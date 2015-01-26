@@ -13,17 +13,17 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.request;
+package org.eclipse.leshan.core.request.exception;
 
-/**
- * A visitor to visit an Uplink Lightweight M2M request.
- */
-public interface UplinkRequestVisitor {
-    void visit(RegisterRequest request);
+public class RequestTimeoutException extends ResourceAccessException {
 
-    void visit(UpdateRequest request);
+    private static final long serialVersionUID = -6372006578730743741L;
 
-    void visit(DeregisterRequest request);
-
-    void visit(BootstrapRequest request);
+    /**
+     * @param uri the resource URI accessed
+     * @param timeout the number of milliseconds after which the request has timed out
+     */
+    public RequestTimeoutException(String uri, long timeout) {
+        super(null, uri, String.format("Request timed out after %d milliseconds", timeout));
+    }
 }

@@ -16,33 +16,21 @@
 package org.eclipse.leshan.client.californium.impl;
 
 import java.net.InetSocketAddress;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.eclipse.californium.core.coap.Request;
-import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.LinkObject;
-import org.eclipse.leshan.client.request.AbstractLwM2mClientRequest;
-import org.eclipse.leshan.client.request.AbstractRegisteredLwM2mClientRequest;
-import org.eclipse.leshan.client.request.BootstrapRequest;
-import org.eclipse.leshan.client.request.DeregisterRequest;
-import org.eclipse.leshan.client.request.LwM2mClientRequestVisitor;
-import org.eclipse.leshan.client.request.LwM2mContentRequest;
-import org.eclipse.leshan.client.request.RegisterRequest;
-import org.eclipse.leshan.client.request.UpdateRequest;
 import org.eclipse.leshan.client.util.LinkFormatUtils;
+import org.eclipse.leshan.core.request.BindingMode;
+import org.eclipse.leshan.core.request.BootstrapRequest;
+import org.eclipse.leshan.core.request.DeregisterRequest;
+import org.eclipse.leshan.core.request.RegisterRequest;
+import org.eclipse.leshan.core.request.UpdateRequest;
+import org.eclipse.leshan.core.request.UplinkRequestVisitor;
 
-public class CoapClientRequestBuilder implements LwM2mClientRequestVisitor {
+public class CoapClientRequestBuilder implements UplinkRequestVisitor {
+
     private Request coapRequest;
-
-    private Endpoint coapEndpoint;
-
-    private boolean parametersValid = false;
-
     private final InetSocketAddress serverAddress;
-
-    private long timeout;
-
     private final LinkObject[] clientObjectModel;
 
     public CoapClientRequestBuilder(final InetSocketAddress serverAddress, final LinkObject... clientObjectModel) {
@@ -53,114 +41,84 @@ public class CoapClientRequestBuilder implements LwM2mClientRequestVisitor {
     @Override
     public void visit(final BootstrapRequest request) {
         coapRequest = Request.newPost();
-        buildRequestSettings(request);
-
+        buildRequestSettings();
         coapRequest.getOptions().addUriPath("bs");
-        coapRequest.getOptions().addUriQuery("ep=" + request.getClientEndpointIdentifier());
-
-        parametersValid = true;
-
+        coapRequest.getOptions().addUriQuery("ep=" + request.getEndpointName());
     }
 
     @Override
     public void visit(final RegisterRequest request) {
-        if (!areParametersValid(request.getClientParameters())) {
-            return;
-        }
         coapRequest = Request.newPost();
-        buildRequestSettings(request);
+        buildRequestSettings();
 
         coapRequest.getOptions().addUriPath("rd");
-        coapRequest.getOptions().addUriQuery("ep=" + request.getClientEndpointIdentifier());
-        buildRequestContent(request);
+        coapRequest.getOptions().addUriQuery("ep=" + request.getEndpointName());
 
-        parametersValid = true;
+        Long lifetime = request.getLifetime();
+        if (lifetime != null)
+            coapRequest.getOptions().addUriQuery("lt=" + lifetime);
+
+        String smsNumber = request.getSmsNumber();
+        if (smsNumber != null)
+            coapRequest.getOptions().addUriQuery("sms=" + smsNumber);
+
+        String lwVersion = request.getLwVersion();
+        if (lwVersion != null)
+            coapRequest.getOptions().addUriQuery("lwm2m=" + lwVersion);
+
+        BindingMode bindingMode = request.getBindingMode();
+        if (bindingMode != null)
+            coapRequest.getOptions().addUriQuery("b=" + bindingMode.toString());
+
+        LinkObject[] linkObjects = request.getObjectLinks();
+        String payload;
+        if (linkObjects == null)
+            payload = LinkFormatUtils.payloadize(clientObjectModel);
+        else
+            payload = LinkFormatUtils.payloadize(linkObjects);
+        coapRequest.setPayload(payload);
     }
 
     @Override
     public void visit(final UpdateRequest request) {
-        if (!areParametersValid(request.getClientParameters())) {
-            return;
-        }
         coapRequest = Request.newPut();
-        buildRequestSettings(request);
+        buildRequestSettings();
+        coapRequest.getOptions().setUriPath(request.getRegistrationId());
 
-        buildLocationPath(request);
-        buildRequestContent(request);
+        Long lifetime = request.getLifeTimeInSec();
+        if (lifetime != null)
+            coapRequest.getOptions().addUriQuery("lt=" + lifetime);
 
-        parametersValid = true;
+        String smsNumber = request.getSmsNumber();
+        if (smsNumber != null)
+            coapRequest.getOptions().addUriQuery("sms=" + smsNumber);
 
+        BindingMode bindingMode = request.getBindingMode();
+        if (bindingMode != null)
+            coapRequest.getOptions().addUriQuery("b=" + bindingMode.toString());
+
+        LinkObject[] linkObjects = request.getObjectLinks();
+        String payload;
+        if (linkObjects == null)
+            payload = LinkFormatUtils.payloadize(clientObjectModel);
+        else
+            payload = LinkFormatUtils.payloadize(linkObjects);
+        coapRequest.setPayload(payload);
     }
 
     @Override
     public void visit(final DeregisterRequest request) {
         coapRequest = Request.newDelete();
-        buildRequestSettings(request);
-
-        buildLocationPath(request);
-
-        parametersValid = true;
-
+        buildRequestSettings();
+        coapRequest.getOptions().setUriPath(request.getRegistrationID());
     }
 
     public Request getRequest() {
         return coapRequest;
     }
 
-    public Endpoint getEndpoint() {
-        return coapEndpoint;
-    }
-
-    public boolean areParametersValid() {
-        return parametersValid;
-    }
-
-    public long getTimeout() {
-        return timeout;
-    }
-
-    private void buildLocationPath(final AbstractRegisteredLwM2mClientRequest request) {
-        request.getClientIdentifier().accept(coapRequest);
-    }
-
-    private void buildRequestSettings(final AbstractLwM2mClientRequest request) {
-        timeout = request.getTimeout();
+    private void buildRequestSettings() {
         coapRequest.setDestination(serverAddress.getAddress());
         coapRequest.setDestinationPort(serverAddress.getPort());
-    }
-
-    private void buildRequestContent(final LwM2mContentRequest request) {
-        for (final Entry<String, String> entry : request.getClientParameters().entrySet()) {
-            coapRequest.getOptions().addUriQuery(entry.getKey() + "=" + entry.getValue());
-        }
-
-        final String payload = LinkFormatUtils.payloadize(clientObjectModel);
-        coapRequest.setPayload(payload);
-    }
-
-    private boolean areParametersValid(final Map<String, String> parameters) {
-        for (final Map.Entry<String, String> p : parameters.entrySet()) {
-            switch (p.getKey()) {
-            case "lt":
-                break;
-            case "lwm2m":
-                break;
-            case "sms":
-                return false;
-            case "b":
-                if (!isBindingValid(p.getValue())) {
-                    return false;
-                }
-                break;
-            default:
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private boolean isBindingValid(final String value) {
-        return value.equals("U");
     }
 }

@@ -27,6 +27,13 @@ public class LwM2mModel {
 
     private final Map<Integer, ObjectModel> objects; // objects by ID
 
+    public LwM2mModel(ObjectModel objectModel) {
+        objects = new HashMap<>();
+        if (objectModel != null) {
+            objects.put(objectModel.id, objectModel);
+        }
+    }
+
     public LwM2mModel(Map<Integer, ObjectModel> objectModels) {
         if (objectModels == null) {
             objects = new HashMap<>();

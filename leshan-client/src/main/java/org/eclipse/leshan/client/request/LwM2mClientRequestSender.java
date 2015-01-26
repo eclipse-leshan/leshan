@@ -15,11 +15,14 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.request;
 
-import org.eclipse.leshan.client.response.OperationResponse;
-import org.eclipse.leshan.client.util.ResponseCallback;
+import org.eclipse.leshan.core.request.UplinkRequest;
+import org.eclipse.leshan.core.response.ExceptionConsumer;
+import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.ResponseConsumer;
 
 public interface LwM2mClientRequestSender {
-    OperationResponse send(LwM2mClientRequest request);
+    <T extends LwM2mResponse> T send(final UplinkRequest<T> request);
 
-    void send(LwM2mClientRequest request, ResponseCallback responseCallback);
+    <T extends LwM2mResponse> void send(final UplinkRequest<T> request, final ResponseConsumer<T> responseCallback,
+            final ExceptionConsumer errorCallback);
 }

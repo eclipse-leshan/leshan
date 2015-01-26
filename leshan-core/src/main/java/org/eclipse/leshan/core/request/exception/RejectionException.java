@@ -13,17 +13,10 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.request;
+package org.eclipse.leshan.core.request.exception;
 
-/**
- * A visitor to visit an Uplink Lightweight M2M request.
- */
-public interface UplinkRequestVisitor {
-    void visit(RegisterRequest request);
+public class RejectionException extends RuntimeException {
 
-    void visit(UpdateRequest request);
+    private static final long serialVersionUID = 1L;
 
-    void visit(DeregisterRequest request);
-
-    void visit(BootstrapRequest request);
 }

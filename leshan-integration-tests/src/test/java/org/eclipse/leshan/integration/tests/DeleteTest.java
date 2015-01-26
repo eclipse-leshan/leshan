@@ -16,24 +16,27 @@
 
 package org.eclipse.leshan.integration.tests;
 
-import static org.eclipse.leshan.ResponseCode.CONTENT;
-import static org.eclipse.leshan.ResponseCode.DELETED;
-import static org.eclipse.leshan.ResponseCode.NOT_FOUND;
-import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.GOOD_OBJECT_ID;
-import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.GOOD_OBJECT_INSTANCE_ID;
-import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.assertEmptyResponse;
-import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.assertResponse;
-import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.createGoodObjectInstance;
+import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.ENDPOINT_IDENTIFIER;
+import static org.junit.Assert.assertEquals;
 
-import org.eclipse.leshan.core.node.LwM2mObject;
-import org.eclipse.leshan.core.node.LwM2mObjectInstance;
+import org.eclipse.leshan.ResponseCode;
+import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.request.CreateRequest;
+import org.eclipse.leshan.core.request.DeleteRequest;
+import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 public class DeleteTest {
 
     private final IntegrationTestHelper helper = new IntegrationTestHelper();
+
+    @Before
+    public void start() {
+        helper.start();
+    }
 
     @After
     public void stop() {
@@ -42,43 +45,40 @@ public class DeleteTest {
 
     @Test
     public void delete_created_object_instance() {
-        helper.register();
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
-        createAndThenAssertDeleted();
-    }
+        // create ACL instance
+        helper.server.send(helper.getClient(), new CreateRequest(2, 0, new LwM2mResource[0], null));
 
-    @Test
-    public void delete_and_cant_read_object_instance() {
-        helper.register();
+        // try to delete this instance
+        LwM2mResponse deleteResponse = helper.server.send(helper.getClient(), new DeleteRequest(2, 0));
 
-        createAndThenAssertDeleted();
-
-        assertEmptyResponse(helper.sendRead(GOOD_OBJECT_ID, GOOD_OBJECT_INSTANCE_ID), NOT_FOUND);
-    }
-
-    @Test
-    public void delete_and_read_object_is_empty() {
-        helper.register();
-
-        createAndThenAssertDeleted();
-
-        assertResponse(helper.sendRead(GOOD_OBJECT_ID), CONTENT, new LwM2mObject(GOOD_OBJECT_ID,
-                new LwM2mObjectInstance[0]));
+        // verify result
+        assertEquals(ResponseCode.DELETED, deleteResponse.getCode());
     }
 
     @Test
     public void cannot_delete_unknown_object_instance() {
-        helper.register();
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
-        final LwM2mResponse responseDelete = helper.sendDelete(GOOD_OBJECT_ID, GOOD_OBJECT_INSTANCE_ID);
-        assertEmptyResponse(responseDelete, NOT_FOUND);
+        // try to create an instance of object 50
+        LwM2mResponse response = helper.server.send(helper.getClient(), new DeleteRequest(2, 0));
+
+        // verify result
+        assertEquals(ResponseCode.NOT_FOUND, response.getCode());
     }
 
-    private void createAndThenAssertDeleted() {
-        helper.sendCreate(createGoodObjectInstance("hello", "goodbye"), GOOD_OBJECT_ID);
+    @Test
+    public void cannot_delete_single_manadatory_object_instance() {
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
-        final LwM2mResponse responseDelete = helper.sendDelete(GOOD_OBJECT_ID, GOOD_OBJECT_INSTANCE_ID);
-        assertEmptyResponse(responseDelete, DELETED);
+        // try to create an instance of object 50
+        LwM2mResponse response = helper.server.send(helper.getClient(), new DeleteRequest(3, 0));
+
+        // verify result
+        assertEquals(ResponseCode.METHOD_NOT_ALLOWED, response.getCode());
     }
-
 }

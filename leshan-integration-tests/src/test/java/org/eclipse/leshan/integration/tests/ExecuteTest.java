@@ -16,22 +16,25 @@
 
 package org.eclipse.leshan.integration.tests;
 
-import static org.eclipse.leshan.ResponseCode.METHOD_NOT_ALLOWED;
-import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.EXECUTABLE_RESOURCE_ID;
-import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.GOOD_OBJECT_ID;
-import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.GOOD_OBJECT_INSTANCE_ID;
-import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.SECOND_RESOURCE_ID;
+import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.ENDPOINT_IDENTIFIER;
+import static org.junit.Assert.assertEquals;
 
 import org.eclipse.leshan.ResponseCode;
-import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ExecuteRequest;
+import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 public class ExecuteTest {
 
     private final IntegrationTestHelper helper = new IntegrationTestHelper();
+
+    @Before
+    public void start() {
+        helper.start();
+    }
 
     @After
     public void stop() {
@@ -40,26 +43,26 @@ public class ExecuteTest {
 
     @Test
     public void cannot_execute_write_only_resource() {
-        helper.register();
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
-        helper.sendCreate(IntegrationTestHelper.createGoodObjectInstance("hello", "goodbye"), GOOD_OBJECT_ID);
+        // execute manufacturer resource on device
+        LwM2mResponse response = helper.server.send(helper.getClient(), new ExecuteRequest(3, 0, 0));
 
-        final LwM2mResponse response = helper.server.send(helper.getClient(), new ExecuteRequest(GOOD_OBJECT_ID,
-                GOOD_OBJECT_INSTANCE_ID, SECOND_RESOURCE_ID, "world".getBytes(), ContentFormat.TEXT));
-
-        IntegrationTestHelper.assertEmptyResponse(response, METHOD_NOT_ALLOWED);
+        // verify result
+        assertEquals(ResponseCode.METHOD_NOT_ALLOWED, response.getCode());
     }
 
     @Test
     public void can_execute_resource() {
-        helper.register();
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
-        helper.sendCreate(IntegrationTestHelper.createGoodObjectInstance("hello", "goodbye"), GOOD_OBJECT_ID);
+        // execute reboot resource on device
+        LwM2mResponse response = helper.server.send(helper.getClient(), new ExecuteRequest(3, 0, 4));
 
-        final LwM2mResponse response = helper.server.send(helper.getClient(), new ExecuteRequest(GOOD_OBJECT_ID,
-                GOOD_OBJECT_INSTANCE_ID, EXECUTABLE_RESOURCE_ID, "world".getBytes(), ContentFormat.TEXT));
-
-        IntegrationTestHelper.assertEmptyResponse(response, ResponseCode.CHANGED);
+        // verify result
+        assertEquals(ResponseCode.CHANGED, response.getCode());
     }
 
 }

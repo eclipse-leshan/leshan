@@ -235,7 +235,7 @@ public class Client {
         return res;
     }
 
-    public synchronized long getLifeTimeInSec() {
+    public synchronized Long getLifeTimeInSec() {
         return lifeTimeInSec;
     }
 

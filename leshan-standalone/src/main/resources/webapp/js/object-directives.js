@@ -72,9 +72,9 @@ angular.module('objectDirectives', [])
                         create.tooltip = formattedDate + "<br/>" + create.status;
                         
                         if (data.status == "CREATED") {
+                            var newinstance = lwResources.addInstance(scope.object, instance.id, null)
                             for (var i in payload.resources) {
                                 var tlvresource = payload.resources[i];
-                                var newinstance = lwResources.addInstance(scope.object, instance.id, null)
                                 resource = lwResources.addResource(scope.object, newinstance, tlvresource.id, null)
                                 resource.value = tlvresource.value;
                                 resource.valuesupposed = true;

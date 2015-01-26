@@ -15,78 +15,124 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.impl;
 
-import java.util.logging.Logger;
-
-import org.eclipse.californium.core.coap.CoAP.ResponseCode;
+import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
-import org.eclipse.leshan.client.request.BootstrapRequest;
-import org.eclipse.leshan.client.request.DeregisterRequest;
-import org.eclipse.leshan.client.request.LwM2mClientRequest;
-import org.eclipse.leshan.client.request.LwM2mClientRequestVisitor;
-import org.eclipse.leshan.client.request.RegisterRequest;
-import org.eclipse.leshan.client.request.UpdateRequest;
-import org.eclipse.leshan.client.response.OperationResponse;
+import org.eclipse.leshan.ResponseCode;
+import org.eclipse.leshan.core.request.BootstrapRequest;
+import org.eclipse.leshan.core.request.DeregisterRequest;
+import org.eclipse.leshan.core.request.RegisterRequest;
+import org.eclipse.leshan.core.request.UpdateRequest;
+import org.eclipse.leshan.core.request.UplinkRequestVisitor;
+import org.eclipse.leshan.core.request.exception.ResourceAccessException;
+import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.RegisterResponse;
+import org.eclipse.leshan.util.Validate;
 
-public class LwM2mClientResponseBuilder implements LwM2mClientRequestVisitor {
-    private static final Logger LOG = Logger.getLogger(LwM2mClientResponseBuilder.class.getCanonicalName());
+public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements UplinkRequestVisitor {
+
+    // private static final Logger LOG = LoggerFactory.getLogger(LwM2mClientResponseBuilder.class);
 
     private final Request coapRequest;
     private final Response coapResponse;
-    private final CaliforniumLwM2mClientRequestSender californiumLwM2mClientRequestSender;
-    private OperationResponse lwM2mresponse;
-    private final CaliforniumClientIdentifierBuilder californiumClientIdentifierBuilder;
 
-    public LwM2mClientResponseBuilder(final Request coapRequest, final Response coapResponse,
-            final CaliforniumLwM2mClientRequestSender californiumLwM2mClientRequestSender) {
+    private LwM2mResponse lwM2mresponse;
+
+    // TODO remove duplicate code from org.eclipse.leshan.server.californium.impl.LwM2mResponseBuilder
+    public static ResponseCode fromCoapCode(final int code) {
+        Validate.notNull(code);
+
+        if (code == CoAP.ResponseCode.CREATED.value) {
+            return ResponseCode.CREATED;
+        } else if (code == CoAP.ResponseCode.DELETED.value) {
+            return ResponseCode.DELETED;
+        } else if (code == CoAP.ResponseCode.CHANGED.value) {
+            return ResponseCode.CHANGED;
+        } else if (code == CoAP.ResponseCode.CONTENT.value) {
+            return ResponseCode.CONTENT;
+        } else if (code == CoAP.ResponseCode.BAD_REQUEST.value) {
+            return ResponseCode.BAD_REQUEST;
+        } else if (code == CoAP.ResponseCode.UNAUTHORIZED.value) {
+            return ResponseCode.UNAUTHORIZED;
+        } else if (code == CoAP.ResponseCode.NOT_FOUND.value) {
+            return ResponseCode.NOT_FOUND;
+        } else if (code == CoAP.ResponseCode.METHOD_NOT_ALLOWED.value) {
+            return ResponseCode.METHOD_NOT_ALLOWED;
+        } else if (code == CoAP.ResponseCode.FORBIDDEN.value) {
+            return ResponseCode.FORBIDDEN;
+        } else {
+            throw new IllegalArgumentException("Invalid CoAP code for LWM2M response: " + code);
+        }
+    }
+
+    public LwM2mClientResponseBuilder(final Request coapRequest, final Response coapResponse) {
         this.coapRequest = coapRequest;
         this.coapResponse = coapResponse;
-        this.californiumLwM2mClientRequestSender = californiumLwM2mClientRequestSender;
-        this.californiumClientIdentifierBuilder = new CaliforniumClientIdentifierBuilder(coapResponse);
     }
 
     @Override
     public void visit(final RegisterRequest request) {
-        buildClientIdentifier(request);
-        buildResponse();
+        switch (coapResponse.getCode()) {
+        case CREATED:
+            lwM2mresponse = new RegisterResponse(fromCoapCode(coapResponse.getCode().value), coapResponse.getOptions()
+                    .getLocationString());
+            break;
+        case BAD_REQUEST:
+            // TODO manage conflict case ...
+            lwM2mresponse = new RegisterResponse(fromCoapCode(coapResponse.getCode().value));
+            break;
+        default:
+            if (coapResponse.getCode().value == 137) // manage conflict code ...
+                lwM2mresponse = new RegisterResponse(fromCoapCode(coapResponse.getCode().value));
+            else
+                handleUnexpectedResponseCode(coapRequest, coapResponse);
+        }
     }
 
     @Override
     public void visit(final DeregisterRequest request) {
-        buildClientIdentifier(request);
-        buildResponse();
+        switch (coapResponse.getCode()) {
+        case DELETED:
+        case NOT_FOUND:
+            lwM2mresponse = new LwM2mResponse(fromCoapCode(coapResponse.getCode().value));
+            break;
+        default:
+            handleUnexpectedResponseCode(coapRequest, coapResponse);
+        }
     }
 
     @Override
     public void visit(final UpdateRequest request) {
-        buildClientIdentifier(request);
-        buildResponse();
+        switch (coapResponse.getCode()) {
+        case CHANGED:
+        case BAD_REQUEST:
+        case NOT_FOUND:
+            lwM2mresponse = new LwM2mResponse(fromCoapCode(coapResponse.getCode().value));
+            break;
+        default:
+            handleUnexpectedResponseCode(coapRequest, coapResponse);
+        }
     }
 
     @Override
     public void visit(final BootstrapRequest request) {
-        buildClientIdentifier(request);
-        buildResponse();
+        throw new UnsupportedOperationException(
+                "The Bootstrap Interface has not yet been fully implemented on the Leshan Client yet.");
     }
 
-    private void buildClientIdentifier(final LwM2mClientRequest request) {
-        request.accept(californiumClientIdentifierBuilder);
+    @SuppressWarnings("unchecked")
+    public T getResponse() {
+        return (T) lwM2mresponse;
     }
 
-    private void buildResponse() {
-        if (coapResponse == null) {
-            lwM2mresponse = OperationResponse.failure(ResponseCode.GATEWAY_TIMEOUT, "Timed Out Waiting For Response.");
-        } else if (ResponseCode.isSuccess(coapResponse.getCode())) {
-            lwM2mresponse = OperationResponse
-                    .of(coapResponse, californiumClientIdentifierBuilder.getClientIdentifier());
-        } else {
-            lwM2mresponse = OperationResponse.failure(coapResponse.getCode(), "Request Failed on Server "
-                    + coapResponse.getOptions());
-        }
+    /**
+     * Throws a generic {@link ResourceAccessException} indicating that the server returned an unexpected response code.
+     *
+     * @param coapRequest
+     * @param coapResponse
+     */
+    private void handleUnexpectedResponseCode(final Request coapRequest, final Response coapResponse) {
+        final String msg = String.format("Server returned unexpected response code [%s]", coapResponse.getCode());
+        throw new ResourceAccessException(fromCoapCode(coapResponse.getCode().value), coapRequest.getURI(), msg);
     }
-
-    public OperationResponse getResponse() {
-        return lwM2mresponse;
-    }
-
 }

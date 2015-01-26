@@ -52,12 +52,12 @@ public class ClientRegistryImplTest {
 
         ClientUpdate update = new ClientUpdate(registrationId, address, port, null, null, null, null);
         Client updatedClient = registry.updateClient(update);
-        Assert.assertEquals((long) lifetime, updatedClient.getLifeTimeInSec());
+        Assert.assertEquals(lifetime, updatedClient.getLifeTimeInSec());
         Assert.assertSame(binding, updatedClient.getBindingMode());
         Assert.assertEquals(sms, updatedClient.getSmsNumber());
 
         Client registeredClient = registry.get(ep);
-        Assert.assertEquals((long) lifetime, registeredClient.getLifeTimeInSec());
+        Assert.assertEquals(lifetime, registeredClient.getLifeTimeInSec());
         Assert.assertSame(binding, registeredClient.getBindingMode());
         Assert.assertEquals(sms, registeredClient.getSmsNumber());
     }

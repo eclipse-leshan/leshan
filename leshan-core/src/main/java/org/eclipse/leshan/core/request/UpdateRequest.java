@@ -40,6 +40,11 @@ public class UpdateRequest implements UplinkRequest<LwM2mResponse> {
         this(registrationId, address, port, lifetime, smsNumber, binding, objectLinks, null);
     }
 
+    public UpdateRequest(String registrationId, Long lifetime, String smsNumber, BindingMode binding,
+            LinkObject[] objectLinks) {
+        this(registrationId, null, null, lifetime, smsNumber, binding, objectLinks, null);
+    }
+
     /**
      * Sets all fields.
      * 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2015 Sierra Wireless and others.
+ * Copyright (c) 2015 Sierra Wireless and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -9,21 +9,28 @@
  *    http://www.eclipse.org/legal/epl-v10.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
-/**
- * A visitor to visit an Uplink Lightweight M2M request.
- */
-public interface UplinkRequestVisitor {
-    void visit(RegisterRequest request);
+import org.eclipse.leshan.core.response.LwM2mResponse;
 
-    void visit(UpdateRequest request);
+public class BootstrapRequest implements UplinkRequest<LwM2mResponse> {
 
-    void visit(DeregisterRequest request);
+    private final String endpointName;
 
-    void visit(BootstrapRequest request);
+    public BootstrapRequest(String endpointName) {
+        this.endpointName = endpointName;
+    }
+
+    public String getEndpointName() {
+        return endpointName;
+    }
+
+    @Override
+    public void accept(UplinkRequestVisitor visitor) {
+        visitor.visit(this);
+    }
 }

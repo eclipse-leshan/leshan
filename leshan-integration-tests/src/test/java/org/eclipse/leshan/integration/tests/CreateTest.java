@@ -16,19 +16,30 @@
 
 package org.eclipse.leshan.integration.tests;
 
+import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.ENDPOINT_IDENTIFIER;
 import static org.junit.Assert.assertEquals;
 
 import org.eclipse.leshan.ResponseCode;
-import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.Value;
+import org.eclipse.leshan.core.request.CreateRequest;
+import org.eclipse.leshan.core.request.ReadRequest;
+import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.response.CreateResponse;
+import org.eclipse.leshan.core.response.ValueResponse;
 import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class CreateTest {
 
     IntegrationTestHelper helper = new IntegrationTestHelper();
+
+    @Before
+    public void start() {
+        helper.start();
+    }
 
     @After
     public void stop() {
@@ -37,157 +48,108 @@ public class CreateTest {
 
     @Test
     public void can_create_instance_of_object() {
-        helper.register();
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
-        final CreateResponse response = helper.sendCreate(
-                IntegrationTestHelper.createGoodObjectInstance("hello", "goodbye"),
-                IntegrationTestHelper.GOOD_OBJECT_ID);
-        IntegrationTestHelper.assertEmptyResponse(response, ResponseCode.CREATED);
-        assertEquals(IntegrationTestHelper.GOOD_OBJECT_ID + "/0", response.getLocation());
+        // create ACL instance
+        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, 0, new LwM2mResource[0],
+                null));
+
+        // verify result
+        assertEquals(ResponseCode.CREATED, response.getCode());
+        assertEquals("2/0", response.getLocation());
     }
 
     @Test
     public void can_create_specific_instance_of_object() {
-        helper.register();
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
-        final CreateResponse response = helper.sendCreate(IntegrationTestHelper.createGoodObjectInstance("one", "two"),
-                IntegrationTestHelper.GOOD_OBJECT_ID, 14);
-        IntegrationTestHelper.assertEmptyResponse(response, ResponseCode.CREATED);
-        assertEquals(IntegrationTestHelper.GOOD_OBJECT_ID + "/14", response.getLocation());
-    }
+        // create ACL instance
+        LwM2mResource accessControlOwner = new LwM2mResource(3, Value.newIntegerValue(123));
 
-    @Test
-    public void can_create_multiple_instance_of_object() {
-        helper.register();
+        LwM2mResource[] data = new LwM2mResource[] { accessControlOwner };
+        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, 0, data, null));
 
-        final CreateResponse response = helper.sendCreate(
-                IntegrationTestHelper.createGoodObjectInstance("hello", "goodbye"),
-                IntegrationTestHelper.GOOD_OBJECT_ID);
-        IntegrationTestHelper.assertEmptyResponse(response, ResponseCode.CREATED);
-        assertEquals(IntegrationTestHelper.GOOD_OBJECT_ID + "/0", response.getLocation());
-
-        final CreateResponse responseTwo = helper.sendCreate(
-                IntegrationTestHelper.createGoodObjectInstance("hello", "goodbye"),
-                IntegrationTestHelper.GOOD_OBJECT_ID);
-        IntegrationTestHelper.assertEmptyResponse(responseTwo, ResponseCode.CREATED);
-        assertEquals(IntegrationTestHelper.GOOD_OBJECT_ID + "/1", responseTwo.getLocation());
+        // verify result
+        assertEquals(ResponseCode.CREATED, response.getCode());
+        assertEquals("2/0", response.getLocation());
     }
 
     @Test
     public void cannot_create_instance_of_object() {
-        helper.register();
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
-        final CreateResponse response = helper
-                .sendCreate(IntegrationTestHelper.createGoodObjectInstance("hello", "goodbye"),
-                        IntegrationTestHelper.BAD_OBJECT_ID);
-        IntegrationTestHelper.assertEmptyResponse(response, ResponseCode.NOT_FOUND);
+        // try to create an instance of object 50
+        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(50, 0, new LwM2mResource[0],
+                null));
+
+        // verify result
+        assertEquals(ResponseCode.NOT_FOUND, response.getCode());
     }
 
+    // TODO not sure all the writable mandatory resource should be present
+    // E.g. for softwareUpdate (object 9) packageURI and package are writable resource mandatory
+    // but you will not make a create with this two resource.
+    @Ignore
     @Test
     public void cannot_create_instance_without_all_required_resources() {
-        helper.register();
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
-        final LwM2mObjectInstance instance = new LwM2mObjectInstance(IntegrationTestHelper.GOOD_OBJECT_INSTANCE_ID,
-                new LwM2mResource[] { new LwM2mResource(IntegrationTestHelper.FIRST_RESOURCE_ID,
-                        Value.newStringValue("hello")) });
+        // create ACL instance
+        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, 0, new LwM2mResource[0],
+                null));
 
-        final CreateResponse response = helper.sendCreate(instance, IntegrationTestHelper.GOOD_OBJECT_ID);
-        IntegrationTestHelper.assertEmptyResponse(response, ResponseCode.BAD_REQUEST);
+        // verify result
+        assertEquals(ResponseCode.BAD_REQUEST, response.getCode());
 
-        IntegrationTestHelper.assertEmptyResponse(
-                helper.sendRead(IntegrationTestHelper.GOOD_OBJECT_ID, IntegrationTestHelper.GOOD_OBJECT_INSTANCE_ID),
-                ResponseCode.NOT_FOUND);
+        // try to read to check if the instance is not created
+        // client registration
+        ValueResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(2, 0));
+        assertEquals(ResponseCode.NOT_FOUND, readResponse.getCode());
     }
 
+    // TODO we must probably implement this.
+    @Ignore
     @Test
     public void cannot_create_instance_with_extraneous_resources() {
-        helper.register();
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
-        final LwM2mObjectInstance instance = new LwM2mObjectInstance(IntegrationTestHelper.GOOD_OBJECT_INSTANCE_ID,
-                new LwM2mResource[] {
-                                        new LwM2mResource(IntegrationTestHelper.FIRST_RESOURCE_ID,
-                                                Value.newStringValue("hello")),
-                                        new LwM2mResource(IntegrationTestHelper.SECOND_RESOURCE_ID,
-                                                Value.newStringValue("goodbye")),
-                                        new LwM2mResource(IntegrationTestHelper.INVALID_RESOURCE_ID,
-                                                Value.newStringValue("lolz")) });
+        // create ACL instance
+        LwM2mResource accessControlOwner = new LwM2mResource(3, Value.newIntegerValue(123));
+        LwM2mResource extraneousResource = new LwM2mResource(50, Value.newIntegerValue(123));
+        LwM2mResource[] data = new LwM2mResource[] { accessControlOwner, extraneousResource };
+        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, 0, data, null));
 
-        final CreateResponse response = helper.sendCreate(instance, IntegrationTestHelper.GOOD_OBJECT_ID);
-        IntegrationTestHelper.assertEmptyResponse(response, ResponseCode.METHOD_NOT_ALLOWED);
+        // verify result
+        assertEquals(ResponseCode.BAD_REQUEST, response.getCode());
 
-        IntegrationTestHelper.assertEmptyResponse(
-                helper.sendRead(IntegrationTestHelper.GOOD_OBJECT_ID, IntegrationTestHelper.GOOD_OBJECT_INSTANCE_ID),
-                ResponseCode.NOT_FOUND);
+        // try to read to check if the instance is not created
+        // client registration
+        ValueResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(2, 0));
+        assertEquals(ResponseCode.NOT_FOUND, readResponse.getCode());
     }
 
+    // TODO I'm not sure we can do use only writable resource on create
+    // see https://github.com/OpenMobileAlliance/OMA-LwM2M-Public-Review/issues/30
+    @Ignore
     @Test
     public void cannot_create_instance_with_non_writable_resource() {
-        helper.register();
-
-        final LwM2mObjectInstance instance = new LwM2mObjectInstance(IntegrationTestHelper.GOOD_OBJECT_INSTANCE_ID,
-                new LwM2mResource[] {
-                                        new LwM2mResource(IntegrationTestHelper.FIRST_RESOURCE_ID,
-                                                Value.newStringValue("hello")),
-                                        new LwM2mResource(IntegrationTestHelper.SECOND_RESOURCE_ID,
-                                                Value.newStringValue("goodbye")),
-                                        new LwM2mResource(IntegrationTestHelper.EXECUTABLE_RESOURCE_ID,
-                                                Value.newStringValue("lolz")) });
-
-        final CreateResponse response = helper.sendCreate(instance, IntegrationTestHelper.GOOD_OBJECT_ID);
-        IntegrationTestHelper.assertEmptyResponse(response, ResponseCode.METHOD_NOT_ALLOWED);
-
-        IntegrationTestHelper.assertEmptyResponse(
-                helper.sendRead(IntegrationTestHelper.GOOD_OBJECT_ID, IntegrationTestHelper.GOOD_OBJECT_INSTANCE_ID),
-                ResponseCode.NOT_FOUND);
-    }
-
-    @Test
-    public void can_create_object_instance_with_empty_payload() {
-        helper.register();
-        IntegrationTestHelper.assertEmptyResponse(helper.sendCreate(new LwM2mObjectInstance(
-                IntegrationTestHelper.GOOD_OBJECT_INSTANCE_ID, new LwM2mResource[0]),
-                IntegrationTestHelper.MULTIPLE_OBJECT_ID), ResponseCode.CREATED);
     }
 
     @Test
     public void cannot_create_mandatory_single_object() {
-        helper.register();
-        IntegrationTestHelper.assertEmptyResponse(helper.sendCreate(new LwM2mObjectInstance(
-                IntegrationTestHelper.GOOD_OBJECT_INSTANCE_ID, new LwM2mResource[0]),
-                IntegrationTestHelper.MANDATORY_SINGLE_OBJECT_ID), ResponseCode.BAD_REQUEST);
-    }
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
-    @Test
-    public void can_create_mandatory_multiple_object() {
-        helper.register();
-        IntegrationTestHelper.assertEmptyResponse(helper.sendCreate(new LwM2mObjectInstance(
-                IntegrationTestHelper.GOOD_OBJECT_INSTANCE_ID, new LwM2mResource[0]),
-                IntegrationTestHelper.MANDATORY_MULTIPLE_OBJECT_ID), ResponseCode.CREATED);
-        IntegrationTestHelper.assertEmptyResponse(helper.sendCreate(new LwM2mObjectInstance(
-                IntegrationTestHelper.GOOD_OBJECT_INSTANCE_ID, new LwM2mResource[0]),
-                IntegrationTestHelper.MANDATORY_MULTIPLE_OBJECT_ID), ResponseCode.CREATED);
-    }
+        // try to create another instance of device object
+        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(3, 0, new LwM2mResource[0],
+                null));
 
-    @Test
-    public void cannot_create_more_than_one_single_object() {
-        helper.register();
-        IntegrationTestHelper.assertEmptyResponse(helper.sendCreate(new LwM2mObjectInstance(
-                IntegrationTestHelper.GOOD_OBJECT_INSTANCE_ID, new LwM2mResource[0]),
-                IntegrationTestHelper.OPTIONAL_SINGLE_OBJECT_ID), ResponseCode.CREATED);
-        IntegrationTestHelper.assertEmptyResponse(helper.sendCreate(new LwM2mObjectInstance(
-                IntegrationTestHelper.GOOD_OBJECT_INSTANCE_ID, new LwM2mResource[0]),
-                IntegrationTestHelper.OPTIONAL_SINGLE_OBJECT_ID), ResponseCode.BAD_REQUEST);
+        // verify result
+        assertEquals(ResponseCode.METHOD_NOT_ALLOWED, response.getCode());
     }
-
-    @Test
-    public void can_access_mandatory_object_without_create() {
-        helper.register();
-        IntegrationTestHelper.assertResponse(
-                helper.sendRead(IntegrationTestHelper.MANDATORY_SINGLE_OBJECT_ID, 0,
-                        IntegrationTestHelper.MANDATORY_SINGLE_RESOURCE_ID),
-                ResponseCode.CONTENT,
-                new LwM2mResource(IntegrationTestHelper.MANDATORY_SINGLE_RESOURCE_ID, Value.newStringValue(Integer
-                        .toString(helper.intResource.getValue()))));
-    }
-
 }

@@ -34,6 +34,20 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
     private int sourcePort;
     private String pskIdentity = null;
 
+    public RegisterRequest(String endpointName) {
+        this.endpointName = endpointName;
+    }
+
+    public RegisterRequest(String endpointName, Long lifetime, String lwVersion, BindingMode bindingMode,
+            String smsNumber, LinkObject[] objectLinks) {
+        this.endpointName = endpointName;
+        this.lifetime = lifetime;
+        this.lwVersion = lwVersion;
+        this.bindingMode = bindingMode;
+        this.smsNumber = smsNumber;
+        this.objectLinks = objectLinks;
+    }
+
     public RegisterRequest(String endpointName, Long lifetime, String lwVersion, BindingMode bindingMode,
             String smsNumber, LinkObject[] objectLinks, InetAddress sourceAddress, int sourcePort,
             InetSocketAddress registrationEndpoint, String pskIdentity) {
@@ -43,6 +57,7 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
         this.bindingMode = bindingMode;
         this.smsNumber = smsNumber;
         this.objectLinks = objectLinks;
+
         this.sourceAddress = sourceAddress;
         this.sourcePort = sourcePort;
         this.registrationEndpoint = registrationEndpoint;

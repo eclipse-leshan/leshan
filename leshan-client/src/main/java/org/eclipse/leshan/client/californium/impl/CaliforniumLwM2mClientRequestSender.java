@@ -16,56 +16,65 @@
 package org.eclipse.leshan.client.californium.impl;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Logger;
 
-import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MessageObserverAdapter;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.LinkObject;
-import org.eclipse.leshan.client.request.LwM2mClientRequest;
 import org.eclipse.leshan.client.request.LwM2mClientRequestSender;
-import org.eclipse.leshan.client.response.OperationResponse;
-import org.eclipse.leshan.client.util.ResponseCallback;
+import org.eclipse.leshan.core.request.UplinkRequest;
+import org.eclipse.leshan.core.request.exception.RejectionException;
+import org.eclipse.leshan.core.request.exception.RequestTimeoutException;
+import org.eclipse.leshan.core.response.ExceptionConsumer;
+import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.ResponseConsumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSender {
-    private static final Logger LOG = Logger.getLogger(CaliforniumLwM2mClientRequestSender.class.getCanonicalName());
+    private static final Logger LOG = LoggerFactory.getLogger(CaliforniumLwM2mClientRequestSender.class);
+    private static final int COAP_REQUEST_TIMEOUT_MILLIS = 5000;
+
     private final Endpoint clientEndpoint;
     private final InetSocketAddress serverAddress;
     private final LinkObject[] clientObjectModel;
+    private final long timeoutMillis;
 
     public CaliforniumLwM2mClientRequestSender(final Endpoint endpoint, final InetSocketAddress serverAddress,
             final LinkObject... linkObjects) {
         this.clientEndpoint = endpoint;
         this.serverAddress = serverAddress;
         this.clientObjectModel = linkObjects;
+        this.timeoutMillis = COAP_REQUEST_TIMEOUT_MILLIS;
     }
 
     @Override
-    public OperationResponse send(final LwM2mClientRequest request) {
+    public <T extends LwM2mResponse> T send(final UplinkRequest<T> request) {
         // Create the CoAP request from LwM2m request
         final CoapClientRequestBuilder coapClientRequestBuilder = new CoapClientRequestBuilder(serverAddress,
                 clientObjectModel);
         request.accept(coapClientRequestBuilder);
-        if (!coapClientRequestBuilder.areParametersValid()) {
-            return OperationResponse.failure(ResponseCode.INTERNAL_SERVER_ERROR,
-                    "Request has invalid parameters.  Not sending.");
-        }
+        // TODO manage invalid parameters
+        // if (!coapClientRequestBuilder.areParametersValid()) {
+        // return OperationResponse.failure(ResponseCode.INTERNAL_SERVER_ERROR,
+        // "Request has invalid parameters.  Not sending.");
+        // }
         final Request coapRequest = coapClientRequestBuilder.getRequest();
 
         // Send CoAP request synchronously
-        final SyncRequestObserver syncMessageObserver = new SyncRequestObserver(coapRequest,
-                coapClientRequestBuilder.getTimeout()) {
+        final SyncRequestObserver<T> syncMessageObserver = new SyncRequestObserver<T>(coapRequest, timeoutMillis) {
             @Override
-            public OperationResponse buildResponse(final Response coapResponse) {
+            public T buildResponse(final Response coapResponse) {
                 // Build LwM2m response
-                final LwM2mClientResponseBuilder lwm2mResponseBuilder = new LwM2mClientResponseBuilder(coapRequest,
-                        coapResponse, CaliforniumLwM2mClientRequestSender.this);
+                final LwM2mClientResponseBuilder<T> lwm2mResponseBuilder = new LwM2mClientResponseBuilder<T>(
+                        coapRequest, coapResponse);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }
@@ -80,26 +89,28 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
     }
 
     @Override
-    public void send(final LwM2mClientRequest request, final ResponseCallback responseCallback) {
+    public <T extends LwM2mResponse> void send(final UplinkRequest<T> request,
+            final ResponseConsumer<T> responseCallback, final ExceptionConsumer errorCallback) {
         // Create the CoAP request from LwM2m request
         final CoapClientRequestBuilder coapClientRequestBuilder = new CoapClientRequestBuilder(serverAddress,
                 clientObjectModel);
         request.accept(coapClientRequestBuilder);
-        if (!coapClientRequestBuilder.areParametersValid()) {
-            responseCallback.onFailure(OperationResponse.failure(ResponseCode.INTERNAL_SERVER_ERROR,
-                    "Request has invalid parameters.  Not sending."));
-            return;
-        }
+        // TODO manage invalid parameters
+        // if (!coapClientRequestBuilder.areParametersValid()) {
+        // responseCallback.onFailure(OperationResponse.failure(ResponseCode.INTERNAL_SERVER_ERROR,
+        // "Request has invalid parameters.  Not sending."));
+        // return;
+        // }
         final Request coapRequest = coapClientRequestBuilder.getRequest();
 
         // Add CoAP request callback
-        coapRequest.addMessageObserver(new AsyncRequestObserver(coapRequest, responseCallback) {
+        coapRequest.addMessageObserver(new AsyncRequestObserver<T>(coapRequest, responseCallback, errorCallback) {
 
             @Override
-            public OperationResponse buildResponse(final Response coapResponse) {
+            public T buildResponse(final Response coapResponse) {
                 // Build LwM2m response
-                final LwM2mClientResponseBuilder lwm2mResponseBuilder = new LwM2mClientResponseBuilder(coapRequest,
-                        coapResponse, CaliforniumLwM2mClientRequestSender.this);
+                final LwM2mClientResponseBuilder<T> lwm2mResponseBuilder = new LwM2mClientResponseBuilder<T>(
+                        coapRequest, coapResponse);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }
@@ -111,35 +122,38 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
 
     // ////// Request Observer Class definition/////////////
 
-    private abstract class AbstractRequestObserver extends MessageObserverAdapter {
-        protected Request coapRequest;
+    private abstract class AbstractRequestObserver<T extends LwM2mResponse> extends MessageObserverAdapter {
+        Request coapRequest;
 
         public AbstractRequestObserver(final Request coapRequest) {
             this.coapRequest = coapRequest;
         }
 
-        public abstract OperationResponse buildResponse(Response coapResponse);
+        public abstract T buildResponse(Response coapResponse);
     }
 
-    private abstract class AsyncRequestObserver extends AbstractRequestObserver {
+    private abstract class AsyncRequestObserver<T extends LwM2mResponse> extends AbstractRequestObserver<T> {
 
-        protected ResponseCallback responseCallback;
+        ResponseConsumer<T> responseCallback;
+        ExceptionConsumer errorCallback;
 
-        AsyncRequestObserver(final Request coapRequest, final ResponseCallback responseCallback) {
+        AsyncRequestObserver(final Request coapRequest, final ResponseConsumer<T> responseCallback,
+                final ExceptionConsumer errorCallback) {
             super(coapRequest);
             this.responseCallback = responseCallback;
+            this.errorCallback = errorCallback;
         }
 
         @Override
         public void onResponse(final Response coapResponse) {
+            LOG.debug("Received coap response: {}", coapResponse);
             try {
-                final OperationResponse lwM2mResponseT = buildResponse(coapResponse);
+                final T lwM2mResponseT = buildResponse(coapResponse);
                 if (lwM2mResponseT != null) {
-                    responseCallback.onSuccess(lwM2mResponseT);
+                    responseCallback.accept(lwM2mResponseT);
                 }
             } catch (final Exception e) {
-                responseCallback.onFailure(OperationResponse.failure(ResponseCode.INTERNAL_SERVER_ERROR,
-                        e.getLocalizedMessage()));
+                errorCallback.accept(e);
             } finally {
                 coapRequest.removeMessageObserver(this);
             }
@@ -147,30 +161,29 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
 
         @Override
         public void onTimeout() {
-            // TODO just have the responseCallback work with just an exception
-            responseCallback.onFailure(OperationResponse.failure(ResponseCode.GATEWAY_TIMEOUT, "Request Timed Out."));
+            errorCallback.accept(new TimeoutException());
         }
 
         @Override
         public void onCancel() {
-            responseCallback.onFailure(OperationResponse.failure(ResponseCode.FORBIDDEN, "Request Cancelled."));
+            errorCallback.accept(new CancellationException());
         }
 
         @Override
         public void onReject() {
-            responseCallback.onFailure(OperationResponse.failure(ResponseCode.FORBIDDEN, "Request Rejected."));
+            errorCallback.accept(new RejectionException());
         }
 
     }
 
-    private abstract class SyncRequestObserver extends AbstractRequestObserver {
+    private abstract class SyncRequestObserver<T extends LwM2mResponse> extends AbstractRequestObserver<T> {
 
-        protected CountDownLatch latch = new CountDownLatch(1);
-        protected AtomicReference<OperationResponse> ref = new AtomicReference<OperationResponse>(null);
-        protected AtomicBoolean coapTimeout = new AtomicBoolean(false);
-        protected AtomicReference<RuntimeException> exception = new AtomicReference<>();
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicReference<T> ref = new AtomicReference<T>(null);
+        AtomicBoolean coapTimeout = new AtomicBoolean(false);
+        AtomicReference<RuntimeException> exception = new AtomicReference<>();
 
-        protected long timeout;
+        long timeout;
 
         public SyncRequestObserver(final Request coapRequest, final long timeout) {
             super(coapRequest);
@@ -179,9 +192,9 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
 
         @Override
         public void onResponse(final Response coapResponse) {
-            LOG.info("Received coap response: " + coapResponse);
+            LOG.debug("Received coap response: {}", coapResponse);
             try {
-                final OperationResponse lwM2mResponseT = buildResponse(coapResponse);
+                final T lwM2mResponseT = buildResponse(coapResponse);
                 if (lwM2mResponseT != null) {
                     ref.set(lwM2mResponseT);
                 }
@@ -208,7 +221,7 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
             latch.countDown();
         }
 
-        public OperationResponse waitForResponse() {
+        public T waitForResponse() {
             try {
                 final boolean latchTimeout = latch.await(timeout, TimeUnit.MILLISECONDS);
                 if (!latchTimeout || coapTimeout.get()) {
@@ -216,13 +229,13 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
                     if (exception.get() != null) {
                         throw exception.get();
                     } else {
-                        throw new RuntimeException("Request Timed Out: " + coapRequest.getURI() + " (timeout)");
+                        throw new RequestTimeoutException(coapRequest.getURI(), timeout);
                     }
                 }
             } catch (final InterruptedException e) {
                 // no idea why some other thread should have interrupted this thread
                 // but anyway, go ahead as if the timeout had been reached
-                LOG.info("Caught an unexpected InterruptedException during execution of CoAP request " + e);
+                LOG.debug("Caught an unexpected InterruptedException during execution of CoAP request", e);
             } finally {
                 coapRequest.removeMessageObserver(this);
             }

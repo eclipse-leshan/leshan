@@ -19,7 +19,6 @@ import java.net.InetSocketAddress;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Executor;
-import java.util.logging.Logger;
 
 import org.eclipse.californium.core.coap.CoAP.Code;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
@@ -31,10 +30,12 @@ import org.eclipse.californium.core.observe.ObserveRelation;
 import org.eclipse.californium.core.observe.ObservingEndpoint;
 import org.eclipse.californium.core.server.MessageDeliverer;
 import org.eclipse.californium.core.server.resources.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LwM2mServerMessageDeliverer implements MessageDeliverer {
 
-    private final static Logger LOGGER = Logger.getLogger(LwM2mServerMessageDeliverer.class.getCanonicalName());
+    private final static Logger LOG = LoggerFactory.getLogger(LwM2mServerMessageDeliverer.class);
 
     /* The root of all resources */
     private final Resource root;
@@ -71,7 +72,7 @@ public class LwM2mServerMessageDeliverer implements MessageDeliverer {
                 resource.handleRequest(exchange);
             }
         } else {
-            LOGGER.info("Did not find resource " + path.toString());
+            LOG.info("Did not find resource " + path.toString());
             exchange.sendResponse(new Response(ResponseCode.NOT_FOUND));
         }
     }
@@ -97,8 +98,8 @@ public class LwM2mServerMessageDeliverer implements MessageDeliverer {
 
             if (request.getOptions().getObserve() == 0) {
                 // Requests wants to observe and resource allows it :-)
-                LOGGER.info("Initiate an observe relation between " + request.getSource() + ":"
-                        + request.getSourcePort() + " and resource " + resource.getURI());
+                LOG.info("Initiate an observe relation between " + request.getSource() + ":" + request.getSourcePort()
+                        + " and resource " + resource.getURI());
                 final ObservingEndpoint remote = observeManager.findObservingEndpoint(source);
                 final ObserveRelation relation = new ObserveRelation(remote, resource, exchange);
                 remote.addObserveRelation(relation);

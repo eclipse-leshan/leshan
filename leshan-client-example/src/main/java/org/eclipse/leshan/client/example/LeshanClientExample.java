@@ -19,35 +19,30 @@
 package org.eclipse.leshan.client.example;
 
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.Random;
 import java.util.TimeZone;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
+import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.californium.LeshanClient;
-import org.eclipse.leshan.client.exchange.LwM2mExchange;
-import org.eclipse.leshan.client.request.AbstractRegisteredLwM2mClientRequest;
-import org.eclipse.leshan.client.request.DeregisterRequest;
-import org.eclipse.leshan.client.request.RegisterRequest;
-import org.eclipse.leshan.client.request.identifier.ClientIdentifier;
-import org.eclipse.leshan.client.resource.LwM2mClientObjectDefinition;
-import org.eclipse.leshan.client.resource.MultipleResourceDefinition;
-import org.eclipse.leshan.client.resource.SingleResourceDefinition;
-import org.eclipse.leshan.client.resource.integer.IntegerLwM2mExchange;
-import org.eclipse.leshan.client.resource.integer.IntegerLwM2mResource;
-import org.eclipse.leshan.client.resource.multiple.MultipleLwM2mExchange;
-import org.eclipse.leshan.client.resource.multiple.MultipleLwM2mResource;
-import org.eclipse.leshan.client.resource.string.StringLwM2mExchange;
-import org.eclipse.leshan.client.resource.string.StringLwM2mResource;
-import org.eclipse.leshan.client.resource.time.TimeLwM2mExchange;
-import org.eclipse.leshan.client.resource.time.TimeLwM2mResource;
-import org.eclipse.leshan.client.response.ExecuteResponse;
-import org.eclipse.leshan.client.response.OperationResponse;
+import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
+import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
+import org.eclipse.leshan.client.resource.ObjectEnabler;
+import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.Value;
+import org.eclipse.leshan.core.request.DeregisterRequest;
+import org.eclipse.leshan.core.request.RegisterRequest;
+import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.RegisterResponse;
+import org.eclipse.leshan.core.response.ValueResponse;
 
 /*
  * To build: 
@@ -56,7 +51,7 @@ import org.eclipse.leshan.client.response.OperationResponse;
  * java -jar target/leshan-client-*-SNAPSHOT-jar-with-dependencies.jar 127.0.0.1 5683 9000
  */
 public class LeshanClientExample {
-    private ClientIdentifier clientIdentifier;
+    private String registrationID;
 
     public static void main(final String[] args) {
         if (args.length < 4) {
@@ -69,27 +64,35 @@ public class LeshanClientExample {
 
     public LeshanClientExample(final String localHostName, final int localPort, final String serverHostName,
             final int serverPort) {
-        final LwM2mClientObjectDefinition objectDevice = createObjectDefinition();
+
+        // Initialize object list
+        ObjectsInitializer initializer = new ObjectsInitializer();
+        initializer.setClassForObject(3, Device.class);
+        List<ObjectEnabler> enablers = initializer.createMandatory();
+
+        // Create client
         final InetSocketAddress clientAddress = new InetSocketAddress(localHostName, localPort);
         final InetSocketAddress serverAddress = new InetSocketAddress(serverHostName, serverPort);
 
-        final LeshanClient client = new LeshanClient(clientAddress, serverAddress, objectDevice);
+        final LeshanClient client = new LeshanClient(clientAddress, serverAddress, new ArrayList<LwM2mObjectEnabler>(
+                enablers));
+
         // Start the client
         client.start();
 
         // Register to the server provided
         final String endpointIdentifier = UUID.randomUUID().toString();
-        final RegisterRequest registerRequest = new RegisterRequest(endpointIdentifier, new HashMap<String, String>());
-        final OperationResponse operationResponse = client.send(registerRequest);
+        RegisterResponse response = client.send(new RegisterRequest(endpointIdentifier));
 
         // Report registration response.
-        System.out.println("Device Registration (Success? " + operationResponse.isSuccess() + ")");
-        if (operationResponse.isSuccess()) {
-            System.out
-                    .println("\tDevice: Registered Client Location '" + operationResponse.getClientIdentifier() + "'");
-            clientIdentifier = operationResponse.getClientIdentifier();
+        System.out.println("Device Registration (Success? " + response.getCode() + ")");
+        if (response.getCode() == ResponseCode.CREATED) {
+            System.out.println("\tDevice: Registered Client Location '" + response.getRegistrationID() + "'");
+            registrationID = response.getRegistrationID();
         } else {
-            System.err.println("\tDevice Registration Error: " + operationResponse.getErrorMessage());
+            // TODO Should we have a error message on response ?
+            // System.err.println("\tDevice Registration Error: " + response.getErrorMessage());
+            System.err.println("\tDevice Registration Error: " + response.getCode());
             System.err
                     .println("If you're having issues connecting to the LWM2M endpoint, try using the DTLS port instead");
         }
@@ -98,177 +101,144 @@ public class LeshanClientExample {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                if (clientIdentifier != null) {
-                    System.out.println("\tDevice: Deregistering Client '" + clientIdentifier + "'");
-                    final AbstractRegisteredLwM2mClientRequest deregisterRequest = new DeregisterRequest(
-                            clientIdentifier);
-                    final OperationResponse deregisterResponse = client.send(deregisterRequest);
+                if (registrationID != null) {
+                    System.out.println("\tDevice: Deregistering Client '" + registrationID + "'");
+                    client.send(new DeregisterRequest(registrationID));
                     client.stop();
                 }
             }
         });
     }
 
-    private LwM2mClientObjectDefinition createObjectDefinition() {
-        // Create an object model
-        final StringValueResource manufacturerResource = new StringValueResource("Leshan Example Device", 0);
-        final StringValueResource modelResource = new StringValueResource("Model 500", 1);
-        final StringValueResource serialNumberResource = new StringValueResource("LT-500-000-0001", 2);
-        final StringValueResource firmwareResource = new StringValueResource("1.0.0", 3);
-        final ExecutableResource rebootResource = new ExecutableResource(4);
-        final ExecutableResource factoryResetResource = new ExecutableResource(5);
-        final MultipleLwM2mResource powerAvailablePowerResource = new IntegerMultipleResource(new Integer[] { 0, 4 });
-        final MultipleLwM2mResource powerSourceVoltageResource = new IntegerMultipleResource(new Integer[] { 12000,
-                                5000 });
-        final IntegerMultipleResource powerSourceCurrentResource = new IntegerMultipleResource(new Integer[] { 150, 75 });
-        final IntegerValueResource batteryLevelResource = new IntegerValueResource(92, 9);
-        final MemoryFreeResource memoryFreeResource = new MemoryFreeResource();
-        final IntegerMultipleResource errorCodeResource = new IntegerMultipleResource(new Integer[] { 0 });
-        final TimeResource currentTimeResource = new TimeResource();
-        final StringValueResource utcOffsetResource = new StringValueResource(new SimpleDateFormat("X").format(Calendar
-                .getInstance().getTime()), 14);
-        final StringValueResource timezoneResource = new StringValueResource(TimeZone.getDefault().getID(), 15);
-        final StringValueResource bindingsResource = new StringValueResource("U", 16);
+    public static class Device extends BaseInstanceEnabler {
 
-        final LwM2mClientObjectDefinition objectDevice = new LwM2mClientObjectDefinition(3, true, true,
-                new SingleResourceDefinition(0, manufacturerResource, true), new SingleResourceDefinition(1,
-                        modelResource, true), new SingleResourceDefinition(2, serialNumberResource, true),
-                new SingleResourceDefinition(3, firmwareResource, true), new SingleResourceDefinition(4,
-                        rebootResource, true), new SingleResourceDefinition(5, factoryResetResource, true),
-                new MultipleResourceDefinition(6, powerAvailablePowerResource, true), new MultipleResourceDefinition(7,
-                        powerSourceVoltageResource, true), new MultipleResourceDefinition(8, powerSourceCurrentResource,
-                        true), new SingleResourceDefinition(9, batteryLevelResource, true),
-                new SingleResourceDefinition(10, memoryFreeResource, true), new MultipleResourceDefinition(11,
-                        errorCodeResource, true), new SingleResourceDefinition(12, new ExecutableResource(12), true),
-                new SingleResourceDefinition(13, currentTimeResource, true), new SingleResourceDefinition(14,
-                        utcOffsetResource, true), new SingleResourceDefinition(15, timezoneResource, true),
-                new SingleResourceDefinition(16, bindingsResource, true));
-        return objectDevice;
-    }
-
-    public class TimeResource extends TimeLwM2mResource {
-        @Override
-        public void handleRead(final TimeLwM2mExchange exchange) {
-            System.out.println("\tDevice: Reading Current Device Time.");
-            exchange.respondContent(new Date());
+        public Device() {
+            // notify new date each 5 second
+            Timer timer = new Timer();
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    fireResourceChange(13);
+                }
+            }, 5000, 5000);
         }
-    }
 
-    public class MemoryFreeResource extends IntegerLwM2mResource {
         @Override
-        public void handleRead(final IntegerLwM2mExchange exchange) {
-            System.out.println("\tDevice: Reading Memory Free Resource");
-            final Random rand = new Random();
-            exchange.respondContent(114 + rand.nextInt(50));
-        }
-    }
-
-    private class IntegerMultipleResource extends MultipleLwM2mResource {
-
-        private final Map<Integer, byte[]> values;
-
-        public IntegerMultipleResource(final Integer[] values) {
-            this.values = new HashMap<>();
-            for (int i = 0; i < values.length; i++) {
-                this.values.put(i, ByteBuffer.allocate(4).putInt(values[i]).array());
+        public ValueResponse read(int resourceid) {
+            System.out.println("Read on resource " + resourceid);
+            switch (resourceid) {
+            case 0:
+                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
+                        Value.newStringValue(getManufacturer())));
+            case 1:
+                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
+                        Value.newStringValue(getModelNumber())));
+            case 2:
+                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
+                        Value.newStringValue(getSerialNumber())));
+            case 3:
+                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
+                        Value.newStringValue(getFirmwareVersion())));
+            case 9:
+                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
+                        Value.newIntegerValue(getBatteryLevel())));
+            case 10:
+                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
+                        Value.newIntegerValue(getMemoryFree())));
+            case 13:
+                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
+                        Value.newDateValue(getCurrentTime())));
+            case 14:
+                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
+                        Value.newStringValue(getUtcOffset())));
+            case 15:
+                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
+                        Value.newStringValue(getTimezone())));
+            case 16:
+                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
+                        Value.newStringValue(getSupportedBinding())));
+            default:
+                return super.read(resourceid);
             }
         }
 
         @Override
-        public void handleRead(final MultipleLwM2mExchange exchange) {
-            exchange.respondContent(values);
-        }
-    }
-
-    public class StringValueResource extends StringLwM2mResource {
-
-        private String value;
-        private final int resourceId;
-
-        public StringValueResource(final String initialValue, final int resourceId) {
-            value = initialValue;
-            this.resourceId = resourceId;
-        }
-
-        public void setValue(final String newValue) {
-            value = newValue;
-            notifyResourceUpdated();
-        }
-
-        public String getValue() {
-            return value;
+        public LwM2mResponse execute(int resourceid, byte[] params) {
+            System.out.println("Execute on resource " + resourceid + " params " + params);
+            return new LwM2mResponse(ResponseCode.CHANGED);
         }
 
         @Override
-        public void handleWrite(final StringLwM2mExchange exchange) {
-            System.out.println("\tDevice: Writing on Resource " + resourceId);
-            setValue(exchange.getRequestPayload());
-
-            exchange.respondSuccess();
+        public LwM2mResponse write(int resourceid, LwM2mResource value) {
+            System.out.println("Write on resource " + resourceid + " value " + value);
+            switch (resourceid) {
+            case 13:
+                return new LwM2mResponse(ResponseCode.NOT_FOUND);
+            case 14:
+                setUtcOffset((String) value.getValue().value);
+                fireResourceChange(resourceid);
+                return new LwM2mResponse(ResponseCode.CHANGED);
+            case 15:
+                setTimezone((String) value.getValue().value);
+                fireResourceChange(resourceid);
+                return new LwM2mResponse(ResponseCode.CHANGED);
+            default:
+                return super.write(resourceid, value);
+            }
         }
 
-        @Override
-        public void handleRead(final StringLwM2mExchange exchange) {
-            System.out.println("\tDevice: Reading on Resource " + resourceId);
-            exchange.respondContent(value);
+        private String getManufacturer() {
+            return "Leshan Example Device";
         }
 
-    }
-
-    public class IntegerValueResource extends IntegerLwM2mResource {
-
-        private Integer value;
-        private final int resourceId;
-
-        public IntegerValueResource(final int initialValue, final int resourceId) {
-            value = initialValue;
-            this.resourceId = resourceId;
+        private String getModelNumber() {
+            return "Model 500";
         }
 
-        public void setValue(final Integer newValue) {
-            value = newValue;
-            notifyResourceUpdated();
+        private String getSerialNumber() {
+            return "LT-500-000-0001";
         }
 
-        public Integer getValue() {
-            return value;
+        private String getFirmwareVersion() {
+            return "1.0.0";
         }
 
-        @Override
-        public void handleWrite(final IntegerLwM2mExchange exchange) {
-            System.out.println("\tDevice: Writing on Integer Resource " + resourceId);
-            setValue(exchange.getRequestPayload());
-
-            exchange.respondSuccess();
+        private int getBatteryLevel() {
+            final Random rand = new Random();
+            return rand.nextInt(100);
         }
 
-        @Override
-        public void handleRead(final IntegerLwM2mExchange exchange) {
-            System.out.println("\tDevice: Reading on IntegerResource " + resourceId);
-            exchange.respondContent(value);
+        private int getMemoryFree() {
+            final Random rand = new Random();
+            return rand.nextInt(50) + 114;
         }
 
-    }
-
-    public class ExecutableResource extends StringLwM2mResource {
-
-        private final int resourceId;
-
-        public ExecutableResource(final int resourceId) {
-            this.resourceId = resourceId;
+        private Date getCurrentTime() {
+            return new Date();
         }
 
-        @Override
-        public void handleExecute(final LwM2mExchange exchange) {
-            System.out.println("Executing on Resource " + resourceId);
+        private String utcOffset = new SimpleDateFormat("X").format(Calendar.getInstance().getTime());;
 
-            exchange.respond(ExecuteResponse.success());
+        private String getUtcOffset() {
+            return utcOffset;
         }
 
-        @Override
-        protected void handleWrite(final StringLwM2mExchange exchange) {
-            exchange.respondSuccess();
+        private void setUtcOffset(String t) {
+            utcOffset = t;
         }
 
+        private String timeZone = TimeZone.getDefault().getID();
+
+        private String getTimezone() {
+            return timeZone;
+        }
+
+        private void setTimezone(String t) {
+            timeZone = t;
+        }
+
+        private String getSupportedBinding() {
+            return "U";
+        }
     }
 }

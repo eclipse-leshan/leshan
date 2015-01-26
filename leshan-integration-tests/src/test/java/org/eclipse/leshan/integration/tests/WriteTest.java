@@ -16,26 +16,29 @@
 
 package org.eclipse.leshan.integration.tests;
 
-import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.*;
+import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.ENDPOINT_IDENTIFIER;
 import static org.junit.Assert.assertEquals;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.Value;
+import org.eclipse.leshan.core.request.ReadRequest;
+import org.eclipse.leshan.core.request.RegisterRequest;
+import org.eclipse.leshan.core.request.WriteRequest;
+import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.ValueResponse;
 import org.junit.After;
-import org.junit.Ignore;
+import org.junit.Before;
 import org.junit.Test;
 
 public class WriteTest {
-
-    private static final String HELLO = "hello";
-    private static final String GOODBYE = "goodbye";
-
     private IntegrationTestHelper helper = new IntegrationTestHelper();
+
+    @Before
+    public void start() {
+        helper.start();
+    }
 
     @After
     public void stop() {
@@ -44,80 +47,57 @@ public class WriteTest {
 
     @Test
     public void can_write_replace_to_resource() {
-        helper.register();
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
-        helper.sendCreate(createGoodObjectInstance(HELLO, GOODBYE), GOOD_OBJECT_ID);
+        // write device timezone
+        final String timeZone = "Europe/Paris";
+        LwM2mResource newValue = new LwM2mResource(15, Value.newStringValue(timeZone));
+        LwM2mResponse response = helper.server.send(helper.getClient(),
+                new WriteRequest(3, 0, 15, newValue, null, true));
 
-        assertEmptyResponse(helper.sendReplace("world", GOOD_OBJECT_ID, GOOD_OBJECT_INSTANCE_ID, SECOND_RESOURCE_ID),
-                ResponseCode.CHANGED);
-        assertResponse(helper.sendRead(GOOD_OBJECT_ID, GOOD_OBJECT_INSTANCE_ID, SECOND_RESOURCE_ID),
-                ResponseCode.CONTENT, new LwM2mResource(SECOND_RESOURCE_ID, Value.newStringValue("world")));
-        assertEquals("world", helper.secondResource.getValue());
-    }
+        // verify result
+        assertEquals(ResponseCode.CHANGED, response.getCode());
 
-    @Test
-    public void bad_write_replace_to_resource() {
-        helper.register();
-
-        helper.sendCreate(createUnwritableResource("i'm broken!"), BROKEN_OBJECT_ID);
-
-        assertEmptyResponse(
-                helper.sendReplace("fix me!", BROKEN_OBJECT_ID, GOOD_OBJECT_INSTANCE_ID, BROKEN_RESOURCE_ID),
-                ResponseCode.BAD_REQUEST);
-        assertResponse(helper.sendRead(BROKEN_OBJECT_ID, GOOD_OBJECT_INSTANCE_ID, BROKEN_RESOURCE_ID),
-                ResponseCode.CONTENT, new LwM2mResource(BROKEN_RESOURCE_ID, Value.newStringValue("i'm broken!")));
+        // read the timezone to check the value changed
+        ValueResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(3, 0, 15));
+        LwM2mResource resource = (LwM2mResource) readResponse.getContent();
+        assertEquals(timeZone, resource.getValue().value);
     }
 
     @Test
     public void cannot_write_to_non_writable_resource() {
-        helper.register();
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
-        helper.sendCreate(createGoodObjectInstance(HELLO, GOODBYE), GOOD_OBJECT_ID);
+        // try to write unwritable resource like manufacturer on device
+        final String manufacturer = "new manufacturer";
+        LwM2mResource newValue = new LwM2mResource(15, Value.newStringValue(manufacturer));
+        LwM2mResponse response = helper.server
+                .send(helper.getClient(), new WriteRequest(3, 0, 0, newValue, null, true));
 
-        assertEmptyResponse(
-                helper.sendReplace("world", GOOD_OBJECT_ID, GOOD_OBJECT_INSTANCE_ID, EXECUTABLE_RESOURCE_ID),
-                ResponseCode.METHOD_NOT_ALLOWED);
+        // verify result
+        assertEquals(ResponseCode.METHOD_NOT_ALLOWED, response.getCode());
     }
 
-    @Ignore
     @Test
     public void can_write_to_writable_multiple_resource() {
-        helper.register();
-        helper.sendCreate(new LwM2mObjectInstance(GOOD_OBJECT_INSTANCE_ID, new LwM2mResource[0]), MULTIPLE_OBJECT_ID);
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
-        final LwM2mResource newValues = new LwM2mResource(MULTIPLE_OBJECT_ID, new Value<?>[] {
-                                Value.newStringValue(HELLO), Value.newStringValue(GOODBYE) });
+        // write device timezone and offset
+        LwM2mResource utcOffset = new LwM2mResource(14, Value.newStringValue("+02"));
+        LwM2mResource timeZone = new LwM2mResource(15, Value.newStringValue("Europe/Paris"));
+        LwM2mObjectInstance newValue = new LwM2mObjectInstance(0, new LwM2mResource[] { utcOffset, timeZone });
+        LwM2mResponse response = helper.server.send(helper.getClient(), new WriteRequest("/3/0", newValue, null, true));
 
-        final Map<Integer, byte[]> map = new HashMap<>();
-        map.put(0, HELLO.getBytes());
-        map.put(1, GOODBYE.getBytes());
+        // verify result
+        assertEquals(ResponseCode.CHANGED, response.getCode());
 
-        helper.multipleResource.setValue(map);
-
-        assertEmptyResponse(
-                helper.sendReplace(newValues, MULTIPLE_OBJECT_ID, GOOD_OBJECT_INSTANCE_ID, MULTIPLE_RESOURCE_ID),
-                ResponseCode.CHANGED);
+        // read the timezone to check the value changed
+        ValueResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(3, 0));
+        LwM2mObjectInstance instance = (LwM2mObjectInstance) readResponse.getContent();
+        assertEquals(utcOffset, instance.getResources().get(14));
+        assertEquals(timeZone, instance.getResources().get(15));
     }
-
-    // TODO: This test tests something that is untestable by the LWM2M spec and should
-    // probably be deleted. Ignored until this is confirmed
-    @Ignore
-    @Test
-    public void can_write_partial_update_to_resource() {
-        helper.register();
-
-        helper.sendCreate(createGoodObjectInstance(HELLO, GOODBYE), GOOD_OBJECT_ID);
-
-        assertEmptyResponse(helper.sendUpdate("world", GOOD_OBJECT_ID, GOOD_OBJECT_INSTANCE_ID, SECOND_RESOURCE_ID),
-                ResponseCode.CHANGED);
-        assertResponse(helper.sendRead(GOOD_OBJECT_ID, GOOD_OBJECT_INSTANCE_ID, SECOND_RESOURCE_ID),
-                ResponseCode.CONTENT, new LwM2mResource(SECOND_RESOURCE_ID, Value.newStringValue("world")));
-        assertEquals("world", helper.secondResource.getValue());
-    }
-
-    protected LwM2mObjectInstance createUnwritableResource(final String value) {
-        return new LwM2mObjectInstance(GOOD_OBJECT_INSTANCE_ID, new LwM2mResource[] { new LwM2mResource(
-                BROKEN_RESOURCE_ID, Value.newStringValue(value)) });
-    }
-
 }
