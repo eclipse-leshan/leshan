@@ -1,0 +1,41 @@
+<div>
+	<div class="row">
+		<div class="col-md-4 instance-name">{{instance.name}}</div>
+		<div class="col-md-2 text-muted small">{{instance.path}}</div>
+		<div class="col-md-6">
+			<div class="btn-toolbar" role="toolbar">
+				<div class="btn-group">
+					<button type="button" ng-click="instance.read.status = null; read()"
+							tooltip-html-unsafe={{instance.read.tooltip}} tooltip-placement="right" tooltip-animation="false" tooltip-append-to-body="true"
+							ng-class="{
+								'btn': true,
+								'btn-xs': true,
+								'btn-default': instance.read.status == null,
+								'btn-danger': instance.read.status != null && instance.read.status != 'CONTENT',
+								'btn-success': instance.read.status == 'CONTENT' }">Read</button>
+				</div>
+				<div class="btn-group">
+					<button type="button" ng-click="instance.write.status = null; write()"
+							tooltip-html-unsafe={{instance.write.tooltip}} tooltip-placement="right" tooltip-animation="false" tooltip-append-to-body="true"
+							ng-class="{
+								'btn': true,
+								'btn-xs': true,
+								'btn-default': instance.write.status == null,
+								'btn-danger': instance.write.status != null && instance.write.status != 'CHANGED',
+								'btn-success': instance.write.status == 'CHANGED' }">Write</button>
+				</div>
+				<div class="btn-group">
+					<button type="button" ng-click="instance.del.status = null; del()"
+							tooltip-html-unsafe={{instance.del.tooltip}} tooltip-placement="right" tooltip-animation="false" tooltip-append-to-body="true"
+							ng-class="{
+								'btn': true,
+								'btn-xs': true,
+								'btn-default': instance.del.status == null,
+								'btn-danger': instance.del.status != null && instance.del.status != 'DELETED',
+								'btn-success': instance.del.status == 'DELETED' }">Delete</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<resource ng-repeat='resource in instance.resources' resource='resource' parent='instance'></resource>
+</div>

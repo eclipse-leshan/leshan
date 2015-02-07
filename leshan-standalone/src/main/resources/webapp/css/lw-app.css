@@ -1,0 +1,131 @@
+/*!
+ * Copyright (c) 2013-2014, Sierra Wireless
+ * Released under the BSD license
+ */
+
+.container {
+	max-width: 980px;
+}
+
+.navbar-default {
+	background-color:#525252;
+	border-color: #E6E6E6;
+	border-bottom-width: 10px;
+}
+
+.navbar div a {
+	height: 80px;
+}
+
+.navbar-default .navbar-nav>.active>a,
+.navbar-default .navbar-nav>.active>a:hover {
+	background-color:#E6E6E6;
+}
+
+.navbar-default .navbar-nav>li>a {
+	line-height: 80px;
+	text-align: center;
+	font-size: 18px;
+	width: 150px;
+	color: #CBCBCB;	
+}
+
+.navbar-default .navbar-nav>li>a:hover {
+	color: #979797;
+}
+
+.breadcrumb{
+	border: 1px solid;
+	border-color: #DDD;	
+}
+
+/* Object level */
+.object {
+	margin-bottom: 5px;
+}
+
+.object-name {
+	font-size: 18px;
+	color: #2DA0FD;
+}
+
+/* Object instance level */
+
+.instance-name {
+	font-size: 16px;
+	padding-left: 30px;
+}
+
+/* Resource level */
+.resource-name {
+	padding-left: 50px;
+}
+
+.resource-value {
+	font-weight: bold;
+}
+
+.resource-value-supposed {
+	color: #AAAAAA;
+}
+
+/* Security info */
+.security-table {
+	margin-top: 20px;
+}
+
+
+/* add curser on table row */
+table.table-href > tbody{
+	cursor: pointer;
+}
+
+.panel-heading {
+	cursor: pointer;
+}
+
+/**
+ * HACK for modal  see : http://stackoverflow.com/questions/17726641/bootstrap-how-to-disable-vertical-scrollbar
+ * Maybe we should try to move modal to top level position in our document : http://getbootstrap.com/javascript/#modals
+ */ 
+body.modal-open,
+.modal-open .navbar-fixed-top,
+.modal-open .navbar-fixed-bottom {
+ margin-right: 0;
+ overflow-y: auto;
+}
+
+/**
+ * HACK to disable modal animation : http://stackoverflow.com/questions/18873428/turn-off-animation-modal-angular-ui
+ */
+.modal.fade {
+  opacity: 1;
+}
+
+.modal.fade .modal-dialog, .modal.in .modal-dialog {
+  -webkit-transform: translate(0, 0);
+  -ms-transform: translate(0, 0);
+  transform: translate(0, 0);
+}
+
+
+/* Sticky footer styles
+-------------------------------------------------- */
+html {
+  position: relative;
+  min-height: 100%;
+}
+body {
+  /* Margin bottom by footer height */
+  margin-bottom: 60px;
+}
+#footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 40px;
+  background-color: #eee;
+  padding-top: 10px;
+}
+

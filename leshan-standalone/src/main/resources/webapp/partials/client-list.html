@@ -1,0 +1,28 @@
+<span ng-if="clientslist">
+	<h3><small><p class="text-right">Connected clients: {{clients.length}}</p></small></h3>
+
+	<div class="table-responsive" ng-if="clients.length >0">
+		<table class="table table-striped table-hover table-condensed table-href">
+		<thead>
+			<tr>
+				<th>Client Endpoint</th>
+				<th>Registration ID</th>
+				<th>Registration Date</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="client in clients" ng-click="showClient(client)">
+				<td><a ng-href="#/clients/{{client.endpoint}}"> <strong>{{client.endpoint}}</strong></a></td>
+				<td>{{client.registrationId}}</td>
+				<td>{{client.registrationDate | date:'medium'}}</td>
+				<td><span ng-class="{hidden: client.secure == false}" class="glyphicon glyphicon-lock"></span></td>
+			</tr>
+		</tbody>
+		</table>
+	</div>		
+</span>
+
+<span ng-if="error">
+	<div class="alert alert-danger">{{error}}</div>
+</span>

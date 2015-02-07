@@ -1,0 +1,29 @@
+<div class="object">
+	<accordion-group is-open="status.open">
+		<accordion-heading>
+			<div class="row">
+				<div class="col-md-4 object-name">{{object.name}}</div>
+				<div class="col-md-8 text-muted small">{{object.path}}
+				<i class="pull-right glyphicon"
+					ng-class="{'glyphicon-chevron-down': status.open, 'glyphicon-chevron-right': !status.open}"></i>
+				</div>
+			</div>
+		</accordion-heading>
+		<div class = "row" ng-show="object.instancetype == 'multiple'">
+			<div class="col-md-6"></div>
+			<div class="col-md-6">
+				<div  btn-group">
+					<button type="button" ng-click="object.create.status = null; create()"
+							tooltip-html-unsafe={{object.create.tooltip}} tooltip-placement="right" tooltip-animation="false" tooltip-append-to-body="true"
+							ng-class="{
+								'btn': true,
+								'btn-xs': true,
+								'btn-default': object.create.status == null,
+								'btn-danger': object.create.status != null && object.create.status != 'CREATED',
+								'btn-success': object.create.status == 'CREATED' }">Create New Instance</button>
+				</div>
+			</div>
+		</div>
+		<instance ng-repeat='instance in object.instances' instance='instance' parent='object'></instance>
+	</accordion-group>
+</div>

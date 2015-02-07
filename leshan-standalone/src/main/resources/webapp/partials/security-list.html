@@ -1,0 +1,153 @@
+<div class="well well-sm" ng-if="serverSecurityInfo && serverSecurityInfo.rpk">
+	<h4>The Leshan public key</h4>
+	<p>
+		<u>Elliptic Curve parameters :</u> <code>{{serverSecurityInfo.rpk.params}}</code> <br/>
+		<u>Public x coord :</u> <code>{{serverSecurityInfo.rpk.x}}</code><br/>
+		<u>Public y coord :</u> <code>{{serverSecurityInfo.rpk.y}}</code>
+	</p>
+</div>
+
+<div>
+	<button class="btn btn-default center-block" ng-click="showModal()" >Add
+		new client security configuration</button>
+</div>
+
+
+<div class="table-responsive">
+	<table class="table table-striped security-table">
+	<thead>
+		<tr>
+			<th>Client Endpoint</th>
+			<th>Security Mode</th>
+			<th>Security Information</th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr ng-repeat="(endpoint, security) in securityInfos">
+			<td>{{ endpoint }}</td>
+			<td ng-if="security.psk">Pre-Shared Key</td>
+			<td ng-if="security.psk">
+				Identity : <code>{{ security.psk.identity }}</code><br/>
+				Key : <code>{{ security.psk.key }}</code>
+			</td>
+			<td ng-if="security.rpk">Raw Public Key <br/><small class="text-muted" >(Elliptic Curve)</small></td>
+			<td ng-if="security.rpk">
+				Params : <code>{{ security.rpk.params }}</code><br/> 
+				X : <code>{{ security.rpk.x }}</code><br/>
+				Y : <code>{{ security.rpk.y }}</code>
+			</td>
+			<td><button type="button" class="btn btn-default btn-xs" ng-click="remove(endpoint)">
+					<span class="glyphicon glyphicon-remove"></button></td>
+		</tr>
+	<tbody>
+	</table>
+</div>
+
+<!-- New security modal -->
+<div class="modal bs-example-modal-sm" id="newSecurityModal"
+	tabindex="-1" role="dialog" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"
+					aria-hidden="true">&times;</button>
+				<h4 class="modal-title">New security configuration</h4>
+			</div>
+			<div class="modal-body">
+				<form class="form form-horizontal" name="form" novalidate>
+					<div class="form-group" show-errors> 
+						<label for="endpointValue" class="col-sm-4 control-label">Client
+							endpoint</label>
+						<div class="col-sm-8">
+							<input class="form-control" id="endpointValue" name="endpoint" ng-model="endpoint" required>
+							<p class="help-block" ng-if="form.endpoint.$error.required">The endpoint is required</p>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="securityMode" class="col-sm-4 control-label">Security
+							mode</label>
+						<div class="col-sm-8">
+							<select class="form-control" id="securityMode" ng-model="securityMode">
+								<option value="psk">Pre-Shared Key</option>
+								<option value="rpk">Raw Public Key (Elliptic Curves)</option>
+							</select>
+						</div>
+					</div>
+
+					<!-- PSK inputs -->
+					<div class="form-group" ng-class="{'hidden': securityMode!='psk'}" show-errors>
+						<label for="pskIdentityValue" class="col-sm-4 control-label">Identity</label>
+						<div class="col-sm-8">
+							<textarea class="form-control" style="resize:none" rows="3" id="pskIdentityValue" name="pskIdentity" 
+							ng-model="pskIdentity" ng-required="securityMode=='psk'" ng-maxlength="128" ></textarea>
+							<p class="help-block" ng-if="form.pskIdentity.$error.required">The PSK identity is required</p>
+							<p class="help-block" ng-if="form.pskIdentity.$error.maxlength">The PSK identity is too long</p>
+						</div>
+					</div>
+
+					<div class="form-group" ng-class="{'hidden': securityMode!='psk'}" show-errors>
+						<label for="pskValue" class="col-sm-4 control-label">Key</label>
+						<div class="col-sm-8">
+							<textarea class="form-control" style="resize:none" rows="3" id="pskValue" name="pskValue" ng-model="pskValue"
+							ng-required="securityMode=='psk'" ng-pattern="/^[0-9a-fA-F]+$/" ng-maxlength="128"></textarea>
+							<p class="text-right text-muted small" style="margin:0">Hexadecimal format</p>
+							<p class="help-block" ng-if="form.pskValue.$error.required">The pre-shared key is required</p>
+							<p class="help-block" ng-if="form.pskValue.$error.pattern">Hexadecimal format is expected</p>
+							<p class="help-block" ng-if="form.pskValue.$error.maxlength">The pre-shared key is too long</p>
+						</div>
+					</div>
+
+					<!-- RPK inputs -->
+					<div class="form-group"  style="resize:none" ng-class="{'hidden': securityMode!='rpk'}" show-errors>
+						<label for="rpkXValue" class="col-sm-4 control-label">X public key part</label>
+						<div class="col-sm-8">
+							<textarea class="form-control" rows="3" id="rpkXValue" name="rpkXValue" ng-model="rpkXValue"
+							ng-required="securityMode=='rpk'" ng-pattern="/^[0-9a-fA-F]+$/" ng-maxlength="64"></textarea>
+							<p class="help-block" ng-if="form.rpkXValue.$error.required">X public key  part is required</p>
+							<p class="help-block" ng-if="form.rpkXValue.$error.pattern">Hexadecimal format is expected</p>
+							<p class="help-block" ng-if="form.rpkXValue.$error.maxlength">X public key part is too long</p>
+						</div>
+					</div>
+					
+					<div class="form-group"  style="resize:none" ng-class="{'hidden': securityMode!='rpk'}" show-errors>
+						<label for="rpkYValue" class="col-sm-4 control-label">Y public key part</label>
+						<div class="col-sm-8">
+							<textarea class="form-control" rows="3" id="rpkYValue" name="rpkYValue" ng-model="rpkYValue"
+							ng-required="securityMode=='rpk'" ng-pattern="/^[0-9a-fA-F]+$/" ng-maxlength="64"></textarea>
+							<p class="help-block" ng-if="form.rpkYValue.$error.required">Y public key part is required</p>
+							<p class="help-block" ng-if="form.rpkYValue.$error.pattern">Hexadecimal format is expected</p>
+							<p class="help-block" ng-if="form.rpkYValue.$error.maxlength">Y public key part is too long</p>
+						</div>
+					</div>
+					
+					<div class="form-group"  style="resize:none" ng-class="{'hidden': securityMode!='rpk'}">
+						<label for="rpkParamsValue" class="col-sm-4 control-label">EC parameters :</label>
+						<div class="col-sm-8">
+							<input class="form-control" id="rpkParamsValue" name="rpkParamsValue" ng-model="rpkParamsValue" type="text" placeholder="{{defaultParams}}">
+						</div>
+					</div>
+
+					<!-- Certificates input -->
+					<!-- TODO -->
+
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-primary" id="newSecuritySubmit" ng-click="save()">Create</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<style>
+	.form-group .help-block {
+		display: none;
+	}
+	
+	.form-group.has-error .help-block {
+		display: block;
+	}
+</style>

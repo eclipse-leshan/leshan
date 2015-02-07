@@ -1,0 +1,19 @@
+<div class="modal-header">
+	<h3 class="modal-title">{{title}}</h3>
+</div>
+<div class="modal-body">
+	<form class="form form-horizontal" name="$parent.form" ng-submit="submit()">
+		<div ng-show="showinstanceid" class="form-group" show-errors>
+			<label for="instanceid" class="col-sm-4 control-label">Instance ID {{object.name}}</label>
+			<div class="col-sm-8">
+				<input class="form-control" id="instanceid" name="instanceid" ng-model="instance.id" required/>
+				<p class="help-block" ng-if="form.instanceid.$error.required">The instance Id is required</p>
+			</div>
+		</div>
+		<resourceform ng-repeat='resource in instance.resources' resource='resource' parent='instance'></resourceform>
+	</form>
+</div>
+<div class="modal-footer">
+	<button class="btn btn-default" ng-click="cancel()">Cancel</button>
+	<button class="btn btn-primary" ng-click="submit()">{{oklabel}}</button>
+</div>
