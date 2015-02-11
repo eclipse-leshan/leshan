@@ -70,11 +70,11 @@ Contributors:
                             org.eclipse.leshan,
                             org.eclipse.leshan.tlv,
                             org.eclipse.leshan.util,
-                            org.eclipse.leshan.core.node
+                            org.eclipse.leshan.core.node,  
                             org.eclipse.leshan.core.node.codec,
                             org.eclipse.leshan.core.objectspec,
-                            org.eclipse.leshan.core.request,
-                            org.eclipse.leshan.core.response
+                            org.eclipse.leshan.core.request,                            
+                            org.eclipse.leshan.core.response                                               
                         </Export-Package>
                         <Import-Package>
                             org.slf4j;version="1.6",

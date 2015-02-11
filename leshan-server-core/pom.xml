@@ -78,7 +78,7 @@ Contributors:
                             org.eclipse.leshan.server.node,
                             org.eclipse.leshan.server.observation,
                             org.eclipse.leshan.server.request,
-                            org.eclipse.leshan.server.security,
+                            org.eclipse.leshan.server.security,   
                             org.eclipse.leshan.server.registration
                         </Export-Package>
                         <Import-Package>
