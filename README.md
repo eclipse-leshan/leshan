@@ -1,4 +1,4 @@
-[Build Status on drone.io](https://drone.io/github.com/jvermillard/leshan/latest)
+[Build Status](https://hudson.eclipse.org/leshan/)
 
 Leshan
 ======
@@ -14,8 +14,6 @@ http://member.openmobilealliance.org/ftp/Public_documents/DM/LightweightM2M/
 Introduction to LWM2M:
 http://fr.slideshare.net/zdshelby/oma-lightweightm2-mtutorial
 
-The project is currently under migration under the Eclipse Foundtation umbrella.
-
 Contact
 -------
 
@@ -28,7 +26,7 @@ Mail address: leshan-dev@eclipse.org
 Test Sandbox
 ------------
 
-You can try it live on our server demo instance: http://54.246.90.121/
+You can try it live on our server demo instance: http://leshan.eclipse.org/
 
 
 Server
@@ -38,7 +36,7 @@ Get and run last binary
 -----------------------
 
 ```
-wget https://drone.io/github.com/jvermillard/leshan/files/leshan.jar
+wget https://hudson.eclipse.org/leshan/job/leshan/lastSuccessfulBuild/artifact/leshan-standalone.jar
 java -jar ./leshan.jar
 ```
 
