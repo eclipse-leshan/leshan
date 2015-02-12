@@ -77,7 +77,7 @@ Contributors:
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>leshan.standalone.LeshanStandalone</mainClass>
+                            <mainClass>org.eclipse.leshan.standalone.LeshanStandalone</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
