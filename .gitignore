@@ -1,0 +1,15 @@
+*.class
+.classpath
+.project
+.settings
+target
+leshan-standalone/Californium.properties
+leshan-standalone/data
+leshan-bs-server/data
+Californium.properties
+bin/
+# Package Files #
+*.jar
+*.war
+*.ear
+leshan-core/ddffiles
