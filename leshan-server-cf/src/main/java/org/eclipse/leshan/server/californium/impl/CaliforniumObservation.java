@@ -72,7 +72,7 @@ public final class CaliforniumObservation extends MessageObserverAdapter impleme
 
     @Override
     public void onResponse(Response coapResponse) {
-        if (coapResponse.getCode() == CoAP.ResponseCode.CHANGED) {
+        if (coapResponse.getCode() == CoAP.ResponseCode.CHANGED || coapResponse.getCode() == CoAP.ResponseCode.CONTENT) {
             try {
                 LwM2mNode content = LwM2mNodeDecoder.decode(coapResponse.getPayload(),
                         ContentFormat.fromCode(coapResponse.getOptions().getContentFormat()), path);
