@@ -90,19 +90,19 @@ public class Ddf2JsonGenerator {
 
     public static void main(String[] args) throws FileNotFoundException, IOException {
         // default value
-        String DDFFilesPath = "ddffiles";
+        String ddfFilesPath = "ddffiles";
         String outputPath = "src/main/resources/objectspec.json";
 
         // use arguments if they exit
         if (args.length >= 1)
-            DDFFilesPath = args[1]; // the path to a DDF file or a folder which contains DDF files.
+            ddfFilesPath = args[0]; // the path to a DDF file or a folder which contains DDF files.
         if (args.length >= 2)
-            outputPath = args[2]; // the path of the output file.
+            outputPath = args[1]; // the path of the output file.
 
         // generate object spec file
         Ddf2JsonGenerator ddfJsonGenerator = new Ddf2JsonGenerator();
         try (FileOutputStream fileOutputStream = new FileOutputStream(outputPath)) {
-            ddfJsonGenerator.generate(new File(DDFFilesPath), fileOutputStream);
+            ddfJsonGenerator.generate(new File(ddfFilesPath), fileOutputStream);
         }
     }
 }
