@@ -85,7 +85,7 @@ Contributors:
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>leshan.server.LeshanMain</mainClass>
+                            <mainClass>org.eclipse.leshan.bootstrap.BootstrapMain</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
