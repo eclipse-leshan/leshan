@@ -73,13 +73,10 @@ Contributors:
                             org.eclipse.leshan.server.bootstrap,
                             org.eclipse.leshan.server.client,
                             org.eclipse.leshan.server.impl,
-                            org.eclipse.leshan.server.impl.node,
-                            org.eclipse.leshan.server.impl.objectspec,
-                            org.eclipse.leshan.server.node,
                             org.eclipse.leshan.server.observation,
+                            org.eclipse.leshan.server.registration,
                             org.eclipse.leshan.server.request,
-                            org.eclipse.leshan.server.security,
-                            org.eclipse.leshan.server.registration
+                            org.eclipse.leshan.server.security                       
                         </Export-Package>
                         <Import-Package>
                         	org.eclipse.leshan.core.request.*;version="${project.version}",
