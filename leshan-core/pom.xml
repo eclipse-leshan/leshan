@@ -14,6 +14,7 @@ and the Eclipse Distribution License is available at
 Contributors:
     Sierra Wireless - initial API and implementation
     Eurotech - initial API and implementation
+    Bosch Software Innovations GmbH - OSGi support
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -66,9 +67,14 @@ Contributors:
                 <configuration>
                     <instructions>
                         <Export-Package>
-                            org.eclipse.leshan,
-                            org.eclipse.leshan.tlv,
-                            org.eclipse.leshan.util
+                            org.eclipse.leshan,        
+                            org.eclipse.leshan.core.node,  
+                            org.eclipse.leshan.core.node.codec,
+                            org.eclipse.leshan.core.objectspec,
+                            org.eclipse.leshan.core.request,                            
+                            org.eclipse.leshan.core.response,
+							org.eclipse.leshan.tlv,
+                            org.eclipse.leshan.util                                      
                         </Export-Package>
                         <Import-Package>
                             org.slf4j;version="1.6",

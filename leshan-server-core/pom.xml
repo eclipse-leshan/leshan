@@ -13,6 +13,7 @@ and the Eclipse Distribution License is available at
 
 Contributors:
     Sierra Wireless - initial API and implementation
+    Bosch Software Innovations GmbH - OSGi support
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -23,6 +24,7 @@ Contributors:
         <version>0.1.10-SNAPSHOT</version>
     </parent>
     <artifactId>leshan-server-core</artifactId>
+    <packaging>bundle</packaging>
     <name>leshan - server core</name>
     <description>A LWM2M server implementation which abstracts transport layer. A transport implementation like "leshan.server.californium" is needed.</description>
 
@@ -71,14 +73,13 @@ Contributors:
                             org.eclipse.leshan.server.bootstrap,
                             org.eclipse.leshan.server.client,
                             org.eclipse.leshan.server.impl,
-                            org.eclipse.leshan.server.impl.node,
-                            org.eclipse.leshan.server.impl.objectspec,
-                            org.eclipse.leshan.server.node,
                             org.eclipse.leshan.server.observation,
+                            org.eclipse.leshan.server.registration,
                             org.eclipse.leshan.server.request,
-                            org.eclipse.leshan.server.security,
+                            org.eclipse.leshan.server.security                       
                         </Export-Package>
                         <Import-Package>
+                        	org.eclipse.leshan.core.request.*;version="${project.version}",
                             org.eclipse.californium.*;version="[1.0.0, 1.1)",
                             org.apache.commons.lang.*;version="[2.6, 3)",
                             *
