@@ -42,7 +42,7 @@ Contributors:
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>leshan.client.example.LeshanClientExample</mainClass>
+                            <mainClass>org.eclipse.leshan.client.example.LeshanClientExample</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
