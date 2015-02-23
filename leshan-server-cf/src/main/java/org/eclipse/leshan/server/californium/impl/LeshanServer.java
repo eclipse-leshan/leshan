@@ -244,4 +244,11 @@ public class LeshanServer implements LwM2mServer {
             final ResponseConsumer<T> responseCallback, final ExceptionConsumer errorCallback) {
         requestSender.send(destination, request, responseCallback, errorCallback);
     }
+
+    /**
+     * @return the underlying {@link CoapServer}
+     */
+    public CoapServer getCoapServer() {
+        return coapServer;
+    }
 }

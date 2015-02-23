@@ -81,7 +81,7 @@ public class LeshanServerBuilder {
         return this;
     }
 
-    public LwM2mServer build() {
+    public LeshanServer build() {
         if (localAddress == null)
             localAddress = new InetSocketAddress((InetAddress) null, PORT);
         if (localAddressSecure == null)
