@@ -163,5 +163,22 @@ lwClientControllers.controller('ClientDetailCtrl', [
                 });
             }
             $scope.eventsource.addEventListener('NOTIFICATION', notificationCallback, false);
+
+            $scope.coaplogs = [];
+            var coapLogCallback = function(msg) {
+                $scope.$apply(function() {
+                    var log = JSON.parse(msg.data);
+                    log.date = $filter('date')(new Date(log.timestamp), 'HH:mm:ss.sss');
+                    console.log(log);
+                    $scope.coaplogs.push(log);
+                });
+            }
+            $scope.eventsource.addEventListener('COAPLOG', coapLogCallback, false);
+
+            // coap logs hidden by default
+            $scope.coapLogsCollapsed = true;
+            $scope.toggleCoapLogs = function() {
+                $scope.coapLogsCollapsed = !$scope.coapLogsCollapsed;
+            }
         });
 }]);

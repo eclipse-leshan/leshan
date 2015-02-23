@@ -18,6 +18,10 @@
 	max-width: 980px;
 }
 
+.container-view {
+	margin-bottom: 250px;
+}
+
 .navbar-default {
 	background-color:#525252;
 	border-color: #E6E6E6;
@@ -119,6 +123,54 @@ body.modal-open,
   transform: translate(0, 0);
 }
 
+/* CoAP logs styles */
+
+.coaplogs {
+	position:fixed;
+	right: 0px;
+	left: 0px;
+	bottom:0px;
+	width:100%;
+	z-index: 2;
+	max-height: 250px;
+	padding: 0px;
+}
+
+.coaplogs-button {
+	margin-bottom: 10px;
+	margin-left: -20px;
+}
+
+.coaplogs-panel {
+	background-color: #F5F5F5;
+	border: 1px solid;
+    border-color: #DDD;
+    padding-right: 20px;
+	padding-left: 20px;
+}
+
+.coaplogs-header {
+	table-layout: fixed;
+	margin-bottom: 0px;
+	padding-right: 20px;
+}
+
+.coaplogs-table {
+    height: 180px;
+    overflow-y: auto;
+    font-size: 12px;
+}
+
+.coaplogs-table > table {
+	table-layout: fixed;
+}
+
+.coaplogs-table > table > tbody > tr > td {
+	padding: 0px 0px 0px 10px;
+	white-space: nowrap;
+  	overflow: hidden;
+  	text-overflow: ellipsis;
+}
 
 /* Sticky footer styles
 -------------------------------------------------- */
