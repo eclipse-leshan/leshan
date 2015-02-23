@@ -35,8 +35,8 @@ import javax.xml.bind.DatatypeConverter;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
-import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
+import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
 import org.eclipse.leshan.standalone.servlet.ClientServlet;
 import org.eclipse.leshan.standalone.servlet.EventServlet;
@@ -50,7 +50,7 @@ public class LeshanStandalone {
     private static final Logger LOG = LoggerFactory.getLogger(LeshanStandalone.class);
 
     private Server server;
-    private LwM2mServer lwServer;
+    private LeshanServer lwServer;
 
     public void start() {
         // Use those ENV variables for specifying the interface to be bound for coap and coaps

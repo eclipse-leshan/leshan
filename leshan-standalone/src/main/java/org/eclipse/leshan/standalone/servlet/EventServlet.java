@@ -26,18 +26,22 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.jetty.continuation.Continuation;
 import org.eclipse.jetty.continuation.ContinuationListener;
 import org.eclipse.jetty.continuation.ContinuationSupport;
 import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.eclipse.leshan.core.node.LwM2mNode;
-import org.eclipse.leshan.server.LwM2mServer;
+import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistryListener;
 import org.eclipse.leshan.server.observation.Observation;
 import org.eclipse.leshan.server.observation.ObservationRegistryListener;
 import org.eclipse.leshan.standalone.servlet.json.ClientSerializer;
 import org.eclipse.leshan.standalone.servlet.json.LwM2mNodeSerializer;
+import org.eclipse.leshan.standalone.servlet.log.CoapMessage;
+import org.eclipse.leshan.standalone.servlet.log.CoapMessageListener;
+import org.eclipse.leshan.standalone.servlet.log.CoapMessageTracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +57,8 @@ public class EventServlet extends HttpServlet {
     private static final String EVENT_REGISTRATION = "REGISTRATION";
 
     private static final String EVENT_NOTIFICATION = "NOTIFICATION";
+
+    private static final String EVENT_COAP_LOG = "COAPLOG";
 
     private static final String QUERY_PARAM_ENDPOINT = "ep";
 
@@ -71,6 +77,8 @@ public class EventServlet extends HttpServlet {
     private static final byte[] TERMINATION = new byte[] { '\r', '\n' };
 
     private final Set<Continuation> continuations = new ConcurrentHashSet<>();
+
+    private final CoapMessageTracer coapMessageTracer;
 
     private final ClientRegistryListener clientRegistryListener = new ClientRegistryListener() {
 
@@ -117,9 +125,15 @@ public class EventServlet extends HttpServlet {
         }
     };
 
-    public EventServlet(LwM2mServer server) {
+    public EventServlet(LeshanServer server) {
         server.getClientRegistry().addListener(this.clientRegistryListener);
         server.getObservationRegistry().addListener(this.observationRegistryListener);
+
+        // add an interceptor to each endpoint to trace all CoAP messages
+        coapMessageTracer = new CoapMessageTracer(server.getClientRegistry());
+        for (Endpoint endpoint : server.getCoapServer().getEndpoints()) {
+            endpoint.addInterceptor(coapMessageTracer);
+        }
 
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeHierarchyAdapter(Client.class, new ClientSerializer());
@@ -155,7 +169,10 @@ public class EventServlet extends HttpServlet {
                 }
             }
         }
-        continuations.removeAll(disconnected);
+        if (!disconnected.isEmpty()) {
+            continuations.removeAll(disconnected);
+            cleanCoapListener(endpoint);
+        }
     }
 
     /**
@@ -185,6 +202,11 @@ public class EventServlet extends HttpServlet {
             public void onComplete(Continuation continuation) {
                 LOG.debug("continuation completed");
                 continuations.remove(continuation);
+
+                String endpoint = (String) continuation.getAttribute(QUERY_PARAM_ENDPOINT);
+                if (endpoint != null) {
+                    cleanCoapListener(endpoint);
+                }
             }
         });
 
@@ -192,10 +214,40 @@ public class EventServlet extends HttpServlet {
         if (endpoint != null) {
             // mark continuation as notification listener for endpoint
             c.setAttribute(QUERY_PARAM_ENDPOINT, endpoint);
+            coapMessageTracer.addListener(endpoint, new ClientCoapListener(endpoint));
+
         }
         synchronized (this) {
             continuations.add(c);
             c.suspend(resp);
         }
+    }
+
+    class ClientCoapListener implements CoapMessageListener {
+
+        private final String endpoint;
+
+        ClientCoapListener(String endpoint) {
+            this.endpoint = endpoint;
+        }
+
+        @Override
+        public void trace(CoapMessage message) {
+            String coapLog = EventServlet.this.gson.toJson(message);
+            sendEvent(EVENT_COAP_LOG, coapLog, endpoint);
+        }
+
+    }
+
+    private void cleanCoapListener(String endpoint) {
+        // remove the listener if there is no more continuation for this endpoint
+        for (Continuation c : continuations) {
+            String cEndpoint = (String) c.getAttribute(QUERY_PARAM_ENDPOINT);
+            if (cEndpoint != null && cEndpoint.equals(endpoint)) {
+                // still used
+                return;
+            }
+        }
+        coapMessageTracer.removeListener(endpoint);
     }
 }
