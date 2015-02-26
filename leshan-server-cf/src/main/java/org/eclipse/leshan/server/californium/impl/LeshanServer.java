@@ -33,6 +33,7 @@ import org.eclipse.leshan.server.Destroyable;
 import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.Startable;
 import org.eclipse.leshan.server.Stopable;
+import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.client.ClientRegistryListener;
@@ -46,11 +47,14 @@ import org.slf4j.LoggerFactory;
 /**
  * A Lightweight M2M server.
  * <p>
- * This CoAP server defines a /rd resources as described in the CoRE RD specification. A {@link ClientRegistry} must be
- * provided to host the description of all the registered LW-M2M clients.
+ * This implementation starts a Californium {@link CoapServer} with a non-secure and secure endpoint. This CoAP server
+ * defines a <i>/rd</i> resource as described in the CoRE RD specification.
  * </p>
  * <p>
- * A {@link RequestHandler} is provided to perform server-initiated requests to LW-M2M clients.
+ * This class is the entry point to send synchronous and asynchronous requests to registered clients.
+ * </p>
+ * <p>
+ * The {@link LeshanServerBuilder} should be the preferred way to build an instance of {@link LeshanServer}.
  * </p>
  */
 public class LeshanServer implements LwM2mServer {
@@ -66,31 +70,6 @@ public class LeshanServer implements LwM2mServer {
     private final ObservationRegistry observationRegistry;
 
     private final SecurityRegistry securityRegistry;
-
-    /**
-     * Initialize a server which will bind to default UDP port for CoAP (5684).
-     */
-    public LeshanServer() {
-        this(null, null, null);
-    }
-
-    /**
-     * Initialize a server which will bind to the specified address and port.
-     *
-     * @param localAddress the address to bind the CoAP server.
-     * @param localAddressSecure the address to bind the CoAP server for DTLS connection.
-     */
-    public LeshanServer(final InetSocketAddress localAddress, final InetSocketAddress localAddressSecure) {
-        this(localAddress, localAddressSecure, null, null, null);
-    }
-
-    /**
-     * Initialize a server which will bind to default UDP port for CoAP (5684).
-     */
-    public LeshanServer(final ClientRegistry clientRegistry, final SecurityRegistry securityRegistry,
-            final ObservationRegistry observationRegistry) {
-        this(null, null, clientRegistry, securityRegistry, observationRegistry);
-    }
 
     /**
      * Initialize a server which will bind to the specified address and port.
@@ -131,12 +110,12 @@ public class LeshanServer implements LwM2mServer {
             }
         });
 
-        // init CoAP server
+        // default endpoint
         coapServer = new CoapServer();
         final Endpoint endpoint = new CoAPEndpoint(localAddress);
         coapServer.addEndpoint(endpoint);
 
-        // init init DTLS server
+        // secure endpoint
         DTLSConnector connector = new DTLSConnector(localAddressSecure);
         connector.getConfig().setPskStore(new LwM2mPskStore(this.securityRegistry, this.clientRegistry));
         PrivateKey privateKey = this.securityRegistry.getServerPrivateKey();
@@ -195,7 +174,7 @@ public class LeshanServer implements LwM2mServer {
             ((Stopable) observationRegistry).stop();
         }
 
-        LOG.info("LW-M2M server stoped");
+        LOG.info("LW-M2M server stopped");
     }
 
     public void destroy() {
