@@ -36,7 +36,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 /**
- * The resource descriptions for registered LWM2M objects (only OMA objects for now).
+ * The resource descriptions for registered LWM2M objects
  */
 public class Resources {
 
@@ -44,84 +44,43 @@ public class Resources {
 
     private static final Map<Integer, ObjectSpec> OBJECTS = new HashMap<>(); // objects by ID
 
-    /**
-     * Initializes the list of LWM2M object definitions.
-     */
-    public static void load() {
+    private static final Gson GSON;
 
-        synchronized (OBJECTS) {
-            if (OBJECTS.isEmpty()) {
+    // load objects definitions
+    static {
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(ObjectSpec.class, new ObjectSpecDeserializer());
+        gsonBuilder.registerTypeAdapter(ResourceSpec.class, new ResourceSpecDeserializer());
+        GSON = gsonBuilder.create();
 
-                // load OMA objects definitions from json files
-                InputStream input = Resources.class.getResourceAsStream("/objectspec.json");
-                if (input == null) {
-                    return;
+        // standard objects
+        LOG.debug("Loading OMA standard object definitions");
+        InputStream input = Resources.class.getResourceAsStream("/oma-objects-spec.json");
+        if (input != null) {
+            try (Reader reader = new InputStreamReader(input)) {
+                ObjectSpec[] objectSpecs = GSON.fromJson(reader, ObjectSpec[].class);
+                for (ObjectSpec objectSpec : objectSpecs) {
+                    loadObject(objectSpec);
                 }
-
-                GsonBuilder gsonBuilder = new GsonBuilder();
-                gsonBuilder.registerTypeAdapter(ObjectSpec.class, new ObjectSpecDeserializer());
-                gsonBuilder.registerTypeAdapter(ResourceSpec.class, new ResourceSpecDeserializer());
-                Gson gson = gsonBuilder.create();
-
-                try (Reader reader = new InputStreamReader(input)) {
-                    ObjectSpec[] objectSpecs = gson.fromJson(reader, ObjectSpec[].class);
-                    for (ObjectSpec objectSpec : objectSpecs) {
-                        OBJECTS.put(objectSpec.id, objectSpec);
-                    }
-                } catch (IOException e) {
-                    LOG.error("Unable to load object specification", e);
-                }
-
-                // load custom resources
-                // get folder path
-                String modelsFolderEnvVar = System.getenv("MODELS_FOLDER");
-                String modelsFolderPath = modelsFolderEnvVar != null ? modelsFolderEnvVar : "./models";
-
-                // check if the folder is usable
-                File modelsFolder = new File(modelsFolderPath);
-                if (!modelsFolder.isDirectory() || !modelsFolder.canRead()) {
-                    // log only if env var is configured
-                    if (modelsFolderEnvVar != null)
-                        LOG.error(MessageFormat.format(
-                                "Models folder {0} is not a directory or you have not the right to list its content.",
-                                modelsFolderPath));
-                    return;
-                }
-
-                // get all files
-                for (File file : modelsFolder.listFiles()) {
-                    if (!file.canRead())
-                        continue;
-
-                    if (file.getName().endsWith(".xml")) {
-                        // load DDF file
-                        DDFFileParser ddfFileParser = new DDFFileParser();
-                        ObjectSpec objectSpec = ddfFileParser.parse(file);
-                        if (objectSpec != null) {
-                            if (OBJECTS.containsKey(objectSpec.id))
-                                LOG.warn(MessageFormat.format("There are multiple definitions for the object {0}",
-                                        objectSpec.id));
-                            OBJECTS.put(objectSpec.id, objectSpec);
-                        }
-                    } else if (file.getName().endsWith(".json")) {
-                        // load object spec json file
-                        try (Reader reader = new InputStreamReader(new FileInputStream(file))) {
-                            ObjectSpec[] objectSpecs = gson.fromJson(reader, ObjectSpec[].class);
-                            for (ObjectSpec objectSpec : objectSpecs) {
-                                if (OBJECTS.containsKey(objectSpec.id))
-                                    LOG.warn(MessageFormat.format("There are multiple definitions for the object {0}",
-                                            objectSpec.id));
-                                OBJECTS.put(objectSpec.id, objectSpec);
-                            }
-                        } catch (IOException e) {
-                            LOG.warn(
-                                    MessageFormat.format("Unable to load object specification for {0}",
-                                            file.getAbsolutePath()), e);
-                        }
-                    }
-                }
+            } catch (IOException e) {
+                LOG.error("Unable to load object specification", e);
             }
         }
+
+        // custom objects (environment variable)
+        String modelsFolderEnvVar = System.getenv("MODELS_FOLDER");
+        if (modelsFolderEnvVar != null) {
+            loadObjectsFromDir(new File(modelsFolderEnvVar));
+        }
+    }
+
+    /**
+     * Load object definitions from DDF or JSON files.
+     * 
+     * @param modelDir the directory containing the object definition files.
+     */
+    public static void load(File modelDir) {
+        loadObjectsFromDir(modelDir);
     }
 
     /**
@@ -154,5 +113,55 @@ public class Resources {
      */
     public static Collection<ObjectSpec> getObjectSpecs() {
         return Collections.unmodifiableCollection(OBJECTS.values());
+    }
+
+    /*
+     * Load object definitions from files
+     */
+    private static void loadObjectsFromDir(File modelsDir) {
+        // check if the folder is usable
+        if (!modelsDir.isDirectory() || !modelsDir.canRead()) {
+            LOG.error(MessageFormat.format(
+                    "Models folder {0} is not a directory or you are not allowed to list its content",
+                    modelsDir.getPath()));
+            return;
+        }
+
+        // get all files
+        for (File file : modelsDir.listFiles()) {
+            if (!file.canRead())
+                continue;
+
+            if (file.getName().endsWith(".xml")) {
+                // from DDF file
+                LOG.debug("Loading object definitions from DDF file {}", file.getAbsolutePath());
+                DDFFileParser ddfFileParser = new DDFFileParser();
+                ObjectSpec objectSpec = ddfFileParser.parse(file);
+                if (objectSpec != null) {
+                    loadObject(objectSpec);
+                }
+            } else if (file.getName().endsWith(".json")) {
+                // from JSON file
+                LOG.debug("Loading object definitions from JSON file {}", file.getAbsolutePath());
+                try (Reader reader = new InputStreamReader(new FileInputStream(file))) {
+                    ObjectSpec[] objectSpecs = GSON.fromJson(reader, ObjectSpec[].class);
+                    for (ObjectSpec objectSpec : objectSpecs) {
+                        loadObject(objectSpec);
+                    }
+                } catch (IOException e) {
+                    LOG.warn(
+                            MessageFormat.format("Unable to load object specification for {0}", file.getAbsolutePath()),
+                            e);
+                }
+            }
+        }
+    }
+
+    private static void loadObject(ObjectSpec objectSpec) {
+        if (OBJECTS.containsKey(objectSpec.id)) {
+            LOG.debug(MessageFormat.format("Definition already exists for object {0}. Overriding it.", objectSpec.id));
+        }
+        OBJECTS.put(objectSpec.id, objectSpec);
+        LOG.debug("Object definition loaded: " + objectSpec);
     }
 }

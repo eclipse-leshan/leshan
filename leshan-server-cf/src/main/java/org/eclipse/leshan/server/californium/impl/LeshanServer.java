@@ -25,7 +25,6 @@ import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoAPEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.scandium.DTLSConnector;
-import org.eclipse.leshan.core.objectspec.Resources;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.response.ExceptionConsumer;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -162,8 +161,6 @@ public class LeshanServer implements LwM2mServer {
 
     @Override
     public void start() {
-        // load resource definitions
-        Resources.load();
 
         // Start registries
         if (clientRegistry instanceof Startable) {

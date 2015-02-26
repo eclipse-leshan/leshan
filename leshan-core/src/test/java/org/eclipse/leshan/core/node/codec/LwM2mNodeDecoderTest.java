@@ -15,9 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 import java.util.Date;
 
@@ -25,26 +23,17 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.Value.DataType;
-import org.eclipse.leshan.core.node.codec.InvalidValueException;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
-import org.eclipse.leshan.core.objectspec.Resources;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.tlv.Tlv;
-import org.eclipse.leshan.tlv.TlvEncoder;
 import org.eclipse.leshan.tlv.Tlv.TlvType;
+import org.eclipse.leshan.tlv.TlvEncoder;
 import org.eclipse.leshan.util.Charsets;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
  * Unit tests for {@link LwM2mNodeDecoder}
  */
 public class LwM2mNodeDecoderTest {
-
-    @BeforeClass
-    public static void loadResourceSpec() {
-        Resources.load();
-    }
 
     @Test
     public void text_manufacturer_resource() throws InvalidValueException {

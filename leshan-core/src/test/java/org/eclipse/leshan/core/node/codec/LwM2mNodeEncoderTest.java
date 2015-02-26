@@ -23,23 +23,15 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.Value;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
-import org.eclipse.leshan.core.objectspec.Resources;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.util.Charsets;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
  * Unit tests for {@link LwM2mNodeEncoder}
  */
 public class LwM2mNodeEncoderTest {
-
-    @BeforeClass
-    public static void loadResourceSpec() {
-        Resources.load();
-    }
 
     @Test
     public void text_encode_single_resource() {
