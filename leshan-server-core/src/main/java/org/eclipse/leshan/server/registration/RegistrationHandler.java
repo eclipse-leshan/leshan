@@ -25,6 +25,7 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.RegisterResponse;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
+import org.eclipse.leshan.server.client.ClientUpdate;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.SecurityStore;
 import org.eclipse.leshan.util.RandomStringUtils;
@@ -96,7 +97,9 @@ public class RegistrationHandler {
     }
 
     public LwM2mResponse update(UpdateRequest updateRequest) {
-        Client client = clientRegistry.updateClient(updateRequest);
+        Client client = clientRegistry.updateClient(new ClientUpdate(updateRequest.getRegistrationId(), updateRequest
+                .getAddress(), updateRequest.getPort(), updateRequest.getLifeTimeInSec(), updateRequest.getSmsNumber(),
+                updateRequest.getBindingMode(), updateRequest.getObjectLinks()));
         if (client == null) {
             return new LwM2mResponse(ResponseCode.NOT_FOUND);
         } else {

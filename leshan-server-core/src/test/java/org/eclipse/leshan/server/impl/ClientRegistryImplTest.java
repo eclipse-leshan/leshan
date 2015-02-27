@@ -20,9 +20,8 @@ import java.net.InetSocketAddress;
 
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.core.request.BindingMode;
-import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.impl.ClientRegistryImpl;
+import org.eclipse.leshan.server.client.ClientUpdate;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,8 +50,8 @@ public class ClientRegistryImplTest {
         givenASimpleClient(lifetime);
         registry.registerClient(client);
 
-        UpdateRequest updateRequest = new UpdateRequest(registrationId, address, port);
-        Client updatedClient = registry.updateClient(updateRequest);
+        ClientUpdate update = new ClientUpdate(registrationId, address, port, null, null, null, null);
+        Client updatedClient = registry.updateClient(update);
         Assert.assertEquals((long) lifetime, updatedClient.getLifeTimeInSec());
         Assert.assertSame(binding, updatedClient.getBindingMode());
         Assert.assertEquals(sms, updatedClient.getSmsNumber());
@@ -76,8 +75,8 @@ public class ClientRegistryImplTest {
         registry.registerClient(client);
         Assert.assertFalse(client.isAlive());
 
-        UpdateRequest updateRequest = new UpdateRequest(registrationId, address, port, lifetime, null, null, null);
-        Client updatedClient = registry.updateClient(updateRequest);
+        ClientUpdate update = new ClientUpdate(registrationId, address, port, lifetime, null, null, null);
+        Client updatedClient = registry.updateClient(update);
         Assert.assertTrue(updatedClient.isAlive());
 
         Client registeredClient = registry.get(ep);

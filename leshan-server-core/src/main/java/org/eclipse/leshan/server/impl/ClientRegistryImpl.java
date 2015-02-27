@@ -15,10 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.impl;
 
-import java.net.InetAddress;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,14 +25,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.leshan.LinkObject;
-import org.eclipse.leshan.core.request.BindingMode;
-import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.server.Startable;
 import org.eclipse.leshan.server.Stopable;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.client.ClientRegistryListener;
+import org.eclipse.leshan.server.client.ClientUpdate;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +67,7 @@ public class ClientRegistryImpl implements ClientRegistry, Startable, Stopable {
     }
 
     @Override
-    public Client registerClient(Client client) {
+    public boolean registerClient(Client client) {
         Validate.notNull(client);
 
         LOG.debug("Registering new client: {}", client);
@@ -86,68 +82,19 @@ public class ClientRegistryImpl implements ClientRegistry, Startable, Stopable {
             l.registered(client);
         }
 
-        return previous;
+        return true;
     }
 
     @Override
-    public Client updateClient(UpdateRequest updateRequest) {
-        Validate.notNull(updateRequest);
+    public Client updateClient(ClientUpdate update) {
+        Validate.notNull(update);
 
-        LOG.debug("Updating registration for client: {}", updateRequest);
-        Client client = findByRegistrationId(updateRequest.getRegistrationId());
+        LOG.debug("Updating registration for client: {}", update);
+        Client client = findByRegistrationId(update.getRegistrationId());
         if (client == null) {
             return null;
         } else {
-            InetAddress address;
-            if (updateRequest.getAddress() != null) {
-                address = updateRequest.getAddress();
-            } else {
-                address = client.getAddress();
-            }
-
-            int port;
-            if (updateRequest.getPort() != null) {
-                port = updateRequest.getPort();
-            } else {
-                port = client.getPort();
-            }
-
-            LinkObject[] linkObject;
-            if (updateRequest.getObjectLinks() != null) {
-                linkObject = updateRequest.getObjectLinks();
-            } else {
-                linkObject = client.getObjectLinks();
-            }
-
-            long lifeTimeInSec;
-            if (updateRequest.getLifeTimeInSec() != null) {
-                lifeTimeInSec = updateRequest.getLifeTimeInSec();
-            } else {
-                lifeTimeInSec = client.getLifeTimeInSec();
-            }
-
-            BindingMode bindingMode;
-            if (updateRequest.getBindingMode() != null) {
-                bindingMode = updateRequest.getBindingMode();
-            } else {
-                bindingMode = client.getBindingMode();
-            }
-
-            String smsNumber;
-            if (updateRequest.getSmsNumber() != null) {
-                smsNumber = updateRequest.getSmsNumber();
-            } else {
-                smsNumber = client.getSmsNumber();
-            }
-
-            // this needs to be done in any case, even if no properties have changed, in order
-            // to extend the client registration's time-to-live period ...
-            Date lastUpdate = new Date();
-
-            Client clientUpdated = new Client(client.getRegistrationId(), client.getEndpoint(), address, port,
-                    client.getLwM2mVersion(), lifeTimeInSec, smsNumber, bindingMode, linkObject,
-                    client.getRegistrationEndpointAddress(), client.getRegistrationDate(), lastUpdate);
-
+            Client clientUpdated = update.updateClient(client);
             clientsByEp.put(clientUpdated.getEndpoint(), clientUpdated);
 
             // notify listener

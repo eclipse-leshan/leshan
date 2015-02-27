@@ -17,8 +17,6 @@ package org.eclipse.leshan.server.client;
 
 import java.util.Collection;
 
-import org.eclipse.leshan.core.request.UpdateRequest;
-
 /**
  * A registry to access registered clients
  */
@@ -59,13 +57,10 @@ public interface ClientRegistry {
      * An implementation must notify all registered listeners as part of processing the registration request.
      * 
      * @param client the client to register, identified by its end-point.
-     * @return any <em>stale</em> registration information for the given client's end-point name or <code>null</code> if
-     *         no stale registration info exists for the end-point. This may happen, if a client somehow loses track of
-     *         its registration status with this server and simply starts over with a new registration request in order
-     *         to remedy the situation. According to the LWM2M spec an implementation must remove the <em>stale</em>
-     *         registration information in this case.
+     * @return <code>true</code> if the client was properly registered and <code>false</code> if the registration has
+     *         failed.
      */
-    Client registerClient(Client client);
+    boolean registerClient(Client client);
 
     /**
      * Updates registration properties for a given client.
@@ -74,7 +69,7 @@ public interface ClientRegistry {
      * @return the updated registered client or <code>null</code> if no client is registered under the given end-point
      *         name
      */
-    Client updateClient(UpdateRequest update);
+    Client updateClient(ClientUpdate update);
 
     /**
      * De-registers a client.
