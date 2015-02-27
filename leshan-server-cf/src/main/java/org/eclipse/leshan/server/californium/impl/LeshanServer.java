@@ -32,7 +32,7 @@ import org.eclipse.leshan.core.response.ResponseConsumer;
 import org.eclipse.leshan.server.Destroyable;
 import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.Startable;
-import org.eclipse.leshan.server.Stopable;
+import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
@@ -164,14 +164,14 @@ public class LeshanServer implements LwM2mServer {
         coapServer.stop();
 
         // Start registries
-        if (clientRegistry instanceof Stopable) {
-            ((Stopable) clientRegistry).stop();
+        if (clientRegistry instanceof Stoppable) {
+            ((Stoppable) clientRegistry).stop();
         }
-        if (securityRegistry instanceof Stopable) {
-            ((Stopable) securityRegistry).stop();
+        if (securityRegistry instanceof Stoppable) {
+            ((Stoppable) securityRegistry).stop();
         }
-        if (observationRegistry instanceof Stopable) {
-            ((Stopable) observationRegistry).stop();
+        if (observationRegistry instanceof Stoppable) {
+            ((Stoppable) observationRegistry).stop();
         }
 
         LOG.info("LW-M2M server stopped");

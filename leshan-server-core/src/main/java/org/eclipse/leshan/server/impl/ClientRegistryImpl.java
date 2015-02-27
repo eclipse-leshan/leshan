@@ -26,7 +26,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.leshan.server.Startable;
-import org.eclipse.leshan.server.Stopable;
+import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.client.ClientRegistryListener;
@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 /**
  * In memory client registry
  */
-public class ClientRegistryImpl implements ClientRegistry, Startable, Stopable {
+public class ClientRegistryImpl implements ClientRegistry, Startable, Stoppable {
 
     private static final Logger LOG = LoggerFactory.getLogger(ClientRegistryImpl.class);
 

@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server;
 
-public interface Stopable {
+public interface Stoppable {
 
     void stop();
 
