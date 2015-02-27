@@ -22,6 +22,8 @@ import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.coap.Response;
+import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.LinkObject;
@@ -67,6 +69,18 @@ public class RegisterResource extends CoapResource {
 
         this.registrationHandler = registrationHandler;
         getAttributes().addResourceType("core.rd");
+    }
+
+    @Override
+    public void handleRequest(Exchange exchange) {
+        try {
+            super.handleRequest(exchange);
+        } catch (Exception e) {
+            LOG.error("Exception while handling a request on the /rd resource", e);
+            // unexpected error, we should sent something like a INTERNAL_SERVER_ERROR.
+            // but it would not be LWM2M compliant. so BAD_REQUEST for now...
+            exchange.sendResponse(new Response(ResponseCode.BAD_REQUEST));
+        }
     }
 
     @Override
