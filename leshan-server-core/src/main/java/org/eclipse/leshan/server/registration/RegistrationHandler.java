@@ -72,7 +72,7 @@ public class RegistrationHandler {
                     LOG.warn("Invalid identity for client {}: expected '{}' but was '{}'",
                             registerRequest.getEndpointName(),
                             securityInfo == null ? null : securityInfo.getIdentity(), pskIdentity);
-                    return new RegisterResponse(ResponseCode.BAD_REQUEST);
+                    return new RegisterResponse(ResponseCode.FORBIDDEN);
 
                 } else {
                     LOG.debug("authenticated client {} using DTLS PSK", registerRequest.getEndpointName());
@@ -89,10 +89,12 @@ public class RegistrationHandler {
                     registerRequest.getLwVersion(), registerRequest.getLifetime(), registerRequest.getSmsNumber(),
                     registerRequest.getBindingMode(), registerRequest.getObjectLinks(), registrationEndpoint);
 
-            clientRegistry.registerClient(client);
-            LOG.debug("New registered client: {}", client);
-
-            return new RegisterResponse(ResponseCode.CREATED, client.getRegistrationId());
+            if (clientRegistry.registerClient(client)) {
+                LOG.debug("New registered client: {}", client);
+                return new RegisterResponse(ResponseCode.CREATED, client.getRegistrationId());
+            } else {
+                return new RegisterResponse(ResponseCode.FORBIDDEN);
+            }
         }
     }
 

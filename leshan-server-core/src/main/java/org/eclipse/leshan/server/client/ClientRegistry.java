@@ -57,8 +57,8 @@ public interface ClientRegistry {
      * An implementation must notify all registered listeners as part of processing the registration request.
      * 
      * @param client the client to register, identified by its end-point.
-     * @return <code>true</code> if the client was properly registered and <code>false</code> if the registration has
-     *         failed.
+     * @return <code>true</code> if the client was properly registered and <code>false</code> if the registration is not
+     *         allowed.
      */
     boolean registerClient(Client client);
 

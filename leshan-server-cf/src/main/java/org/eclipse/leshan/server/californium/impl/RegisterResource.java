@@ -146,8 +146,11 @@ public class RegisterResource extends CoapResource {
             // TODO we lost specific message error with this refactoring
             // exchange.respond(fromLwM2mCode(response.getCode()),"error message");
             exchange.respond(fromLwM2mCode(response.getCode()));
-            if (exchange.advanced().getEndpoint() instanceof SecureEndpoint) {
-
+            if (exchange.advanced().getEndpoint() instanceof SecureEndpoint
+                    && response.getCode().equals(org.eclipse.leshan.ResponseCode.FORBIDDEN)) {
+                // kill the DTLS Session
+                ((SecureEndpoint) exchange.advanced().getEndpoint()).getDTLSConnector().close(
+                        new InetSocketAddress(request.getSource(), request.getSourcePort()));
             }
         }
     }
@@ -172,11 +175,9 @@ public class RegisterResource extends CoapResource {
             return ResponseCode.NOT_FOUND;
         case METHOD_NOT_ALLOWED:
             return ResponseCode.METHOD_NOT_ALLOWED;
+        case FORBIDDEN:
+            return ResponseCode.FORBIDDEN;
         default:
-            // TODO how can we manage CONFLICT code ...
-            // } else if (code == leshan.ResponseCode.CONFLICT) {
-            // //return 137;
-            // } else {
             throw new IllegalArgumentException("Invalid CoAP code for LWM2M response: " + code);
         }
     }
@@ -243,6 +244,15 @@ public class RegisterResource extends CoapResource {
             DeregisterRequest deregisterRequest = new DeregisterRequest(uri.get(1));
             LwM2mResponse deregisterResponse = registrationHandler.deregister(deregisterRequest);
             exchange.respond(fromLwM2mCode(deregisterResponse.getCode()));
+
+            if (exchange.advanced().getEndpoint() instanceof SecureEndpoint
+                    && deregisterResponse.getCode().equals(org.eclipse.leshan.ResponseCode.DELETED)) {
+                // clean the DTLS Session
+                Request request = exchange.advanced().getRequest();
+                ((SecureEndpoint) exchange.advanced().getEndpoint()).getDTLSConnector().close(
+                        new InetSocketAddress(request.getSource(), request.getSourcePort()));
+            }
+
         } else {
             LOG.debug("Invalid deregistration");
             exchange.respond(ResponseCode.NOT_FOUND);
