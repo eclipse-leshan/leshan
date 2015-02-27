@@ -56,7 +56,7 @@ public abstract class BaseLwM2mResponse implements LwM2mResponse {
         case DELETED:
             return true;
         case BAD_REQUEST:
-        case CONFLICT:
+        case FORBIDDEN:
         case METHOD_NOT_ALLOWED:
         case NOT_FOUND:
         case UNAUTHORIZED:

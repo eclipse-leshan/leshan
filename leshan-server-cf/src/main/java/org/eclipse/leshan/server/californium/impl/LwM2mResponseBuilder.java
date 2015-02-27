@@ -75,8 +75,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             return ResponseCode.NOT_FOUND;
         } else if (code == CoAP.ResponseCode.METHOD_NOT_ALLOWED.value) {
             return ResponseCode.METHOD_NOT_ALLOWED;
-        } else if (code == 137) {
-            return ResponseCode.CONFLICT;
+        } else if (code == CoAP.ResponseCode.FORBIDDEN.value) {
+            return ResponseCode.FORBIDDEN;
         } else {
             throw new IllegalArgumentException("Invalid CoAP code for LWM2M response: " + code);
         }

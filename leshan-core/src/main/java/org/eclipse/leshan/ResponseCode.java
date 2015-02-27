@@ -34,7 +34,7 @@ public enum ResponseCode {
     /** This method (GET/PUT/POST/DELETE) is not allowed on this resource */
     METHOD_NOT_ALLOWED,
     /** The End-point Client Name results in a duplicate entry on the LWM2M Server */
-    CONFLICT,
+    FORBIDDEN,
     /** Resource not found */
     NOT_FOUND;
 }
