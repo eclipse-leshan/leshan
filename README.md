@@ -37,7 +37,7 @@ Get and run last binary
 
 ```
 wget https://hudson.eclipse.org/leshan/job/leshan/lastSuccessfulBuild/artifact/leshan-standalone.jar
-java -jar ./leshan.jar
+java -jar ./leshan-standalone.jar
 ```
 
 Compile & Run
