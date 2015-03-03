@@ -367,8 +367,8 @@ public class ClientServlet extends HttpServlet {
             if (!(node instanceof LwM2mObjectInstance)) {
                 throw new IllegalArgumentException("payload must contain an object instance");
             }
-
-            return server.send(client, new CreateRequest(target, (LwM2mObjectInstance) node, ContentFormat.TLV));
+            return server.send(client, new CreateRequest(target, ((LwM2mObjectInstance) node).getResources().values()
+                    .toArray(new LwM2mResource[0]), ContentFormat.TLV));
         } else {
             throw new IllegalArgumentException("content type " + req.getContentType()
                     + " not supported for write requests");

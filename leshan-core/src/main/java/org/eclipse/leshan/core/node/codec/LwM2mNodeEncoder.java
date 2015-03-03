@@ -30,12 +30,12 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.Value;
 import org.eclipse.leshan.core.node.Value.DataType;
 import org.eclipse.leshan.core.objectspec.ResourceSpec;
-import org.eclipse.leshan.core.objectspec.Resources;
 import org.eclipse.leshan.core.objectspec.ResourceSpec.Type;
+import org.eclipse.leshan.core.objectspec.Resources;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.tlv.Tlv;
-import org.eclipse.leshan.tlv.TlvEncoder;
 import org.eclipse.leshan.tlv.Tlv.TlvType;
+import org.eclipse.leshan.tlv.TlvEncoder;
 import org.eclipse.leshan.util.Charsets;
 import org.eclipse.leshan.util.StringUtils;
 import org.eclipse.leshan.util.Validate;
@@ -92,7 +92,7 @@ public class LwM2mNodeEncoder {
 
         @Override
         public void visit(LwM2mObject object) {
-            // Not needed for now
+            // TODO needed to encode multiple instances
             throw new UnsupportedOperationException("Object TLV encoding not supported");
         }
 

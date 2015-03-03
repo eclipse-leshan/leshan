@@ -17,6 +17,7 @@ package org.eclipse.leshan.server.californium.impl;
 
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
+import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.request.CreateRequest;
@@ -85,8 +86,9 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     public void visit(CreateRequest request) {
         coapRequest = Request.newPost();
         coapRequest.getOptions().setContentFormat(request.getContentFormat().getCode());
-        coapRequest.setPayload(LwM2mNodeEncoder.encode(request.getObjectInstance(), request.getContentFormat(),
-                request.getPath()));
+        // wrap the resources into an object instance layer (with a fake instance id).
+        coapRequest.setPayload(LwM2mNodeEncoder.encode(new LwM2mObjectInstance(-1, request.getResources()),
+                request.getContentFormat(), request.getPath()));
         setTarget(coapRequest, destination, request.getPath());
     }
 

@@ -15,9 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
-import org.eclipse.leshan.core.node.LwM2mNode;
-import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.response.CreateResponse;
 
 /**
@@ -25,49 +24,53 @@ import org.eclipse.leshan.core.response.CreateResponse;
  */
 public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
 
-    private final LwM2mObjectInstance instance;
+    private final LwM2mResource[] resources;
 
     private final ContentFormat contentFormat;
 
     /**
-     * Creates a request for creating the (only) instance of a particular object.
+     * Creates a request for creating an instance of a particular object.
      * 
      * @param objectId the object ID
-     * @param values the TLV encoded resource values of the object instance
+     * @param resources the resource values for the new instance
+     * @param contentFormat the payload format
      */
-    public CreateRequest(int objectId, LwM2mObjectInstance instance, ContentFormat contentFormat) {
-        this(new LwM2mPath(objectId), instance, contentFormat);
+    public CreateRequest(int objectId, LwM2mResource[] resources, ContentFormat contentFormat) {
+        this(new LwM2mPath(objectId), resources, contentFormat);
     }
 
     /**
-     * Creates a request for creating the (only) instance of a particular object.
+     * Creates a request for creating an instance of a particular object.
      * 
      * @param objectId the object ID
      * @param objectInstanceId the ID of the new object instance
-     * @param values the TLV encoded resource values of the object instance
+     * @param resources the resource values for the new instance
+     * @param contentFormat the payload format
      */
-    public CreateRequest(int objectId, int objectInstanceId, LwM2mObjectInstance instance, ContentFormat contentFormat) {
-        this(new LwM2mPath(objectId, objectInstanceId), instance, contentFormat);
+    public CreateRequest(int objectId, int objectInstanceId, LwM2mResource[] resources, ContentFormat contentFormat) {
+        this(new LwM2mPath(objectId, objectInstanceId), resources, contentFormat);
     }
 
     /**
-     * Creates a request for creating the (only) instance of a particular object.
+     * Creates a request for creating an instance of a particular object.
      * 
      * @param path the target path
      * @param values the TLV encoded resource values of the object instance
+     * @param resources the resource values for the new instance
+     * @param contentFormat the payload format
      */
-    public CreateRequest(String path, LwM2mObjectInstance instance, ContentFormat contentFormat) {
-        this(new LwM2mPath(path), instance, contentFormat);
+    public CreateRequest(String path, LwM2mResource[] resources, ContentFormat contentFormat) {
+        this(new LwM2mPath(path), resources, contentFormat);
     }
 
-    private CreateRequest(LwM2mPath target, LwM2mObjectInstance instance, ContentFormat format) {
+    private CreateRequest(LwM2mPath target, LwM2mResource[] resources, ContentFormat format) {
         super(target);
 
         if (target.isResource()) {
             throw new IllegalArgumentException("Cannot create a resource node");
         }
 
-        this.instance = instance;
+        this.resources = resources;
         this.contentFormat = format != null ? format : ContentFormat.TLV; // default to TLV
     }
 
@@ -76,8 +79,8 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
         visitor.visit(this);
     }
 
-    public LwM2mNode getObjectInstance() {
-        return instance;
+    public LwM2mResource[] getResources() {
+        return resources;
     }
 
     public ContentFormat getContentFormat() {

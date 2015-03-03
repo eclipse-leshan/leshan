@@ -15,10 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -28,7 +26,6 @@ import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.leshan.ObserveSpec;
-import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.Value;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -40,7 +37,6 @@ import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
-import org.eclipse.leshan.server.californium.impl.CoapRequestBuilder;
 import org.eclipse.leshan.server.client.Client;
 import org.junit.Test;
 
@@ -199,8 +195,8 @@ public class CoapRequestBuilderTest {
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(client);
-        CreateRequest request = new CreateRequest(12, 0, new LwM2mObjectInstance(0,
-                new LwM2mResource[] { new LwM2mResource(0, Value.newStringValue("value")) }), ContentFormat.TLV);
+        CreateRequest request = new CreateRequest(12, 0, new LwM2mResource[] { new LwM2mResource(0,
+                Value.newStringValue("value")) }, ContentFormat.TLV);
         builder.visit(request);
 
         // verify
