@@ -70,7 +70,9 @@ public class BootstrapStoreImpl implements BootstrapStore {
         ConfigurationChecker.verify(config);
         // check the configuration
         bootstrapByEndpoint.put(endpoint, config);
-        saveToFile();
+        //
+        // TODO save to JSON format
+        // saveToFile();
     }
 
     public Map<String, BootstrapConfig> getBootstrapConfigs() {
