@@ -86,7 +86,7 @@ public class ConfigurationChecker {
     }
 
     private static void assertIf(boolean condition, String message) throws ConfigurationException {
-        if (!condition) {
+        if (condition) {
             throw new ConfigurationException(message);
         }
 
