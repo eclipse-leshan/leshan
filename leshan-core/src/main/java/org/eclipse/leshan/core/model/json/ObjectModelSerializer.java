@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.objectspec.json;
+package org.eclipse.leshan.core.model.json;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -21,25 +21,25 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.eclipse.leshan.core.objectspec.ObjectSpec;
-import org.eclipse.leshan.core.objectspec.ResourceSpec;
+import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.model.ResourceModel;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
-public class ObjectSpecSerializer implements JsonSerializer<ObjectSpec> {
+public class ObjectModelSerializer implements JsonSerializer<ObjectModel> {
 
     @Override
-    public JsonElement serialize(ObjectSpec object, Type typeOfSrc, JsonSerializationContext context) {
+    public JsonElement serialize(ObjectModel object, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject element = new JsonObject();
 
         // sort resources value
-        List<ResourceSpec> resourceSpecs = new ArrayList<ResourceSpec>(object.resources.values());
-        Collections.sort(resourceSpecs, new Comparator<ResourceSpec>() {
+        List<ResourceModel> resourceSpecs = new ArrayList<ResourceModel>(object.resources.values());
+        Collections.sort(resourceSpecs, new Comparator<ResourceModel>() {
             @Override
-            public int compare(ResourceSpec r1, ResourceSpec r2) {
+            public int compare(ResourceModel r1, ResourceModel r2) {
                 return r1.id - r2.id;
             }
         });

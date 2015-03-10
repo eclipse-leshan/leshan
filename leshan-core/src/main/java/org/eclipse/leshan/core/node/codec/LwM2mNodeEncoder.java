@@ -21,6 +21,9 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Map.Entry;
 
+import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.ResourceModel;
+import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mNodeVisitor;
 import org.eclipse.leshan.core.node.LwM2mObject;
@@ -29,9 +32,6 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.Value;
 import org.eclipse.leshan.core.node.Value.DataType;
-import org.eclipse.leshan.core.objectspec.ResourceSpec;
-import org.eclipse.leshan.core.objectspec.ResourceSpec.Type;
-import org.eclipse.leshan.core.objectspec.Resources;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.tlv.Tlv;
 import org.eclipse.leshan.tlv.Tlv.TlvType;
@@ -52,9 +52,10 @@ public class LwM2mNodeEncoder {
      * @param node the object/instance/resource to serialize
      * @param format the content format
      * @param path the path of the node to serialize
+     * @param model the collection of supported object models
      * @return the encoded node as a byte array
      */
-    public static byte[] encode(LwM2mNode node, ContentFormat format, LwM2mPath path) {
+    public static byte[] encode(LwM2mNode node, ContentFormat format, LwM2mPath path, LwM2mModel model) {
         Validate.notNull(node);
         Validate.notNull(format);
 
@@ -65,12 +66,14 @@ public class LwM2mNodeEncoder {
         case TLV:
             NodeTlvEncoder tlvEncoder = new NodeTlvEncoder();
             tlvEncoder.objectId = path.getObjectId();
+            tlvEncoder.model = model;
             node.accept(tlvEncoder);
             encoded = tlvEncoder.out.toByteArray();
             break;
         case TEXT:
             NodeTextEncoder textEncoder = new NodeTextEncoder();
             textEncoder.objectId = path.getObjectId();
+            textEncoder.model = model;
             node.accept(textEncoder);
             encoded = textEncoder.encoded;
             break;
@@ -87,6 +90,7 @@ public class LwM2mNodeEncoder {
     private static class NodeTlvEncoder implements LwM2mNodeVisitor {
 
         int objectId;
+        LwM2mModel model;
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
@@ -110,7 +114,7 @@ public class LwM2mNodeEncoder {
         public void visit(LwM2mResource resource) {
             LOG.trace("Encoding resource {} into TLV", resource);
 
-            ResourceSpec rSpec = Resources.getResourceSpec(objectId, resource.getId());
+            ResourceModel rSpec = model.getResourceModel(objectId, resource.getId());
             Type expectedType = rSpec != null ? rSpec.type : null;
 
             Tlv rTlv = null;
@@ -160,6 +164,7 @@ public class LwM2mNodeEncoder {
     private static class NodeTextEncoder implements LwM2mNodeVisitor {
 
         int objectId;
+        LwM2mModel model;
 
         byte[] encoded = null;
 
@@ -180,7 +185,7 @@ public class LwM2mNodeEncoder {
             }
             LOG.trace("Encoding resource {} into text", resource);
 
-            ResourceSpec rSpec = Resources.getResourceSpec(objectId, resource.getId());
+            ResourceModel rSpec = model.getResourceModel(objectId, resource.getId());
             Type expectedType = rSpec != null ? rSpec.type : null;
             Value<?> val = convertValue(resource.getValue(), expectedType);
 

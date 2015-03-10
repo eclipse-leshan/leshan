@@ -28,12 +28,14 @@ import org.eclipse.californium.core.coap.MessageObserverAdapter;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
+import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.response.ExceptionConsumer;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseConsumer;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
+import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
 import org.eclipse.leshan.server.request.RejectionException;
@@ -46,46 +48,42 @@ import org.slf4j.LoggerFactory;
 public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
     private static final Logger LOG = LoggerFactory.getLogger(CaliforniumLwM2mRequestSender.class);
-    private static final int COAP_REQUEST_TIMEOUT_MILLIS = 5000;
 
     private final Set<Endpoint> endpoints;
     private final ClientRegistry clientRegistry;
     private final ObservationRegistry observationRegistry;
+    private final LwM2mModelProvider modelProvider;
     private final long timeoutMillis;
 
     /**
      * @param endpoints the CoAP endpoints to use for sending requests
      * @param clientRegistry the registry which stores all the registered clients
      * @param observationRegistry the registry for keeping track of observed resources
-     */
-    public CaliforniumLwM2mRequestSender(final Set<Endpoint> endpoints, final ClientRegistry clientRegistry,
-            final ObservationRegistry observationRegistry) {
-        this(endpoints, clientRegistry, observationRegistry, COAP_REQUEST_TIMEOUT_MILLIS);
-    }
-
-    /**
-     * @param endpoints the CoAP endpoints to use for sending requests
-     * @param clientRegistry the registry which stores all the registered clients
-     * @param observationRegistry the registry for keeping track of observed resources
+     * @param modelProvider provides the supported objects definitions
      * @param timeoutMillis timeout for synchronously sending of CoAP request
      */
     public CaliforniumLwM2mRequestSender(final Set<Endpoint> endpoints, final ClientRegistry clientRegistry,
-            final ObservationRegistry observationRegistry, final long timeoutMillis) {
+            final ObservationRegistry observationRegistry, LwM2mModelProvider modelProvider, final long timeoutMillis) {
         Validate.notNull(endpoints);
         Validate.notNull(observationRegistry);
+        Validate.notNull(modelProvider);
         this.clientRegistry = clientRegistry;
         this.observationRegistry = observationRegistry;
         this.endpoints = endpoints;
         this.timeoutMillis = timeoutMillis;
+        this.modelProvider = modelProvider;
     }
 
     @Override
     public <T extends LwM2mResponse> T send(final Client destination, final DownlinkRequest<T> request) {
 
+        // Retrieve the objects definition
+        final LwM2mModel model = modelProvider.getObjectModel(destination);
+
         // Create the CoAP request from LwM2m request
-        final CoapRequestBuilder CoapRequestBuilder = new CoapRequestBuilder(destination);
-        request.accept(CoapRequestBuilder);
-        final Request coapRequest = CoapRequestBuilder.getRequest();
+        final CoapRequestBuilder coapRequestBuilder = new CoapRequestBuilder(destination, model);
+        request.accept(coapRequestBuilder);
+        final Request coapRequest = coapRequestBuilder.getRequest();
 
         // Send CoAP request synchronously
         final SyncRequestObserver<T> syncMessageObserver = new SyncRequestObserver<T>(coapRequest, destination,
@@ -94,7 +92,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
             public T buildResponse(final Response coapResponse) {
                 // Build LwM2m response
                 final LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<T>(coapRequest,
-                        coapResponse, client, observationRegistry);
+                        coapResponse, client, model, observationRegistry);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }
@@ -112,10 +110,13 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
     @Override
     public <T extends LwM2mResponse> void send(final Client destination, final DownlinkRequest<T> request,
             final ResponseConsumer<T> responseCallback, final ExceptionConsumer errorCallback) {
+        // Retrieve the objects definition
+        final LwM2mModel model = modelProvider.getObjectModel(destination);
+
         // Create the CoAP request from LwM2m request
-        final CoapRequestBuilder CoapRequestBuilder = new CoapRequestBuilder(destination);
-        request.accept(CoapRequestBuilder);
-        final Request coapRequest = CoapRequestBuilder.getRequest();
+        final CoapRequestBuilder coapRequestBuilder = new CoapRequestBuilder(destination, model);
+        request.accept(coapRequestBuilder);
+        final Request coapRequest = coapRequestBuilder.getRequest();
 
         // Add CoAP request callback
         coapRequest.addMessageObserver(new AsyncRequestObserver<T>(coapRequest, destination, responseCallback,
@@ -124,7 +125,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
             public T buildResponse(final Response coapResponse) {
                 // Build LwM2m response
                 final LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<T>(coapRequest,
-                        coapResponse, client, observationRegistry);
+                        coapResponse, client, model, observationRegistry);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }

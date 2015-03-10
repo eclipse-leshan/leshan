@@ -18,7 +18,12 @@ package org.eclipse.leshan.core.node.codec;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.ObjectLoader;
+import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
@@ -26,6 +31,7 @@ import org.eclipse.leshan.core.node.Value;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.util.Charsets;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -33,11 +39,22 @@ import org.junit.Test;
  */
 public class LwM2mNodeEncoderTest {
 
+    private static LwM2mModel model;
+
+    @BeforeClass
+    public static void loadModel() {
+        Map<Integer, ObjectModel> models = new HashMap<>();
+        for (ObjectModel model : ObjectLoader.loadDefault()) {
+            models.put(model.id, model);
+        }
+        model = new LwM2mModel(models);
+    }
+
     @Test
     public void text_encode_single_resource() {
 
         byte[] encoded = LwM2mNodeEncoder.encode(new LwM2mResource(15, Value.newDoubleValue(56.4D)),
-                ContentFormat.TEXT, new LwM2mPath("/323/0/15"));
+                ContentFormat.TEXT, new LwM2mPath("/323/0/15"), model);
 
         Assert.assertEquals("56.4", new String(encoded, Charsets.UTF_8));
     }
@@ -47,7 +64,7 @@ public class LwM2mNodeEncoderTest {
 
         byte[] encoded = LwM2mNodeEncoder.encode(
                 new LwM2mResource(13, Value.newStringValue("2010-01-01T12:00:00+01:00")), ContentFormat.TEXT,
-                new LwM2mPath("/3/0/13"));
+                new LwM2mPath("/3/0/13"), model);
 
         Assert.assertEquals("1262343600", new String(encoded, Charsets.UTF_8));
     }
@@ -56,7 +73,7 @@ public class LwM2mNodeEncoderTest {
     public void text_encode_date_as_iso_string() {
 
         byte[] encoded = LwM2mNodeEncoder.encode(new LwM2mResource(13, Value.newLongValue(1367491215000L)),
-                ContentFormat.TEXT, new LwM2mPath("/3/0/13"));
+                ContentFormat.TEXT, new LwM2mPath("/3/0/13"), model);
 
         Assert.assertEquals("1367491215", new String(encoded, Charsets.UTF_8));
     }
@@ -65,7 +82,7 @@ public class LwM2mNodeEncoderTest {
     public void text_encode_multiple_instances() {
         LwM2mNodeEncoder.encode(
                 new LwM2mResource(6, new Value[] { Value.newIntegerValue(1), Value.newIntegerValue(5) }),
-                ContentFormat.TEXT, new LwM2mPath("/3/0/6"));
+                ContentFormat.TEXT, new LwM2mPath("/3/0/6"), model);
     }
 
     @Test
@@ -90,7 +107,7 @@ public class LwM2mNodeEncoderTest {
 
         LwM2mObjectInstance oInstance = new LwM2mObjectInstance(0, resources.toArray(new LwM2mResource[0]));
 
-        byte[] encoded = LwM2mNodeEncoder.encode(oInstance, ContentFormat.TLV, new LwM2mPath("/3/0"));
+        byte[] encoded = LwM2mNodeEncoder.encode(oInstance, ContentFormat.TLV, new LwM2mPath("/3/0"), model);
 
         // tlv content for instance 0 of device object
         byte[] expected = new byte[] { -56, 0, 20, 79, 112, 101, 110, 32, 77, 111, 98, 105, 108, 101, 32, 65, 108, 108,

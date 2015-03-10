@@ -24,6 +24,8 @@ import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.impl.ClientRegistryImpl;
 import org.eclipse.leshan.server.impl.ObservationRegistryImpl;
 import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
+import org.eclipse.leshan.server.model.LwM2mModelProvider;
+import org.eclipse.leshan.server.model.StandardModelProvider;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
 import org.eclipse.leshan.server.security.SecurityRegistry;
 
@@ -43,6 +45,7 @@ public class LeshanServerBuilder {
     private SecurityRegistry securityRegistry;
     private ObservationRegistry observationRegistry;
     private ClientRegistry clientRegistry;
+    private LwM2mModelProvider modelProvider;
     private InetSocketAddress localAddress;
     private InetSocketAddress localAddressSecure;
 
@@ -81,6 +84,11 @@ public class LeshanServerBuilder {
         return this;
     }
 
+    public LeshanServerBuilder setObjectModelProvider(LwM2mModelProvider objectModelProvider) {
+        this.modelProvider = objectModelProvider;
+        return this;
+    }
+
     public LeshanServer build() {
         if (localAddress == null)
             localAddress = new InetSocketAddress((InetAddress) null, PORT);
@@ -92,6 +100,10 @@ public class LeshanServerBuilder {
             securityRegistry = new SecurityRegistryImpl();
         if (observationRegistry == null)
             observationRegistry = new ObservationRegistryImpl();
-        return new LeshanServer(localAddress, localAddressSecure, clientRegistry, securityRegistry, observationRegistry);
+        if (modelProvider == null) {
+            modelProvider = new StandardModelProvider();
+        }
+        return new LeshanServer(localAddress, localAddressSecure, clientRegistry, securityRegistry,
+                observationRegistry, modelProvider);
     }
 }

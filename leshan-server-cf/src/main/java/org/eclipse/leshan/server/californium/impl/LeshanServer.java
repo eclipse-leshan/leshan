@@ -37,6 +37,7 @@ import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.client.ClientRegistryListener;
+import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
 import org.eclipse.leshan.server.security.SecurityRegistry;
@@ -63,6 +64,8 @@ public class LeshanServer implements LwM2mServer {
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanServer.class);
 
+    private static final int COAP_REQUEST_TIMEOUT_MILLIS = 5000;
+
     private final CaliforniumLwM2mRequestSender requestSender;
 
     private final ClientRegistry clientRegistry;
@@ -70,6 +73,8 @@ public class LeshanServer implements LwM2mServer {
     private final ObservationRegistry observationRegistry;
 
     private final SecurityRegistry securityRegistry;
+
+    private final LwM2mModelProvider modelProvider;
 
     /**
      * Initialize a server which will bind to the specified address and port.
@@ -81,17 +86,20 @@ public class LeshanServer implements LwM2mServer {
      */
     public LeshanServer(InetSocketAddress localAddress, InetSocketAddress localAddressSecure,
             final ClientRegistry clientRegistry, final SecurityRegistry securityRegistry,
-            final ObservationRegistry observationRegistry) {
+            final ObservationRegistry observationRegistry, final LwM2mModelProvider modelProvider) {
         Validate.notNull(localAddress, "IP address cannot be null");
         Validate.notNull(localAddressSecure, "Secure IP address cannot be null");
         Validate.notNull(clientRegistry, "clientRegistry cannot be null");
         Validate.notNull(securityRegistry, "securityRegistry cannot be null");
         Validate.notNull(observationRegistry, "observationRegistry cannot be null");
+        Validate.notNull(modelProvider, "modelProvider cannot be null");
 
         // Init registries
         this.clientRegistry = clientRegistry;
         this.securityRegistry = securityRegistry;
         this.observationRegistry = observationRegistry;
+
+        this.modelProvider = modelProvider;
 
         // Cancel observations on client unregistering
         this.clientRegistry.addListener(new ClientRegistryListener() {
@@ -135,7 +143,8 @@ public class LeshanServer implements LwM2mServer {
         final Set<Endpoint> endpoints = new HashSet<>();
         endpoints.add(endpoint);
         endpoints.add(secureEndpoint);
-        requestSender = new CaliforniumLwM2mRequestSender(endpoints, this.clientRegistry, this.observationRegistry);
+        requestSender = new CaliforniumLwM2mRequestSender(endpoints, this.clientRegistry, this.observationRegistry,
+                modelProvider, COAP_REQUEST_TIMEOUT_MILLIS);
     }
 
     @Override
@@ -208,6 +217,11 @@ public class LeshanServer implements LwM2mServer {
     @Override
     public SecurityRegistry getSecurityRegistry() {
         return this.securityRegistry;
+    }
+
+    @Override
+    public LwM2mModelProvider getModelProvider() {
+        return this.modelProvider;
     }
 
     @Override

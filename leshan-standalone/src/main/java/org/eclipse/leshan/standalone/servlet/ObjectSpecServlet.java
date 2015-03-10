@@ -16,18 +16,19 @@
 package org.eclipse.leshan.standalone.servlet;
 
 import java.io.IOException;
-import java.util.Collection;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.eclipse.leshan.core.objectspec.ObjectSpec;
-import org.eclipse.leshan.core.objectspec.ResourceSpec;
-import org.eclipse.leshan.core.objectspec.Resources;
-import org.eclipse.leshan.core.objectspec.json.ObjectSpecSerializer;
-import org.eclipse.leshan.core.objectspec.json.ResourceSpecSerializer;
+import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.model.ResourceModel;
+import org.eclipse.leshan.core.model.json.ObjectModelSerializer;
+import org.eclipse.leshan.core.model.json.ResourceModelSerializer;
+import org.eclipse.leshan.server.model.LwM2mModelProvider;
+import org.eclipse.leshan.server.model.StandardModelProvider;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -40,19 +41,24 @@ public class ObjectSpecServlet extends HttpServlet {
 
     private final Gson gson;
 
+    private final LwM2mModelProvider modelProvider;
+
     public ObjectSpecServlet() {
         GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeHierarchyAdapter(ObjectSpec.class, new ObjectSpecSerializer());
-        gsonBuilder.registerTypeHierarchyAdapter(ResourceSpec.class, new ResourceSpecSerializer());
+        gsonBuilder.registerTypeHierarchyAdapter(ObjectModel.class, new ObjectModelSerializer());
+        gsonBuilder.registerTypeHierarchyAdapter(ResourceModel.class, new ResourceModelSerializer());
         this.gson = gsonBuilder.create();
+
+        // TODO use the provider from the server and return a model by client
+        modelProvider = new StandardModelProvider();
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if (req.getPathInfo() == null) {
-            Collection<ObjectSpec> objectSpecs = Resources.getObjectSpecs();
+            LwM2mModel model = modelProvider.getObjectModel(null);
 
-            String json = this.gson.toJson(objectSpecs.toArray(new ObjectSpec[] {}));
+            String json = this.gson.toJson(model.getObjectModels().toArray(new ObjectModel[] {}));
             resp.setContentType("application/json");
             resp.getOutputStream().write(json.getBytes("UTF-8"));
             resp.setStatus(HttpServletResponse.SC_OK);

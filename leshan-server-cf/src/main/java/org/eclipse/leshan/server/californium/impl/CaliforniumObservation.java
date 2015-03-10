@@ -23,6 +23,7 @@ import org.eclipse.californium.core.coap.MessageObserverAdapter;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.ResponseCode;
+import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.InvalidValueException;
@@ -43,26 +44,18 @@ public final class CaliforniumObservation extends MessageObserverAdapter impleme
     private final List<ObservationListener> listeners = new CopyOnWriteArrayList<>();
     private final Client client;
     private final LwM2mPath path;
+    private final LwM2mModel model;
 
-    public CaliforniumObservation(Request coapRequest, Client client, LwM2mPath path) {
+    public CaliforniumObservation(Request coapRequest, Client client, LwM2mPath path, LwM2mModel model) {
         Validate.notNull(coapRequest);
         Validate.notNull(client);
         Validate.notNull(path);
+        Validate.notNull(model);
 
         this.coapRequest = coapRequest;
         this.client = client;
         this.path = path;
-    }
-
-    public CaliforniumObservation(Request coapRequest, Client client, LwM2mPath path, ObservationListener listener) {
-        this(coapRequest, client, path);
-        this.listeners.add(listener);
-    }
-
-    public CaliforniumObservation(Request coapRequest, Client client, LwM2mPath path,
-            List<ObservationListener> listeners) {
-        this(coapRequest, client, path);
-        this.listeners.addAll(listeners);
+        this.model = model;
     }
 
     @Override
@@ -75,7 +68,7 @@ public final class CaliforniumObservation extends MessageObserverAdapter impleme
         if (coapResponse.getCode() == CoAP.ResponseCode.CHANGED || coapResponse.getCode() == CoAP.ResponseCode.CONTENT) {
             try {
                 LwM2mNode content = LwM2mNodeDecoder.decode(coapResponse.getPayload(),
-                        ContentFormat.fromCode(coapResponse.getOptions().getContentFormat()), path);
+                        ContentFormat.fromCode(coapResponse.getOptions().getContentFormat()), path, model);
                 ValueResponse response = new ValueResponse(ResponseCode.CHANGED, content);
 
                 for (ObservationListener listener : listeners) {

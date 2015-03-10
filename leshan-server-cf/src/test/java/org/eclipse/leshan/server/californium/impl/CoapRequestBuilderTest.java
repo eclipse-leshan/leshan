@@ -21,11 +21,16 @@ import static org.mockito.Mockito.*;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.leshan.ObserveSpec;
+import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.ObjectLoader;
+import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.Value;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -38,12 +43,24 @@ import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.server.client.Client;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
  * Unit tests for {@link CoapRequestBuilder}
  */
 public class CoapRequestBuilderTest {
+
+    private static LwM2mModel model;
+
+    @BeforeClass
+    public static void loadModel() {
+        Map<Integer, ObjectModel> models = new HashMap<>();
+        for (ObjectModel model : ObjectLoader.loadDefault()) {
+            models.put(model.id, model);
+        }
+        model = new LwM2mModel(models);
+    }
 
     private Client newClient() throws UnknownHostException {
         Client client = mock(Client.class);
@@ -58,7 +75,7 @@ public class CoapRequestBuilderTest {
         Client client = newClient();
 
         // test
-        CoapRequestBuilder builder = new CoapRequestBuilder(client);
+        CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
         ReadRequest request = new ReadRequest(3, 0);
         builder.visit(request);
 
@@ -76,7 +93,7 @@ public class CoapRequestBuilderTest {
         when(client.getRootPath()).thenReturn("/lwm2m");
 
         // test
-        CoapRequestBuilder builder = new CoapRequestBuilder(client);
+        CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
         ReadRequest request = new ReadRequest(3, 0, 1);
         builder.visit(request);
 
@@ -91,7 +108,7 @@ public class CoapRequestBuilderTest {
         when(client.getRootPath()).thenReturn("/");
 
         // test
-        CoapRequestBuilder builder = new CoapRequestBuilder(client);
+        CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
         ReadRequest request = new ReadRequest(3);
         builder.visit(request);
 
@@ -105,7 +122,7 @@ public class CoapRequestBuilderTest {
         Client client = newClient();
 
         // test
-        CoapRequestBuilder builder = new CoapRequestBuilder(client);
+        CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
         DiscoverRequest request = new DiscoverRequest(3, 0);
         builder.visit(request);
 
@@ -123,7 +140,7 @@ public class CoapRequestBuilderTest {
         Client client = newClient();
 
         // test
-        CoapRequestBuilder builder = new CoapRequestBuilder(client);
+        CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
         WriteRequest request = new WriteRequest(3, 0, 14, new LwM2mResource(14, Value.newStringValue("value")),
                 ContentFormat.TEXT, false);
         builder.visit(request);
@@ -142,7 +159,7 @@ public class CoapRequestBuilderTest {
         Client client = newClient();
 
         // test
-        CoapRequestBuilder builder = new CoapRequestBuilder(client);
+        CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
         WriteRequest request = new WriteRequest(3, 0, 14, new LwM2mResource(14, Value.newStringValue("value")),
                 ContentFormat.TEXT, true);
         builder.visit(request);
@@ -157,7 +174,7 @@ public class CoapRequestBuilderTest {
         Client client = newClient();
 
         // test
-        CoapRequestBuilder builder = new CoapRequestBuilder(client);
+        CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
         WriteAttributesRequest request = new WriteAttributesRequest(3, 0, 14, new ObserveSpec.Builder().minPeriod(10)
                 .maxPeriod(100).build());
         builder.visit(request);
@@ -175,7 +192,7 @@ public class CoapRequestBuilderTest {
         Client client = newClient();
 
         // test
-        CoapRequestBuilder builder = new CoapRequestBuilder(client);
+        CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
         ExecuteRequest request = new ExecuteRequest(3, 0, 12, "params".getBytes(), ContentFormat.TEXT);
         builder.visit(request);
 
@@ -194,7 +211,7 @@ public class CoapRequestBuilderTest {
         Client client = newClient();
 
         // test
-        CoapRequestBuilder builder = new CoapRequestBuilder(client);
+        CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
         CreateRequest request = new CreateRequest(12, 0, new LwM2mResource[] { new LwM2mResource(0,
                 Value.newStringValue("value")) }, ContentFormat.TLV);
         builder.visit(request);
@@ -214,7 +231,7 @@ public class CoapRequestBuilderTest {
         Client client = newClient();
 
         // test
-        CoapRequestBuilder builder = new CoapRequestBuilder(client);
+        CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
         DeleteRequest request = new DeleteRequest(12, 0);
         builder.visit(request);
 
@@ -231,7 +248,7 @@ public class CoapRequestBuilderTest {
         Client client = newClient();
 
         // test
-        CoapRequestBuilder builder = new CoapRequestBuilder(client);
+        CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
         ObserveRequest request = new ObserveRequest(12, 0);
         builder.visit(request);
 

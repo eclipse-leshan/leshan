@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.objectspec;
+package org.eclipse.leshan.core.model;
 
 import java.util.Collections;
 import java.util.Map;
@@ -21,7 +21,7 @@ import java.util.Map;
 /**
  * An object description
  */
-public class ObjectSpec {
+public class ObjectModel {
 
     public final int id;
     public final String name;
@@ -29,10 +29,10 @@ public class ObjectSpec {
     public final boolean multiple;
     public final boolean mandatory;
 
-    public final Map<Integer, ResourceSpec> resources; // resources by ID
+    public final Map<Integer, ResourceModel> resources; // resources by ID
 
-    public ObjectSpec(int id, String name, String description, boolean multiple, boolean mandatory,
-            Map<Integer, ResourceSpec> resources) {
+    public ObjectModel(int id, String name, String description, boolean multiple, boolean mandatory,
+            Map<Integer, ResourceModel> resources) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -44,9 +44,10 @@ public class ObjectSpec {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("ObjectDesc [id=").append(id).append(", name=").append(name).append(", description=")
+        builder.append("ObjectModel [id=").append(id).append(", name=").append(name).append(", description=")
                 .append(description).append(", multiple=").append(multiple).append(", mandatory=").append(mandatory)
                 .append(", resources=").append(resources).append("]");
         return builder.toString();
     }
+
 }

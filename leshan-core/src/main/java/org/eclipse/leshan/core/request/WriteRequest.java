@@ -20,10 +20,6 @@ import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
-import org.eclipse.leshan.core.node.Value.DataType;
-import org.eclipse.leshan.core.objectspec.ResourceSpec;
-import org.eclipse.leshan.core.objectspec.Resources;
-import org.eclipse.leshan.core.objectspec.ResourceSpec.Type;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.util.Validate;
 
@@ -79,47 +75,10 @@ public class WriteRequest extends AbstractDownlinkRequest<LwM2mResponse> {
                 throw new IllegalArgumentException(String.format("%s format must be used only for single resources",
                         format.toString()));
             } else {
-                final ResourceSpec description = Resources.getResourceSpec(getPath().getObjectId(), getPath()
-                        .getResourceId());
-                if (description != null && description.multiple) {
-                    throw new IllegalArgumentException(String.format(
-                            "%s format must be used only for single resources", format.toString()));
-                }
                 if (((LwM2mResource) node).isMultiInstances()) {
                     throw new IllegalArgumentException(String.format(
                             "%s format must be used only for single resources", format.toString()));
                 }
-            }
-        }
-
-        // Manage default format
-        if (format == null) {
-            // Use text for single resource ...
-            if (getPath().isResource()) {
-                // Use resource description to guess
-                final ResourceSpec description = Resources.getResourceSpec(getPath().getObjectId(), getPath()
-                        .getResourceId());
-                if (description != null) {
-                    if (description.multiple) {
-                        format = ContentFormat.TLV;
-                    } else {
-                        format = description.type == Type.OPAQUE ? ContentFormat.OPAQUE : ContentFormat.TEXT;
-                    }
-                }
-                // If no object description available, use 'node' to guess
-                else {
-                    LwM2mResource resourceNode = ((LwM2mResource) node);
-                    if (resourceNode.isMultiInstances()) {
-                        format = ContentFormat.TLV;
-                    } else {
-                        format = resourceNode.getValue().type == DataType.OPAQUE ? ContentFormat.OPAQUE
-                                : ContentFormat.TEXT;
-                    }
-                }
-            }
-            // ... and TLV for other ones.
-            else {
-                format = ContentFormat.TLV;
             }
         }
 

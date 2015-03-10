@@ -13,21 +13,21 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.objectspec.json;
+package org.eclipse.leshan.core.model.json;
 
 import java.lang.reflect.Type;
 
-import org.eclipse.leshan.core.objectspec.ResourceSpec;
+import org.eclipse.leshan.core.model.ResourceModel;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
-public class ResourceSpecSerializer implements JsonSerializer<ResourceSpec> {
+public class ResourceModelSerializer implements JsonSerializer<ResourceModel> {
 
     @Override
-    public JsonElement serialize(ResourceSpec resource, Type typeOfSrc, JsonSerializationContext context) {
+    public JsonElement serialize(ResourceModel resource, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject element = new JsonObject();
 
         element.addProperty("id", resource.id);

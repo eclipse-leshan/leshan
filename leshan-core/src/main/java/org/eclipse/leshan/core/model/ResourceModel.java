@@ -13,12 +13,12 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.objectspec;
+package org.eclipse.leshan.core.model;
 
 /**
  * A resource description
  */
-public class ResourceSpec {
+public class ResourceModel {
 
     public enum Operations {
         NONE, R, W, RW, E, RE, WE, RWE
@@ -38,7 +38,7 @@ public class ResourceSpec {
     public final String units;
     public final String description;
 
-    public ResourceSpec(int id, String name, Operations operations, boolean multiple, boolean mandatory, Type type,
+    public ResourceModel(int id, String name, Operations operations, boolean multiple, boolean mandatory, Type type,
             String rangeEnumeration, String units, String description) {
         this.id = id;
         this.name = name;

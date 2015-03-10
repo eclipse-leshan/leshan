@@ -13,14 +13,11 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.objectspec.json;
+package org.eclipse.leshan.core.model.json;
 
-import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.eclipse.leshan.core.objectspec.ObjectSpec;
-import org.eclipse.leshan.core.objectspec.ResourceSpec;
+import org.eclipse.leshan.core.model.ResourceModel;
+import org.eclipse.leshan.core.model.ResourceModel.Operations;
+import org.eclipse.leshan.core.model.ResourceModel.Type;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -28,10 +25,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 
-public class ObjectSpecDeserializer implements JsonDeserializer<ObjectSpec> {
+public class ResourceModelDeserializer implements JsonDeserializer<ResourceModel> {
 
     @Override
-    public ObjectSpec deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+    public ResourceModel deserialize(JsonElement json, java.lang.reflect.Type typeOfT, JsonDeserializationContext context)
             throws JsonParseException {
         if (json == null)
             return null;
@@ -45,15 +42,15 @@ public class ObjectSpecDeserializer implements JsonDeserializer<ObjectSpec> {
 
         int id = jsonObject.get("id").getAsInt();
         String name = jsonObject.get("name").getAsString();
+        Operations operations = Operations.valueOf(jsonObject.get("operations").getAsString());
         String instancetype = jsonObject.get("instancetype").getAsString();
         boolean mandatory = jsonObject.get("mandatory").getAsBoolean();
+        Type type = Type.valueOf(jsonObject.get("type").getAsString().toUpperCase());
+        String range = jsonObject.get("range").getAsString();
+        String units = jsonObject.get("units").getAsString();
         String description = jsonObject.get("description").getAsString();
-        ResourceSpec[] resourceSpecs = context.deserialize(jsonObject.get("resourcedefs"), ResourceSpec[].class);
-        Map<Integer, ResourceSpec> resources = new HashMap<Integer, ResourceSpec>();
-        for (ResourceSpec resourceSpec : resourceSpecs) {
-            resources.put(resourceSpec.id, resourceSpec);
-        }
 
-        return new ObjectSpec(id, name, description, "multiple".equals(instancetype), mandatory, resources);
+        return new ResourceModel(id, name, operations, "multiple".equals(instancetype), mandatory, type, range, units,
+                description);
     }
 }

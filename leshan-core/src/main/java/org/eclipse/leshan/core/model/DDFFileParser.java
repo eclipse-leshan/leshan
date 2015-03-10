@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.objectspec;
+package org.eclipse.leshan.core.model;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,8 +24,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.eclipse.leshan.core.objectspec.ResourceSpec.Operations;
-import org.eclipse.leshan.core.objectspec.ResourceSpec.Type;
+import org.eclipse.leshan.core.model.ResourceModel.Operations;
+import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -45,10 +45,10 @@ public class DDFFileParser {
         factory = DocumentBuilderFactory.newInstance();
     }
 
-    public ObjectSpec parse(File ddfFile) {
+    public ObjectModel parse(File ddfFile) {
         LOG.debug("Parsing DDF file {}", ddfFile.getName());
 
-        ObjectSpec result = null;
+        ObjectModel result = null;
         try {
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document document = builder.parse(ddfFile);
@@ -63,14 +63,14 @@ public class DDFFileParser {
         return result;
     }
 
-    private ObjectSpec parseObject(Node object) {
+    private ObjectModel parseObject(Node object) {
 
         Integer id = null;
         String name = null;
         String description = null;
         boolean multiple = false;
         boolean mandatory = false;
-        Map<Integer, ResourceSpec> resources = new HashMap<>();
+        Map<Integer, ResourceModel> resources = new HashMap<>();
 
         for (int i = 0; i < object.getChildNodes().getLength(); i++) {
             Node field = object.getChildNodes().item(i);
@@ -94,7 +94,7 @@ public class DDFFileParser {
                 for (int j = 0; j < field.getChildNodes().getLength(); j++) {
                     Node item = field.getChildNodes().item(j);
                     if (item.getNodeName().equals("Item")) {
-                        ResourceSpec res = this.parseResource(item);
+                        ResourceModel res = this.parseResource(item);
                         resources.put(res.id, res);
                     }
                 }
@@ -102,11 +102,11 @@ public class DDFFileParser {
             }
         }
 
-        return new ObjectSpec(id, name, description, multiple, mandatory, resources);
+        return new ObjectModel(id, name, description, multiple, mandatory, resources);
 
     }
 
-    private ResourceSpec parseResource(Node item) {
+    private ResourceModel parseResource(Node item) {
 
         Integer id = Integer.valueOf(item.getAttributes().getNamedItem("ID").getTextContent());
         String name = null;
@@ -171,7 +171,7 @@ public class DDFFileParser {
 
         }
 
-        return new ResourceSpec(id, name, operations, multiple, mandatory, type, rangeEnumeration, units, description);
+        return new ResourceModel(id, name, operations, multiple, mandatory, type, rangeEnumeration, units, description);
     }
 
 }

@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.objectspec;
+package org.eclipse.leshan.core.model;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,8 +27,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.eclipse.leshan.core.objectspec.json.ObjectSpecSerializer;
-import org.eclipse.leshan.core.objectspec.json.ResourceSpecSerializer;
+import org.eclipse.leshan.core.model.json.ObjectModelSerializer;
+import org.eclipse.leshan.core.model.json.ResourceModelSerializer;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -39,15 +39,15 @@ public class Ddf2JsonGenerator {
 
     public Ddf2JsonGenerator() {
         GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(ObjectSpec.class, new ObjectSpecSerializer());
-        gsonBuilder.registerTypeAdapter(ResourceSpec.class, new ResourceSpecSerializer());
+        gsonBuilder.registerTypeAdapter(ObjectModel.class, new ObjectModelSerializer());
+        gsonBuilder.registerTypeAdapter(ResourceModel.class, new ResourceModelSerializer());
         gsonBuilder.setPrettyPrinting();
         gson = gsonBuilder.create();
     }
 
-    private void generate(Collection<ObjectSpec> objectSpecs, OutputStream output) throws IOException {
+    private void generate(Collection<ObjectModel> objectModels, OutputStream output) throws IOException {
         try (OutputStreamWriter outputStreamWriter = new OutputStreamWriter(output)) {
-            gson.toJson(objectSpecs, outputStreamWriter);
+            gson.toJson(objectModels, outputStreamWriter);
         }
     }
 
@@ -65,27 +65,27 @@ public class Ddf2JsonGenerator {
         }
 
         // parse DDF file
-        List<ObjectSpec> objectSpecs = new ArrayList<ObjectSpec>();
+        List<ObjectModel> objectModels = new ArrayList<ObjectModel>();
         DDFFileParser ddfParser = new DDFFileParser();
         for (File f : files) {
             if (f.canRead()) {
-                ObjectSpec objectSpec = ddfParser.parse(f);
-                if (objectSpec != null) {
-                    objectSpecs.add(objectSpec);
+                ObjectModel objectModel = ddfParser.parse(f);
+                if (objectModel != null) {
+                    objectModels.add(objectModel);
                 }
             }
         }
 
         // sort object by id
-        Collections.sort(objectSpecs, new Comparator<ObjectSpec>() {
+        Collections.sort(objectModels, new Comparator<ObjectModel>() {
             @Override
-            public int compare(ObjectSpec o1, ObjectSpec o2) {
+            public int compare(ObjectModel o1, ObjectModel o2) {
                 return o1.id - o2.id;
             }
         });
 
         // generate json
-        generate(objectSpecs, output);
+        generate(objectModels, output);
     }
 
     public static void main(String[] args) throws FileNotFoundException, IOException {

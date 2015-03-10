@@ -18,7 +18,12 @@ package org.eclipse.leshan.core.node.codec;
 import static org.junit.Assert.*;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.ObjectLoader;
+import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
@@ -28,6 +33,7 @@ import org.eclipse.leshan.tlv.Tlv;
 import org.eclipse.leshan.tlv.Tlv.TlvType;
 import org.eclipse.leshan.tlv.TlvEncoder;
 import org.eclipse.leshan.util.Charsets;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -35,11 +41,22 @@ import org.junit.Test;
  */
 public class LwM2mNodeDecoderTest {
 
+    private static LwM2mModel model;
+
+    @BeforeClass
+    public static void loadModel() {
+        Map<Integer, ObjectModel> models = new HashMap<>();
+        for (ObjectModel model : ObjectLoader.loadDefault()) {
+            models.put(model.id, model);
+        }
+        model = new LwM2mModel(models);
+    }
+
     @Test
     public void text_manufacturer_resource() throws InvalidValueException {
         String value = "MyManufacturer";
         LwM2mResource resource = (LwM2mResource) LwM2mNodeDecoder.decode(value.getBytes(Charsets.UTF_8),
-                ContentFormat.TEXT, new LwM2mPath(3, 0, 0));
+                ContentFormat.TEXT, new LwM2mPath(3, 0, 0), model);
 
         assertEquals(0, resource.getId());
         assertFalse(resource.isMultiInstances());
@@ -50,7 +67,7 @@ public class LwM2mNodeDecoderTest {
     @Test
     public void text_battery_resource() throws InvalidValueException {
         LwM2mResource resource = (LwM2mResource) LwM2mNodeDecoder.decode("100".getBytes(Charsets.UTF_8),
-                ContentFormat.TEXT, new LwM2mPath(3, 0, 9));
+                ContentFormat.TEXT, new LwM2mPath(3, 0, 9), model);
 
         assertEquals(9, resource.getId());
         assertFalse(resource.isMultiInstances());
@@ -64,7 +81,7 @@ public class LwM2mNodeDecoderTest {
         byte[] content = TlvEncoder.encode(new Tlv[] { new Tlv(TlvType.RESOURCE_VALUE, null, value.getBytes(), 0) })
                 .array();
         LwM2mResource resource = (LwM2mResource) LwM2mNodeDecoder.decode(content, ContentFormat.TLV, new LwM2mPath(3,
-                0, 0));
+                0, 0), model);
 
         assertEquals(0, resource.getId());
         assertFalse(resource.isMultiInstances());
@@ -82,7 +99,7 @@ public class LwM2mNodeDecoderTest {
                                 -63, 11, 0, -60, 13, 81, -126, 66, -113, -58, 14, 43, 48, 50, 58, 48, 48, -63, 15, 85 };
 
         LwM2mObjectInstance oInstance = (LwM2mObjectInstance) LwM2mNodeDecoder.decode(content, ContentFormat.TLV,
-                new LwM2mPath(3, 0));
+                new LwM2mPath(3, 0), model);
 
         assertEquals(0, oInstance.getId());
 
@@ -113,7 +130,7 @@ public class LwM2mNodeDecoderTest {
         byte[] content = new byte[] { 65, 0, 1, 65, 1, 5 };
 
         LwM2mResource resource = (LwM2mResource) LwM2mNodeDecoder.decode(content, ContentFormat.TLV, new LwM2mPath(3,
-                0, 6));
+                0, 6), model);
 
         assertEquals(6, resource.getId());
         assertEquals(2, resource.getValues().length);
@@ -128,7 +145,7 @@ public class LwM2mNodeDecoderTest {
         byte[] content = new byte[] { -122, 6, 65, 0, 1, 65, 1, 5 };
 
         LwM2mResource resource = (LwM2mResource) LwM2mNodeDecoder.decode(content, ContentFormat.TLV, new LwM2mPath(3,
-                0, 6));
+                0, 6), model);
 
         assertEquals(6, resource.getId());
         assertEquals(2, resource.getValues().length);

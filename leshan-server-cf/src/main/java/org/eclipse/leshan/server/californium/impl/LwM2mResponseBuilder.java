@@ -21,6 +21,7 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.ResponseCode;
+import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.InvalidValueException;
@@ -55,6 +56,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     private final Response coapResponse;
     private final ObservationRegistry observationRegistry;
     private final Client client;
+    private final LwM2mModel model;
 
     public static ResponseCode fromCoapCode(final int code) {
         Validate.notNull(code);
@@ -83,12 +85,12 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     }
 
     public LwM2mResponseBuilder(final Request coapRequest, final Response coapResponse, final Client client,
-            final ObservationRegistry observationRegistry) {
-        super();
+            final LwM2mModel model, final ObservationRegistry observationRegistry) {
         this.coapRequest = coapRequest;
         this.coapResponse = coapResponse;
         this.observationRegistry = observationRegistry;
         this.client = client;
+        this.model = model;
     }
 
     @Override
@@ -230,7 +232,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             if (coapResponse.getOptions().hasObserve()) {
                 // observe request succeed so we can add and observation to registry
                 final CaliforniumObservation observation = new CaliforniumObservation(coapRequest, client,
-                        request.getPath());
+                        request.getPath(), model);
                 coapRequest.addMessageObserver(observation);
                 observationRegistry.addObservation(observation);
             }
@@ -249,7 +251,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         LwM2mNode content;
         try {
             content = LwM2mNodeDecoder.decode(coapResponse.getPayload(),
-                    ContentFormat.fromCode(coapResponse.getOptions().getContentFormat()), path);
+                    ContentFormat.fromCode(coapResponse.getOptions().getContentFormat()), path, model);
         } catch (final InvalidValueException e) {
             final String msg = String.format("[%s] ([%s])", e.getMessage(), e.getPath().toString());
             throw new ResourceAccessException(code, path.toString(), msg, e);

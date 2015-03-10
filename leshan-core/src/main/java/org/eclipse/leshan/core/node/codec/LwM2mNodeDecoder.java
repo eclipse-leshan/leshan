@@ -18,15 +18,15 @@ package org.eclipse.leshan.core.node.codec;
 import java.nio.ByteBuffer;
 import java.util.Date;
 
+import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.ResourceModel;
+import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.Value;
-import org.eclipse.leshan.core.objectspec.ResourceSpec;
-import org.eclipse.leshan.core.objectspec.Resources;
-import org.eclipse.leshan.core.objectspec.ResourceSpec.Type;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.tlv.Tlv;
 import org.eclipse.leshan.tlv.TlvDecoder;
@@ -46,10 +46,12 @@ public class LwM2mNodeDecoder {
      * @param content the content
      * @param format the content format
      * @param path the path of the node to build
+     * @param model the collection of supported object models
      * @return the resulting node
      * @throws InvalidValueException
      */
-    public static LwM2mNode decode(byte[] content, ContentFormat format, LwM2mPath path) throws InvalidValueException {
+    public static LwM2mNode decode(byte[] content, ContentFormat format, LwM2mPath path, LwM2mModel model)
+            throws InvalidValueException {
         LOG.debug("Decoding value for path {} and format {}: {}", path, format, content);
 
         Validate.notNull(path);
@@ -57,7 +59,7 @@ public class LwM2mNodeDecoder {
         // default to plain/text
         if (format == null) {
             if (path.isResource()) {
-                ResourceSpec rDesc = Resources.getResourceSpec(path.getObjectId(), path.getResourceId());
+                ResourceModel rDesc = model.getResourceModel(path.getObjectId(), path.getResourceId());
                 if (rDesc != null && rDesc.multiple) {
                     format = ContentFormat.TLV;
                 } else {
@@ -74,7 +76,7 @@ public class LwM2mNodeDecoder {
         case TEXT:
             // single resource value
             Validate.notNull(path.getResourceId());
-            ResourceSpec rDesc = Resources.getResourceSpec(path.getObjectId(), path.getResourceId());
+            ResourceModel rDesc = model.getResourceModel(path.getObjectId(), path.getResourceId());
 
             String strValue = new String(content, Charsets.UTF_8);
             Value<?> value = null;
@@ -89,7 +91,7 @@ public class LwM2mNodeDecoder {
         case TLV:
             try {
                 Tlv[] tlvs = TlvDecoder.decode(ByteBuffer.wrap(content));
-                return parseTlv(tlvs, path);
+                return parseTlv(tlvs, path, model);
             } catch (TlvException e) {
                 throw new InvalidValueException("Unable to decode tlv.", path, e);
             }
@@ -153,14 +155,14 @@ public class LwM2mNodeDecoder {
         }
     }
 
-    private static LwM2mNode parseTlv(Tlv[] tlvs, LwM2mPath path) throws InvalidValueException {
+    private static LwM2mNode parseTlv(Tlv[] tlvs, LwM2mPath path, LwM2mModel model) throws InvalidValueException {
         LOG.trace("Parsing TLV content for path {}: {}", path, tlvs);
 
         if (path.isObject()) {
             // object level request
             LwM2mObjectInstance[] instances = new LwM2mObjectInstance[tlvs.length];
             for (int i = 0; i < tlvs.length; i++) {
-                instances[i] = parseObjectInstancesTlv(tlvs[i], path.getObjectId());
+                instances[i] = parseObjectInstancesTlv(tlvs[i], path.getObjectId(), model);
             }
             return new LwM2mObject(path.getObjectId(), instances);
 
@@ -168,7 +170,7 @@ public class LwM2mNodeDecoder {
             // object instance level request
             LwM2mResource[] resources = new LwM2mResource[tlvs.length];
             for (int i = 0; i < tlvs.length; i++) {
-                resources[i] = parseResourceTlv(tlvs[i], path.getObjectId(), path.getObjectInstanceId());
+                resources[i] = parseResourceTlv(tlvs[i], path.getObjectId(), path.getObjectInstanceId(), model);
             }
             return new LwM2mObjectInstance(path.getObjectInstanceId(), resources);
 
@@ -178,10 +180,10 @@ public class LwM2mNodeDecoder {
                 switch (tlvs[0].getType()) {
                 case RESOURCE_VALUE:
                     // single value
-                    return new LwM2mResource(tlvs[0].getIdentifier(), parseTlvValue(tlvs[0].getValue(), path));
+                    return new LwM2mResource(tlvs[0].getIdentifier(), parseTlvValue(tlvs[0].getValue(), path, model));
                 case MULTIPLE_RESOURCE:
                     // supported but not compliant with the TLV specification
-                    return parseResourceTlv(tlvs[0], path.getObjectId(), path.getObjectInstanceId());
+                    return parseResourceTlv(tlvs[0], path.getObjectId(), path.getObjectInstanceId(), model);
 
                 default:
                     throw new InvalidValueException("Invalid TLV type: " + tlvs[0].getType(), path);
@@ -190,23 +192,24 @@ public class LwM2mNodeDecoder {
                 // array of values
                 Value<?>[] values = new Value[tlvs.length];
                 for (int j = 0; j < tlvs.length; j++) {
-                    values[j] = parseTlvValue(tlvs[j].getValue(), path);
+                    values[j] = parseTlvValue(tlvs[j].getValue(), path, model);
                 }
                 return new LwM2mResource(path.getResourceId(), values);
             }
         }
     }
 
-    private static LwM2mObjectInstance parseObjectInstancesTlv(Tlv tlv, int objectId) throws InvalidValueException {
+    private static LwM2mObjectInstance parseObjectInstancesTlv(Tlv tlv, int objectId, LwM2mModel model)
+            throws InvalidValueException {
         // read resources
         LwM2mResource[] resources = new LwM2mResource[tlv.getChildren().length];
         for (int i = 0; i < tlv.getChildren().length; i++) {
-            resources[i] = parseResourceTlv(tlv.getChildren()[i], objectId, tlv.getIdentifier());
+            resources[i] = parseResourceTlv(tlv.getChildren()[i], objectId, tlv.getIdentifier(), model);
         }
         return new LwM2mObjectInstance(tlv.getIdentifier(), resources);
     }
 
-    private static LwM2mResource parseResourceTlv(Tlv tlv, int objectId, int objectInstanceId)
+    private static LwM2mResource parseResourceTlv(Tlv tlv, int objectId, int objectInstanceId, LwM2mModel model)
             throws InvalidValueException {
         LwM2mPath rscPath = new LwM2mPath(objectId, objectInstanceId, tlv.getIdentifier());
         switch (tlv.getType()) {
@@ -214,19 +217,20 @@ public class LwM2mNodeDecoder {
             // read values
             Value<?>[] values = new Value[tlv.getChildren().length];
             for (int j = 0; j < tlv.getChildren().length; j++) {
-                values[j] = parseTlvValue(tlv.getChildren()[j].getValue(), rscPath);
+                values[j] = parseTlvValue(tlv.getChildren()[j].getValue(), rscPath, model);
             }
             return new LwM2mResource(tlv.getIdentifier(), values);
         case RESOURCE_VALUE:
-            return new LwM2mResource(tlv.getIdentifier(), parseTlvValue(tlv.getValue(), rscPath));
+            return new LwM2mResource(tlv.getIdentifier(), parseTlvValue(tlv.getValue(), rscPath, model));
         default:
             throw new InvalidValueException("Invalid TLV value", rscPath);
         }
     }
 
-    private static Value<?> parseTlvValue(byte[] value, LwM2mPath rscPath) throws InvalidValueException {
+    private static Value<?> parseTlvValue(byte[] value, LwM2mPath rscPath, LwM2mModel model)
+            throws InvalidValueException {
 
-        ResourceSpec rscDesc = Resources.getResourceSpec(rscPath.getObjectId(), rscPath.getResourceId());
+        ResourceModel rscDesc = model.getResourceModel(rscPath.getObjectId(), rscPath.getResourceId());
         if (rscDesc == null) {
             LOG.trace("TLV value for path {} and unknown type: {}", rscPath, value);
             // no resource description... opaque

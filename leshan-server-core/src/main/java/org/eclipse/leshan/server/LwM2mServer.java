@@ -21,6 +21,7 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseConsumer;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
+import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
 import org.eclipse.leshan.server.security.SecurityRegistry;
 
@@ -77,4 +78,9 @@ public interface LwM2mServer {
      * Get the SecurityRegistry containing of security information.
      */
     SecurityRegistry getSecurityRegistry();
+
+    /**
+     * Get the provider in charge of retrieving the object definitions for each client.
+     */
+    LwM2mModelProvider getModelProvider();
 }
