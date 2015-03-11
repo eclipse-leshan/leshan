@@ -63,7 +63,11 @@ public class LwM2mNodeDecoder {
                 if (rDesc != null && rDesc.multiple) {
                     format = ContentFormat.TLV;
                 } else {
-                    format = ContentFormat.TEXT;
+                    if (rDesc.type == Type.OPAQUE) {
+                        format = ContentFormat.OPAQUE;
+                    } else {
+                        format = ContentFormat.TEXT;
+                    }
                 }
             } else {
                 // HACK: client should return a content type
@@ -95,9 +99,17 @@ public class LwM2mNodeDecoder {
             } catch (TlvException e) {
                 throw new InvalidValueException("Unable to decode tlv.", path, e);
             }
+        case OPAQUE:
+            // single resource value
+            Validate.notNull(path.getResourceId());
+            ResourceModel desc = model.getResourceModel(path.getObjectId(), path.getResourceId());
+            if (desc != null && desc.type != Type.OPAQUE) {
+                throw new InvalidValueException(
+                        "Invalid content format, OPAQUE can only be used for single OPAQUE resource", path);
+            }
+            return new LwM2mResource(path.getResourceId(), Value.newBinaryValue(content));
         case JSON:
         case LINK:
-        case OPAQUE:
             throw new InvalidValueException("Content format " + format + " not yet implemented", path);
         }
         return null;

@@ -77,6 +77,13 @@ public class LwM2mNodeEncoder {
             node.accept(textEncoder);
             encoded = textEncoder.encoded;
             break;
+        case OPAQUE:
+            NodeOpaqueEncoder opaqueEncoder = new NodeOpaqueEncoder();
+            opaqueEncoder.objectId = path.getObjectId();
+            opaqueEncoder.model = model;
+            node.accept(opaqueEncoder);
+            encoded = opaqueEncoder.encoded;
+            break;
         case JSON:
             throw new IllegalArgumentException("JSON content format not supported");
         default:
@@ -210,6 +217,38 @@ public class LwM2mNodeEncoder {
             }
 
             encoded = strValue.getBytes(Charsets.UTF_8);
+        }
+    }
+
+    private static class NodeOpaqueEncoder implements LwM2mNodeVisitor {
+
+        int objectId;
+        LwM2mModel model;
+
+        byte[] encoded = null;
+
+        @Override
+        public void visit(LwM2mObject object) {
+            throw new IllegalArgumentException("Object cannot be encoded in opaque format");
+        }
+
+        @Override
+        public void visit(LwM2mObjectInstance instance) {
+            throw new IllegalArgumentException("Object instance cannot be encoded in opaque format");
+        }
+
+        @Override
+        public void visit(LwM2mResource resource) {
+            if (resource.isMultiInstances()) {
+                throw new IllegalArgumentException("Mulitple instances resource cannot be encoded in opaque format");
+            }
+            ResourceModel rSpec = model.getResourceModel(objectId, resource.getId());
+            if (rSpec != null && rSpec.type != Type.OPAQUE) {
+                throw new IllegalArgumentException("Only single opaque resource can be encoded in opaque format");
+            }
+            LOG.trace("Encoding resource {} into text", resource);
+            Value<?> val = convertValue(resource.getValue(), Type.OPAQUE);
+            encoded = (byte[]) val.value;
         }
     }
 
