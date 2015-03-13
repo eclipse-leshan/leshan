@@ -24,12 +24,17 @@ Contributors:
     <packaging>pom</packaging>
 
     <name>leshan</name>
-    <url>https://github.com/jvermillard/leshan/tree/master/</url>
-    <description>A Lightweight M2M Server implementation based on Californium</description>
+    <url>http://eclipse.org/leshan</url>
+    <description>An OMA Lightweight M2M (LWM2M) implementation in Java</description>
     <licenses>
         <license>
-            <name>BSD 3 Clause</name>
-            <url>https://raw.githubusercontent.com/jvermillard/leshan/master/LICENSE</url>
+            <name>Eclipse Public License (EPL), Version 1.0</name>
+            <url>http://www.eclipse.org/legal/epl-v10.html</url>
+            <distribution>repo</distribution>
+        </license>
+        <license>
+            <name>Eclipse Distribution License (EDL), Version 1.0</name>
+            <url>http://www.eclipse.org/org/documents/edl-v10.html</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
@@ -49,8 +54,8 @@ Contributors:
     </modules>
 
     <scm>
-        <developerConnection>scm:git:ssh://git@github.com/jvermillard/leshan.git</developerConnection>
-        <url>https://github.com/jvermillard/leshan</url>
+        <developerConnection>scm:git:ssh://git@github.com/eclipse/leshan.git</developerConnection>
+        <url>https://github.com/eclipse/leshan.git</url>
         <tag>HEAD</tag>
     </scm>
 
