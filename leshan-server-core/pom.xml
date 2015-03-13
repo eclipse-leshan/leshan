@@ -26,7 +26,7 @@ Contributors:
     <artifactId>leshan-server-core</artifactId>
     <packaging>bundle</packaging>
     <name>leshan - server core</name>
-    <description>A LWM2M server implementation which abstracts transport layer. A transport implementation like "leshan.server.californium" is needed.</description>
+    <description>A LWM2M server implementation which abstracts transport layer. A transport implementation like &quot;leshan-server-cf&quot; is needed.</description>
 
     <dependencies>
         <dependency>

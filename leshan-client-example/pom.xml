@@ -29,7 +29,7 @@ Contributors:
     <dependencies>
         <dependency>
             <groupId>org.eclipse.leshan</groupId>
-            <artifactId>leshan-client</artifactId>
+            <artifactId>leshan-client-cf</artifactId>
         </dependency>
     </dependencies>
 
