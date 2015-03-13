@@ -43,8 +43,7 @@ Contributors:
         <!--module>leshan-client-core</module-->
         <!--module>leshan-client-californium</module-->
 
-        <!-- Integration tests moved in a profiles waiting it was stable -->
-        <!--<module>leshan-integration-tests</module>--> 
+        <module>leshan-integration-tests</module> 
 
         <module>leshan-client-example</module>
         <module>leshan-standalone</module>
@@ -107,16 +106,6 @@ Contributors:
             </activation>
             <modules>
                 <module>leshan-all</module>
-            </modules>
-        </profile>
-        <profile>
-            <!-- This profile includes all the tests, even the integration ones -->
-            <id>integration</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <modules>
-                <module>leshan-integration-tests</module>
             </modules>
         </profile>
         <profile>
