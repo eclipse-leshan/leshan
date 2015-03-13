@@ -26,7 +26,6 @@ import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.californium.impl.CaliforniumLwM2mClientRequestSender;
-import org.eclipse.leshan.client.californium.impl.LwM2mServerMessageDeliverer;
 import org.eclipse.leshan.client.californium.impl.ObjectResource;
 import org.eclipse.leshan.client.resource.LinkFormattable;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
@@ -58,9 +57,6 @@ public class LeshanClient implements LwM2mClient {
         Validate.notNull(serverAddress);
         Validate.notNull(objectEnablers);
         Validate.notEmpty(objectEnablers);
-
-        // TODO I'm not sure this is still necessary
-        serverLocal.setMessageDeliverer(new LwM2mServerMessageDeliverer(serverLocal.getRoot()));
 
         final Endpoint endpoint = new CoAPEndpoint(clientAddress);
         serverLocal.addEndpoint(endpoint);
