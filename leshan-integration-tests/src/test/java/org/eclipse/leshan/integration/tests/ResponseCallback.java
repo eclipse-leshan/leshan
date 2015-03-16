@@ -13,7 +13,7 @@
  * Contributors:
  *     Zebra Technologies - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.util;
+package org.eclipse.leshan.integration.tests;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
