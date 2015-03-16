@@ -54,6 +54,9 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ValueResponse;
 import org.eclipse.leshan.util.Validate;
 
+/**
+ * A CoAP {@link Resource} in charge of handling requests for of a lwM2M Object.
+ */
 public class ObjectResource extends CoapResource implements LinkFormattable, NotifySender {
 
     private LwM2mObjectEnabler nodeEnabler;
@@ -67,7 +70,7 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
 
     @Override
     public void handleGET(CoapExchange exchange) {
-        String URI = "/" + exchange.getRequestOptions().getUriPathString();
+        String URI = exchange.getRequestOptions().getUriPathString();
 
         // Manage Discover Request
         if (exchange.getRequestOptions().getAccept() == MediaTypeRegistry.APPLICATION_LINK_FORMAT) {
@@ -109,7 +112,7 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
 
     @Override
     public void handlePUT(final CoapExchange coapExchange) {
-        String URI = "/" + coapExchange.getRequestOptions().getUriPathString();
+        String URI = coapExchange.getRequestOptions().getUriPathString();
 
         // get Observe Spec
         ObserveSpec spec = null;
@@ -145,7 +148,7 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
 
     @Override
     public void handlePOST(final CoapExchange exchange) {
-        String URI = "/" + exchange.getRequestOptions().getUriPathString();
+        String URI = exchange.getRequestOptions().getUriPathString();
         LwM2mPath path = new LwM2mPath(URI);
 
         // Manage Execute Request
@@ -184,7 +187,7 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
     @Override
     public void handleDELETE(final CoapExchange coapExchange) {
         // Manage Delete Request
-        String URI = "/" + coapExchange.getRequestOptions().getUriPathString();
+        String URI = coapExchange.getRequestOptions().getUriPathString();
         LwM2mResponse response = nodeEnabler.delete(new DeleteRequest(URI));
         coapExchange.respond(fromLwM2mCode(response.getCode()));
     }
@@ -196,14 +199,14 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
 
     /*
      * Override the default behavior so that requests to sub resources (typically /ObjectId/*) are handled by this
-     * resource. TODO: not sure this is the best way to do that. (we do the same thing in RegisterResource)
+     * resource.
      */
     @Override
     public Resource getChild(String name) {
         return this;
     }
 
-    // TODO this code should be factorize with leshan-server-cf
+    // TODO leshan-code-cf: this code should be factorize in a leshan-core-cf project.
     public static ResponseCode fromLwM2mCode(final org.eclipse.leshan.ResponseCode code) {
         Validate.notNull(code);
 
@@ -240,7 +243,10 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
         return linkFormat.toString();
     }
 
-    /* TODO: Observe HACK we should see if this could not be integrated in californium */
+    /*
+     * TODO: Observe HACK we should see if this could not be integrated in californium
+     * http://dev.eclipse.org/mhonarc/lists/cf-dev/msg00181.html
+     */
     private ObserveRelationContainer observeRelations = new ObserveRelationContainer();
 
     @Override

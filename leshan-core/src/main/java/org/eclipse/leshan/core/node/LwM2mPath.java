@@ -69,10 +69,9 @@ public class LwM2mPath {
      */
     public LwM2mPath(String path) {
         Validate.notEmpty(path);
-        if (!path.startsWith("/")) {
-            throw new IllegalArgumentException("Invalid LWM2M path: " + path);
+        if (path.startsWith("/")) {
+            path = path.substring(1);
         }
-        path = path.substring(1);
         String[] p = path.split("/");
         if (p.length < 1 || p.length > 3) {
             throw new IllegalArgumentException("Invalid length for path: " + path);
