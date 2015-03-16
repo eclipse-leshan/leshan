@@ -21,6 +21,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 
 import org.eclipse.leshan.ResponseCode;
@@ -72,7 +74,7 @@ public class RegistrationTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void fail_to_create_client_with_null() {
-        helper.client = new LeshanClient(helper.clientAddress, helper.serverAddress, null);
+        helper.client = new LeshanClient(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), null);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -82,7 +84,7 @@ public class RegistrationTest {
         ArrayList<LwM2mObjectEnabler> objects = new ArrayList<>();
         objects.add(baseObjectEnabler);
         objects.add(baseObjectEnabler2);
-        helper.client = new LeshanClient(helper.clientAddress, helper.serverAddress, objects);
+        helper.client = new LeshanClient(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), objects);
     }
 
     // TODO we must fix the API of registered response
