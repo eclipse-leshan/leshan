@@ -48,7 +48,7 @@ import org.eclipse.leshan.core.response.ValueResponse;
  * To build: 
  * mvn assembly:assembly -DdescriptorId=jar-with-dependencies
  * To use:
- * java -jar target/leshan-client-*-SNAPSHOT-jar-with-dependencies.jar 127.0.0.1 5683 9000
+ * java -jar target/leshan-client-*-SNAPSHOT-jar-with-dependencies.jar 127.0.0.1 5683
  */
 public class LeshanClientExample {
     private String registrationID;
