@@ -21,6 +21,8 @@ import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.LinkFormat;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
+import org.eclipse.californium.core.coap.Response;
+import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.observe.ObserveRelation;
 import org.eclipse.californium.core.observe.ObserveRelationContainer;
 import org.eclipse.californium.core.server.resources.CoapExchange;
@@ -53,11 +55,15 @@ import org.eclipse.leshan.core.response.DiscoverResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ValueResponse;
 import org.eclipse.leshan.util.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A CoAP {@link Resource} in charge of handling requests for of a lwM2M Object.
  */
 public class ObjectResource extends CoapResource implements LinkFormattable, NotifySender {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ObjectResource.class);
 
     private LwM2mObjectEnabler nodeEnabler;
 
@@ -66,6 +72,18 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
         this.nodeEnabler = nodeEnabler;
         this.nodeEnabler.setNotifySender(this);
         setObservable(true);
+    }
+
+    @Override
+    public void handleRequest(Exchange exchange) {
+        try {
+            super.handleRequest(exchange);
+        } catch (Exception e) {
+            LOG.error("Exception while handling a request on the /rd resource", e);
+            // unexpected error, we should sent something like a INTERNAL_SERVER_ERROR.
+            // but it would not be LWM2M compliant. so BAD_REQUEST for now...
+            exchange.sendResponse(new Response(ResponseCode.BAD_REQUEST));
+        }
     }
 
     @Override
@@ -207,6 +225,7 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
     }
 
     // TODO leshan-code-cf: this code should be factorize in a leshan-core-cf project.
+    // duplicated from org.eclipse.leshan.server.californium.impl.RegisterResource
     public static ResponseCode fromLwM2mCode(final org.eclipse.leshan.ResponseCode code) {
         Validate.notNull(code);
 
