@@ -58,6 +58,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     private final Client client;
     private final LwM2mModel model;
 
+    // TODO leshan-code-cf: this code should be factorize in a leshan-core-cf project.
+    // duplicate from org.eclipse.leshan.client.californium.impl.LwM2mClientResponseBuilder<T>
     public static ResponseCode fromCoapCode(final int code) {
         Validate.notNull(code);
 

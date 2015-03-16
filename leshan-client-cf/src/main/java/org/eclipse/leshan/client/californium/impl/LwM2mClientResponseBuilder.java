@@ -38,7 +38,8 @@ public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements Upli
 
     private LwM2mResponse lwM2mresponse;
 
-    // TODO remove duplicate code from org.eclipse.leshan.server.californium.impl.LwM2mResponseBuilder
+    // TODO leshan-code-cf: this code should be factorize in a leshan-core-cf project.
+    // duplicate from org.eclipse.leshan.server.californium.impl.LwM2mResponseBuilder<T>
     public static ResponseCode fromCoapCode(final int code) {
         Validate.notNull(code);
 
@@ -78,14 +79,11 @@ public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements Upli
                     .getLocationString());
             break;
         case BAD_REQUEST:
-            // TODO manage conflict case ...
+        case FORBIDDEN:
             lwM2mresponse = new RegisterResponse(fromCoapCode(coapResponse.getCode().value));
             break;
         default:
-            if (coapResponse.getCode().value == 137) // manage conflict code ...
-                lwM2mresponse = new RegisterResponse(fromCoapCode(coapResponse.getCode().value));
-            else
-                handleUnexpectedResponseCode(coapRequest, coapResponse);
+            handleUnexpectedResponseCode(coapRequest, coapResponse);
         }
     }
 
@@ -117,7 +115,7 @@ public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements Upli
     @Override
     public void visit(final BootstrapRequest request) {
         throw new UnsupportedOperationException(
-                "The Bootstrap Interface has not yet been fully implemented on the Leshan Client yet.");
+                "The Bootstrap Interface has not yet been fully implemented on the Leshan Client.");
     }
 
     @SuppressWarnings("unchecked")

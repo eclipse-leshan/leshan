@@ -155,6 +155,8 @@ public class RegisterResource extends CoapResource {
         }
     }
 
+    // TODO leshan-code-cf: this code should be factorize in a leshan-core-cf project.
+    // duplicated from org.eclipse.leshan.client.californium.impl.ObjectResource
     public static ResponseCode fromLwM2mCode(final org.eclipse.leshan.ResponseCode code) {
         Validate.notNull(code);
 

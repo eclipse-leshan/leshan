@@ -40,6 +40,8 @@ import org.slf4j.LoggerFactory;
 
 public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSender {
     private static final Logger LOG = LoggerFactory.getLogger(CaliforniumLwM2mClientRequestSender.class);
+
+    // TODO add a way to set timeout.
     private static final int COAP_REQUEST_TIMEOUT_MILLIS = 5000;
 
     private final Endpoint clientEndpoint;
@@ -121,7 +123,8 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
     }
 
     // ////// Request Observer Class definition/////////////
-
+    // TODO leshan-code-cf: All Request Observer should be factorize in a leshan-core-cf project.
+    // duplicate from org.eclipse.leshan.server.californium.impl.CaliforniumLwM2mRequestSender
     private abstract class AbstractRequestObserver<T extends LwM2mResponse> extends MessageObserverAdapter {
         Request coapRequest;
 

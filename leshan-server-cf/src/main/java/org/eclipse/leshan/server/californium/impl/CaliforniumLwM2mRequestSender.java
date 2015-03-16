@@ -156,7 +156,8 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
     }
 
     // ////// Request Observer Class definition/////////////
-
+    // TODO leshan-code-cf: All Request Observer should be factorize in a leshan-core-cf project.
+    // duplicate from org.eclipse.leshan.client.californium.impl.CaliforniumLwM2mClientRequestSender
     private abstract class AbstractRequestObserver<T extends LwM2mResponse> extends MessageObserverAdapter {
         Request coapRequest;
         Client client;

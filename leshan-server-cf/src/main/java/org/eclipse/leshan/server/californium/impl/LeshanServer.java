@@ -143,6 +143,7 @@ public class LeshanServer implements LwM2mServer {
         final Set<Endpoint> endpoints = new HashSet<>();
         endpoints.add(endpoint);
         endpoints.add(secureEndpoint);
+        // TODO add a way to set timeout.
         requestSender = new CaliforniumLwM2mRequestSender(endpoints, this.clientRegistry, this.observationRegistry,
                 modelProvider, COAP_REQUEST_TIMEOUT_MILLIS);
     }
