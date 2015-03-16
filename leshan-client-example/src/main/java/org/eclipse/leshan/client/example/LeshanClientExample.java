@@ -54,11 +54,14 @@ public class LeshanClientExample {
     private String registrationID;
 
     public static void main(final String[] args) {
-        if (args.length < 4) {
+        if (args.length != 4 && args.length != 2) {
             System.out
-                    .println("Usage:\njava -jar target/leshan-client-example-*-SNAPSHOT-jar-with-dependencies.jar [Client IP] [Client port] [Server IP] [Server Port]");
+                    .println("Usage:\njava -jar target/leshan-client-example-*-SNAPSHOT-jar-with-dependencies.jar [ClientIP] [ClientPort] ServerIP ServerPort");
         } else {
-            new LeshanClientExample(args[0], Integer.parseInt(args[1]), args[2], Integer.parseInt(args[3]));
+            if (args.length == 4)
+                new LeshanClientExample(args[0], Integer.parseInt(args[1]), args[2], Integer.parseInt(args[3]));
+            else
+                new LeshanClientExample("0", 0, args[0], Integer.parseInt(args[1]));
         }
     }
 

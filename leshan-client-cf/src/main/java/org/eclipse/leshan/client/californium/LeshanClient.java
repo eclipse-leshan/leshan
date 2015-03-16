@@ -44,6 +44,10 @@ public class LeshanClient implements LwM2mClient {
     private final AtomicBoolean clientServerStarted = new AtomicBoolean(false);
     private final CaliforniumLwM2mClientRequestSender requestSender;
 
+    public LeshanClient(final InetSocketAddress serverAddress, final List<LwM2mObjectEnabler> objectEnablers) {
+        this(new InetSocketAddress("0", 0), serverAddress, new CoapServer(), objectEnablers);
+    }
+
     public LeshanClient(final InetSocketAddress clientAddress, final InetSocketAddress serverAddress,
             final List<LwM2mObjectEnabler> objectEnablers) {
         this(clientAddress, serverAddress, new CoapServer(), objectEnablers);
