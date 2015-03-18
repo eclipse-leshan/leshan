@@ -16,6 +16,7 @@
 package org.eclipse.leshan.server.californium.impl;
 
 import java.net.InetSocketAddress;
+import java.security.PublicKey;
 import java.util.List;
 
 import org.eclipse.californium.core.CoapResource;
@@ -127,11 +128,14 @@ public class RegisterResource extends CoapResource {
         InetSocketAddress registrationEndpoint = exchange.advanced().getEndpoint().getAddress();
         // Get Security info
         String pskIdentity = null;
-        if (exchange.advanced().getEndpoint() instanceof SecureEndpoint)
+        PublicKey rpk = null;
+        if (exchange.advanced().getEndpoint() instanceof SecureEndpoint) {
             pskIdentity = ((SecureEndpoint) exchange.advanced().getEndpoint()).getPskIdentity(request);
+            rpk = ((SecureEndpoint) exchange.advanced().getEndpoint()).getRawPublicKey(request);
+        }
 
         RegisterRequest registerRequest = new RegisterRequest(endpoint, lifetime, lwVersion, binding, smsNumber,
-                objectLinks, request.getSource(), request.getSourcePort(), registrationEndpoint, pskIdentity);
+                objectLinks, request.getSource(), request.getSourcePort(), registrationEndpoint, pskIdentity, rpk);
 
         // Handle request
         // -------------------------------

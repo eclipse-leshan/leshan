@@ -17,6 +17,7 @@ package org.eclipse.leshan.core.request;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.security.PublicKey;
 
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.core.response.RegisterResponse;
@@ -33,6 +34,7 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
     private InetAddress sourceAddress = null;
     private int sourcePort;
     private String pskIdentity = null;
+    private PublicKey publicKey = null;
 
     public RegisterRequest(String endpointName) {
         this.endpointName = endpointName;
@@ -50,7 +52,7 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
 
     public RegisterRequest(String endpointName, Long lifetime, String lwVersion, BindingMode bindingMode,
             String smsNumber, LinkObject[] objectLinks, InetAddress sourceAddress, int sourcePort,
-            InetSocketAddress registrationEndpoint, String pskIdentity) {
+            InetSocketAddress registrationEndpoint, String pskIdentity, PublicKey publicKey) {
         this.endpointName = endpointName;
         this.lifetime = lifetime;
         this.lwVersion = lwVersion;
@@ -62,6 +64,7 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
         this.sourcePort = sourcePort;
         this.registrationEndpoint = registrationEndpoint;
         this.pskIdentity = pskIdentity;
+        this.publicKey = publicKey;
     }
 
     public InetAddress getSourceAddress() {
@@ -101,11 +104,15 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
     }
 
     public boolean isSecure() {
-        return pskIdentity != null;
+        return pskIdentity != null || publicKey != null;
     }
 
     public String getPskIdentity() {
         return pskIdentity;
+    }
+
+    public PublicKey getSourcePublicKey() {
+        return publicKey;
     }
 
     @Override

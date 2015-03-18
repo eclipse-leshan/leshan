@@ -16,6 +16,9 @@
 package org.eclipse.leshan.server.registration;
 
 import java.net.InetSocketAddress;
+import java.security.PublicKey;
+
+import javax.xml.bind.DatatypeConverter;
 
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.request.DeregisterRequest;
@@ -64,22 +67,49 @@ public class RegistrationHandler {
 
             // if this is a secure end-point, we must check that the registering client is using the right identity.
             if (registerRequest.isSecure()) {
+                PublicKey rpk = registerRequest.getSourcePublicKey();
                 String pskIdentity = registerRequest.getPskIdentity();
-                LOG.debug("Registration request received using the secure endpoint {} with identity {}",
-                        registrationEndpoint, pskIdentity);
 
-                if (securityInfo == null || pskIdentity == null || !pskIdentity.equals(securityInfo.getIdentity())) {
-                    LOG.warn("Invalid identity for client {}: expected '{}' but was '{}'",
-                            registerRequest.getEndpointName(),
-                            securityInfo == null ? null : securityInfo.getIdentity(), pskIdentity);
+                if (securityInfo == null) {
+                    LOG.debug("A client {} without security info try to connect through the secure endpont",
+                            registerRequest.getEndpointName());
                     return new RegisterResponse(ResponseCode.FORBIDDEN);
+                } else if (pskIdentity != null) {
+                    // Manage PSK authentication
+                    // ----------------------------------------------------
+                    LOG.debug("Registration request received using the secure endpoint {} with identity {}",
+                            registrationEndpoint, pskIdentity);
 
+                    if (pskIdentity == null || !pskIdentity.equals(securityInfo.getIdentity())) {
+                        LOG.warn("Invalid identity for client {}: expected '{}' but was '{}'",
+                                registerRequest.getEndpointName(), securityInfo.getIdentity(), pskIdentity);
+                        return new RegisterResponse(ResponseCode.FORBIDDEN);
+                    } else {
+                        LOG.debug("authenticated client {} using DTLS PSK", registerRequest.getEndpointName());
+                    }
+                } else if (rpk != null) {
+                    // Manage RPK authentication
+                    // ----------------------------------------------------
+                    LOG.debug("Registration request received using the secure endpoint {} with rpk {}",
+                            registrationEndpoint, DatatypeConverter.printHexBinary(rpk.getEncoded()));
+
+                    if (rpk == null || !rpk.equals(securityInfo.getRawPublicKey())) {
+                        LOG.warn("Invalid rpk for client {}: expected \n'{}'\n but was \n'{}'",
+                                registerRequest.getEndpointName(),
+                                DatatypeConverter.printHexBinary(securityInfo.getRawPublicKey().getEncoded()),
+                                DatatypeConverter.printHexBinary(rpk.getEncoded()));
+                        return new RegisterResponse(ResponseCode.FORBIDDEN);
+                    } else {
+                        LOG.debug("authenticated client {} using DTLS RPK", registerRequest.getEndpointName());
+                    }
                 } else {
-                    LOG.debug("authenticated client {} using DTLS PSK", registerRequest.getEndpointName());
+                    LOG.warn("Unable to authenticate client {}: unknown authentication mode.",
+                            registerRequest.getEndpointName());
+                    return new RegisterResponse(ResponseCode.FORBIDDEN);
                 }
             } else {
                 if (securityInfo != null) {
-                    LOG.warn("client {} must connect using DTLS PSK", registerRequest.getEndpointName());
+                    LOG.warn("client {} must connect using DTLS ", registerRequest.getEndpointName());
                     return new RegisterResponse(ResponseCode.BAD_REQUEST);
                 }
             }

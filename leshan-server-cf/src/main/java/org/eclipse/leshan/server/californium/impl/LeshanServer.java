@@ -25,6 +25,7 @@ import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoAPEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.scandium.DTLSConnector;
+import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.response.ExceptionConsumer;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -128,8 +129,14 @@ public class LeshanServer implements LwM2mServer {
         connector.getConfig().setPskStore(new LwM2mPskStore(this.securityRegistry, this.clientRegistry));
         PrivateKey privateKey = this.securityRegistry.getServerPrivateKey();
         PublicKey publicKey = this.securityRegistry.getServerPublicKey();
-        if (privateKey != null && publicKey != null)
+        if (privateKey != null && publicKey != null) {
             connector.getConfig().setPrivateKey(privateKey, publicKey);
+            // TODO this should be automatically done by scandium
+            connector.getConfig().setPreferredCipherSuite(CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8);
+        } else {
+            // TODO this should be automatically done by scandium
+            connector.getConfig().setPreferredCipherSuite(CipherSuite.TLS_PSK_WITH_AES_128_CCM_8);
+        }
 
         final Endpoint secureEndpoint = new SecureEndpoint(connector);
         coapServer.addEndpoint(secureEndpoint);
