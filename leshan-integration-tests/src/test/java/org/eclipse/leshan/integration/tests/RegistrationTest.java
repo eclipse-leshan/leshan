@@ -46,12 +46,16 @@ public class RegistrationTest {
 
     @Before
     public void start() {
-        helper.start();
+        helper.createServer();
+        helper.server.start();
+        helper.createClient();
+        helper.client.start();
     }
 
     @After
     public void stop() {
-        helper.stop();
+        helper.client.stop();
+        helper.server.stop();
     }
 
     // TODO we must fix the API of registered response
@@ -65,7 +69,7 @@ public class RegistrationTest {
         RegisterResponse response = helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         // verify result
-        assertTrue(response.getCode() == ResponseCode.CREATED);
+        assertEquals(ResponseCode.CREATED, response.getCode());
         assertEquals(1, helper.server.getClientRegistry().allClients().size());
         assertEquals(response.getRegistrationID(), helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER)
                 .getRegistrationId());
@@ -99,7 +103,7 @@ public class RegistrationTest {
         callback.waitForResponse(2000);
         assertTrue(callback.isCalled().get());
         RegisterResponse response = callback.getResponse();
-        assertTrue(response.getCode() == ResponseCode.CREATED);
+        assertEquals(ResponseCode.CREATED, response.getCode());
         assertEquals(1, helper.server.getClientRegistry().allClients().size());
         assertEquals(response.getRegistrationID(), helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER)
                 .getRegistrationId());

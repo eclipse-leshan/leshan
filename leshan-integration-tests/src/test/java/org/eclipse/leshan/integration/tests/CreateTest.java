@@ -38,12 +38,16 @@ public class CreateTest {
 
     @Before
     public void start() {
-        helper.start();
+        helper.createServer();
+        helper.server.start();
+        helper.createClient();
+        helper.client.start();
     }
 
     @After
     public void stop() {
-        helper.stop();
+        helper.server.stop();
+        helper.client.stop();
     }
 
     @Test

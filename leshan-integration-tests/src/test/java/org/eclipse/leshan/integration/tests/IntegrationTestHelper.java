@@ -20,12 +20,8 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
-import org.eclipse.californium.core.WebLink;
-import org.eclipse.californium.core.coap.LinkFormat;
 import org.eclipse.californium.core.network.Endpoint;
-import org.eclipse.leshan.bootstrap.BootstrapStoreImpl;
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
@@ -34,7 +30,6 @@ import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
-import org.eclipse.leshan.server.californium.impl.LwM2mBootstrapServerImpl;
 import org.eclipse.leshan.server.californium.impl.SecureEndpoint;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
@@ -43,62 +38,45 @@ import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
  * Helper for running a server and executing a client against it.
  * 
  */
-public final class IntegrationTestHelper {
+public class IntegrationTestHelper {
 
     static final String ENDPOINT_IDENTIFIER = "kdfflwmtm";
-
-    private final String clientDataModel = "</lwm2m>;rt=\"oma.lwm2m\", </lwm2m/1/101>, </lwm2m/1/102>, </lwm2m/2/0>, </lwm2m/2/1>, </lwm2m/2/2>, </lwm2m/3/0>, </lwm2m/4/0>, </lwm2m/5>";
-    Set<WebLink> objectsAndInstances = LinkFormat.parse(clientDataModel);
 
     LwM2mServer server;
     LwM2mClient client;
 
-    private LwM2mBootstrapServerImpl bootstrapServer;
-    private boolean startBootstrap;
-
-    public IntegrationTestHelper() {
-        this(false);
-    }
-
-    public IntegrationTestHelper(final boolean startBootstrap) {
-        this.startBootstrap = startBootstrap;
-    }
-
-    LwM2mClient createClient(final InetSocketAddress serverAddress) {
+    public void createClient() {
         ObjectsInitializer initializer = new ObjectsInitializer();
         List<ObjectEnabler> objects = initializer.create(2, 3);
-        return new LeshanClient(serverAddress, new ArrayList<LwM2mObjectEnabler>(objects));
+        client = new LeshanClient(getServerAddress(), new ArrayList<LwM2mObjectEnabler>(objects));
     }
 
-    public void start() {
-        server = new LeshanServerBuilder().setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0))
-                .setLocalAddressSecure(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0)).build();
+    public void createServer() {
+        LeshanServerBuilder builder = new LeshanServerBuilder();
+        builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
+        builder.setLocalAddressSecure(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
+        builder.setSecurityRegistry(new SecurityRegistryImpl() {
+            // TODO we should separate SecurityRegistryImpl in 2 registries :
+            // InMemorySecurityRegistry and PersistentSecurityRegistry
 
-        if (startBootstrap) {
-            bootstrapServer = new LwM2mBootstrapServerImpl(new BootstrapStoreImpl(), new SecurityRegistryImpl());
-            bootstrapServer.start();
-            client = createClient(getServerSecureAddress());
-            client.start();
-        } else {
-            server.start();
-            client = createClient(getServerAddress());
-            client.start();
-        }
-    }
+            @Override
+            protected void loadFromFile() {
+                // do not load From File
+            }
 
-    public void stop() {
-        client.stop();
-        server.stop();
-        if (bootstrapServer != null) {
-            bootstrapServer.stop();
-        }
+            @Override
+            protected void saveToFile() {
+                // do not save to file
+            }
+        });
+        server = builder.build();
     }
 
     Client getClient() {
         return server.getClientRegistry().get(ENDPOINT_IDENTIFIER);
     }
 
-    private InetSocketAddress getServerSecureAddress() {
+    protected InetSocketAddress getServerSecureAddress() {
         for (Endpoint endpoint : ((LeshanServer) server).getCoapServer().getEndpoints()) {
             if (endpoint instanceof SecureEndpoint)
                 return endpoint.getAddress();
@@ -106,7 +84,7 @@ public final class IntegrationTestHelper {
         return null;
     }
 
-    private InetSocketAddress getServerAddress() {
+    protected InetSocketAddress getServerAddress() {
         for (Endpoint endpoint : ((LeshanServer) server).getCoapServer().getEndpoints()) {
             if (!(endpoint instanceof SecureEndpoint))
                 return endpoint.getAddress();

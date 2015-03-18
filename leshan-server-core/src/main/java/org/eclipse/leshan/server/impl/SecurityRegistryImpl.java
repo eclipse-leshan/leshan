@@ -137,7 +137,7 @@ public class SecurityRegistryImpl implements SecurityRegistry {
 
     // /////// File persistence
 
-    private void loadFromFile() {
+    protected void loadFromFile() {
         try {
             File file = new File(filename);
 
@@ -176,7 +176,7 @@ public class SecurityRegistryImpl implements SecurityRegistry {
         }
     }
 
-    private void saveToFile() {
+    protected void saveToFile() {
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename));) {
             out.writeObject(this.getAll().toArray(new SecurityInfo[0]));
         } catch (Exception e) {
