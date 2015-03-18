@@ -150,12 +150,6 @@ public class RegisterResource extends CoapResource {
             // TODO we lost specific message error with this refactoring
             // exchange.respond(fromLwM2mCode(response.getCode()),"error message");
             exchange.respond(fromLwM2mCode(response.getCode()));
-            if (exchange.advanced().getEndpoint() instanceof SecureEndpoint
-                    && response.getCode().equals(org.eclipse.leshan.ResponseCode.FORBIDDEN)) {
-                // kill the DTLS Session
-                ((SecureEndpoint) exchange.advanced().getEndpoint()).getDTLSConnector().close(
-                        new InetSocketAddress(request.getSource(), request.getSourcePort()));
-            }
         }
     }
 
