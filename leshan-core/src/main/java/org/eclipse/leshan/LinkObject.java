@@ -18,6 +18,7 @@ package org.eclipse.leshan;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,8 +26,10 @@ import org.eclipse.leshan.util.Charsets;
 import org.eclipse.leshan.util.StringUtils;
 
 /**
- * A LwM2M path description given at the registration time by the client.
+ * A Link Format object. see (http://tools.ietf.org/html/rfc6690)
  */
+// TODO this class should not have a lwM2M flavor.
+// TODO we should have a look at org.eclipse.californium.core.coap.LinkFormat
 public class LinkObject {
 
     private final String url;
@@ -88,6 +91,9 @@ public class LinkObject {
         return attributes;
     }
 
+    // TODO Object id, instance id and resource id is not really a LinkObject concept
+    // we should remove this.
+    @Deprecated
     public String getPath() {
         StringBuilder sb = new StringBuilder("/");
         if (objectId != null) {
@@ -107,17 +113,42 @@ public class LinkObject {
 
     @Override
     public String toString() {
-        return String.format("LinkObject [url=%s, attributes=%s]", url, attributes);
+        final StringBuilder builder = new StringBuilder();
+        builder.append('<');
+        builder.append(getUrl());
+        builder.append('>');
+
+        final Map<String, Object> attributes = getAttributes();
+        if (attributes != null && !attributes.isEmpty()) {
+            for (Entry<String, Object> entry : attributes.entrySet()) {
+                builder.append(";");
+                builder.append(entry.getKey());
+                if (entry.getValue() != null) {
+                    builder.append("=");
+                    if (entry.getValue() instanceof String) {
+                        builder.append("\"").append(entry.getValue()).append("\"");
+                    } else {
+                        builder.append(entry.getValue());
+                    }
+                }
+            }
+        }
+        return builder.toString();
     }
 
+    // TODO Object id, instance id and resource id is not really a LinkObject concept
+    // we should remove this 3 methods below.
+    @Deprecated
     public Integer getObjectId() {
         return objectId;
     }
 
+    @Deprecated
     public Integer getObjectInstanceId() {
         return objectInstanceId;
     }
 
+    @Deprecated
     public Integer getResourceId() {
         return resourceId;
     }
@@ -160,5 +191,54 @@ public class LinkObject {
             index++;
         }
         return linksResult;
+    }
+
+    public static final String INVALID_LINK_PAYLOAD = "<>";
+    private static final String TRAILER = ", ";
+
+    public static String serialyse(LinkObject... linkObjects) {
+        try {
+            final StringBuilder builder = new StringBuilder();
+            for (final LinkObject link : linkObjects) {
+                builder.append(link.toString()).append(TRAILER);
+            }
+
+            builder.delete(builder.length() - TRAILER.length(), builder.length());
+
+            return builder.toString();
+        } catch (final Exception e) {
+            return null;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((attributes == null) ? 0 : attributes.hashCode());
+        result = prime * result + ((url == null) ? 0 : url.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        LinkObject other = (LinkObject) obj;
+        if (attributes == null) {
+            if (other.attributes != null)
+                return false;
+        } else if (!attributes.equals(other.attributes))
+            return false;
+        if (url == null) {
+            if (other.url != null)
+                return false;
+        } else if (!url.equals(other.url))
+            return false;
+        return true;
     }
 }

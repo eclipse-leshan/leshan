@@ -27,6 +27,7 @@ import org.eclipse.californium.core.observe.ObserveRelation;
 import org.eclipse.californium.core.observe.ObserveRelationContainer;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
+import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.ObserveSpec;
 import org.eclipse.leshan.client.resource.LinkFormattable;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
@@ -93,7 +94,7 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
         // Manage Discover Request
         if (exchange.getRequestOptions().getAccept() == MediaTypeRegistry.APPLICATION_LINK_FORMAT) {
             DiscoverResponse response = nodeEnabler.discover(new DiscoverRequest(URI));
-            exchange.respond(fromLwM2mCode(response.getCode()), LinkFormatUtils.payloadize(response.getObjectLinks()),
+            exchange.respond(fromLwM2mCode(response.getCode()), LinkObject.serialyse(response.getObjectLinks()),
                     MediaTypeRegistry.APPLICATION_LINK_FORMAT);
         }
         // Manage Observe Request

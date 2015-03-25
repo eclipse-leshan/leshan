@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.leshan.LinkObject;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -77,6 +76,79 @@ public class LinkObjectTest {
         Assert.assertNull(parse[0].getObjectId());
         Assert.assertNull(parse[0].getObjectInstanceId());
         Assert.assertNull(parse[0].getResourceId());
+    }
+
+    @Test
+    public void serialyse_without_attribute() {
+        LinkObject obj1 = new LinkObject("/1/0/1");
+        LinkObject obj2 = new LinkObject("/2/1");
+        LinkObject obj3 = new LinkObject("/3");
+
+        String res = LinkObject.serialyse(obj1, obj2, obj3);
+
+        Assert.assertEquals("</1/0/1>, </2/1>, </3>", res);
+
+    }
+
+    @Test
+    public void serialyse_with_attributes() {
+        HashMap<String, Object> attributesObj1 = new HashMap<>();
+        attributesObj1.put("number", 12);
+        LinkObject obj1 = new LinkObject("/1/0/1", attributesObj1);
+
+        HashMap<String, Object> attributesObj2 = new HashMap<>();
+        attributesObj2.put("string", "stringval");
+        LinkObject obj2 = new LinkObject("/2/1", attributesObj2);
+
+        HashMap<String, Object> attributesObj3 = new HashMap<>();
+        attributesObj3.put("empty", null);
+        LinkObject obj3 = new LinkObject("/3", attributesObj3);
+
+        String res = LinkObject.serialyse(obj1, obj2, obj3);
+
+        Assert.assertEquals("</1/0/1>;number=12, </2/1>;string=\"stringval\", </3>;empty", res);
+
+    }
+
+    @Test
+    public void serialyse_with_root_url() {
+        HashMap<String, Object> attributesObj1 = new HashMap<>();
+        attributesObj1.put("number", 12);
+        LinkObject obj1 = new LinkObject("/", attributesObj1);
+
+        String res = LinkObject.serialyse(obj1);
+
+        Assert.assertEquals("</>;number=12", res);
+
+    }
+
+    @Test
+    public void serialyse_then_parse_with_severals_attributes() {
+        HashMap<String, Object> attributesObj1 = new HashMap<>();
+        attributesObj1.put("number1", 1);
+        attributesObj1.put("number2", 1);
+        attributesObj1.put("string1", "stringval1");
+        LinkObject obj1 = new LinkObject("/1/0", attributesObj1);
+
+        HashMap<String, Object> attributesObj2 = new HashMap<>();
+        attributesObj2.put("number3", 3);
+        LinkObject obj2 = new LinkObject("/2", attributesObj2);
+
+        LinkObject[] input = new LinkObject[] { obj1, obj2 };
+        String strObjs = LinkObject.serialyse(input);
+        System.out.println(strObjs);
+        LinkObject[] output = LinkObject.parse(strObjs.getBytes());
+
+        Assert.assertArrayEquals(input, output);
+
+    }
+
+    @Test
+    public void parse_then_serialyse_with_rt_attribute() {
+        String input = "</lwm2m>;rt=\"oma.lwm2m\", </lwm2m/1/101>, </lwm2m/1/102>, </lwm2m/2/0>";
+        LinkObject[] objs = LinkObject.parse(input.getBytes());
+        String ouput = LinkObject.serialyse(objs);
+        Assert.assertEquals(input, ouput);
 
     }
 }
