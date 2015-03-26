@@ -57,10 +57,7 @@ public class ObjectLoader {
         InputStream input = ObjectLoader.class.getResourceAsStream("/oma-objects-spec.json");
         if (input != null) {
             try (Reader reader = new InputStreamReader(input)) {
-                ObjectModel[] objectModels = GSON.fromJson(reader, ObjectModel[].class);
-                for (ObjectModel objectModel : objectModels) {
-                    models.add(objectModel);
-                }
+                models.addAll(loadJsonFile(input));
             } catch (IOException e) {
                 LOG.error("Unable to load object models", e);
             }
@@ -84,6 +81,32 @@ public class ObjectLoader {
         return loadObjectsFromDir(modelDir);
     }
 
+    /**
+     * Load object definition from DDF file.
+     * 
+     * @param input An inputStream to a DFF file.
+     * @param streamName A name for the stream used for logging only
+     */
+    public static ObjectModel loadDdfFile(InputStream input, String streamName) {
+        DDFFileParser ddfFileParser = new DDFFileParser();
+        return ddfFileParser.parse(input, streamName);
+    }
+
+    /**
+     * Load object definitions from JSON file.
+     * 
+     * @param input An inputStream to a JSON file.
+     */
+    public static List<ObjectModel> loadJsonFile(InputStream input) {
+        List<ObjectModel> models = new ArrayList<>();
+        Reader reader = new InputStreamReader(input);
+        ObjectModel[] objectModels = GSON.fromJson(reader, ObjectModel[].class);
+        for (ObjectModel objectModel : objectModels) {
+            models.add(objectModel);
+        }
+        return models;
+    }
+
     /*
      * Load object definitions from files
      */
@@ -104,19 +127,21 @@ public class ObjectLoader {
                 if (file.getName().endsWith(".xml")) {
                     // from DDF file
                     LOG.debug("Loading object models from DDF file {}", file.getAbsolutePath());
-                    DDFFileParser ddfFileParser = new DDFFileParser();
-                    ObjectModel objectModel = ddfFileParser.parse(file);
-                    if (objectModel != null) {
-                        models.add(objectModel);
+                    try (FileInputStream input = new FileInputStream(file)) {
+                        ObjectModel objectModel = loadDdfFile(input, file.getName());
+                        if (objectModel != null) {
+                            models.add(objectModel);
+                        }
+                    } catch (IOException e) {
+                        LOG.warn(MessageFormat.format("Unable to load object models for {0}", file.getAbsolutePath()),
+                                e);
                     }
+
                 } else if (file.getName().endsWith(".json")) {
                     // from JSON file
                     LOG.debug("Loading object models from JSON file {}", file.getAbsolutePath());
-                    try (Reader reader = new InputStreamReader(new FileInputStream(file))) {
-                        ObjectModel[] objectModels = GSON.fromJson(reader, ObjectModel[].class);
-                        for (ObjectModel objectModel : objectModels) {
-                            models.add(objectModel);
-                        }
+                    try (FileInputStream input = new FileInputStream(file)) {
+                        models.addAll(loadJsonFile(input));
                     } catch (IOException e) {
                         LOG.warn(MessageFormat.format("Unable to load object models for {0}", file.getAbsolutePath()),
                                 e);
@@ -126,5 +151,4 @@ public class ObjectLoader {
         }
         return models;
     }
-
 }

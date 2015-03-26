@@ -16,7 +16,9 @@
 package org.eclipse.leshan.core.model;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,18 +48,29 @@ public class DDFFileParser {
     }
 
     public ObjectModel parse(File ddfFile) {
-        LOG.debug("Parsing DDF file {}", ddfFile.getName());
+        try (InputStream input = new FileInputStream(ddfFile)) {
+            return parse(input, ddfFile.getName());
+        } catch (IOException e) {
+            LOG.error("Could not parse the resource definition file " + ddfFile.getName(), e);
+        }
+        return null;
+    }
+
+    public ObjectModel parse(InputStream inputStream, String streamName) {
+        streamName = streamName == null ? "" : streamName;
+
+        LOG.debug("Parsing DDF file {}", streamName);
 
         ObjectModel result = null;
         try {
             DocumentBuilder builder = factory.newDocumentBuilder();
-            Document document = builder.parse(ddfFile);
+            Document document = builder.parse(inputStream);
 
             Node object = document.getDocumentElement().getElementsByTagName("Object").item(0);
             result = this.parseObject(object);
 
         } catch (SAXException | IOException | ParserConfigurationException e) {
-            LOG.error("Could not parse the resource definition file " + ddfFile.getName(), e);
+            LOG.error("Could not parse the resource definition file " + streamName, e);
         }
 
         return result;
