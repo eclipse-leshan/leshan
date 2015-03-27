@@ -19,6 +19,8 @@ import java.net.InetSocketAddress;
 
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.leshan.LinkObject;
+import org.eclipse.leshan.client.LwM2mClient;
+import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.DeregisterRequest;
@@ -30,11 +32,11 @@ public class CoapClientRequestBuilder implements UplinkRequestVisitor {
 
     private Request coapRequest;
     private final InetSocketAddress serverAddress;
-    private final LinkObject[] clientObjectModel;
+    private final LwM2mClient client;
 
-    public CoapClientRequestBuilder(final InetSocketAddress serverAddress, final LinkObject... clientObjectModel) {
+    public CoapClientRequestBuilder(final InetSocketAddress serverAddress, final LwM2mClient client) {
         this.serverAddress = serverAddress;
-        this.clientObjectModel = clientObjectModel;
+        this.client = client;
     }
 
     @Override
@@ -72,7 +74,7 @@ public class CoapClientRequestBuilder implements UplinkRequestVisitor {
         LinkObject[] linkObjects = request.getObjectLinks();
         String payload;
         if (linkObjects == null)
-            payload = LinkObject.serialyse(clientObjectModel);
+            payload = LinkObject.serialyse(LinkFormatHelper.getClientDescription(client.getObjectEnablers(), null));
         else
             payload = LinkObject.serialyse(linkObjects);
         coapRequest.setPayload(payload);
@@ -99,7 +101,7 @@ public class CoapClientRequestBuilder implements UplinkRequestVisitor {
         LinkObject[] linkObjects = request.getObjectLinks();
         String payload;
         if (linkObjects == null)
-            payload = LinkObject.serialyse(clientObjectModel);
+            payload = LinkObject.serialyse(LinkFormatHelper.getClientDescription(client.getObjectEnablers(), null));
         else
             payload = LinkObject.serialyse(linkObjects);
         coapRequest.setPayload(payload);

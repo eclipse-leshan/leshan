@@ -24,11 +24,13 @@ import static org.junit.Assert.assertTrue;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.californium.LeshanClient;
-import org.eclipse.leshan.client.resource.BaseObjectEnabler;
+import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
+import org.eclipse.leshan.client.resource.ObjectEnabler;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
@@ -82,11 +84,11 @@ public class RegistrationTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void fail_to_create_client_with_same_object_twice() {
-        BaseObjectEnabler baseObjectEnabler = new BaseObjectEnabler(1, null);
-        BaseObjectEnabler baseObjectEnabler2 = new BaseObjectEnabler(1, null);
+        ObjectEnabler objectEnabler = new ObjectEnabler(1, null, new HashMap<Integer, LwM2mInstanceEnabler>(), null);
+        ObjectEnabler objectEnabler2 = new ObjectEnabler(1, null, new HashMap<Integer, LwM2mInstanceEnabler>(), null);
         ArrayList<LwM2mObjectEnabler> objects = new ArrayList<>();
-        objects.add(baseObjectEnabler);
-        objects.add(baseObjectEnabler2);
+        objects.add(objectEnabler);
+        objects.add(objectEnabler2);
         helper.client = new LeshanClient(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), objects);
     }
 

@@ -15,7 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.client;
 
-import org.eclipse.leshan.LinkObject;
+import java.util.List;
+
+import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.core.response.ExceptionConsumer;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -32,6 +34,6 @@ public interface LwM2mClient {
     public <T extends LwM2mResponse> void send(final UplinkRequest<T> request,
             final ResponseConsumer<T> responseCallback, final ExceptionConsumer errorCallback);
 
-    public LinkObject[] getObjectModel(Integer... ids);
+    List<LwM2mObjectEnabler> getObjectEnablers();
 
 }

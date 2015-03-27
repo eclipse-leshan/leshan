@@ -16,6 +16,7 @@
 package org.eclipse.leshan.client.resource;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,13 @@ public class ObjectEnabler extends BaseObjectEnabler {
         for (Entry<Integer, LwM2mInstanceEnabler> entry : this.instances.entrySet()) {
             listenInstance(entry.getValue(), entry.getKey());
         }
+    }
+
+    @Override
+    public List<Integer> getAvailableInstance() {
+        List<Integer> ids = new ArrayList<Integer>(instances.keySet());
+        Collections.sort(ids);
+        return ids;
     }
 
     @Override

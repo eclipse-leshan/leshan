@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
 
+import java.util.List;
+
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
@@ -34,6 +36,8 @@ public interface LwM2mObjectEnabler {
     int getId();
 
     ObjectModel getObjectModel();
+
+    List<Integer> getAvailableInstance();
 
     CreateResponse create(CreateRequest request);
 
