@@ -99,12 +99,8 @@ public class CoapClientRequestBuilder implements UplinkRequestVisitor {
             coapRequest.getOptions().addUriQuery("b=" + bindingMode.toString());
 
         LinkObject[] linkObjects = request.getObjectLinks();
-        String payload;
         if (linkObjects == null)
-            payload = LinkObject.serialyse(LinkFormatHelper.getClientDescription(client.getObjectEnablers(), null));
-        else
-            payload = LinkObject.serialyse(linkObjects);
-        coapRequest.setPayload(payload);
+            coapRequest.setPayload(LinkObject.serialyse(linkObjects));
     }
 
     @Override
