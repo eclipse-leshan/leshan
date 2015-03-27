@@ -16,14 +16,18 @@
 
 package org.eclipse.leshan.integration.tests;
 
+import static org.eclipse.leshan.ResponseCode.CONTENT;
+import static org.eclipse.leshan.ResponseCode.NOT_FOUND;
+import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.ENDPOINT_IDENTIFIER;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 import org.eclipse.leshan.LinkObject;
-import org.eclipse.leshan.ResponseCode;
+import org.eclipse.leshan.core.request.DiscoverRequest;
+import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.response.DiscoverResponse;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class DiscoverTest {
@@ -44,46 +48,120 @@ public class DiscoverTest {
         helper.client.stop();
     }
 
-    @Ignore
     @Test
     public void can_discover_object() {
-        // TODO implement discover
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        // read ACL object
+        DiscoverResponse response = helper.server.send(helper.getClient(), new DiscoverRequest(2));
+
+        // verify result
+        assertEquals(CONTENT, response.getCode());
+
+        LinkObject[] payload = response.getObjectLinks();
+        assertArrayEquals(LinkObject.parse("</2>, </2/0/0>, </2/0/1>, </2/0/2>, </2/0/3>".getBytes()), payload);
     }
 
-    @Ignore
-    @Test(expected = IllegalArgumentException.class)
-    public void illegal_object_links_request_two() {
-        // TODO implement discover
+    @Test
+    public void cant_discover_non_existent_object() {
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        // read ACL object
+        DiscoverResponse response = helper.server.send(helper.getClient(), new DiscoverRequest(4));
+
+        // verify result
+        assertEquals(NOT_FOUND, response.getCode());
     }
 
-    @Ignore
     @Test
     public void can_discover_object_instance() {
-        // TODO implement discover
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        // read ACL object
+        DiscoverResponse response = helper.server.send(helper.getClient(), new DiscoverRequest(3, 0));
+
+        // verify result
+        assertEquals(CONTENT, response.getCode());
+
+        LinkObject[] payload = response.getObjectLinks();
+        assertArrayEquals(LinkObject.parse("</3/0>".getBytes()), payload);
     }
 
-    @Ignore
+    @Test
+    public void cant_discover_non_existent_instance() {
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        // read ACL object
+        DiscoverResponse response = helper.server.send(helper.getClient(), new DiscoverRequest(3, 1));
+
+        // verify result
+        assertEquals(NOT_FOUND, response.getCode());
+    }
+
     @Test
     public void can_discover_resource() {
-        // TODO implement discover
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        // read ACL object
+        DiscoverResponse response = helper.server.send(helper.getClient(), new DiscoverRequest(3, 0, 0));
+
+        // verify result
+        assertEquals(CONTENT, response.getCode());
+
+        LinkObject[] payload = response.getObjectLinks();
+        assertArrayEquals(LinkObject.parse("</3/0/0>".getBytes()), payload);
     }
 
-    @Ignore
     @Test
-    public void cant_discover_non_existent_resource() {
-        // TODO implement discover
+    public void cant_discover_resource_of_non_existent_object() {
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        // read ACL object
+        DiscoverResponse response = helper.server.send(helper.getClient(), new DiscoverRequest(4, 0, 0));
+
+        // verify result
+        assertEquals(NOT_FOUND, response.getCode());
     }
 
-    private void assertLinkFormatResponse(final DiscoverResponse response, final ResponseCode responseCode,
-            final LinkObject[] expectedObjects) {
-        assertEquals(responseCode, response.getCode());
+    @Test
+    public void cant_discover_resource_of_non_existent_instance() {
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
-        final LinkObject[] actualObjects = response.getObjectLinks();
+        // read ACL object
+        DiscoverResponse response = helper.server.send(helper.getClient(), new DiscoverRequest(3, 1, 0));
 
-        assertEquals(expectedObjects.length, actualObjects.length);
-        for (int i = 0; i < expectedObjects.length; i++) {
-            assertEquals(expectedObjects[i].toString(), actualObjects[i].toString());
-        }
+        // verify result
+        assertEquals(NOT_FOUND, response.getCode());
     }
 
+    @Test
+    public void cant_discover_resource_of_non_existent_instance_and_resource() {
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        // read ACL object
+        DiscoverResponse response = helper.server.send(helper.getClient(), new DiscoverRequest(3, 1, 20));
+
+        // verify result
+        assertEquals(NOT_FOUND, response.getCode());
+    }
+
+    @Test
+    public void cant_discover_resource_of_non_existent_resource() {
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        // read ACL object
+        DiscoverResponse response = helper.server.send(helper.getClient(), new DiscoverRequest(3, 0, 20));
+
+        // verify result
+        assertEquals(NOT_FOUND, response.getCode());
+    }
 }
