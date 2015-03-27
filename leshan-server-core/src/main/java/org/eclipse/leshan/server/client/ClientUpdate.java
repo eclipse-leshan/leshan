@@ -16,6 +16,7 @@
 package org.eclipse.leshan.server.client;
 
 import java.net.InetAddress;
+import java.util.Arrays;
 import java.util.Date;
 
 import org.eclipse.leshan.LinkObject;
@@ -100,4 +101,11 @@ public class ClientUpdate {
         return objectLinks;
     }
 
+    @Override
+    public String toString() {
+        return String
+                .format("ClientUpdate [registrationId=%s, address=%s, port=%s, lifeTimeInSec=%s, smsNumber=%s, bindingMode=%s, objectLinks=%s]",
+                        registrationId, address, port, lifeTimeInSec, smsNumber, bindingMode,
+                        Arrays.toString(objectLinks));
+    }
 }
