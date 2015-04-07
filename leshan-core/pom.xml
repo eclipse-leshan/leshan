@@ -67,11 +67,13 @@ Contributors:
                 <configuration>
                     <instructions>
                         <Export-Package>
-                            org.eclipse.leshan,        
+                            org.eclipse.leshan,
+                            org.eclipse.leshan.core.model,
+                            org.eclipse.leshan.core.model.json,
                             org.eclipse.leshan.core.node,  
                             org.eclipse.leshan.core.node.codec,
-                            org.eclipse.leshan.core.objectspec,
-                            org.eclipse.leshan.core.request,                            
+                            org.eclipse.leshan.core.request,
+                            org.eclipse.leshan.core.request.exception,
                             org.eclipse.leshan.core.response,
 							org.eclipse.leshan.tlv,
                             org.eclipse.leshan.util                                      
