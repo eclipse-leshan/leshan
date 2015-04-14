@@ -39,7 +39,7 @@ import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoAPEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.scandium.DTLSConnector;
-import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.dtls.pskstore.StaticPskStore;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
@@ -120,12 +120,11 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         List<ObjectEnabler> objects = initializer.create(2, 3);
 
         InetSocketAddress clientAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
-        DTLSConnector dtlsConnector = new DTLSConnector(clientAddress);
-        // TODO The preferered CipherSuite should not be necessary, if I only set the PSK (scandium bug ?)
-        dtlsConnector.getConfig().setPreferredCipherSuite(CipherSuite.TLS_PSK_WITH_AES_128_CCM_8);
-        dtlsConnector.getConfig().setPskStore(new StaticPskStore(pskIdentity, pskKey));
+        DtlsConnectorConfig.Builder config = new DtlsConnectorConfig.Builder(clientAddress);
+        config.setPskStore(new StaticPskStore(pskIdentity, pskKey));
+
         CoapServer coapServer = new CoapServer();
-        coapServer.addEndpoint(new CoAPEndpoint(dtlsConnector, NetworkConfig.getStandard()));
+        coapServer.addEndpoint(new CoAPEndpoint(new DTLSConnector(config.build()), NetworkConfig.getStandard()));
 
         client = new LeshanClient(clientAddress, getServerSecureAddress(), coapServer,
                 new ArrayList<LwM2mObjectEnabler>(objects));
@@ -137,13 +136,11 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         List<ObjectEnabler> objects = initializer.create(2, 3);
 
         InetSocketAddress clientAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
-        DTLSConnector dtlsConnector = new DTLSConnector(clientAddress);
-        // TODO The preferered CipherSuite should not be necessary, if I only set the PSK (scandium bug ?)
-        dtlsConnector.getConfig().setPreferredCipherSuite(CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8);
-        dtlsConnector.getConfig().setPrivateKey(clientPrivateKey, clientPublicKey);
+        DtlsConnectorConfig.Builder config = new DtlsConnectorConfig.Builder(clientAddress);
+        config.setIdentity(clientPrivateKey, clientPublicKey);
 
         CoapServer coapServer = new CoapServer();
-        coapServer.addEndpoint(new CoAPEndpoint(dtlsConnector, NetworkConfig.getStandard()));
+        coapServer.addEndpoint(new CoAPEndpoint(new DTLSConnector(config.build()), NetworkConfig.getStandard()));
         client = new LeshanClient(clientAddress, getServerSecureAddress(), coapServer,
                 new ArrayList<LwM2mObjectEnabler>(objects));
     }
@@ -153,13 +150,13 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         List<ObjectEnabler> objects = initializer.create(2, 3);
 
         InetSocketAddress clientAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
-        DTLSConnector dtlsConnector = new DTLSConnector(clientAddress);
-        dtlsConnector.getConfig().setPreferredCipherSuite(CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8);
-        dtlsConnector.getConfig().setPskStore(new StaticPskStore(pskIdentity, pskKey));
-        dtlsConnector.getConfig().setPrivateKey(clientPrivateKey, clientPublicKey);
+        DtlsConnectorConfig.Builder config = new DtlsConnectorConfig.Builder(clientAddress);
+        config.setPskStore(new StaticPskStore(pskIdentity, pskKey));
+        config.setIdentity(clientPrivateKey, clientPublicKey);
 
         CoapServer coapServer = new CoapServer();
-        coapServer.addEndpoint(new CoAPEndpoint(dtlsConnector, NetworkConfig.getStandard()));
+        coapServer.addEndpoint(new CoAPEndpoint(new DTLSConnector(config.build()), NetworkConfig.getStandard()));
+
         client = new LeshanClient(clientAddress, getServerSecureAddress(), coapServer,
                 new ArrayList<LwM2mObjectEnabler>(objects));
     }

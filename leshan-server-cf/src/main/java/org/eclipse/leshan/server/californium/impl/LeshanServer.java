@@ -25,7 +25,8 @@ import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoAPEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.scandium.DTLSConnector;
-import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
@@ -127,20 +128,15 @@ public class LeshanServer implements LwM2mServer {
         coapServer.addEndpoint(endpoint);
 
         // secure endpoint
-        DTLSConnector connector = new DTLSConnector(localAddressSecure);
-        connector.getConfig().setPskStore(new LwM2mPskStore(this.securityRegistry, this.clientRegistry));
+        Builder builder = new DtlsConnectorConfig.Builder(localAddressSecure);
+        builder.setPskStore(new LwM2mPskStore(this.securityRegistry, this.clientRegistry));
         PrivateKey privateKey = this.securityRegistry.getServerPrivateKey();
         PublicKey publicKey = this.securityRegistry.getServerPublicKey();
         if (privateKey != null && publicKey != null) {
-            connector.getConfig().setPrivateKey(privateKey, publicKey);
-            // TODO this should be automatically done by scandium
-            connector.getConfig().setPreferredCipherSuite(CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8);
-        } else {
-            // TODO this should be automatically done by scandium
-            connector.getConfig().setPreferredCipherSuite(CipherSuite.TLS_PSK_WITH_AES_128_CCM_8);
+            builder.setIdentity(privateKey, publicKey);
         }
 
-        final Endpoint secureEndpoint = new SecureEndpoint(connector);
+        final Endpoint secureEndpoint = new SecureEndpoint(new DTLSConnector(builder.build()));
         coapServer.addEndpoint(secureEndpoint);
 
         // define /rd resource
