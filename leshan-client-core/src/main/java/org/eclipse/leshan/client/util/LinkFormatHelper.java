@@ -15,8 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.util;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -45,22 +44,22 @@ public final class LinkFormatHelper {
         rootPath = rootPath == null ? "" : rootPath;
 
         // create link object for "object"
-        Path rootURL = Paths.get("/", rootPath);
+        String rootURL = getPath("/", rootPath);
         Map<String, Object> attributes = new HashMap<>();
         attributes.put("rt", "oma.lwm2m");
-        linkObjects.add(new LinkObject(rootURL.toString(), attributes));
+        linkObjects.add(new LinkObject(rootURL, attributes));
 
         // sort resources
         for (LwM2mObjectEnabler objectEnabler : objectEnablers) {
             List<Integer> availableInstance = objectEnabler.getAvailableInstance();
             if (availableInstance.isEmpty()) {
-                Path objectInstanceUrl = Paths.get("/", rootPath, Integer.toString(objectEnabler.getId()));
-                linkObjects.add(new LinkObject(objectInstanceUrl.toString()));
+                String objectInstanceUrl = getPath("/", rootPath, Integer.toString(objectEnabler.getId()));
+                linkObjects.add(new LinkObject(objectInstanceUrl));
             } else {
                 for (Integer instanceId : objectEnabler.getAvailableInstance()) {
-                    Path objectInstanceUrl = Paths.get("/", rootPath, Integer.toString(objectEnabler.getId()),
+                    String objectInstanceUrl = getPath("/", rootPath, Integer.toString(objectEnabler.getId()),
                             instanceId.toString());
-                    linkObjects.add(new LinkObject(objectInstanceUrl.toString()));
+                    linkObjects.add(new LinkObject(objectInstanceUrl));
                 }
             }
         }
@@ -75,8 +74,8 @@ public final class LinkFormatHelper {
         rootPath = rootPath == null ? "" : rootPath;
 
         // create link object for "object"
-        Path objectURL = Paths.get("/", rootPath, Integer.toString(objectModel.id));
-        linkObjects.add(new LinkObject(objectURL.toString()));
+        String objectURL = getPath("/", rootPath, Integer.toString(objectModel.id));
+        linkObjects.add(new LinkObject(objectURL));
 
         // sort resources
         List<ResourceModel> resources = new ArrayList<>(objectModel.resources.values());
@@ -89,9 +88,9 @@ public final class LinkFormatHelper {
 
         // create link object for resource
         for (ResourceModel resourceModel : resources) {
-            Path resourceURL = Paths.get("/", rootPath, Integer.toString(objectModel.id), "0",
+            String resourceURL = getPath("/", rootPath, Integer.toString(objectModel.id), "0",
                     Integer.toString(resourceModel.id));
-            linkObjects.add(new LinkObject(resourceURL.toString()));
+            linkObjects.add(new LinkObject(resourceURL));
         }
 
         return linkObjects.toArray(new LinkObject[] {});
@@ -102,8 +101,8 @@ public final class LinkFormatHelper {
         rootPath = rootPath == null ? "" : rootPath;
 
         // create link object for "object"
-        Path objectURL = Paths.get("/", rootPath, Integer.toString(objectModel.id), Integer.toString(instanceId));
-        return new LinkObject(objectURL.toString());
+        String objectURL = getPath("/", rootPath, Integer.toString(objectModel.id), Integer.toString(instanceId));
+        return new LinkObject(objectURL);
     }
 
     public static LinkObject getResourceDescription(int objectId, int instanceId, ResourceModel resourceModel,
@@ -112,8 +111,70 @@ public final class LinkFormatHelper {
         rootPath = rootPath == null ? "" : rootPath;
 
         // create link object for "object"
-        Path objectURL = Paths.get("/", rootPath, Integer.toString(objectId), Integer.toString(instanceId),
+        String objectURL = getPath("/", rootPath, Integer.toString(objectId), Integer.toString(instanceId),
                 Integer.toString(resourceModel.id));
-        return new LinkObject(objectURL.toString());
+        return new LinkObject(objectURL);
+    }
+
+    private static final String getPath(String first, String... more) {
+        String path;
+        if (more.length == 0) {
+            path = first;
+        } else {
+            StringBuilder sb = new StringBuilder();
+            sb.append(first);
+            for (String segment : more) {
+                if (segment.length() > 0) {
+                    if (sb.length() > 0)
+                        sb.append('/');
+                    sb.append(segment);
+                }
+            }
+            path = sb.toString();
+        }
+        return normalizeAndCheck(path);
+    }
+
+    private static String normalizeAndCheck(String input) {
+        int n = input.length();
+        char prevChar = 0;
+        for (int i = 0; i < n; i++) {
+            char c = input.charAt(i);
+            if ((c == '/') && (prevChar == '/'))
+                return normalize(input, n, i - 1);
+            checkNotNul(input, c);
+            prevChar = c;
+        }
+        if (prevChar == '/')
+            return normalize(input, n, n - 1);
+        return input;
+    }
+
+    private static void checkNotNul(String input, char c) {
+        if (c == '\u0000')
+            throw new InvalidPathException(input, "Nul character not allowed");
+    }
+
+    private static String normalize(String input, int len, int off) {
+        if (len == 0)
+            return input;
+        int n = len;
+        while ((n > 0) && (input.charAt(n - 1) == '/'))
+            n--;
+        if (n == 0)
+            return "/";
+        StringBuilder sb = new StringBuilder(input.length());
+        if (off > 0)
+            sb.append(input.substring(0, off));
+        char prevChar = 0;
+        for (int i = off; i < n; i++) {
+            char c = input.charAt(i);
+            if ((c == '/') && (prevChar == '/'))
+                continue;
+            checkNotNul(input, c);
+            sb.append(c);
+            prevChar = c;
+        }
+        return sb.toString();
     }
 }
