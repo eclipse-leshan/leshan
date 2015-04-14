@@ -38,6 +38,7 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
+import org.eclipse.leshan.server.model.InMemoryModelProvider;
 import org.eclipse.leshan.standalone.servlet.ClientServlet;
 import org.eclipse.leshan.standalone.servlet.EventServlet;
 import org.eclipse.leshan.standalone.servlet.ObjectSpecServlet;
@@ -67,6 +68,9 @@ public class LeshanStandalone {
             String[] adds = ifaces.split(":");
             builder.setLocalAddressSecure(adds[0], Integer.parseInt(adds[1]));
         }
+
+        // Use Custom Model Provider
+        builder.setObjectModelProvider(new InMemoryModelProvider());
 
         // Get public and private server key
         PrivateKey privateKey = null;
@@ -128,7 +132,7 @@ public class LeshanStandalone {
         ServletHolder securityServletHolder = new ServletHolder(new SecurityServlet(lwServer.getSecurityRegistry()));
         root.addServlet(securityServletHolder, "/api/security/*");
 
-        ServletHolder objectSpecServletHolder = new ServletHolder(new ObjectSpecServlet());
+        ServletHolder objectSpecServletHolder = new ServletHolder(new ObjectSpecServlet(lwServer));
         root.addServlet(objectSpecServletHolder, "/api/objectspecs/*");
 
         // Start jetty

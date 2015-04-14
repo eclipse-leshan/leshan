@@ -15,7 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.model;
 
-import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -38,7 +37,9 @@ public class ObjectModel {
         this.description = description;
         this.multiple = multiple;
         this.mandatory = mandatory;
-        this.resources = Collections.unmodifiableMap(resources);
+        // TODO we must change that if we want to continue to have immutable ObjetModel object
+        // this.resources = Collections.unmodifiableMap(resources);
+        this.resources = resources;
     }
 
     @Override

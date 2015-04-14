@@ -74,4 +74,13 @@ public class LwM2mModel {
         return Collections.unmodifiableCollection(objects.values());
     }
 
+    // TODO we must change that if we want to continue to have immutable LwM2mModel object
+    public void putObjectModel(int objectId, ObjectModel model) {
+        objects.put(objectId, model);
+    }
+
+    public void putResourceModel(int objectId, int resourceId, ResourceModel model) {
+        ObjectModel objectModel = objects.get(objectId);
+        objectModel.resources.put(resourceId, model);
+    }
 }

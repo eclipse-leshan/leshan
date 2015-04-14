@@ -111,7 +111,7 @@ lwClientControllers.controller('ClientDetailCtrl', [
             $scope.client = data;
 
             // update resource tree with client details
-            lwResources.buildResourceTree($scope.client.rootPath, $scope.client.objectLinks, function (objects){
+            lwResources.buildResourceTree($scope.client.endpoint,$scope.client.rootPath, $scope.client.objectLinks, function (objects){
                 $scope.objects = objects;
             });
 
@@ -122,7 +122,7 @@ lwClientControllers.controller('ClientDetailCtrl', [
                 $scope.$apply(function() {
                     $scope.deregistered = false;
                     $scope.client = JSON.parse(msg.data);
-                    lwResources.buildResourceTree($scope.client.rootPath, $scope.client.objectLinks, function (objects){
+                    lwResources.buildResourceTree($scope.client.endpoint,$scope.client.rootPath, $scope.client.objectLinks, function (objects){
                         $scope.objects = objects;
                     });
                 });
@@ -164,6 +164,13 @@ lwClientControllers.controller('ClientDetailCtrl', [
             }
             $scope.eventsource.addEventListener('NOTIFICATION', notificationCallback, false);
 
+            var objectChangedCallback = function(msg) {
+                $scope.$apply(function() {
+                    lwResources.updateObject($scope.objects,JSON.parse(msg.data));
+                });
+            }
+            $scope.eventsource.addEventListener('OBJECTCHANGED', objectChangedCallback , false);
+            
             $scope.coaplogs = [];
             var coapLogCallback = function(msg) {
                 $scope.$apply(function() {

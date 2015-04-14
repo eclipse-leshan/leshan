@@ -35,11 +35,13 @@ import org.eclipse.leshan.core.node.Value;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
+import org.eclipse.leshan.core.request.DiscoverRequest;
 import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.exception.ResourceAccessException;
+import org.eclipse.leshan.core.response.DiscoverResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ValueResponse;
 import org.eclipse.leshan.server.LwM2mServer;
@@ -114,6 +116,32 @@ public class ClientServlet extends HttpServlet {
             } else {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
+            }
+            return;
+        }
+
+        // /clients/endPoint/LWRequest/discover : do LightWeight M2M discover request on a given client.
+        if (path.length >= 2 && "discover".equals(path[path.length - 1])) {
+            try {
+                String target = StringUtils.substringBetween(req.getPathInfo(), clientEndpoint, "/discover");
+                Client client = server.getClientRegistry().get(clientEndpoint);
+                if (client != null) {
+                    DiscoverRequest request = new DiscoverRequest(target);
+                    DiscoverResponse cResponse = server.send(client, request);
+
+                    processDeviceResponse(resp, cResponse);
+                } else {
+                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    resp.getWriter().format("No registered client with id '%s'", clientEndpoint).flush();
+                }
+            } catch (IllegalArgumentException e) {
+                LOG.warn("Invalid request", e);
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                resp.getWriter().append(e.getMessage()).flush();
+            } catch (ResourceAccessException e) {
+                LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
+                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                resp.getWriter().append(e.getMessage()).flush();
             }
             return;
         }

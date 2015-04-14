@@ -42,6 +42,8 @@ import org.eclipse.leshan.core.response.DiscoverResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ValueResponse;
 import org.eclipse.leshan.server.client.Client;
+import org.eclipse.leshan.server.model.InMemoryModelProvider;
+import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
@@ -55,6 +57,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     private final Request coapRequest;
     private final Response coapResponse;
     private final ObservationRegistry observationRegistry;
+    private final LwM2mModelProvider modelProvider;
     private final Client client;
     private final LwM2mModel model;
 
@@ -87,10 +90,12 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     }
 
     public LwM2mResponseBuilder(final Request coapRequest, final Response coapResponse, final Client client,
-            final LwM2mModel model, final ObservationRegistry observationRegistry) {
+            final LwM2mModel model, final ObservationRegistry observationRegistry,
+            final LwM2mModelProvider modelProvider) {
         this.coapRequest = coapRequest;
         this.coapResponse = coapResponse;
         this.observationRegistry = observationRegistry;
+        this.modelProvider = modelProvider;
         this.client = client;
         this.model = model;
     }
@@ -117,13 +122,19 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         case CONTENT:
             LinkObject[] links = null;
             if (MediaTypeRegistry.APPLICATION_LINK_FORMAT != coapResponse.getOptions().getContentFormat()) {
-                LOG.debug("Expected LWM2M Client [{}] to return application/link-format [{}] content but got [{}]",
+                LOG.warn(
+                        "Expected LWM2M Client [{}] to return application/link-format [{}] content but got [{}] on discover response.",
                         client.getEndpoint(), MediaTypeRegistry.APPLICATION_LINK_FORMAT, coapResponse.getOptions()
                                 .getContentFormat());
-                links = new LinkObject[] {}; // empty list
-            } else {
-                links = LinkObject.parse(coapResponse.getPayload());
             }
+
+            links = LinkObject.parse(coapResponse.getPayload());
+            // TODO we should create a interface or add updateObject method to LwM2mModelProvider
+            if (modelProvider instanceof InMemoryModelProvider) {
+                if (request.getPath().isObject())
+                    ((InMemoryModelProvider) modelProvider).updateObject(client.getEndpoint(), links);
+            }
+
             lwM2mresponse = new DiscoverResponse(fromCoapCode(coapResponse.getCode().value), links);
             break;
         case NOT_FOUND:

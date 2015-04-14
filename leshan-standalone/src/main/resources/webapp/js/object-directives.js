@@ -22,7 +22,6 @@ angular.module('objectDirectives', [])
         replace: true,
         scope: {
             object: '=',
-            parent: '='
         },
         templateUrl: "partials/object.html",
         link: function (scope, element, attrs) {
@@ -35,6 +34,24 @@ angular.module('objectDirectives', [])
             
             scope.object.path = parentPath + "/" + scope.object.id;
             scope.object.create  =  {tooltip : "Create <br/>"   + scope.object.path};
+            
+            scope.discover = function() {
+                var uri = "api/clients/" + $routeParams.clientId + scope.object.path + "/discover";                
+                $http.get(uri)
+                .success(function(data, status, headers, config) {
+                    // manage request information
+                    var discover = scope.object.discover;
+                    discover.date = new Date();
+                    var formattedDate = $filter('date')(discover.date, 'HH:mm:ss.sss');
+                    discover.status = data.status;
+                    discover.tooltip = formattedDate + "<br/>" + discover.status;          
+                    
+                }).error(function(data, status, headers, config) {
+                    errormessage = "Unable to discover object " + scope.object.path + " for "+ $routeParams.clientId + " : " + status +" "+ data
+                    dialog.open(errormessage);
+                    console.error(errormessage)
+                });;
+            };
             
             scope.create = function () {
                 var modalInstance = $modal.open({

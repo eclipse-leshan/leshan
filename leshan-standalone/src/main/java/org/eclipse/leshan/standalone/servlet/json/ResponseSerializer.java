@@ -17,6 +17,7 @@ package org.eclipse.leshan.standalone.servlet.json;
 
 import java.lang.reflect.Type;
 
+import org.eclipse.leshan.core.response.DiscoverResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ValueResponse;
 
@@ -35,6 +36,8 @@ public class ResponseSerializer implements JsonSerializer<LwM2mResponse> {
 
         if (typeOfSrc == ValueResponse.class) {
             element.add("content", context.serialize(((ValueResponse) src).getContent()));
+        } else if (typeOfSrc == DiscoverResponse.class) {
+            element.add("content", context.serialize(((DiscoverResponse) src).getObjectLinks()));
         }
 
         return element;

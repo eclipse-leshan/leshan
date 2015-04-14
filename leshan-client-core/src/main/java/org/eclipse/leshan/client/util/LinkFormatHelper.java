@@ -29,7 +29,7 @@ import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 
 /**
- * An Utility class which help to generate Link Objects from {@link LwM2mObjectEnabler} and {@link LwM2mModell}.<br>
+ * An Utility class which helps to generate Link Objects from {@link LwM2mObjectEnabler} and {@link LwM2mModell}.<br>
  * Used for register and discover payload.
  */
 public final class LinkFormatHelper {
@@ -75,7 +75,9 @@ public final class LinkFormatHelper {
 
         // create link object for "object"
         String objectURL = getPath("/", rootPath, Integer.toString(objectModel.id));
-        linkObjects.add(new LinkObject(objectURL));
+        Map<String, Object> objectAttributes = new HashMap<>();
+        objectAttributes.put("title", objectModel.name);
+        linkObjects.add(new LinkObject(objectURL, objectAttributes));
 
         // sort resources
         List<ResourceModel> resources = new ArrayList<>(objectModel.resources.values());
@@ -90,7 +92,11 @@ public final class LinkFormatHelper {
         for (ResourceModel resourceModel : resources) {
             String resourceURL = getPath("/", rootPath, Integer.toString(objectModel.id), "0",
                     Integer.toString(resourceModel.id));
-            linkObjects.add(new LinkObject(resourceURL));
+            Map<String, Object> resourceAttributes = new HashMap<>();
+            resourceAttributes.put("title", resourceModel.name);
+            resourceAttributes.put("type", resourceModel.type);
+            linkObjects.add(new LinkObject(resourceURL, resourceAttributes));
+        
         }
 
         return linkObjects.toArray(new LinkObject[] {});

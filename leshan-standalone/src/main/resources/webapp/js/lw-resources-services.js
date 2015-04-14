@@ -65,11 +65,11 @@ myModule.factory('lwResources',["$http", function($http) {
     /**
      * Build Resource Tree for the given rootPath and objectLinks
      */
-    var buildResourceTree = function(rootPath, objectLinks, callback) {
+    var buildResourceTree = function(clientenpoint, rootPath, objectLinks, callback) {
         if (objectLinks.length == 0)
             callback([]);
 
-        getObjectDefinitions(function(objectDefs){
+        getObjectDefinitions(clientenpoint,function(objectDefs){
             var tree = [];
             
             for (var i = 0; i < objectLinks.length; i++) {
@@ -238,15 +238,63 @@ myModule.factory('lwResources',["$http", function($http) {
         }
         return val;
     }
-    
+
+    /**
+     * Update the current model with a new Object definition
+     */
+    var updateObject = function(tree, newObject) {
+        var object = searchById(tree, newObject.id);
+
+        // if object is not already in the tree, add it
+        if (object == undefined) {
+            // add instances field to this object
+            newObject.instances = [];
+
+            // add object to tree
+            tree.push(newObject);
+        // else update it
+        }else{
+            // update fields
+            object.name = newObject.name;
+            object.instancetype = newObject.instancetype;
+            
+            // update resource def
+            for (resourceId in newObject.resourcedefs){
+                var resourcedef = searchById(object.resourcedefs, resourceId);
+                
+                // if resource def is not already in the tree create it
+                if (resourcedef == undefined){
+                    for (instanceId in object.instances){
+                        // create resource
+                        resource = {
+                            def : newResourcedef,
+                            id : newResourcedef.id,
+                        };
+                        object.instances[instanceId].resources.push(resource);
+                    }
+                // else update it
+                }else{
+                    var newResourcedef = newObject.resourcedefs[resourceId];
+                    resourcedef.name = newResourcedef.name;
+                    resourcedef.operations = newResourcedef.operations;
+                    resourcedef.instancetype = newResourcedef.instancetype;
+                    resourcedef.mandatory = newResourcedef.mandatory;
+                    resourcedef.type = newResourcedef.type;
+                    resourcedef.range = newResourcedef.range;
+                    resourcedef.units = newResourcedef.units;
+                    resourcedef.description = newResourcedef.description;
+                }
+            }
+            
+            // TODO remove resource which does not exist anymore
+        }
+    }
+
     /**
      * Load all the Object Definition known by the server.
      */
-    var loadObjectDefinitions = function(callback) {
-        if (objectDefs){
-            callback(objectDefs);
-        }else{
-            $http.get("api/objectspecs")
+    var loadObjectDefinitions = function(clientendpoint, callback) {
+        $http.get("api/objectspecs/"+clientendpoint)
             .success(function(data, status, headers, config) {
                 if (data) {
                     objectDefs = data
@@ -258,15 +306,14 @@ myModule.factory('lwResources',["$http", function($http) {
                 errormessage = "Unable to load object specfication : " + status +" "+ data
                 console.error(errormessage)
                 callback([]);
-            });;
-        }
+        });;
     }
 
     /**
      * Return a copy of model describing the LWM2M Objects defined by OMA
      */
-    var getObjectDefinitions = function(callback) {
-        loadObjectDefinitions(function(objectDefs){
+    var getObjectDefinitions = function(clientendpoint, callback) {
+        loadObjectDefinitions(clientendpoint, function(objectDefs){
             callback($.extend(true,[],objectDefs)); // make a deep copy of the cache
         });
     }
@@ -276,6 +323,7 @@ myModule.factory('lwResources',["$http", function($http) {
     serviceInstance.addInstance = addInstance;
     serviceInstance.addResource = addResource;
     serviceInstance.getTypedValue = getTypedValue;
+    serviceInstance.updateObject = updateObject;
 
     return serviceInstance;
     }]);

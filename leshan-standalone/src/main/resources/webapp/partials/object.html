@@ -2,25 +2,37 @@
 	<accordion-group is-open="status.open">
 		<accordion-heading>
 			<div class="row">
-				<div class="col-md-4 object-name">{{object.name}}</div>
-				<div class="col-md-8 text-muted small">{{object.path}}
+				<div class="col-md-3 object-name">{{object.name}}</div>
+				<div class="col-md-9 text-muted small">{{object.path}}
 				<i class="pull-right glyphicon"
 					ng-class="{'glyphicon-chevron-down': status.open, 'glyphicon-chevron-right': !status.open}"></i>
 				</div>
 			</div>
 		</accordion-heading>
-		<div class = "row" ng-show="object.instancetype == 'multiple'">
-			<div class="col-md-6"></div>
-			<div class="col-md-6">
-				<div  btn-group">
-					<button type="button" ng-click="object.create.status = null; create()"
-							tooltip-html-unsafe={{object.create.tooltip}} tooltip-placement="right" tooltip-animation="false" tooltip-append-to-body="true"
-							ng-class="{
-								'btn': true,
-								'btn-xs': true,
-								'btn-default': object.create.status == null,
-								'btn-danger': object.create.status != null && object.create.status != 'CREATED',
-								'btn-success': object.create.status == 'CREATED' }">Create New Instance</button>
+		<div class = "row">
+			<div class="col-md-5"></div>
+			<div class="col-md-7">
+				<div class="btn-toolbar" role="toolbar">
+					<div class="btn-group">
+						<button type="button" ng-click="object.discover.status = null; discover()"
+								tooltip-html-unsafe={{object.discover.tooltip}} tooltip-placement="right" tooltip-animation="false" tooltip-append-to-body="true"
+								ng-class="{
+									'btn': true,
+									'btn-xs': true,
+									'btn-default': object.discover.status == null,
+									'btn-danger': object.discover.status != null && object.discover.status != 'CONTENT',
+									'btn-success': object.discover.status == 'CONTENT' }">Discover</button>
+					</div>
+					<div ng-show="object.instancetype == 'multiple'" class="btn-group">
+						<button type="button" ng-click="object.create.status = null; create()"
+								tooltip-html-unsafe={{object.create.tooltip}} tooltip-placement="right" tooltip-animation="false" tooltip-append-to-body="true"
+								ng-class="{
+									'btn': true,
+									'btn-xs': true,
+									'btn-default': object.create.status == null,
+									'btn-danger': object.create.status != null && object.create.status != 'CREATED',
+									'btn-success': object.create.status == 'CREATED' }">New Instance</button>
+					</div>
 				</div>
 			</div>
 		</div>

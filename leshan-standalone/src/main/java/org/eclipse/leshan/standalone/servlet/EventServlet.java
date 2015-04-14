@@ -31,10 +31,17 @@ import org.eclipse.jetty.continuation.Continuation;
 import org.eclipse.jetty.continuation.ContinuationListener;
 import org.eclipse.jetty.continuation.ContinuationSupport;
 import org.eclipse.jetty.util.ConcurrentHashSet;
+import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.model.ResourceModel;
+import org.eclipse.leshan.core.model.json.ObjectModelSerializer;
+import org.eclipse.leshan.core.model.json.ResourceModelSerializer;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistryListener;
+import org.eclipse.leshan.server.model.InMemoryModelProvider;
+import org.eclipse.leshan.server.model.ModelListener;
 import org.eclipse.leshan.server.observation.Observation;
 import org.eclipse.leshan.server.observation.ObservationRegistryListener;
 import org.eclipse.leshan.standalone.servlet.json.ClientSerializer;
@@ -57,6 +64,8 @@ public class EventServlet extends HttpServlet {
     private static final String EVENT_REGISTRATION = "REGISTRATION";
 
     private static final String EVENT_NOTIFICATION = "NOTIFICATION";
+
+    private static final String EVENT_OBJECTCHANGED = "OBJECTCHANGED";
 
     private static final String EVENT_COAP_LOG = "COAPLOG";
 
@@ -125,9 +134,26 @@ public class EventServlet extends HttpServlet {
         }
     };
 
+    private final ModelListener modelListener = new ModelListener() {
+
+        @Override
+        public void objectChanged(String endpoint, ObjectModel newModel) {
+            String model = EventServlet.this.gson.toJson(newModel);
+            sendEvent(EVENT_OBJECTCHANGED, model, endpoint);
+        }
+
+        @Override
+        public void modelChanged(String endpoint, LwM2mModel newModel) {
+        }
+    };
+
     public EventServlet(LeshanServer server) {
         server.getClientRegistry().addListener(this.clientRegistryListener);
         server.getObservationRegistry().addListener(this.observationRegistryListener);
+        // TODO we should create a interface or add addModelListener method to LwM2mModelProvider
+        if (server.getModelProvider() instanceof InMemoryModelProvider) {
+            ((InMemoryModelProvider) server.getModelProvider()).addModelListener(modelListener);
+        }
 
         // add an interceptor to each endpoint to trace all CoAP messages
         coapMessageTracer = new CoapMessageTracer(server.getClientRegistry());
@@ -138,6 +164,8 @@ public class EventServlet extends HttpServlet {
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeHierarchyAdapter(Client.class, new ClientSerializer());
         gsonBuilder.registerTypeHierarchyAdapter(LwM2mNode.class, new LwM2mNodeSerializer());
+        gsonBuilder.registerTypeHierarchyAdapter(ObjectModel.class, new ObjectModelSerializer());
+        gsonBuilder.registerTypeHierarchyAdapter(ResourceModel.class, new ResourceModelSerializer());
         gsonBuilder.setDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
         this.gson = gsonBuilder.create();
     }

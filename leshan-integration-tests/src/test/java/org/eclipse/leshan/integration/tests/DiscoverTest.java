@@ -60,7 +60,9 @@ public class DiscoverTest {
         assertEquals(CONTENT, response.getCode());
 
         LinkObject[] payload = response.getObjectLinks();
-        assertArrayEquals(LinkObject.parse("</2>, </2/0/0>, </2/0/1>, </2/0/2>, </2/0/3>".getBytes()), payload);
+        assertArrayEquals(
+                LinkObject.parse("</2>;title=\"LWM2M Access Control\", </2/0/0>;title=\"Object ID\";type=\"INTEGER\", </2/0/1>;title=\"Object Instance ID\";type=\"INTEGER\", </2/0/2>;title=\"ACL\";type=\"INTEGER\", </2/0/3>;title=\"Access Control Owner\";type=\"INTEGER\""
+                        .getBytes()), payload);
     }
 
     @Test

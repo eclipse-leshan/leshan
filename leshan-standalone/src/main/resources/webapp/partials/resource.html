@@ -1,14 +1,14 @@
 <div>
 	<div class="row">
-		<div class="col-md-4 resource-name">{{resource.def.name}}</div>
+		<div class="col-md-3 resource-name">{{resource.def.name}}</div>
 		<div class="col-md-1 text-muted small">{{resource.path}}</div>
 		<div class="col-md-1 text-muted small"><span ng-if="resource.observed" class="glyphicon glyphicon-eye-open"></span></div>
-		<div class="col-md-3">
+		<div class="col-md-4">
 			<div class="btn-toolbar" role="toolbar">
 				<div ng-show="readable()" class="btn-group">
 					<button type="button" ng-click="resource.observe.status = null; startObserve()"
 							tooltip-html-unsafe={{resource.observe.tooltip}} tooltip-placement="right" tooltip-animation="false" tooltip-append-to-body="true"
-				        	ng-class="{
+							ng-class="{
 								'btn': true,
 								'btn-xs': true,
 								'btn-default': resource.observe.status == null,
@@ -20,11 +20,11 @@
 								'btn-xs': true,
 								'btn-default': resource.observe.stop == null,
 								'btn-success': resource.observe.stop == 'success' }"><span class="glyphicon glyphicon-stop"></button>
- 					</div>
+ 				</div>
 				<div ng-show="readable()" class="btn-group">
 					<button type="button" ng-click="resource.read.status = null; read()"
 							tooltip-html-unsafe={{resource.read.tooltip}} tooltip-placement="right" tooltip-animation="false" tooltip-append-to-body="true"
-					        ng-class="{
+							ng-class="{
 								'btn': true,
 								'btn-xs': true,
 								'btn-default': resource.read.status == null,
