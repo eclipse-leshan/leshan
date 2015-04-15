@@ -112,7 +112,9 @@ public class TlvDecoder {
                         input.get(payload);
                         tlvs.add(new Tlv(type, null, payload, identifier));
 
-                        LOG.trace("payload value: {}", DatatypeConverter.printHexBinary(payload));
+                        if (LOG.isTraceEnabled()) {
+                            LOG.trace("payload value: {}", DatatypeConverter.printHexBinary(payload));
+                        }
                     } catch (BufferOverflowException e) {
                         throw new TlvException("Invalid 'value' length", e);
                     }
