@@ -60,7 +60,7 @@ public class TlvDecoder {
                     type = TlvType.RESOURCE_VALUE;
                     break;
                 default:
-                    throw new TlvException("unknown type : " + (typeByte & 0b1100_0000));
+                    throw new TlvException("unknown type: " + (typeByte & 0b1100_0000));
                 }
 
                 // decode identifier
@@ -72,8 +72,9 @@ public class TlvDecoder {
                         identifier = input.getShort() & 0xFFFF;
                     }
                 } catch (BufferUnderflowException e) {
-                    throw new TlvException("Invalild 'identifier' length", e);
+                    throw new TlvException("Invalid 'identifier' length", e);
                 }
+                LOG.trace("decoding {} {}", type, identifier);
 
                 // decode length
                 int length;
@@ -97,11 +98,12 @@ public class TlvDecoder {
                         length = ((input.get() & 0xFF) << 16) + input.getShort() & 0xFFFF;
                         break;
                     default:
-                        throw new TlvException("unknown length type : " + (typeByte & 0b0001_1000));
+                        throw new TlvException("unknown length type: " + (typeByte & 0b0001_1000));
                     }
                 } catch (BufferUnderflowException e) {
-                    throw new TlvException("Invalild 'length' length", e);
+                    throw new TlvException("Invalid 'length' length", e);
                 }
+                LOG.trace("length: {} (length type: {})", length, lengthType);
 
                 // decode value
                 if (type == TlvType.RESOURCE_VALUE || type == TlvType.RESOURCE_INSTANCE) {
@@ -109,8 +111,10 @@ public class TlvDecoder {
                         byte[] payload = new byte[length];
                         input.get(payload);
                         tlvs.add(new Tlv(type, null, payload, identifier));
+
+                        LOG.trace("payload value: {}", DatatypeConverter.printHexBinary(payload));
                     } catch (BufferOverflowException e) {
-                        throw new TlvException("Invalild 'value' length", e);
+                        throw new TlvException("Invalid 'value' length", e);
                     }
                 } else {
                     try {
@@ -126,7 +130,7 @@ public class TlvDecoder {
                         Tlv tlv = new Tlv(type, children, null, identifier);
                         tlvs.add(tlv);
                     } catch (IllegalArgumentException e) {
-                        throw new TlvException("Invalild 'value' length", e);
+                        throw new TlvException("Invalid 'value' length", e);
                     }
                 }
             }
