@@ -32,7 +32,6 @@ import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.exception.RejectionException;
 import org.eclipse.leshan.core.request.exception.RequestTimeoutException;
-import org.eclipse.leshan.core.request.exception.ResourceAccessException;
 import org.eclipse.leshan.core.response.ExceptionConsumer;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseConsumer;
@@ -190,7 +189,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
                 if (lwM2mResponseT != null) {
                     responseCallback.accept(lwM2mResponseT);
                 }
-            } catch (final ResourceAccessException e) {
+            } catch (final Exception e) {
                 errorCallback.accept(e);
             } finally {
                 coapRequest.removeMessageObserver(this);
