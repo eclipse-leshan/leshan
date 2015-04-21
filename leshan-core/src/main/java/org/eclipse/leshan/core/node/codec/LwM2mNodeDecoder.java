@@ -19,6 +19,7 @@ import java.nio.ByteBuffer;
 import java.util.Date;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -29,6 +30,7 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.Value;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.tlv.Tlv;
+import org.eclipse.leshan.tlv.Tlv.TlvType;
 import org.eclipse.leshan.tlv.TlvDecoder;
 import org.eclipse.leshan.tlv.TlvException;
 import org.eclipse.leshan.util.Charsets;
@@ -172,9 +174,24 @@ public class LwM2mNodeDecoder {
 
         if (path.isObject()) {
             // object level request
-            LwM2mObjectInstance[] instances = new LwM2mObjectInstance[tlvs.length];
-            for (int i = 0; i < tlvs.length; i++) {
-                instances[i] = parseObjectInstancesTlv(tlvs[i], path.getObjectId(), model);
+            final LwM2mObjectInstance[] instances;
+
+            // is it a mono-instance object without the containing TLV Object instance?
+            ObjectModel objectModel = model.getObjectModel(path.getObjectId());
+            boolean multiple = objectModel == null ? true : objectModel.multiple;
+
+            if (!multiple && tlvs.length > 0 && tlvs[0].getType() == TlvType.MULTIPLE_RESOURCE
+                    || tlvs[0].getType() == TlvType.RESOURCE_VALUE) {
+                LwM2mResource[] resources = new LwM2mResource[tlvs.length];
+                for (int i = 0; i < tlvs.length; i++) {
+                    resources[i] = parseResourceTlv(tlvs[i], path.getObjectId(), 0, model);
+                }
+                instances = new LwM2mObjectInstance[] { new LwM2mObjectInstance(0, resources) };
+            } else {
+                instances = new LwM2mObjectInstance[tlvs.length];
+                for (int i = 0; i < tlvs.length; i++) {
+                    instances[i] = parseObjectInstancesTlv(tlvs[i], path.getObjectId(), model);
+                }
             }
             return new LwM2mObject(path.getObjectId(), instances);
 

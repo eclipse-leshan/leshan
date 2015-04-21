@@ -15,7 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -24,6 +26,7 @@ import java.util.Map;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
@@ -88,19 +91,22 @@ public class LwM2mNodeDecoderTest {
         assertEquals(value, resource.getValue().value);
     }
 
+    // tlv content for instance 0 of device object
+    private final static byte[] DEVICE_CONTENT = new byte[] { -56, 0, 20, 79, 112, 101, 110, 32, 77, 111, 98, 105, 108,
+                            101, 32, 65, 108, 108, 105, 97, 110, 99, 101, -56, 1, 22, 76, 105, 103, 104, 116, 119, 101,
+                            105, 103, 104, 116, 32, 77, 50, 77, 32, 67, 108, 105, 101, 110, 116, -56, 2, 9, 51, 52, 53,
+                            48, 48, 48, 49, 50, 51, -61, 3, 49, 46, 48, -122, 6, 65, 0, 1, 65, 1, 5, -120, 7, 8, 66, 0,
+                            14, -40, 66, 1, 19, -120, -121, 8, 65, 0, 125, 66, 1, 3, -124, -63, 9, 100, -63, 10, 15,
+                            -63, 11, 0, -60, 13, 81, -126, 66, -113, -58, 14, 43, 48, 50, 58, 48, 48, -63, 15, 85 };
+
     @Test
-    public void tlv_device_object_instance0() throws InvalidValueException {
-        // tlv content for instance 0 of device object
-        byte[] content = new byte[] { -56, 0, 20, 79, 112, 101, 110, 32, 77, 111, 98, 105, 108, 101, 32, 65, 108, 108,
-                                105, 97, 110, 99, 101, -56, 1, 22, 76, 105, 103, 104, 116, 119, 101, 105, 103, 104,
-                                116, 32, 77, 50, 77, 32, 67, 108, 105, 101, 110, 116, -56, 2, 9, 51, 52, 53, 48, 48,
-                                48, 49, 50, 51, -61, 3, 49, 46, 48, -122, 6, 65, 0, 1, 65, 1, 5, -120, 7, 8, 66, 0, 14,
-                                -40, 66, 1, 19, -120, -121, 8, 65, 0, 125, 66, 1, 3, -124, -63, 9, 100, -63, 10, 15,
-                                -63, 11, 0, -60, 13, 81, -126, 66, -113, -58, 14, 43, 48, 50, 58, 48, 48, -63, 15, 85 };
+    public void tlv_device_object_mono_instance() throws Exception {
+        LwM2mObjectInstance oInstance = ((LwM2mObject) LwM2mNodeDecoder.decode(DEVICE_CONTENT, ContentFormat.TLV,
+                new LwM2mPath(3), model)).getInstances().get(0);
+        assertDeviceInstance(oInstance);
+    }
 
-        LwM2mObjectInstance oInstance = (LwM2mObjectInstance) LwM2mNodeDecoder.decode(content, ContentFormat.TLV,
-                new LwM2mPath(3, 0), model);
-
+    private void assertDeviceInstance(LwM2mObjectInstance oInstance) {
         assertEquals(0, oInstance.getId());
 
         assertEquals("Open Mobile Alliance", (String) oInstance.getResources().get(0).getValue().value);
@@ -123,6 +129,15 @@ public class LwM2mNodeDecoderTest {
         assertEquals(new Date(1367491215000L), (Date) oInstance.getResources().get(13).getValue().value);
         assertEquals("+02:00", (String) oInstance.getResources().get(14).getValue().value);
         assertEquals("U", (String) oInstance.getResources().get(15).getValue().value);
+
+    }
+
+    @Test
+    public void tlv_device_object_instance0() throws InvalidValueException {
+
+        LwM2mObjectInstance oInstance = (LwM2mObjectInstance) LwM2mNodeDecoder.decode(DEVICE_CONTENT,
+                ContentFormat.TLV, new LwM2mPath(3, 0), model);
+        assertDeviceInstance(oInstance);
     }
 
     @Test
