@@ -57,7 +57,7 @@ public class ObjectLoader {
         InputStream input = ObjectLoader.class.getResourceAsStream("/oma-objects-spec.json");
         if (input != null) {
             try (Reader reader = new InputStreamReader(input)) {
-                models.addAll(loadJsonFile(input));
+                models.addAll(loadJsonStream(input));
             } catch (IOException e) {
                 LOG.error("Unable to load object models", e);
             }
@@ -93,11 +93,11 @@ public class ObjectLoader {
     }
 
     /**
-     * Load object definitions from JSON file.
+     * Load object definitions from JSON stream.
      * 
-     * @param input An inputStream to a JSON file.
+     * @param input An inputStream to a JSON stream.
      */
-    public static List<ObjectModel> loadJsonFile(InputStream input) {
+    public static List<ObjectModel> loadJsonStream(InputStream input) {
         List<ObjectModel> models = new ArrayList<>();
         Reader reader = new InputStreamReader(input);
         ObjectModel[] objectModels = GSON.fromJson(reader, ObjectModel[].class);
@@ -141,7 +141,7 @@ public class ObjectLoader {
                     // from JSON file
                     LOG.debug("Loading object models from JSON file {}", file.getAbsolutePath());
                     try (FileInputStream input = new FileInputStream(file)) {
-                        models.addAll(loadJsonFile(input));
+                        models.addAll(loadJsonStream(input));
                     } catch (IOException e) {
                         LOG.warn(MessageFormat.format("Unable to load object models for {0}", file.getAbsolutePath()),
                                 e);
