@@ -25,14 +25,17 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
+import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
@@ -52,6 +55,7 @@ import org.eclipse.leshan.core.response.ValueResponse;
  */
 public class LeshanClientExample {
     private String registrationID;
+    private final Location locationInstance = new Location();
 
     public static void main(final String[] args) {
         if (args.length != 4 && args.length != 2) {
@@ -70,8 +74,11 @@ public class LeshanClientExample {
 
         // Initialize object list
         ObjectsInitializer initializer = new ObjectsInitializer();
+
         initializer.setClassForObject(3, Device.class);
+        initializer.setInstanceForObject(6, locationInstance);
         List<ObjectEnabler> enablers = initializer.createMandatory();
+        enablers.addAll(initializer.create(6));
 
         // Create client
         final InetSocketAddress clientAddress = new InetSocketAddress(localHostName, localPort);
@@ -111,6 +118,15 @@ public class LeshanClientExample {
                 }
             }
         });
+
+        // Change the location through the Console
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Press 'w','a','s','d' to change reported Location.");
+        while (scanner.hasNext()) {
+            String nextMove = scanner.next();
+            locationInstance.moveLocation(nextMove);
+        }
+        scanner.close();
     }
 
     public static class Device extends BaseInstanceEnabler {
@@ -128,7 +144,7 @@ public class LeshanClientExample {
 
         @Override
         public ValueResponse read(int resourceid) {
-            System.out.println("Read on resource " + resourceid);
+            System.out.println("Read on Device Resource " + resourceid);
             switch (resourceid) {
             case 0:
                 return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
@@ -148,6 +164,9 @@ public class LeshanClientExample {
             case 10:
                 return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
                         Value.newIntegerValue(getMemoryFree())));
+            case 11:
+                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
+                        Value.newIntegerValue(getErrorCode())));
             case 13:
                 return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
                         Value.newDateValue(getCurrentTime())));
@@ -167,13 +186,13 @@ public class LeshanClientExample {
 
         @Override
         public LwM2mResponse execute(int resourceid, byte[] params) {
-            System.out.println("Execute on resource " + resourceid + " params " + params);
+            System.out.println("Execute on Device Resource " + resourceid + " params " + params);
             return new LwM2mResponse(ResponseCode.CHANGED);
         }
 
         @Override
         public LwM2mResponse write(int resourceid, LwM2mResource value) {
-            System.out.println("Write on resource " + resourceid + " value " + value);
+            System.out.println("Write on Device Resource " + resourceid + " value " + value);
             switch (resourceid) {
             case 13:
                 return new LwM2mResponse(ResponseCode.NOT_FOUND);
@@ -204,6 +223,10 @@ public class LeshanClientExample {
 
         private String getFirmwareVersion() {
             return "1.0.0";
+        }
+
+        private int getErrorCode() {
+            return 0;
         }
 
         private int getBatteryLevel() {
@@ -243,5 +266,83 @@ public class LeshanClientExample {
         private String getSupportedBinding() {
             return "U";
         }
+    }
+
+    public class Location extends BaseInstanceEnabler {
+        private Random random;
+        private float latitude;
+        private float longitude;
+        private Date timestamp;
+
+        public Location() {
+            random = new Random();
+            latitude = Float.valueOf(random.nextInt(180));
+            longitude = Float.valueOf(random.nextInt(360));
+            timestamp = new Date();
+        }
+
+        @Override
+        public ValueResponse read(int resourceid) {
+            System.out.println("Read on Location Resource " + resourceid);
+            switch (resourceid) {
+            case 0:
+                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
+                        Value.newStringValue(getLatitude())));
+            case 1:
+                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
+                        Value.newStringValue(getLongitude())));
+            case 5:
+                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
+                        Value.newDateValue(getTimestamp())));
+            default:
+                return super.read(resourceid);
+            }
+
+        }
+
+        public void moveLocation(String nextMove) {
+            switch (nextMove.charAt(0)) {
+            case 'w':
+                moveLatitude(1.0f);
+                break;
+            case 'a':
+                moveLongitude(-1.0f);
+                break;
+            case 's':
+                moveLatitude(-1.0f);
+                break;
+            case 'd':
+                moveLongitude(1.0f);
+                break;
+            }
+
+        }
+
+        private void moveLatitude(float delta) {
+            latitude = latitude + delta;
+            timestamp = new Date();
+            fireResourceChange(0);
+            fireResourceChange(5);
+        }
+
+        private void moveLongitude(float delta) {
+            longitude = longitude + delta;
+            timestamp = new Date();
+            fireResourceChange(1);
+            fireResourceChange(5);
+        }
+
+        public String getLatitude() {
+            return Float.toString(latitude - 90.0f);
+        }
+
+        public String getLongitude() {
+            return Float.toString(longitude - 180.f);
+        }
+
+        public Date getTimestamp() {
+            return timestamp;
+        }
+
     }
 }
