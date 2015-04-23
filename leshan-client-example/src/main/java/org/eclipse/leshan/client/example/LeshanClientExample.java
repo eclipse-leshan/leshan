@@ -25,6 +25,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -33,6 +34,8 @@ import java.util.UUID;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
+import org.eclipse.leshan.client.resource.InstanceChangedListener;
+import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
@@ -52,6 +55,7 @@ import org.eclipse.leshan.core.response.ValueResponse;
  */
 public class LeshanClientExample {
     private String registrationID;
+    private Device deviceInstance;
 
     public static void main(final String[] args) {
         if (args.length != 4 && args.length != 2) {
@@ -71,6 +75,14 @@ public class LeshanClientExample {
         // Initialize object list
         ObjectsInitializer initializer = new ObjectsInitializer();
         initializer.setClassForObject(3, Device.class);
+        initializer.addListener(new InstanceChangedListener() {
+            @Override
+            public void onCreate(LwM2mInstanceEnabler instance) {
+                if (instance instanceof Device) {
+                    deviceInstance = (Device) instance;
+                }
+            }
+        });
         List<ObjectEnabler> enablers = initializer.createMandatory();
 
         // Create client
@@ -111,9 +123,21 @@ public class LeshanClientExample {
                 }
             }
         });
+
+        // Change Reported Error Code through Console
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Press 0-9 to change reported Error Code.");
+        while (scanner.hasNextInt()) {
+            int nextInt = scanner.nextInt() % 9;
+            System.out.println("Changing Reported Error Code to " + nextInt);
+            deviceInstance.setErrorCode(nextInt);
+        }
+        scanner.close();
     }
 
     public static class Device extends BaseInstanceEnabler {
+
+        private int errorCode = 0;
 
         public Device() {
             // notify new date each 5 second
@@ -148,6 +172,9 @@ public class LeshanClientExample {
             case 10:
                 return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
                         Value.newIntegerValue(getMemoryFree())));
+            case 11:
+                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
+                        Value.newIntegerValue(getErrorCode())));
             case 13:
                 return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
                         Value.newDateValue(getCurrentTime())));
@@ -206,6 +233,10 @@ public class LeshanClientExample {
             return "1.0.0";
         }
 
+        private int getErrorCode() {
+            return errorCode;
+        }
+
         private int getBatteryLevel() {
             final Random rand = new Random();
             return rand.nextInt(100);
@@ -242,6 +273,11 @@ public class LeshanClientExample {
 
         private String getSupportedBinding() {
             return "U";
+        }
+
+        public void setErrorCode(int nextErrorCode) {
+            errorCode = nextErrorCode;
+            fireResourceChange(11);
         }
     }
 }

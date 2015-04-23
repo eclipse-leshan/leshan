@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
@@ -29,6 +30,7 @@ public class ObjectsInitializer {
 
     protected Map<Integer, Class<? extends LwM2mInstanceEnabler>> classes = new HashMap<Integer, Class<? extends LwM2mInstanceEnabler>>();
     protected LwM2mModel model;
+    protected final List<InstanceChangedListener> listeners = new CopyOnWriteArrayList<>();
 
     public ObjectsInitializer() {
         this(null);
@@ -102,6 +104,21 @@ public class ObjectsInitializer {
             throw new RuntimeException(e);
         }
         instance.setObjectModel(objectModel);
+        fireInstanceCreated(instance);
         return instance;
+    }
+
+    private void fireInstanceCreated(final LwM2mInstanceEnabler instance) {
+        for (final InstanceChangedListener l : listeners) {
+            l.onCreate(instance);
+        }
+    }
+
+    public void addListener(InstanceChangedListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeListener(InstanceChangedListener listener) {
+        listeners.remove(listener);
     }
 }
