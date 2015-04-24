@@ -252,14 +252,14 @@ public class LwM2mNodeDecoder {
         LOG.trace("Parsing JSON content for path {}: {}", path, jsonObject);
 
         if (path.isObject()) {
-           // TODO WILL need to parse multi object instances
+           // TODO 
            // If bn is present will have multiple object instances in JSON the payload
-           // in case of objLink is present
+           // In case of JSON contains ObjLnk -> this should return List<LwM2mNode> ???
         	 throw new InvalidValueException("Not yet implemented: " + " Object Path ", path);
 
         } else if (path.isObjectInstance()) {
             // object instance level request
-           	Map<Integer,LwM2mResource> resourceMap = parseJsonPayLoadToResources(jsonObject,  path,  model);
+           	Map<Integer,LwM2mResource> resourceMap = parseJsonPayLoadLwM2mResources(jsonObject,  path,  model);
         	LwM2mResource[] resources = new LwM2mResource[resourceMap.size()];
         	int k=0;
         	for (Entry<Integer,LwM2mResource> entry : resourceMap.entrySet()) {
@@ -271,7 +271,7 @@ public class LwM2mNodeDecoder {
 
         } else {
             // resource level request
-        	Map<Integer,LwM2mResource> resourceMap = parseJsonPayLoadToResources(jsonObject,  path,  model);
+        	Map<Integer,LwM2mResource> resourceMap = parseJsonPayLoadLwM2mResources(jsonObject,  path,  model);
         	LwM2mResource resource = resourceMap.get(0);
         	return resource;
         }
@@ -279,7 +279,7 @@ public class LwM2mNodeDecoder {
     }
 
     
-	public static Map<Integer,LwM2mResource> parseJsonPayLoadToResources(LwM2mJsonObject jsonObject, LwM2mPath path, LwM2mModel model) throws InvalidValueException
+	public static Map<Integer,LwM2mResource> parseJsonPayLoadLwM2mResources(LwM2mJsonObject jsonObject, LwM2mPath path, LwM2mModel model) throws InvalidValueException
 	{
 		Map<Integer,LwM2mResource> lwM2mResourceMap = new HashMap<>();
 		Map<Integer,List<Object>> multiResourceMap = new HashMap<>();
@@ -370,7 +370,7 @@ public class LwM2mNodeDecoder {
             	// JSON format specs said v = integer or float
                return Value.newFloatValue(((Number)value).floatValue());
             case TIME:
-             	// TODO Resource 13 (current time) of device object represented as Float value 
+             	// TODO Specs page 44, Resource 13 (current time) of device object represented as Float value 
             	return Value.newDateValue(new Date(((Number)value).longValue() * 1000L));
             case OPAQUE:
             	// If the Resource data type is opaque the string value 
