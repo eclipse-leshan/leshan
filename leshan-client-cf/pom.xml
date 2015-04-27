@@ -22,7 +22,7 @@ Contributors:
     <parent>
         <groupId>org.eclipse.leshan</groupId>
         <artifactId>leshan</artifactId>
-        <version>0.1.11-M3-SNAPSHOT</version>
+        <version>0.1.11-M3</version>
     </parent>
     <artifactId>leshan-client-cf</artifactId>
     <name>leshan - client californium</name>
