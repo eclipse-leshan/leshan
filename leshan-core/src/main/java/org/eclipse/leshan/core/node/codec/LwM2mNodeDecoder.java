@@ -65,7 +65,7 @@ public class LwM2mNodeDecoder {
                 if (rDesc != null && rDesc.multiple) {
                     format = ContentFormat.TLV;
                 } else {
-                    if (rDesc.type == Type.OPAQUE) {
+                    if (rDesc != null && rDesc.type == Type.OPAQUE) {
                         format = ContentFormat.OPAQUE;
                     } else {
                         format = ContentFormat.TEXT;

@@ -15,9 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -60,6 +58,18 @@ public class LwM2mNodeDecoderTest {
         String value = "MyManufacturer";
         LwM2mResource resource = (LwM2mResource) LwM2mNodeDecoder.decode(value.getBytes(Charsets.UTF_8),
                 ContentFormat.TEXT, new LwM2mPath(3, 0, 0), model);
+
+        assertEquals(0, resource.getId());
+        assertFalse(resource.isMultiInstances());
+        assertEquals(DataType.STRING, resource.getValue().type);
+        assertEquals(value, resource.getValue().value);
+    }
+
+    @Test
+    public void no_model_and_no_content_type_then_fallback_to_text() throws InvalidValueException {
+        String value = "MyManufacturer";
+        LwM2mResource resource = (LwM2mResource) LwM2mNodeDecoder.decode(value.getBytes(Charsets.UTF_8), null,
+                new LwM2mPath(666, 0, 0), model);
 
         assertEquals(0, resource.getId());
         assertFalse(resource.isMultiInstances());
