@@ -20,7 +20,7 @@ Contributors:
 
     <groupId>org.eclipse.leshan</groupId>
     <artifactId>leshan</artifactId>
-    <version>0.1.11-M4-SNAPSHOT</version>
+    <version>0.1.11-M4</version>
     <packaging>pom</packaging>
 
     <name>leshan</name>
