@@ -20,7 +20,7 @@ Contributors:
     <parent>
         <groupId>org.eclipse.leshan</groupId>
         <artifactId>leshan</artifactId>
-        <version>0.1.11-M4</version>
+        <version>0.1.11-M5-SNAPSHOT</version>
     </parent>
     <artifactId>leshan-client-example</artifactId>
     <name>leshan - client example</name>
