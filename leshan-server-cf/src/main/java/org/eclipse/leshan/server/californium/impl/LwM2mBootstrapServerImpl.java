@@ -21,6 +21,7 @@ import java.net.InetSocketAddress;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoAPEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
+import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
@@ -71,7 +72,7 @@ public class LwM2mBootstrapServerImpl implements LwM2mBootstrapServer {
         Builder builder = new DtlsConnectorConfig.Builder(localAddressSecure);
         builder.setPskStore(new LwM2mPskStore(this.securityStore));
 
-        Endpoint secureEndpoint = new SecureEndpoint(new DTLSConnector(builder.build()));
+        Endpoint secureEndpoint = new CoAPEndpoint(new DTLSConnector(builder.build()), NetworkConfig.getStandard());
         coapServer.addEndpoint(secureEndpoint);
 
         // define /bs ressource

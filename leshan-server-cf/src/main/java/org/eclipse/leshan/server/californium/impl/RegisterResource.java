@@ -16,6 +16,7 @@
 package org.eclipse.leshan.server.californium.impl;
 
 import java.net.InetSocketAddress;
+import java.security.Principal;
 import java.security.PublicKey;
 import java.util.List;
 
@@ -27,6 +28,8 @@ import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
+import org.eclipse.californium.scandium.auth.PreSharedKeyIdentity;
+import org.eclipse.californium.scandium.auth.RawPublicKeyIdentity;
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.DeregisterRequest;
@@ -147,9 +150,14 @@ public class RegisterResource extends CoapResource {
         // Get Security info
         String pskIdentity = null;
         PublicKey rpk = null;
-        if (exchange.advanced().getEndpoint() instanceof SecureEndpoint) {
-            pskIdentity = ((SecureEndpoint) exchange.advanced().getEndpoint()).getPskIdentity(request);
-            rpk = ((SecureEndpoint) exchange.advanced().getEndpoint()).getRawPublicKey(request);
+        Principal senderIdentity = exchange.advanced().getRequest().getSenderIdentity();
+        if (senderIdentity != null) {
+            if (senderIdentity instanceof PreSharedKeyIdentity) {
+                pskIdentity = senderIdentity.getName();
+            } else if (senderIdentity instanceof RawPublicKeyIdentity) {
+                // TODO we need a PublicKey object.
+                // rpk = ((RawPublicKeyIdentity) senderIdentity).getSubjectInfo();
+            }
         }
 
         RegisterRequest registerRequest = new RegisterRequest(endpoint, lifetime, lwVersion, binding, smsNumber,
@@ -266,15 +274,6 @@ public class RegisterResource extends CoapResource {
             DeregisterRequest deregisterRequest = new DeregisterRequest(uri.get(1));
             DeregisterResponse deregisterResponse = registrationHandler.deregister(deregisterRequest);
             exchange.respond(fromLwM2mCode(deregisterResponse.getCode()));
-
-            if (exchange.advanced().getEndpoint() instanceof SecureEndpoint
-                    && deregisterResponse.getCode().equals(org.eclipse.leshan.ResponseCode.DELETED)) {
-                // clean the DTLS Session
-                Request request = exchange.advanced().getRequest();
-                ((SecureEndpoint) exchange.advanced().getEndpoint()).getDTLSConnector().close(
-                        new InetSocketAddress(request.getSource(), request.getSourcePort()));
-            }
-
         } else {
             LOG.debug("Invalid deregistration");
             exchange.respond(ResponseCode.NOT_FOUND);

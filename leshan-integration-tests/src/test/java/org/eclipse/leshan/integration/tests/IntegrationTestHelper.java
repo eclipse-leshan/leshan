@@ -21,16 +21,13 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
-import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
-import org.eclipse.leshan.server.californium.impl.SecureEndpoint;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
 
@@ -42,13 +39,13 @@ public class IntegrationTestHelper {
 
     static final String ENDPOINT_IDENTIFIER = "kdfflwmtm";
 
-    LwM2mServer server;
+    LeshanServer server;
     LwM2mClient client;
 
     public void createClient() {
         ObjectsInitializer initializer = new ObjectsInitializer();
         List<ObjectEnabler> objects = initializer.create(2, 3);
-        client = new LeshanClient(getServerAddress(), new ArrayList<LwM2mObjectEnabler>(objects));
+        client = new LeshanClient(server.getNonSecureAddress(), new ArrayList<LwM2mObjectEnabler>(objects));
     }
 
     public void createServer() {
@@ -74,21 +71,5 @@ public class IntegrationTestHelper {
 
     Client getClient() {
         return server.getClientRegistry().get(ENDPOINT_IDENTIFIER);
-    }
-
-    protected InetSocketAddress getServerSecureAddress() {
-        for (Endpoint endpoint : ((LeshanServer) server).getCoapServer().getEndpoints()) {
-            if (endpoint instanceof SecureEndpoint)
-                return endpoint.getAddress();
-        }
-        return null;
-    }
-
-    protected InetSocketAddress getServerAddress() {
-        for (Endpoint endpoint : ((LeshanServer) server).getCoapServer().getEndpoints()) {
-            if (!(endpoint instanceof SecureEndpoint))
-                return endpoint.getAddress();
-        }
-        return null;
     }
 }
