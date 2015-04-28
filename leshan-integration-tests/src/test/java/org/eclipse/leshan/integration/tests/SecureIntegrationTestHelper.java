@@ -127,7 +127,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         CoapServer coapServer = new CoapServer();
         coapServer.addEndpoint(new CoAPEndpoint(new DTLSConnector(config.build()), NetworkConfig.getStandard()));
 
-        client = new LeshanClient(clientAddress, getServerSecureAddress(), coapServer,
+        client = new LeshanClient(clientAddress, server.getSecureAddress(), coapServer,
                 new ArrayList<LwM2mObjectEnabler>(objects));
     }
 
@@ -142,7 +142,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
 
         CoapServer coapServer = new CoapServer();
         coapServer.addEndpoint(new CoAPEndpoint(new DTLSConnector(config.build()), NetworkConfig.getStandard()));
-        client = new LeshanClient(clientAddress, getServerSecureAddress(), coapServer,
+        client = new LeshanClient(clientAddress, server.getSecureAddress(), coapServer,
                 new ArrayList<LwM2mObjectEnabler>(objects));
     }
 
@@ -158,7 +158,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         CoapServer coapServer = new CoapServer();
         coapServer.addEndpoint(new CoAPEndpoint(new DTLSConnector(config.build()), NetworkConfig.getStandard()));
 
-        client = new LeshanClient(clientAddress, getServerSecureAddress(), coapServer,
+        client = new LeshanClient(clientAddress, server.getSecureAddress(), coapServer,
                 new ArrayList<LwM2mObjectEnabler>(objects));
     }
 
