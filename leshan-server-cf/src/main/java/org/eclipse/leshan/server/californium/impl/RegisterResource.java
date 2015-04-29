@@ -155,8 +155,7 @@ public class RegisterResource extends CoapResource {
             if (senderIdentity instanceof PreSharedKeyIdentity) {
                 pskIdentity = senderIdentity.getName();
             } else if (senderIdentity instanceof RawPublicKeyIdentity) {
-                // TODO we need a PublicKey object.
-                // rpk = ((RawPublicKeyIdentity) senderIdentity).getSubjectInfo();
+                rpk = ((RawPublicKeyIdentity) senderIdentity).getKey();
             }
         }
 
