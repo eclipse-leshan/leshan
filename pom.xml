@@ -93,7 +93,7 @@ Contributors:
         <snapshotRepository>
             <id>repo.eclipse.org</id>
             <name>Californium Repository - Snapshots</name>
-            <url>https://repo.eclipse.org/content/repositories/californium-snapshots/</url>
+            <url>https://repo.eclipse.org/content/repositories/leshan-snapshots/</url>
         </snapshotRepository>
         <repository>
             <id>ossrh</id>
