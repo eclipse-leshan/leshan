@@ -29,6 +29,7 @@ import org.eclipse.leshan.core.model.ObjectModel;
 public class ObjectsInitializer {
 
     protected Map<Integer, Class<? extends LwM2mInstanceEnabler>> classes = new HashMap<Integer, Class<? extends LwM2mInstanceEnabler>>();
+    protected Map<Integer, LwM2mInstanceEnabler> instances = new HashMap<Integer, LwM2mInstanceEnabler>();
     protected LwM2mModel model;
     protected final List<InstanceChangedListener> listeners = new CopyOnWriteArrayList<>();
 
@@ -50,7 +51,19 @@ public class ObjectsInitializer {
     }
 
     public void setClassForObject(int objectId, Class<? extends LwM2mInstanceEnabler> clazz) {
+        if (instances.containsKey(objectId)) {
+            throw new IllegalStateException("Cannot set Instance Class for Object " + objectId
+                    + " when Instance already exists. Can only have one or the other.");
+        }
         classes.put(objectId, clazz);
+    }
+
+    public void setInstanceForObject(int objectId, LwM2mInstanceEnabler instance) {
+        if (classes.containsKey(objectId)) {
+            throw new IllegalStateException("Cannot set Instance for Object " + objectId
+                    + " when Instance Class already exists.  Can only have one or the other.");
+        }
+        instances.put(objectId, instance);
     }
 
     public List<ObjectEnabler> createMandatory() {
@@ -80,8 +93,7 @@ public class ObjectsInitializer {
     }
 
     protected ObjectEnabler createNodeEnabler(ObjectModel objectModel) {
-        HashMap<Integer, LwM2mInstanceEnabler> instances = new HashMap<Integer, LwM2mInstanceEnabler>();
-
+        final Map<Integer, LwM2mInstanceEnabler> instances = new HashMap<Integer, LwM2mInstanceEnabler>();
         if (!objectModel.multiple) {
             LwM2mInstanceEnabler newInstance = createInstance(objectModel);
             if (newInstance != null) {
@@ -93,15 +105,19 @@ public class ObjectsInitializer {
     }
 
     protected LwM2mInstanceEnabler createInstance(ObjectModel objectModel) {
-        Class<? extends LwM2mInstanceEnabler> clazz = classes.get(objectModel.id);
-        if (clazz == null)
-            clazz = SimpleInstanceEnabler.class;
-
         LwM2mInstanceEnabler instance;
-        try {
-            instance = clazz.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException(e);
+        if (instances.containsKey(objectModel.id)) {
+            instance = instances.get(objectModel.id);
+        } else {
+            Class<? extends LwM2mInstanceEnabler> clazz = classes.get(objectModel.id);
+            if (clazz == null)
+                clazz = SimpleInstanceEnabler.class;
+
+            try {
+                instance = clazz.newInstance();
+            } catch (InstantiationException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
         }
         instance.setObjectModel(objectModel);
         fireInstanceCreated(instance);
