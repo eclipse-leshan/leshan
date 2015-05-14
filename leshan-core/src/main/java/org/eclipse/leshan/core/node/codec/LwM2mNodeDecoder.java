@@ -38,8 +38,8 @@ import org.eclipse.leshan.core.node.Value;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.json.JsonArrayElement;
 import org.eclipse.leshan.json.LwM2mJson;
-import org.eclipse.leshan.json.LwM2mJsonObject;
 import org.eclipse.leshan.json.LwM2mJsonException;
+import org.eclipse.leshan.json.LwM2mJsonObject;
 import org.eclipse.leshan.tlv.Tlv;
 import org.eclipse.leshan.tlv.Tlv.TlvType;
 import org.eclipse.leshan.tlv.TlvDecoder;
@@ -122,12 +122,12 @@ public class LwM2mNodeDecoder {
             }
             return new LwM2mResource(path.getResourceId(), Value.newBinaryValue(content));
         case JSON:
-        	try {
-        		String jsonStrValue = new String(content);
-				LwM2mJsonObject json =  LwM2mJson.fromJsonLwM2m(jsonStrValue);
-				return parseJSON(json,path, model);
+			try {
+				String jsonStrValue = new String(content);
+				LwM2mJsonObject json = LwM2mJson.fromJsonLwM2m(jsonStrValue);
+				return parseJSON(json, path, model);
 			} catch (LwM2mJsonException e) {
-			    throw new InvalidValueException("Unable to deSerialize json.", path, e);
+				throw new InvalidValueException("Unable to deSerialize json", path, e);
 			}
         case LINK:
             throw new InvalidValueException("Content format " + format + " not yet implemented", path);
@@ -248,15 +248,15 @@ public class LwM2mNodeDecoder {
         }
     }
     
-    private static LwM2mNode parseJSON(LwM2mJsonObject jsonObject, LwM2mPath path, LwM2mModel model) throws InvalidValueException {
+    private static LwM2mNode parseJSON(LwM2mJsonObject jsonObject, LwM2mPath path, LwM2mModel model) throws InvalidValueException, IllegalStateException {
         LOG.trace("Parsing JSON content for path {}: {}", path, jsonObject);
 
         if (path.isObject()) {
            // TODO 
-           // If bn is present will have multiple object instances in JSON the payload
-           // In case of JSON contains ObjLnk -> this should return List<LwM2mNode> ???
-        	 throw new InvalidValueException("Not yet implemented: " + " Object Path ", path);
-
+           // If bn is present will have multiple object instances in JSON payload
+           // If JSON contains ObjLnk -> this method should return List<LwM2mNode> ???
+           throw new IllegalStateException("Not implemented");
+           
         } else if (path.isObjectInstance()) {
             // object instance level request
            	Map<Integer,LwM2mResource> resourceMap = parseJsonPayLoadLwM2mResources(jsonObject,  path,  model);

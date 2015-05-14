@@ -96,7 +96,6 @@ public class LwM2mNodeEncoder {
             node.accept(jsonEncoder);
             encoded = jsonEncoder.encoded;
           break;
-//            throw new IllegalArgumentException("JSON content format not supported");
         default:
             throw new IllegalArgumentException("Cannot encode " + node + " with format " + format);
         }

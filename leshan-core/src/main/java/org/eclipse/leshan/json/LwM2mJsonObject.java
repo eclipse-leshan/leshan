@@ -17,15 +17,12 @@
 
 package org.eclipse.leshan.json;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
 import com.google.gson.annotations.SerializedName;
 
-public class LwM2mJsonObject implements Serializable{
+public class LwM2mJsonObject {
 	
-	private static final long serialVersionUID = 7302201912160751832L;
-
 	@SerializedName("bn")
     private String baseName = null ; 
 	
@@ -101,8 +98,7 @@ public class LwM2mJsonObject implements Serializable{
 
 	@Override
 	public String toString() {
-		return "LwM2mJsonElement [baseName=" + baseName + ", baseTime="
-				+ baseTime + ", resourceList=" + jsonArray + "]";
+		return String.format("LwM2mJsonElement [baseName=%s, baseTime=%d, resourceList=%s]", baseName, baseTime, jsonArray);
 	}
   
 }

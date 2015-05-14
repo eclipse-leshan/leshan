@@ -172,10 +172,10 @@ public class LwM2mNodeDecoderTest {
     public void json_device_object_instance0() throws InvalidValueException {
         // tlv content for instance 0 of device object
     	String content = "{"
-    			+ "\"e\":["+"{"+"\"n\":\"0\","+"\"sv\":\"Open Mobile Alliance\""+"},"
-    			+ "{"+"\"n\":\"1\","+"\"sv\":\"Lightweight M2M Client\""+"}," 
-    	        + "{"+"\"n\":\"2\","+"\"sv\":\"345000123\""+"}," 
-    	        + "{"+"\"n\":\"3\","+"\"sv\":\"1.0\""+"}," 
+    			+ "\"e\":["+"{"+"\"n\":\"0\","+"\"sv\":\"Open Mobile Alliance\"},"
+    			+ "{"+"\"n\":\"1\","+"\"sv\":\"Lightweight M2M Client\"}," 
+    	        + "{"+"\"n\":\"2\","+"\"sv\":\"345000123\"}," 
+    	        + "{"+"\"n\":\"3\","+"\"sv\":\"1.0\"}," 
     	        + "{"+"\"n\":\"6/0\","+"\"v\":1"+"}," 
     	        + "{"+"\"n\":\"6/1\","+"\"v\":5"+"}," 
     	        + "{"+"\"n\":\"7/0\","+"\"v\":3800"+"}," 
@@ -186,8 +186,8 @@ public class LwM2mNodeDecoderTest {
     	        + "{"+"\"n\":\"10\","+"\"v\":15"+"}," 
     	        + "{"+"\"n\":\"11/0\","+"\"v\":0"+"}," 
     	        + "{"+"\"n\":\"13\","+"\"v\":1367491215"+"}," 
-    	        + "{"+"\"n\":\"14\","+"\"sv\":\"+02:00\""+"}," 
-    	        + "{"+"\"n\":\"15\","+"\"sv\":\"U\""+"}"+ "]"+"}"; 
+    	        + "{"+"\"n\":\"14\","+"\"sv\":\"+02:00\"}," 
+    	        + "{"+"\"n\":\"15\","+"\"sv\":\"U\"}"+ "]"+"}"; 
 
 
         LwM2mObjectInstance oInstance = (LwM2mObjectInstance) LwM2mNodeDecoder.decode(content.getBytes(), ContentFormat.JSON,

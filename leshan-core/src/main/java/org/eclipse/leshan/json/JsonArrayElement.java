@@ -17,16 +17,9 @@
 
 package org.eclipse.leshan.json;
 
-import java.io.Serializable;
-
 import com.google.gson.annotations.SerializedName;
 
-public class JsonArrayElement implements Serializable {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -7863478129361403779L;
+public class JsonArrayElement{
 
 	@SerializedName("n")
 	private String name;
