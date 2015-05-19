@@ -167,7 +167,9 @@ public class LeshanClientExample {
 
         @Override
         public LwM2mResponse execute(int resourceid, byte[] params) {
-            System.out.println("Execute on resource " + resourceid + " params " + params);
+            System.out.println("Execute on resource " + resourceid);
+            if (params != null && params.length != 0)
+                System.out.println("\t params " + new String(params));
             return new LwM2mResponse(ResponseCode.CHANGED);
         }
 

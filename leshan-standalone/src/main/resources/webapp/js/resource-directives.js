@@ -30,6 +30,7 @@ angular.module('resourceDirectives', [])
             scope.resource.read  =  {tooltip : "Read <br/>"   + scope.resource.path};
             scope.resource.write =  {tooltip : "Write <br/>"  + scope.resource.path};
             scope.resource.exec  =  {tooltip : "Execute <br/>"+ scope.resource.path};
+            scope.resource.execwithparams = {tooltip : "Execute with paramaters<br/>"+ scope.resource.path};
             scope.resource.observe  =  {tooltip : "Observe <br/>"+ scope.resource.path};
             
             scope.readable = function() {
@@ -187,11 +188,41 @@ angular.module('resourceDirectives', [])
                     var formattedDate = $filter('date')(exec.date, 'HH:mm:ss.sss');
                     exec.status = data.status;
                     exec.tooltip = formattedDate + "<br/>" + exec.status;
+                    scope.resource.execwithparams.tooltip = exec.tooltip;
                 }).error(function(data, status, headers, config) {
                     errormessage = "Unable to execute resource " + scope.resource.path + " for "+ $routeParams.clientId + " : " + status +" "+ data
                     dialog.open(errormessage);
                     console.error(errormessage)
                 });;
+            };
+
+            scope.execWithParams = function() {
+                $('#writeModalLabel').text(scope.resource.def.name);
+                $('#writeInputValue').val(scope.resource.value);
+                $('#writeSubmit').unbind();
+                $('#writeSubmit').click(function(e){
+                    e.preventDefault();
+                    var value = $('#writeInputValue').val();
+
+                    if(value) {
+                        $('#writeModal').modal('hide');
+
+                        $http({method: 'POST', url: "api/clients/" + $routeParams.clientId + scope.resource.path, data: value})
+                        .success(function(data, status, headers, config) {
+                            exec = scope.resource.exec;
+                            exec.date = new Date();
+                            var formattedDate = $filter('date')(exec.date, 'HH:mm:ss.sss');
+                            exec.status = data.status;
+                            exec.tooltip = formattedDate + "<br/>" + exec.status;
+                            scope.resource.execwithparams.tooltip = exec.tooltip;
+                        }).error(function(data, status, headers, config) {
+                            errormessage = "Unable to execute resource " + scope.resource.path + " for "+ $routeParams.clientId + " : " + status +" "+ data
+                            dialog.open(errormessage);
+                            console.error(errormessage);
+                        });
+                    }
+                });
+                $('#writeModal').modal('show');
             };
         }
     }

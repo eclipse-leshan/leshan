@@ -50,6 +50,14 @@
 								'btn-default': resource.exec.status == null,
 								'btn-danger':  resource.exec.status != null && resource.exec.status != 'CHANGED',
 								'btn-success': resource.exec.status == 'CHANGED' }">Exec</button>
+					<button type="button" ng-click="resource.exec.status = null; execWithParams();"
+							tooltip-html-unsafe={{resource.execwithparams.tooltip}} tooltip-placement="right" tooltip-animation="false" tooltip-append-to-body="true"
+							ng-class="{
+								'btn': true,
+								'btn-xs': true,
+								'btn-default': resource.exec.status == null,
+								'btn-danger':  resource.exec.status != null && resource.exec.status != 'CHANGED',
+								'btn-success': resource.exec.status == 'CHANGED' }"><span class="glyphicon glyphicon-cog"></button>
 				</div>
 			</div>
 		</div>
