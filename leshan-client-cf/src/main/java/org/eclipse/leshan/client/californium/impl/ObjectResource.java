@@ -172,7 +172,8 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
 
         // Manage Execute Request
         if (path.isResource()) {
-            LwM2mResponse response = nodeEnabler.execute(new ExecuteRequest(URI));
+            LwM2mResponse response = nodeEnabler.execute(new ExecuteRequest(URI, exchange.getRequestPayload(),
+                     ContentFormat.fromCode(exchange.getRequestOptions().getContentFormat())));
             exchange.respond(fromLwM2mCode(response.getCode()));
             return;
         }
