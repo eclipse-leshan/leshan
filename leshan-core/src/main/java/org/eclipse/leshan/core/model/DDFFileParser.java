@@ -169,7 +169,7 @@ public class DDFFileParser {
                 case "Time":
                     type = Type.TIME;
                     break;
-                 }
+				}
                 break;
             case "RangeEnumeration":
                 rangeEnumeration = field.getTextContent();

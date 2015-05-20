@@ -26,6 +26,6 @@ public class LwM2mJsonException extends Exception {
         super(message, cause);
     }
 
-    private static final long serialVersionUID = 5765213465835546341L;
+    private static final long serialVersionUID = 1L;
 
 }
