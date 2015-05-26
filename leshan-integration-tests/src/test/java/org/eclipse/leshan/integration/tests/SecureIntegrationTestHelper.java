@@ -16,14 +16,24 @@
 
 package org.eclipse.leshan.integration.tests;
 
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.AlgorithmParameters;
 import java.security.KeyFactory;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.security.spec.ECGenParameterSpec;
 import java.security.spec.ECParameterSpec;
 import java.security.spec.ECPoint;
@@ -59,6 +69,8 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
     public final PublicKey serverPublicKey;
     public final PrivateKey serverPrivateKey;
 
+    public final X509Certificate clientX509Cert, clientCAX509Cert, serverX509Cert, serverCAX509Cert;
+
     public SecureIntegrationTestHelper() {
         // create client credentials
         try {
@@ -83,7 +95,14 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
             // Get keys
             clientPublicKey = KeyFactory.getInstance("EC").generatePublic(publicKeySpec);
             clientPrivateKey = KeyFactory.getInstance("EC").generatePrivate(privateKeySpec);
-        } catch (InvalidKeySpecException | NoSuchAlgorithmException | InvalidParameterSpecException e) {
+
+            // Get certificates
+            // TODO handmade credentials -> automatically generated creds to delete after test
+            clientCAX509Cert = createCertificate("credentials/clientCA.crt");
+            clientX509Cert = createCertificate("credentials/client.crt");
+
+        } catch (InvalidKeySpecException | NoSuchAlgorithmException | InvalidParameterSpecException
+                | FileNotFoundException | CertificateException e) {
             throw new RuntimeException(e);
         }
 
@@ -110,9 +129,24 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
             // Get keys
             serverPublicKey = KeyFactory.getInstance("EC").generatePublic(publicKeySpec);
             serverPrivateKey = KeyFactory.getInstance("EC").generatePrivate(privateKeySpec);
-        } catch (InvalidKeySpecException | NoSuchAlgorithmException | InvalidParameterSpecException e) {
+
+            // Get certificates
+            // TODO handmade credentials -> automatically generated creds to delete after test
+            serverCAX509Cert = createCertificate("credentials/serverCA.crt");
+            serverX509Cert = createCertificate("credentials/server.crt");
+
+        } catch (InvalidKeySpecException | NoSuchAlgorithmException | InvalidParameterSpecException
+                | FileNotFoundException | CertificateException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private X509Certificate createCertificate(String certFilename) throws FileNotFoundException, CertificateException {
+        FileInputStream fileInStream = new FileInputStream(certFilename);
+        BufferedInputStream bufInStream = new BufferedInputStream(fileInStream);
+        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+
+        return (X509Certificate) cf.generateCertificate(bufInStream);
     }
 
     // TODO we need better API for secure client, maybe we need a builder like leshanServer.
@@ -146,6 +180,41 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
                 new ArrayList<LwM2mObjectEnabler>(objects));
     }
 
+    // TODO we need better API for secure client, maybe we need a builder like leshanServer.
+    public void createX509CertClient() {
+        try {
+            // TODO configurable pwd and path to keystore
+            char[] keyStorePwd = "client".toCharArray();
+            X509Certificate[] clientX509CertChain = { clientX509Cert, clientCAX509Cert };
+            X509Certificate[] trustedCertificates = { clientCAX509Cert, serverCAX509Cert };
+
+            FileInputStream fileInStream = new FileInputStream("./credentials/clientKeyStore.jks");
+
+            KeyStore clientKeyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            clientKeyStore.load(fileInStream, keyStorePwd);
+
+            PrivateKey clientPrivKey = (PrivateKey) clientKeyStore.getKey("client", keyStorePwd);
+
+            ObjectsInitializer initializer = new ObjectsInitializer();
+            List<ObjectEnabler> objects = initializer.create(2, 3);
+
+            InetSocketAddress clientAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
+            DtlsConnectorConfig.Builder config = new DtlsConnectorConfig.Builder(clientAddress);
+            config.setIdentity(clientPrivKey, clientX509CertChain, false);
+            config.setTrustStore(trustedCertificates);
+
+            CoapServer coapServer = new CoapServer();
+            coapServer.addEndpoint(new CoAPEndpoint(new DTLSConnector(config.build()), NetworkConfig.getStandard()));
+            client = new LeshanClient(clientAddress, server.getSecureAddress(), coapServer,
+                    new ArrayList<LwM2mObjectEnabler>(objects));
+        } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException
+                | UnrecoverableKeyException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // TODO client with (psk + rpk + cert) and (psk + cert)?
+
     public void createPSKandRPKClient() {
         ObjectsInitializer initializer = new ObjectsInitializer();
         List<ObjectEnabler> objects = initializer.create(2, 3);
@@ -166,7 +235,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         LeshanServerBuilder builder = new LeshanServerBuilder();
         builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         builder.setLocalAddressSecure(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-        builder.setSecurityRegistry(new SecurityRegistryImpl(serverPrivateKey, serverPublicKey) {
+        builder.setSecurityRegistry(new SecurityRegistryImpl(serverPrivateKey, serverPublicKey, null) {
             // TODO we should separate SecurityRegistryImpl in 2 registries :
             // InMemorySecurityRegistry and PersistentSecurityRegistry
             @Override
@@ -181,5 +250,48 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         });
 
         server = builder.build();
+    }
+
+    public void createServerWithX509Cert() {
+        try {
+            // TODO configurable pwd and path to keystore
+            char[] keyStorePwd = "server".toCharArray();
+            X509Certificate[] serverX509CertChain = { serverX509Cert, serverCAX509Cert };
+            X509Certificate[] trustedCertificates = { serverCAX509Cert, clientCAX509Cert };
+
+            FileInputStream fileInStream = new FileInputStream("./credentials/serverKeyStore.jks");
+
+            KeyStore serverKeyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            serverKeyStore.load(fileInStream, keyStorePwd);
+
+            PublicKey serverPubKey = serverKeyStore.getCertificate("server").getPublicKey();
+            PrivateKey serverPrivKey = (PrivateKey) serverKeyStore.getKey("server", keyStorePwd);
+
+            LeshanServerBuilder builder = new LeshanServerBuilder();
+            builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
+            builder.setLocalAddressSecure(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
+
+            SecurityRegistryImpl securityRegistry = new SecurityRegistryImpl(serverPrivKey, serverPubKey,
+                    serverX509CertChain) {
+                // TODO we should separate SecurityRegistryImpl in 2 registries :
+                // InMemorySecurityRegistry and PersistentSecurityRegistry
+                @Override
+                protected void loadFromFile() {
+                    // do not load From File
+                }
+
+                @Override
+                protected void saveToFile() {
+                    // do not save to file
+                }
+            };
+            securityRegistry.setTrustedCertificates(trustedCertificates);
+            builder.setSecurityRegistry(securityRegistry);
+
+            server = builder.build();
+        } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException
+                | UnrecoverableKeyException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

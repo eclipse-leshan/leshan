@@ -22,6 +22,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -58,26 +60,33 @@ public class SecurityRegistryImpl implements SecurityRegistry {
 
     private PrivateKey serverPrivateKey;
 
+    private X509Certificate[] serverX509CertChain;
+
+    private Certificate[] trustedCertificates = null; // TODO retrieve certs from JRE trustStore
+
     // default location for persistence
     private static final String DEFAULT_FILE = "data/security.data";
 
     public SecurityRegistryImpl() {
-        this(DEFAULT_FILE, null, null);
+        this(DEFAULT_FILE, null, null, null);
     }
 
-    public SecurityRegistryImpl(PrivateKey serverPrivateKey, PublicKey serverPublicKey) {
-        this(DEFAULT_FILE, serverPrivateKey, serverPublicKey);
+    public SecurityRegistryImpl(PrivateKey serverPrivateKey, PublicKey serverPublicKey,
+            X509Certificate[] serverX509CertChain) {
+        this(DEFAULT_FILE, serverPrivateKey, serverPublicKey, serverX509CertChain);
     }
 
     /**
      * @param file the file path to persist the registry
      */
-    public SecurityRegistryImpl(String file, PrivateKey serverPrivateKey, PublicKey serverPublicKey) {
+    public SecurityRegistryImpl(String file, PrivateKey serverPrivateKey, PublicKey serverPublicKey,
+            X509Certificate[] serverX509CertChain) {
         Validate.notEmpty(file);
 
         this.filename = file;
         this.serverPrivateKey = serverPrivateKey;
         this.serverPublicKey = serverPublicKey;
+        this.serverX509CertChain = serverX509CertChain;
         this.loadFromFile();
     }
 
@@ -185,6 +194,15 @@ public class SecurityRegistryImpl implements SecurityRegistry {
     }
 
     @Override
+    public void setTrustedCertificates(Certificate[] trustedCertificates) {
+        if (trustedCertificates != null && trustedCertificates.length > 0) {
+            this.trustedCertificates = trustedCertificates;
+        } else {
+            LOG.debug("Tried to set trusted certificates to null");
+        }
+    }
+
+    @Override
     public PublicKey getServerPublicKey() {
         return serverPublicKey;
     }
@@ -192,5 +210,15 @@ public class SecurityRegistryImpl implements SecurityRegistry {
     @Override
     public PrivateKey getServerPrivateKey() {
         return serverPrivateKey;
+    }
+
+    @Override
+    public X509Certificate[] getServerX509CertChain() {
+        return serverX509CertChain;
+    }
+
+    @Override
+    public Certificate[] getTrustedCertificates() {
+        return trustedCertificates;
     }
 }

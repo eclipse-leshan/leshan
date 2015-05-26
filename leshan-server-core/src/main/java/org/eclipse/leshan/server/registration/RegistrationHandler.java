@@ -69,6 +69,7 @@ public class RegistrationHandler {
             if (registerRequest.isSecure()) {
                 PublicKey rpk = registerRequest.getSourcePublicKey();
                 String pskIdentity = registerRequest.getPskIdentity();
+                String X509IdentityFromReq = registerRequest.getX509Identity();
 
                 if (securityInfo == null) {
                     LOG.debug("A client {} without security info try to connect through the secure endpont",
@@ -101,6 +102,23 @@ public class RegistrationHandler {
                         return new RegisterResponse(ResponseCode.FORBIDDEN);
                     } else {
                         LOG.debug("authenticated client {} using DTLS RPK", registerRequest.getEndpointName());
+                    }
+                } else if (X509IdentityFromReq != null) {
+                    // Manage X509 certificate authentication
+                    // ----------------------------------------------------
+                    LOG.debug("Registration request received using the secure endpoint {} with X509 identity {}",
+                            registrationEndpoint, X509IdentityFromReq);
+
+                    String X509IdentityFromCert = securityInfo.getX509CertChain()[0].getSubjectX500Principal()
+                            .getName();
+                    // TODO already tested if null or not
+                    if (X509IdentityFromReq == null || !X509IdentityFromReq.equals(X509IdentityFromCert)) {
+                        LOG.warn("Invalid X509 identity for client {}: expected \n'{}'\n but was \n'{}'",
+                                registerRequest.getEndpointName(), X509IdentityFromCert, X509IdentityFromReq);
+                        return new RegisterResponse(ResponseCode.FORBIDDEN);
+                    } else {
+                        LOG.debug("authenticated client {} using DTLS X509 certificates",
+                                registerRequest.getEndpointName());
                     }
                 } else {
                     LOG.warn("Unable to authenticate client {}: unknown authentication mode.",

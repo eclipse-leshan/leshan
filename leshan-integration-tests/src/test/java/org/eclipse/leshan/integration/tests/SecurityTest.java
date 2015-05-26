@@ -19,6 +19,7 @@ import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.ENDPOIN
 import static org.junit.Assert.assertEquals;
 
 import java.security.PublicKey;
+import java.security.cert.X509Certificate;
 
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.request.RegisterRequest;
@@ -174,6 +175,26 @@ public class SecurityTest {
         // verify result
         assertEquals(ResponseCode.FORBIDDEN, response.getCode());
     }
+
+    @Test
+    public void registered_device_with_x509_cert_to_server_with_x509_cert() throws NonUniqueSecurityInfoException {
+        helper.createServerWithX509Cert();
+        helper.server.start();
+
+        helper.createX509CertClient();
+        helper.client.start();
+
+        X509Certificate[] clientCertChain = { helper.clientX509Cert, helper.clientCAX509Cert };
+        helper.server.getSecurityRegistry().add(SecurityInfo.newX509CertInfo(ENDPOINT_IDENTIFIER, clientCertChain));
+
+        // client registration
+        RegisterResponse response = helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        // verify result
+        assertEquals(ResponseCode.CREATED, response.getCode());
+    }
+
+    // TODO error test cases + (rpk+psk+cert) tests
 
     @Test
     public void registered_device_with_rpk_and_psk_to_server_with_rpk() throws NonUniqueSecurityInfoException {

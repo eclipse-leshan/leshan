@@ -17,6 +17,8 @@ package org.eclipse.leshan.server.security;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.Collection;
 
 public interface SecurityRegistry extends SecurityStore {
@@ -48,6 +50,11 @@ public interface SecurityRegistry extends SecurityStore {
     SecurityInfo remove(String endpoint);
 
     /**
+     * Sets the trusted certificates
+     */
+    void setTrustedCertificates(Certificate[] trustedCertificates);
+
+    /**
      * Returns the Server Public Key
      */
     PublicKey getServerPublicKey();
@@ -56,4 +63,14 @@ public interface SecurityRegistry extends SecurityStore {
      * Returns the Server Private Key
      */
     PrivateKey getServerPrivateKey();
+
+    /**
+     * Returns the Server X509 Certificate Chain
+     */
+    X509Certificate[] getServerX509CertChain();
+
+    /**
+     * Returns the trusted certificates
+     */
+    Certificate[] getTrustedCertificates();
 }
