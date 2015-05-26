@@ -18,6 +18,8 @@ package org.eclipse.leshan.server.californium.impl;
 import java.net.InetSocketAddress;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -139,6 +141,14 @@ public class LeshanServer implements LwM2mServer {
         PublicKey publicKey = this.securityRegistry.getServerPublicKey();
         if (privateKey != null && publicKey != null) {
             builder.setIdentity(privateKey, publicKey);
+        }
+        X509Certificate[] X509CertChain = this.securityRegistry.getServerX509CertChain();
+        if (privateKey != null && X509CertChain != null && X509CertChain.length > 0) {
+            builder.setIdentity(privateKey, X509CertChain, false);
+        }
+        Certificate[] trustedCertificates = securityRegistry.getTrustedCertificates();
+        if (trustedCertificates != null && trustedCertificates.length > 0) {
+            builder.setTrustStore(trustedCertificates);
         }
 
         secureEndpoint = new CoAPEndpoint(new DTLSConnector(builder.build()), NetworkConfig.getStandard());

@@ -39,6 +39,7 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
     private int sourcePort;
     private String pskIdentity = null;
     private PublicKey publicKey = null;
+    private String X509Identity = null;
 
     public RegisterRequest(String endpointName) {
         this.endpointName = endpointName;
@@ -56,7 +57,7 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
 
     public RegisterRequest(String endpointName, Long lifetime, String lwVersion, BindingMode bindingMode,
             String smsNumber, LinkObject[] objectLinks, InetAddress sourceAddress, int sourcePort,
-            InetSocketAddress registrationEndpoint, String pskIdentity, PublicKey publicKey) {
+            InetSocketAddress registrationEndpoint, String pskIdentity, PublicKey publicKey, String X509Identity) {
         this.endpointName = endpointName;
         this.lifetime = lifetime;
         this.lwVersion = lwVersion;
@@ -69,6 +70,7 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
         this.registrationEndpoint = registrationEndpoint;
         this.pskIdentity = pskIdentity;
         this.publicKey = publicKey;
+        this.X509Identity = X509Identity;
     }
 
     public InetAddress getSourceAddress() {
@@ -108,7 +110,7 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
     }
 
     public boolean isSecure() {
-        return pskIdentity != null || publicKey != null;
+        return pskIdentity != null || publicKey != null || X509Identity != null;
     }
 
     public String getPskIdentity() {
@@ -117,6 +119,10 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
 
     public PublicKey getSourcePublicKey() {
         return publicKey;
+    }
+
+    public String getX509Identity() {
+        return X509Identity;
     }
 
     @Override

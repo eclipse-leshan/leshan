@@ -20,6 +20,8 @@ import java.security.Principal;
 import java.security.PublicKey;
 import java.util.List;
 
+import javax.security.auth.x500.X500Principal;
+
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.CoAP.Type;
@@ -150,17 +152,22 @@ public class RegisterResource extends CoapResource {
         // Get Security info
         String pskIdentity = null;
         PublicKey rpk = null;
+        String X509Identity = null;
         Principal senderIdentity = exchange.advanced().getRequest().getSenderIdentity();
+
         if (senderIdentity != null) {
             if (senderIdentity instanceof PreSharedKeyIdentity) {
                 pskIdentity = senderIdentity.getName();
             } else if (senderIdentity instanceof RawPublicKeyIdentity) {
                 rpk = ((RawPublicKeyIdentity) senderIdentity).getKey();
+            } else if (senderIdentity instanceof X500Principal) {
+                X509Identity = senderIdentity.getName();
             }
         }
 
         RegisterRequest registerRequest = new RegisterRequest(endpoint, lifetime, lwVersion, binding, smsNumber,
-                objectLinks, request.getSource(), request.getSourcePort(), registrationEndpoint, pskIdentity, rpk);
+                objectLinks, request.getSource(), request.getSourcePort(), registrationEndpoint, pskIdentity, rpk,
+                X509Identity);
 
         // Handle request
         // -------------------------------

@@ -17,6 +17,8 @@ package org.eclipse.leshan.server.registration;
 
 import java.net.InetSocketAddress;
 import java.security.PublicKey;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
@@ -68,6 +70,7 @@ public class RegistrationHandler {
             if (registerRequest.isSecure()) {
                 PublicKey rpk = registerRequest.getSourcePublicKey();
                 String pskIdentity = registerRequest.getPskIdentity();
+                String X509Identity = registerRequest.getX509Identity();
 
                 if (securityInfo == null) {
                     LOG.debug("A client {} without security info try to connect through the secure endpont",
@@ -104,6 +107,32 @@ public class RegistrationHandler {
                         return RegisterResponse.forbidden(null);
                     } else {
                         LOG.debug("authenticated client {} using DTLS RPK", registerRequest.getEndpointName());
+                    }
+                } else if (X509Identity != null) {
+                    // Manage X509 certificate authentication
+                    // ----------------------------------------------------
+                    LOG.debug("Registration request received using the secure endpoint {} with X509 identity {}",
+                            registrationEndpoint, X509Identity);
+
+                    String endpointFromCert = null;
+                    String endpointFromReq = registerRequest.getEndpointName();
+
+                    if (!securityInfo.useX509Cert()) {
+                        LOG.warn("Client {} is not supposed to use X509 certificate to authenticate", endpointFromReq);
+                        return RegisterResponse.forbidden(null);
+                    }
+
+                    Matcher endpointMatcher = Pattern.compile("CN=.*?,").matcher(X509Identity);
+                    if (endpointMatcher.find()) {
+                        endpointFromCert = endpointMatcher.group().substring(3, endpointMatcher.group().length() - 1);
+                    }
+
+                    if (endpointFromCert == null || !endpointFromCert.equals(endpointFromReq)) {
+                        LOG.warn("Invalid certificate endpoint for client {}: expected \n'{}'\n but was \n'{}'",
+                                endpointFromReq, endpointFromReq, endpointFromCert);
+                        return RegisterResponse.forbidden(null);
+                    } else {
+                        LOG.debug("authenticated client {} using DTLS X509 certificates", endpointFromReq);
                     }
                 } else {
                     LOG.warn("Unable to authenticate client {}: unknown authentication mode.",
