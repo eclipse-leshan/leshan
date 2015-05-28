@@ -183,8 +183,8 @@ public class LwM2mNodeDecoderTest {
     public void json_device_object_instance0() throws InvalidValueException {
         // json content for instance 0 of device object
     	String content = "{"
-    			+ "\"e\":["+"{"+"\"n\":\"0\","+"\"sv\":\"Open Mobile Alliance\"},"
-    			+ "{"+"\"n\":\"1\","+"\"sv\":\"Lightweight M2M Client\"}," 
+    	        + "\"e\":["+"{"+"\"n\":\"0\","+"\"sv\":\"Open Mobile Alliance\"},"
+    	        + "{"+"\"n\":\"1\","+"\"sv\":\"Lightweight M2M Client\"}," 
     	        + "{"+"\"n\":\"2\","+"\"sv\":\"345000123\"}," 
     	        + "{"+"\"n\":\"3\","+"\"sv\":\"1.0\"}," 
     	        + "{"+"\"n\":\"6/0\","+"\"v\":1"+"}," 

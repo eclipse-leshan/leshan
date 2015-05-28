@@ -90,9 +90,9 @@ public class LwM2mNodeEncoder {
             encoded = opaqueEncoder.encoded;
             break;
         case JSON:
-        	NodeJsonEncoder jsonEncoder = new NodeJsonEncoder();
-        	jsonEncoder.objectId = path.getObjectId();
-        	jsonEncoder.model = model;
+            NodeJsonEncoder jsonEncoder = new NodeJsonEncoder();
+            jsonEncoder.objectId = path.getObjectId();
+            jsonEncoder.model = model;
             node.accept(jsonEncoder);
             encoded = jsonEncoder.encoded;
             break;
