@@ -23,6 +23,7 @@ import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.Value;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
@@ -50,7 +51,7 @@ public class WriteTest {
     }
 
     @Test
-    public void can_write_replace_to_resource() {
+    public void can_write_replace_resource() {
         // client registration
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
@@ -70,7 +71,27 @@ public class WriteTest {
     }
 
     @Test
-    public void cannot_write_to_non_writable_resource() {
+    public void can_write_replace_resource_in_json() {
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        // write device timezone
+        final String timeZone = "Europe/Paris";
+        LwM2mResource newValue = new LwM2mResource(15, Value.newStringValue(timeZone));
+        LwM2mResponse response = helper.server.send(helper.getClient(), new WriteRequest(3, 0, 15, newValue,
+                ContentFormat.JSON, true));
+
+        // verify result
+        assertEquals(ResponseCode.CHANGED, response.getCode());
+
+        // read the timezone to check the value changed
+        ValueResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(3, 0, 15));
+        LwM2mResource resource = (LwM2mResource) readResponse.getContent();
+        assertEquals(timeZone, resource.getValue().value);
+    }
+
+    @Test
+    public void cannot_write_non_writable_resource() {
         // client registration
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
@@ -85,7 +106,28 @@ public class WriteTest {
     }
 
     @Test
-    public void can_write_to_writable_multiple_resource() {
+    public void can_write_object_instance() {
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        // write device timezone and offset
+        LwM2mResource utcOffset = new LwM2mResource(14, Value.newStringValue("+02"));
+        LwM2mResource timeZone = new LwM2mResource(15, Value.newStringValue("Europe/Paris"));
+        LwM2mObjectInstance newValue = new LwM2mObjectInstance(0, new LwM2mResource[] { utcOffset, timeZone });
+        LwM2mResponse response = helper.server.send(helper.getClient(), new WriteRequest("/3/0", newValue, null, true));
+
+        // verify result
+        assertEquals(ResponseCode.CHANGED, response.getCode());
+
+        // read the timezone to check the value changed
+        ValueResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(3, 0));
+        LwM2mObjectInstance instance = (LwM2mObjectInstance) readResponse.getContent();
+        assertEquals(utcOffset, instance.getResources().get(14));
+        assertEquals(timeZone, instance.getResources().get(15));
+    }
+
+    @Test
+    public void can_write_object_instance_in_json() {
         // client registration
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
