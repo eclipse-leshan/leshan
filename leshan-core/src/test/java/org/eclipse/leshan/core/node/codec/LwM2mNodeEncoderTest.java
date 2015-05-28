@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Gemalto M2M GmbH
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec;
 
@@ -155,5 +156,50 @@ public class LwM2mNodeEncoderTest {
                                 -63, 11, 0, -60, 13, 81, -126, 66, -113, -58, 14, 43, 48, 50, 58, 48, 48, -63, 15, 85 };
 
         Assert.assertArrayEquals(expected, encoded);
+    }
+    
+    @Test
+    public void json_encode_device_object_instance() {
+
+        Collection<LwM2mResource> resources = new ArrayList<>();
+
+        resources.add(new LwM2mResource(0, Value.newStringValue("Open Mobile Alliance")));
+        resources.add(new LwM2mResource(1, Value.newStringValue("Lightweight M2M Client")));
+        resources.add(new LwM2mResource(2, Value.newStringValue("345000123")));
+        resources.add(new LwM2mResource(3, Value.newStringValue("1.0")));
+
+        resources.add(new LwM2mResource(6, new Value[] { Value.newIntegerValue(1), Value.newIntegerValue(5) }));
+        resources.add(new LwM2mResource(7, new Value[] { Value.newIntegerValue(3800), Value.newIntegerValue(5000) }));
+        resources.add(new LwM2mResource(8, new Value[] { Value.newIntegerValue(125), Value.newIntegerValue(900) }));
+        resources.add(new LwM2mResource(9, Value.newIntegerValue(100)));
+        resources.add(new LwM2mResource(10, Value.newIntegerValue(15)));
+        resources.add(new LwM2mResource(11, new Value[] { Value.newIntegerValue(0) }));
+        resources.add(new LwM2mResource(13, Value.newDateValue(new Date(1367491215000L))));
+        resources.add(new LwM2mResource(14, Value.newStringValue("+02:00")));
+        resources.add(new LwM2mResource(15, Value.newStringValue("U")));
+
+        LwM2mObjectInstance oInstance = new LwM2mObjectInstance(0, resources.toArray(new LwM2mResource[0]));
+
+        byte[] encoded = LwM2mNodeEncoder.encode(oInstance, ContentFormat.JSON, new LwM2mPath("/3/0"), model);
+               
+       	String expected = "{"
+       	        + "\"e\":["+"{"+"\"n\":\"0\","+"\"sv\":\"Open Mobile Alliance\""+"},"
+       	        + "{"+"\"n\":\"1\","+"\"sv\":\"Lightweight M2M Client\""+"}," 
+       	        + "{"+"\"n\":\"2\","+"\"sv\":\"345000123\""+"}," 
+       	        + "{"+"\"n\":\"3\","+"\"sv\":\"1.0\""+"}," 
+       	        + "{"+"\"n\":\"6/0\","+"\"v\":1"+"}," 
+       	        + "{"+"\"n\":\"6/1\","+"\"v\":5"+"}," 
+       	        + "{"+"\"n\":\"7/0\","+"\"v\":3800"+"}," 
+       	        + "{"+"\"n\":\"7/1\","+"\"v\":5000"+"}," 
+       	        + "{"+"\"n\":\"8/0\","+"\"v\":125"+"}," 
+       	        + "{"+"\"n\":\"8/1\","+"\"v\":900"+"}," 
+       	        + "{"+"\"n\":\"9\","+"\"v\":100"+"}," 
+       	        + "{"+"\"n\":\"10\","+"\"v\":15"+"}," 
+       	        + "{"+"\"n\":\"11/0\","+"\"v\":0"+"}," 
+       	        + "{"+"\"n\":\"13\","+"\"v\":1367491215"+"}," 
+       	        + "{"+"\"n\":\"14\","+"\"sv\":\"+02:00\""+"}," 
+       	        + "{"+"\"n\":\"15\","+"\"sv\":\"U\"}"+ "]"+"}"; 
+
+    	 Assert.assertEquals(expected, new String(encoded));
     }
 }
