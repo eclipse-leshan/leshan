@@ -268,7 +268,7 @@ public class LeshanClientExample {
         }
     }
 
-    public class Location extends BaseInstanceEnabler {
+    public static class Location extends BaseInstanceEnabler {
         private Random random;
         private float latitude;
         private float longitude;

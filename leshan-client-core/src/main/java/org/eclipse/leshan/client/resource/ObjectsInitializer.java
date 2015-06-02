@@ -55,6 +55,13 @@ public class ObjectsInitializer {
             throw new IllegalStateException("Cannot set Instance Class for Object " + objectId
                     + " when Instance already exists. Can only have one or the other.");
         }
+
+        // check clazz has a default constructor
+        try {
+            clazz.getConstructor();
+        } catch (NoSuchMethodException e) {
+            throw new IllegalStateException("Class must have a default constructor");
+        }
         classes.put(objectId, clazz);
     }
 
@@ -63,6 +70,13 @@ public class ObjectsInitializer {
         if (classes.containsKey(objectId)) {
             throw new IllegalStateException("Cannot set Instance for Object " + objectId
                     + " when Instance Class already exists.  Can only have one or the other.");
+        }
+
+        // check class of the instance has a default constructor
+        try {
+            instance.getClass().getConstructor();
+        } catch (NoSuchMethodException e) {
+            throw new IllegalStateException("Instance must have a class with a default constructor");
         }
         instances.put(objectId, instance);
     }
@@ -88,9 +102,23 @@ public class ObjectsInitializer {
             ObjectEnabler objectEnabler = createNodeEnabler(objectModel);
             if (objectEnabler != null)
                 enablers.add(objectEnabler);
-
         }
         return enablers;
+    }
+
+    protected Class<? extends LwM2mInstanceEnabler> getClassFor(ObjectModel objectModel) {
+        // if we have a class for this object id, return it
+        Class<? extends LwM2mInstanceEnabler> clazz = classes.get(objectModel.id);
+        if (clazz != null)
+            return clazz;
+
+        // if there are no class for this object check in instance list.
+        LwM2mInstanceEnabler instance = instances.get(objectModel.id);
+        if (instance != null)
+            return instance.getClass();
+
+        // default class :
+        return SimpleInstanceEnabler.class;
     }
 
     protected ObjectEnabler createNodeEnabler(ObjectModel objectModel) {
@@ -99,10 +127,10 @@ public class ObjectsInitializer {
             LwM2mInstanceEnabler newInstance = createInstance(objectModel);
             if (newInstance != null) {
                 instances.put(0, newInstance);
-                return new ObjectEnabler(objectModel.id, objectModel, instances, SimpleInstanceEnabler.class);
+                return new ObjectEnabler(objectModel.id, objectModel, instances, getClassFor(objectModel));
             }
         }
-        return new ObjectEnabler(objectModel.id, objectModel, instances, SimpleInstanceEnabler.class);
+        return new ObjectEnabler(objectModel.id, objectModel, instances, getClassFor(objectModel));
     }
 
     protected LwM2mInstanceEnabler createInstance(ObjectModel objectModel) {
@@ -110,10 +138,7 @@ public class ObjectsInitializer {
         if (instances.containsKey(objectModel.id)) {
             instance = instances.get(objectModel.id);
         } else {
-            Class<? extends LwM2mInstanceEnabler> clazz = classes.get(objectModel.id);
-            if (clazz == null)
-                clazz = SimpleInstanceEnabler.class;
-
+            Class<? extends LwM2mInstanceEnabler> clazz = getClassFor(objectModel);
             try {
                 instance = clazz.newInstance();
             } catch (InstantiationException | IllegalAccessException e) {
