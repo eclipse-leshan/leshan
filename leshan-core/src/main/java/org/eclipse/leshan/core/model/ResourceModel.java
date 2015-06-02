@@ -37,7 +37,7 @@ public class ResourceModel {
     }
 
     public enum Type {
-        STRING, INTEGER, FLOAT, BOOLEAN, OPAQUE, TIME
+        STRING, INTEGER, FLOAT, BOOLEAN, OPAQUE, TIME, OBJECTLINK
     }
 
     public final int id;
