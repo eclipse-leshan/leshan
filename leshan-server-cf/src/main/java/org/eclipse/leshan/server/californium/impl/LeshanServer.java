@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Bosch Software Innovations GmbH - externalize listeners notification
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
@@ -38,8 +39,11 @@ import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.client.ClientRegistryListener;
+import org.eclipse.leshan.server.client.ClientRegistryListenerManagement;
+import org.eclipse.leshan.server.client.ClientRegistryNotification;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
+import org.eclipse.leshan.server.registration.RegistrationAcceptor;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
 import org.eclipse.leshan.server.security.SecurityRegistry;
 import org.eclipse.leshan.util.Validate;
@@ -77,34 +81,49 @@ public class LeshanServer implements LwM2mServer {
 
     private final LwM2mModelProvider modelProvider;
 
+    private final RegistrationCleaner registrationCleaner;
+
+    private final ClientRegistryListenerManagement clientRegistryListenerManagement;
+
     /**
      * Initialize a server which will bind to the specified address and port.
      *
      * @param localAddress the address to bind the CoAP server.
      * @param localAddressSecure the address to bind the CoAP server for DTLS connection.
-     * @param privateKey for RPK authentication mode
-     * @param publicKey for RPK authentication mode
+     * @param clientRegistry client registry to be used
+     * @param securityRegistry security registry
+     * @param observationRegistry observation registry
+     * @param modelProvider model provider
+     * @param registrationAcceptor client registration acceptor
+     * @param listenerManagement client registry listener management
+     * @param notification client registry notification
      */
     public LeshanServer(InetSocketAddress localAddress, InetSocketAddress localAddressSecure,
             final ClientRegistry clientRegistry, final SecurityRegistry securityRegistry,
-            final ObservationRegistry observationRegistry, final LwM2mModelProvider modelProvider) {
+            final ObservationRegistry observationRegistry, final LwM2mModelProvider modelProvider,
+            final RegistrationAcceptor registrationAcceptor, final ClientRegistryListenerManagement listenerManagement,
+            final ClientRegistryNotification notification) {
         Validate.notNull(localAddress, "IP address cannot be null");
         Validate.notNull(localAddressSecure, "Secure IP address cannot be null");
         Validate.notNull(clientRegistry, "clientRegistry cannot be null");
         Validate.notNull(securityRegistry, "securityRegistry cannot be null");
         Validate.notNull(observationRegistry, "observationRegistry cannot be null");
         Validate.notNull(modelProvider, "modelProvider cannot be null");
+        Validate.notNull(registrationAcceptor, "clientRegistryAcceptor cannot be null");
+        Validate.notNull(listenerManagement, "ClientRegistryListenerManagement cannot be null");
+        Validate.notNull(notification, "ClientRegistryNotification cannot be null");
 
         // Init registries
         this.clientRegistry = clientRegistry;
         this.securityRegistry = securityRegistry;
         this.observationRegistry = observationRegistry;
-
         this.modelProvider = modelProvider;
+        this.clientRegistryListenerManagement = listenerManagement;
+
+        this.registrationCleaner = new RegistrationCleaner(clientRegistry);
 
         // Cancel observations on client unregistering
-        this.clientRegistry.addListener(new ClientRegistryListener() {
-
+        listenerManagement.addClientRegistryListener(new ClientRegistryListener() {
             @Override
             public void updated(final Client clientUpdated) {
             }
@@ -142,8 +161,8 @@ public class LeshanServer implements LwM2mServer {
         coapServer.addEndpoint(secureEndpoint);
 
         // define /rd resource
-        final RegisterResource rdResource = new RegisterResource(new RegistrationHandler(this.clientRegistry,
-                this.securityRegistry));
+        final RegisterResource rdResource = new RegisterResource(new RegistrationHandler(clientRegistry,
+                registrationAcceptor, securityRegistry), notification);
         coapServer.add(rdResource);
 
         // create sender
@@ -169,6 +188,8 @@ public class LeshanServer implements LwM2mServer {
             ((Startable) observationRegistry).start();
         }
 
+        registrationCleaner.start();
+
         // Start server
         coapServer.start();
 
@@ -179,6 +200,8 @@ public class LeshanServer implements LwM2mServer {
     public void stop() {
         // Stop server
         coapServer.stop();
+
+        registrationCleaner.stop();
 
         // Start registries
         if (clientRegistry instanceof Stoppable) {
@@ -248,5 +271,10 @@ public class LeshanServer implements LwM2mServer {
      */
     public CoapServer getCoapServer() {
         return coapServer;
+    }
+
+    @Override
+    public ClientRegistryListenerManagement getClientRegistryListenerManagement() {
+        return clientRegistryListenerManagement;
     }
 }

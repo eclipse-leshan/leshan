@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Bosch Software Innovations GmbH - extend with listeners notification
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
@@ -35,6 +36,8 @@ import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.RegisterResponse;
 import org.eclipse.leshan.server.client.ClientRegistry;
+import org.eclipse.leshan.server.client.ClientRegistryNotification;
+import org.eclipse.leshan.server.registration.ClientAwareResponseHolder;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
@@ -64,11 +67,14 @@ public class RegisterResource extends CoapResource {
     public static final String RESOURCE_NAME = "rd";
 
     private final RegistrationHandler registrationHandler;
+    private final ClientRegistryNotification clientRegistryNotification;
 
-    public RegisterResource(RegistrationHandler registrationHandler) {
+    public RegisterResource(final RegistrationHandler registrationHandler,
+            final ClientRegistryNotification clientRegistryNotification) {
         super(RESOURCE_NAME);
 
         this.registrationHandler = registrationHandler;
+        this.clientRegistryNotification = clientRegistryNotification;
         getAttributes().addResourceType("core.rd");
     }
 
@@ -139,13 +145,15 @@ public class RegisterResource extends CoapResource {
 
         // Handle request
         // -------------------------------
-        RegisterResponse response = registrationHandler.register(registerRequest);
+        final ClientAwareResponseHolder responseHolder = registrationHandler.register(registerRequest);
+        RegisterResponse response = (RegisterResponse) responseHolder.getResponse();
 
         // Create CoAP Response from LwM2m request
         // -------------------------------
         if (response.getCode() == org.eclipse.leshan.ResponseCode.CREATED) {
             exchange.setLocationPath(RESOURCE_NAME + "/" + response.getRegistrationID());
             exchange.respond(ResponseCode.CREATED);
+            clientRegistryNotification.notifyOnRegistration(responseHolder.getClient());
         } else {
             // TODO we lost specific message error with this refactoring
             // exchange.respond(fromLwM2mCode(response.getCode()),"error message");
@@ -227,11 +235,15 @@ public class RegisterResource extends CoapResource {
 
         // Handle request
         // -------------------------------
-        LwM2mResponse updateResponse = registrationHandler.update(updateRequest);
+        ClientAwareResponseHolder responseHolder = registrationHandler.update(updateRequest);
+        LwM2mResponse updateResponse = responseHolder.getResponse();
 
         // Create CoAP Response from LwM2m request
         // -------------------------------
         exchange.respond(fromLwM2mCode(updateResponse.getCode()));
+        if (updateResponse.getCode().equals(ResponseCode.CHANGED)) {
+            clientRegistryNotification.notifyOnUpdate(responseHolder.getClient());
+        }
     }
 
     @Override
@@ -242,17 +254,19 @@ public class RegisterResource extends CoapResource {
 
         if (uri != null && uri.size() == 2 && RESOURCE_NAME.equals(uri.get(0))) {
             DeregisterRequest deregisterRequest = new DeregisterRequest(uri.get(1));
-            LwM2mResponse deregisterResponse = registrationHandler.deregister(deregisterRequest);
+            ClientAwareResponseHolder responseHolder = registrationHandler.deregister(deregisterRequest);
+            LwM2mResponse deregisterResponse = responseHolder.getResponse();
             exchange.respond(fromLwM2mCode(deregisterResponse.getCode()));
 
-            if (exchange.advanced().getEndpoint() instanceof SecureEndpoint
-                    && deregisterResponse.getCode().equals(org.eclipse.leshan.ResponseCode.DELETED)) {
-                // clean the DTLS Session
-                Request request = exchange.advanced().getRequest();
-                ((SecureEndpoint) exchange.advanced().getEndpoint()).getDTLSConnector().close(
-                        new InetSocketAddress(request.getSource(), request.getSourcePort()));
+            if (deregisterResponse.getCode().equals(org.eclipse.leshan.ResponseCode.DELETED)) {
+                clientRegistryNotification.notifyOnUnregistration(responseHolder.getClient());
+                if (exchange.advanced().getEndpoint() instanceof SecureEndpoint) {
+                    // clean the DTLS Session
+                    Request request = exchange.advanced().getRequest();
+                    ((SecureEndpoint) exchange.advanced().getEndpoint()).getDTLSConnector().close(
+                            new InetSocketAddress(request.getSource(), request.getSourcePort()));
+                }
             }
-
         } else {
             LOG.debug("Invalid deregistration");
             exchange.respond(ResponseCode.NOT_FOUND);

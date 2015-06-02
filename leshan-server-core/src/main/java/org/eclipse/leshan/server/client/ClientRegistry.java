@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Bosch Software Innovations GmbH - externalize registry listeners
  *******************************************************************************/
 package org.eclipse.leshan.server.client;
 
@@ -25,7 +26,7 @@ public interface ClientRegistry {
     /**
      * Retrieves a registered client by end-point.
      * 
-     * @param endpoint
+     * @param endpoint endpoint name
      * @return the matching client or <code>null</code> if not found
      */
     Client get(String endpoint);
@@ -38,29 +39,13 @@ public interface ClientRegistry {
     Collection<Client> allClients();
 
     /**
-     * Adds a new listener to be notified with client registration events.
-     * 
-     * @param listener
-     */
-    void addListener(ClientRegistryListener listener);
-
-    /**
-     * Removes a client registration listener.
-     * 
-     * @param listener the listener to be removed
-     */
-    void removeListener(ClientRegistryListener listener);
-
-    /**
      * Registers a new client.
      * 
      * An implementation must notify all registered listeners as part of processing the registration request.
      * 
      * @param client the client to register, identified by its end-point.
-     * @return <code>true</code> if the client was properly registered and <code>false</code> if the registration is not
-     *         allowed.
      */
-    boolean registerClient(Client client);
+    void registerClient(Client client);
 
     /**
      * Updates registration properties for a given client.

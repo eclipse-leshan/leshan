@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Bosch Software Innovations GmbH - adapted for registration acceptor
  *******************************************************************************/
 package org.eclipse.leshan.server.californium;
 
@@ -20,13 +21,18 @@ import java.net.InetSocketAddress;
 
 import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
+import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
+import org.eclipse.leshan.server.client.ClientRegistryListenerManagement;
+import org.eclipse.leshan.server.client.ClientRegistryNotification;
 import org.eclipse.leshan.server.impl.ClientRegistryImpl;
+import org.eclipse.leshan.server.impl.ClientRegistryManagementImpl;
 import org.eclipse.leshan.server.impl.ObservationRegistryImpl;
 import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StandardModelProvider;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
+import org.eclipse.leshan.server.registration.RegistrationAcceptor;
 import org.eclipse.leshan.server.security.SecurityRegistry;
 
 /**
@@ -48,6 +54,9 @@ public class LeshanServerBuilder {
     private LwM2mModelProvider modelProvider;
     private InetSocketAddress localAddress;
     private InetSocketAddress localAddressSecure;
+    private RegistrationAcceptor registrationAcceptor;
+    private ClientRegistryListenerManagement clientRegistryListenerManagement;
+    private ClientRegistryNotification clientRegistryNotification;
 
     public LeshanServerBuilder setLocalAddress(String hostname, int port) {
         this.localAddress = new InetSocketAddress(hostname, port);
@@ -89,6 +98,21 @@ public class LeshanServerBuilder {
         return this;
     }
 
+    public LeshanServerBuilder setRegistrationAcceptor(RegistrationAcceptor acceptor) {
+        this.registrationAcceptor = acceptor;
+        return this;
+    }
+
+    public LeshanServerBuilder setClientRegistryListenerManagement(ClientRegistryListenerManagement management) {
+        this.clientRegistryListenerManagement = management;
+        return this;
+    }
+
+    public LeshanServerBuilder setClientRegistryNotification(ClientRegistryNotification notification) {
+        this.clientRegistryNotification = notification;
+        return this;
+    }
+
     public LeshanServer build() {
         if (localAddress == null)
             localAddress = new InetSocketAddress((InetAddress) null, PORT);
@@ -103,7 +127,23 @@ public class LeshanServerBuilder {
         if (modelProvider == null) {
             modelProvider = new StandardModelProvider();
         }
+        if (registrationAcceptor == null) {
+            registrationAcceptor = new RegistrationAcceptor() {
+                @Override
+                public boolean acceptRegistration(Client client) {
+                    return true;
+                }
+            };
+        }
+        if (clientRegistryListenerManagement == null && clientRegistryNotification == null) {
+            clientRegistryListenerManagement = new ClientRegistryManagementImpl();
+            clientRegistryNotification = (ClientRegistryManagementImpl) clientRegistryListenerManagement;
+        } else if (!(clientRegistryListenerManagement != null && clientRegistryNotification != null)) {
+            throw new IllegalStateException(
+                    "you have to provide both client registry management and notification, or none of them - to use defaults");
+        }
         return new LeshanServer(localAddress, localAddressSecure, clientRegistry, securityRegistry,
-                observationRegistry, modelProvider);
+                observationRegistry, modelProvider, registrationAcceptor, clientRegistryListenerManagement,
+                clientRegistryNotification);
     }
 }

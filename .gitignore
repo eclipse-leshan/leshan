@@ -13,3 +13,5 @@ bin/
 *.war
 *.ear
 leshan-core/ddffiles
+.idea/
+*.iml

@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Bosch Software Innovations GmbH - extended for external listeners notification
  *******************************************************************************/
 package org.eclipse.leshan.server.registration;
 
@@ -45,16 +46,19 @@ public class RegistrationHandler {
 
     private SecurityStore securityStore;
     private ClientRegistry clientRegistry;
+    private final RegistrationAcceptor registrationAcceptor;
 
-    public RegistrationHandler(ClientRegistry clientRegistry, SecurityStore securityStore) {
+    public RegistrationHandler(ClientRegistry clientRegistry, RegistrationAcceptor registrationAcceptor,
+            SecurityStore securityStore) {
         this.clientRegistry = clientRegistry;
+        this.registrationAcceptor = registrationAcceptor;
         this.securityStore = securityStore;
     }
 
-    public RegisterResponse register(RegisterRequest registerRequest) {
+    public ClientAwareResponseHolder register(RegisterRequest registerRequest) {
 
         if (registerRequest.getEndpointName() == null || registerRequest.getEndpointName().isEmpty()) {
-            return new RegisterResponse(ResponseCode.BAD_REQUEST);
+            return new ClientAwareResponseHolder(new RegisterResponse(ResponseCode.BAD_REQUEST));
         } else {
             // register
             String registrationId = RegistrationHandler.createRegistrationId();
@@ -73,7 +77,7 @@ public class RegistrationHandler {
                 if (securityInfo == null) {
                     LOG.debug("A client {} without security info try to connect through the secure endpont",
                             registerRequest.getEndpointName());
-                    return new RegisterResponse(ResponseCode.FORBIDDEN);
+                    return new ClientAwareResponseHolder(new RegisterResponse(ResponseCode.FORBIDDEN));
                 } else if (pskIdentity != null) {
                     // Manage PSK authentication
                     // ----------------------------------------------------
@@ -83,7 +87,7 @@ public class RegistrationHandler {
                     if (pskIdentity == null || !pskIdentity.equals(securityInfo.getIdentity())) {
                         LOG.warn("Invalid identity for client {}: expected '{}' but was '{}'",
                                 registerRequest.getEndpointName(), securityInfo.getIdentity(), pskIdentity);
-                        return new RegisterResponse(ResponseCode.FORBIDDEN);
+                        return new ClientAwareResponseHolder(new RegisterResponse(ResponseCode.FORBIDDEN));
                     } else {
                         LOG.debug("authenticated client {} using DTLS PSK", registerRequest.getEndpointName());
                     }
@@ -98,19 +102,19 @@ public class RegistrationHandler {
                                 registerRequest.getEndpointName(),
                                 DatatypeConverter.printHexBinary(securityInfo.getRawPublicKey().getEncoded()),
                                 DatatypeConverter.printHexBinary(rpk.getEncoded()));
-                        return new RegisterResponse(ResponseCode.FORBIDDEN);
+                        return new ClientAwareResponseHolder(new RegisterResponse(ResponseCode.FORBIDDEN));
                     } else {
                         LOG.debug("authenticated client {} using DTLS RPK", registerRequest.getEndpointName());
                     }
                 } else {
                     LOG.warn("Unable to authenticate client {}: unknown authentication mode.",
                             registerRequest.getEndpointName());
-                    return new RegisterResponse(ResponseCode.FORBIDDEN);
+                    return new ClientAwareResponseHolder(new RegisterResponse(ResponseCode.FORBIDDEN));
                 }
             } else {
                 if (securityInfo != null) {
                     LOG.warn("client {} must connect using DTLS ", registerRequest.getEndpointName());
-                    return new RegisterResponse(ResponseCode.BAD_REQUEST);
+                    return new ClientAwareResponseHolder(new RegisterResponse(ResponseCode.BAD_REQUEST));
                 }
             }
 
@@ -119,33 +123,34 @@ public class RegistrationHandler {
                     registerRequest.getLwVersion(), registerRequest.getLifetime(), registerRequest.getSmsNumber(),
                     registerRequest.getBindingMode(), registerRequest.getObjectLinks(), registrationEndpoint);
 
-            if (clientRegistry.registerClient(client)) {
-                LOG.debug("New registered client: {}", client);
-                return new RegisterResponse(ResponseCode.CREATED, client.getRegistrationId());
+            if (registrationAcceptor.acceptRegistration(client)) {
+                clientRegistry.registerClient(client);
+                return new ClientAwareResponseHolder(new RegisterResponse(ResponseCode.CREATED,
+                        client.getRegistrationId()), client);
             } else {
-                return new RegisterResponse(ResponseCode.FORBIDDEN);
+                return new ClientAwareResponseHolder(new RegisterResponse(ResponseCode.FORBIDDEN));
             }
         }
     }
 
-    public LwM2mResponse update(UpdateRequest updateRequest) {
+    public ClientAwareResponseHolder update(UpdateRequest updateRequest) {
         Client client = clientRegistry.updateClient(new ClientUpdate(updateRequest.getRegistrationId(), updateRequest
                 .getAddress(), updateRequest.getPort(), updateRequest.getLifeTimeInSec(), updateRequest.getSmsNumber(),
                 updateRequest.getBindingMode(), updateRequest.getObjectLinks()));
         if (client == null) {
-            return new LwM2mResponse(ResponseCode.NOT_FOUND);
+            return new ClientAwareResponseHolder(new LwM2mResponse(ResponseCode.NOT_FOUND));
         } else {
-            return new LwM2mResponse(ResponseCode.CHANGED);
+            return new ClientAwareResponseHolder(new LwM2mResponse(ResponseCode.CHANGED), client);
         }
     }
 
-    public LwM2mResponse deregister(DeregisterRequest deregisterRequest) {
+    public ClientAwareResponseHolder deregister(DeregisterRequest deregisterRequest) {
         Client unregistered = clientRegistry.deregisterClient(deregisterRequest.getRegistrationID());
         if (unregistered != null) {
-            return new LwM2mResponse(ResponseCode.DELETED);
+            return new ClientAwareResponseHolder(new LwM2mResponse(ResponseCode.DELETED), unregistered);
         } else {
             LOG.debug("Invalid deregistration");
-            return new LwM2mResponse(ResponseCode.NOT_FOUND);
+            return new ClientAwareResponseHolder(new LwM2mResponse(ResponseCode.NOT_FOUND));
         }
     }
 

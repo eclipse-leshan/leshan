@@ -126,7 +126,7 @@ public class EventServlet extends HttpServlet {
     };
 
     public EventServlet(LeshanServer server) {
-        server.getClientRegistry().addListener(this.clientRegistryListener);
+        server.getClientRegistryListenerManagement().addClientRegistryListener(this.clientRegistryListener);
         server.getObservationRegistry().addListener(this.observationRegistryListener);
 
         // add an interceptor to each endpoint to trace all CoAP messages
