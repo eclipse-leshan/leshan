@@ -19,149 +19,132 @@ package org.eclipse.leshan.json;
 
 import com.google.gson.annotations.SerializedName;
 
-public class JsonArrayElement{
+public class JsonArrayElement {
 
-	@SerializedName("n")
-	private String name;
+    @SerializedName("n")
+    private String name;
 
-	@SerializedName("v")
-	private Number floatValue;
+    @SerializedName("v")
+    private Number floatValue;
 
-	@SerializedName("bv")
-	private Boolean booleanValue;
+    @SerializedName("bv")
+    private Boolean booleanValue;
 
-	@SerializedName("ov")
-	private String objectLinkValue;
+    @SerializedName("ov")
+    private String objectLinkValue;
 
-	@SerializedName("sv")
-	private String stringValue;
+    @SerializedName("sv")
+    private String stringValue;
 
-	@SerializedName("t")
-	private Integer time;
+    @SerializedName("t")
+    private Integer time;
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public Integer getTime() {
-		return time;
-	}
+    public Integer getTime() {
+        return time;
+    }
 
-	public void setTime(Integer time) {
-		this.time = time;
-	}
+    public void setTime(Integer time) {
+        this.time = time;
+    }
 
-	public void setFloatValue(Number floatValue) {
-		this.floatValue = floatValue;
-	}
+    public void setFloatValue(Number floatValue) {
+        this.floatValue = floatValue;
+    }
 
-	public void setBooleanValue(Boolean booleanValue) {
-		this.booleanValue = booleanValue;
-	}
+    public void setBooleanValue(Boolean booleanValue) {
+        this.booleanValue = booleanValue;
+    }
 
-	public void setObjectLinkValue(String objectLinkValue) {
-		this.objectLinkValue = objectLinkValue;
-	}
+    public void setObjectLinkValue(String objectLinkValue) {
+        this.objectLinkValue = objectLinkValue;
+    }
 
-	public void setStringValue(String stringValue) {
-		this.stringValue = stringValue;
-	}
+    public void setStringValue(String stringValue) {
+        this.stringValue = stringValue;
+    }
 
-	public Object getResourceValue() {
-		
-		if (booleanValue != null) {
-			return booleanValue;
-		}
-		if (floatValue != null) {
-			return floatValue;
-		}
-		if (objectLinkValue != null) {
-			return objectLinkValue;
-		}
-		if (stringValue != null) {
-			return stringValue;
-		}
-		return null;
-	}
+    public Object getResourceValue() {
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((booleanValue == null) ? 0 : booleanValue.hashCode());
-		result = prime * result
-				+ ((floatValue == null) ? 0 : floatValue.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result
-				+ ((objectLinkValue == null) ? 0 : objectLinkValue.hashCode());
-		result = prime * result
-				+ ((stringValue == null) ? 0 : stringValue.hashCode());
-		result = prime * result + time;
-		return result;
-	}
+        if (booleanValue != null) {
+            return booleanValue;
+        }
+        if (floatValue != null) {
+            return floatValue;
+        }
+        if (objectLinkValue != null) {
+            return objectLinkValue;
+        }
+        if (stringValue != null) {
+            return stringValue;
+        }
+        return null;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		JsonArrayElement other = (JsonArrayElement) obj;
-		if (booleanValue == null) {
-			if (other.booleanValue != null)
-				return false;
-		} else if (!booleanValue.equals(other.booleanValue))
-			return false;
-		if (floatValue == null) {
-			if (other.floatValue != null)
-				return false;
-		} else if (!floatValue.equals(other.floatValue))
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
-		if (objectLinkValue == null) {
-			if (other.objectLinkValue != null)
-				return false;
-		} else if (!objectLinkValue.equals(other.objectLinkValue))
-			return false;
-		if (stringValue == null) {
-			if (other.stringValue != null)
-				return false;
-		} else if (!stringValue.equals(other.stringValue))
-			return false;
-		if (time != other.time)
-			return false;
-		return true;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((booleanValue == null) ? 0 : booleanValue.hashCode());
+        result = prime * result + ((floatValue == null) ? 0 : floatValue.hashCode());
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((objectLinkValue == null) ? 0 : objectLinkValue.hashCode());
+        result = prime * result + ((stringValue == null) ? 0 : stringValue.hashCode());
+        result = prime * result + time;
+        return result;
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("ArrayElement [n=").append(name);
-		if (floatValue != null)
-			builder.append(", v=").append(floatValue);
-		if (booleanValue != null)
-			builder.append(", bv=").append(booleanValue);
-		if (stringValue != null)
-			builder.append(", sv=").append(stringValue);
-		if (objectLinkValue != null)
-			builder.append(", ov=").append(objectLinkValue);
-		if (time != null)
-			builder.append(", t=").append(time);
-		builder.append("]");
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        JsonArrayElement other = (JsonArrayElement) obj;
+        if (booleanValue == null) {
+            if (other.booleanValue != null)
+                return false;
+        } else if (!booleanValue.equals(other.booleanValue))
+            return false;
+        if (floatValue == null) {
+            if (other.floatValue != null)
+                return false;
+        } else if (!floatValue.equals(other.floatValue))
+            return false;
+        if (name == null) {
+            if (other.name != null)
+                return false;
+        } else if (!name.equals(other.name))
+            return false;
+        if (objectLinkValue == null) {
+            if (other.objectLinkValue != null)
+                return false;
+        } else if (!objectLinkValue.equals(other.objectLinkValue))
+            return false;
+        if (stringValue == null) {
+            if (other.stringValue != null)
+                return false;
+        } else if (!stringValue.equals(other.stringValue))
+            return false;
+        if (time != other.time)
+            return false;
+        return true;
+    }
 
-		return builder.toString();
-
-	}
+    @Override
+    public String toString() {
+        return String
+                .format("JsonArrayElement [name=%s, floatValue=%s, booleanValue=%s, objectLinkValue=%s, stringValue=%s, time=%s]",
+                        name, floatValue, booleanValue, objectLinkValue, stringValue, time);
+    }
 
 }

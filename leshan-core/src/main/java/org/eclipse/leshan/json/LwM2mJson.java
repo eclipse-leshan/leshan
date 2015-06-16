@@ -19,37 +19,27 @@ package org.eclipse.leshan.json;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 
+/**
+ * Helper for encoding/decoding LWM2M JSON format
+ */
 public class LwM2mJson {
 
-	private static final Gson gson = new GsonBuilder().create();
+    private static final Gson gson = new GsonBuilder().create();
 
-	/**
-	 * 
-	 * @param lwM2mJsonElement
-	 * @return
-	 */
-	public static String toJsonLwM2m(LwM2mJsonObject lwM2mJsonElement) {
-		String json = gson.toJson(lwM2mJsonElement);
-		return json;
-	}
+    public static String toJsonLwM2m(LwM2mJsonObject lwM2mJsonElement) {
+        String json = gson.toJson(lwM2mJsonElement);
+        return json;
+    }
 
-	/**
-	 * 
-	 * @param jsonString
-	 * @return
-	 * @throws LwM2mJsonException
-	 */
-	public static LwM2mJsonObject fromJsonLwM2m(String jsonString)
-			throws LwM2mJsonException {
-		try {
-			LwM2mJsonObject element = gson.fromJson(jsonString,
-					LwM2mJsonObject.class);
-			return element;
-		} catch (Exception e) {
-			throw new LwM2mJsonException(
-					"Unable to deserialize JSON String to LwM2mJsonObject ", e);
-		}
-	}
+    public static LwM2mJsonObject fromJsonLwM2m(String jsonString) throws LwM2mJsonException {
+        try {
+            LwM2mJsonObject element = gson.fromJson(jsonString, LwM2mJsonObject.class);
+            return element;
+        } catch (JsonSyntaxException e) {
+            throw new LwM2mJsonException("Unable to deserialize JSON String to LwM2mJsonObject ", e);
+        }
+    }
 
 }
