@@ -16,16 +16,19 @@
  *******************************************************************************/
 package org.eclipse.leshan.json;
 
+/**
+ * Exception thrown in case of JSON parsing error
+ */
 public class LwM2mJsonException extends Exception {
 
-	public LwM2mJsonException(String message) {
+    private static final long serialVersionUID = 1L;
+
+    public LwM2mJsonException(String message) {
         super(message);
     }
 
     public LwM2mJsonException(String message, Exception cause) {
         super(message, cause);
     }
-
-    private static final long serialVersionUID = 1L;
 
 }

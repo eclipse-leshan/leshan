@@ -42,6 +42,7 @@ import java.util.Map;
  * @since 2.0
  * @version $Id: Validate.java 1057051 2011-01-09 23:15:51Z sebb $
  */
+@SuppressWarnings("rawtypes")
 public class Validate {
     // Validate has no dependencies on other classes in Commons Lang at present
 

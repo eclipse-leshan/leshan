@@ -21,84 +21,85 @@ import java.util.ArrayList;
 
 import com.google.gson.annotations.SerializedName;
 
+/**
+ * The class representing the JSON format of LWM2M
+ */
 public class LwM2mJsonObject {
-	
-	@SerializedName("bn")
-    private String baseName = null ; 
-	
-	@SerializedName("e")
+
+    @SerializedName("bn")
+    private String baseName = null;
+
+    @SerializedName("e")
     private final ArrayList<JsonArrayElement> jsonArray;
-	
-	@SerializedName("bt")
+
+    @SerializedName("bt")
     private Long baseTime;
-    
-	public LwM2mJsonObject(ArrayList<JsonArrayElement> jsonArray) {
-		this.jsonArray = jsonArray;
-	}
 
-	public String getBaseName() {
-		return baseName;
-	}
+    public LwM2mJsonObject(ArrayList<JsonArrayElement> jsonArray) {
+        this.jsonArray = jsonArray;
+    }
 
-	public void setBaseName(String baseName) {
-		this.baseName = baseName;
-	}
+    public String getBaseName() {
+        return baseName;
+    }
 
-	public Long getBaseTime() {
-		return baseTime;
-	}
+    public void setBaseName(String baseName) {
+        this.baseName = baseName;
+    }
 
-	public void setBaseTime(Long baseTime) {
-		this.baseTime = baseTime;
-	}
+    public Long getBaseTime() {
+        return baseTime;
+    }
 
-	public ArrayList<JsonArrayElement> getResourceList() {
-		return jsonArray;
-	}
+    public void setBaseTime(Long baseTime) {
+        this.baseTime = baseTime;
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((baseName == null) ? 0 : baseName.hashCode());
-		result = prime * result
-				+ ((baseTime == null) ? 0 : baseTime.hashCode());
-		result = prime * result
-				+ ((jsonArray == null) ? 0 : jsonArray.hashCode());
-		return result;
-	}
+    public ArrayList<JsonArrayElement> getResourceList() {
+        return jsonArray;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		LwM2mJsonObject other = (LwM2mJsonObject) obj;
-		if (baseName == null) {
-			if (other.baseName != null)
-				return false;
-		} else if (!baseName.equals(other.baseName))
-			return false;
-		if (baseTime == null) {
-			if (other.baseTime != null)
-				return false;
-		} else if (!baseTime.equals(other.baseTime))
-			return false;
-		if (jsonArray == null) {
-			if (other.jsonArray != null)
-				return false;
-		} else if (!jsonArray.equals(other.jsonArray))
-			return false;
-		return true;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((baseName == null) ? 0 : baseName.hashCode());
+        result = prime * result + ((baseTime == null) ? 0 : baseTime.hashCode());
+        result = prime * result + ((jsonArray == null) ? 0 : jsonArray.hashCode());
+        return result;
+    }
 
-	@Override
-	public String toString() {
-		return String.format("LwM2mJsonElement [baseName=%s, baseTime=%d, resourceList=%s]", baseName, baseTime, jsonArray);
-	}
-  
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        LwM2mJsonObject other = (LwM2mJsonObject) obj;
+        if (baseName == null) {
+            if (other.baseName != null)
+                return false;
+        } else if (!baseName.equals(other.baseName))
+            return false;
+        if (baseTime == null) {
+            if (other.baseTime != null)
+                return false;
+        } else if (!baseTime.equals(other.baseTime))
+            return false;
+        if (jsonArray == null) {
+            if (other.jsonArray != null)
+                return false;
+        } else if (!jsonArray.equals(other.jsonArray))
+            return false;
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("LwM2mJsonElement [baseName=%s, baseTime=%d, resourceList=%s]", baseName, baseTime,
+                jsonArray);
+    }
+
 }
