@@ -28,7 +28,14 @@ myModule.factory('lwResources',["$http", function($http) {
         if (url.length > 0 && url.charAt(0) === '/') {
             url = url.substr(1);
         }
-        return url.split("/");
+        var array = url.split("/");
+        // check if all element in the array is a number
+        for (i in array) {
+          if (isNaN(parseInt(array[i], 10))){
+              return [];
+          }
+        }
+        return array;
     }
 
     /**
@@ -85,6 +92,9 @@ myModule.factory('lwResources',["$http", function($http) {
                 var attributes = objectLinks[i].attributes;
 
                 switch (resourcepath.length) {
+                case 0:
+                    // ignore empty path
+                    break;
                 case 1:
                     // object
                     var object = addObject(tree, objectDefs, resourcepath[0],
