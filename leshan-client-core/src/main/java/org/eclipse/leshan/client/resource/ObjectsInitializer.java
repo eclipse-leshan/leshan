@@ -50,6 +50,11 @@ public class ObjectsInitializer {
     }
 
     public void setClassForObject(int objectId, Class<? extends LwM2mInstanceEnabler> clazz) {
+        if (model.getObjectModel(objectId) == null) {
+            throw new IllegalStateException("Cannot set Instance Class for Object " + objectId
+                    + " because no model is defined for this id.");
+        }
+
         Validate.notNull(clazz);
         if (instances.containsKey(objectId)) {
             throw new IllegalStateException("Cannot set Instance Class for Object " + objectId
@@ -66,6 +71,10 @@ public class ObjectsInitializer {
     }
 
     public void setInstanceForObject(int objectId, LwM2mInstanceEnabler instance) {
+        if (model.getObjectModel(objectId) == null) {
+            throw new IllegalStateException("Cannot set Instance Class for Object " + objectId
+                    + " because no model is defined for this id.");
+        }
         Validate.notNull(instance);
         if (classes.containsKey(objectId)) {
             throw new IllegalStateException("Cannot set Instance for Object " + objectId
@@ -99,6 +108,11 @@ public class ObjectsInitializer {
         List<ObjectEnabler> enablers = new ArrayList<ObjectEnabler>();
         for (int i = 0; i < objectId.length; i++) {
             ObjectModel objectModel = model.getObjectModel(objectId[i]);
+            if (objectModel == null) {
+                throw new IllegalStateException("Cannot create object for id " + objectId[i]
+                        + " because no model is defined for this id.");
+            }
+
             ObjectEnabler objectEnabler = createNodeEnabler(objectModel);
             if (objectEnabler != null)
                 enablers.add(objectEnabler);
