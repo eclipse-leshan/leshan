@@ -47,7 +47,7 @@ public class LwM2mResource implements LwM2mNode {
      * New multiple instances resource
      */
     public LwM2mResource(int id, Value<?>[] values) {
-        Validate.notEmpty(values);
+        Validate.notNull(values);
         this.id = id;
         this.values = Arrays.copyOf(values, values.length);
         this.isMultiInstances = true;
