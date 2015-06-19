@@ -164,7 +164,7 @@ public class LeshanClientExample {
                         Value.newIntegerValue(getMemoryFree())));
             case 11:
                 return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
-                        Value.newIntegerValue(getErrorCode())));
+                        new Value<?>[] { Value.newIntegerValue(getErrorCode()) }));
             case 13:
                 return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
                         Value.newDateValue(getCurrentTime())));
