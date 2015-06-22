@@ -16,7 +16,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -182,24 +184,26 @@ public class LwM2mNodeDecoderTest {
     @Test
     public void json_device_object_instance0() throws InvalidValueException {
         // json content for instance 0 of device object
-        String content = "{\"e\":[{\"n\":\"0\",\"sv\":\"Open Mobile Alliance\"}," //
-                + "{\"n\":\"1\",\"sv\":\"Lightweight M2M Client\"}," //
-                + "{\"n\":\"2\",\"sv\":\"345000123\"}," //
-                + "{\"n\":\"3\",\"sv\":\"1.0\"}," //
-                + "{\"n\":\"6/0\",\"v\":1}," //
-                + "{\"n\":\"6/1\",\"v\":5}," //
-                + "{\"n\":\"7/0\",\"v\":3800}," //
-                + "{\"n\":\"7/1\",\"v\":5000}," //
-                + "{\"n\":\"8/0\",\"v\":125}," //
-                + "{\"n\":\"8/1\",\"v\":900}," //
-                + "{\"n\":\"9\",\"v\":100}," // //
-                + "{\"n\":\"10\",\"v\":15}," //
-                + "{\"n\":\"11/0\",\"v\":0}," //
-                + "{\"n\":\"13\",\"v\":1367491215}," //
-                + "{\"n\":\"14\",\"sv\":\"+02:00\"}," //
-                + "{\"n\":\"15\",\"sv\":\"U\"}" + "]}";
+        StringBuilder b = new StringBuilder();
+        b.append("{\"e\":[");
+        b.append("{\"n\":\"0\",\"sv\":\"Open Mobile Alliance\"},");
+        b.append("{\"n\":\"1\",\"sv\":\"Lightweight M2M Client\"},");
+        b.append("{\"n\":\"2\",\"sv\":\"345000123\"},");
+        b.append("{\"n\":\"3\",\"sv\":\"1.0\"},");
+        b.append("{\"n\":\"6/0\",\"v\":1},");
+        b.append("{\"n\":\"6/1\",\"v\":5},");
+        b.append("{\"n\":\"7/0\",\"v\":3800},");
+        b.append("{\"n\":\"7/1\",\"v\":5000},");
+        b.append("{\"n\":\"8/0\",\"v\":125},");
+        b.append("{\"n\":\"8/1\",\"v\":900},");
+        b.append("{\"n\":\"9\",\"v\":100},");
+        b.append("{\"n\":\"10\",\"v\":15},");
+        b.append("{\"n\":\"11/0\",\"v\":0},");
+        b.append("{\"n\":\"13\",\"v\":1367491215},");
+        b.append("{\"n\":\"14\",\"sv\":\"+02:00\"},");
+        b.append("{\"n\":\"15\",\"sv\":\"U\"}]}");
 
-        LwM2mObjectInstance oInstance = (LwM2mObjectInstance) LwM2mNodeDecoder.decode(content.getBytes(),
+        LwM2mObjectInstance oInstance = (LwM2mObjectInstance) LwM2mNodeDecoder.decode(b.toString().getBytes(),
                 ContentFormat.JSON, new LwM2mPath(3, 0), model);
 
         assertEquals(0, oInstance.getId());
