@@ -276,6 +276,10 @@ public class LwM2mNodeDecoder {
         Map<Integer, LwM2mResource> lwM2mResourceMap = new HashMap<>();
         Map<Integer, List<Object>> multiResourceMap = new HashMap<>();
 
+        if (jsonObject.getBaseName() != null && !jsonObject.getBaseName().isEmpty()) {
+            throw new UnsupportedOperationException("Basename is not supported in Json format");
+        }
+
         for (int i = 0; i < jsonObject.getResourceList().size(); i++) {
             JsonArrayElement resourceElt = jsonObject.getResourceList().get(i);
             String[] resourcePath = resourceElt.getName().split("/");
