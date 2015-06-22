@@ -272,7 +272,7 @@ public class LwM2mNodeEncoder {
         @Override
         public void visit(LwM2mObject object) {
             // TODO needed to encode multiple instances
-        	// How to deal with ObjLink
+            // How to deal with ObjLink
             throw new UnsupportedOperationException("Object JSON encoding not supported");
         }
 
@@ -280,14 +280,14 @@ public class LwM2mNodeEncoder {
         public void visit(LwM2mObjectInstance instance) {
             LOG.trace("Encoding object instance {} into JSON", instance);
             LwM2mJsonObject jsonObject = null;
-            ArrayList<JsonArrayElement> resourceList =  new ArrayList<>();
+            ArrayList<JsonArrayElement> resourceList = new ArrayList<>();
             for (Entry<Integer, LwM2mResource> resource : instance.getResources().entrySet()) {
-               	LwM2mResource res = resource.getValue();
-               	resourceList.addAll(lwM2mResourceToJsonArrayElement(res));
-             }
-           jsonObject = new LwM2mJsonObject(resourceList);
-           String json = LwM2mJson.toJsonLwM2m(jsonObject);
-           encoded = json.getBytes();
+                LwM2mResource res = resource.getValue();
+                resourceList.addAll(lwM2mResourceToJsonArrayElement(res));
+            }
+            jsonObject = new LwM2mJsonObject(resourceList);
+            String json = LwM2mJson.toJsonLwM2m(jsonObject);
+            encoded = json.getBytes();
         }
 
         @Override
@@ -298,62 +298,58 @@ public class LwM2mNodeEncoder {
             String json = LwM2mJson.toJsonLwM2m(jsonObject);
             encoded = json.getBytes();
         }
-        
-        
-        private ArrayList<JsonArrayElement> lwM2mResourceToJsonArrayElement(LwM2mResource resource)
-        {
-        	ResourceModel rSpec = model.getResourceModel(objectId, resource.getId());
+
+        private ArrayList<JsonArrayElement> lwM2mResourceToJsonArrayElement(LwM2mResource resource) {
+            ResourceModel rSpec = model.getResourceModel(objectId, resource.getId());
             Type expectedType = rSpec != null ? rSpec.type : null;
-            ArrayList<JsonArrayElement> resourcesList =  new ArrayList<>();
-         	  if (resource.isMultiInstances()) {
-            		for (int i = 0; i < resource.getValues().length; i++) {
-            			JsonArrayElement jsonResourceElt = new JsonArrayElement();
-            			jsonResourceElt.setName(resource.getId()+"/"+i);
-            			this.setResourceValue(convertValue(resource.getValues()[i], expectedType),jsonResourceElt);
-            			resourcesList.add(jsonResourceElt);
-            		}
-            	}
-            	else
-            	{
-            		JsonArrayElement jsonResourceElt = new JsonArrayElement();
-        			jsonResourceElt.setName(new StringBuffer().append(resource.getId()).toString());
-        			this.setResourceValue(convertValue(resource.getValue(), expectedType),jsonResourceElt);
-        			resourcesList.add(jsonResourceElt);
-            	}
-        	return resourcesList;
+            ArrayList<JsonArrayElement> resourcesList = new ArrayList<>();
+            if (resource.isMultiInstances()) {
+                for (int i = 0; i < resource.getValues().length; i++) {
+                    JsonArrayElement jsonResourceElt = new JsonArrayElement();
+                    jsonResourceElt.setName(resource.getId() + "/" + i);
+                    this.setResourceValue(convertValue(resource.getValues()[i], expectedType), jsonResourceElt);
+                    resourcesList.add(jsonResourceElt);
+                }
+            } else {
+                JsonArrayElement jsonResourceElt = new JsonArrayElement();
+                jsonResourceElt.setName(new StringBuffer().append(resource.getId()).toString());
+                this.setResourceValue(convertValue(resource.getValue(), expectedType), jsonResourceElt);
+                resourcesList.add(jsonResourceElt);
+            }
+            return resourcesList;
         }
-        
-        private void setResourceValue(Value<?> value,JsonArrayElement jsonResource) {
+
+        private void setResourceValue(Value<?> value, JsonArrayElement jsonResource) {
             LOG.trace("Encoding value {} in JSON", value);
             // Following table 20 in the Specs
             switch (value.type) {
             case STRING:
-            	jsonResource.setStringValue((String) value.value);
-            	break;
+                jsonResource.setStringValue((String) value.value);
+                break;
             case INTEGER:
             case FLOAT:
-            	jsonResource.setFloatValue((Number)value.value);
-            	break;
+                jsonResource.setFloatValue((Number) value.value);
+                break;
             case LONG:
             case DOUBLE:
-               	jsonResource.setStringValue(String.valueOf(value.value));
-               	break;
+                jsonResource.setStringValue(String.valueOf(value.value));
+                break;
             case BOOLEAN:
-            	jsonResource.setBooleanValue((Boolean) value.value);
-            	break;
+                jsonResource.setBooleanValue((Boolean) value.value);
+                break;
             case TIME:
-            	// Specs device object example page 44, rec 13 is Time
-            	// represented as float?
-            	jsonResource.setFloatValue((((Date) value.value).getTime() / 1000L));
-            	break;
+                // Specs device object example page 44, rec 13 is Time
+                // represented as float?
+                jsonResource.setFloatValue((((Date) value.value).getTime() / 1000L));
+                break;
             case OPAQUE:
-            	jsonResource.setStringValue(javax.xml.bind.DatatypeConverter.printBase64Binary((byte[])value.value));
-             default:
+                jsonResource.setStringValue(javax.xml.bind.DatatypeConverter.printBase64Binary((byte[]) value.value));
+            default:
                 throw new IllegalArgumentException("Invalid value type: " + value.type);
             }
         }
     }
-    
+
     private static Value<?> convertValue(Value<?> value, Type expectedType) {
         if (expectedType == null) {
             // unknown resource, trusted value
