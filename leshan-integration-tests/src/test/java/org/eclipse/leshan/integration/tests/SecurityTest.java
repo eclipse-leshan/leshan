@@ -19,7 +19,6 @@ import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.ENDPOIN
 import static org.junit.Assert.assertEquals;
 
 import java.security.PublicKey;
-import java.security.cert.X509Certificate;
 
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.request.RegisterRequest;
@@ -177,15 +176,14 @@ public class SecurityTest {
     }
 
     @Test
-    public void registered_device_with_x509_cert_to_server_with_x509_cert() throws NonUniqueSecurityInfoException {
+    public void registered_device_with_x509cert_to_server_with_x509cert() throws NonUniqueSecurityInfoException {
         helper.createServerWithX509Cert();
         helper.server.start();
 
-        helper.createX509CertClient();
+        boolean goodPrivateKey = true;
+        boolean trustedCA = true;
+        helper.createX509CertClient(goodPrivateKey, trustedCA);
         helper.client.start();
-
-        X509Certificate[] clientCertChain = { helper.clientX509Cert, helper.clientCAX509Cert };
-        helper.server.getSecurityRegistry().add(SecurityInfo.newX509CertInfo(ENDPOINT_IDENTIFIER, clientCertChain));
 
         // client registration
         RegisterResponse response = helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
@@ -194,7 +192,67 @@ public class SecurityTest {
         assertEquals(ResponseCode.CREATED, response.getCode());
     }
 
-    // TODO error test cases + (rpk+psk+cert) tests
+    @Test
+    public void registered_device_with_x509cert_and_bad_endpoint_to_server_with_x509cert()
+            throws NonUniqueSecurityInfoException {
+        helper.createServerWithX509Cert();
+        helper.server.start();
+
+        boolean goodPrivateKey = true;
+        boolean trustedCA = true;
+        helper.createX509CertClient(goodPrivateKey, trustedCA);
+        helper.client.start();
+
+        // client registration
+        RegisterResponse response = helper.client.send(new RegisterRequest("bad_endpoint"));
+
+        // verify result
+        assertEquals(ResponseCode.FORBIDDEN, response.getCode());
+    }
+
+    // TODO HandshakeException not re-thrown in cf CoapServer.start() when calling CoapEndpoint.start()
+    // Exception origin : CertificateVerify.verifySignature()
+    @Ignore
+    @Test
+    public void registered_device_with_x509cert_and_bad_private_key_to_server_with_x509cert()
+            throws NonUniqueSecurityInfoException {
+        helper.createServerWithX509Cert();
+        helper.server.start();
+
+        boolean goodPrivateKey = false;
+        boolean trustedCA = true;
+        helper.createX509CertClient(goodPrivateKey, trustedCA);
+        helper.client.start();
+
+        // client registration
+        RegisterResponse response = helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        // verify result
+        assertEquals(ResponseCode.FORBIDDEN, response.getCode());
+    }
+
+    // TODO HandshakeException not re-thrown in cf CoapServer.start() when calling CoapEndpoint.start()
+    // Exception origin : CertificateMessage.verifyCertificate()
+    @Ignore
+    @Test
+    public void registered_device_with_x509cert_and_untrusted_CA_to_server_with_x509cert()
+            throws NonUniqueSecurityInfoException {
+        helper.createServerWithX509Cert();
+        helper.server.start();
+
+        boolean goodPrivateKey = true;
+        boolean trustedCA = false;
+        helper.createX509CertClient(goodPrivateKey, trustedCA);
+        helper.client.start();
+
+        // client registration
+        RegisterResponse response = helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        // verify result
+        assertEquals(ResponseCode.FORBIDDEN, response.getCode());
+    }
+
+    // TODO invalid certificate test case (for instance, validity over)
 
     @Test
     public void registered_device_with_rpk_and_psk_to_server_with_rpk() throws NonUniqueSecurityInfoException {
@@ -226,6 +284,58 @@ public class SecurityTest {
 
         helper.server.getSecurityRegistry().add(
                 SecurityInfo.newPreSharedKeyInfo(ENDPOINT_IDENTIFIER, helper.pskIdentity, helper.pskKey));
+
+        // client registration
+        RegisterResponse response = helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        // verify result
+        assertEquals(ResponseCode.CREATED, response.getCode());
+    }
+
+    @Test
+    // RPK and X509 are not handled at the same time, the one that is latest set is kept
+    public void registered_device_with_rpk_and_x509cert_to_server_with_x509cert() throws NonUniqueSecurityInfoException {
+        helper.createServerWithX509Cert();
+        helper.server.start();
+
+        // Works because RPK creds are set before X509 creds and X509 replace RPK
+        helper.createRPKandX509CertClient();
+        helper.client.start();
+
+        // client registration
+        RegisterResponse response = helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        // verify result
+        assertEquals(ResponseCode.CREATED, response.getCode());
+    }
+
+    @Test
+    public void registered_device_with_psk_and_x509cert_to_server_with_x509cert() throws NonUniqueSecurityInfoException {
+        helper.createServerWithX509Cert();
+        helper.server.start();
+
+        // Works because RPK creds are set before X509 creds and X509 replace RPK
+        helper.createPSKandX509CertClient();
+        helper.client.start();
+
+        // client registration
+        RegisterResponse response = helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        // verify result
+        assertEquals(ResponseCode.CREATED, response.getCode());
+    }
+
+    @Test
+    // RPK and X509 are not handled at the same time, the one that is latest set is kept
+    public void registered_device_with_x509cert_to_server_with_rpk_and_x509cert() throws NonUniqueSecurityInfoException {
+        helper.createServerWithRPKandX509Cert();
+        helper.server.start();
+
+        boolean goodPrivateKey = true;
+        boolean trustedCA = true;
+        // Works because RPK creds are set before X509 creds and X509 replace RPK
+        helper.createX509CertClient(goodPrivateKey, trustedCA);
+        helper.client.start();
 
         // client registration
         RegisterResponse response = helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));

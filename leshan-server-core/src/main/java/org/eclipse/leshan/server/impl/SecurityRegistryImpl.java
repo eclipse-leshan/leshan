@@ -62,31 +62,55 @@ public class SecurityRegistryImpl implements SecurityRegistry {
 
     private X509Certificate[] serverX509CertChain;
 
-    private Certificate[] trustedCertificates = null; // TODO retrieve certs from JRE trustStore
+    private Certificate[] trustedCertificates = null; // TODO retrieve certs from JRE trustStore ?
 
     // default location for persistence
     private static final String DEFAULT_FILE = "data/security.data";
 
     public SecurityRegistryImpl() {
-        this(DEFAULT_FILE, null, null, null);
+        this(DEFAULT_FILE, null, null);
     }
 
-    public SecurityRegistryImpl(PrivateKey serverPrivateKey, PublicKey serverPublicKey,
-            X509Certificate[] serverX509CertChain) {
-        this(DEFAULT_FILE, serverPrivateKey, serverPublicKey, serverX509CertChain);
+    /**
+     * Constructor for RPK
+     */
+    public SecurityRegistryImpl(PrivateKey serverPrivateKey, PublicKey serverPublicKey) {
+        this(DEFAULT_FILE, serverPrivateKey, serverPublicKey);
+    }
+
+    /**
+     * Constructor for X509 certificates
+     */
+    public SecurityRegistryImpl(PrivateKey serverPrivateKey, X509Certificate[] serverX509CertChain,
+            Certificate[] trustedCertificates) {
+        this(DEFAULT_FILE, serverPrivateKey, serverX509CertChain, trustedCertificates);
     }
 
     /**
      * @param file the file path to persist the registry
      */
-    public SecurityRegistryImpl(String file, PrivateKey serverPrivateKey, PublicKey serverPublicKey,
-            X509Certificate[] serverX509CertChain) {
+    public SecurityRegistryImpl(String file, PrivateKey serverPrivateKey, PublicKey serverPublicKey) {
         Validate.notEmpty(file);
 
         this.filename = file;
         this.serverPrivateKey = serverPrivateKey;
         this.serverPublicKey = serverPublicKey;
+        this.loadFromFile();
+    }
+
+    /**
+     * @param file the file path to persist the registry
+     */
+    public SecurityRegistryImpl(String file, PrivateKey serverPrivateKey, X509Certificate[] serverX509CertChain,
+            Certificate[] trustedCertificates) {
+        Validate.notEmpty(file);
+        Validate.notEmpty(serverX509CertChain);
+        Validate.notEmpty(trustedCertificates);
+
+        this.filename = file;
+        this.serverPrivateKey = serverPrivateKey;
         this.serverX509CertChain = serverX509CertChain;
+        this.trustedCertificates = trustedCertificates;
         this.loadFromFile();
     }
 
@@ -190,15 +214,6 @@ public class SecurityRegistryImpl implements SecurityRegistry {
             out.writeObject(this.getAll().toArray(new SecurityInfo[0]));
         } catch (Exception e) {
             LOG.debug("Could not save security infos to file", e);
-        }
-    }
-
-    @Override
-    public void setTrustedCertificates(Certificate[] trustedCertificates) {
-        if (trustedCertificates != null && trustedCertificates.length > 0) {
-            this.trustedCertificates = trustedCertificates;
-        } else {
-            LOG.debug("Tried to set trusted certificates to null");
         }
     }
 

@@ -94,7 +94,7 @@ public class LeshanStandalone {
             publicKey = KeyFactory.getInstance("EC").generatePublic(publicKeySpec);
             privateKey = KeyFactory.getInstance("EC").generatePrivate(privateKeySpec);
 
-            builder.setSecurityRegistry(new SecurityRegistryImpl(privateKey, publicKey, null));
+            builder.setSecurityRegistry(new SecurityRegistryImpl(privateKey, publicKey));
         } catch (InvalidKeySpecException | NoSuchAlgorithmException | InvalidParameterSpecException e) {
             LOG.warn("Unable to load RPK.", e);
         }

@@ -50,11 +50,6 @@ public interface SecurityRegistry extends SecurityStore {
     SecurityInfo remove(String endpoint);
 
     /**
-     * Sets the trusted certificates
-     */
-    void setTrustedCertificates(Certificate[] trustedCertificates);
-
-    /**
      * Returns the Server Public Key
      */
     PublicKey getServerPublicKey();
