@@ -176,6 +176,93 @@ public class SecurityTest {
     }
 
     @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert() throws NonUniqueSecurityInfoException {
+        helper.createServerWithX509Cert();
+        helper.server.start();
+
+        boolean goodPrivateKey = true;
+        boolean trustedCA = true;
+        helper.createX509CertClient(goodPrivateKey, trustedCA);
+        helper.client.start();
+
+        helper.server.getSecurityRegistry().add(SecurityInfo.newX509CertInfo(ENDPOINT_IDENTIFIER));
+
+        // client registration
+        RegisterResponse response = helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        // verify result
+        assertEquals(ResponseCode.CREATED, response.getCode());
+    }
+
+    @Test
+    public void registered_device_with_x509cert_and_bad_endpoint_to_server_with_x509cert()
+            throws NonUniqueSecurityInfoException {
+        helper.createServerWithX509Cert();
+        helper.server.start();
+
+        boolean goodPrivateKey = true;
+        boolean trustedCA = true;
+        helper.createX509CertClient(goodPrivateKey, trustedCA);
+        helper.client.start();
+
+        helper.server.getSecurityRegistry().add(SecurityInfo.newX509CertInfo("bad_endpoint"));
+
+        // client registration
+        RegisterResponse response = helper.client.send(new RegisterRequest("bad_endpoint"));
+
+        // verify result
+        assertEquals(ResponseCode.FORBIDDEN, response.getCode());
+    }
+
+    // TODO HandshakeException not re-thrown in cf CoapServer.start() when calling CoapEndpoint.start()
+    // Exception origin : CertificateVerify.verifySignature()
+    @Ignore
+    @Test
+    public void registered_device_with_x509cert_and_bad_private_key_to_server_with_x509cert()
+            throws NonUniqueSecurityInfoException {
+        helper.createServerWithX509Cert();
+        helper.server.start();
+
+        boolean goodPrivateKey = false;
+        boolean trustedCA = true;
+        helper.createX509CertClient(goodPrivateKey, trustedCA);
+        helper.client.start();
+
+        helper.server.getSecurityRegistry().add(SecurityInfo.newX509CertInfo(ENDPOINT_IDENTIFIER));
+
+        // client registration
+        RegisterResponse response = helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        // verify result
+        assertEquals(ResponseCode.FORBIDDEN, response.getCode());
+    }
+
+    // TODO HandshakeException not re-thrown in cf CoapServer.start() when calling CoapEndpoint.start()
+    // Exception origin : CertificateMessage.verifyCertificate()
+    @Ignore
+    @Test
+    public void registered_device_with_x509cert_and_untrusted_CA_to_server_with_x509cert()
+            throws NonUniqueSecurityInfoException {
+        helper.createServerWithX509Cert();
+        helper.server.start();
+
+        boolean goodPrivateKey = true;
+        boolean trustedCA = false;
+        helper.createX509CertClient(goodPrivateKey, trustedCA);
+        helper.client.start();
+
+        helper.server.getSecurityRegistry().add(SecurityInfo.newX509CertInfo(ENDPOINT_IDENTIFIER));
+
+        // client registration
+        RegisterResponse response = helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        // verify result
+        assertEquals(ResponseCode.FORBIDDEN, response.getCode());
+    }
+
+    // TODO invalid certificate test case (for instance, validity over)
+
+    @Test
     public void registered_device_with_rpk_and_psk_to_server_with_rpk() throws NonUniqueSecurityInfoException {
         helper.createServerWithRPK();
         helper.server.start();
@@ -205,6 +292,64 @@ public class SecurityTest {
 
         helper.server.getSecurityRegistry().add(
                 SecurityInfo.newPreSharedKeyInfo(ENDPOINT_IDENTIFIER, helper.pskIdentity, helper.pskKey));
+
+        // client registration
+        RegisterResponse response = helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        // verify result
+        assertEquals(ResponseCode.CREATED, response.getCode());
+    }
+
+    @Test
+    // RPK and X509 are not handled at the same time, the one that is latest set is kept
+    public void registered_device_with_rpk_and_x509cert_to_server_with_x509cert() throws NonUniqueSecurityInfoException {
+        helper.createServerWithX509Cert();
+        helper.server.start();
+
+        // Works because RPK creds are set before X509 creds and X509 replace RPK
+        helper.createRPKandX509CertClient();
+        helper.client.start();
+
+        helper.server.getSecurityRegistry().add(SecurityInfo.newX509CertInfo(ENDPOINT_IDENTIFIER));
+
+        // client registration
+        RegisterResponse response = helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        // verify result
+        assertEquals(ResponseCode.CREATED, response.getCode());
+    }
+
+    @Test
+    public void registered_device_with_psk_and_x509cert_to_server_with_x509cert() throws NonUniqueSecurityInfoException {
+        helper.createServerWithX509Cert();
+        helper.server.start();
+
+        // Works because PSK creds are set before X509 creds and X509 replace PSK
+        helper.createPSKandX509CertClient();
+        helper.client.start();
+
+        helper.server.getSecurityRegistry().add(SecurityInfo.newX509CertInfo(ENDPOINT_IDENTIFIER));
+
+        // client registration
+        RegisterResponse response = helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        // verify result
+        assertEquals(ResponseCode.CREATED, response.getCode());
+    }
+
+    @Test
+    // RPK and X509 are not handled at the same time, the one that is latest set is kept
+    public void registered_device_with_x509cert_to_server_with_rpk_and_x509cert() throws NonUniqueSecurityInfoException {
+        helper.createServerWithRPKandX509Cert();
+        helper.server.start();
+
+        boolean goodPrivateKey = true;
+        boolean trustedCA = true;
+        // Works because RPK creds are set before X509 creds and X509 replace RPK
+        helper.createX509CertClient(goodPrivateKey, trustedCA);
+        helper.client.start();
+
+        helper.server.getSecurityRegistry().add(SecurityInfo.newX509CertInfo(ENDPOINT_IDENTIFIER));
 
         // client registration
         RegisterResponse response = helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));

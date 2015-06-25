@@ -27,6 +27,7 @@ import org.eclipse.leshan.util.Validate;
  * <ul>
  * <li>Pre-Shared Key: an identity and a key are needed</li>
  * <li>Raw Public Key Certificate: a public key is needed</li>
+ * <li>X509 Certificate: an X509 certificate is needed</li>
  * </ul>
  * </p>
  */
@@ -43,12 +44,16 @@ public class SecurityInfo implements Serializable {
 
     private final PublicKey rawPublicKey;
 
-    private SecurityInfo(String endpoint, String identity, byte[] preSharedKey, PublicKey rawPublicKey) {
+    private final boolean useX509Cert;
+
+    private SecurityInfo(String endpoint, String identity, byte[] preSharedKey, PublicKey rawPublicKey,
+            boolean useX509Cert) {
         Validate.notEmpty(endpoint);
         this.endpoint = endpoint;
         this.identity = identity;
         this.preSharedKey = preSharedKey;
         this.rawPublicKey = rawPublicKey;
+        this.useX509Cert = useX509Cert;
     }
 
     /**
@@ -57,7 +62,7 @@ public class SecurityInfo implements Serializable {
     public static SecurityInfo newPreSharedKeyInfo(String endpoint, String identity, byte[] preSharedKey) {
         Validate.notEmpty(identity);
         Validate.notNull(preSharedKey);
-        return new SecurityInfo(endpoint, identity, preSharedKey, null);
+        return new SecurityInfo(endpoint, identity, preSharedKey, null, false);
     }
 
     /**
@@ -65,7 +70,14 @@ public class SecurityInfo implements Serializable {
      */
     public static SecurityInfo newRawPublicKeyInfo(String endpoint, PublicKey rawPublicKey) {
         Validate.notNull(rawPublicKey);
-        return new SecurityInfo(endpoint, null, null, rawPublicKey);
+        return new SecurityInfo(endpoint, null, null, rawPublicKey, false);
+    }
+
+    /**
+     * Construct a {@link SecurityInfo} when using DTLS with an X509 Certificate.
+     */
+    public static SecurityInfo newX509CertInfo(String endpoint) {
+        return new SecurityInfo(endpoint, null, null, null, true);
     }
 
     public String getEndpoint() {
@@ -82,5 +94,9 @@ public class SecurityInfo implements Serializable {
 
     public PublicKey getRawPublicKey() {
         return rawPublicKey;
+    }
+
+    public boolean useX509Cert() {
+        return useX509Cert;
     }
 }

@@ -22,6 +22,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -58,6 +60,10 @@ public class SecurityRegistryImpl implements SecurityRegistry {
 
     private PrivateKey serverPrivateKey;
 
+    private X509Certificate[] serverX509CertChain;
+
+    private Certificate[] trustedCertificates = null; // TODO retrieve certs from JRE trustStore ?
+
     // default location for persistence
     private static final String DEFAULT_FILE = "data/security.data";
 
@@ -65,8 +71,19 @@ public class SecurityRegistryImpl implements SecurityRegistry {
         this(DEFAULT_FILE, null, null);
     }
 
+    /**
+     * Constructor for RPK
+     */
     public SecurityRegistryImpl(PrivateKey serverPrivateKey, PublicKey serverPublicKey) {
         this(DEFAULT_FILE, serverPrivateKey, serverPublicKey);
+    }
+
+    /**
+     * Constructor for X509 certificates
+     */
+    public SecurityRegistryImpl(PrivateKey serverPrivateKey, X509Certificate[] serverX509CertChain,
+            Certificate[] trustedCertificates) {
+        this(DEFAULT_FILE, serverPrivateKey, serverX509CertChain, trustedCertificates);
     }
 
     /**
@@ -78,6 +95,22 @@ public class SecurityRegistryImpl implements SecurityRegistry {
         this.filename = file;
         this.serverPrivateKey = serverPrivateKey;
         this.serverPublicKey = serverPublicKey;
+        this.loadFromFile();
+    }
+
+    /**
+     * @param file the file path to persist the registry
+     */
+    public SecurityRegistryImpl(String file, PrivateKey serverPrivateKey, X509Certificate[] serverX509CertChain,
+            Certificate[] trustedCertificates) {
+        Validate.notEmpty(file);
+        Validate.notEmpty(serverX509CertChain);
+        Validate.notEmpty(trustedCertificates);
+
+        this.filename = file;
+        this.serverPrivateKey = serverPrivateKey;
+        this.serverX509CertChain = serverX509CertChain;
+        this.trustedCertificates = trustedCertificates;
         this.loadFromFile();
     }
 
@@ -192,5 +225,15 @@ public class SecurityRegistryImpl implements SecurityRegistry {
     @Override
     public PrivateKey getServerPrivateKey() {
         return serverPrivateKey;
+    }
+
+    @Override
+    public X509Certificate[] getServerX509CertChain() {
+        return serverX509CertChain;
+    }
+
+    @Override
+    public Certificate[] getTrustedCertificates() {
+        return trustedCertificates;
     }
 }
