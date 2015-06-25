@@ -17,7 +17,6 @@ package org.eclipse.leshan.server.security;
 
 import java.io.Serializable;
 import java.security.PublicKey;
-import java.security.cert.X509Certificate;
 
 import org.eclipse.leshan.util.Validate;
 
@@ -45,16 +44,16 @@ public class SecurityInfo implements Serializable {
 
     private final PublicKey rawPublicKey;
 
-    private final X509Certificate[] X509CertChain;
+    private final boolean useX509Cert;
 
     private SecurityInfo(String endpoint, String identity, byte[] preSharedKey, PublicKey rawPublicKey,
-            X509Certificate[] X509CertChain) {
+            boolean useX509Cert) {
         Validate.notEmpty(endpoint);
         this.endpoint = endpoint;
         this.identity = identity;
         this.preSharedKey = preSharedKey;
         this.rawPublicKey = rawPublicKey;
-        this.X509CertChain = X509CertChain;
+        this.useX509Cert = useX509Cert;
     }
 
     /**
@@ -63,7 +62,7 @@ public class SecurityInfo implements Serializable {
     public static SecurityInfo newPreSharedKeyInfo(String endpoint, String identity, byte[] preSharedKey) {
         Validate.notEmpty(identity);
         Validate.notNull(preSharedKey);
-        return new SecurityInfo(endpoint, identity, preSharedKey, null, null);
+        return new SecurityInfo(endpoint, identity, preSharedKey, null, false);
     }
 
     /**
@@ -71,15 +70,14 @@ public class SecurityInfo implements Serializable {
      */
     public static SecurityInfo newRawPublicKeyInfo(String endpoint, PublicKey rawPublicKey) {
         Validate.notNull(rawPublicKey);
-        return new SecurityInfo(endpoint, null, null, rawPublicKey, null);
+        return new SecurityInfo(endpoint, null, null, rawPublicKey, false);
     }
 
     /**
      * Construct a {@link SecurityInfo} when using DTLS with an X509 Certificate.
      */
-    public static SecurityInfo newX509CertInfo(String endpoint, X509Certificate[] X509CertChain) {
-        Validate.notEmpty(X509CertChain);
-        return new SecurityInfo(endpoint, null, null, null, X509CertChain);
+    public static SecurityInfo newX509CertInfo(String endpoint) {
+        return new SecurityInfo(endpoint, null, null, null, true);
     }
 
     public String getEndpoint() {
@@ -98,7 +96,7 @@ public class SecurityInfo implements Serializable {
         return rawPublicKey;
     }
 
-    public X509Certificate[] getX509CertChain() {
-        return X509CertChain;
+    public boolean useX509Cert() {
+        return useX509Cert;
     }
 }
