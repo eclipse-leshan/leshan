@@ -15,7 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.tlv;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.nio.ByteBuffer;
 import java.util.Date;
@@ -67,6 +68,12 @@ public class TlvEncoderTest {
         ByteBuffer bb = ByteBuffer.wrap(encoded);
         assertEquals(value, bb.getLong());
         assertEquals(0, bb.remaining());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void can_not_encode_min_long() {
+        long value = Long.MIN_VALUE;
+        TlvEncoder.encodeInteger(value);
     }
 
     @Test

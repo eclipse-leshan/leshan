@@ -56,7 +56,13 @@ public class TlvEncoder {
     public static byte[] encodeInteger(Number number) {
 
         ByteBuffer iBuf = null;
-        long positiveValue = number.longValue() < 0 ? -number.longValue() : number.longValue();
+        long longValue = number.longValue();
+        if (longValue == Long.MIN_VALUE) {
+            throw new IllegalArgumentException(
+                    "Could not encode Long.MIN_VALUE, because of signed magnitude representation.");
+        }
+
+        long positiveValue = longValue < 0 ? -longValue : longValue;
         if (positiveValue <= Byte.MAX_VALUE) {
             iBuf = ByteBuffer.allocate(1);
             iBuf.put((byte) positiveValue);
@@ -66,7 +72,7 @@ public class TlvEncoder {
         } else if (positiveValue <= Integer.MAX_VALUE) {
             iBuf = ByteBuffer.allocate(4);
             iBuf.putInt((int) positiveValue);
-        } else {
+        } else if (positiveValue <= Long.MAX_VALUE) {
             iBuf = ByteBuffer.allocate(8);
             iBuf.putLong(positiveValue);
         }
@@ -85,7 +91,7 @@ public class TlvEncoder {
     public static byte[] encodeFloat(Number number) {
         ByteBuffer fBuf = null;
         double dValue = number.doubleValue();
-        if (dValue >= Float.MIN_VALUE && dValue <= Float.MAX_VALUE) {
+        if (Float.MIN_VALUE <= dValue && dValue <= Float.MAX_VALUE) {
             fBuf = ByteBuffer.allocate(4);
             fBuf.putFloat((float) dValue);
         } else {
