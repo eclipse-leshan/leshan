@@ -25,6 +25,7 @@ Contributors:
         <version>0.1.11-M5-SNAPSHOT</version>
     </parent>
     <artifactId>leshan-client-cf</artifactId>
+    <packaging>bundle</packaging>
     <name>leshan - client californium</name>
     <description>A transport implementation for leshan client based on CoAP Californium</description>
 
@@ -65,21 +66,13 @@ Contributors:
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
+                <version>2.3.7</version>
                 <extensions>true</extensions>
-                <executions>
-                    <execution>
-                        <id>bundle</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>bundle</goal>
-                        </goals>
-                    </execution>
-                </executions>
                 <configuration>
                     <instructions>
                         <Export-Package>
-                            org.eclipse.leshan.californium.client,
-                            org.eclipse.leshan.californium.client.impl,
+                            org.eclipse.leshan.client.californium,
+                            org.eclipse.leshan.client.californium.impl,
                         </Export-Package>
                         <Import-Package>
                             javax.xml.bind, 
@@ -99,8 +92,18 @@ Contributors:
                             org.eclipse.californium.core.observe,
                             org.eclipse.californium.elements,
                             org.eclipse.leshan,
+                            org.eclipse.leshan.core.model,
+                            org.eclipse.leshan.core.node,
+                            org.eclipse.leshan.core.node.codec,
+                            org.eclipse.leshan.core.request,
+                            org.eclipse.leshan.core.request.exception,
+                            org.eclipse.leshan.core.response,
                             org.eclipse.leshan.tlv,
                             org.eclipse.leshan.util,
+                            org.eclipse.leshan.client,
+                            org.eclipse.leshan.client.request,
+                            org.eclipse.leshan.client.resource,
+                            org.eclipse.leshan.client.util,
                         </Import-Package>
                     </instructions>
                 </configuration>

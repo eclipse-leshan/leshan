@@ -25,6 +25,7 @@ Contributors:
         <version>0.1.11-M5-SNAPSHOT</version>
     </parent>
     <artifactId>leshan-client-core</artifactId>
+    <packaging>bundle</packaging>
     <name>leshan - client core</name>
     <description>A LWM2M client implementation which abstracts transport layer. A transport implementation like &quot;leshan-client-cf&quot; is needed.</description>
 
@@ -57,35 +58,14 @@ Contributors:
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
+                <version>2.3.7</version>
                 <extensions>true</extensions>
-                <executions>
-                    <execution>
-                        <id>bundle</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>bundle</goal>
-                        </goals>
-                    </execution>
-                </executions>
                 <configuration>
                     <instructions>
                         <Export-Package>
                             org.eclipse.leshan.client,
-                            org.eclipse.leshan.client.bootstrap,
-                            org.eclipse.leshan.client.coap.californium,
-                            org.eclipse.leshan.client.exchange,
-                            org.eclipse.leshan.client.exchange.aggregate,
-                            org.eclipse.leshan.client.register,
                             org.eclipse.leshan.client.request,
                             org.eclipse.leshan.client.resource,
-                            org.eclipse.leshan.client.resource.bool,
-                            org.eclipse.leshan.client.resource.decimal,
-                            org.eclipse.leshan.client.resource.integer,
-                            org.eclipse.leshan.client.resource.multiple,
-                            org.eclipse.leshan.client.resource.opaque,
-                            org.eclipse.leshan.client.resource.string,
-                            org.eclipse.leshan.client.resource.time,
-                            org.eclipse.leshan.client.response,
                             org.eclipse.leshan.client.util
                         </Export-Package>
                         <Import-Package>
@@ -106,6 +86,10 @@ Contributors:
                             org.eclipse.californium.core.observe,
                             org.eclipse.californium.elements,
                             org.eclipse.leshan,
+                            org.eclipse.leshan.core.model,
+                            org.eclipse.leshan.core.node,
+                            org.eclipse.leshan.core.request,
+                            org.eclipse.leshan.core.response,
                             org.eclipse.leshan.tlv,
                             org.eclipse.leshan.util
                         </Import-Package>
