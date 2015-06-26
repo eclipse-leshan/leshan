@@ -96,7 +96,7 @@ public class RegistrationTest {
 
     @Test
     public void registered_device_exists_async() throws InterruptedException {
-        final ResponseCallback<RegisterResponse> callback = new ResponseCallback<>();
+        final Callback<RegisterResponse> callback = new Callback<>();
 
         // client registration
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER), callback, callback);
@@ -124,7 +124,7 @@ public class RegistrationTest {
     public void wont_send_asynchronous_if_not_started() {
         helper.client.stop();
         final RegisterRequest registerRequest = new RegisterRequest(ENDPOINT_IDENTIFIER);
-        final ResponseCallback<RegisterResponse> callback = new ResponseCallback<RegisterResponse>();
+        final Callback<RegisterResponse> callback = new Callback<RegisterResponse>();
         helper.client.send(registerRequest, callback, callback);
     }
 

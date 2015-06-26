@@ -22,7 +22,6 @@ import java.security.PublicKey;
 
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.request.RegisterRequest;
-import org.eclipse.leshan.core.request.exception.RequestTimeoutException;
 import org.eclipse.leshan.core.response.RegisterResponse;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
@@ -60,9 +59,7 @@ public class SecurityTest {
 
     // The good point is that client with bad credential can not connect to the server but
     // TODO I am not sure this must end with a timeout ...
-    // We will ignore this test case waiting we could configure timeout or we handle this in a better way
-    @Ignore
-    @Test(expected = RequestTimeoutException.class)
+    @Test
     public void registered_device_with_bad_psk_identity_to_server_with_psk() throws NonUniqueSecurityInfoException {
         helper.createServer(); // default server support PSK
         helper.server.start();
@@ -74,17 +71,15 @@ public class SecurityTest {
                 SecurityInfo.newPreSharedKeyInfo(ENDPOINT_IDENTIFIER, "bad_psk_identity", helper.pskKey));
 
         // client registration
-        RegisterResponse response = helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+        RegisterResponse response = helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER), 500);
 
         // verify result
-        assertEquals(ResponseCode.CREATED, response.getCode());
+        assertEquals(null, response);
     }
 
     // The good point is that client with bad credential can not connect to the server but
     // TODO I am not sure this must end with a timeout ...
-    // We will ignore this test case waiting we could configure timeout or we handle this in a better way
-    @Ignore
-    @Test(expected = RequestTimeoutException.class)
+    @Test
     public void registered_device_with_bad_psk_key_to_server_with_psk() throws NonUniqueSecurityInfoException {
         helper.createServer(); // default server support PSK
         helper.server.start();
@@ -96,10 +91,10 @@ public class SecurityTest {
                 SecurityInfo.newPreSharedKeyInfo(ENDPOINT_IDENTIFIER, helper.pskIdentity, "bad_key".getBytes()));
 
         // client registration
-        RegisterResponse response = helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+        RegisterResponse response = helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER), 500);
 
         // verify result
-        assertEquals(ResponseCode.CREATED, response.getCode());
+        assertEquals(null, response);
     }
 
     @Test

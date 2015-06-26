@@ -15,8 +15,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request.exception;
 
-public class RejectionException extends RuntimeException {
+public class TimeoutException extends Exception {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -8966041387554358975L;
+
+    public TimeoutException() {
+        super("Request timed out after all CoAP retransmission attempts");
+    }
 
 }

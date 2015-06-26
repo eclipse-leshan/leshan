@@ -16,13 +16,14 @@
 package org.eclipse.leshan.core.response;
 
 /**
- * Functional interface receiving errors produced by a LWM2M request
+ * On success callback for LWM2M request.
  */
-public interface ExceptionConsumer {
+public interface ResponseCallback<T extends LwM2mResponse> {
+    // We should keep this as a 1 method interface to be java 8 lambda compatible.
 
     /**
-     * Called when a exception occurs during a request
-     * @param e the produced exception
+     * Called when the request succeed.
      */
-    void accept(Exception e);
+    void onResponse(T response);
+
 }

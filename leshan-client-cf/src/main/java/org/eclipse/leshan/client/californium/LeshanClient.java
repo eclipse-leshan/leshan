@@ -28,9 +28,9 @@ import org.eclipse.leshan.client.californium.impl.CaliforniumLwM2mClientRequestS
 import org.eclipse.leshan.client.californium.impl.ObjectResource;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.core.request.UplinkRequest;
-import org.eclipse.leshan.core.response.ExceptionConsumer;
+import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.core.response.ResponseConsumer;
+import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.util.Validate;
 
 /**
@@ -98,12 +98,20 @@ public class LeshanClient implements LwM2mClient {
         if (!clientServerStarted.get()) {
             throw new RuntimeException("Internal CoapServer is not started.");
         }
-        return requestSender.send(request);
+        return requestSender.send(request, null);
+    }
+
+    @Override
+    public <T extends LwM2mResponse> T send(final UplinkRequest<T> request, long timeout) {
+        if (!clientServerStarted.get()) {
+            throw new RuntimeException("Internal CoapServer is not started.");
+        }
+        return requestSender.send(request, timeout);
     }
 
     @Override
     public <T extends LwM2mResponse> void send(final UplinkRequest<T> request,
-            final ResponseConsumer<T> responseCallback, final ExceptionConsumer errorCallback) {
+            final ResponseCallback<T> responseCallback, final ErrorCallback errorCallback) {
         if (!clientServerStarted.get()) {
             throw new RuntimeException("Internal CoapServer is not started.");
         }

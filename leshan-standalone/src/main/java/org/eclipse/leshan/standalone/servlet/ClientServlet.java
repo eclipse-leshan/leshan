@@ -39,6 +39,7 @@ import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
+import org.eclipse.leshan.core.request.exception.RequestFailedException;
 import org.eclipse.leshan.core.request.exception.ResourceAccessException;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ValueResponse;
@@ -61,6 +62,8 @@ import com.google.gson.JsonSyntaxException;
 public class ClientServlet extends HttpServlet {
 
     private static final Logger LOG = LoggerFactory.getLogger(ClientServlet.class);
+
+    private static final long TIMEOUT = 5000; // ms
 
     private static final long serialVersionUID = 1L;
 
@@ -124,8 +127,8 @@ public class ClientServlet extends HttpServlet {
             Client client = server.getClientRegistry().get(clientEndpoint);
             if (client != null) {
                 ReadRequest request = new ReadRequest(target);
-                ValueResponse cResponse = server.send(client, request);
-                processDeviceResponse(resp, cResponse);
+                ValueResponse cResponse = server.send(client, request, TIMEOUT);
+                processDeviceResponse(req, resp, cResponse);
             } else {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().format("No registered client with id '%s'", clientEndpoint).flush();
@@ -134,7 +137,7 @@ public class ClientServlet extends HttpServlet {
             LOG.warn("Invalid request", e);
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             resp.getWriter().append(e.getMessage()).flush();
-        } catch (ResourceAccessException e) {
+        } catch (ResourceAccessException | RequestFailedException e) {
             LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.getWriter().append(e.getMessage()).flush();
@@ -160,7 +163,7 @@ public class ClientServlet extends HttpServlet {
             Client client = server.getClientRegistry().get(clientEndpoint);
             if (client != null) {
                 LwM2mResponse cResponse = this.writeRequest(client, target, req, resp);
-                processDeviceResponse(resp, cResponse);
+                processDeviceResponse(req, resp, cResponse);
             } else {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().format("No registered client with id '%s'", clientEndpoint).flush();
@@ -169,7 +172,7 @@ public class ClientServlet extends HttpServlet {
             LOG.warn("Invalid request", e);
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             resp.getWriter().append(e.getMessage()).flush();
-        } catch (ResourceAccessException e) {
+        } catch (ResourceAccessException | RequestFailedException e) {
             LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.getWriter().append(e.getMessage()).flush();
@@ -191,8 +194,8 @@ public class ClientServlet extends HttpServlet {
                 Client client = server.getClientRegistry().get(clientEndpoint);
                 if (client != null) {
                     ObserveRequest request = new ObserveRequest(target);
-                    LwM2mResponse cResponse = server.send(client, request);
-                    processDeviceResponse(resp, cResponse);
+                    LwM2mResponse cResponse = server.send(client, request, TIMEOUT);
+                    processDeviceResponse(req, resp, cResponse);
                 } else {
                     resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
@@ -201,7 +204,7 @@ public class ClientServlet extends HttpServlet {
                 LOG.warn("Invalid request", e);
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().append(e.getMessage()).flush();
-            } catch (ResourceAccessException e) {
+            } catch (ResourceAccessException | RequestFailedException e) {
                 LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 resp.getWriter().append(e.getMessage()).flush();
@@ -217,8 +220,8 @@ public class ClientServlet extends HttpServlet {
                 Client client = server.getClientRegistry().get(clientEndpoint);
                 if (client != null) {
                     ExecuteRequest request = new ExecuteRequest(target, IOUtils.toByteArray(req.getInputStream()), null);
-                    LwM2mResponse cResponse = server.send(client, request);
-                    processDeviceResponse(resp, cResponse);
+                    LwM2mResponse cResponse = server.send(client, request, TIMEOUT);
+                    processDeviceResponse(req, resp, cResponse);
                 } else {
                     resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
@@ -227,7 +230,7 @@ public class ClientServlet extends HttpServlet {
                 LOG.warn("Invalid request", e);
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().append(e.getMessage()).flush();
-            } catch (ResourceAccessException e) {
+            } catch (ResourceAccessException | RequestFailedException e) {
                 LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 resp.getWriter().append(e.getMessage()).flush();
@@ -241,7 +244,7 @@ public class ClientServlet extends HttpServlet {
                 Client client = server.getClientRegistry().get(clientEndpoint);
                 if (client != null) {
                     LwM2mResponse cResponse = this.createRequest(client, target, req, resp);
-                    processDeviceResponse(resp, cResponse);
+                    processDeviceResponse(req, resp, cResponse);
                 } else {
                     resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
@@ -250,7 +253,7 @@ public class ClientServlet extends HttpServlet {
                 LOG.warn("Invalid request", e);
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().append(e.getMessage()).flush();
-            } catch (ResourceAccessException e) {
+            } catch (ResourceAccessException | RequestFailedException e) {
                 LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 resp.getWriter().append(e.getMessage()).flush();
@@ -280,7 +283,7 @@ public class ClientServlet extends HttpServlet {
                 LOG.warn("Invalid request", e);
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().append(e.getMessage()).flush();
-            } catch (ResourceAccessException e) {
+            } catch (ResourceAccessException | RequestFailedException e) {
                 LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 resp.getWriter().append(e.getMessage()).flush();
@@ -294,8 +297,8 @@ public class ClientServlet extends HttpServlet {
             Client client = server.getClientRegistry().get(clientEndpoint);
             if (client != null) {
                 DeleteRequest request = new DeleteRequest(target);
-                LwM2mResponse cResponse = server.send(client, request);
-                processDeviceResponse(resp, cResponse);
+                LwM2mResponse cResponse = server.send(client, request, TIMEOUT);
+                processDeviceResponse(req, resp, cResponse);
             } else {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
@@ -304,23 +307,27 @@ public class ClientServlet extends HttpServlet {
             LOG.warn("Invalid request", e);
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             resp.getWriter().append(e.getMessage()).flush();
-        } catch (ResourceAccessException e) {
+        } catch (ResourceAccessException | RequestFailedException e) {
             LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.getWriter().append(e.getMessage()).flush();
         }
     }
 
-    private void processDeviceResponse(HttpServletResponse resp, LwM2mResponse cResponse) throws IOException {
+    private void processDeviceResponse(HttpServletRequest req, HttpServletResponse resp, LwM2mResponse cResponse)
+            throws IOException {
         String response = null;
         if (cResponse == null) {
-            response = "Request timeout";
+            LOG.warn(String.format("Request %s%s timed out.", req.getServletPath(), req.getPathInfo()));
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.getWriter().append("Request timeout").flush();
         } else {
             response = this.gson.toJson(cResponse);
+            resp.setContentType("application/json");
+            resp.getOutputStream().write(response.getBytes());
+            resp.setStatus(HttpServletResponse.SC_OK);
         }
-        resp.setContentType("application/json");
-        resp.getOutputStream().write(response.getBytes());
-        resp.setStatus(HttpServletResponse.SC_OK);
+
     }
 
     // TODO refactor the code to remove this method.
@@ -333,7 +340,7 @@ public class ClientServlet extends HttpServlet {
             String content = IOUtils.toString(req.getInputStream(), parameters.get("charset"));
             int rscId = Integer.valueOf(target.substring(target.lastIndexOf("/") + 1));
             return server.send(client, new WriteRequest(target,
-                    new LwM2mResource(rscId, Value.newStringValue(content)), ContentFormat.TEXT, true));
+                    new LwM2mResource(rscId, Value.newStringValue(content)), ContentFormat.TEXT, true), TIMEOUT);
 
         } else if ("application/json".equals(contentType)) {
             String content = IOUtils.toString(req.getInputStream(), parameters.get("charset"));
@@ -343,7 +350,7 @@ public class ClientServlet extends HttpServlet {
             } catch (JsonSyntaxException e) {
                 throw new IllegalArgumentException("unable to parse json to tlv:" + e.getMessage(), e);
             }
-            return server.send(client, new WriteRequest(target, node, null, true));
+            return server.send(client, new WriteRequest(target, node, null, true), TIMEOUT);
 
         } else {
             throw new IllegalArgumentException("content type " + req.getContentType()
@@ -368,7 +375,7 @@ public class ClientServlet extends HttpServlet {
                 throw new IllegalArgumentException("payload must contain an object instance");
             }
             return server.send(client, new CreateRequest(target, ((LwM2mObjectInstance) node).getResources().values()
-                    .toArray(new LwM2mResource[0]), ContentFormat.TLV));
+                    .toArray(new LwM2mResource[0]), ContentFormat.TLV), TIMEOUT);
         } else {
             throw new IllegalArgumentException("content type " + req.getContentType()
                     + " not supported for write requests");

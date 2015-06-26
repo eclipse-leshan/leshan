@@ -20,30 +20,30 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.leshan.ResponseCode;
-import org.eclipse.leshan.core.response.ExceptionConsumer;
+import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.core.response.ResponseConsumer;
+import org.eclipse.leshan.core.response.ResponseCallback;
 
-public class ResponseCallback<T extends LwM2mResponse> implements ResponseConsumer<T>, ExceptionConsumer {
+public class Callback<T extends LwM2mResponse> implements ResponseCallback<T>, ErrorCallback {
 
     private final CountDownLatch latch;
     private final AtomicBoolean called;
     private T response;
 
-    public ResponseCallback() {
+    public Callback() {
         called = new AtomicBoolean(false);
         latch = new CountDownLatch(1);
     }
 
     @Override
-    public void accept(T response) {
+    public void onResponse(T response) {
         this.response = response;
         called.set(true);
         latch.countDown();
     }
 
     @Override
-    public void accept(Exception e) {
+    public void onError(Exception e) {
         called.set(true);
         latch.countDown();
     }

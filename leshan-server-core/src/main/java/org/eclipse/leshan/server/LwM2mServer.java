@@ -16,9 +16,9 @@
 package org.eclipse.leshan.server;
 
 import org.eclipse.leshan.core.request.DownlinkRequest;
-import org.eclipse.leshan.core.response.ExceptionConsumer;
+import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.core.response.ResponseConsumer;
+import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
@@ -36,7 +36,7 @@ import org.eclipse.leshan.server.security.SecurityRegistry;
 public interface LwM2mServer {
 
     /**
-     * Start the server (bind port, start to listen CoAP messages.
+     * Starts the server (bind port, start to listen CoAP messages).
      */
     void start();
 
@@ -52,15 +52,30 @@ public interface LwM2mServer {
     void destroy();
 
     /**
-     * Send a Lightweight M2M request synchronously. Will block until a response is received from the remote client.
+     * Sends a Lightweight M2M request synchronously. Will block until a response is received from the remote client.
+     * 
+     * @param destination the remote client
+     * @param request the request to the client
+     * @return the response or <code>null</code> if the CoAP timeout expires ( see
+     *         http://tools.ietf.org/html/rfc7252#section-4.2 ).
      */
     <T extends LwM2mResponse> T send(Client destination, DownlinkRequest<T> request);
 
     /**
-     * Send a Lightweight M2M request asynchronously.
+     * Sends a Lightweight M2M request synchronously. Will block until a response is received from the remote client.
+     * 
+     * @param destination the remote client
+     * @param request the request to the client
+     * @param timeout the request timeout in millisecond
+     * @return the response or <code>null</code> if the timeout expires (given parameter or CoAP timeout).
+     */
+    <T extends LwM2mResponse> T send(Client destination, DownlinkRequest<T> request, long timeout);
+
+    /**
+     * Sends a Lightweight M2M request asynchronously.
      */
     <T extends LwM2mResponse> void send(Client destination, DownlinkRequest<T> request,
-            ResponseConsumer<T> responseCallback, ExceptionConsumer errorCallback);
+            ResponseCallback<T> responseCallback, ErrorCallback errorCallback);
 
     /**
      * Get the client registry containing the list of connected clients. You can use this object for listening client
@@ -83,4 +98,5 @@ public interface LwM2mServer {
      * Get the provider in charge of retrieving the object definitions for each client.
      */
     LwM2mModelProvider getModelProvider();
+
 }

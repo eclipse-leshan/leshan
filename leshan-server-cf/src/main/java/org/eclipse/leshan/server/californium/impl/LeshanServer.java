@@ -27,9 +27,9 @@ import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.leshan.core.request.DownlinkRequest;
-import org.eclipse.leshan.core.response.ExceptionConsumer;
+import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.core.response.ResponseConsumer;
+import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.server.Destroyable;
 import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.Startable;
@@ -64,8 +64,6 @@ public class LeshanServer implements LwM2mServer {
     private final CoapServer coapServer;
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanServer.class);
-
-    private static final int COAP_REQUEST_TIMEOUT_MILLIS = 5000;
 
     private final CaliforniumLwM2mRequestSender requestSender;
 
@@ -150,9 +148,8 @@ public class LeshanServer implements LwM2mServer {
         final Set<Endpoint> endpoints = new HashSet<>();
         endpoints.add(endpoint);
         endpoints.add(secureEndpoint);
-        // TODO add a way to set timeout.
         requestSender = new CaliforniumLwM2mRequestSender(endpoints, this.clientRegistry, this.observationRegistry,
-                modelProvider, COAP_REQUEST_TIMEOUT_MILLIS);
+                modelProvider);
     }
 
     @Override
@@ -234,12 +231,17 @@ public class LeshanServer implements LwM2mServer {
 
     @Override
     public <T extends LwM2mResponse> T send(final Client destination, final DownlinkRequest<T> request) {
-        return requestSender.send(destination, request);
+        return requestSender.send(destination, request, null);
+    }
+
+    @Override
+    public <T extends LwM2mResponse> T send(final Client destination, final DownlinkRequest<T> request, long timeout) {
+        return requestSender.send(destination, request, timeout);
     }
 
     @Override
     public <T extends LwM2mResponse> void send(final Client destination, final DownlinkRequest<T> request,
-            final ResponseConsumer<T> responseCallback, final ExceptionConsumer errorCallback) {
+            final ResponseCallback<T> responseCallback, final ErrorCallback errorCallback) {
         requestSender.send(destination, request, responseCallback, errorCallback);
     }
 
