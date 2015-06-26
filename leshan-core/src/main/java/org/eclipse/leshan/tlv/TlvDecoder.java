@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.tlv;
 
+import java.math.BigInteger;
 import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
@@ -191,15 +192,15 @@ public class TlvDecoder {
             value[0] &= ~(1 << 7);
         }
 
-        ByteBuffer buf = ByteBuffer.wrap(value);
+        BigInteger buf = new BigInteger(value);
         if (value.length == 1) {
-            return positive ? buf.get() : -buf.get();
+            return positive ? buf.byteValue() : -buf.byteValue();
         } else if (value.length <= 2) {
-            return positive ? buf.getShort() : -buf.getShort();
+            return positive ? buf.shortValue() : -buf.shortValue();
         } else if (value.length <= 4) {
-            return positive ? buf.getInt() : -buf.getInt();
+            return positive ? buf.intValue() : -buf.intValue();
         } else if (value.length <= 8) {
-            return positive ? buf.getLong() : -buf.getLong();
+            return positive ? buf.longValue() : -buf.longValue();
         } else {
             throw new TlvException("Invalid length for an integer value: " + value.length);
         }
