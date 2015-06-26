@@ -80,7 +80,7 @@ public class TlvEncoder {
         byte[] bytes = iBuf.array();
         // set the most significant bit to 1 if negative value
         if (number.longValue() < 0) {
-            bytes[0] |= (1 << 7);
+            bytes[0] |= 0b1000_0000;
         }
         return bytes;
     }

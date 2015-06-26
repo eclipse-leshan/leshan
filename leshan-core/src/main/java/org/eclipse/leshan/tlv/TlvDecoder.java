@@ -186,10 +186,10 @@ public class TlvDecoder {
      * Decodes a byte array into an integer value (signed magnitude representation)
      */
     public static Number decodeInteger(byte[] value) throws TlvException {
-        boolean positive = (value[0] & (1 << 7)) == 0; // last bit to 0?
+        boolean positive = (value[0] & 0b1000_0000) == 0; // last bit to 0?
         if (!positive) {
             // convert to positive value by setting the most significant bit to 0
-            value[0] &= ~(1 << 7);
+            value[0] &= 0b0111_1111;
         }
 
         BigInteger buf = new BigInteger(value);
