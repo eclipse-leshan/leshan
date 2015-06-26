@@ -111,7 +111,7 @@ public class LeshanClientExample {
             public void run() {
                 if (registrationID != null) {
                     System.out.println("\tDevice: Deregistering Client '" + registrationID + "'");
-                    client.send(new DeregisterRequest(registrationID));
+                    client.send(new DeregisterRequest(registrationID), 1000);
                     client.stop();
                 }
             }

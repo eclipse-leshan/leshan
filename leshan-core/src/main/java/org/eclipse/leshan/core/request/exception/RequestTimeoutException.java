@@ -15,15 +15,26 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request.exception;
 
-public class RequestTimeoutException extends ResourceAccessException {
+
+public class RequestTimeoutException extends RuntimeException {
 
     private static final long serialVersionUID = -6372006578730743741L;
 
+    // TODO this should take a LwM2mRequest object as parameters instead of String
+
     /**
-     * @param uri the resource URI accessed
+     * @param request a string representing the request which timed out
+     */
+    public RequestTimeoutException(String request) {
+        super(String.format("Request %s timed out after all CoaP retransmission attempt", request));
+    }
+
+    /**
+     * @param request request a string representing the request which timed out
      * @param timeout the number of milliseconds after which the request has timed out
      */
-    public RequestTimeoutException(String uri, long timeout) {
-        super(null, uri, String.format("Request timed out after %d milliseconds", timeout));
+    public RequestTimeoutException(String request, long timeout) {
+        super(String.format("Request %s timed out after %d milliseconds", request, timeout));
+
     }
 }

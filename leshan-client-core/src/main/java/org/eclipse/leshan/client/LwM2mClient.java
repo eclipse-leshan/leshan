@@ -31,6 +31,8 @@ public interface LwM2mClient {
 
     public <T extends LwM2mResponse> T send(final UplinkRequest<T> request);
 
+    public <T extends LwM2mResponse> T send(final UplinkRequest<T> request, long timeout);
+
     public <T extends LwM2mResponse> void send(final UplinkRequest<T> request,
             final ResponseConsumer<T> responseCallback, final ExceptionConsumer errorCallback);
 

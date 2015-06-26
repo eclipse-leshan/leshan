@@ -41,24 +41,19 @@ import org.slf4j.LoggerFactory;
 public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSender {
     private static final Logger LOG = LoggerFactory.getLogger(CaliforniumLwM2mClientRequestSender.class);
 
-    // TODO add a way to set timeout.
-    private static final int COAP_REQUEST_TIMEOUT_MILLIS = 5000;
-
     private final Endpoint clientEndpoint;
     private final InetSocketAddress serverAddress;
     private final LwM2mClient client;
-    private final long timeoutMillis;
 
     public CaliforniumLwM2mClientRequestSender(final Endpoint endpoint, final InetSocketAddress serverAddress,
             final LwM2mClient client) {
         this.clientEndpoint = endpoint;
         this.serverAddress = serverAddress;
         this.client = client;
-        this.timeoutMillis = COAP_REQUEST_TIMEOUT_MILLIS;
     }
 
     @Override
-    public <T extends LwM2mResponse> T send(final UplinkRequest<T> request) {
+    public <T extends LwM2mResponse> T send(final UplinkRequest<T> request, Long timeout) {
         // Create the CoAP request from LwM2m request
         final CoapClientRequestBuilder coapClientRequestBuilder = new CoapClientRequestBuilder(serverAddress, client);
         request.accept(coapClientRequestBuilder);
@@ -70,7 +65,7 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
         final Request coapRequest = coapClientRequestBuilder.getRequest();
 
         // Send CoAP request synchronously
-        final SyncRequestObserver<T> syncMessageObserver = new SyncRequestObserver<T>(coapRequest, timeoutMillis) {
+        final SyncRequestObserver<T> syncMessageObserver = new SyncRequestObserver<T>(coapRequest, timeout) {
             @Override
             public T buildResponse(final Response coapResponse) {
                 // Build LwM2m response
@@ -183,10 +178,9 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
         AtomicReference<T> ref = new AtomicReference<T>(null);
         AtomicBoolean coapTimeout = new AtomicBoolean(false);
         AtomicReference<RuntimeException> exception = new AtomicReference<>();
+        Long timeout;
 
-        long timeout;
-
-        public SyncRequestObserver(final Request coapRequest, final long timeout) {
+        public SyncRequestObserver(final Request coapRequest, final Long timeout) {
             super(coapRequest);
             this.timeout = timeout;
         }
@@ -224,13 +218,21 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
 
         public T waitForResponse() {
             try {
-                final boolean latchTimeout = latch.await(timeout, TimeUnit.MILLISECONDS);
-                if (!latchTimeout || coapTimeout.get()) {
+                boolean timeEllapsed = false;
+                if (timeout != null) {
+                    timeEllapsed = !latch.await(timeout, TimeUnit.MILLISECONDS);
+                } else {
+                    latch.await();
+                }
+                if (timeEllapsed || coapTimeout.get()) {
                     coapRequest.cancel();
                     if (exception.get() != null) {
                         throw exception.get();
                     } else {
-                        throw new RequestTimeoutException(coapRequest.getURI(), timeout);
+                        if (timeout != null)
+                            throw new RequestTimeoutException(coapRequest.toString(), timeout);
+                        else
+                            throw new RequestTimeoutException(coapRequest.toString());
                     }
                 }
             } catch (final InterruptedException e) {

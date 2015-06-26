@@ -16,6 +16,7 @@
 package org.eclipse.leshan.server;
 
 import org.eclipse.leshan.core.request.DownlinkRequest;
+import org.eclipse.leshan.core.request.exception.RequestTimeoutException;
 import org.eclipse.leshan.core.response.ExceptionConsumer;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseConsumer;
@@ -53,8 +54,18 @@ public interface LwM2mServer {
 
     /**
      * Send a Lightweight M2M request synchronously. Will block until a response is received from the remote client.
+     * 
+     * a {@link RequestTimeoutException} is thrown if the CoAP timeout expired. (see
+     * http://tools.ietf.org/html/rfc7252#section-4.2)
      */
     <T extends LwM2mResponse> T send(Client destination, DownlinkRequest<T> request);
+
+    /**
+     * Send a Lightweight M2M request synchronously. Will block until a response is received from the remote client.
+     * 
+     * a {@link RequestTimeoutException} is thrown if the given timeout expired.
+     */
+    <T extends LwM2mResponse> T send(Client destination, DownlinkRequest<T> request, long timeout);
 
     /**
      * Send a Lightweight M2M request asynchronously.
@@ -83,4 +94,5 @@ public interface LwM2mServer {
      * Get the provider in charge of retrieving the object definitions for each client.
      */
     LwM2mModelProvider getModelProvider();
+
 }

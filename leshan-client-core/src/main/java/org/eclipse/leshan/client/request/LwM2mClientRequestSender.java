@@ -21,7 +21,8 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseConsumer;
 
 public interface LwM2mClientRequestSender {
-    <T extends LwM2mResponse> T send(final UplinkRequest<T> request);
+
+    <T extends LwM2mResponse> T send(final UplinkRequest<T> request, Long timeout);
 
     <T extends LwM2mResponse> void send(final UplinkRequest<T> request, final ResponseConsumer<T> responseCallback,
             final ExceptionConsumer errorCallback);
