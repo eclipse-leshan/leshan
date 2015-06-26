@@ -15,7 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.tlv;
 
-import java.math.BigInteger;
 import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
@@ -175,27 +174,32 @@ public class TlvDecoder {
      * Decodes a byte array into a date value.
      */
     public static Date decodeDate(byte[] value) throws TlvException {
-        BigInteger bi = new BigInteger(value);
         if (value.length <= 8) {
-            return new Date(bi.longValue() * 1000L);
+            return new Date(decodeInteger(value).longValue() * 1000L);
         } else {
             throw new TlvException("Invalid length for a time value: " + value.length);
         }
     }
 
     /**
-     * Decodes a byte array into an integer value.
+     * Decodes a byte array into an integer value (signed magnitude representation)
      */
     public static Number decodeInteger(byte[] value) throws TlvException {
-        BigInteger bi = new BigInteger(value);
+        boolean positive = (value[0] & (1 << 7)) == 0; // last bit to 0?
+        if (!positive) {
+            // convert to positive value by setting the most significant bit to 0
+            value[0] &= ~(1 << 7);
+        }
+
+        ByteBuffer buf = ByteBuffer.wrap(value);
         if (value.length == 1) {
-            return bi.byteValue();
+            return positive ? buf.get() : -buf.get();
         } else if (value.length <= 2) {
-            return bi.shortValue();
+            return positive ? buf.getShort() : -buf.getShort();
         } else if (value.length <= 4) {
-            return bi.intValue();
+            return positive ? buf.getInt() : -buf.getInt();
         } else if (value.length <= 8) {
-            return bi.longValue();
+            return positive ? buf.getLong() : -buf.getLong();
         } else {
             throw new TlvException("Invalid length for an integer value: " + value.length);
         }

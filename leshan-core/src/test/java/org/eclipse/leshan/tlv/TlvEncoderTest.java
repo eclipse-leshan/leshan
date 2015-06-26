@@ -15,12 +15,11 @@
  *******************************************************************************/
 package org.eclipse.leshan.tlv;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.nio.ByteBuffer;
 import java.util.Date;
 
-import org.eclipse.leshan.tlv.TlvEncoder;
 import org.junit.Test;
 
 public class TlvEncoderTest {
@@ -40,6 +39,20 @@ public class TlvEncoderTest {
         byte[] encoded = TlvEncoder.encodeInteger(1245823);
 
         // check value
+        ByteBuffer bb = ByteBuffer.wrap(encoded);
+        assertEquals(1245823, bb.getInt());
+        assertEquals(0, bb.remaining());
+    }
+
+    @Test
+    public void encode_negative_integer() {
+        byte[] encoded = TlvEncoder.encodeInteger(-1245823);
+
+        // check sign
+        assertFalse((encoded[0] & (1 << 7)) == 0);
+
+        // convert to positive and check the value
+        encoded[0] &= ~(1 << 7);
         ByteBuffer bb = ByteBuffer.wrap(encoded);
         assertEquals(1245823, bb.getInt());
         assertEquals(0, bb.remaining());

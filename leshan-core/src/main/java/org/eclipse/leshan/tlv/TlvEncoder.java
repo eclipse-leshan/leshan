@@ -51,25 +51,32 @@ public class TlvEncoder {
     }
 
     /**
-     * Encodes an integer value.
+     * Encodes an integer value (signed magnitude representation)
      */
     public static byte[] encodeInteger(Number number) {
+
         ByteBuffer iBuf = null;
-        long lValue = number.longValue();
-        if (lValue >= Byte.MIN_VALUE && lValue <= Byte.MAX_VALUE) {
+        long positiveValue = number.longValue() < 0 ? -number.longValue() : number.longValue();
+        if (positiveValue <= Byte.MAX_VALUE) {
             iBuf = ByteBuffer.allocate(1);
-            iBuf.put((byte) lValue);
-        } else if (lValue >= Short.MIN_VALUE && lValue <= Short.MAX_VALUE) {
+            iBuf.put((byte) positiveValue);
+        } else if (positiveValue <= Short.MAX_VALUE) {
             iBuf = ByteBuffer.allocate(2);
-            iBuf.putShort((short) lValue);
-        } else if (lValue >= Integer.MIN_VALUE && lValue <= Integer.MAX_VALUE) {
+            iBuf.putShort((short) positiveValue);
+        } else if (positiveValue <= Integer.MAX_VALUE) {
             iBuf = ByteBuffer.allocate(4);
-            iBuf.putInt((int) lValue);
+            iBuf.putInt((int) positiveValue);
         } else {
             iBuf = ByteBuffer.allocate(8);
-            iBuf.putLong(lValue);
+            iBuf.putLong(positiveValue);
         }
-        return iBuf.array();
+
+        byte[] bytes = iBuf.array();
+        // set the most significant bit to 1 if negative value
+        if (number.longValue() < 0) {
+            bytes[0] |= (1 << 7);
+        }
+        return bytes;
     }
 
     /**
