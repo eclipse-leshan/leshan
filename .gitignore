@@ -13,3 +13,7 @@ bin/
 *.war
 *.ear
 leshan-core/ddffiles
+
+# IntelliJ
+.idea/
+*.iml
