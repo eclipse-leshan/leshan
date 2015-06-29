@@ -1,15 +1,27 @@
-*.class
-.classpath
-.project
-.settings
-target
+# Leshan config files #
+leshan-core/ddffiles
 leshan-standalone/Californium.properties
 leshan-standalone/data
 leshan-bs-server/data
 Californium.properties
+
+# Binary files #
+*.class
+
+# Maven build files #
+target
+
+# Eclipse files #
 bin/
+.classpath
+.project
+.settings
+
+# IntelliJ Config Files #
+.idea/
+*.iml
+
 # Package Files #
 *.jar
 *.war
 *.ear
-leshan-core/ddffiles
