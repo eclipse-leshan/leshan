@@ -18,7 +18,8 @@ package org.eclipse.leshan.core.request.exception;
 import org.eclipse.leshan.ResponseCode;
 
 /**
- * An exception indicating a problem while accessing a resource on a LWM2M Client.
+ * An exception indicating a problem while accessing a resource on a LWM2M Client (invalid error code, invalid resource
+ * value...).
  */
 public class ResourceAccessException extends RuntimeException {
 

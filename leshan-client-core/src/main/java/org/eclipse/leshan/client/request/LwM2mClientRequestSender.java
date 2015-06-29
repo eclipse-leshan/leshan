@@ -22,8 +22,17 @@ import org.eclipse.leshan.core.response.ResponseConsumer;
 
 public interface LwM2mClientRequestSender {
 
+    /**
+     * Send a Lightweight M2M request synchronously. Will block until a response is received from the remote client.
+     * 
+     * @return the LWM2M response. The response can be <code>null</code> if the timeout (given parameter or CoAP
+     *         timeout) expires.
+     */
     <T extends LwM2mResponse> T send(final UplinkRequest<T> request, Long timeout);
 
+    /**
+     * Send a Lightweight M2M request asynchronously.
+     */
     <T extends LwM2mResponse> void send(final UplinkRequest<T> request, final ResponseConsumer<T> responseCallback,
             final ExceptionConsumer errorCallback);
 }

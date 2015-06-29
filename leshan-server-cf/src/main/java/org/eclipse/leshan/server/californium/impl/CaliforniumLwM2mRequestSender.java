@@ -17,10 +17,8 @@ package org.eclipse.leshan.server.californium.impl;
 
 import java.net.InetSocketAddress;
 import java.util.Set;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -30,8 +28,7 @@ import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.request.DownlinkRequest;
-import org.eclipse.leshan.core.request.exception.RejectionException;
-import org.eclipse.leshan.core.request.exception.RequestTimeoutException;
+import org.eclipse.leshan.core.request.exception.RequestFailedException;
 import org.eclipse.leshan.core.response.ExceptionConsumer;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseConsumer;
@@ -196,17 +193,17 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         @Override
         public void onTimeout() {
             clientRegistry.deregisterClient(client.getRegistrationId());
-            errorCallback.accept(new TimeoutException());
+            errorCallback.accept(new org.eclipse.leshan.core.request.exception.TimeoutException());
         }
 
         @Override
         public void onCancel() {
-            errorCallback.accept(new CancellationException());
+            errorCallback.accept(new RequestFailedException("Canceled request"));
         }
 
         @Override
         public void onReject() {
-            errorCallback.accept(new RejectionException());
+            errorCallback.accept(new RequestFailedException("Rejected request"));
         }
 
     }
@@ -257,22 +254,17 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
         public T waitForResponse() {
             try {
-                boolean timeEllapsed = false;
+                boolean timeElapsed = false;
                 if (timeout != null) {
-                    timeEllapsed = !latch.await(timeout, TimeUnit.MILLISECONDS);
+                    timeElapsed = !latch.await(timeout, TimeUnit.MILLISECONDS);
                 } else {
                     latch.await();
                 }
-                if (timeEllapsed || coapTimeout.get()) {
+                if (timeElapsed || coapTimeout.get()) {
                     clientRegistry.deregisterClient(client.getRegistrationId());
                     coapRequest.cancel();
                     if (exception.get() != null) {
                         throw exception.get();
-                    } else {
-                        if (timeout != null)
-                            throw new RequestTimeoutException(coapRequest.toString(), timeout);
-                        else
-                            throw new RequestTimeoutException(coapRequest.toString());
                     }
                 }
             } catch (final InterruptedException e) {

@@ -16,20 +16,18 @@
 package org.eclipse.leshan.server.request;
 
 import org.eclipse.leshan.core.request.DownlinkRequest;
-import org.eclipse.leshan.core.request.exception.RequestTimeoutException;
 import org.eclipse.leshan.core.response.ExceptionConsumer;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseConsumer;
 import org.eclipse.leshan.server.client.Client;
 
 public interface LwM2mRequestSender {
+
     /**
      * Send a Lightweight M2M request synchronously. Will block until a response is received from the remote client.
      * 
-     * a {@link RequestTimeoutException} is thrown if the given timeout expired.
-     * 
-     * If timeout is NULL, a {@link RequestTimeoutException} is thrown if the CoAP timeout expired. (see
-     * http://tools.ietf.org/html/rfc7252#section-4.2)
+     * @return the LWM2M response. The response can be <code>null</code> if the timeout (given parameter or CoAP
+     *         timeout) expires.
      */
     <T extends LwM2mResponse> T send(Client destination, DownlinkRequest<T> request, Long timeout);
 
