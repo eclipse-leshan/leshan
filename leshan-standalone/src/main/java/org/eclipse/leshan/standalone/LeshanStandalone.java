@@ -37,6 +37,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
+import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
 import org.eclipse.leshan.standalone.servlet.ClientServlet;
 import org.eclipse.leshan.standalone.servlet.EventServlet;
@@ -51,6 +52,8 @@ public class LeshanStandalone {
 
     private Server server;
     private LeshanServer lwServer;
+
+    private ClientRegistry clientRegistry;
 
     public void start() {
         // Use those ENV variables for specifying the interface to be bound for coap and coaps
@@ -99,7 +102,7 @@ public class LeshanStandalone {
             LOG.warn("Unable to load RPK.", e);
         }
 
-        lwServer = builder.build();
+        lwServer = builder.setClientRegistry(clientRegistry).build();
         lwServer.start();
 
         // Now prepare and start jetty
@@ -146,6 +149,15 @@ public class LeshanStandalone {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public LeshanServer leshanServer() {
+        return lwServer;
+    }
+
+    public LeshanStandalone clientRegistry(ClientRegistry clientRegistry) {
+        this.clientRegistry = clientRegistry;
+        return this;
     }
 
     public static void main(String[] args) {
