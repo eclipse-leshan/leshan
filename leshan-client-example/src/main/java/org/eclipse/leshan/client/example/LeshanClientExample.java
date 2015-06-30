@@ -88,22 +88,24 @@ public class LeshanClientExample {
         // Start the client
         client.start();
 
-        // Register to the server provided
+        // Register to the server
         final String endpointIdentifier = UUID.randomUUID().toString();
         RegisterResponse response = client.send(new RegisterRequest(endpointIdentifier));
+        if (response == null) {
+            System.out.println("Registration request timeout");
+            return;
+        }
 
-        // Report registration response.
         System.out.println("Device Registration (Success? " + response.getCode() + ")");
-        if (response.getCode() == ResponseCode.CREATED) {
-            System.out.println("\tDevice: Registered Client Location '" + response.getRegistrationID() + "'");
-            registrationID = response.getRegistrationID();
-        } else {
-            // TODO Should we have a error message on response ?
+        if (response.getCode() != ResponseCode.CREATED) {
             // System.err.println("\tDevice Registration Error: " + response.getErrorMessage());
-            System.err.println("\tDevice Registration Error: " + response.getCode());
             System.err
                     .println("If you're having issues connecting to the LWM2M endpoint, try using the DTLS port instead");
+            return;
         }
+
+        registrationID = response.getRegistrationID();
+        System.out.println("\tDevice: Registered Client Location '" + registrationID + "'");
 
         // Deregister on shutdown and stop client.
         Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -111,7 +113,7 @@ public class LeshanClientExample {
             public void run() {
                 if (registrationID != null) {
                     System.out.println("\tDevice: Deregistering Client '" + registrationID + "'");
-                    client.send(new DeregisterRequest(registrationID));
+                    client.send(new DeregisterRequest(registrationID), 5000);
                     client.stop();
                 }
             }

@@ -65,8 +65,6 @@ public class LeshanServer implements LwM2mServer {
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanServer.class);
 
-    private static final int COAP_REQUEST_TIMEOUT_MILLIS = 5000;
-
     private final CaliforniumLwM2mRequestSender requestSender;
 
     private final ClientRegistry clientRegistry;
@@ -150,9 +148,8 @@ public class LeshanServer implements LwM2mServer {
         final Set<Endpoint> endpoints = new HashSet<>();
         endpoints.add(endpoint);
         endpoints.add(secureEndpoint);
-        // TODO add a way to set timeout.
         requestSender = new CaliforniumLwM2mRequestSender(endpoints, this.clientRegistry, this.observationRegistry,
-                modelProvider, COAP_REQUEST_TIMEOUT_MILLIS);
+                modelProvider);
     }
 
     @Override
@@ -234,7 +231,12 @@ public class LeshanServer implements LwM2mServer {
 
     @Override
     public <T extends LwM2mResponse> T send(final Client destination, final DownlinkRequest<T> request) {
-        return requestSender.send(destination, request);
+        return requestSender.send(destination, request, null);
+    }
+
+    @Override
+    public <T extends LwM2mResponse> T send(final Client destination, final DownlinkRequest<T> request, long timeout) {
+        return requestSender.send(destination, request, timeout);
     }
 
     @Override

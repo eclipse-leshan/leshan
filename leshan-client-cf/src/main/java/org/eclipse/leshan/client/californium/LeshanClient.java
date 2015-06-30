@@ -98,7 +98,15 @@ public class LeshanClient implements LwM2mClient {
         if (!clientServerStarted.get()) {
             throw new RuntimeException("Internal CoapServer is not started.");
         }
-        return requestSender.send(request);
+        return requestSender.send(request, null);
+    }
+
+    @Override
+    public <T extends LwM2mResponse> T send(final UplinkRequest<T> request, long timeout) {
+        if (!clientServerStarted.get()) {
+            throw new RuntimeException("Internal CoapServer is not started.");
+        }
+        return requestSender.send(request, timeout);
     }
 
     @Override

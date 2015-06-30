@@ -15,15 +15,19 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request.exception;
 
-public class RequestTimeoutException extends ResourceAccessException {
+/**
+ * Generic exception for all unexpected errors (e.g. rejected request at CoAP level).
+ */
+public class RequestFailedException extends RuntimeException {
 
-    private static final long serialVersionUID = -6372006578730743741L;
+    private static final long serialVersionUID = 1L;
 
-    /**
-     * @param uri the resource URI accessed
-     * @param timeout the number of milliseconds after which the request has timed out
-     */
-    public RequestTimeoutException(String uri, long timeout) {
-        super(null, uri, String.format("Request timed out after %d milliseconds", timeout));
+    public RequestFailedException() {
+        super();
     }
+
+    public RequestFailedException(String message) {
+        super(message);
+    }
+
 }

@@ -16,10 +16,8 @@
 package org.eclipse.leshan.client.californium.impl;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -30,8 +28,7 @@ import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.request.LwM2mClientRequestSender;
 import org.eclipse.leshan.core.request.UplinkRequest;
-import org.eclipse.leshan.core.request.exception.RejectionException;
-import org.eclipse.leshan.core.request.exception.RequestTimeoutException;
+import org.eclipse.leshan.core.request.exception.RequestFailedException;
 import org.eclipse.leshan.core.response.ExceptionConsumer;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseConsumer;
@@ -41,24 +38,19 @@ import org.slf4j.LoggerFactory;
 public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSender {
     private static final Logger LOG = LoggerFactory.getLogger(CaliforniumLwM2mClientRequestSender.class);
 
-    // TODO add a way to set timeout.
-    private static final int COAP_REQUEST_TIMEOUT_MILLIS = 5000;
-
     private final Endpoint clientEndpoint;
     private final InetSocketAddress serverAddress;
     private final LwM2mClient client;
-    private final long timeoutMillis;
 
     public CaliforniumLwM2mClientRequestSender(final Endpoint endpoint, final InetSocketAddress serverAddress,
             final LwM2mClient client) {
         this.clientEndpoint = endpoint;
         this.serverAddress = serverAddress;
         this.client = client;
-        this.timeoutMillis = COAP_REQUEST_TIMEOUT_MILLIS;
     }
 
     @Override
-    public <T extends LwM2mResponse> T send(final UplinkRequest<T> request) {
+    public <T extends LwM2mResponse> T send(final UplinkRequest<T> request, Long timeout) {
         // Create the CoAP request from LwM2m request
         final CoapClientRequestBuilder coapClientRequestBuilder = new CoapClientRequestBuilder(serverAddress, client);
         request.accept(coapClientRequestBuilder);
@@ -70,7 +62,7 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
         final Request coapRequest = coapClientRequestBuilder.getRequest();
 
         // Send CoAP request synchronously
-        final SyncRequestObserver<T> syncMessageObserver = new SyncRequestObserver<T>(coapRequest, timeoutMillis) {
+        final SyncRequestObserver<T> syncMessageObserver = new SyncRequestObserver<T>(coapRequest, timeout) {
             @Override
             public T buildResponse(final Response coapResponse) {
                 // Build LwM2m response
@@ -162,17 +154,17 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
 
         @Override
         public void onTimeout() {
-            errorCallback.accept(new TimeoutException());
+            errorCallback.accept(new org.eclipse.leshan.core.request.exception.TimeoutException());
         }
 
         @Override
         public void onCancel() {
-            errorCallback.accept(new CancellationException());
+            errorCallback.accept(new RequestFailedException("Canceled request"));
         }
 
         @Override
         public void onReject() {
-            errorCallback.accept(new RejectionException());
+            errorCallback.accept(new RequestFailedException("Reject request"));
         }
 
     }
@@ -183,10 +175,9 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
         AtomicReference<T> ref = new AtomicReference<T>(null);
         AtomicBoolean coapTimeout = new AtomicBoolean(false);
         AtomicReference<RuntimeException> exception = new AtomicReference<>();
+        Long timeout;
 
-        long timeout;
-
-        public SyncRequestObserver(final Request coapRequest, final long timeout) {
+        public SyncRequestObserver(final Request coapRequest, final Long timeout) {
             super(coapRequest);
             this.timeout = timeout;
         }
@@ -224,13 +215,16 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
 
         public T waitForResponse() {
             try {
-                final boolean latchTimeout = latch.await(timeout, TimeUnit.MILLISECONDS);
-                if (!latchTimeout || coapTimeout.get()) {
+                boolean timeElapsed = false;
+                if (timeout != null) {
+                    timeElapsed = !latch.await(timeout, TimeUnit.MILLISECONDS);
+                } else {
+                    latch.await();
+                }
+                if (timeElapsed || coapTimeout.get()) {
                     coapRequest.cancel();
                     if (exception.get() != null) {
                         throw exception.get();
-                    } else {
-                        throw new RequestTimeoutException(coapRequest.getURI(), timeout);
                     }
                 }
             } catch (final InterruptedException e) {
