@@ -215,13 +215,13 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
 
         public T waitForResponse() {
             try {
-                boolean timeEllapsed = false;
+                boolean timeElapsed = false;
                 if (timeout != null) {
-                    timeEllapsed = !latch.await(timeout, TimeUnit.MILLISECONDS);
+                    timeElapsed = !latch.await(timeout, TimeUnit.MILLISECONDS);
                 } else {
                     latch.await();
                 }
-                if (timeEllapsed || coapTimeout.get()) {
+                if (timeElapsed || coapTimeout.get()) {
                     coapRequest.cancel();
                     if (exception.get() != null) {
                         throw exception.get();
