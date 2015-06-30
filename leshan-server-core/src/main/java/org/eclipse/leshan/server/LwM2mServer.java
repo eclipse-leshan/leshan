@@ -36,7 +36,7 @@ import org.eclipse.leshan.server.security.SecurityRegistry;
 public interface LwM2mServer {
 
     /**
-     * Start the server (bind port, start to listen CoAP messages.
+     * Starts the server (bind port, start to listen CoAP messages).
      */
     void start();
 
@@ -52,21 +52,26 @@ public interface LwM2mServer {
     void destroy();
 
     /**
-     * Send a Lightweight M2M request synchronously. Will block until a response is received from the remote client.
-     *
+     * Sends a Lightweight M2M request synchronously. Will block until a response is received from the remote client.
+     * 
+     * @param destination the remote client
+     * @param request the request to the client
      * @return the response or <code>null</code> if the timeout expires (CoAP timeout).
      */
     <T extends LwM2mResponse> T send(Client destination, DownlinkRequest<T> request);
 
     /**
-     * Send a Lightweight M2M request synchronously. Will block until a response is received from the remote client.
+     * Sends a Lightweight M2M request synchronously. Will block until a response is received from the remote client.
      * 
+     * @param destination the remote client
+     * @param request the request to the client
+     * @param timeout the request timeout in millisecond
      * @return the response or <code>null</code> if the timeout expires (given parameter or CoAP timeout).
      */
     <T extends LwM2mResponse> T send(Client destination, DownlinkRequest<T> request, long timeout);
 
     /**
-     * Send a Lightweight M2M request asynchronously.
+     * Sends a Lightweight M2M request asynchronously.
      */
     <T extends LwM2mResponse> void send(Client destination, DownlinkRequest<T> request,
             ResponseConsumer<T> responseCallback, ExceptionConsumer errorCallback);
