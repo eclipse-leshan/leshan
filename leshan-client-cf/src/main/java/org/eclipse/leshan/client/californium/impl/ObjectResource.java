@@ -80,10 +80,8 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
         try {
             super.handleRequest(exchange);
         } catch (Exception e) {
-            LOG.error("Exception while handling a request on the /rd resource", e);
-            // unexpected error, we should sent something like a INTERNAL_SERVER_ERROR.
-            // but it would not be LWM2M compliant. so BAD_REQUEST for now...
-            exchange.sendResponse(new Response(ResponseCode.BAD_REQUEST));
+            LOG.error(String.format("Exception while handling a request on the %s resource", getURI()), e);
+            exchange.sendResponse(new Response(ResponseCode.INTERNAL_SERVER_ERROR));
         }
     }
 
@@ -173,7 +171,7 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
         // Manage Execute Request
         if (path.isResource()) {
             LwM2mResponse response = nodeEnabler.execute(new ExecuteRequest(URI, exchange.getRequestPayload(),
-                     ContentFormat.fromCode(exchange.getRequestOptions().getContentFormat())));
+                    ContentFormat.fromCode(exchange.getRequestOptions().getContentFormat())));
             exchange.respond(fromLwM2mCode(response.getCode()));
             return;
         }

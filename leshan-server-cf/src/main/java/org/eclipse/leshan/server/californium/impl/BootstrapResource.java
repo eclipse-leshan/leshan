@@ -29,6 +29,7 @@ import org.eclipse.californium.core.coap.MessageObserver;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
+import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerConfig;
@@ -52,6 +53,16 @@ public class BootstrapResource extends CoapResource {
     public BootstrapResource(BootstrapStore store) {
         super("bs");
         this.store = store;
+    }
+
+    @Override
+    public void handleRequest(Exchange exchange) {
+        try {
+            super.handleRequest(exchange);
+        } catch (Exception e) {
+            LOG.error("Exception while handling a request on the /bs resource", e);
+            exchange.sendResponse(new Response(ResponseCode.INTERNAL_SERVER_ERROR));
+        }
     }
 
     @Override

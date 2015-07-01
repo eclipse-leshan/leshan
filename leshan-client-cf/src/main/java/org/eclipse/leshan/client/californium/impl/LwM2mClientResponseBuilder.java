@@ -61,6 +61,8 @@ public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements Upli
             return ResponseCode.METHOD_NOT_ALLOWED;
         } else if (code == CoAP.ResponseCode.FORBIDDEN.value) {
             return ResponseCode.FORBIDDEN;
+        } else if (code == CoAP.ResponseCode.INTERNAL_SERVER_ERROR.value) {
+            return ResponseCode.INTERNAL_SERVER_ERROR;
         } else {
             throw new IllegalArgumentException("Invalid CoAP code for LWM2M response: " + code);
         }
@@ -80,6 +82,7 @@ public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements Upli
             break;
         case BAD_REQUEST:
         case FORBIDDEN:
+        case INTERNAL_SERVER_ERROR:
             lwM2mresponse = new RegisterResponse(fromCoapCode(coapResponse.getCode().value));
             break;
         default:
@@ -92,6 +95,7 @@ public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements Upli
         switch (coapResponse.getCode()) {
         case DELETED:
         case NOT_FOUND:
+        case INTERNAL_SERVER_ERROR:
             lwM2mresponse = new LwM2mResponse(fromCoapCode(coapResponse.getCode().value));
             break;
         default:
@@ -105,6 +109,7 @@ public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements Upli
         case CHANGED:
         case BAD_REQUEST:
         case NOT_FOUND:
+        case INTERNAL_SERVER_ERROR:
             lwM2mresponse = new LwM2mResponse(fromCoapCode(coapResponse.getCode().value));
             break;
         default:

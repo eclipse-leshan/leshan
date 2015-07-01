@@ -78,9 +78,7 @@ public class RegisterResource extends CoapResource {
             super.handleRequest(exchange);
         } catch (Exception e) {
             LOG.error("Exception while handling a request on the /rd resource", e);
-            // unexpected error, we should sent something like a INTERNAL_SERVER_ERROR.
-            // but it would not be LWM2M compliant. so BAD_REQUEST for now...
-            exchange.sendResponse(new Response(ResponseCode.BAD_REQUEST));
+            exchange.sendResponse(new Response(ResponseCode.INTERNAL_SERVER_ERROR));
         }
     }
 

@@ -68,7 +68,8 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     protected CreateResponse doCreate(CreateRequest request) {
-        return new CreateResponse(ResponseCode.BAD_REQUEST);
+        // This should be a not implemented error, but this is not defined in the spec.
+        return new CreateResponse(ResponseCode.INTERNAL_SERVER_ERROR);
     }
 
     @Override
@@ -89,7 +90,8 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     protected ValueResponse doRead(ReadRequest request) {
-        return new ValueResponse(ResponseCode.BAD_REQUEST);
+        // This should be a not implemented error, but this is not defined in the spec.
+        return new ValueResponse(ResponseCode.INTERNAL_SERVER_ERROR);
     }
 
     @Override
@@ -110,7 +112,8 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     protected LwM2mResponse doWrite(WriteRequest request) {
-        return new LwM2mResponse(ResponseCode.BAD_REQUEST);
+        // This should be a not implemented error, but this is not defined in the spec.
+        return new LwM2mResponse(ResponseCode.INTERNAL_SERVER_ERROR);
     }
 
     @Override
@@ -124,7 +127,8 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     protected LwM2mResponse doDelete(DeleteRequest request) {
-        return new LwM2mResponse(ResponseCode.BAD_REQUEST);
+        // This should be a not implemented error, but this is not defined in the spec.
+        return new LwM2mResponse(ResponseCode.INTERNAL_SERVER_ERROR);
     }
 
     @Override
@@ -146,13 +150,15 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     protected LwM2mResponse doExecute(ExecuteRequest request) {
-        return new LwM2mResponse(ResponseCode.BAD_REQUEST);
+        // This should be a not implemented error, but this is not defined in the spec.
+        return new LwM2mResponse(ResponseCode.INTERNAL_SERVER_ERROR);
     }
 
     @Override
     public LwM2mResponse writeAttributes(WriteAttributesRequest request) {
         // TODO should be implemented here to be available for all object enabler
-        return new LwM2mResponse(ResponseCode.BAD_REQUEST);
+        // This should be a not implemented error, but this is not defined in the spec.
+        return new LwM2mResponse(ResponseCode.INTERNAL_SERVER_ERROR);
     }
 
     @Override

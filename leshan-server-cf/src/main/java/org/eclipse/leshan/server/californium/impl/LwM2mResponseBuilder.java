@@ -81,6 +81,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             return ResponseCode.METHOD_NOT_ALLOWED;
         } else if (code == CoAP.ResponseCode.FORBIDDEN.value) {
             return ResponseCode.FORBIDDEN;
+        } else if (code == CoAP.ResponseCode.INTERNAL_SERVER_ERROR.value) {
+            return ResponseCode.INTERNAL_SERVER_ERROR;
         } else {
             throw new IllegalArgumentException("Invalid CoAP code for LWM2M response: " + code);
         }
@@ -104,6 +106,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         case UNAUTHORIZED:
         case NOT_FOUND:
         case METHOD_NOT_ALLOWED:
+        case INTERNAL_SERVER_ERROR:
             lwM2mresponse = new ValueResponse(fromCoapCode(coapResponse.getCode().value));
             break;
         default:
@@ -129,6 +132,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         case NOT_FOUND:
         case UNAUTHORIZED:
         case METHOD_NOT_ALLOWED:
+        case INTERNAL_SERVER_ERROR:
             lwM2mresponse = new DiscoverResponse(fromCoapCode(coapResponse.getCode().value));
             break;
         default:
@@ -146,6 +150,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         case NOT_FOUND:
         case UNAUTHORIZED:
         case METHOD_NOT_ALLOWED:
+        case INTERNAL_SERVER_ERROR:
             lwM2mresponse = new LwM2mResponse(fromCoapCode(coapResponse.getCode().value));
             break;
         default:
@@ -163,6 +168,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         case NOT_FOUND:
         case UNAUTHORIZED:
         case METHOD_NOT_ALLOWED:
+        case INTERNAL_SERVER_ERROR:
             lwM2mresponse = new LwM2mResponse(fromCoapCode(coapResponse.getCode().value));
             break;
         default:
@@ -180,6 +186,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         case UNAUTHORIZED:
         case NOT_FOUND:
         case METHOD_NOT_ALLOWED:
+        case INTERNAL_SERVER_ERROR:
             lwM2mresponse = new LwM2mResponse(fromCoapCode(coapResponse.getCode().value));
             break;
         default:
@@ -199,6 +206,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         case UNAUTHORIZED:
         case NOT_FOUND:
         case METHOD_NOT_ALLOWED:
+        case INTERNAL_SERVER_ERROR:
             lwM2mresponse = new CreateResponse(fromCoapCode(coapResponse.getCode().value));
             break;
         default:
@@ -215,6 +223,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         case UNAUTHORIZED:
         case NOT_FOUND:
         case METHOD_NOT_ALLOWED:
+        case INTERNAL_SERVER_ERROR:
             lwM2mresponse = new LwM2mResponse(fromCoapCode(coapResponse.getCode().value));
             break;
         default:
@@ -241,6 +250,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             break;
         case NOT_FOUND:
         case METHOD_NOT_ALLOWED:
+        case INTERNAL_SERVER_ERROR:
             lwM2mresponse = new ValueResponse(fromCoapCode(coapResponse.getCode().value));
             break;
         default:

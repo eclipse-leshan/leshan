@@ -76,8 +76,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
 
             return new CreateResponse(ResponseCode.CREATED, request.getPath().toString());
         } catch (InstantiationException | IllegalAccessException e) {
-            // TODO not really a bad request ...
-            return new CreateResponse(ResponseCode.BAD_REQUEST);
+            return new CreateResponse(ResponseCode.INTERNAL_SERVER_ERROR);
         }
     }
 
