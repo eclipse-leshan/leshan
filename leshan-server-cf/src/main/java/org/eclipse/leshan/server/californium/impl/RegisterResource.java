@@ -90,13 +90,32 @@ public class RegisterResource extends CoapResource {
 
         LOG.debug("POST received : {}", request);
 
-        // The LW M2M spec (section 8.2) mandates the usage of Confirmable
-        // messages
+        // The LWM2M spec (section 8.2) mandates the usage of confirmable messages
         if (!Type.CON.equals(request.getType())) {
             exchange.respond(ResponseCode.BAD_REQUEST);
             return;
         }
 
+        List<String> uri = exchange.getRequestOptions().getUriPath();
+        if (uri == null || uri.size() == 0 || !RESOURCE_NAME.equals(uri.get(0))) {
+            exchange.respond(ResponseCode.BAD_REQUEST);
+            return;
+        }
+
+        if (uri.size() == 1) {
+            handleRegister(exchange, request);
+            return;
+        } else if (uri.size() == 2) {
+            handleUpdate(exchange, request, uri.get(1));
+            return;
+        } else {
+            exchange.respond(ResponseCode.BAD_REQUEST);
+            return;
+        }
+
+    }
+
+    private void handleRegister(CoapExchange exchange, Request request) {
         // Create LwM2m request from CoAP request
         // --------------------------------
         // TODO: assert content media type is APPLICATION LINK FORMAT?
@@ -153,6 +172,37 @@ public class RegisterResource extends CoapResource {
         }
     }
 
+    private void handleUpdate(CoapExchange exchange, Request request, String registrationId) {
+        // Create LwM2m request from CoAP request
+        // --------------------------------
+        Long lifetime = null;
+        String smsNumber = null;
+        BindingMode binding = null;
+        LinkObject[] objectLinks = null;
+        for (String param : request.getOptions().getUriQuery()) {
+            if (param.startsWith(QUERY_PARAM_LIFETIME)) {
+                lifetime = Long.valueOf(param.substring(3));
+            } else if (param.startsWith(QUERY_PARAM_SMS)) {
+                smsNumber = param.substring(4);
+            } else if (param.startsWith(QUERY_PARAM_BINDING_MODE)) {
+                binding = BindingMode.valueOf(param.substring(2));
+            }
+        }
+        if (request.getPayload() != null && request.getPayload().length > 0) {
+            objectLinks = LinkObject.parse(request.getPayload());
+        }
+        UpdateRequest updateRequest = new UpdateRequest(registrationId, request.getSource(), request.getSourcePort(),
+                lifetime, smsNumber, binding, objectLinks);
+
+        // Handle request
+        // -------------------------------
+        LwM2mResponse updateResponse = registrationHandler.update(updateRequest);
+
+        // Create CoAP Response from LwM2m request
+        // -------------------------------
+        exchange.respond(fromLwM2mCode(updateResponse.getCode()));
+    }
+
     // TODO leshan-code-cf: this code should be factorize in a leshan-core-cf project.
     // duplicated from org.eclipse.leshan.client.californium.impl.ObjectResource
     public static ResponseCode fromLwM2mCode(final org.eclipse.leshan.ResponseCode code) {
@@ -182,11 +232,9 @@ public class RegisterResource extends CoapResource {
         }
     }
 
-    /**
-     * Updates an existing Client registration.
-     *
-     * @param exchange the CoAP request containing the updated registration properties
-     */
+    // Since the V1_0-20150615-D version of specification, the registration update should be a CoAP POST.
+    // To keep compatibility with older version, we still accept CoAP PUT.
+    // TODO remove this backward compatibility when the version 1.0.0 of the spec will be released.
     @Override
     public void handlePUT(CoapExchange exchange) {
         Request request = exchange.advanced().getRequest();
@@ -199,39 +247,14 @@ public class RegisterResource extends CoapResource {
 
         List<String> uri = exchange.getRequestOptions().getUriPath();
         if (uri == null || uri.size() != 2 || !RESOURCE_NAME.equals(uri.get(0))) {
-            exchange.respond(ResponseCode.NOT_FOUND);
+            exchange.respond(ResponseCode.BAD_REQUEST);
             return;
         }
 
-        // Create LwM2m request from CoAP request
-        // --------------------------------
-        String registrationId = uri.get(1);
-        Long lifetime = null;
-        String smsNumber = null;
-        BindingMode binding = null;
-        LinkObject[] objectLinks = null;
-        for (String param : request.getOptions().getUriQuery()) {
-            if (param.startsWith(QUERY_PARAM_LIFETIME)) {
-                lifetime = Long.valueOf(param.substring(3));
-            } else if (param.startsWith(QUERY_PARAM_SMS)) {
-                smsNumber = param.substring(4);
-            } else if (param.startsWith(QUERY_PARAM_BINDING_MODE)) {
-                binding = BindingMode.valueOf(param.substring(2));
-            }
-        }
-        if (request.getPayload() != null && request.getPayload().length > 0) {
-            objectLinks = LinkObject.parse(request.getPayload());
-        }
-        UpdateRequest updateRequest = new UpdateRequest(registrationId, request.getSource(), request.getSourcePort(),
-                lifetime, smsNumber, binding, objectLinks);
-
-        // Handle request
-        // -------------------------------
-        LwM2mResponse updateResponse = registrationHandler.update(updateRequest);
-
-        // Create CoAP Response from LwM2m request
-        // -------------------------------
-        exchange.respond(fromLwM2mCode(updateResponse.getCode()));
+        LOG.debug(
+                "Warning a client made a registration update using a CoAP PUT, a POST must be used since version V1_0-20150615-D of the specification. Request: {}",
+                request);
+        handleUpdate(exchange, request, uri.get(1));
     }
 
     @Override
