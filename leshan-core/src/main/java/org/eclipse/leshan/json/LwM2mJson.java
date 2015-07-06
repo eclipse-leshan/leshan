@@ -28,17 +28,17 @@ public class LwM2mJson {
 
     private static final Gson gson = new GsonBuilder().create();
 
-    public static String toJsonLwM2m(LwM2mJsonObject lwM2mJsonElement) {
+    public static String toJsonLwM2m(JsonRootObject lwM2mJsonElement) {
         String json = gson.toJson(lwM2mJsonElement);
         return json;
     }
 
-    public static LwM2mJsonObject fromJsonLwM2m(String jsonString) throws LwM2mJsonException {
+    public static JsonRootObject fromJsonLwM2m(String jsonString) throws LwM2mJsonException {
         try {
-            LwM2mJsonObject element = gson.fromJson(jsonString, LwM2mJsonObject.class);
+            JsonRootObject element = gson.fromJson(jsonString, JsonRootObject.class);
             return element;
         } catch (JsonSyntaxException e) {
-            throw new LwM2mJsonException("Unable to deserialize JSON String to LwM2mJsonObject ", e);
+            throw new LwM2mJsonException("Unable to deserialize JSON String to JsonRootObject ", e);
         }
     }
 

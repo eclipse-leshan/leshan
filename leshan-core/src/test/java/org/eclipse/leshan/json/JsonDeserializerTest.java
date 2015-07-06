@@ -54,7 +54,7 @@ public class JsonDeserializerTest {
 
         String dataString = b.toString();
         log.debug(dataString.trim());
-        LwM2mJsonObject element = LwM2mJson.fromJsonLwM2m(dataString);
+        JsonRootObject element = LwM2mJson.fromJsonLwM2m(dataString);
         log.debug(element.toString());
         String outString = LwM2mJson.toJsonLwM2m(element);
         Assert.assertTrue(dataString.trim().equals(outString));
@@ -73,7 +73,7 @@ public class JsonDeserializerTest {
 
         String dataString = b.toString();
 
-        LwM2mJsonObject element = LwM2mJson.fromJsonLwM2m(dataString);
+        JsonRootObject element = LwM2mJson.fromJsonLwM2m(dataString);
         log.debug(element.toString());
         String outString = LwM2mJson.toJsonLwM2m(element);
         Assert.assertTrue(dataString.trim().equals(outString));
@@ -104,7 +104,7 @@ public class JsonDeserializerTest {
         String dataString = b.toString();
 
         log.debug(dataString.trim());
-        LwM2mJsonObject element = LwM2mJson.fromJsonLwM2m(dataString);
+        JsonRootObject element = LwM2mJson.fromJsonLwM2m(dataString);
         log.debug(element.toString());
         String outString = LwM2mJson.toJsonLwM2m(element);
         Assert.assertTrue(dataString.trim().equals(outString));

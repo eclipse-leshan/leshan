@@ -24,18 +24,18 @@ import com.google.gson.annotations.SerializedName;
 /**
  * The class representing the JSON format of LWM2M
  */
-public class LwM2mJsonObject {
+public class JsonRootObject {
 
     @SerializedName("bn")
     private String baseName = null;
 
     @SerializedName("e")
-    private final ArrayList<JsonArrayElement> jsonArray;
+    private final ArrayList<JsonArrayEntry> jsonArray;
 
     @SerializedName("bt")
     private Long baseTime;
 
-    public LwM2mJsonObject(ArrayList<JsonArrayElement> jsonArray) {
+    public JsonRootObject(ArrayList<JsonArrayEntry> jsonArray) {
         this.jsonArray = jsonArray;
     }
 
@@ -55,7 +55,7 @@ public class LwM2mJsonObject {
         this.baseTime = baseTime;
     }
 
-    public ArrayList<JsonArrayElement> getResourceList() {
+    public ArrayList<JsonArrayEntry> getResourceList() {
         return jsonArray;
     }
 
@@ -77,7 +77,7 @@ public class LwM2mJsonObject {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        LwM2mJsonObject other = (LwM2mJsonObject) obj;
+        JsonRootObject other = (JsonRootObject) obj;
         if (baseName == null) {
             if (other.baseName != null)
                 return false;
