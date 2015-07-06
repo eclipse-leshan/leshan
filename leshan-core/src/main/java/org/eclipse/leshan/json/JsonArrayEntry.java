@@ -19,7 +19,7 @@ package org.eclipse.leshan.json;
 
 import com.google.gson.annotations.SerializedName;
 
-public class JsonArrayElement {
+public class JsonArrayEntry {
 
     @SerializedName("n")
     private String name;
@@ -109,7 +109,7 @@ public class JsonArrayElement {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        JsonArrayElement other = (JsonArrayElement) obj;
+        JsonArrayEntry other = (JsonArrayEntry) obj;
         if (booleanValue == null) {
             if (other.booleanValue != null)
                 return false;

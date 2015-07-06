@@ -35,10 +35,10 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.Value;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.json.JsonArrayElement;
+import org.eclipse.leshan.json.JsonArrayEntry;
 import org.eclipse.leshan.json.LwM2mJson;
 import org.eclipse.leshan.json.LwM2mJsonException;
-import org.eclipse.leshan.json.LwM2mJsonObject;
+import org.eclipse.leshan.json.JsonRootObject;
 import org.eclipse.leshan.tlv.Tlv;
 import org.eclipse.leshan.tlv.Tlv.TlvType;
 import org.eclipse.leshan.tlv.TlvDecoder;
@@ -123,7 +123,7 @@ public class LwM2mNodeDecoder {
         case JSON:
             try {
                 String jsonStrValue = new String(content);
-                LwM2mJsonObject json = LwM2mJson.fromJsonLwM2m(jsonStrValue);
+                JsonRootObject json = LwM2mJson.fromJsonLwM2m(jsonStrValue);
                 return parseJSON(json, path, model);
             } catch (LwM2mJsonException e) {
                 throw new InvalidValueException("Unable to deSerialize json", path, e);
@@ -245,7 +245,7 @@ public class LwM2mNodeDecoder {
         }
     }
 
-    private static LwM2mNode parseJSON(LwM2mJsonObject jsonObject, LwM2mPath path, LwM2mModel model)
+    private static LwM2mNode parseJSON(JsonRootObject jsonObject, LwM2mPath path, LwM2mModel model)
             throws InvalidValueException {
         LOG.trace("Parsing JSON content for path {}: {}", path, jsonObject);
 
@@ -275,7 +275,7 @@ public class LwM2mNodeDecoder {
 
     }
 
-    private static Map<Integer, LwM2mResource> parseJsonPayLoadLwM2mResources(LwM2mJsonObject jsonObject,
+    private static Map<Integer, LwM2mResource> parseJsonPayLoadLwM2mResources(JsonRootObject jsonObject,
             LwM2mPath path, LwM2mModel model) throws InvalidValueException {
         Map<Integer, LwM2mResource> lwM2mResourceMap = new HashMap<>();
         Map<Integer, List<Object>> multiResourceMap = new HashMap<>();
@@ -285,7 +285,7 @@ public class LwM2mNodeDecoder {
         }
 
         for (int i = 0; i < jsonObject.getResourceList().size(); i++) {
-            JsonArrayElement resourceElt = jsonObject.getResourceList().get(i);
+            JsonArrayEntry resourceElt = jsonObject.getResourceList().get(i);
             String[] resourcePath = resourceElt.getName().split("/");
             Integer resourceId = Integer.valueOf(resourcePath[0]);
 

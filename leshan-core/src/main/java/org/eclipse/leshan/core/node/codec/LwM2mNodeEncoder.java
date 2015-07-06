@@ -35,9 +35,9 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.Value;
 import org.eclipse.leshan.core.node.Value.DataType;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.json.JsonArrayElement;
+import org.eclipse.leshan.json.JsonArrayEntry;
 import org.eclipse.leshan.json.LwM2mJson;
-import org.eclipse.leshan.json.LwM2mJsonObject;
+import org.eclipse.leshan.json.JsonRootObject;
 import org.eclipse.leshan.tlv.Tlv;
 import org.eclipse.leshan.tlv.Tlv.TlvType;
 import org.eclipse.leshan.tlv.TlvEncoder;
@@ -279,13 +279,13 @@ public class LwM2mNodeEncoder {
         @Override
         public void visit(LwM2mObjectInstance instance) {
             LOG.trace("Encoding object instance {} into JSON", instance);
-            LwM2mJsonObject jsonObject = null;
-            ArrayList<JsonArrayElement> resourceList = new ArrayList<>();
+            JsonRootObject jsonObject = null;
+            ArrayList<JsonArrayEntry> resourceList = new ArrayList<>();
             for (Entry<Integer, LwM2mResource> resource : instance.getResources().entrySet()) {
                 LwM2mResource res = resource.getValue();
-                resourceList.addAll(lwM2mResourceToJsonArrayElement(res));
+                resourceList.addAll(lwM2mResourceToJsonArrayEntry(res));
             }
-            jsonObject = new LwM2mJsonObject(resourceList);
+            jsonObject = new JsonRootObject(resourceList);
             String json = LwM2mJson.toJsonLwM2m(jsonObject);
             encoded = json.getBytes();
         }
@@ -293,25 +293,25 @@ public class LwM2mNodeEncoder {
         @Override
         public void visit(LwM2mResource resource) {
             LOG.trace("Encoding resource {} into JSON", resource);
-            LwM2mJsonObject jsonObject = null;
-            jsonObject = new LwM2mJsonObject(lwM2mResourceToJsonArrayElement(resource));
+            JsonRootObject jsonObject = null;
+            jsonObject = new JsonRootObject(lwM2mResourceToJsonArrayEntry(resource));
             String json = LwM2mJson.toJsonLwM2m(jsonObject);
             encoded = json.getBytes();
         }
 
-        private ArrayList<JsonArrayElement> lwM2mResourceToJsonArrayElement(LwM2mResource resource) {
+        private ArrayList<JsonArrayEntry> lwM2mResourceToJsonArrayEntry(LwM2mResource resource) {
             ResourceModel rSpec = model.getResourceModel(objectId, resource.getId());
             Type expectedType = rSpec != null ? rSpec.type : null;
-            ArrayList<JsonArrayElement> resourcesList = new ArrayList<>();
+            ArrayList<JsonArrayEntry> resourcesList = new ArrayList<>();
             if (resource.isMultiInstances()) {
                 for (int i = 0; i < resource.getValues().length; i++) {
-                    JsonArrayElement jsonResourceElt = new JsonArrayElement();
+                    JsonArrayEntry jsonResourceElt = new JsonArrayEntry();
                     jsonResourceElt.setName(resource.getId() + "/" + i);
                     this.setResourceValue(convertValue(resource.getValues()[i], expectedType), jsonResourceElt);
                     resourcesList.add(jsonResourceElt);
                 }
             } else {
-                JsonArrayElement jsonResourceElt = new JsonArrayElement();
+                JsonArrayEntry jsonResourceElt = new JsonArrayEntry();
                 jsonResourceElt.setName(new StringBuffer().append(resource.getId()).toString());
                 this.setResourceValue(convertValue(resource.getValue(), expectedType), jsonResourceElt);
                 resourcesList.add(jsonResourceElt);
@@ -319,7 +319,7 @@ public class LwM2mNodeEncoder {
             return resourcesList;
         }
 
-        private void setResourceValue(Value<?> value, JsonArrayElement jsonResource) {
+        private void setResourceValue(Value<?> value, JsonArrayEntry jsonResource) {
             LOG.trace("Encoding value {} in JSON", value);
             // Following table 20 in the Specs
             switch (value.type) {
