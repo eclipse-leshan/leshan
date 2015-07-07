@@ -33,7 +33,6 @@ import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
@@ -46,23 +45,20 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
     private static final Logger LOG = LoggerFactory.getLogger(CaliforniumLwM2mRequestSender.class);
 
     private final Set<Endpoint> endpoints;
-    private final ClientRegistry clientRegistry;
     private final ObservationRegistry observationRegistry;
     private final LwM2mModelProvider modelProvider;
 
     /**
      * @param endpoints the CoAP endpoints to use for sending requests
-     * @param clientRegistry the registry which stores all the registered clients
      * @param observationRegistry the registry for keeping track of observed resources
      * @param modelProvider provides the supported objects definitions
      * @param timeoutMillis timeout for synchronously sending of CoAP request
      */
-    public CaliforniumLwM2mRequestSender(final Set<Endpoint> endpoints, final ClientRegistry clientRegistry,
-            final ObservationRegistry observationRegistry, LwM2mModelProvider modelProvider) {
+    public CaliforniumLwM2mRequestSender(final Set<Endpoint> endpoints, final ObservationRegistry observationRegistry,
+            LwM2mModelProvider modelProvider) {
         Validate.notNull(endpoints);
         Validate.notNull(observationRegistry);
         Validate.notNull(modelProvider);
-        this.clientRegistry = clientRegistry;
         this.observationRegistry = observationRegistry;
         this.endpoints = endpoints;
         this.modelProvider = modelProvider;
@@ -192,7 +188,6 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
         @Override
         public void onTimeout() {
-            clientRegistry.deregisterClient(client.getRegistrationId());
             errorCallback.onError(new org.eclipse.leshan.core.request.exception.TimeoutException());
         }
 
@@ -263,7 +258,6 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
                     latch.await();
                 }
                 if (timeElapsed || coapTimeout.get()) {
-                    clientRegistry.deregisterClient(client.getRegistrationId());
                     coapRequest.cancel();
                 }
             } catch (final InterruptedException e) {
