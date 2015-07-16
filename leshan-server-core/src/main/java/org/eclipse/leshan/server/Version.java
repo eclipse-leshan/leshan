@@ -17,16 +17,15 @@ package org.eclipse.leshan.server;
 
 public class Version {
     public static String value;
-    
-    public final static String getValue(){
-        if (value == null)
-        {
+
+    public final static String getValue() {
+        if (value == null) {
             Package p = Version.class.getPackage();
             String version = p.getImplementationVersion();
             if (version != null)
-                value =  version;
+                value = version;
             else
-                value =  "unknown";    
+                value = "unknown";
         }
         return value;
     }

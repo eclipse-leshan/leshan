@@ -120,7 +120,8 @@ public class Value<T> {
         if (value == null) {
             return other.value == null;
         } else {
-            return type == DataType.OPAQUE ? Arrays.equals((byte[])value, (byte[])other.value) : value.equals(other.value);
+            return type == DataType.OPAQUE ? Arrays.equals((byte[]) value, (byte[]) other.value) : value
+                    .equals(other.value);
         }
     }
 

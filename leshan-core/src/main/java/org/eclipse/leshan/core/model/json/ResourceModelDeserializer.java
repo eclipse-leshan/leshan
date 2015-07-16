@@ -28,8 +28,8 @@ import com.google.gson.JsonParseException;
 public class ResourceModelDeserializer implements JsonDeserializer<ResourceModel> {
 
     @Override
-    public ResourceModel deserialize(JsonElement json, java.lang.reflect.Type typeOfT, JsonDeserializationContext context)
-            throws JsonParseException {
+    public ResourceModel deserialize(JsonElement json, java.lang.reflect.Type typeOfT,
+            JsonDeserializationContext context) throws JsonParseException {
         if (json == null)
             return null;
 

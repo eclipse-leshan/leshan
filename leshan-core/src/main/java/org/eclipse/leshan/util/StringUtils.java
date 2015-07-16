@@ -16,7 +16,6 @@
  */
 package org.eclipse.leshan.util;
 
-
 /**
  * <p>
  * Operations on {@link java.lang.String} that are <code>null</code> safe.
