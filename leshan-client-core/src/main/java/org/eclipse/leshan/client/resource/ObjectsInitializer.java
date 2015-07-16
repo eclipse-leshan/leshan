@@ -29,7 +29,7 @@ import org.eclipse.leshan.util.Validate;
 public class ObjectsInitializer {
 
     protected Map<Integer, Class<? extends LwM2mInstanceEnabler>> classes = new HashMap<Integer, Class<? extends LwM2mInstanceEnabler>>();
-    protected Map<Integer, LwM2mInstanceEnabler> instances = new HashMap<Integer, LwM2mInstanceEnabler>();
+    protected Map<Integer, LwM2mInstanceEnabler[]> instances = new HashMap<Integer, LwM2mInstanceEnabler[]>();
     protected LwM2mModel model;
 
     public ObjectsInitializer() {
@@ -70,24 +70,30 @@ public class ObjectsInitializer {
         classes.put(objectId, clazz);
     }
 
-    public void setInstanceForObject(int objectId, LwM2mInstanceEnabler instance) {
-        if (model.getObjectModel(objectId) == null) {
-            throw new IllegalStateException("Cannot set Instance Class for Object " + objectId
+    public void setInstancesForObject(int objectId, LwM2mInstanceEnabler... instances) {
+        ObjectModel objectModel = model.getObjectModel(objectId);
+        if (objectModel == null) {
+            throw new IllegalStateException("Cannot set Instances Class for Object " + objectId
                     + " because no model is defined for this id.");
         }
-        Validate.notNull(instance);
+        Validate.notNull(instances);
+        Validate.notEmpty(instances);
+
         if (classes.containsKey(objectId)) {
-            throw new IllegalStateException("Cannot set Instance for Object " + objectId
+            throw new IllegalStateException("Cannot set Instances for Object " + objectId
                     + " when Instance Class already exists.  Can only have one or the other.");
         }
 
+        if (instances.length > 1 && !objectModel.multiple)
+            throw new IllegalStateException("Cannot set more than one instance for the single Object " + objectId);
+
         // check class of the instance has a default constructor
         try {
-            instance.getClass().getConstructor();
+            instances[0].getClass().getConstructor();
         } catch (NoSuchMethodException e) {
             throw new IllegalStateException("Instance must have a class with a default constructor");
         }
-        instances.put(objectId, instance);
+        this.instances.put(objectId, instances);
     }
 
     public List<ObjectEnabler> createMandatory() {
@@ -132,9 +138,9 @@ public class ObjectsInitializer {
             return clazz;
 
         // if there are no class for this object check in instance list.
-        LwM2mInstanceEnabler instance = instances.get(objectModel.id);
-        if (instance != null)
-            return instance.getClass();
+        LwM2mInstanceEnabler[] instances = this.instances.get(objectModel.id);
+        if (instances != null && instances.length > 0)
+            return instances[0].getClass();
 
         // default class :
         return SimpleInstanceEnabler.class;
@@ -142,29 +148,28 @@ public class ObjectsInitializer {
 
     protected ObjectEnabler createNodeEnabler(ObjectModel objectModel) {
         final Map<Integer, LwM2mInstanceEnabler> instances = new HashMap<Integer, LwM2mInstanceEnabler>();
-        if (!objectModel.multiple) {
-            LwM2mInstanceEnabler newInstance = createInstance(objectModel);
-            if (newInstance != null) {
-                instances.put(0, newInstance);
-                return new ObjectEnabler(objectModel.id, objectModel, instances, getClassFor(objectModel));
-            }
+        LwM2mInstanceEnabler[] newInstances = createInstances(objectModel);
+        for (int i = 0; i < newInstances.length; i++) {
+            instances.put(i, newInstances[i]);
         }
         return new ObjectEnabler(objectModel.id, objectModel, instances, getClassFor(objectModel));
     }
 
-    protected LwM2mInstanceEnabler createInstance(ObjectModel objectModel) {
-        LwM2mInstanceEnabler instance;
+    protected LwM2mInstanceEnabler[] createInstances(ObjectModel objectModel) {
+        LwM2mInstanceEnabler[] newInstances = new LwM2mInstanceEnabler[0];
         if (instances.containsKey(objectModel.id)) {
-            instance = instances.get(objectModel.id);
+            newInstances = instances.get(objectModel.id);
         } else {
-            Class<? extends LwM2mInstanceEnabler> clazz = getClassFor(objectModel);
-            try {
-                instance = clazz.newInstance();
-            } catch (InstantiationException | IllegalAccessException e) {
-                throw new RuntimeException(e);
+            // we create instance from class only for single object
+            if (!objectModel.multiple) {
+                Class<? extends LwM2mInstanceEnabler> clazz = getClassFor(objectModel);
+                try {
+                    newInstances = new LwM2mInstanceEnabler[] { clazz.newInstance() };
+                } catch (InstantiationException | IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
-        instance.setObjectModel(objectModel);
-        return instance;
+        return newInstances;
     }
 }

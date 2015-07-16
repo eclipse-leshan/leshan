@@ -74,7 +74,7 @@ public class LeshanClientExample {
         ObjectsInitializer initializer = new ObjectsInitializer();
 
         initializer.setClassForObject(3, Device.class);
-        initializer.setInstanceForObject(6, locationInstance);
+        initializer.setInstancesForObject(6, locationInstance);
         List<ObjectEnabler> enablers = initializer.createMandatory();
         enablers.add(initializer.create(6));
 

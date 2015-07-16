@@ -50,7 +50,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
         this.instances = new HashMap<Integer, LwM2mInstanceEnabler>(instances);
         this.instanceClass = instanceClass;
         for (Entry<Integer, LwM2mInstanceEnabler> entry : this.instances.entrySet()) {
-            listenInstance(entry.getValue(), entry.getKey());
+            addInstance(entry.getKey(), entry.getValue());
         }
     }
 
@@ -61,7 +61,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
         return ids;
     }
 
-    public void createInstance(int instanceId, LwM2mInstanceEnabler newInstance) {
+    public void addInstance(int instanceId, LwM2mInstanceEnabler newInstance) {
         newInstance.setObjectModel(getObjectModel());
 
         instances.put(instanceId, newInstance);
