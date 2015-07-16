@@ -18,10 +18,12 @@ package org.eclipse.leshan.core.node.codec;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Map.Entry;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -103,17 +105,42 @@ public class LwM2mNodeEncoder {
 
         @Override
         public void visit(LwM2mObject object) {
-            // TODO needed to encode multiple instances
-            throw new UnsupportedOperationException("Object TLV encoding not supported");
+            LOG.trace("Encoding object instances {} into TLV", object);
+
+            Tlv[] tlvs = null;
+
+            ObjectModel objectModel = model.getObjectModel(object.getId());
+            if (objectModel != null && !objectModel.multiple) {
+                // single instance object, the instance is level is not needed
+                tlvs = encodeResources(object.getInstances().get(0).getResources().values());
+            } else {
+                tlvs = new Tlv[object.getInstances().size()];
+                int i = 0;
+                for (Entry<Integer, LwM2mObjectInstance> instance : object.getInstances().entrySet()) {
+                    Tlv[] resources = encodeResources(instance.getValue().getResources().values());
+                    tlvs[i] = new Tlv(TlvType.OBJECT_INSTANCE, resources, null, instance.getKey());
+                    i++;
+                }
+            }
+
+            try {
+                out.write(TlvEncoder.encode(tlvs).array());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         @Override
         public void visit(LwM2mObjectInstance instance) {
             LOG.trace("Encoding object instance {} into TLV", instance);
-            // The top-level object instance TLV is not required since a single instance is encoded.
-            // The instance will be encoded as an array of resource TLVs.
-            for (Entry<Integer, LwM2mResource> resource : instance.getResources().entrySet()) {
-                resource.getValue().accept(this);
+
+            // The instance is encoded as an array of resource TLVs.
+            Tlv[] rTlvs = encodeResources(instance.getResources().values());
+
+            try {
+                out.write(TlvEncoder.encode(rTlvs).array());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
 
@@ -121,6 +148,26 @@ public class LwM2mNodeEncoder {
         public void visit(LwM2mResource resource) {
             LOG.trace("Encoding resource {} into TLV", resource);
 
+            Tlv rTlv = encodeResource(resource);
+
+            try {
+                out.write(TlvEncoder.encode(new Tlv[] { rTlv }).array());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        private Tlv[] encodeResources(Collection<LwM2mResource> resources) {
+            Tlv[] rTlvs = new Tlv[resources.size()];
+            int i = 0;
+            for (LwM2mResource resource : resources) {
+                rTlvs[i] = encodeResource(resource);
+                i++;
+            }
+            return rTlvs;
+        }
+
+        private Tlv encodeResource(LwM2mResource resource) {
             ResourceModel rSpec = model.getResourceModel(objectId, resource.getId());
             Type expectedType = rSpec != null ? rSpec.type : null;
 
@@ -136,13 +183,7 @@ public class LwM2mNodeEncoder {
                 rTlv = new Tlv(TlvType.RESOURCE_VALUE, null, this.encodeTlvValue(convertValue(resource.getValue(),
                         expectedType)), resource.getId());
             }
-
-            try {
-                out.write(TlvEncoder.encode(new Tlv[] { rTlv }).array());
-            } catch (IOException e) {
-                // should not occur
-                throw new RuntimeException(e);
-            }
+            return rTlv;
         }
 
         private byte[] encodeTlvValue(Value<?> value) {

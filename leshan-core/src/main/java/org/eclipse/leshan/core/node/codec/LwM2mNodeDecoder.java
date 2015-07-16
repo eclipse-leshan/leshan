@@ -19,7 +19,6 @@ import java.nio.ByteBuffer;
 import java.util.Date;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
-import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -176,11 +175,8 @@ public class LwM2mNodeDecoder {
             // object level request
             final LwM2mObjectInstance[] instances;
 
-            // is it a mono-instance object without the containing TLV Object instance?
-            ObjectModel objectModel = model.getObjectModel(path.getObjectId());
-            boolean multiple = objectModel == null ? true : objectModel.multiple;
-
-            if (!multiple && tlvs.length > 0 && //
+            // is it an array of resource TLV?
+            if (tlvs.length > 0 && //
                     (tlvs[0].getType() == TlvType.MULTIPLE_RESOURCE || tlvs[0].getType() == TlvType.RESOURCE_VALUE)) {
                 LwM2mResource[] resources = new LwM2mResource[tlvs.length];
                 for (int i = 0; i < tlvs.length; i++) {
