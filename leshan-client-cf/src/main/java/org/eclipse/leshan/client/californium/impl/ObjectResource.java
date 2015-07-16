@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.impl;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.californium.core.CoapResource;
@@ -35,6 +37,7 @@ import org.eclipse.leshan.client.resource.NotifySender;
 import org.eclipse.leshan.client.util.ObserveSpecParser;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
@@ -181,13 +184,31 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
             ContentFormat contentFormat = ContentFormat.fromCode(exchange.getRequestOptions().getContentFormat());
             LwM2mModel model = new LwM2mModel(nodeEnabler.getObjectModel());
             LwM2mNode lwM2mNode = LwM2mNodeDecoder.decode(exchange.getRequestPayload(), contentFormat, path, model);
-            if (!(lwM2mNode instanceof LwM2mObjectInstance)) {
+
+            Collection<LwM2mResource> resources = null;
+            if (lwM2mNode instanceof LwM2mObject) {
+                LwM2mObject object = (LwM2mObject) lwM2mNode;
+                if (object.getInstances().size() == 0) {
+                    resources = Collections.emptyList();
+                } else {
+                    if (object.getInstances().size() == 1) {
+                        LwM2mObjectInstance newInstance = object.getInstances().values().iterator().next();
+                        resources = newInstance.getResources().values();
+                    }
+                }
+            } else if (lwM2mNode instanceof LwM2mObjectInstance) {
+                LwM2mObjectInstance newInstance = (LwM2mObjectInstance) lwM2mNode;
+                resources = newInstance.getResources().values();
+            }
+
+            if (resources == null) {
+                LOG.debug("Invalid create request payload: {}", lwM2mNode);
                 exchange.respond(ResponseCode.BAD_REQUEST);
                 return;
             }
-            LwM2mResource[] resources = ((LwM2mObjectInstance) lwM2mNode).getResources().values()
-                    .toArray(new LwM2mResource[0]);
-            CreateResponse response = nodeEnabler.create(new CreateRequest(URI, resources, contentFormat));
+
+            CreateResponse response = nodeEnabler.create(new CreateRequest(URI,
+                    resources.toArray(new LwM2mResource[0]), contentFormat));
             if (response.getCode() == org.eclipse.leshan.ResponseCode.CREATED) {
                 exchange.setLocationPath(response.getLocation());
                 exchange.respond(fromLwM2mCode(response.getCode()));

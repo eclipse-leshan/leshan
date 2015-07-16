@@ -173,7 +173,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         } else if (path.isObjectInstance()) {
 
             // Manage discover on instance
-            if (!getAvailableInstance().contains(path.getObjectInstanceId()))
+            if (!getAvailableInstanceIds().contains(path.getObjectInstanceId()))
                 return new DiscoverResponse(ResponseCode.NOT_FOUND);
 
             LinkObject linkObject = LinkFormatHelper.getInstanceDescription(getObjectModel(),
@@ -182,7 +182,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
         } else if (path.isResource()) {
             // Manage discover on resource
-            if (!getAvailableInstance().contains(path.getObjectInstanceId()))
+            if (!getAvailableInstanceIds().contains(path.getObjectInstanceId()))
                 return new DiscoverResponse(ResponseCode.NOT_FOUND);
 
             ResourceModel resourceModel = getObjectModel().resources.get(path.getResourceId());

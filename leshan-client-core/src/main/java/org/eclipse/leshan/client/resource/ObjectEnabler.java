@@ -55,26 +55,51 @@ public class ObjectEnabler extends BaseObjectEnabler {
     }
 
     @Override
-    public List<Integer> getAvailableInstance() {
+    public List<Integer> getAvailableInstanceIds() {
         List<Integer> ids = new ArrayList<Integer>(instances.keySet());
         Collections.sort(ids);
         return ids;
     }
 
+    public void createInstance(int instanceId, LwM2mInstanceEnabler newInstance) {
+        newInstance.setObjectModel(getObjectModel());
+
+        instances.put(instanceId, newInstance);
+        listenInstance(newInstance, instanceId);
+    }
+
+    public LwM2mInstanceEnabler getInstance(int instanceId) {
+        return instances.get(instanceId);
+    }
+
+    public LwM2mInstanceEnabler removeInstance(int instanceId) {
+        return instances.remove(instanceId);
+    }
+
     @Override
-    protected CreateResponse doCreate(CreateRequest request) {
+    protected synchronized CreateResponse doCreate(CreateRequest request) {
         try {
-            // TODO manage case where instanceid is not available
+            Integer instanceId = request.getPath().getObjectInstanceId();
+            if (instanceId == null) {
+                // the client is in charge to generate the id of the new instance
+                if (instances.isEmpty()) {
+                    instanceId = 0;
+                } else {
+                    instanceId = Collections.max(instances.keySet()) + 1;
+                }
+            }
+
             LwM2mInstanceEnabler newInstance = instanceClass.newInstance();
             newInstance.setObjectModel(getObjectModel());
 
             for (LwM2mResource resource : request.getResources()) {
                 newInstance.write(resource.getId(), resource);
             }
-            instances.put(request.getPath().getObjectInstanceId(), newInstance);
-            listenInstance(newInstance, request.getPath().getObjectInstanceId());
+            instances.put(instanceId, newInstance);
+            listenInstance(newInstance, instanceId);
 
-            return new CreateResponse(ResponseCode.CREATED, request.getPath().toString());
+            return new CreateResponse(ResponseCode.CREATED,
+                    new LwM2mPath(request.getPath().getObjectId(), instanceId).toString());
         } catch (InstantiationException | IllegalAccessException e) {
             return new CreateResponse(ResponseCode.INTERNAL_SERVER_ERROR);
         }

@@ -37,7 +37,7 @@ public interface LwM2mObjectEnabler {
 
     ObjectModel getObjectModel();
 
-    List<Integer> getAvailableInstance();
+    List<Integer> getAvailableInstanceIds();
 
     CreateResponse create(CreateRequest request);
 

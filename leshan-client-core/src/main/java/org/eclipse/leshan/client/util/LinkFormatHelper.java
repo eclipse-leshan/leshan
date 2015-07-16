@@ -51,12 +51,12 @@ public final class LinkFormatHelper {
 
         // sort resources
         for (LwM2mObjectEnabler objectEnabler : objectEnablers) {
-            List<Integer> availableInstance = objectEnabler.getAvailableInstance();
+            List<Integer> availableInstance = objectEnabler.getAvailableInstanceIds();
             if (availableInstance.isEmpty()) {
                 String objectInstanceUrl = getPath("/", rootPath, Integer.toString(objectEnabler.getId()));
                 linkObjects.add(new LinkObject(objectInstanceUrl));
             } else {
-                for (Integer instanceId : objectEnabler.getAvailableInstance()) {
+                for (Integer instanceId : objectEnabler.getAvailableInstanceIds()) {
                     String objectInstanceUrl = getPath("/", rootPath, Integer.toString(objectEnabler.getId()),
                             instanceId.toString());
                     linkObjects.add(new LinkObject(objectInstanceUrl));

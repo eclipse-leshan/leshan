@@ -104,16 +104,21 @@ public class ObjectsInitializer {
         return enablers;
     }
 
+    public ObjectEnabler create(int objectId) {
+        ObjectModel objectModel = model.getObjectModel(objectId);
+        if (objectModel == null) {
+            throw new IllegalStateException("Cannot create object for id " + objectId
+                    + " because no model is defined for this id.");
+        }
+
+        return createNodeEnabler(objectModel);
+
+    }
+
     public List<ObjectEnabler> create(int... objectId) {
         List<ObjectEnabler> enablers = new ArrayList<ObjectEnabler>();
         for (int i = 0; i < objectId.length; i++) {
-            ObjectModel objectModel = model.getObjectModel(objectId[i]);
-            if (objectModel == null) {
-                throw new IllegalStateException("Cannot create object for id " + objectId[i]
-                        + " because no model is defined for this id.");
-            }
-
-            ObjectEnabler objectEnabler = createNodeEnabler(objectModel);
+            ObjectEnabler objectEnabler = create(objectId[i]);
             if (objectEnabler != null)
                 enablers.add(objectEnabler);
         }

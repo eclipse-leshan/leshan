@@ -65,6 +65,28 @@ public class CreateTest {
     }
 
     @Test
+    public void can_create_instance_of_object_without_instance_id() {
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        // create ACL instance
+        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, new LwM2mResource[0],
+                null));
+
+        // verify result
+        assertEquals(ResponseCode.CREATED, response.getCode());
+        assertEquals("2/0", response.getLocation());
+
+        // create a second ACL instance
+        response = helper.server.send(helper.getClient(), new CreateRequest(2, new LwM2mResource[0], null));
+
+        // verify result
+        assertEquals(ResponseCode.CREATED, response.getCode());
+        assertEquals("2/1", response.getLocation());
+
+    }
+
+    @Test
     public void can_create_specific_instance_of_object() {
         // client registration
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
