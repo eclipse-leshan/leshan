@@ -22,27 +22,61 @@
 	margin-bottom: 250px;
 }
 
+code {
+	color: #b11eb2;	
+}
+
+
+.navbar {
+    text-transform: uppercase;
+    font-family: Montserrat,"Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-weight: 700;
+    background: #333333;
+}
+
+.navbar-brand {
+	padding: 5px;
+}
+
 .navbar-default {
-	background-color:#525252;
-	border-color: #E6E6E6;
-	border-bottom-width: 10px;
+	background-color:#2e2d2d;
+	border-color: #2e2d2d;
+	border-bottom-width: 0	px;
 }
 
 .navbar div a {
-	height: 80px;
+	height: 60px;
 }
 
 .navbar-default .navbar-nav>.active>a,
-.navbar-default .navbar-nav>.active>a:hover {
-	background-color:#E6E6E6;
+.navbar-default .navbar-nav>.active>a:hover,
+.navbar-default .navbar-nav > .active > a:focus {
+	background-color:#2e2d2d;
+
+}
+
+li.navlink>a:focus{
+	outline: 0px none;
+	text-decoration: underline;
+}
+
+#client-navlink.active>a,
+#client-navlink>a:hover,
+#client-navlink>a:focus {
+		color:#25A79C;
+}
+#security-navlink.active>a,
+#security-navlink>a:hover,
+#security-navlink>a:focus{
+		color: #b11eb2;
 }
 
 .navbar-default .navbar-nav>li>a {
-	line-height: 80px;
+	line-height: 35px;
 	text-align: center;
-	font-size: 18px;
-	width: 150px;
-	color: #CBCBCB;	
+	letter-spacing: 1px;
+	/*width: 150px; */
+	color: #F7FAFA;	
 }
 
 .navbar-default .navbar-nav>li>a:hover {
@@ -61,7 +95,7 @@
 
 .object-name {
 	font-size: 18px;
-	color: #2DA0FD;
+	color: #25A79C;
 }
 
 /* Object instance level */
@@ -90,7 +124,7 @@
 }
 
 
-/* add curser on table row */
+/* add cursor on table row */
 table.table-href > tbody{
 	cursor: pointer;
 }
@@ -181,14 +215,21 @@ html {
 body {
   /* Margin bottom by footer height */
   margin-bottom: 60px;
+  background: #fafcfc;
 }
 #footer {
   position: absolute;
   bottom: 0;
   width: 100%;
   /* Set the fixed height of the footer here */
-  height: 40px;
-  background-color: #eee;
+  background-color: #2e2d2d;
   padding-top: 10px;
 }
 
+.text-muted {
+    color: #cccac9;
+}
+
+a {
+	color : #25A79C;
+}
