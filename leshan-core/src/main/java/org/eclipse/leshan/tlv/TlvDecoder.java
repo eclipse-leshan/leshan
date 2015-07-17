@@ -175,32 +175,27 @@ public class TlvDecoder {
      * Decodes a byte array into a date value.
      */
     public static Date decodeDate(byte[] value) throws TlvException {
+        BigInteger bi = new BigInteger(value);
         if (value.length <= 8) {
-            return new Date(decodeInteger(value).longValue() * 1000L);
+            return new Date(bi.longValue() * 1000L);
         } else {
             throw new TlvException("Invalid length for a time value: " + value.length);
         }
     }
 
     /**
-     * Decodes a byte array into an integer value (signed magnitude representation)
+     * Decodes a byte array into an integer value.
      */
     public static Number decodeInteger(byte[] value) throws TlvException {
-        boolean positive = (value[0] & 0b1000_0000) == 0; // last bit to 0?
-        if (!positive) {
-            // convert to positive value by setting the most significant bit to 0
-            value[0] &= 0b0111_1111;
-        }
-
-        BigInteger buf = new BigInteger(value);
+        BigInteger bi = new BigInteger(value);
         if (value.length == 1) {
-            return positive ? buf.byteValue() : -buf.byteValue();
+            return bi.byteValue();
         } else if (value.length <= 2) {
-            return positive ? buf.shortValue() : -buf.shortValue();
+            return bi.shortValue();
         } else if (value.length <= 4) {
-            return positive ? buf.intValue() : -buf.intValue();
+            return bi.intValue();
         } else if (value.length <= 8) {
-            return positive ? buf.longValue() : -buf.longValue();
+            return bi.longValue();
         } else {
             throw new TlvException("Invalid length for an integer value: " + value.length);
         }
