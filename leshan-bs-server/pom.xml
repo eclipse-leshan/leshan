@@ -20,7 +20,7 @@ Contributors:
     <parent>
         <groupId>org.eclipse.leshan</groupId>
         <artifactId>leshan</artifactId>
-        <version>0.1.11-M5</version>
+        <version>0.1.11-M6-SNAPSHOT</version>
     </parent>
     <artifactId>leshan-bs-server</artifactId>
     <name>leshan - standalone bootstrap server</name>
