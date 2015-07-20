@@ -29,8 +29,6 @@ public interface ObservationRegistry {
      * Adds an observation of resource(s) to the registry.
      * 
      * @param observation the observation
-     * @return the ID under which the observation is registered. This ID can be used to cancel the observation (see
-     *         {@link #cancelObservation(String))
      */
     void addObservation(Observation observation);
 
@@ -53,7 +51,6 @@ public interface ObservationRegistry {
      * 
      * @param client the LWM2M Client to cancel observation for
      * @param resourcepath resource to cancel observation for
-     * @return the number of canceled observations
      */
     void cancelObservation(Client client, String resourcepath);
 

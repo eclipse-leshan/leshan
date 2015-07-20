@@ -144,6 +144,9 @@ Contributors:
                                 <goals>
                                     <goal>jar</goal>
                                 </goals>
+                                <configuration>
+                                    <excludePackageNames>org.eclipse.leshan.util</excludePackageNames>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>

@@ -34,6 +34,6 @@ public interface SecurityStore {
      * @param identity of the client
      * @return the security information of <code>null</code> if not found.
      */
-    SecurityInfo getByIdentity(String Identity);
+    SecurityInfo getByIdentity(String identity);
 
 }

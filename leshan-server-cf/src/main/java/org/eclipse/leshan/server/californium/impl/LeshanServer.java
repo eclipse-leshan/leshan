@@ -39,8 +39,10 @@ import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.client.ClientRegistryListener;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
+import org.eclipse.leshan.server.observation.Observation;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
+import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.SecurityRegistry;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
@@ -80,8 +82,10 @@ public class LeshanServer implements LwM2mServer {
      *
      * @param localAddress the address to bind the CoAP server.
      * @param localAddressSecure the address to bind the CoAP server for DTLS connection.
-     * @param privateKey for RPK authentication mode
-     * @param publicKey for RPK authentication mode
+     * @param clientRegistry the registered {@link Client} registry.
+     * @param securityRegistry the {@link SecurityInfo} registry.
+     * @param observationRegistry the {@link Observation} registry.
+     * @param modelProvider provides the objects description for each client.
      */
     public LeshanServer(InetSocketAddress localAddress, InetSocketAddress localAddressSecure,
             final ClientRegistry clientRegistry, final SecurityRegistry securityRegistry,

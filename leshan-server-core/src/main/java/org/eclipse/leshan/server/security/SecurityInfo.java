@@ -28,7 +28,6 @@ import org.eclipse.leshan.util.Validate;
  * <li>Pre-Shared Key: an identity and a key are needed</li>
  * <li>Raw Public Key Certificate: a public key is needed</li>
  * </ul>
- * </p>
  */
 public class SecurityInfo implements Serializable {
 
