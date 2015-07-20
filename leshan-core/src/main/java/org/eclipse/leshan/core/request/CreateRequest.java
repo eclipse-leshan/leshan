@@ -55,7 +55,6 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
      * Creates a request for creating an instance of a particular object.
      * 
      * @param path the target path
-     * @param values the TLV encoded resource values of the object instance
      * @param resources the resource values for the new instance
      * @param contentFormat the payload format
      */

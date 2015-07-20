@@ -52,7 +52,6 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
      * @param endpoints the CoAP endpoints to use for sending requests
      * @param observationRegistry the registry for keeping track of observed resources
      * @param modelProvider provides the supported objects definitions
-     * @param timeoutMillis timeout for synchronously sending of CoAP request
      */
     public CaliforniumLwM2mRequestSender(final Set<Endpoint> endpoints, final ObservationRegistry observationRegistry,
             LwM2mModelProvider modelProvider) {

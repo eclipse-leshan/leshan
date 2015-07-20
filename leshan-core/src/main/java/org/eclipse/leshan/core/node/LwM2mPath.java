@@ -54,7 +54,7 @@ public class LwM2mPath {
      *
      * @param objectId the object identifier
      * @param objectInstanceId
-     * @param resourceIdthe resource identifier
+     * @param resourceId the resource identifier
      */
     public LwM2mPath(int objectId, int objectInstanceId, int resourceId) {
         this.objectId = objectId;
