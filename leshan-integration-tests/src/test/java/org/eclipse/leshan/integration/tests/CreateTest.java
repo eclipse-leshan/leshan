@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.Value;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
@@ -96,6 +97,23 @@ public class CreateTest {
 
         LwM2mResource[] data = new LwM2mResource[] { accessControlOwner };
         CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, 0, data, null));
+
+        // verify result
+        assertEquals(ResponseCode.CREATED, response.getCode());
+        assertEquals("2/0", response.getLocation());
+    }
+
+    @Test
+    public void can_create_specific_instance_of_object_with_json() {
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        // create ACL instance
+        LwM2mResource accessControlOwner = new LwM2mResource(3, Value.newIntegerValue(123));
+
+        LwM2mResource[] data = new LwM2mResource[] { accessControlOwner };
+        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, 0, data,
+                ContentFormat.JSON));
 
         // verify result
         assertEquals(ResponseCode.CREATED, response.getCode());
