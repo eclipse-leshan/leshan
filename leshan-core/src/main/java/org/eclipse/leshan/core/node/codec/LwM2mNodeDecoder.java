@@ -417,25 +417,6 @@ public class LwM2mNodeDecoder {
                 // If the Resource data type is opaque the string value
                 // holds the Base64 encoded representation of the Resource
                 return Value.newBinaryValue(javax.xml.bind.DatatypeConverter.parseHexBinary((String) value));
-            case OBJECTLINK:
-                try {
-                    String sValue = (String) value;
-                    String[] Objlnk = sValue.split(":");
-                    if (Objlnk.length <= 1) // Objlnk must contains ":"
-                        throw new InvalidValueException("Invalid value for Objlnk resource: " + value, rscPath);
-                    Long ObjlnkId = Long.valueOf(Objlnk[0]);
-                    Long ObjlnkInstanceId = Long.valueOf(Objlnk[1]);
-                    // MAX_ID 65535 must not be used for object instance
-                    if ((ObjlnkId >= Integer.MIN_VALUE && ObjlnkId <= Integer.MAX_VALUE)
-                            && (ObjlnkInstanceId >= Integer.MIN_VALUE && ObjlnkInstanceId < Integer.MAX_VALUE)) {
-                        return Value.newStringValue(sValue);
-                    } else {
-                        throw new InvalidValueException("Invalid value for Objlnk resource: " + value, rscPath);
-                    }
-                } catch (NumberFormatException e) {
-                    throw new InvalidValueException("Invalid value for Objlnk resource: " + value, rscPath);
-                }
-
             default:
                 // Default is Strung
                 return Value.newStringValue((String) value);
