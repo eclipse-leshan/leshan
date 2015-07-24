@@ -35,9 +35,9 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.Value;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.json.JsonArrayEntry;
+import org.eclipse.leshan.json.JsonRootObject;
 import org.eclipse.leshan.json.LwM2mJson;
 import org.eclipse.leshan.json.LwM2mJsonException;
-import org.eclipse.leshan.json.JsonRootObject;
 import org.eclipse.leshan.tlv.Tlv;
 import org.eclipse.leshan.tlv.Tlv.TlvType;
 import org.eclipse.leshan.tlv.TlvDecoder;
@@ -265,10 +265,8 @@ public class LwM2mNodeDecoder {
         } else {
             // resource level request
             Map<Integer, LwM2mResource> resourceMap = parseJsonPayLoadLwM2mResources(jsonObject, path, model);
-            LwM2mResource resource = resourceMap.get(0);
-            return resource;
+            return resourceMap.values().iterator().next();
         }
-
     }
 
     private static Map<Integer, LwM2mResource> parseJsonPayLoadLwM2mResources(JsonRootObject jsonObject,
@@ -277,7 +275,7 @@ public class LwM2mNodeDecoder {
         Map<Integer, List<Object>> multiResourceMap = new HashMap<>();
 
         if (jsonObject.getBaseName() != null && !jsonObject.getBaseName().isEmpty()) {
-            throw new UnsupportedOperationException("Basename is not supported in Json format");
+            throw new UnsupportedOperationException("Basename support is not implemented.");
         }
 
         for (int i = 0; i < jsonObject.getResourceList().size(); i++) {
