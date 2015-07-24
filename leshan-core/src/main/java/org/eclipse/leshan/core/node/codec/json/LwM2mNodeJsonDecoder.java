@@ -41,7 +41,7 @@ public class LwM2mNodeJsonDecoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeJsonDecoder.class);
 
-    public LwM2mNode decode(byte[] content, LwM2mPath path, LwM2mModel model) throws InvalidValueException {
+    public static LwM2mNode decode(byte[] content, LwM2mPath path, LwM2mModel model) throws InvalidValueException {
         try {
             String jsonStrValue = new String(content);
             JsonRootObject json = LwM2mJson.fromJsonLwM2m(jsonStrValue);

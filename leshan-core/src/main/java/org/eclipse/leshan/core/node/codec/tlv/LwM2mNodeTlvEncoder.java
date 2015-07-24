@@ -44,7 +44,7 @@ public class LwM2mNodeTlvEncoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeTlvEncoder.class);
 
-    public byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model) {
+    public static byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model) {
         Validate.notNull(node);
         Validate.notNull(path);
         Validate.notNull(model);

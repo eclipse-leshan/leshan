@@ -27,7 +27,7 @@ import org.eclipse.leshan.util.Validate;
 
 public class LwM2mNodeOpaqueDecoder {
 
-    public LwM2mNode decode(byte[] content, LwM2mPath path, LwM2mModel model) throws InvalidValueException {
+    public static LwM2mNode decode(byte[] content, LwM2mPath path, LwM2mModel model) throws InvalidValueException {
         // single resource value
         Validate.notNull(path.getResourceId());
         ResourceModel desc = model.getResourceModel(path.getObjectId(), path.getResourceId());

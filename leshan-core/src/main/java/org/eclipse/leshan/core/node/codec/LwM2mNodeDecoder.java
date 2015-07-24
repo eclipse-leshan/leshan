@@ -71,13 +71,13 @@ public class LwM2mNodeDecoder {
         // Decode content.
         switch (format) {
         case TEXT:
-            return new LwM2mNodeTextDecoder().decode(content, path, model);
+            return LwM2mNodeTextDecoder.decode(content, path, model);
         case TLV:
-            return new LwM2mNodeTlvDecoder().decode(content, path, model);
+            return LwM2mNodeTlvDecoder.decode(content, path, model);
         case OPAQUE:
-            return new LwM2mNodeOpaqueDecoder().decode(content, path, model);
+            return LwM2mNodeOpaqueDecoder.decode(content, path, model);
         case JSON:
-            return new LwM2mNodeJsonDecoder().decode(content, path, model);
+            return LwM2mNodeJsonDecoder.decode(content, path, model);
         case LINK:
             throw new UnsupportedOperationException("Content format " + format + " not yet implemented '" + path + "'");
         }

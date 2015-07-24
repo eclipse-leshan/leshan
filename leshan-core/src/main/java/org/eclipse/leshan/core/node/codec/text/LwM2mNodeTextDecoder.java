@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 public class LwM2mNodeTextDecoder {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeTextDecoder.class);
 
-    public LwM2mNode decode(byte[] content, LwM2mPath path, LwM2mModel model) throws InvalidValueException {
+    public static LwM2mNode decode(byte[] content, LwM2mPath path, LwM2mModel model) throws InvalidValueException {
         // single resource value
         Validate.notNull(path.getResourceId());
         ResourceModel rDesc = model.getResourceModel(path.getObjectId(), path.getResourceId());

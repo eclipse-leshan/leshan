@@ -52,16 +52,16 @@ public class LwM2mNodeEncoder {
         byte[] encoded = null;
         switch (format) {
         case TLV:
-            encoded = new LwM2mNodeTlvEncoder().encode(node, path, model);
+            encoded = LwM2mNodeTlvEncoder.encode(node, path, model);
             break;
         case TEXT:
-            encoded = new LwM2mNodeTextEncoder().encode(node, path, model);
+            encoded = LwM2mNodeTextEncoder.encode(node, path, model);
             break;
         case OPAQUE:
-            encoded = new LwM2mNodeOpaqueEncoder().encode(node, path, model);
+            encoded = LwM2mNodeOpaqueEncoder.encode(node, path, model);
             break;
         case JSON:
-            encoded = new LwM2mNodeJsonEncoder().encode(node, path, model);
+            encoded = LwM2mNodeJsonEncoder.encode(node, path, model);
             break;
         default:
             throw new IllegalArgumentException("Cannot encode " + node + " with format " + format);

@@ -41,7 +41,7 @@ public class LwM2mNodeJsonEncoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeJsonEncoder.class);
 
-    public byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model) {
+    public static byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model) {
         Validate.notNull(node);
         Validate.notNull(path);
         Validate.notNull(model);

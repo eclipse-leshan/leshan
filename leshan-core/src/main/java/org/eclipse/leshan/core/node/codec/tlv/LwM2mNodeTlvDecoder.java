@@ -37,7 +37,7 @@ public class LwM2mNodeTlvDecoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeTlvDecoder.class);
 
-    public LwM2mNode decode(byte[] content, LwM2mPath path, LwM2mModel model) throws InvalidValueException {
+    public static LwM2mNode decode(byte[] content, LwM2mPath path, LwM2mModel model) throws InvalidValueException {
         try {
             Tlv[] tlvs = TlvDecoder.decode(ByteBuffer.wrap(content));
             return parseTlv(tlvs, path, model);

@@ -37,7 +37,7 @@ public class LwM2mNodeTextEncoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeTextEncoder.class);
 
-    public byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model) {
+    public static byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model) {
         Validate.notNull(node);
         Validate.notNull(path);
         Validate.notNull(model);
