@@ -93,7 +93,7 @@ Modules
 `Leshan-server-cf` : server implementation based on [californium](https://github.com/eclipse/californium).  
 `Leshan-client-core` : client lwm2m logic.  
 `Leshan-client-cf` : client implementation based on [californium](https://github.com/eclipse/californium).  
-`Leshan-all` : everything in 1 jar.  
+`Leshan-all` : every previous modules in 1 jar.  
 `Leshan-client-example` : a sample of client API.  
 `Leshan-standalone` : a demo server with a web UI.  
 `Leshan-bs-server` : a bootstarp demo server.  
