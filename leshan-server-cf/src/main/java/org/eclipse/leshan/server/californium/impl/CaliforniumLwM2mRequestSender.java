@@ -268,6 +268,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
             }
 
             if (exception.get() != null) {
+                coapRequest.cancel();
                 throw exception.get();
             }
             return ref.get();
