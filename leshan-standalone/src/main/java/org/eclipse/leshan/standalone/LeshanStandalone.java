@@ -60,12 +60,12 @@ public class LeshanStandalone {
         // Build LWM2M server
         LeshanServerBuilder builder = new LeshanServerBuilder();
         if (iface != null && !iface.isEmpty()) {
-            String[] add = iface.split(":");
-            builder.setLocalAddress(add[0], Integer.parseInt(add[1]));
+            builder.setLocalAddress(iface.substring(0, iface.lastIndexOf(':')),
+                Integer.parseInt(iface.substring(iface.lastIndexOf(':') + 1, iface.length())));
         }
         if (ifaces != null && !ifaces.isEmpty()) {
-            String[] adds = ifaces.split(":");
-            builder.setLocalAddressSecure(adds[0], Integer.parseInt(adds[1]));
+            builder.setLocalAddress(ifaces.substring(0, ifaces.lastIndexOf(':')),
+                Integer.parseInt(ifaces.substring(ifaces.lastIndexOf(':') + 1, ifaces.length())));
         }
 
         // Get public and private server key
