@@ -12,20 +12,14 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Alexander Ellwein (Bosch Software Innovations GmbH)
+ *                     - refactorings for queue mode
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
 import java.net.InetSocketAddress;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.eclipse.californium.core.CoapServer;
-import org.eclipse.californium.core.network.CoAPEndpoint;
-import org.eclipse.californium.core.network.Endpoint;
-import org.eclipse.californium.scandium.DTLSConnector;
-import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -41,8 +35,7 @@ import org.eclipse.leshan.server.client.ClientRegistryListener;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.Observation;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
-import org.eclipse.leshan.server.registration.RegistrationHandler;
-import org.eclipse.leshan.server.security.SecurityInfo;
+import org.eclipse.leshan.server.request.LwM2mRequestSender;
 import org.eclipse.leshan.server.security.SecurityRegistry;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
@@ -67,7 +60,7 @@ public class LeshanServer implements LwM2mServer {
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanServer.class);
 
-    private final CaliforniumLwM2mRequestSender requestSender;
+    private final LwM2mRequestSender requestSender;
 
     private final ClientRegistry clientRegistry;
 
@@ -86,16 +79,21 @@ public class LeshanServer implements LwM2mServer {
      * @param securityRegistry the {@link SecurityInfo} registry.
      * @param observationRegistry the {@link Observation} registry.
      * @param modelProvider provides the objects description for each client.
+     * @param coapServer CoAP server to use
+     * @param requestSender request sender to use
      */
     public LeshanServer(InetSocketAddress localAddress, InetSocketAddress localAddressSecure,
             final ClientRegistry clientRegistry, final SecurityRegistry securityRegistry,
-            final ObservationRegistry observationRegistry, final LwM2mModelProvider modelProvider) {
+            final ObservationRegistry observationRegistry, final LwM2mModelProvider modelProvider,
+            final CoapServer coapServer, final LwM2mRequestSender requestSender) {
         Validate.notNull(localAddress, "IP address cannot be null");
         Validate.notNull(localAddressSecure, "Secure IP address cannot be null");
         Validate.notNull(clientRegistry, "clientRegistry cannot be null");
         Validate.notNull(securityRegistry, "securityRegistry cannot be null");
         Validate.notNull(observationRegistry, "observationRegistry cannot be null");
         Validate.notNull(modelProvider, "modelProvider cannot be null");
+        Validate.notNull(coapServer, "coapServer cannot be null");
+        Validate.notNull(requestSender, "requestSender cannot be null");
 
         // Init registries
         this.clientRegistry = clientRegistry;
@@ -121,38 +119,8 @@ public class LeshanServer implements LwM2mServer {
             }
         });
 
-        // default endpoint
-        coapServer = new CoapServer();
-        final Endpoint endpoint = new CoAPEndpoint(localAddress);
-        coapServer.addEndpoint(endpoint);
-
-        // secure endpoint
-        DTLSConnector connector = new DTLSConnector(localAddressSecure);
-        connector.getConfig().setPskStore(new LwM2mPskStore(this.securityRegistry, this.clientRegistry));
-        PrivateKey privateKey = this.securityRegistry.getServerPrivateKey();
-        PublicKey publicKey = this.securityRegistry.getServerPublicKey();
-        if (privateKey != null && publicKey != null) {
-            connector.getConfig().setPrivateKey(privateKey, publicKey);
-            // TODO this should be automatically done by scandium
-            connector.getConfig().setPreferredCipherSuite(CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8);
-        } else {
-            // TODO this should be automatically done by scandium
-            connector.getConfig().setPreferredCipherSuite(CipherSuite.TLS_PSK_WITH_AES_128_CCM_8);
-        }
-
-        final Endpoint secureEndpoint = new SecureEndpoint(connector);
-        coapServer.addEndpoint(secureEndpoint);
-
-        // define /rd resource
-        final RegisterResource rdResource = new RegisterResource(new RegistrationHandler(this.clientRegistry,
-                this.securityRegistry));
-        coapServer.add(rdResource);
-
-        // create sender
-        final Set<Endpoint> endpoints = new HashSet<>();
-        endpoints.add(endpoint);
-        endpoints.add(secureEndpoint);
-        requestSender = new CaliforniumLwM2mRequestSender(endpoints, this.observationRegistry, modelProvider);
+        this.coapServer = coapServer;
+        this.requestSender = requestSender;
     }
 
     @Override

@@ -12,8 +12,12 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Alexander Ellwein (Bosch Software Innovations GmbH) 
+ *                     - extended for using with queue mode
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
+
+import java.util.EnumSet;
 
 /**
  * Transport binding and Queue Mode
@@ -36,5 +40,14 @@ public enum BindingMode {
     US,
 
     /** UDP with Queue Mode and SMS */
-    UQS
+    UQS;
+
+    private static final EnumSet<BindingMode> QUEUE_MODES = EnumSet.of(UQ, SQ, UQS);
+
+    /**
+     * @return true, if a binding mode is a queue mode, otherwise false.
+     */
+    public boolean isQueueMode() {
+        return QUEUE_MODES.contains(this);
+    }
 }
