@@ -151,7 +151,7 @@ public class SecurityRegistryImpl implements SecurityRegistry {
 
             } else {
 
-                try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));) {
+                try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
                     SecurityInfo[] infos = (SecurityInfo[]) in.readObject();
 
                     if (infos != null) {
