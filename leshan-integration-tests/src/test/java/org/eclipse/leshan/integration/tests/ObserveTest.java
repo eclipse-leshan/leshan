@@ -35,6 +35,7 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ValueResponse;
 import org.eclipse.leshan.server.observation.Observation;
 import org.eclipse.leshan.server.observation.ObservationRegistryListener;
+import org.eclipse.leshan.server.response.ObserveResponse;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,9 +66,16 @@ public class ObserveTest {
         TestObservationListener listener = new TestObservationListener();
         helper.server.getObservationRegistry().addListener(listener);
 
-        // observe devive timezone
+        // observe device timezone
         ValueResponse response = helper.server.send(helper.getClient(), new ObserveRequest(3, 0, 15));
         assertEquals(ResponseCode.CONTENT, response.getCode());
+
+        // an observation response should have been sent
+        assertTrue(response instanceof ObserveResponse);
+        ObserveResponse observeResponse = (ObserveResponse) response;
+        Observation observation = observeResponse.getObservation();
+        assertEquals("/3/0/15", observation.getPath().toString());
+        assertEquals(helper.getClient(), observation.getClient());
 
         // write device timezone
         LwM2mResource newValue = new LwM2mResource(15, Value.newStringValue("Europe/Paris"));

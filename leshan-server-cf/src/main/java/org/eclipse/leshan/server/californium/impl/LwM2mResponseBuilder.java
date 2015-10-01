@@ -42,7 +42,9 @@ import org.eclipse.leshan.core.response.DiscoverResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ValueResponse;
 import org.eclipse.leshan.server.client.Client;
+import org.eclipse.leshan.server.observation.Observation;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
+import org.eclipse.leshan.server.response.ObserveResponse;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -239,13 +241,16 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             lwM2mresponse = null;
             break;
         case CONTENT:
-            lwM2mresponse = buildContentResponse(request.getPath(), coapResponse);
             if (coapResponse.getOptions().hasObserve()) {
                 // observe request succeed so we can add and observation to registry
                 final CaliforniumObservation observation = new CaliforniumObservation(coapRequest, client,
                         request.getPath(), model);
                 coapRequest.addMessageObserver(observation);
                 observationRegistry.addObservation(observation);
+                // add the observation to an ObserveResponse instance
+                lwM2mresponse = buildObserveResponse(request.getPath(), coapResponse, observation);
+            } else {
+                lwM2mresponse = buildContentResponse(request.getPath(), coapResponse);
             }
             break;
         case NOT_FOUND:
@@ -258,8 +263,20 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         }
     }
 
+    private ObserveResponse buildObserveResponse(final LwM2mPath path, final Response coapResponse,
+            Observation observation) {
+        final ResponseCode code = ResponseCode.CONTENT;
+        LwM2mNode content = decodeCoapResponse(path, coapResponse, code);
+        return new ObserveResponse(code, content, observation);
+    }
+
     private ValueResponse buildContentResponse(final LwM2mPath path, final Response coapResponse) {
         final ResponseCode code = ResponseCode.CONTENT;
+        LwM2mNode content = decodeCoapResponse(path, coapResponse, code);
+        return new ValueResponse(code, content);
+    }
+
+    private LwM2mNode decodeCoapResponse(final LwM2mPath path, final Response coapResponse, final ResponseCode code) {
         LwM2mNode content;
         try {
             content = LwM2mNodeDecoder.decode(coapResponse.getPayload(),
@@ -268,7 +285,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             final String msg = String.format("[%s] ([%s])", e.getMessage(), e.getPath().toString());
             throw new ResourceAccessException(code, path.toString(), msg, e);
         }
-        return new ValueResponse(code, content);
+        return content;
     }
 
     @SuppressWarnings("unchecked")
