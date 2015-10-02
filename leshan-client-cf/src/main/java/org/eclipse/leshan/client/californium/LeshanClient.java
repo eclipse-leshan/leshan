@@ -94,6 +94,12 @@ public class LeshanClient implements LwM2mClient {
     }
 
     @Override
+    public void destroy() {
+        clientSideServer.destroy();
+        clientServerStarted.set(false);
+    }
+
+    @Override
     public <T extends LwM2mResponse> T send(final UplinkRequest<T> request) {
         if (!clientServerStarted.get()) {
             throw new RuntimeException("Internal CoapServer is not started.");

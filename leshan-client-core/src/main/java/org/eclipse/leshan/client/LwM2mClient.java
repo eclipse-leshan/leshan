@@ -25,9 +25,21 @@ import org.eclipse.leshan.core.response.ResponseCallback;
 
 public interface LwM2mClient {
 
+    /**
+     * Starts the client (bind port, start to listen CoAP messages).
+     */
     public void start();
 
+    /**
+     * Stops the client, i.e. unbinds it from all ports. Frees as much system resources as possible to still be able to
+     * be started.
+     */
     public void stop();
+
+    /**
+     * Destroys the client, i.e. unbinds from all ports and frees all system resources.
+     */
+    void destroy();
 
     /**
      * Send a Lightweight M2M request synchronously. Will block until a response is received from the remote server.
