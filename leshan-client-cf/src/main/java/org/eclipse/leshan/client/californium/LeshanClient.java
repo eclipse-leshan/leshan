@@ -93,6 +93,10 @@ public class LeshanClient implements LwM2mClient {
         clientServerStarted.set(false);
     }
 
+    public void destroy() {
+        clientSideServer.destroy();
+    }
+
     @Override
     public <T extends LwM2mResponse> T send(final UplinkRequest<T> request) {
         if (!clientServerStarted.get()) {
