@@ -15,8 +15,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.tlv;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Date;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -42,7 +46,7 @@ public class TlvDecoderTest {
         LOG.debug(Arrays.toString(tlv));
 
         ByteBuffer buff = TlvEncoder.encode(tlv);
-        Assert.assertTrue(Arrays.equals(bytes, buff.array()));
+        assertTrue(Arrays.equals(bytes, buff.array()));
     }
 
     @Test
@@ -52,11 +56,49 @@ public class TlvDecoderTest {
         ByteBuffer b = ByteBuffer.wrap(bytes);
 
         try {
-            Tlv[] tlv = TlvDecoder.decode(b);
+            TlvDecoder.decode(b);
             Assert.fail();
         } catch (TlvException ex) {
-
-            Assert.assertEquals("Impossible to parse TLV: \n0011223344556677889900", ex.getMessage());
+            assertEquals("Impossible to parse TLV: \n0011223344556677889900", ex.getMessage());
         }
+    }
+
+    @Test
+    public void decode_uncomplete_integer() throws TlvException {
+
+        // byte representation of 4194304 (2^22) integer on only 3 bytes instead of 4.
+        ByteBuffer bb = ByteBuffer.allocate(3);
+        bb.put((byte) 0b01000000);
+        bb.put((byte) 0b00000000);
+        bb.put((byte) 0b00000000);
+        byte[] val = bb.array();
+
+        Integer intVal = (Integer) TlvDecoder.decodeInteger(val);
+        assertEquals(4194304, intVal.intValue());
+    }
+
+    @Test
+    public void decode_negative_integer() throws TlvException {
+
+        // signed magnitude representation for value -123456
+        ByteBuffer bb = ByteBuffer.allocate(4);
+        bb.putInt(123456);
+        byte[] val = bb.array();
+
+        // last bit to 1 for negative number
+        val[0] |= (1 << 7);
+
+        Integer intVal = (Integer) TlvDecoder.decodeInteger(val);
+        assertEquals(-123456, intVal.intValue());
+    }
+
+    @Test
+    public void decode_date() throws TlvException {
+
+        long tsInSecond = 100000;
+        ByteBuffer bb = ByteBuffer.allocate(8);
+        bb.putLong(tsInSecond);
+
+        assertEquals(new Date(tsInSecond * 1000L), TlvDecoder.decodeDate(bb.array()));
     }
 }
