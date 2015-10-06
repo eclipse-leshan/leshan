@@ -64,7 +64,7 @@ public class LeshanStandalone {
                 Integer.parseInt(iface.substring(iface.lastIndexOf(':') + 1, iface.length())));
         }
         if (ifaces != null && !ifaces.isEmpty()) {
-            builder.setLocalAddress(ifaces.substring(0, ifaces.lastIndexOf(':')),
+            builder.setLocalAddressSecure(ifaces.substring(0, ifaces.lastIndexOf(':')),
                 Integer.parseInt(ifaces.substring(ifaces.lastIndexOf(':') + 1, ifaces.length())));
         }
 
