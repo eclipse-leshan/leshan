@@ -15,12 +15,13 @@
  *******************************************************************************/
 package org.eclipse.leshan.tlv;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 import java.nio.ByteBuffer;
 import java.util.Date;
 
-import org.eclipse.leshan.tlv.TlvEncoder;
+import org.eclipse.leshan.tlv.Tlv.TlvType;
 import org.junit.Test;
 
 public class TlvEncoderTest {
@@ -76,4 +77,13 @@ public class TlvEncoderTest {
         assertEquals(1, encoded[0]);
     }
 
+    @Test
+    public void encode_resource() throws TlvException {
+        Tlv[] expectedTlv = new Tlv[] { new Tlv(TlvType.RESOURCE_VALUE, null, TlvEncoder.encodeInteger(100), 500) };
+
+        ByteBuffer encoded = TlvEncoder.encode(expectedTlv);
+        Tlv[] decodedTlv = TlvDecoder.decode(encoded);
+
+        assertArrayEquals(expectedTlv, decodedTlv);
+    }
 }
