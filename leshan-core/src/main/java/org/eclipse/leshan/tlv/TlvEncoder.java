@@ -27,6 +27,10 @@ public class TlvEncoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(TlvEncoder.class);
 
+    private static final int MAX_LENGTH_8BIT  = 256;
+    private static final int MAX_LENGTH_16BIT = 65_536;
+    private static final int MAX_LENGTH_24BIT = 16_777_216;
+
     /**
      * Encodes an array of TLV.
      */
@@ -113,15 +117,15 @@ public class TlvEncoder {
 
     private static int tlvEncodedSize(Tlv tlv, int length) {
         int size = 1 /* HEADER */;
-        size += (tlv.getIdentifier() < 65_536) ? 1 : 2; /* 8 bits or 16 bits identifiers */
+        size += (tlv.getIdentifier() < MAX_LENGTH_8BIT) ? 1 : 2; /* 8 bits or 16 bits identifiers */
 
         if (length < 8) {
             size += 0;
-        } else if (length < 256) {
+        } else if (length < MAX_LENGTH_8BIT) {
             size += 1;
-        } else if (length < 65_536) {
+        } else if (length < MAX_LENGTH_16BIT) {
             size += 2;
-        } else if (length < 16_777_216) {
+        } else if (length < MAX_LENGTH_24BIT) {
             size += 3;
         } else {
             throw new IllegalArgumentException("length should fit in max 24bits");
@@ -173,14 +177,14 @@ public class TlvEncoder {
         }
 
         // encode identifier length
-        typeByte |= (tlv.getIdentifier() < 65_536) ? 0b00_0000 : 0b10_0000;
+        typeByte |= (tlv.getIdentifier() < MAX_LENGTH_8BIT) ? 0b00_0000 : 0b10_0000;
 
         // type of length
         if (length < 8) {
             typeByte |= length;
-        } else if (length < 256) {
+        } else if (length < MAX_LENGTH_8BIT) {
             typeByte |= 0b0000_1000;
-        } else if (length < 65_536) {
+        } else if (length < MAX_LENGTH_16BIT) {
             typeByte |= 0b0001_0000;
         } else {
             typeByte |= 0b0001_1000;
@@ -188,7 +192,7 @@ public class TlvEncoder {
 
         // fill the buffer
         b.put((byte) typeByte);
-        if (tlv.getIdentifier() < 65_536) {
+        if (tlv.getIdentifier() < MAX_LENGTH_8BIT) {
             b.put((byte) tlv.getIdentifier());
         } else {
             b.putShort((short) tlv.getIdentifier());
@@ -197,9 +201,9 @@ public class TlvEncoder {
         // write length
 
         if (length >= 8) {
-            if (length < 256) {
+            if (length < MAX_LENGTH_8BIT) {
                 b.put((byte) length);
-            } else if (length < 65_536) {
+            } else if (length < MAX_LENGTH_16BIT) {
                 b.putShort((short) length);
             } else {
                 int msb = (length & 0xFF_00_00) >> 16;
