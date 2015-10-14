@@ -252,17 +252,22 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             lwM2mresponse = null;
             break;
         case CONTENT:
-            LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse);
-            if (coapResponse.getOptions().hasObserve()) {
-                // observe request succeed so we can add and observation to registry
-                final CaliforniumObservation observation = new CaliforniumObservation(coapRequest,
-                        client.getRegistrationId(), request.getPath(), model);
-                coapRequest.addMessageObserver(observation);
-                observationRegistry.addObservation(observation);
-                // add the observation to an ObserveResponse instance
-                lwM2mresponse = new ObserveResponse(ResponseCode.CONTENT, content, observation, null);
+            // just handle first response as observe response (the next one will be handle as NOTIFY)
+            if (coapRequest.getMID() == coapResponse.getMID()) {
+                LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse);
+                if (coapResponse.getOptions().hasObserve()) {
+                    // observe request succeed so we can add and observation to registry
+                    final CaliforniumObservation observation = new CaliforniumObservation(coapRequest,
+                            client.getRegistrationId(), request.getPath(), model);
+                    coapRequest.addMessageObserver(observation);
+                    observationRegistry.addObservation(observation);
+                    // add the observation to an ObserveResponse instance
+                    lwM2mresponse = new ObserveResponse(ResponseCode.CONTENT, content, observation, null);
+                } else {
+                    lwM2mresponse = ObserveResponse.success(content);
+                }
             } else {
-                lwM2mresponse = ObserveResponse.success(content);
+                lwM2mresponse = null;
             }
             break;
         case NOT_FOUND:
