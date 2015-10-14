@@ -21,16 +21,12 @@ import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.util.Validate;
 
-public class DiscoverResponse extends LwM2mResponse {
+public class DiscoverResponse extends AbstractLwM2mResponse {
 
     private final LinkObject[] links;
 
-    public DiscoverResponse(ResponseCode code) {
-        this(code, null);
-    }
-
-    public DiscoverResponse(ResponseCode code, LinkObject[] links) {
-        super(code);
+    public DiscoverResponse(ResponseCode code, LinkObject[] links, String errorMessage) {
+        super(code, errorMessage);
         if (ResponseCode.CONTENT.equals(code)) {
             Validate.notNull(links);
             this.links = Arrays.copyOf(links, links.length);
@@ -50,6 +46,35 @@ public class DiscoverResponse extends LwM2mResponse {
 
     @Override
     public String toString() {
-        return String.format("DiscoverResponse [links=%s, code=%s]", Arrays.toString(links), code);
+        if (errorMessage != null)
+            return String.format("DiscoverResponse [code=%s, errormessage=%s]", code, errorMessage);
+        else
+            return String.format("DiscoverResponse [code=%s, location=%s]", code, Arrays.toString(links));
+    }
+
+    // Syntactic sugar static constructors :
+
+    public static DiscoverResponse success(LinkObject[] links) {
+        return new DiscoverResponse(ResponseCode.CONTENT, links, null);
+    }
+
+    public static DiscoverResponse badRequest(String errorMessage) {
+        return new DiscoverResponse(ResponseCode.BAD_REQUEST, null, errorMessage);
+    }
+
+    public static DiscoverResponse notFound() {
+        return new DiscoverResponse(ResponseCode.NOT_FOUND, null, null);
+    }
+
+    public static DiscoverResponse unauthorized() {
+        return new DiscoverResponse(ResponseCode.UNAUTHORIZED, null, null);
+    }
+
+    public static DiscoverResponse methodNotAllowed() {
+        return new DiscoverResponse(ResponseCode.METHOD_NOT_ALLOWED, null, null);
+    }
+
+    public static DiscoverResponse internalServerError(String errorMessage) {
+        return new DiscoverResponse(ResponseCode.INTERNAL_SERVER_ERROR, null, errorMessage);
     }
 }

@@ -27,8 +27,8 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
-import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.core.response.ValueResponse;
+import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.core.response.WriteResponse;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,14 +58,14 @@ public class WriteTest {
         // write device timezone
         final String timeZone = "Europe/Paris";
         LwM2mResource newValue = new LwM2mResource(15, Value.newStringValue(timeZone));
-        LwM2mResponse response = helper.server.send(helper.getClient(),
+        WriteResponse response = helper.server.send(helper.getClient(),
                 new WriteRequest(3, 0, 15, newValue, null, true));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
 
         // read the timezone to check the value changed
-        ValueResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(3, 0, 15));
+        ReadResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(3, 0, 15));
         LwM2mResource resource = (LwM2mResource) readResponse.getContent();
         assertEquals(timeZone, resource.getValue().value);
     }
@@ -78,14 +78,14 @@ public class WriteTest {
         // write device timezone
         final String timeZone = "Europe/Paris";
         LwM2mResource newValue = new LwM2mResource(15, Value.newStringValue(timeZone));
-        LwM2mResponse response = helper.server.send(helper.getClient(), new WriteRequest(3, 0, 15, newValue,
+        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(3, 0, 15, newValue,
                 ContentFormat.JSON, true));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
 
         // read the timezone to check the value changed
-        ValueResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(3, 0, 15));
+        ReadResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(3, 0, 15));
         LwM2mResource resource = (LwM2mResource) readResponse.getContent();
         assertEquals(timeZone, resource.getValue().value);
     }
@@ -98,7 +98,7 @@ public class WriteTest {
         // try to write unwritable resource like manufacturer on device
         final String manufacturer = "new manufacturer";
         LwM2mResource newValue = new LwM2mResource(15, Value.newStringValue(manufacturer));
-        LwM2mResponse response = helper.server
+        WriteResponse response = helper.server
                 .send(helper.getClient(), new WriteRequest(3, 0, 0, newValue, null, true));
 
         // verify result
@@ -114,13 +114,13 @@ public class WriteTest {
         LwM2mResource utcOffset = new LwM2mResource(14, Value.newStringValue("+02"));
         LwM2mResource timeZone = new LwM2mResource(15, Value.newStringValue("Europe/Paris"));
         LwM2mObjectInstance newValue = new LwM2mObjectInstance(0, new LwM2mResource[] { utcOffset, timeZone });
-        LwM2mResponse response = helper.server.send(helper.getClient(), new WriteRequest("/3/0", newValue, null, true));
+        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest("/3/0", newValue, null, true));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
 
         // read the timezone to check the value changed
-        ValueResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(3, 0));
+        ReadResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(3, 0));
         LwM2mObjectInstance instance = (LwM2mObjectInstance) readResponse.getContent();
         assertEquals(utcOffset, instance.getResources().get(14));
         assertEquals(timeZone, instance.getResources().get(15));
@@ -135,13 +135,13 @@ public class WriteTest {
         LwM2mResource utcOffset = new LwM2mResource(14, Value.newStringValue("+02"));
         LwM2mResource timeZone = new LwM2mResource(15, Value.newStringValue("Europe/Paris"));
         LwM2mObjectInstance newValue = new LwM2mObjectInstance(0, new LwM2mResource[] { utcOffset, timeZone });
-        LwM2mResponse response = helper.server.send(helper.getClient(), new WriteRequest("/3/0", newValue, null, true));
+        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest("/3/0", newValue, null, true));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
 
         // read the timezone to check the value changed
-        ValueResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(3, 0));
+        ReadResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(3, 0));
         LwM2mObjectInstance instance = (LwM2mObjectInstance) readResponse.getContent();
         assertEquals(utcOffset, instance.getResources().get(14));
         assertEquals(timeZone, instance.getResources().get(15));

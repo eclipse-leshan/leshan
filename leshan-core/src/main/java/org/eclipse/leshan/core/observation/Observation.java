@@ -13,24 +13,22 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.observation;
+package org.eclipse.leshan.core.observation;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.server.client.Client;
 
 /**
  * An observation of a resource provided by a LWM2M Client.
  * 
- * Instances are managed by an {@link ObservationRegistry}.
  */
 public interface Observation {
 
     /**
-     * Gets the observed client.
+     * Get the registration ID link to this observation.
      * 
-     * @return the client
+     * @return the registration ID
      */
-    Client getClient();
+    String getRegistrationId();
 
     /**
      * Gets the observed resource path.

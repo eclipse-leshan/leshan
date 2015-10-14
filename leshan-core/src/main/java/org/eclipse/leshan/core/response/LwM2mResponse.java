@@ -16,31 +16,25 @@
 package org.eclipse.leshan.core.response;
 
 import org.eclipse.leshan.ResponseCode;
-import org.eclipse.leshan.util.Validate;
 
 /**
- * A response to a server request.
+ * A response to Lightweight M2M request.
  */
-public class LwM2mResponse {
-
-    protected final ResponseCode code;
-
-    public LwM2mResponse(final ResponseCode code) {
-        Validate.notNull(code);
-        this.code = code;
-    }
+public interface LwM2mResponse {
 
     /**
      * Gets the response code.
      *
      * @return the code
      */
-    public final ResponseCode getCode() {
-        return this.code;
-    }
+    ResponseCode getCode();
 
-    @Override
-    public String toString() {
-        return String.format("LwM2mResponse [code=%s]", code);
-    }
+    /**
+     * Gets the error Message. The message is similar to the Reason-Phrase on an HTTP status line. It is not intended
+     * for end users but for software engineers that during debugging need to interpret it.
+     *
+     * @return the error message
+     */
+    String getErrorMessage();
+
 }

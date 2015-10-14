@@ -19,9 +19,13 @@ import java.net.InetAddress;
 import java.util.Date;
 
 import org.eclipse.leshan.LinkObject;
-import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.UpdateResponse;
 
-public class UpdateRequest implements UplinkRequest<LwM2mResponse> {
+/**
+ * A Lightweight M2M request for updating the LWM2M Client properties required by the LWM2M Server to contact the LWM2M
+ * Client.
+ */
+public class UpdateRequest implements UplinkRequest<UpdateResponse> {
 
     private final InetAddress address;
     private final Integer port;

@@ -20,14 +20,14 @@ import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
-import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.WriteResponse;
 import org.eclipse.leshan.util.Validate;
 
 /**
  * The request to change the value of a Resource, an array of Resources Instances or multiple Resources from an Object
  * Instance.
  */
-public class WriteRequest extends AbstractDownlinkRequest<LwM2mResponse> {
+public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
 
     private final LwM2mNode node;
     private final ContentFormat contentFormat;

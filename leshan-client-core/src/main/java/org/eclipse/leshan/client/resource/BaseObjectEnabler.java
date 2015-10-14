@@ -16,7 +16,6 @@
 package org.eclipse.leshan.client.resource;
 
 import org.eclipse.leshan.LinkObject;
-import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
@@ -30,9 +29,13 @@ import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.response.CreateResponse;
+import org.eclipse.leshan.core.response.DeleteResponse;
 import org.eclipse.leshan.core.response.DiscoverResponse;
-import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.core.response.ValueResponse;
+import org.eclipse.leshan.core.response.ExecuteResponse;
+import org.eclipse.leshan.core.response.ObserveResponse;
+import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.core.response.WriteAttributesResponse;
+import org.eclipse.leshan.core.response.WriteResponse;
 
 public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
@@ -59,7 +62,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     public final CreateResponse create(CreateRequest request) {
         // we can not create new instance on single object
         if (objectModel != null && !objectModel.multiple) {
-            return new CreateResponse(ResponseCode.METHOD_NOT_ALLOWED);
+            return CreateResponse.methodNotAllowed();
         }
 
         // TODO we could do a validation of request.getObjectInstance() by comparing with resourceSpec information.
@@ -69,18 +72,18 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
     protected CreateResponse doCreate(CreateRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
-        return new CreateResponse(ResponseCode.INTERNAL_SERVER_ERROR);
+        return CreateResponse.internalServerError("not implemented");
     }
 
     @Override
-    public final ValueResponse read(ReadRequest request) {
+    public final ReadResponse read(ReadRequest request) {
         LwM2mPath path = request.getPath();
 
         // check if the resource is readable
         if (path.isResource()) {
             ResourceModel resourceModel = objectModel.resources.get(path.getResourceId());
             if (resourceModel != null && !resourceModel.operations.isReadable()) {
-                return new ValueResponse(ResponseCode.METHOD_NOT_ALLOWED);
+                return ReadResponse.methodNotAllowed();
             }
         }
 
@@ -89,20 +92,20 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         // TODO we could do a validation of response.getContent by comparing with the spec.
     }
 
-    protected ValueResponse doRead(ReadRequest request) {
+    protected ReadResponse doRead(ReadRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
-        return new ValueResponse(ResponseCode.INTERNAL_SERVER_ERROR);
+        return ReadResponse.internalServerError("not implemented");
     }
 
     @Override
-    public final LwM2mResponse write(WriteRequest request) {
+    public final WriteResponse write(WriteRequest request) {
         LwM2mPath path = request.getPath();
 
         // check if the resource is writable
         if (path.isResource()) {
             ResourceModel resourceModel = objectModel.resources.get(path.getResourceId());
             if (resourceModel != null && !resourceModel.operations.isWritable()) {
-                return new LwM2mResponse(ResponseCode.METHOD_NOT_ALLOWED);
+                return WriteResponse.methodNotAllowed();
             }
         }
 
@@ -111,54 +114,54 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         return doWrite(request);
     }
 
-    protected LwM2mResponse doWrite(WriteRequest request) {
+    protected WriteResponse doWrite(WriteRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
-        return new LwM2mResponse(ResponseCode.INTERNAL_SERVER_ERROR);
+        return WriteResponse.internalServerError("not implemented");
     }
 
     @Override
-    public final LwM2mResponse delete(DeleteRequest request) {
+    public final DeleteResponse delete(DeleteRequest request) {
         // we can not create new instance on single object
         if (objectModel != null && !objectModel.multiple) {
-            return new CreateResponse(ResponseCode.METHOD_NOT_ALLOWED);
+            return DeleteResponse.methodNotAllowed();
         }
 
         return doDelete(request);
     }
 
-    protected LwM2mResponse doDelete(DeleteRequest request) {
+    protected DeleteResponse doDelete(DeleteRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
-        return new LwM2mResponse(ResponseCode.INTERNAL_SERVER_ERROR);
+        return DeleteResponse.internalServerError("not implemented");
     }
 
     @Override
-    public final LwM2mResponse execute(ExecuteRequest request) {
+    public final ExecuteResponse execute(ExecuteRequest request) {
         LwM2mPath path = request.getPath();
 
         // only resource could be executed
         if (!path.isResource()) {
-            return new LwM2mResponse(ResponseCode.BAD_REQUEST);
+            return ExecuteResponse.badRequest(null);
         }
 
         // check if the resource is writable
         ResourceModel resourceModel = objectModel.resources.get(path.getResourceId());
         if (resourceModel != null && !resourceModel.operations.isExecutable()) {
-            return new LwM2mResponse(ResponseCode.METHOD_NOT_ALLOWED);
+            return ExecuteResponse.methodNotAllowed();
         }
 
         return doExecute(request);
     }
 
-    protected LwM2mResponse doExecute(ExecuteRequest request) {
+    protected ExecuteResponse doExecute(ExecuteRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
-        return new LwM2mResponse(ResponseCode.INTERNAL_SERVER_ERROR);
+        return ExecuteResponse.internalServerError("not implemented");
     }
 
     @Override
-    public LwM2mResponse writeAttributes(WriteAttributesRequest request) {
+    public WriteAttributesResponse writeAttributes(WriteAttributesRequest request) {
         // TODO should be implemented here to be available for all object enabler
         // This should be a not implemented error, but this is not defined in the spec.
-        return new LwM2mResponse(ResponseCode.INTERNAL_SERVER_ERROR);
+        return WriteAttributesResponse.internalServerError("not implemented");
     }
 
     @Override
@@ -168,37 +171,38 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
             // Manage discover on object
             LinkObject[] linkObjects = LinkFormatHelper.getObjectDescription(getObjectModel(), null);
-            return new DiscoverResponse(ResponseCode.CONTENT, linkObjects);
+            return DiscoverResponse.success(linkObjects);
 
         } else if (path.isObjectInstance()) {
 
             // Manage discover on instance
             if (!getAvailableInstanceIds().contains(path.getObjectInstanceId()))
-                return new DiscoverResponse(ResponseCode.NOT_FOUND);
+                return DiscoverResponse.notFound();
 
             LinkObject linkObject = LinkFormatHelper.getInstanceDescription(getObjectModel(),
                     path.getObjectInstanceId(), null);
-            return new DiscoverResponse(ResponseCode.CONTENT, new LinkObject[] { linkObject });
+            return DiscoverResponse.success(new LinkObject[] { linkObject });
 
         } else if (path.isResource()) {
             // Manage discover on resource
             if (!getAvailableInstanceIds().contains(path.getObjectInstanceId()))
-                return new DiscoverResponse(ResponseCode.NOT_FOUND);
+                return DiscoverResponse.notFound();
 
             ResourceModel resourceModel = getObjectModel().resources.get(path.getResourceId());
             if (resourceModel == null)
-                return new DiscoverResponse(ResponseCode.NOT_FOUND);
+                return DiscoverResponse.notFound();
 
             LinkObject linkObject = LinkFormatHelper.getResourceDescription(getObjectModel().id,
                     path.getObjectInstanceId(), resourceModel, null);
-            return new DiscoverResponse(ResponseCode.CONTENT, new LinkObject[] { linkObject });
+            return DiscoverResponse.success(new LinkObject[] { linkObject });
         }
-        return new DiscoverResponse(ResponseCode.BAD_REQUEST);
+        return DiscoverResponse.badRequest(null);
     }
 
     @Override
-    public ValueResponse observe(ObserveRequest request) {
-        return this.read(new ReadRequest(request.getPath().toString()));
+    public ObserveResponse observe(ObserveRequest request) {
+        ReadResponse readResponse = this.read(new ReadRequest(request.getPath().toString()));
+        return ObserveResponse.success(readResponse.getContent());
     }
 
     @Override

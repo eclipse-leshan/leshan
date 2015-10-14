@@ -55,9 +55,13 @@ import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.response.CreateResponse;
+import org.eclipse.leshan.core.response.DeleteResponse;
 import org.eclipse.leshan.core.response.DiscoverResponse;
-import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.core.response.ValueResponse;
+import org.eclipse.leshan.core.response.ExecuteResponse;
+import org.eclipse.leshan.core.response.ObserveResponse;
+import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.core.response.WriteAttributesResponse;
+import org.eclipse.leshan.core.response.WriteResponse;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,7 +104,7 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
         }
         // Manage Observe Request
         else if (exchange.getRequestOptions().hasObserve()) {
-            ValueResponse response = nodeEnabler.observe(new ObserveRequest(URI));
+            ObserveResponse response = nodeEnabler.observe(new ObserveRequest(URI));
             if (response.getCode() == org.eclipse.leshan.ResponseCode.CONTENT) {
                 LwM2mPath path = new LwM2mPath(URI);
                 LwM2mNode content = response.getContent();
@@ -115,7 +119,7 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
         }
         // Manage Read Request
         else {
-            ValueResponse response = nodeEnabler.read(new ReadRequest(URI));
+            ReadResponse response = nodeEnabler.read(new ReadRequest(URI));
             if (response.getCode() == org.eclipse.leshan.ResponseCode.CONTENT) {
                 LwM2mPath path = new LwM2mPath(URI);
                 LwM2mNode content = response.getContent();
@@ -143,7 +147,7 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
 
         // Manage Write Attributes Request
         if (spec != null) {
-            LwM2mResponse response = nodeEnabler.writeAttributes(new WriteAttributesRequest(URI, spec));
+            WriteAttributesResponse response = nodeEnabler.writeAttributes(new WriteAttributesRequest(URI, spec));
             coapExchange.respond(fromLwM2mCode(response.getCode()));
             return;
         }
@@ -155,7 +159,7 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
             try {
                 LwM2mModel model = new LwM2mModel(nodeEnabler.getObjectModel());
                 lwM2mNode = LwM2mNodeDecoder.decode(coapExchange.getRequestPayload(), contentFormat, path, model);
-                LwM2mResponse response = nodeEnabler.write(new WriteRequest(URI, lwM2mNode, contentFormat, true));
+                WriteResponse response = nodeEnabler.write(new WriteRequest(URI, lwM2mNode, contentFormat, true));
                 coapExchange.respond(fromLwM2mCode(response.getCode()));
                 return;
             } catch (InvalidValueException e) {
@@ -173,7 +177,7 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
 
         // Manage Execute Request
         if (path.isResource()) {
-            LwM2mResponse response = nodeEnabler.execute(new ExecuteRequest(URI, exchange.getRequestPayload(),
+            ExecuteResponse response = nodeEnabler.execute(new ExecuteRequest(URI, exchange.getRequestPayload(),
                     ContentFormat.fromCode(exchange.getRequestOptions().getContentFormat())));
             exchange.respond(fromLwM2mCode(response.getCode()));
             return;
@@ -227,7 +231,7 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
     public void handleDELETE(final CoapExchange coapExchange) {
         // Manage Delete Request
         String URI = coapExchange.getRequestOptions().getUriPathString();
-        LwM2mResponse response = nodeEnabler.delete(new DeleteRequest(URI));
+        DeleteResponse response = nodeEnabler.delete(new DeleteRequest(URI));
         coapExchange.respond(fromLwM2mCode(response.getCode()));
     }
 

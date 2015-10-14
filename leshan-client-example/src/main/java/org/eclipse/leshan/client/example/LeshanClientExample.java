@@ -41,9 +41,10 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.Value;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
-import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.RegisterResponse;
-import org.eclipse.leshan.core.response.ValueResponse;
+import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.core.response.WriteResponse;
 
 /*
  * To build: 
@@ -144,69 +145,60 @@ public class LeshanClientExample {
         }
 
         @Override
-        public ValueResponse read(int resourceid) {
+        public ReadResponse read(int resourceid) {
             System.out.println("Read on Device Resource " + resourceid);
             switch (resourceid) {
             case 0:
-                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
-                        Value.newStringValue(getManufacturer())));
+                return ReadResponse.success(new LwM2mResource(resourceid, Value.newStringValue(getManufacturer())));
             case 1:
-                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
-                        Value.newStringValue(getModelNumber())));
+                return ReadResponse.success(new LwM2mResource(resourceid, Value.newStringValue(getModelNumber())));
             case 2:
-                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
-                        Value.newStringValue(getSerialNumber())));
+                return ReadResponse.success(new LwM2mResource(resourceid, Value.newStringValue(getSerialNumber())));
             case 3:
-                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
-                        Value.newStringValue(getFirmwareVersion())));
+                return ReadResponse.success(new LwM2mResource(resourceid, Value.newStringValue(getFirmwareVersion())));
             case 9:
-                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
-                        Value.newIntegerValue(getBatteryLevel())));
+                return ReadResponse.success(new LwM2mResource(resourceid, Value.newIntegerValue(getBatteryLevel())));
             case 10:
-                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
-                        Value.newIntegerValue(getMemoryFree())));
+                return ReadResponse.success(new LwM2mResource(resourceid, Value.newIntegerValue(getMemoryFree())));
             case 11:
-                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
-                        new Value<?>[] { Value.newIntegerValue(getErrorCode()) }));
+                return ReadResponse.success(new LwM2mResource(resourceid, new Value<?>[] { Value
+                        .newIntegerValue(getErrorCode()) }));
             case 13:
-                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
-                        Value.newDateValue(getCurrentTime())));
+                return ReadResponse.success(new LwM2mResource(resourceid, Value.newDateValue(getCurrentTime())));
             case 14:
-                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
-                        Value.newStringValue(getUtcOffset())));
+                return ReadResponse.success(new LwM2mResource(resourceid, Value.newStringValue(getUtcOffset())));
             case 15:
-                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
-                        Value.newStringValue(getTimezone())));
+                return ReadResponse.success(new LwM2mResource(resourceid, Value.newStringValue(getTimezone())));
             case 16:
-                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
-                        Value.newStringValue(getSupportedBinding())));
+                return ReadResponse
+                        .success(new LwM2mResource(resourceid, Value.newStringValue(getSupportedBinding())));
             default:
                 return super.read(resourceid);
             }
         }
 
         @Override
-        public LwM2mResponse execute(int resourceid, byte[] params) {
+        public ExecuteResponse execute(int resourceid, byte[] params) {
             System.out.println("Execute on Device resource " + resourceid);
             if (params != null && params.length != 0)
                 System.out.println("\t params " + new String(params));
-            return new LwM2mResponse(ResponseCode.CHANGED);
+            return ExecuteResponse.success();
         }
 
         @Override
-        public LwM2mResponse write(int resourceid, LwM2mResource value) {
+        public WriteResponse write(int resourceid, LwM2mResource value) {
             System.out.println("Write on Device Resource " + resourceid + " value " + value);
             switch (resourceid) {
             case 13:
-                return new LwM2mResponse(ResponseCode.NOT_FOUND);
+                return WriteResponse.notFound();
             case 14:
                 setUtcOffset((String) value.getValue().value);
                 fireResourceChange(resourceid);
-                return new LwM2mResponse(ResponseCode.CHANGED);
+                return WriteResponse.success();
             case 15:
                 setTimezone((String) value.getValue().value);
                 fireResourceChange(resourceid);
-                return new LwM2mResponse(ResponseCode.CHANGED);
+                return WriteResponse.success();
             default:
                 return super.write(resourceid, value);
             }
@@ -285,18 +277,15 @@ public class LeshanClientExample {
         }
 
         @Override
-        public ValueResponse read(int resourceid) {
+        public ReadResponse read(int resourceid) {
             System.out.println("Read on Location Resource " + resourceid);
             switch (resourceid) {
             case 0:
-                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
-                        Value.newStringValue(getLatitude())));
+                return ReadResponse.success(new LwM2mResource(resourceid, Value.newStringValue(getLatitude())));
             case 1:
-                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
-                        Value.newStringValue(getLongitude())));
+                return ReadResponse.success(new LwM2mResource(resourceid, Value.newStringValue(getLongitude())));
             case 5:
-                return new ValueResponse(ResponseCode.CONTENT, new LwM2mResource(resourceid,
-                        Value.newDateValue(getTimestamp())));
+                return ReadResponse.success(new LwM2mResource(resourceid, Value.newDateValue(getTimestamp())));
             default:
                 return super.read(resourceid);
             }

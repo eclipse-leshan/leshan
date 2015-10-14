@@ -9,30 +9,17 @@
  *    http://www.eclipse.org/legal/epl-v10.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- *
+ * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.resource;
+package org.eclipse.leshan.core.response;
 
-import org.eclipse.leshan.core.model.ObjectModel;
-import org.eclipse.leshan.core.node.LwM2mResource;
-import org.eclipse.leshan.core.response.ExecuteResponse;
-import org.eclipse.leshan.core.response.ReadResponse;
-import org.eclipse.leshan.core.response.WriteResponse;
+import org.eclipse.leshan.ResponseCode;
 
-public interface LwM2mInstanceEnabler {
+public class BootstrapResponse extends AbstractLwM2mResponse {
 
-    void setObjectModel(ObjectModel objectModel);
-
-    void addResourceChangedListener(ResourceChangedListener listener);
-
-    void removeResourceChangedListener(ResourceChangedListener listener);
-
-    ReadResponse read(int resourceid);
-
-    WriteResponse write(int resourceid, LwM2mResource value);
-
-    ExecuteResponse execute(int resourceid, byte[] params);
-
+    public BootstrapResponse(final ResponseCode code, final String errorMessage) {
+        super(code, errorMessage);
+    }
 }

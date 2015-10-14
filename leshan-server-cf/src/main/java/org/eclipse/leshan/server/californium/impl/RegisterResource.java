@@ -32,8 +32,9 @@ import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
-import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.DeregisterResponse;
 import org.eclipse.leshan.core.response.RegisterResponse;
+import org.eclipse.leshan.core.response.UpdateResponse;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
 import org.eclipse.leshan.util.Validate;
@@ -194,7 +195,7 @@ public class RegisterResource extends CoapResource {
 
         // Handle request
         // -------------------------------
-        LwM2mResponse updateResponse = registrationHandler.update(updateRequest);
+        UpdateResponse updateResponse = registrationHandler.update(updateRequest);
 
         // Create CoAP Response from LwM2m request
         // -------------------------------
@@ -263,7 +264,7 @@ public class RegisterResource extends CoapResource {
 
         if (uri != null && uri.size() == 2 && RESOURCE_NAME.equals(uri.get(0))) {
             DeregisterRequest deregisterRequest = new DeregisterRequest(uri.get(1));
-            LwM2mResponse deregisterResponse = registrationHandler.deregister(deregisterRequest);
+            DeregisterResponse deregisterResponse = registrationHandler.deregister(deregisterRequest);
             exchange.respond(fromLwM2mCode(deregisterResponse.getCode()));
 
             if (exchange.advanced().getEndpoint() instanceof SecureEndpoint

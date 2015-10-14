@@ -28,14 +28,13 @@ import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.Value;
+import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.core.response.ValueResponse;
-import org.eclipse.leshan.server.observation.Observation;
+import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.observation.ObservationRegistryListener;
-import org.eclipse.leshan.server.response.ObserveResponse;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -67,15 +66,13 @@ public class ObserveTest {
         helper.server.getObservationRegistry().addListener(listener);
 
         // observe device timezone
-        ValueResponse response = helper.server.send(helper.getClient(), new ObserveRequest(3, 0, 15));
-        assertEquals(ResponseCode.CONTENT, response.getCode());
+        ObserveResponse observeResponse = helper.server.send(helper.getClient(), new ObserveRequest(3, 0, 15));
+        assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
 
         // an observation response should have been sent
-        assertTrue(response instanceof ObserveResponse);
-        ObserveResponse observeResponse = (ObserveResponse) response;
         Observation observation = observeResponse.getObservation();
         assertEquals("/3/0/15", observation.getPath().toString());
-        assertEquals(helper.getClient(), observation.getClient());
+        assertEquals(helper.getClient().getRegistrationId(), observation.getRegistrationId());
 
         // write device timezone
         LwM2mResource newValue = new LwM2mResource(15, Value.newStringValue("Europe/Paris"));
