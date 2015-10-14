@@ -18,7 +18,7 @@ package org.eclipse.leshan.standalone.servlet.json;
 import java.lang.reflect.Type;
 
 import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.core.response.ValueResponse;
+import org.eclipse.leshan.core.response.ReadResponse;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -33,8 +33,8 @@ public class ResponseSerializer implements JsonSerializer<LwM2mResponse> {
 
         element.addProperty("status", src.getCode().toString());
 
-        if (typeOfSrc instanceof Class<?> && ValueResponse.class.isAssignableFrom((Class<?>) typeOfSrc)) {
-            element.add("content", context.serialize(((ValueResponse) src).getContent()));
+        if (typeOfSrc instanceof Class<?> && ReadResponse.class.isAssignableFrom((Class<?>) typeOfSrc)) {
+            element.add("content", context.serialize(((ReadResponse) src).getContent()));
         }
 
         return element;

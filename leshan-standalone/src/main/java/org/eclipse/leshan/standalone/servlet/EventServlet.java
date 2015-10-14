@@ -32,10 +32,10 @@ import org.eclipse.jetty.continuation.ContinuationListener;
 import org.eclipse.jetty.continuation.ContinuationSupport;
 import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistryListener;
-import org.eclipse.leshan.server.observation.Observation;
 import org.eclipse.leshan.server.observation.ObservationRegistryListener;
 import org.eclipse.leshan.standalone.servlet.json.ClientSerializer;
 import org.eclipse.leshan.standalone.servlet.json.LwM2mNodeSerializer;
@@ -80,6 +80,8 @@ public class EventServlet extends HttpServlet {
 
     private final CoapMessageTracer coapMessageTracer;
 
+    private final LeshanServer server;
+
     private final ClientRegistryListener clientRegistryListener = new ClientRegistryListener() {
 
         @Override
@@ -113,11 +115,15 @@ public class EventServlet extends HttpServlet {
                 LOG.debug("Received notification from [{}] containing value [{}]", observation.getPath(),
                         value.toString());
             }
-            String data = new StringBuffer("{\"ep\":\"").append(observation.getClient().getEndpoint())
-                    .append("\",\"res\":\"").append(observation.getPath().toString()).append("\",\"val\":")
-                    .append(gson.toJson(value)).append("}").toString();
+            Client client = server.getClientRegistry().findByRegistrationId(observation.getRegistrationId());
 
-            sendEvent(EVENT_NOTIFICATION, data, observation.getClient().getEndpoint());
+            if (client != null) {
+                String data = new StringBuffer("{\"ep\":\"").append(client.getEndpoint()).append("\",\"res\":\"")
+                        .append(observation.getPath().toString()).append("\",\"val\":").append(gson.toJson(value))
+                        .append("}").toString();
+
+                sendEvent(EVENT_NOTIFICATION, data, client.getEndpoint());
+            }
         }
 
         @Override
@@ -126,6 +132,7 @@ public class EventServlet extends HttpServlet {
     };
 
     public EventServlet(LeshanServer server) {
+        this.server = server;
         server.getClientRegistry().addListener(this.clientRegistryListener);
         server.getObservationRegistry().addListener(this.observationRegistryListener);
 

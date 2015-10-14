@@ -19,16 +19,12 @@ import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.util.Validate;
 
-public class ValueResponse extends LwM2mResponse {
+public class ReadResponse extends AbstractLwM2mResponse {
 
-    private final LwM2mNode content;
+    protected final LwM2mNode content;
 
-    public ValueResponse(ResponseCode code) {
-        this(code, null);
-    }
-
-    public ValueResponse(ResponseCode code, LwM2mNode content) {
-        super(code);
+    public ReadResponse(ResponseCode code, LwM2mNode content, String errorMessage) {
+        super(code, errorMessage);
 
         if (ResponseCode.CONTENT.equals(code)) {
             Validate.notNull(content);
@@ -47,6 +43,31 @@ public class ValueResponse extends LwM2mResponse {
 
     @Override
     public String toString() {
-        return String.format("ValueResponse [content=%s, code=%s]", content, code);
+        if (errorMessage != null)
+            return String.format("ReadResponse [code=%s, errormessage=%s]", code, errorMessage);
+        else
+            return String.format("ReadResponse [code=%s, content=%s]", code, content);
+    }
+
+    // Syntactic sugar static constructors :
+
+    public static ReadResponse success(LwM2mNode content) {
+        return new ReadResponse(ResponseCode.CONTENT, content, null);
+    }
+
+    public static ReadResponse notFound() {
+        return new ReadResponse(ResponseCode.NOT_FOUND, null, null);
+    }
+
+    public static ReadResponse unauthorized() {
+        return new ReadResponse(ResponseCode.UNAUTHORIZED, null, null);
+    }
+
+    public static ReadResponse methodNotAllowed() {
+        return new ReadResponse(ResponseCode.METHOD_NOT_ALLOWED, null, null);
+    }
+
+    public static ReadResponse internalServerError(String errorMessage) {
+        return new ReadResponse(ResponseCode.INTERNAL_SERVER_ERROR, null, errorMessage);
     }
 }

@@ -25,8 +25,10 @@ import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.request.UplinkRequestVisitor;
 import org.eclipse.leshan.core.request.exception.ResourceAccessException;
+import org.eclipse.leshan.core.response.DeregisterResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.RegisterResponse;
+import org.eclipse.leshan.core.response.UpdateResponse;
 import org.eclipse.leshan.util.Validate;
 
 public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements UplinkRequestVisitor {
@@ -77,13 +79,13 @@ public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements Upli
     public void visit(final RegisterRequest request) {
         switch (coapResponse.getCode()) {
         case CREATED:
-            lwM2mresponse = new RegisterResponse(fromCoapCode(coapResponse.getCode().value), coapResponse.getOptions()
-                    .getLocationString());
+            lwM2mresponse = RegisterResponse.success(coapResponse.getOptions().getLocationString());
             break;
         case BAD_REQUEST:
         case FORBIDDEN:
         case INTERNAL_SERVER_ERROR:
-            lwM2mresponse = new RegisterResponse(fromCoapCode(coapResponse.getCode().value));
+            lwM2mresponse = new RegisterResponse(fromCoapCode(coapResponse.getCode().value), null,
+                    coapResponse.getPayloadString());
             break;
         default:
             handleUnexpectedResponseCode(coapRequest, coapResponse);
@@ -94,9 +96,12 @@ public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements Upli
     public void visit(final DeregisterRequest request) {
         switch (coapResponse.getCode()) {
         case DELETED:
+            lwM2mresponse = DeregisterResponse.success();
+            break;
         case NOT_FOUND:
         case INTERNAL_SERVER_ERROR:
-            lwM2mresponse = new LwM2mResponse(fromCoapCode(coapResponse.getCode().value));
+            lwM2mresponse = new DeregisterResponse(fromCoapCode(coapResponse.getCode().value),
+                    coapResponse.getPayloadString());
             break;
         default:
             handleUnexpectedResponseCode(coapRequest, coapResponse);
@@ -107,10 +112,13 @@ public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements Upli
     public void visit(final UpdateRequest request) {
         switch (coapResponse.getCode()) {
         case CHANGED:
+            lwM2mresponse = UpdateResponse.success();
+            break;
         case BAD_REQUEST:
         case NOT_FOUND:
         case INTERNAL_SERVER_ERROR:
-            lwM2mresponse = new LwM2mResponse(fromCoapCode(coapResponse.getCode().value));
+            lwM2mresponse = new UpdateResponse(fromCoapCode(coapResponse.getCode().value),
+                    coapResponse.getPayloadString());
             break;
         default:
             handleUnexpectedResponseCode(coapRequest, coapResponse);
@@ -136,6 +144,6 @@ public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements Upli
      */
     private void handleUnexpectedResponseCode(final Request coapRequest, final Response coapResponse) {
         final String msg = String.format("Server returned unexpected response code [%s]", coapResponse.getCode());
-        throw new ResourceAccessException(fromCoapCode(coapResponse.getCode().value), coapRequest.getURI(), msg);
+        throw new ResourceAccessException(coapRequest.getURI(), msg);
     }
 }

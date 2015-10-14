@@ -17,16 +17,12 @@ package org.eclipse.leshan.core.response;
 
 import org.eclipse.leshan.ResponseCode;
 
-public class CreateResponse extends LwM2mResponse {
+public class CreateResponse extends AbstractLwM2mResponse {
 
     private String location;
 
-    public CreateResponse(ResponseCode code) {
-        super(code);
-    }
-
-    public CreateResponse(ResponseCode code, String location) {
-        super(code);
+    public CreateResponse(ResponseCode code, String location, String errorMessage) {
+        super(code, errorMessage);
         this.location = location;
     }
 
@@ -36,7 +32,35 @@ public class CreateResponse extends LwM2mResponse {
 
     @Override
     public String toString() {
-        return String.format("CreateResponse [location=%s, code=%s]", location, code);
+        if (errorMessage != null)
+            return String.format("CreateResponse [code=%s, errormessage=%s]", code, errorMessage);
+        else
+            return String.format("CreateResponse [code=%s, location=%s]", code, location);
     }
 
+    // Syntactic sugar static constructors :
+
+    public static CreateResponse success(String location) {
+        return new CreateResponse(ResponseCode.CREATED, location, null);
+    }
+
+    public static CreateResponse badRequest(String errorMessage) {
+        return new CreateResponse(ResponseCode.BAD_REQUEST, null, errorMessage);
+    }
+
+    public static CreateResponse notFound() {
+        return new CreateResponse(ResponseCode.NOT_FOUND, null, null);
+    }
+
+    public static CreateResponse unauthorized() {
+        return new CreateResponse(ResponseCode.UNAUTHORIZED, null, null);
+    }
+
+    public static CreateResponse methodNotAllowed() {
+        return new CreateResponse(ResponseCode.METHOD_NOT_ALLOWED, null, null);
+    }
+
+    public static CreateResponse internalServerError(String errorMessage) {
+        return new CreateResponse(ResponseCode.INTERNAL_SERVER_ERROR, null, errorMessage);
+    }
 }

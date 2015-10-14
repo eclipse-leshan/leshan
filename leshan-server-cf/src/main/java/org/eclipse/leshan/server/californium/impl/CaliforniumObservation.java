@@ -22,17 +22,14 @@ import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MessageObserverAdapter;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
-import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.InvalidValueException;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
+import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.observation.ObservationListener;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.response.ValueResponse;
-import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.observation.Observation;
-import org.eclipse.leshan.server.observation.ObservationListener;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,18 +39,18 @@ public final class CaliforniumObservation extends MessageObserverAdapter impleme
 
     private final Request coapRequest;
     private final List<ObservationListener> listeners = new CopyOnWriteArrayList<>();
-    private final Client client;
+    private final String registrationId;
     private final LwM2mPath path;
     private final LwM2mModel model;
 
-    public CaliforniumObservation(Request coapRequest, Client client, LwM2mPath path, LwM2mModel model) {
+    public CaliforniumObservation(Request coapRequest, String registrationId, LwM2mPath path, LwM2mModel model) {
         Validate.notNull(coapRequest);
-        Validate.notNull(client);
+        Validate.notNull(registrationId);
         Validate.notNull(path);
         Validate.notNull(model);
 
         this.coapRequest = coapRequest;
-        this.client = client;
+        this.registrationId = registrationId;
         this.path = path;
         this.model = model;
     }
@@ -65,14 +62,13 @@ public final class CaliforniumObservation extends MessageObserverAdapter impleme
 
     @Override
     public void onResponse(Response coapResponse) {
+        // TODO remove the CHANGED test case, the spec say now a successful notify should be a 2.05 content
         if (coapResponse.getCode() == CoAP.ResponseCode.CHANGED || coapResponse.getCode() == CoAP.ResponseCode.CONTENT) {
             try {
                 LwM2mNode content = LwM2mNodeDecoder.decode(coapResponse.getPayload(),
                         ContentFormat.fromCode(coapResponse.getOptions().getContentFormat()), path, model);
-                ValueResponse response = new ValueResponse(ResponseCode.CHANGED, content);
-
                 for (ObservationListener listener : listeners) {
-                    listener.newValue(this, response.getContent());
+                    listener.newValue(this, content);
                 }
             } catch (InvalidValueException e) {
                 String msg = String.format("[%s] ([%s])", e.getMessage(), e.getPath().toString());
@@ -92,8 +88,8 @@ public final class CaliforniumObservation extends MessageObserverAdapter impleme
      * {@inheritDoc}
      */
     @Override
-    public Client getClient() {
-        return client;
+    public String getRegistrationId() {
+        return registrationId;
     }
 
     /**

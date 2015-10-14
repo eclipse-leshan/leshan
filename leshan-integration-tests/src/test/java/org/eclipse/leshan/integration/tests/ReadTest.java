@@ -28,7 +28,7 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
-import org.eclipse.leshan.core.response.ValueResponse;
+import org.eclipse.leshan.core.response.ReadResponse;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -60,7 +60,7 @@ public class ReadTest {
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         // read ACL object
-        ValueResponse response = helper.server.send(helper.getClient(), new ReadRequest(2));
+        ReadResponse response = helper.server.send(helper.getClient(), new ReadRequest(2));
 
         // verify result
         assertEquals(CONTENT, response.getCode());
@@ -78,7 +78,7 @@ public class ReadTest {
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         // read device object
-        ValueResponse response = helper.server.send(helper.getClient(), new ReadRequest(3));
+        ReadResponse response = helper.server.send(helper.getClient(), new ReadRequest(3));
 
         // verify result
         assertEquals(CONTENT, response.getCode());
@@ -96,7 +96,7 @@ public class ReadTest {
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         // read device single instance
-        ValueResponse response = helper.server.send(helper.getClient(), new ReadRequest(3, 0));
+        ReadResponse response = helper.server.send(helper.getClient(), new ReadRequest(3, 0));
 
         // verify result
         assertEquals(CONTENT, response.getCode());
@@ -111,7 +111,7 @@ public class ReadTest {
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         // read device model number
-        ValueResponse response = helper.server.send(helper.getClient(), new ReadRequest(3, 0, 1));
+        ReadResponse response = helper.server.send(helper.getClient(), new ReadRequest(3, 0, 1));
 
         // verify result
         assertEquals(CONTENT, response.getCode());
@@ -127,7 +127,7 @@ public class ReadTest {
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         // read device reboot resource
-        ValueResponse response = helper.server.send(helper.getClient(), new ReadRequest(3, 0, 4));
+        ReadResponse response = helper.server.send(helper.getClient(), new ReadRequest(3, 0, 4));
 
         // verify result
         assertEquals(METHOD_NOT_ALLOWED, response.getCode());
@@ -139,7 +139,7 @@ public class ReadTest {
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         // read object "50"
-        ValueResponse response = helper.server.send(helper.getClient(), new ReadRequest(50));
+        ReadResponse response = helper.server.send(helper.getClient(), new ReadRequest(50));
 
         // verify result
         assertEquals(NOT_FOUND, response.getCode());
@@ -151,7 +151,7 @@ public class ReadTest {
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         // read 2nd Device resource
-        ValueResponse response = helper.server.send(helper.getClient(), new ReadRequest(3, 1));
+        ReadResponse response = helper.server.send(helper.getClient(), new ReadRequest(3, 1));
 
         // verify result
         assertEquals(NOT_FOUND, response.getCode());
@@ -163,7 +163,7 @@ public class ReadTest {
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         // read device 50 resource
-        ValueResponse response = helper.server.send(helper.getClient(), new ReadRequest(3, 0, 50));
+        ReadResponse response = helper.server.send(helper.getClient(), new ReadRequest(3, 0, 50));
 
         // verify result
         assertEquals(NOT_FOUND, response.getCode());

@@ -27,9 +27,13 @@ import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.response.CreateResponse;
+import org.eclipse.leshan.core.response.DeleteResponse;
 import org.eclipse.leshan.core.response.DiscoverResponse;
-import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.core.response.ValueResponse;
+import org.eclipse.leshan.core.response.ExecuteResponse;
+import org.eclipse.leshan.core.response.ObserveResponse;
+import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.core.response.WriteAttributesResponse;
+import org.eclipse.leshan.core.response.WriteResponse;
 
 public interface LwM2mObjectEnabler {
 
@@ -41,19 +45,19 @@ public interface LwM2mObjectEnabler {
 
     CreateResponse create(CreateRequest request);
 
-    ValueResponse read(ReadRequest request);
+    ReadResponse read(ReadRequest request);
 
-    LwM2mResponse write(WriteRequest request);
+    WriteResponse write(WriteRequest request);
 
-    LwM2mResponse delete(DeleteRequest request);
+    DeleteResponse delete(DeleteRequest request);
 
-    LwM2mResponse execute(ExecuteRequest request);
+    ExecuteResponse execute(ExecuteRequest request);
 
-    LwM2mResponse writeAttributes(WriteAttributesRequest request);
+    WriteAttributesResponse writeAttributes(WriteAttributesRequest request);
 
     DiscoverResponse discover(DiscoverRequest request);
 
-    ValueResponse observe(ObserveRequest request);
+    ObserveResponse observe(ObserveRequest request);
 
     void setNotifySender(NotifySender sender);
 }

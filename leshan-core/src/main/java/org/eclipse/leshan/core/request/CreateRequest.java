@@ -20,7 +20,7 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.response.CreateResponse;
 
 /**
- * A Lightweight M2M request for creating resources on a client.
+ * A Lightweight M2M request for creating Object Instance(s) within the LWM2M Client.
  */
 public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
 

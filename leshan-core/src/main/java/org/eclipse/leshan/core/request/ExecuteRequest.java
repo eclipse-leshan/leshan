@@ -16,12 +16,12 @@
 package org.eclipse.leshan.core.request;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.ExecuteResponse;
 
 /**
- * A request for executing resources on a client.
+ * A Lightweight M2M request for initiate some action, it can only be performed on individual Resources.
  */
-public class ExecuteRequest extends AbstractDownlinkRequest<LwM2mResponse> {
+public class ExecuteRequest extends AbstractDownlinkRequest<ExecuteResponse> {
 
     private final byte[] parameters;
     private final ContentFormat contentFormat;

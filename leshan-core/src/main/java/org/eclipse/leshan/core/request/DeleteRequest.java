@@ -16,9 +16,12 @@
 package org.eclipse.leshan.core.request;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.DeleteResponse;
 
-public class DeleteRequest extends AbstractDownlinkRequest<LwM2mResponse> {
+/**
+ * A Lightweight M2M request for deleting an Object Instance within the LWM2M Client.
+ */
+public class DeleteRequest extends AbstractDownlinkRequest<DeleteResponse> {
 
     /**
      * Creates a request for deleting a particular object instance implemented by a client.

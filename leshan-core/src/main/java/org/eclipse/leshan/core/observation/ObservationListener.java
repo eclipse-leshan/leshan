@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.observation;
+package org.eclipse.leshan.core.observation;
 
 import org.eclipse.leshan.core.node.LwM2mNode;
 

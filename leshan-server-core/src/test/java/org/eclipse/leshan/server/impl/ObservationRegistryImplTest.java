@@ -18,10 +18,8 @@ package org.eclipse.leshan.server.impl;
 import java.io.IOException;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.impl.ObservationRegistryImpl;
-import org.eclipse.leshan.server.observation.Observation;
-import org.eclipse.leshan.server.observation.ObservationListener;
+import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.observation.ObservationListener;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,10 +37,10 @@ public class ObservationRegistryImplTest extends BasicTestSupport {
     public void add_duplicate_observation() throws IOException {
         givenASimpleClient();
 
-        Observation obs = new ObservationImpl(client, new LwM2mPath(3, 0, 15));
+        Observation obs = new ObservationImpl(client.getRegistrationId(), new LwM2mPath(3, 0, 15));
         registry.addObservation(obs);
 
-        Observation duplicate = new ObservationImpl(client, new LwM2mPath(3, 0, 15));
+        Observation duplicate = new ObservationImpl(client.getRegistrationId(), new LwM2mPath(3, 0, 15));
 
         registry.addObservation(duplicate);
         Assert.assertSame(1, registry.cancelObservations(client));
@@ -50,17 +48,17 @@ public class ObservationRegistryImplTest extends BasicTestSupport {
 
     private class ObservationImpl implements Observation {
 
-        private Client client;
+        private String registrationId;
         private LwM2mPath path;
 
-        public ObservationImpl(Client client, LwM2mPath path) {
-            this.client = client;
+        public ObservationImpl(String registrationId, LwM2mPath path) {
+            this.registrationId = registrationId;
             this.path = path;
         }
 
         @Override
-        public Client getClient() {
-            return client;
+        public String getRegistrationId() {
+            return registrationId;
         }
 
         @Override

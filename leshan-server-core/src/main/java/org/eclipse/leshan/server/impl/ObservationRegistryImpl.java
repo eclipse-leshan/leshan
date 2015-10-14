@@ -25,9 +25,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.observation.ObservationListener;
 import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.observation.Observation;
-import org.eclipse.leshan.server.observation.ObservationListener;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
 import org.eclipse.leshan.server.observation.ObservationRegistryListener;
 import org.slf4j.Logger;
@@ -52,7 +52,7 @@ public class ObservationRegistryImpl implements ObservationRegistry, Observation
     public synchronized void addObservation(Observation observation) {
 
         if (observation != null) {
-            String registrationID = observation.getClient().getRegistrationId();
+            String registrationID = observation.getRegistrationId();
 
             Map<LwM2mPath, Observation> clientObservations = observationsByClientAndResource.get(registrationID);
             if (clientObservations == null) {
