@@ -268,6 +268,42 @@ public class BootstrapResource extends CoapResource {
         } else {
             // done
             LOG.debug("Bootstrap session done for endpoint {}", endpoint);
+            Request postServer = Request.newPost();
+            postServer.getOptions().addUriPath("bs");
+            postServer.setConfirmable(true);
+            postServer.setDestination(targetAddress);
+            postServer.setDestinationPort(targetPort);
+            postServer.send(e).addMessageObserver(new MessageObserver() {
+                @Override
+                public void onTimeout() {
+                    LOG.debug("End bootstrap for {} timeout!", endpoint);
+                }
+
+                @Override
+                public void onRetransmission() {
+                    LOG.debug("End bootstrap for {} retransmission", endpoint);
+                }
+
+                @Override
+                public void onResponse(Response response) {
+                    LOG.debug("End bootstrap for {} return code {}", endpoint, response.getCode());
+                }
+
+                @Override
+                public void onReject() {
+                    LOG.debug("End bootstrap for {} reject", endpoint);
+                }
+
+                @Override
+                public void onCancel() {
+                    LOG.debug("End bootstrap for {} cancel", endpoint);
+                }
+
+                @Override
+                public void onAcknowledgement() {
+                    LOG.debug("End bootstrap for {} acknowledgement", endpoint);
+                }
+            });
         }
     }
 
