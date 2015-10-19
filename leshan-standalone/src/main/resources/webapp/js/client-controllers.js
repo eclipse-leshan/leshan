@@ -12,6 +12,8 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - fix typo in notificationCallback
+ *                                                     processing multiple resources
  *******************************************************************************/
 
 var lwClientControllers = angular.module('clientControllers', []);
@@ -149,7 +151,7 @@ lwClientControllers.controller('ClientDetailCtrl', [
                         else if("values" in content.val) {
                             // multiple instances
                             var tab = new Array();
-                            for (var i in content.valvalues) {
+                            for (var i in content.val.values) {
                                 tab.push(content.val.values[i])
                             }
                             resource.value = tab.join(", ");
