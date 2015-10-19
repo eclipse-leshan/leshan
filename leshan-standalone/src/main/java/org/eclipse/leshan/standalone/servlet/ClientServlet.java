@@ -41,8 +41,13 @@ import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.exception.RequestFailedException;
 import org.eclipse.leshan.core.request.exception.ResourceAccessException;
+import org.eclipse.leshan.core.response.CreateResponse;
+import org.eclipse.leshan.core.response.DeleteResponse;
+import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.core.response.ValueResponse;
+import org.eclipse.leshan.core.response.ObserveResponse;
+import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.core.response.WriteResponse;
 import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.standalone.servlet.json.ClientSerializer;
@@ -127,7 +132,7 @@ public class ClientServlet extends HttpServlet {
             Client client = server.getClientRegistry().get(clientEndpoint);
             if (client != null) {
                 ReadRequest request = new ReadRequest(target);
-                ValueResponse cResponse = server.send(client, request, TIMEOUT);
+                ReadResponse cResponse = server.send(client, request, TIMEOUT);
                 processDeviceResponse(req, resp, cResponse);
             } else {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -162,7 +167,7 @@ public class ClientServlet extends HttpServlet {
             String target = StringUtils.removeStart(req.getPathInfo(), "/" + clientEndpoint);
             Client client = server.getClientRegistry().get(clientEndpoint);
             if (client != null) {
-                LwM2mResponse cResponse = this.writeRequest(client, target, req, resp);
+                WriteResponse cResponse = this.writeRequest(client, target, req, resp);
                 processDeviceResponse(req, resp, cResponse);
             } else {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -194,7 +199,7 @@ public class ClientServlet extends HttpServlet {
                 Client client = server.getClientRegistry().get(clientEndpoint);
                 if (client != null) {
                     ObserveRequest request = new ObserveRequest(target);
-                    LwM2mResponse cResponse = server.send(client, request, TIMEOUT);
+                    ObserveResponse cResponse = server.send(client, request, TIMEOUT);
                     processDeviceResponse(req, resp, cResponse);
                 } else {
                     resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -220,7 +225,7 @@ public class ClientServlet extends HttpServlet {
                 Client client = server.getClientRegistry().get(clientEndpoint);
                 if (client != null) {
                     ExecuteRequest request = new ExecuteRequest(target, IOUtils.toByteArray(req.getInputStream()), null);
-                    LwM2mResponse cResponse = server.send(client, request, TIMEOUT);
+                    ExecuteResponse cResponse = server.send(client, request, TIMEOUT);
                     processDeviceResponse(req, resp, cResponse);
                 } else {
                     resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -243,7 +248,7 @@ public class ClientServlet extends HttpServlet {
             try {
                 Client client = server.getClientRegistry().get(clientEndpoint);
                 if (client != null) {
-                    LwM2mResponse cResponse = this.createRequest(client, target, req, resp);
+                    CreateResponse cResponse = this.createRequest(client, target, req, resp);
                     processDeviceResponse(req, resp, cResponse);
                 } else {
                     resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -297,7 +302,7 @@ public class ClientServlet extends HttpServlet {
             Client client = server.getClientRegistry().get(clientEndpoint);
             if (client != null) {
                 DeleteRequest request = new DeleteRequest(target);
-                LwM2mResponse cResponse = server.send(client, request, TIMEOUT);
+                DeleteResponse cResponse = server.send(client, request, TIMEOUT);
                 processDeviceResponse(req, resp, cResponse);
             } else {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -331,7 +336,7 @@ public class ClientServlet extends HttpServlet {
     }
 
     // TODO refactor the code to remove this method.
-    private LwM2mResponse writeRequest(Client client, String target, HttpServletRequest req, HttpServletResponse resp)
+    private WriteResponse writeRequest(Client client, String target, HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
         Map<String, String> parameters = new HashMap<String, String>();
         String contentType = HttpFields.valueParameters(req.getContentType(), parameters);
@@ -359,7 +364,7 @@ public class ClientServlet extends HttpServlet {
     }
 
     // TODO refactor the code to remove this method.
-    private LwM2mResponse createRequest(Client client, String target, HttpServletRequest req, HttpServletResponse resp)
+    private CreateResponse createRequest(Client client, String target, HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
         Map<String, String> parameters = new HashMap<String, String>();
         String contentType = HttpFields.valueParameters(req.getContentType(), parameters);

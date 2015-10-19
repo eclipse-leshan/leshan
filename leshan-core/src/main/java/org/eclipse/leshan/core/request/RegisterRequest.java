@@ -22,6 +22,10 @@ import java.security.PublicKey;
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.core.response.RegisterResponse;
 
+/**
+ * A Lightweight M2M request for sending the LWM2M Client properties required by the LWM2M Server to contact the LWM2M
+ * Client.
+ */
 public class RegisterRequest implements UplinkRequest<RegisterResponse> {
 
     private String endpointName = null;

@@ -18,11 +18,11 @@ package org.eclipse.leshan.client.resource;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mResource;
-import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.core.response.ValueResponse;
+import org.eclipse.leshan.core.response.ExecuteResponse;
+import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.core.response.WriteResponse;
 
 public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
 
@@ -51,17 +51,17 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     }
 
     @Override
-    public ValueResponse read(int resourceid) {
-        return new ValueResponse(ResponseCode.NOT_FOUND);
+    public ReadResponse read(int resourceid) {
+        return ReadResponse.notFound();
     }
 
     @Override
-    public LwM2mResponse write(int resourceid, LwM2mResource value) {
-        return new LwM2mResponse(ResponseCode.NOT_FOUND);
+    public WriteResponse write(int resourceid, LwM2mResource value) {
+        return WriteResponse.notFound();
     }
 
     @Override
-    public LwM2mResponse execute(int resourceid, byte[] params) {
-        return new LwM2mResponse(ResponseCode.NOT_FOUND);
+    public ExecuteResponse execute(int resourceid, byte[] params) {
+        return ExecuteResponse.notFound();
     }
 }

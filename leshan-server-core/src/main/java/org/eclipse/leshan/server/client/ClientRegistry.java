@@ -78,4 +78,12 @@ public interface ClientRegistry {
      * @return the previously registered client or <code>null</code> if no client is registered under the given ID
      */
     Client deregisterClient(String registrationId);
+
+    /**
+     * Retrieves a registered client by registration id.
+     * 
+     * @param registration id
+     * @return the matching client or <code>null</code> if not found
+     */
+    Client findByRegistrationId(String id);
 }

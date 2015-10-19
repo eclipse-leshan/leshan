@@ -15,6 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.observation;
 
+import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.observation.ObservationListener;
+
 public interface ObservationRegistryListener extends ObservationListener {
     void newObservation(Observation observation);
 }

@@ -17,10 +17,10 @@ package org.eclipse.leshan.core.request;
 
 import org.eclipse.leshan.ObserveSpec;
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.WriteAttributesResponse;
 import org.eclipse.leshan.util.Validate;
 
-public class WriteAttributesRequest extends AbstractDownlinkRequest<LwM2mResponse> {
+public class WriteAttributesRequest extends AbstractDownlinkRequest<WriteAttributesResponse> {
 
     private final ObserveSpec observeSpec;
 

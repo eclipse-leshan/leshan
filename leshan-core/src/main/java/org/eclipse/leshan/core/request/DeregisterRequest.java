@@ -15,9 +15,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
-import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.DeregisterResponse;
 
-public class DeregisterRequest implements UplinkRequest<LwM2mResponse> {
+/**
+ * A Lightweight M2M request for removing the registration information from the LWM2M Server.
+ */
+public class DeregisterRequest implements UplinkRequest<DeregisterResponse> {
 
     private String registrationID = null;
 

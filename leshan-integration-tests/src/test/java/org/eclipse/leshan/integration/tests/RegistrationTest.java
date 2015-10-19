@@ -36,8 +36,9 @@ import org.eclipse.leshan.client.resource.ObjectEnabler;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
-import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.DeregisterResponse;
 import org.eclipse.leshan.core.response.RegisterResponse;
+import org.eclipse.leshan.core.response.UpdateResponse;
 import org.eclipse.leshan.server.client.Client;
 import org.junit.After;
 import org.junit.Before;
@@ -135,7 +136,7 @@ public class RegistrationTest {
 
         // do an update
         final Long updatedLifetime = 1337l;
-        final LwM2mResponse updateResponse = helper.client.send(new UpdateRequest(response.getRegistrationID(),
+        final UpdateResponse updateResponse = helper.client.send(new UpdateRequest(response.getRegistrationID(),
                 updatedLifetime, null, null, null));
 
         // verify result
@@ -151,7 +152,7 @@ public class RegistrationTest {
         RegisterResponse response = helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         // do an update
-        final LwM2mResponse deregisteredResponse = helper.client.send(new DeregisterRequest(response
+        final DeregisterResponse deregisteredResponse = helper.client.send(new DeregisterRequest(response
                 .getRegistrationID()));
 
         // verify result

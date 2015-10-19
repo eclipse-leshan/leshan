@@ -22,7 +22,7 @@ import static org.junit.Assert.assertEquals;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
-import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,7 +51,7 @@ public class ExecuteTest {
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         // execute manufacturer resource on device
-        LwM2mResponse response = helper.server.send(helper.getClient(), new ExecuteRequest(3, 0, 0));
+        ExecuteResponse response = helper.server.send(helper.getClient(), new ExecuteRequest(3, 0, 0));
 
         // verify result
         assertEquals(ResponseCode.METHOD_NOT_ALLOWED, response.getCode());
@@ -63,7 +63,7 @@ public class ExecuteTest {
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         // execute reboot resource on device
-        LwM2mResponse response = helper.server.send(helper.getClient(), new ExecuteRequest(3, 0, 4));
+        ExecuteResponse response = helper.server.send(helper.getClient(), new ExecuteRequest(3, 0, 4));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());

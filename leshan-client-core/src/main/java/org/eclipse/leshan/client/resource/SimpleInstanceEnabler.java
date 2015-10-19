@@ -19,39 +19,39 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.Value;
-import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.core.response.ValueResponse;
+import org.eclipse.leshan.core.response.ExecuteResponse;
+import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.core.response.WriteResponse;
 
 public class SimpleInstanceEnabler extends BaseInstanceEnabler {
 
     Map<Integer, LwM2mResource> resources = new HashMap<Integer, LwM2mResource>();
 
     @Override
-    public ValueResponse read(int resourceid) {
+    public ReadResponse read(int resourceid) {
         if (resources.containsKey(resourceid)) {
-            return new ValueResponse(ResponseCode.CONTENT, resources.get(resourceid));
+            return ReadResponse.success(resources.get(resourceid));
         }
-        return new ValueResponse(ResponseCode.NOT_FOUND);
+        return ReadResponse.notFound();
     }
 
     @Override
-    public LwM2mResponse write(int resourceid, LwM2mResource value) {
+    public WriteResponse write(int resourceid, LwM2mResource value) {
         LwM2mResource previousValue = resources.get(resourceid);
         resources.put(resourceid, value);
         if (!value.equals(previousValue))
             fireResourceChange(resourceid);
-        return new LwM2mResponse(ResponseCode.CHANGED);
+        return WriteResponse.success();
     }
 
     @Override
-    public LwM2mResponse execute(int resourceid, byte[] params) {
+    public ExecuteResponse execute(int resourceid, byte[] params) {
         System.out.println("Execute on resource " + resourceid + " params " + params);
-        return new LwM2mResponse(ResponseCode.CHANGED);
+        return ExecuteResponse.success();
     }
 
     @Override

@@ -27,7 +27,7 @@ import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.response.CreateResponse;
-import org.eclipse.leshan.core.response.ValueResponse;
+import org.eclipse.leshan.core.response.ReadResponse;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -151,7 +151,7 @@ public class CreateTest {
 
         // try to read to check if the instance is not created
         // client registration
-        ValueResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(2, 0));
+        ReadResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(2, 0));
         assertEquals(ResponseCode.NOT_FOUND, readResponse.getCode());
     }
 
@@ -173,7 +173,7 @@ public class CreateTest {
 
         // try to read to check if the instance is not created
         // client registration
-        ValueResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(2, 0));
+        ReadResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(2, 0));
         assertEquals(ResponseCode.NOT_FOUND, readResponse.getCode());
     }
 

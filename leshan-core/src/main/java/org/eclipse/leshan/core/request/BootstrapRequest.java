@@ -15,9 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
-import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.BootstrapResponse;
 
-public class BootstrapRequest implements UplinkRequest<LwM2mResponse> {
+public class BootstrapRequest implements UplinkRequest<BootstrapResponse> {
 
     private final String endpointName;
 

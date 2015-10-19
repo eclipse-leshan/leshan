@@ -15,7 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,8 +30,8 @@ import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
-import org.eclipse.leshan.server.observation.Observation;
-import org.eclipse.leshan.server.observation.ObservationListener;
+import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.observation.ObservationListener;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -71,7 +72,8 @@ public class CaliforniumObservationTest {
                 assertEquals(3, observation.getPath().getObjectId());
                 assertEquals((Integer) 0, observation.getPath().getObjectInstanceId());
                 assertEquals((Integer) 15, observation.getPath().getResourceId());
-                assertEquals(CaliforniumObservationTest.this.support.client, observation.getClient());
+                assertEquals(CaliforniumObservationTest.this.support.client.getRegistrationId(),
+                        observation.getRegistrationId());
             }
 
             @Override
@@ -79,7 +81,8 @@ public class CaliforniumObservationTest {
             }
         };
         givenAnObserveRequest(target);
-        CaliforniumObservation observation = new CaliforniumObservation(coapRequest, support.client, target, model);
+        CaliforniumObservation observation = new CaliforniumObservation(coapRequest,
+                support.client.getRegistrationId(), target, model);
         observation.addListener(listener);
         Response coapResponse = new Response(ResponseCode.CONTENT);
         coapResponse.setPayload(reportedValue);
@@ -91,7 +94,8 @@ public class CaliforniumObservationTest {
 
         givenAnObserveRequest(target);
         assertFalse(coapRequest.isCanceled());
-        CaliforniumObservation observation = new CaliforniumObservation(coapRequest, support.client, target, model);
+        CaliforniumObservation observation = new CaliforniumObservation(coapRequest,
+                support.client.getRegistrationId(), target, model);
         observation.cancel();
         Assert.assertTrue(coapRequest.isCanceled());
     }

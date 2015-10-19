@@ -18,6 +18,9 @@ package org.eclipse.leshan.core.request;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.response.DiscoverResponse;
 
+/**
+ * A Lightweight M2M request for discovering LWM2M Attributes attached to an Object, Object Instances, and Resources.
+ */
 public class DiscoverRequest extends AbstractDownlinkRequest<DiscoverResponse> {
 
     /**

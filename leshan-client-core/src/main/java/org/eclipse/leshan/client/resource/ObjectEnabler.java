@@ -35,8 +35,10 @@ import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.response.CreateResponse;
-import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.core.response.ValueResponse;
+import org.eclipse.leshan.core.response.DeleteResponse;
+import org.eclipse.leshan.core.response.ExecuteResponse;
+import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.core.response.WriteResponse;
 
 public class ObjectEnabler extends BaseObjectEnabler {
 
@@ -98,15 +100,14 @@ public class ObjectEnabler extends BaseObjectEnabler {
             instances.put(instanceId, newInstance);
             listenInstance(newInstance, instanceId);
 
-            return new CreateResponse(ResponseCode.CREATED,
-                    new LwM2mPath(request.getPath().getObjectId(), instanceId).toString());
+            return CreateResponse.success(new LwM2mPath(request.getPath().getObjectId(), instanceId).toString());
         } catch (InstantiationException | IllegalAccessException e) {
-            return new CreateResponse(ResponseCode.INTERNAL_SERVER_ERROR);
+            return CreateResponse.internalServerError(e.getMessage());
         }
     }
 
     @Override
-    protected ValueResponse doRead(ReadRequest request) {
+    protected ReadResponse doRead(ReadRequest request) {
         LwM2mPath path = request.getPath();
 
         // Manage Object case
@@ -115,17 +116,17 @@ public class ObjectEnabler extends BaseObjectEnabler {
             for (Entry<Integer, LwM2mInstanceEnabler> entry : instances.entrySet()) {
                 lwM2mObjectInstances.add(getLwM2mObjectInstance(entry.getKey(), entry.getValue()));
             }
-            return new ValueResponse(ResponseCode.CONTENT, new LwM2mObject(getId(),
-                    lwM2mObjectInstances.toArray(new LwM2mObjectInstance[0])));
+            return ReadResponse.success(new LwM2mObject(getId(), lwM2mObjectInstances
+                    .toArray(new LwM2mObjectInstance[0])));
         }
 
         // Manage Instance case
         LwM2mInstanceEnabler instance = instances.get(path.getObjectInstanceId());
         if (instance == null)
-            return new ValueResponse(ResponseCode.NOT_FOUND);
+            return ReadResponse.notFound();
 
         if (path.getResourceId() == null) {
-            return new ValueResponse(ResponseCode.CONTENT, getLwM2mObjectInstance(path.getObjectInstanceId(), instance));
+            return ReadResponse.success(getLwM2mObjectInstance(path.getObjectInstanceId(), instance));
         }
 
         // Manage Resource case
@@ -136,7 +137,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
         List<LwM2mResource> resources = new ArrayList<>();
         for (ResourceModel resourceModel : getObjectModel().resources.values()) {
             if (resourceModel.operations.isReadable()) {
-                ValueResponse response = instance.read(resourceModel.id);
+                ReadResponse response = instance.read(resourceModel.id);
                 if (response.getCode() == ResponseCode.CONTENT && response.getContent() instanceof LwM2mResource)
                     resources.add((LwM2mResource) response.getContent());
             }
@@ -145,19 +146,19 @@ public class ObjectEnabler extends BaseObjectEnabler {
     }
 
     @Override
-    protected LwM2mResponse doWrite(WriteRequest request) {
+    protected WriteResponse doWrite(WriteRequest request) {
         LwM2mPath path = request.getPath();
 
         // Manage Instance case
         LwM2mInstanceEnabler instance = instances.get(path.getObjectInstanceId());
         if (instance == null)
-            return new LwM2mResponse(ResponseCode.NOT_FOUND);
+            return WriteResponse.notFound();
 
         if (path.getResourceId() == null) {
             for (LwM2mResource resource : ((LwM2mObjectInstance) request.getNode()).getResources().values()) {
                 instance.write(resource.getId(), resource);
             }
-            return new LwM2mResponse(ResponseCode.CHANGED);
+            return WriteResponse.success();
         }
 
         // Manage Resource case
@@ -165,23 +166,23 @@ public class ObjectEnabler extends BaseObjectEnabler {
     }
 
     @Override
-    protected LwM2mResponse doExecute(ExecuteRequest request) {
+    protected ExecuteResponse doExecute(ExecuteRequest request) {
         LwM2mPath path = request.getPath();
         LwM2mInstanceEnabler instance = instances.get(path.getObjectInstanceId());
         if (instance == null) {
-            return new LwM2mResponse(ResponseCode.NOT_FOUND);
+            return ExecuteResponse.notFound();
         }
         return instance.execute(path.getResourceId(), request.getParameters());
     }
 
     @Override
-    protected LwM2mResponse doDelete(DeleteRequest request) {
+    protected DeleteResponse doDelete(DeleteRequest request) {
         LwM2mPath path = request.getPath();
         if (!instances.containsKey(path.getObjectInstanceId())) {
-            return new LwM2mResponse(ResponseCode.NOT_FOUND);
+            return DeleteResponse.notFound();
         }
         instances.remove(request.getPath().getObjectInstanceId());
-        return new LwM2mResponse(ResponseCode.DELETED);
+        return DeleteResponse.success();
     }
 
     private void listenInstance(LwM2mInstanceEnabler instance, final int instanceId) {

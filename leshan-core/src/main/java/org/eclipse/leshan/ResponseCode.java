@@ -38,5 +38,19 @@ public enum ResponseCode {
     /** Resource not found */
     NOT_FOUND,
     /** generic response code for unexpected error */
-    INTERNAL_SERVER_ERROR
+    INTERNAL_SERVER_ERROR;
+
+    public boolean isError() {
+        switch (this) {
+        case UNAUTHORIZED:
+        case BAD_REQUEST:
+        case METHOD_NOT_ALLOWED:
+        case FORBIDDEN:
+        case NOT_FOUND:
+        case INTERNAL_SERVER_ERROR:
+            return true;
+        default:
+            return false;
+        }
+    }
 }

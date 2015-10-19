@@ -24,7 +24,7 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
-import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.DeleteResponse;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,7 +56,7 @@ public class DeleteTest {
         helper.server.send(helper.getClient(), new CreateRequest(2, 0, new LwM2mResource[0], null));
 
         // try to delete this instance
-        LwM2mResponse deleteResponse = helper.server.send(helper.getClient(), new DeleteRequest(2, 0));
+        DeleteResponse deleteResponse = helper.server.send(helper.getClient(), new DeleteRequest(2, 0));
 
         // verify result
         assertEquals(ResponseCode.DELETED, deleteResponse.getCode());
@@ -68,7 +68,7 @@ public class DeleteTest {
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         // try to create an instance of object 50
-        LwM2mResponse response = helper.server.send(helper.getClient(), new DeleteRequest(2, 0));
+        DeleteResponse response = helper.server.send(helper.getClient(), new DeleteRequest(2, 0));
 
         // verify result
         assertEquals(ResponseCode.NOT_FOUND, response.getCode());
@@ -80,7 +80,7 @@ public class DeleteTest {
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         // try to create an instance of object 50
-        LwM2mResponse response = helper.server.send(helper.getClient(), new DeleteRequest(3, 0));
+        DeleteResponse response = helper.server.send(helper.getClient(), new DeleteRequest(3, 0));
 
         // verify result
         assertEquals(ResponseCode.METHOD_NOT_ALLOWED, response.getCode());

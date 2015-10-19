@@ -20,12 +20,12 @@ import java.security.PublicKey;
 
 import javax.xml.bind.DatatypeConverter;
 
-import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
-import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.DeregisterResponse;
 import org.eclipse.leshan.core.response.RegisterResponse;
+import org.eclipse.leshan.core.response.UpdateResponse;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.client.ClientUpdate;
@@ -54,7 +54,7 @@ public class RegistrationHandler {
     public RegisterResponse register(RegisterRequest registerRequest) {
 
         if (registerRequest.getEndpointName() == null || registerRequest.getEndpointName().isEmpty()) {
-            return new RegisterResponse(ResponseCode.BAD_REQUEST);
+            return RegisterResponse.badRequest(null);
         } else {
             // register
             String registrationId = RegistrationHandler.createRegistrationId();
@@ -73,7 +73,7 @@ public class RegistrationHandler {
                 if (securityInfo == null) {
                     LOG.debug("A client {} without security info try to connect through the secure endpont",
                             registerRequest.getEndpointName());
-                    return new RegisterResponse(ResponseCode.FORBIDDEN);
+                    return RegisterResponse.forbidden(null);
                 } else if (pskIdentity != null) {
                     // Manage PSK authentication
                     // ----------------------------------------------------
@@ -83,7 +83,7 @@ public class RegistrationHandler {
                     if (pskIdentity == null || !pskIdentity.equals(securityInfo.getIdentity())) {
                         LOG.warn("Invalid identity for client {}: expected '{}' but was '{}'",
                                 registerRequest.getEndpointName(), securityInfo.getIdentity(), pskIdentity);
-                        return new RegisterResponse(ResponseCode.FORBIDDEN);
+                        return RegisterResponse.forbidden(null);
                     } else {
                         LOG.debug("authenticated client {} using DTLS PSK", registerRequest.getEndpointName());
                     }
@@ -98,19 +98,19 @@ public class RegistrationHandler {
                                 registerRequest.getEndpointName(),
                                 DatatypeConverter.printHexBinary(securityInfo.getRawPublicKey().getEncoded()),
                                 DatatypeConverter.printHexBinary(rpk.getEncoded()));
-                        return new RegisterResponse(ResponseCode.FORBIDDEN);
+                        return RegisterResponse.forbidden(null);
                     } else {
                         LOG.debug("authenticated client {} using DTLS RPK", registerRequest.getEndpointName());
                     }
                 } else {
                     LOG.warn("Unable to authenticate client {}: unknown authentication mode.",
                             registerRequest.getEndpointName());
-                    return new RegisterResponse(ResponseCode.FORBIDDEN);
+                    return RegisterResponse.forbidden(null);
                 }
             } else {
                 if (securityInfo != null) {
                     LOG.warn("client {} must connect using DTLS ", registerRequest.getEndpointName());
-                    return new RegisterResponse(ResponseCode.BAD_REQUEST);
+                    return RegisterResponse.badRequest(null);
                 }
             }
 
@@ -121,31 +121,31 @@ public class RegistrationHandler {
 
             if (clientRegistry.registerClient(client)) {
                 LOG.debug("New registered client: {}", client);
-                return new RegisterResponse(ResponseCode.CREATED, client.getRegistrationId());
+                return RegisterResponse.success(client.getRegistrationId());
             } else {
-                return new RegisterResponse(ResponseCode.FORBIDDEN);
+                return RegisterResponse.forbidden(null);
             }
         }
     }
 
-    public LwM2mResponse update(UpdateRequest updateRequest) {
+    public UpdateResponse update(UpdateRequest updateRequest) {
         Client client = clientRegistry.updateClient(new ClientUpdate(updateRequest.getRegistrationId(), updateRequest
                 .getAddress(), updateRequest.getPort(), updateRequest.getLifeTimeInSec(), updateRequest.getSmsNumber(),
                 updateRequest.getBindingMode(), updateRequest.getObjectLinks()));
         if (client == null) {
-            return new LwM2mResponse(ResponseCode.NOT_FOUND);
+            return UpdateResponse.notFound();
         } else {
-            return new LwM2mResponse(ResponseCode.CHANGED);
+            return UpdateResponse.success();
         }
     }
 
-    public LwM2mResponse deregister(DeregisterRequest deregisterRequest) {
+    public DeregisterResponse deregister(DeregisterRequest deregisterRequest) {
         Client unregistered = clientRegistry.deregisterClient(deregisterRequest.getRegistrationID());
         if (unregistered != null) {
-            return new LwM2mResponse(ResponseCode.DELETED);
+            return DeregisterResponse.success();
         } else {
             LOG.debug("Invalid deregistration");
-            return new LwM2mResponse(ResponseCode.NOT_FOUND);
+            return DeregisterResponse.notFound();
         }
     }
 

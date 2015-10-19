@@ -20,17 +20,12 @@ import org.eclipse.leshan.ResponseCode;
 /**
  * Response to a client registration request
  */
-public class RegisterResponse extends LwM2mResponse {
+public class RegisterResponse extends AbstractLwM2mResponse {
 
     private final String registrationID;
 
-    public RegisterResponse(ResponseCode code) {
-        super(code);
-        this.registrationID = null;
-    }
-
-    public RegisterResponse(ResponseCode code, String registrationID) {
-        super(code);
+    public RegisterResponse(ResponseCode code, String registrationID, String errorMessage) {
+        super(code, errorMessage);
         this.registrationID = registrationID;
     }
 
@@ -40,6 +35,27 @@ public class RegisterResponse extends LwM2mResponse {
 
     @Override
     public String toString() {
-        return String.format("RegisterResponse [registrationID=%s, code=%s]", registrationID, code);
+        if (errorMessage != null)
+            return String.format("RegisterResponse [code=%s, errormessage=%s]", code, errorMessage);
+        else
+            return String.format("RegisterResponse [code=%s, registrationID=%s]", code, registrationID);
+    }
+
+    // Syntactic sugar static constructors :
+
+    public static RegisterResponse success(String registrationID) {
+        return new RegisterResponse(ResponseCode.CREATED, registrationID, null);
+    }
+
+    public static RegisterResponse badRequest(String errorMessage) {
+        return new RegisterResponse(ResponseCode.BAD_REQUEST, null, errorMessage);
+    }
+
+    public static RegisterResponse forbidden(String errorMessage) {
+        return new RegisterResponse(ResponseCode.FORBIDDEN, null, errorMessage);
+    }
+
+    public static RegisterResponse internalServerError(String errorMessage) {
+        return new RegisterResponse(ResponseCode.INTERNAL_SERVER_ERROR, null, errorMessage);
     }
 }

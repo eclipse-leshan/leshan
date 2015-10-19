@@ -16,9 +16,13 @@
 package org.eclipse.leshan.core.request;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.response.ValueResponse;
+import org.eclipse.leshan.core.response.ObserveResponse;
 
-public class ObserveRequest extends AbstractDownlinkRequest<ValueResponse> {
+/**
+ * A Lightweight M2M request for observing changes of a specific Resource, Resources within an Object Instance or for
+ * all the Object Instances of an Object within the LWM2M Client.
+ */
+public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
 
     public ObserveRequest(String target) {
         super(new LwM2mPath(target));

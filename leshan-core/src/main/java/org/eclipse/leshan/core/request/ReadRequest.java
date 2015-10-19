@@ -16,7 +16,7 @@
 package org.eclipse.leshan.core.request;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.response.ValueResponse;
+import org.eclipse.leshan.core.response.ReadResponse;
 
 /**
  * A Lightweight M2M request for retrieving the values of resources from a LWM2M Client.
@@ -24,7 +24,7 @@ import org.eclipse.leshan.core.response.ValueResponse;
  * The request can be used to retrieve the value(s) of one or all attributes of one particular or all instances of a
  * particular object type.
  */
-public class ReadRequest extends AbstractDownlinkRequest<ValueResponse> {
+public class ReadRequest extends AbstractDownlinkRequest<ReadResponse> {
 
     /**
      * Creates a request for reading all instances of a particular object from a client.

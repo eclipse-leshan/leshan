@@ -124,7 +124,8 @@ public class ClientRegistryImpl implements ClientRegistry, Startable, Stoppable 
         }
     }
 
-    private Client findByRegistrationId(String id) {
+    @Override
+    public Client findByRegistrationId(String id) {
         Client result = null;
         if (id != null) {
             for (Client client : clientsByEp.values()) {
