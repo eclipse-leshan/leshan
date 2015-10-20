@@ -33,7 +33,7 @@ public class ResponseSerializer implements JsonSerializer<LwM2mResponse> {
 
         element.addProperty("status", src.getCode().toString());
 
-        if (typeOfSrc == ValueResponse.class) {
+        if (typeOfSrc instanceof Class<?> && ValueResponse.class.isAssignableFrom((Class<?>) typeOfSrc)) {
             element.add("content", context.serialize(((ValueResponse) src).getContent()));
         }
 
