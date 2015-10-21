@@ -22,7 +22,7 @@ import static org.junit.Assert.assertEquals;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
-import org.eclipse.leshan.core.node.Value;
+import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
@@ -57,7 +57,7 @@ public class WriteTest {
 
         // write device timezone
         final String timeZone = "Europe/Paris";
-        LwM2mResource newValue = new LwM2mResource(15, Value.newStringValue(timeZone));
+        LwM2mResource newValue = LwM2mSingleResource.newStringResource(15, timeZone);
         WriteResponse response = helper.server.send(helper.getClient(),
                 new WriteRequest(3, 0, 15, newValue, null, true));
 
@@ -67,7 +67,7 @@ public class WriteTest {
         // read the timezone to check the value changed
         ReadResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(3, 0, 15));
         LwM2mResource resource = (LwM2mResource) readResponse.getContent();
-        assertEquals(timeZone, resource.getValue().value);
+        assertEquals(timeZone, resource.getValue());
     }
 
     @Test
@@ -77,7 +77,7 @@ public class WriteTest {
 
         // write device timezone
         final String timeZone = "Europe/Paris";
-        LwM2mResource newValue = new LwM2mResource(15, Value.newStringValue(timeZone));
+        LwM2mResource newValue = LwM2mSingleResource.newStringResource(15, timeZone);
         WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(3, 0, 15, newValue,
                 ContentFormat.JSON, true));
 
@@ -87,7 +87,7 @@ public class WriteTest {
         // read the timezone to check the value changed
         ReadResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(3, 0, 15));
         LwM2mResource resource = (LwM2mResource) readResponse.getContent();
-        assertEquals(timeZone, resource.getValue().value);
+        assertEquals(timeZone, resource.getValue());
     }
 
     @Test
@@ -97,7 +97,7 @@ public class WriteTest {
 
         // try to write unwritable resource like manufacturer on device
         final String manufacturer = "new manufacturer";
-        LwM2mResource newValue = new LwM2mResource(15, Value.newStringValue(manufacturer));
+        LwM2mResource newValue = LwM2mSingleResource.newStringResource(0, manufacturer);
         WriteResponse response = helper.server
                 .send(helper.getClient(), new WriteRequest(3, 0, 0, newValue, null, true));
 
@@ -111,8 +111,8 @@ public class WriteTest {
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         // write device timezone and offset
-        LwM2mResource utcOffset = new LwM2mResource(14, Value.newStringValue("+02"));
-        LwM2mResource timeZone = new LwM2mResource(15, Value.newStringValue("Europe/Paris"));
+        LwM2mResource utcOffset = LwM2mSingleResource.newStringResource(14, "+02");
+        LwM2mResource timeZone = LwM2mSingleResource.newStringResource(15, "Europe/Paris");
         LwM2mObjectInstance newValue = new LwM2mObjectInstance(0, new LwM2mResource[] { utcOffset, timeZone });
         WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest("/3/0", newValue, null, true));
 
@@ -132,8 +132,8 @@ public class WriteTest {
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         // write device timezone and offset
-        LwM2mResource utcOffset = new LwM2mResource(14, Value.newStringValue("+02"));
-        LwM2mResource timeZone = new LwM2mResource(15, Value.newStringValue("Europe/Paris"));
+        LwM2mResource utcOffset = LwM2mSingleResource.newStringResource(14, "+02");
+        LwM2mResource timeZone = LwM2mSingleResource.newStringResource(15, "Europe/Paris");
         LwM2mObjectInstance newValue = new LwM2mObjectInstance(0, new LwM2mResource[] { utcOffset, timeZone });
         WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest("/3/0", newValue, null, true));
 

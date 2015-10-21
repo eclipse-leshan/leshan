@@ -29,7 +29,7 @@ import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
-import org.eclipse.leshan.core.node.Value;
+import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -79,7 +79,7 @@ public class ObserveTest {
         assertEquals(helper.getClient().getRegistrationId(), observation.getRegistrationId());
 
         // write device timezone
-        LwM2mResource newValue = new LwM2mResource(15, Value.newStringValue("Europe/Paris"));
+        LwM2mResource newValue = LwM2mSingleResource.newStringResource(15, "Europe/Paris");
         LwM2mResponse writeResponse = helper.server.send(helper.getClient(), new WriteRequest(3, 0, 15, newValue, null,
                 true));
 
@@ -108,7 +108,7 @@ public class ObserveTest {
         assertEquals(helper.getClient().getRegistrationId(), observation.getRegistrationId());
 
         // write device timezone
-        LwM2mResource newValue = new LwM2mResource(15, Value.newStringValue("Europe/Paris"));
+        LwM2mResource newValue = LwM2mSingleResource.newStringResource(15, "Europe/Paris");
         LwM2mResponse writeResponse = helper.server.send(helper.getClient(), new WriteRequest(3, 0, 15, newValue, null,
                 true));
 
@@ -119,7 +119,7 @@ public class ObserveTest {
         assertTrue(listener.getContent() instanceof LwM2mObjectInstance);
 
         // try to read the object instance for comparing
-        ReadResponse readResp = helper.server.send(helper.getClient(), new ReadRequest(3,0));
+        ReadResponse readResp = helper.server.send(helper.getClient(), new ReadRequest(3, 0));
 
         assertEquals(readResp.getContent(), listener.getContent());
     }
@@ -142,7 +142,7 @@ public class ObserveTest {
         assertEquals(helper.getClient().getRegistrationId(), observation.getRegistrationId());
 
         // write device timezone
-        LwM2mResource newValue = new LwM2mResource(15, Value.newStringValue("Europe/Paris"));
+        LwM2mResource newValue = LwM2mSingleResource.newStringResource(15, "Europe/Paris");
         LwM2mResponse writeResponse = helper.server.send(helper.getClient(), new WriteRequest(3, 0, 15, newValue, null,
                 true));
 
@@ -157,6 +157,7 @@ public class ObserveTest {
 
         assertEquals(readResp.getContent(), listener.getContent());
     }
+
     private final class TestObservationListener implements ObservationRegistryListener {
 
         private final CountDownLatch latch = new CountDownLatch(1);

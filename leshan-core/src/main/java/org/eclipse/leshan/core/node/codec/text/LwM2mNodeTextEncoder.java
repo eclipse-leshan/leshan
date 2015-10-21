@@ -26,7 +26,6 @@ import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
-import org.eclipse.leshan.core.node.Value;
 import org.eclipse.leshan.core.node.codec.Lwm2mNodeEncoderUtil;
 import org.eclipse.leshan.util.Charsets;
 import org.eclipse.leshan.util.Validate;
@@ -75,24 +74,22 @@ public class LwM2mNodeTextEncoder {
             LOG.trace("Encoding resource {} into text", resource);
 
             ResourceModel rSpec = model.getResourceModel(objectId, resource.getId());
-            Type expectedType = rSpec != null ? rSpec.type : null;
-            Value<?> val = Lwm2mNodeEncoderUtil.convertValue(resource.getValue(), expectedType);
+            Type expectedType = rSpec != null ? rSpec.type : resource.getType();
+            Object val = Lwm2mNodeEncoderUtil.convertValue(resource.getValue(), resource.getType(), expectedType);
 
             String strValue = null;
-            switch (val.type) {
+            switch (expectedType) {
             case INTEGER:
-            case LONG:
-            case DOUBLE:
             case FLOAT:
             case STRING:
-                strValue = String.valueOf(val.value);
+                strValue = String.valueOf(val);
                 break;
             case BOOLEAN:
-                strValue = ((Boolean) val.value) ? "1" : "0";
+                strValue = ((Boolean) val) ? "1" : "0";
                 break;
             case TIME:
                 // number of seconds since 1970/1/1
-                strValue = String.valueOf(((Date) val.value).getTime() / 1000L);
+                strValue = String.valueOf(((Date) val).getTime() / 1000L);
                 break;
             default:
                 throw new IllegalArgumentException("Cannot encode " + val + " in text format");

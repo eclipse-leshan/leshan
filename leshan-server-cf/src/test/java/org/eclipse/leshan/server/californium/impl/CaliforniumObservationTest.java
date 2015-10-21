@@ -70,7 +70,7 @@ public class CaliforniumObservationTest {
         ObservationListener listener = new ObservationListener() {
             @Override
             public void newValue(Observation observation, LwM2mNode value) {
-                assertEquals(CaliforniumObservationTest.this.reportedValue, ((LwM2mResource) value).getValue().value);
+                assertEquals(CaliforniumObservationTest.this.reportedValue, ((LwM2mResource) value).getValue());
                 assertEquals(3, observation.getPath().getObjectId());
                 assertEquals((Integer) 0, observation.getPath().getObjectInstanceId());
                 assertEquals((Integer) 15, observation.getPath().getResourceId());

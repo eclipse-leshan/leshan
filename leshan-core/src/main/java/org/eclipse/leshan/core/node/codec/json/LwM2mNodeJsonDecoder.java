@@ -15,20 +15,20 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec.json;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ResourceModel;
+import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
-import org.eclipse.leshan.core.node.Value;
+import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.codec.InvalidValueException;
 import org.eclipse.leshan.json.JsonArrayEntry;
 import org.eclipse.leshan.json.JsonRootObject;
@@ -83,7 +83,7 @@ public class LwM2mNodeJsonDecoder {
     private static Map<Integer, LwM2mResource> parseJsonPayLoadLwM2mResources(JsonRootObject jsonObject,
             LwM2mPath path, LwM2mModel model) throws InvalidValueException {
         Map<Integer, LwM2mResource> lwM2mResourceMap = new HashMap<>();
-        Map<Integer, List<Object>> multiResourceMap = new HashMap<>();
+        Map<Integer, Map<Integer, Object>> multiResourceMap = new HashMap<>();
 
         if (jsonObject.getBaseName() != null && !jsonObject.getBaseName().isEmpty()) {
             throw new UnsupportedOperationException("Basename support is not implemented.");
@@ -95,72 +95,81 @@ public class LwM2mNodeJsonDecoder {
             Integer resourceId = Integer.valueOf(resourcePath[0]);
 
             if (!multiResourceMap.isEmpty() && multiResourceMap.get(resourceId) != null) {
-                multiResourceMap.get(resourceId).add(resourceElt.getResourceValue());
+                multiResourceMap.get(resourceId).put(Integer.valueOf(resourcePath[1]), resourceElt.getResourceValue());
                 continue;
             }
             if (resourcePath.length > 1) {
                 // multi resource
                 // store multi resource values in a map
-                List<Object> list = new ArrayList<>();
-                list.add(resourceElt.getResourceValue());
-                multiResourceMap.put(resourceId, list);
+                Map<Integer, Object> values = new HashMap<>();
+                values.put(Integer.valueOf(resourcePath[1]), resourceElt.getResourceValue());
+                multiResourceMap.put(resourceId, values);
             } else {
                 // single resource
                 LwM2mPath rscPath = new LwM2mPath(path.getObjectId(), path.getObjectInstanceId(), resourceId);
-                LwM2mResource res = new LwM2mResource(resourceId, parseJsonValue(resourceElt.getResourceValue(),
-                        rscPath, model));
+                Type expectedType = getResourceType(rscPath, model);
+                LwM2mResource res = LwM2mSingleResource.newResource(resourceId,
+                        parseJsonValue(resourceElt.getResourceValue(), expectedType, rscPath), expectedType);
                 lwM2mResourceMap.put(resourceId, res);
             }
         }
 
-        for (Map.Entry<Integer, List<Object>> entry : multiResourceMap.entrySet()) {
+        for (Map.Entry<Integer, Map<Integer, Object>> entry : multiResourceMap.entrySet()) {
             Integer key = entry.getKey();
-            List<Object> valueList = entry.getValue();
+            Map<Integer, Object> values = entry.getValue();
 
-            if (valueList != null && !valueList.isEmpty()) {
-                Value<?>[] values = new Value[valueList.size()];
-                for (int j = 0; j < valueList.size(); j++) {
-                    LwM2mPath rscPath = new LwM2mPath(path.getObjectId(), path.getObjectInstanceId(), key);
-                    values[j] = parseJsonValue(valueList.get(j), rscPath, model);
+            if (values != null && !values.isEmpty()) {
+                LwM2mPath rscPath = new LwM2mPath(path.getObjectId(), path.getObjectInstanceId(), key);
+                Type expectedType = getResourceType(rscPath, model);
+                for (Entry<Integer, Object> e : values.entrySet()) {
+                    values.put(e.getKey(), parseJsonValue(e.getValue(), expectedType, rscPath));
                 }
-                LwM2mResource res = new LwM2mResource(key, values);
+                LwM2mResource res = LwM2mMultipleResource.newResource(key, values, expectedType);
                 lwM2mResourceMap.put(key, res);
             }
         }
         return lwM2mResourceMap;
     }
 
-    private static Value<?> parseJsonValue(Object value, LwM2mPath rscPath, LwM2mModel model)
-            throws InvalidValueException {
+    private static Object parseJsonValue(Object value, Type expectedType, LwM2mPath path) throws InvalidValueException {
 
-        ResourceModel rscDesc = model.getResourceModel(rscPath.getObjectId(), rscPath.getResourceId());
-
-        LOG.trace("JSON value for path {} and expected type {}: {}", rscPath, rscDesc.type, value);
+        LOG.trace("JSON value for path {} and expected type {}: {}", path, expectedType, value);
 
         try {
-            switch (rscDesc.type) {
+            switch (expectedType) {
             case INTEGER:
                 // JSON format specs said v = integer or float
-                return Value.newIntegerValue(((Number) value).intValue());
+                return ((Number) value).longValue();
             case BOOLEAN:
-                return Value.newBooleanValue((Boolean) value);
+                return value;
             case FLOAT:
                 // JSON format specs said v = integer or float
-                return Value.newFloatValue(((Number) value).floatValue());
+                return ((Number) value).doubleValue();
             case TIME:
                 // TODO Specs page 44, Resource 13 (current time) of device object represented as Float value
-                return Value.newDateValue(new Date(((Number) value).longValue() * 1000L));
+                return new Date(((Number) value).longValue() * 1000L);
             case OPAQUE:
                 // If the Resource data type is opaque the string value
                 // holds the Base64 encoded representation of the Resource
-                return Value.newBinaryValue(Base64.decodeBase64((String) value));
+                return Base64.decodeBase64((String) value);
+            case STRING:
+                return value;
             default:
-                // Default is Strung
-                return Value.newStringValue((String) value);
-
+                throw new InvalidValueException("Unsupported type " + expectedType, path);
             }
         } catch (Exception e) {
-            throw new InvalidValueException("Invalid content for type " + rscDesc.type, rscPath, e);
+            throw new InvalidValueException("Invalid content for type " + expectedType, path, e);
+        }
+    }
+
+    public static Type getResourceType(LwM2mPath rscPath, LwM2mModel model) throws InvalidValueException {
+        ResourceModel rscDesc = model.getResourceModel(rscPath.getObjectId(), rscPath.getResourceId());
+        if (rscDesc == null || rscDesc.type == null) {
+            LOG.trace("unknown type for resource : {}", rscPath);
+            // no resource description... string
+            return Type.STRING;
+        } else {
+            return rscDesc.type;
         }
     }
 }

@@ -152,7 +152,7 @@ lwClientControllers.controller('ClientDetailCtrl', [
                             // multiple instances
                             var tab = new Array();
                             for (var i in content.val.values) {
-                                tab.push(content.val.values[i])
+                                tab.push(i+"="+content.val.values[i])
                             }
                             resource.value = tab.join(", ");
                         }
@@ -176,7 +176,7 @@ lwClientControllers.controller('ClientDetailCtrl', [
                                     // multiple instances
                                     var tab = new Array();
                                     for (var j in tlvresource.values) {
-                                        tab.push(tlvresource.values[j])
+                                        tab.push(j+"="+tlvresource.values[j])
                                     }
                                     resource.value = tab.join(", ");
                                 }

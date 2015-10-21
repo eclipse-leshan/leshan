@@ -28,7 +28,6 @@ import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
-import org.eclipse.leshan.core.node.Value;
 import org.eclipse.leshan.core.node.codec.Lwm2mNodeEncoderUtil;
 import org.eclipse.leshan.json.JsonArrayEntry;
 import org.eclipse.leshan.json.JsonRootObject;
@@ -94,53 +93,51 @@ public class LwM2mNodeJsonEncoder {
 
         private ArrayList<JsonArrayEntry> lwM2mResourceToJsonArrayEntry(LwM2mResource resource) {
             ResourceModel rSpec = model.getResourceModel(objectId, resource.getId());
-            Type expectedType = rSpec != null ? rSpec.type : null;
+            Type expectedType = rSpec != null ? rSpec.type : resource.getType();
             ArrayList<JsonArrayEntry> resourcesList = new ArrayList<>();
             if (resource.isMultiInstances()) {
-                for (int i = 0; i < resource.getValues().length; i++) {
+                for (Entry<Integer, ?> entry : resource.getValues().entrySet()) {
                     JsonArrayEntry jsonResourceElt = new JsonArrayEntry();
-                    jsonResourceElt.setName(resource.getId() + "/" + i);
-                    this.setResourceValue(Lwm2mNodeEncoderUtil.convertValue(resource.getValues()[i], expectedType),
-                            jsonResourceElt);
+                    jsonResourceElt.setName(resource.getId() + "/" + entry.getKey());
+                    Object convertedValue = Lwm2mNodeEncoderUtil.convertValue(entry.getValue(), resource.getType(),
+                            expectedType);
+                    this.setResourceValue(convertedValue, expectedType, jsonResourceElt);
                     resourcesList.add(jsonResourceElt);
                 }
             } else {
                 JsonArrayEntry jsonResourceElt = new JsonArrayEntry();
                 jsonResourceElt.setName(new StringBuffer().append(resource.getId()).toString());
-                this.setResourceValue(Lwm2mNodeEncoderUtil.convertValue(resource.getValue(), expectedType),
-                        jsonResourceElt);
+                this.setResourceValue(
+                        Lwm2mNodeEncoderUtil.convertValue(resource.getValue(), resource.getType(), expectedType),
+                        expectedType, jsonResourceElt);
                 resourcesList.add(jsonResourceElt);
             }
             return resourcesList;
         }
 
-        private void setResourceValue(Value<?> value, JsonArrayEntry jsonResource) {
+        private void setResourceValue(Object value, Type type, JsonArrayEntry jsonResource) {
             LOG.trace("Encoding value {} in JSON", value);
             // Following table 20 in the Specs
-            switch (value.type) {
+            switch (type) {
             case STRING:
-                jsonResource.setStringValue((String) value.value);
+                jsonResource.setStringValue((String) value);
                 break;
             case INTEGER:
             case FLOAT:
-                jsonResource.setFloatValue((Number) value.value);
-                break;
-            case LONG:
-            case DOUBLE:
-                jsonResource.setStringValue(String.valueOf(value.value));
+                jsonResource.setFloatValue((Number) value);
                 break;
             case BOOLEAN:
-                jsonResource.setBooleanValue((Boolean) value.value);
+                jsonResource.setBooleanValue((Boolean) value);
                 break;
             case TIME:
                 // Specs device object example page 44, rec 13 is Time
                 // represented as float?
-                jsonResource.setFloatValue((((Date) value.value).getTime() / 1000L));
+                jsonResource.setFloatValue((((Date) value).getTime() / 1000L));
                 break;
             case OPAQUE:
-                jsonResource.setStringValue(Base64.encodeBase64String((byte[]) value.value));
+                jsonResource.setStringValue(Base64.encodeBase64String((byte[]) value));
             default:
-                throw new IllegalArgumentException("Invalid value type: " + value.type);
+                throw new IllegalArgumentException("Invalid value type: " + type);
             }
         }
     }

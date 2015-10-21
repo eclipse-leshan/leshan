@@ -58,7 +58,7 @@ angular.module('instanceDirectives', [])
                                 // multiple instances
                                 var tab = new Array();
                                 for (var j in tlvresource.values) {
-                                    tab.push(tlvresource.values[j])
+                                    tab.push(j+"="+tlvresource.values[j])
                                 }
                                 resource.value = tab.join(", ");
                             }
@@ -172,7 +172,7 @@ angular.module('instanceDirectives', [])
                                 // multiple instances
                                 var tab = new Array();
                                 for (var j in tlvresource.values) {
-                                    tab.push(tlvresource.values[j])
+                                    tab.push(j+"="+tlvresource.values[j])
                                 }
                                 resource.value = tab.join(", ");
                             }

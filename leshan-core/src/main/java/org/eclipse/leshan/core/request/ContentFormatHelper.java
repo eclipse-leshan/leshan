@@ -21,7 +21,6 @@ import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
-import org.eclipse.leshan.core.node.Value.DataType;
 
 public class ContentFormatHelper {
 
@@ -50,8 +49,7 @@ public class ContentFormatHelper {
                 if (resourceNode.isMultiInstances()) {
                     format = ContentFormat.TLV;
                 } else {
-                    format = resourceNode.getValue().type == DataType.OPAQUE ? ContentFormat.OPAQUE
-                            : ContentFormat.TEXT;
+                    format = resourceNode.getType() == Type.OPAQUE ? ContentFormat.OPAQUE : ContentFormat.TEXT;
                 }
             }
         }

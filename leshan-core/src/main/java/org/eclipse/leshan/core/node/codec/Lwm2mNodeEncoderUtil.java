@@ -25,8 +25,6 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.eclipse.leshan.core.model.ResourceModel.Type;
-import org.eclipse.leshan.core.node.Value;
-import org.eclipse.leshan.core.node.Value.DataType;
 import org.eclipse.leshan.util.Hex;
 import org.eclipse.leshan.util.StringUtils;
 import org.slf4j.Logger;
@@ -46,14 +44,13 @@ public class Lwm2mNodeEncoderUtil {
      * 
      * @throws IllegalArgumentException the value is not convertible.
      */
-    public static Value<?> convertValue(Value<?> value, Type expectedType) {
+    public static Object convertValue(Object value, Type currentType, Type expectedType) {
         if (expectedType == null) {
             // unknown resource, trusted value
             return value;
         }
 
-        Type valueType = toResourceType(value.type);
-        if (valueType == expectedType) {
+        if (currentType == expectedType) {
             // expected type
             return value;
         }
@@ -63,39 +60,39 @@ public class Lwm2mNodeEncoderUtil {
 
         switch (expectedType) {
         case BOOLEAN:
-            switch (value.type) {
+            switch (currentType) {
             case STRING:
-                LOG.debug("Trying to convert string value {} to boolean", value.value);
-                if (StringUtils.equalsIgnoreCase((String) value.value, "true")) {
-                    return Value.newBooleanValue(true);
-                } else if (StringUtils.equalsIgnoreCase((String) value.value, "false")) {
-                    return Value.newBooleanValue(false);
+                LOG.debug("Trying to convert string value {} to boolean", value);
+                if (StringUtils.equalsIgnoreCase((String) value, "true")) {
+                    return true;
+                } else if (StringUtils.equalsIgnoreCase((String) value, "false")) {
+                    return false;
                 }
             case INTEGER:
-                LOG.debug("Trying to convert int value {} to boolean", value.value);
-                Integer val = (Integer) value.value;
+                LOG.debug("Trying to convert int value {} to boolean", value);
+                Long val = (Long) value;
                 if (val == 1) {
-                    return Value.newBooleanValue(true);
+                    return true;
                 } else if (val == 0) {
-                    return Value.newBooleanValue(false);
+                    return false;
                 }
             default:
                 break;
             }
             break;
         case TIME:
-            switch (value.type) {
-            case LONG:
-                LOG.debug("Trying to convert long value {} to date", value.value);
+            switch (currentType) {
+            case INTEGER:
+                LOG.debug("Trying to convert long value {} to date", value);
                 // let's assume we received the millisecond since 1970/1/1
-                return Value.newDateValue(new Date((Long) value.value));
+                return new Date((Long) value);
             case STRING:
-                LOG.debug("Trying to convert string value {} to date", value.value);
+                LOG.debug("Trying to convert string value {} to date", value);
                 // let's assume we received an ISO 8601 format date
                 try {
                     DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
-                    XMLGregorianCalendar cal = datatypeFactory.newXMLGregorianCalendar((String) value.value);
-                    return Value.newDateValue(cal.toGregorianCalendar().getTime());
+                    XMLGregorianCalendar cal = datatypeFactory.newXMLGregorianCalendar((String) value);
+                    return cal.toGregorianCalendar().getTime();
                 } catch (DatatypeConfigurationException e) {
                     LOG.debug("Unable to convert string to date", e);
                 }
@@ -104,49 +101,26 @@ public class Lwm2mNodeEncoderUtil {
             }
             break;
         case STRING:
-            switch (value.type) {
+            switch (currentType) {
             case BOOLEAN:
             case INTEGER:
-            case LONG:
-            case DOUBLE:
             case FLOAT:
-                return Value.newStringValue(String.valueOf(value.value));
+                return String.valueOf(value);
             default:
                 break;
             }
             break;
         case OPAQUE:
-            if (value.type == DataType.STRING) {
+            if (currentType == Type.STRING) {
                 // let's assume we received an hexadecimal string
-                LOG.debug("Trying to convert hexadecimal string {} to byte array", value.value);
+                LOG.debug("Trying to convert hexadecimal string {} to byte array", value);
                 // TODO: check if we shouldn't instead assume that the string contains Base64 encoded data
-                return Value.newBinaryValue(Hex.decodeHex(((String) value.value).toCharArray()));
+                return Hex.decodeHex(((String) value).toCharArray());
             }
             break;
         default:
         }
 
-        throw new IllegalArgumentException("Invalid value type, expected " + expectedType + ", got " + valueType);
-    }
-
-    private static Type toResourceType(DataType type) {
-        switch (type) {
-        case INTEGER:
-        case LONG:
-            return Type.INTEGER;
-        case FLOAT:
-        case DOUBLE:
-            return Type.FLOAT;
-        case BOOLEAN:
-            return Type.BOOLEAN;
-        case OPAQUE:
-            return Type.OPAQUE;
-        case STRING:
-            return Type.STRING;
-        case TIME:
-            return Type.TIME;
-        default:
-            throw new IllegalArgumentException("Invalid type: " + type);
-        }
+        throw new IllegalArgumentException("Invalid value type, expected " + expectedType + ", got " + currentType);
     }
 }

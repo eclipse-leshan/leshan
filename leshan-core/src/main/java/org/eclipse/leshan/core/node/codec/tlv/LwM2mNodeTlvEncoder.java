@@ -31,7 +31,6 @@ import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
-import org.eclipse.leshan.core.node.Value;
 import org.eclipse.leshan.core.node.codec.Lwm2mNodeEncoderUtil;
 import org.eclipse.leshan.tlv.Tlv;
 import org.eclipse.leshan.tlv.Tlv.TlvType;
@@ -131,42 +130,46 @@ public class LwM2mNodeTlvEncoder {
 
         private Tlv encodeResource(LwM2mResource resource) {
             ResourceModel rSpec = model.getResourceModel(objectId, resource.getId());
-            Type expectedType = rSpec != null ? rSpec.type : null;
+            Type expectedType = rSpec != null ? rSpec.type : resource.getType();
 
             Tlv rTlv = null;
             if (resource.isMultiInstances()) {
-                Tlv[] instances = new Tlv[resource.getValues().length];
-                for (int i = 0; i < resource.getValues().length; i++) {
-                    instances[i] = new Tlv(TlvType.RESOURCE_INSTANCE, null, this.encodeTlvValue(Lwm2mNodeEncoderUtil
-                            .convertValue(resource.getValues()[i], expectedType)), i);
+                Tlv[] instances = new Tlv[resource.getValues().size()];
+                int i = 0;
+                for (Entry<Integer, ?> entry : resource.getValues().entrySet()) {
+                    Object convertedValue = Lwm2mNodeEncoderUtil.convertValue(entry.getValue(), resource.getType(),
+                            expectedType);
+                    instances[i] = new Tlv(TlvType.RESOURCE_INSTANCE, null, this.encodeTlvValue(convertedValue,
+                            expectedType), entry.getKey());
+                    i++;
                 }
                 rTlv = new Tlv(TlvType.MULTIPLE_RESOURCE, instances, null, resource.getId());
             } else {
-                rTlv = new Tlv(TlvType.RESOURCE_VALUE, null, this.encodeTlvValue(Lwm2mNodeEncoderUtil.convertValue(
-                        resource.getValue(), expectedType)), resource.getId());
+                Object convertedValue = Lwm2mNodeEncoderUtil.convertValue(resource.getValue(), resource.getType(),
+                        expectedType);
+                rTlv = new Tlv(TlvType.RESOURCE_VALUE, null, this.encodeTlvValue(convertedValue, expectedType),
+                        resource.getId());
             }
             return rTlv;
         }
 
-        private byte[] encodeTlvValue(Value<?> value) {
+        private byte[] encodeTlvValue(Object value, Type type) {
             LOG.trace("Encoding value {} in TLV", value);
-            switch (value.type) {
+            switch (type) {
             case STRING:
-                return TlvEncoder.encodeString((String) value.value);
+                return TlvEncoder.encodeString((String) value);
             case INTEGER:
-            case LONG:
-                return TlvEncoder.encodeInteger((Number) value.value);
+                return TlvEncoder.encodeInteger((Number) value);
             case FLOAT:
-            case DOUBLE:
-                return TlvEncoder.encodeFloat((Number) value.value);
+                return TlvEncoder.encodeFloat((Number) value);
             case BOOLEAN:
-                return TlvEncoder.encodeBoolean((Boolean) value.value);
+                return TlvEncoder.encodeBoolean((Boolean) value);
             case TIME:
-                return TlvEncoder.encodeDate((Date) value.value);
+                return TlvEncoder.encodeDate((Date) value);
             case OPAQUE:
-                return (byte[]) value.value;
+                return (byte[]) value;
             default:
-                throw new IllegalArgumentException("Invalid value type: " + value.type);
+                throw new IllegalArgumentException("Invalid value type: " + type);
             }
         }
     }

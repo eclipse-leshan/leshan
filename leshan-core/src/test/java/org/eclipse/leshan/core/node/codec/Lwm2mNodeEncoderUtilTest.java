@@ -20,31 +20,28 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import org.eclipse.leshan.core.model.ResourceModel.Type;
-import org.eclipse.leshan.core.node.Value;
-import org.eclipse.leshan.core.node.Value.DataType;
 import org.junit.Test;
 
 public class Lwm2mNodeEncoderUtilTest {
 
     @Test
     public void testConvertValueParsesHexString() {
-        Value<String> hexString = Value.newStringValue("10FF"); // 16 * 256 + 255 = 4351
-        Value<?> opaqueValue = Lwm2mNodeEncoderUtil.convertValue(hexString, Type.OPAQUE);
-        assertThat(opaqueValue.type, is(DataType.OPAQUE));
-        assertThat(opaqueValue.value, instanceOf(byte[].class));
-        assertThat((byte[]) opaqueValue.value, is(new byte[] { (byte) 0x10, (byte) 0xff }));
+        String hexString = "10FF"; // 16 * 256 + 255 = 4351
+        Object opaqueValue = Lwm2mNodeEncoderUtil.convertValue(hexString, Type.STRING, Type.OPAQUE);
+        assertThat(opaqueValue, instanceOf(byte[].class));
+        assertThat((byte[]) opaqueValue, is(new byte[] { (byte) 0x10, (byte) 0xff }));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConvertValueDetectsNonHexChars() {
-        Value<String> hexString = Value.newStringValue("10R8");
-        Lwm2mNodeEncoderUtil.convertValue(hexString, Type.OPAQUE);
+        String hexString = "10R8";
+        Lwm2mNodeEncoderUtil.convertValue(hexString, Type.STRING, Type.OPAQUE);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConvertValueDetectsInvalidHexStringLength() {
-        Value<String> hexString = Value.newStringValue("10F");
-        Lwm2mNodeEncoderUtil.convertValue(hexString, Type.OPAQUE);
+        String hexString = "10F";
+        Lwm2mNodeEncoderUtil.convertValue(hexString, Type.STRING, Type.OPAQUE);
     }
 
 }

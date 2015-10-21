@@ -24,7 +24,6 @@ import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
-import org.eclipse.leshan.core.node.Value;
 import org.eclipse.leshan.core.node.codec.Lwm2mNodeEncoderUtil;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
@@ -72,8 +71,8 @@ public class LwM2mNodeOpaqueEncoder {
                 throw new IllegalArgumentException("Only single opaque resource can be encoded in opaque format");
             }
             LOG.trace("Encoding resource {} into text", resource);
-            Value<?> val = Lwm2mNodeEncoderUtil.convertValue(resource.getValue(), Type.OPAQUE);
-            encoded = (byte[]) val.value;
+            Object value = Lwm2mNodeEncoderUtil.convertValue(resource.getValue(), resource.getType(), Type.OPAQUE);
+            encoded = (byte[]) value;
         }
     }
 }

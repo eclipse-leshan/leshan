@@ -78,7 +78,7 @@ angular.module('resourceDirectives', [])
                             // multiple instances
                             var tab = new Array();
                             for (var i in data.content.values) {
-                                tab.push(data.content.values[i])
+                                tab.push(i+"="+data.content.values[i])
                             }
                             scope.resource.value = tab.join(", ");
                         }
@@ -107,7 +107,7 @@ angular.module('resourceDirectives', [])
             
             
             scope.read = function() {
-                var uri = "api/clients/" + $routeParams.clientId + scope.resource.path;                
+                var uri = "api/clients/" + $routeParams.clientId + scope.resource.path;
                 $http.get(uri)
                 .success(function(data, status, headers, config) {
                     // manage request information
@@ -119,18 +119,18 @@ angular.module('resourceDirectives', [])
                     
                     // manage read data
                     if (data.status == "CONTENT" && data.content) {
-                    	if("value" in data.content) {
-                    		// single value
-                    		scope.resource.value = data.content.value
-                    	}
-                    	else if("values" in data.content) {
-                    		// multiple instances
-                    		var tab = new Array();
+                        if("value" in data.content) {
+                            // single value
+                            scope.resource.value = data.content.value
+                        }
+                    else if("values" in data.content) {
+                            // multiple instances
+                            var tab = new Array();
                             for (var i in data.content.values) {
-                                tab.push(data.content.values[i])
+                                tab.push(i+"="+data.content.values[i])
                             }
                             scope.resource.value = tab.join(", ");
-                    	}
+                        }
                         scope.resource.valuesupposed = false;
                         scope.resource.tooltip = formattedDate;
                     }

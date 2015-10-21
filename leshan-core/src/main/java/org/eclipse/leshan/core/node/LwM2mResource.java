@@ -15,110 +15,58 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
-import java.util.Arrays;
+import java.util.Date;
+import java.util.Map;
 
-import org.eclipse.leshan.util.Validate;
+import org.eclipse.leshan.core.model.ResourceModel.Type;
 
 /**
  * A resource is an information made available by the LWM2M Client.
  * <p>
- * A resource may have a single {@link Value} or consist of multiple instances.
+ * A resource could be a {@link LwM2mSingleResource} or a {@link LwM2mMultipleResource}.
  * </p>
  */
-public class LwM2mResource implements LwM2mNode {
-
-    private final int id;
-
-    private final Value<?>[] values;
-
-    private final boolean isMultiInstances;
+public interface LwM2mResource extends LwM2mNode {
 
     /**
-     * New single instance resource
+     * @return the type of the resource.
      */
-    public LwM2mResource(int id, Value<?> value) {
-        Validate.notNull(value);
-        this.id = id;
-        this.values = new Value[] { value };
-        this.isMultiInstances = false;
-    }
+    Type getType();
 
     /**
-     * New multiple instances resource
+     * @return true if this resource contains severals resources instances.
      */
-    public LwM2mResource(int id, Value<?>[] values) {
-        Validate.notNull(values);
-        this.id = id;
-        this.values = Arrays.copyOf(values, values.length);
-        this.isMultiInstances = true;
-    }
-
-    @Override
-    public void accept(LwM2mNodeVisitor visitor) {
-        visitor.visit(this);
-    }
+    boolean isMultiInstances();
 
     /**
-     * {@inheritDoc}
+     * This method is only available if {@link #isMultiInstances()} return <code>false</code>.
+     * 
+     * The type of the returned value depends on the {@link #getType()} method.
+     * 
+     * If {@link #getType()} returns {@link Type#BOOLEAN}, the value is a {@link Boolean}.<br/>
+     * If {@link #getType()} returns {@link Type#STRING}, the value is a {@link String}.<br/>
+     * If {@link #getType()} returns {@link Type#OPAQUE}, the value is a byte array.<br/>
+     * If {@link #getType()} returns {@link Type#TIME}, the value is a {@link Date}.<br/>
+     * If {@link #getType()} returns {@link Type#INTEGER}, the value is a {@link Long}.<br/>
+     * If {@link #getType()} returns {@link Type#FLOAT}, the value is a {@link Double}.<br/>
+     * 
+     * @return the value of the resource.
      */
-    @Override
-    public int getId() {
-        return id;
-    }
+    Object getValue();
 
     /**
-     * @return the resource value (for a single instance resource) or the first value (for a multi-instance resource)
+     * This method is only available if {@link #isMultiInstances()} return <code>true</code>.
+     * 
+     * The type of the right part of the returned map depends on the {@link #getType()} method.
+     * 
+     * If {@link #getType()} returns {@link Type#BOOLEAN}, the value is a {@link Boolean}.<br/>
+     * If {@link #getType()} returns {@link Type#STRING}, the value is a {@link String}.<br/>
+     * If {@link #getType()} returns {@link Type#OPAQUE}, the value is a byte array.<br/>
+     * If {@link #getType()} returns {@link Type#TIME}, the value is a {@link Date}.<br/>
+     * If {@link #getType()} returns {@link Type#INTEGER}, the value is a {@link Long}.<br/>
+     * If {@link #getType()} returns {@link Type#FLOAT}, the value is a {@link Double}.<br/>
+     * 
+     * @return the values of each resource instances (key is the resource instance identifier).
      */
-    public Value<?> getValue() {
-        return values[0];
-    }
-
-    /**
-     * @return the resource values
-     */
-    public Value<?>[] getValues() {
-        return values;
-    }
-
-    /**
-     * @return <code>true</code> if this is a resource supporting multiple instances and <code>false</code> otherwise
-     */
-    public boolean isMultiInstances() {
-        return isMultiInstances;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("LwM2mResource [id=%s, values=%s, isMultiInstances=%s]", id, Arrays.toString(values),
-                isMultiInstances);
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + id;
-        result = prime * result + (isMultiInstances ? 1231 : 1237);
-        result = prime * result + Arrays.hashCode(values);
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        LwM2mResource other = (LwM2mResource) obj;
-        if (id != other.id)
-            return false;
-        if (isMultiInstances != other.isMultiInstances)
-            return false;
-        if (!Arrays.equals(values, other.values))
-            return false;
-        return true;
-    }
-
+    Map<Integer, ?> getValues();
 }

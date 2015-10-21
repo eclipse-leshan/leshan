@@ -21,7 +21,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mResource;
-import org.eclipse.leshan.core.node.Value;
+import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -93,7 +93,7 @@ public class CreateTest {
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         // create ACL instance
-        LwM2mResource accessControlOwner = new LwM2mResource(3, Value.newIntegerValue(123));
+        LwM2mResource accessControlOwner = LwM2mSingleResource.newIntegerResource(3, 123);
 
         LwM2mResource[] data = new LwM2mResource[] { accessControlOwner };
         CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, 0, data, null));
@@ -109,7 +109,7 @@ public class CreateTest {
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         // create ACL instance
-        LwM2mResource accessControlOwner = new LwM2mResource(3, Value.newIntegerValue(123));
+        LwM2mResource accessControlOwner = LwM2mSingleResource.newIntegerResource(3, 123);
 
         LwM2mResource[] data = new LwM2mResource[] { accessControlOwner };
         CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, 0, data,
@@ -163,8 +163,8 @@ public class CreateTest {
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         // create ACL instance
-        LwM2mResource accessControlOwner = new LwM2mResource(3, Value.newIntegerValue(123));
-        LwM2mResource extraneousResource = new LwM2mResource(50, Value.newIntegerValue(123));
+        LwM2mResource accessControlOwner = LwM2mSingleResource.newIntegerResource(3, 123);
+        LwM2mResource extraneousResource = LwM2mSingleResource.newIntegerResource(50, 123);
         LwM2mResource[] data = new LwM2mResource[] { accessControlOwner, extraneousResource };
         CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, 0, data, null));
 

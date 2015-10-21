@@ -16,12 +16,12 @@
 package org.eclipse.leshan.standalone.servlet.json;
 
 import java.lang.reflect.Type;
+import java.util.Map.Entry;
 
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
-import org.eclipse.leshan.core.node.Value.DataType;
 import org.eclipse.leshan.util.Hex;
 
 import com.google.gson.JsonElement;
@@ -41,23 +41,24 @@ public class LwM2mNodeSerializer implements JsonSerializer<LwM2mNode> {
             element.add("instances", context.serialize(((LwM2mObject) src).getInstances().values()));
         } else if (typeOfSrc == LwM2mObjectInstance.class) {
             element.add("resources", context.serialize(((LwM2mObjectInstance) src).getResources().values()));
-        } else if (typeOfSrc == LwM2mResource.class) {
+        } else if (LwM2mResource.class.isAssignableFrom((Class<?>) typeOfSrc)) {
             LwM2mResource rsc = (LwM2mResource) src;
             if (rsc.isMultiInstances()) {
-                Object[] values = new Object[rsc.getValues().length];
-                for (int i = 0; i < rsc.getValues().length; i++) {
-                    if (rsc.getValue().type == DataType.OPAQUE) {
-                        values[i] = Hex.encodeHex((byte[]) rsc.getValue().value);
+                JsonObject values = new JsonObject();
+                for (Entry<Integer, ?> entry : rsc.getValues().entrySet()) {
+                    if (rsc.getType() == org.eclipse.leshan.core.model.ResourceModel.Type.OPAQUE) {
+                        values.add(entry.getKey().toString(),
+                                context.serialize(Hex.encodeHex((byte[]) entry.getValue())));
                     } else {
-                        values[i] = rsc.getValues()[i].value;
+                        values.add(entry.getKey().toString(), context.serialize(entry.getValue()));
                     }
                 }
-                element.add("values", context.serialize(values));
+                element.add("values", values);
             } else {
-                if (rsc.getValue().type == DataType.OPAQUE) {
-                    element.add("value", context.serialize(Hex.encodeHex((byte[]) rsc.getValue().value)));
+                if (rsc.getType() == org.eclipse.leshan.core.model.ResourceModel.Type.OPAQUE) {
+                    element.add("value", context.serialize(Hex.encodeHex((byte[]) rsc.getValue())));
                 } else {
-                    element.add("value", context.serialize(rsc.getValue().value));
+                    element.add("value", context.serialize(rsc.getValue()));
                 }
             }
         }

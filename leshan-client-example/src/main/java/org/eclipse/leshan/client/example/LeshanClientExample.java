@@ -23,7 +23,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.TimeZone;
@@ -37,13 +39,14 @@ import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mResource;
-import org.eclipse.leshan.core.node.Value;
+import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.response.ExecuteResponse;
-import org.eclipse.leshan.core.response.RegisterResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.core.response.RegisterResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 
 /*
@@ -149,28 +152,29 @@ public class LeshanClientExample {
             System.out.println("Read on Device Resource " + resourceid);
             switch (resourceid) {
             case 0:
-                return ReadResponse.success(new LwM2mResource(resourceid, Value.newStringValue(getManufacturer())));
+                return ReadResponse.success(LwM2mSingleResource.newStringResource(resourceid, getManufacturer()));
             case 1:
-                return ReadResponse.success(new LwM2mResource(resourceid, Value.newStringValue(getModelNumber())));
+                return ReadResponse.success(LwM2mSingleResource.newStringResource(resourceid, getModelNumber()));
             case 2:
-                return ReadResponse.success(new LwM2mResource(resourceid, Value.newStringValue(getSerialNumber())));
+                return ReadResponse.success(LwM2mSingleResource.newStringResource(resourceid, getSerialNumber()));
             case 3:
-                return ReadResponse.success(new LwM2mResource(resourceid, Value.newStringValue(getFirmwareVersion())));
+                return ReadResponse.success(LwM2mSingleResource.newStringResource(resourceid, getFirmwareVersion()));
             case 9:
-                return ReadResponse.success(new LwM2mResource(resourceid, Value.newIntegerValue(getBatteryLevel())));
+                return ReadResponse.success(LwM2mSingleResource.newIntegerResource(resourceid, getBatteryLevel()));
             case 10:
-                return ReadResponse.success(new LwM2mResource(resourceid, Value.newIntegerValue(getMemoryFree())));
+                return ReadResponse.success(LwM2mSingleResource.newIntegerResource(resourceid, getMemoryFree()));
             case 11:
-                return ReadResponse.success(new LwM2mResource(resourceid, new Value<?>[] { Value
-                        .newIntegerValue(getErrorCode()) }));
+                Map<Integer, Long> errorCodes = new HashMap<>();
+                errorCodes.put(0, getErrorCode());
+                return ReadResponse.success(LwM2mMultipleResource.newIntegerResource(resourceid, errorCodes));
             case 13:
-                return ReadResponse.success(new LwM2mResource(resourceid, Value.newDateValue(getCurrentTime())));
+                return ReadResponse.success(LwM2mSingleResource.newDateResource(resourceid, getCurrentTime()));
             case 14:
-                return ReadResponse.success(new LwM2mResource(resourceid, Value.newStringValue(getUtcOffset())));
+                return ReadResponse.success(LwM2mSingleResource.newStringResource(resourceid, getUtcOffset()));
             case 15:
-                return ReadResponse.success(new LwM2mResource(resourceid, Value.newStringValue(getTimezone())));
+                return ReadResponse.success(LwM2mSingleResource.newStringResource(resourceid, getTimezone()));
             case 16:
-                return ReadResponse.success(new LwM2mResource(resourceid, Value.newStringValue(getSupportedBinding())));
+                return ReadResponse.success(LwM2mSingleResource.newStringResource(resourceid, getSupportedBinding()));
             default:
                 return super.read(resourceid);
             }
@@ -191,11 +195,11 @@ public class LeshanClientExample {
             case 13:
                 return WriteResponse.notFound();
             case 14:
-                setUtcOffset((String) value.getValue().value);
+                setUtcOffset((String) value.getValue());
                 fireResourcesChange(resourceid);
                 return WriteResponse.success();
             case 15:
-                setTimezone((String) value.getValue().value);
+                setTimezone((String) value.getValue());
                 fireResourcesChange(resourceid);
                 return WriteResponse.success();
             default:
@@ -219,7 +223,7 @@ public class LeshanClientExample {
             return "1.0.0";
         }
 
-        private int getErrorCode() {
+        private long getErrorCode() {
             return 0;
         }
 
@@ -280,11 +284,11 @@ public class LeshanClientExample {
             System.out.println("Read on Location Resource " + resourceid);
             switch (resourceid) {
             case 0:
-                return ReadResponse.success(new LwM2mResource(resourceid, Value.newStringValue(getLatitude())));
+                return ReadResponse.success(LwM2mSingleResource.newStringResource(resourceid, getLatitude()));
             case 1:
-                return ReadResponse.success(new LwM2mResource(resourceid, Value.newStringValue(getLongitude())));
+                return ReadResponse.success(LwM2mSingleResource.newStringResource(resourceid, getLongitude()));
             case 5:
-                return ReadResponse.success(new LwM2mResource(resourceid, Value.newDateValue(getTimestamp())));
+                return ReadResponse.success(LwM2mSingleResource.newDateResource(resourceid, getTimestamp()));
             default:
                 return super.read(resourceid);
             }

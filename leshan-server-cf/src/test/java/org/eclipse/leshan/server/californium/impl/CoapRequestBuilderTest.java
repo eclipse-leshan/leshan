@@ -15,8 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -32,7 +34,7 @@ import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mResource;
-import org.eclipse.leshan.core.node.Value;
+import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
@@ -141,7 +143,7 @@ public class CoapRequestBuilderTest {
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
-        WriteRequest request = new WriteRequest(3, 0, 14, new LwM2mResource(14, Value.newStringValue("value")),
+        WriteRequest request = new WriteRequest(3, 0, 14, LwM2mSingleResource.newStringResource(14, "value"),
                 ContentFormat.TEXT, false);
         builder.visit(request);
 
@@ -160,7 +162,7 @@ public class CoapRequestBuilderTest {
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
-        WriteRequest request = new WriteRequest(3, 0, 14, new LwM2mResource(14, Value.newStringValue("value")),
+        WriteRequest request = new WriteRequest(3, 0, 14, LwM2mSingleResource.newStringResource(14, "value"),
                 ContentFormat.TEXT, true);
         builder.visit(request);
 
@@ -212,8 +214,8 @@ public class CoapRequestBuilderTest {
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
-        CreateRequest request = new CreateRequest(12, 0, new LwM2mResource[] { new LwM2mResource(0,
-                Value.newStringValue("value")) }, ContentFormat.TLV);
+        CreateRequest request = new CreateRequest(12, 0, new LwM2mResource[] { LwM2mSingleResource.newStringResource(0,
+                "value") }, ContentFormat.TLV);
         builder.visit(request);
 
         // verify
