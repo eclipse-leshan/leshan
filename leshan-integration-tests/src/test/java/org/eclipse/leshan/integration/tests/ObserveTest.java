@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mResource;
-import org.eclipse.leshan.core.node.Value;
+import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
@@ -75,7 +75,7 @@ public class ObserveTest {
         assertEquals(helper.getClient().getRegistrationId(), observation.getRegistrationId());
 
         // write device timezone
-        LwM2mResource newValue = new LwM2mResource(15, Value.newStringValue("Europe/Paris"));
+        LwM2mResource newValue = LwM2mSingleResource.newStringResource(15, "Europe/Paris");
         LwM2mResponse writeResponse = helper.server.send(helper.getClient(), new WriteRequest(3, 0, 15, newValue, null,
                 true));
 

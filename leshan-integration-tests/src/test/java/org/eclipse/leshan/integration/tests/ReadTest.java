@@ -118,7 +118,7 @@ public class ReadTest {
 
         LwM2mResource resource = (LwM2mResource) response.getContent();
         assertEquals(1, resource.getId());
-        assertEquals("Model Number", resource.getValue().value);
+        assertEquals("Model Number", resource.getValue());
     }
 
     @Test

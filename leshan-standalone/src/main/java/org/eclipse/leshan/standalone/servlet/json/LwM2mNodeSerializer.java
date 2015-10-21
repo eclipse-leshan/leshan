@@ -23,7 +23,6 @@ import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
-import org.eclipse.leshan.core.node.Value.DataType;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -45,21 +44,18 @@ public class LwM2mNodeSerializer implements JsonSerializer<LwM2mNode> {
         } else if (typeOfSrc == LwM2mResource.class) {
             LwM2mResource rsc = (LwM2mResource) src;
             if (rsc.isMultiInstances()) {
-                Object[] values = new Object[rsc.getValues().length];
-                for (int i = 0; i < rsc.getValues().length; i++) {
-                    if (rsc.getValue().type == DataType.OPAQUE) {
-                        values[i] = DatatypeConverter.printHexBinary((byte[]) rsc.getValue().value);
-                    } else {
-                        values[i] = rsc.getValues()[i].value;
+                Object[] values = rsc.getValues().values().toArray();
+                if (rsc.getType() == org.eclipse.leshan.core.model.ResourceModel.Type.OPAQUE) {
+                    for (int i = 0; i < values.length; i++) {
+                        values[i] = DatatypeConverter.printHexBinary((byte[]) values[i]);
                     }
                 }
                 element.add("values", context.serialize(values));
             } else {
-                if (rsc.getValue().type == DataType.OPAQUE) {
-                    element.add("value",
-                            context.serialize(DatatypeConverter.printHexBinary((byte[]) rsc.getValue().value)));
+                if (rsc.getType() == org.eclipse.leshan.core.model.ResourceModel.Type.OPAQUE) {
+                    element.add("value", context.serialize(DatatypeConverter.printHexBinary((byte[]) rsc.getValue())));
                 } else {
-                    element.add("value", context.serialize(rsc.getValue().value));
+                    element.add("value", context.serialize(rsc.getValue()));
                 }
             }
         }

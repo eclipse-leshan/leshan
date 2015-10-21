@@ -31,7 +31,7 @@ import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
-import org.eclipse.leshan.core.node.Value;
+import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
@@ -344,8 +344,8 @@ public class ClientServlet extends HttpServlet {
         if ("text/plain".equals(contentType)) {
             String content = IOUtils.toString(req.getInputStream(), parameters.get("charset"));
             int rscId = Integer.valueOf(target.substring(target.lastIndexOf("/") + 1));
-            return server.send(client, new WriteRequest(target,
-                    new LwM2mResource(rscId, Value.newStringValue(content)), ContentFormat.TEXT, true), TIMEOUT);
+            return server.send(client, new WriteRequest(target, LwM2mSingleResource.newStringResource(rscId, content),
+                    ContentFormat.TEXT, true), TIMEOUT);
 
         } else if ("application/json".equals(contentType)) {
             String content = IOUtils.toString(req.getInputStream(), parameters.get("charset"));

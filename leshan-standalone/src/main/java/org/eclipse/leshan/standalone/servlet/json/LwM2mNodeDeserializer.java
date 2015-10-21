@@ -16,14 +16,15 @@
 package org.eclipse.leshan.standalone.servlet.json;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
-import org.eclipse.leshan.core.node.Value;
+import org.eclipse.leshan.core.node.LwM2mSingleResource;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
@@ -74,14 +75,25 @@ public class LwM2mNodeDeserializer implements JsonDeserializer<LwM2mNode> {
 
             } else if (object.has("value")) {
                 // single value resource
-                node = new LwM2mResource(id, this.deserializeValue(object.get("value").getAsJsonPrimitive()));
+                JsonPrimitive val = object.get("value").getAsJsonPrimitive();
+                org.eclipse.leshan.core.model.ResourceModel.Type expectedType = getTypeFor(val);
+                node = LwM2mSingleResource.newResource(id, deserializeValue(val, expectedType), expectedType);
             } else if (object.has("values")) {
                 // multi-instances resource
-                Collection<Value<?>> values = new ArrayList<>();
+                Map<Integer, Object> values = new HashMap<Integer, Object>();
+                // TODO handle id for multiple resource
+                int i = 0;
+                org.eclipse.leshan.core.model.ResourceModel.Type expectedType = null;
                 for (JsonElement val : object.get("values").getAsJsonArray()) {
-                    values.add(this.deserializeValue(val.getAsJsonPrimitive()));
+                    JsonPrimitive pval = val.getAsJsonPrimitive();
+                    expectedType = getTypeFor(pval);
+                    values.put(i, deserializeValue(pval, expectedType));
+                    i++;
                 }
-                node = new LwM2mResource(id, values.toArray(new Value<?>[0]));
+                // use string by default;
+                if (expectedType == null)
+                    expectedType = org.eclipse.leshan.core.model.ResourceModel.Type.STRING;
+                node = LwM2mMultipleResource.newResource(id, values, expectedType);
             } else {
                 throw new JsonParseException("Invalid node element");
             }
@@ -92,32 +104,37 @@ public class LwM2mNodeDeserializer implements JsonDeserializer<LwM2mNode> {
         return node;
     }
 
-    private Value<?> deserializeValue(JsonPrimitive val) {
-        Value<?> value = null;
+    private org.eclipse.leshan.core.model.ResourceModel.Type getTypeFor(JsonPrimitive val) {
+        if (val.isBoolean())
+            return org.eclipse.leshan.core.model.ResourceModel.Type.BOOLEAN;
+        if (val.isString())
+            return org.eclipse.leshan.core.model.ResourceModel.Type.STRING;
         if (val.isNumber()) {
-
-            Number n = val.getAsNumber();
-            if (n.doubleValue() == (long) n.doubleValue()) {
-                Long lValue = Long.valueOf(n.longValue());
-                if (lValue >= Integer.MIN_VALUE && lValue <= Integer.MAX_VALUE) {
-                    value = Value.newIntegerValue(lValue.intValue());
-                } else {
-                    value = Value.newLongValue(lValue);
-                }
+            if (val.getAsDouble() == (long) val.getAsLong()) {
+                return org.eclipse.leshan.core.model.ResourceModel.Type.BOOLEAN;
             } else {
-                Double dValue = Double.valueOf(n.doubleValue());
-                if (dValue >= Float.MIN_VALUE && dValue <= Float.MAX_VALUE) {
-                    value = Value.newFloatValue(dValue.floatValue());
-                } else {
-                    value = Value.newDoubleValue(dValue);
-                }
+                return org.eclipse.leshan.core.model.ResourceModel.Type.BOOLEAN;
             }
-
-        } else if (val.isBoolean()) {
-            value = Value.newBooleanValue(val.getAsBoolean());
-        } else if (val.isString()) {
-            value = Value.newStringValue(val.getAsString());
         }
-        return value;
+        // use string as default value
+        return org.eclipse.leshan.core.model.ResourceModel.Type.STRING;
+    }
+
+    private Object deserializeValue(JsonPrimitive val, org.eclipse.leshan.core.model.ResourceModel.Type expectedType) {
+        switch (expectedType) {
+        case BOOLEAN:
+            return val.getAsBoolean();
+        case STRING:
+            return val.getAsString();
+        case INTEGER:
+            return val.getAsLong();
+        case FLOAT:
+            return val.getAsDouble();
+        case TIME:
+        case OPAQUE:
+        default:
+            // TODO we need to better handle this.
+            return val.getAsString();
+        }
     }
 }

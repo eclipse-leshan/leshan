@@ -20,8 +20,7 @@ import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.node.LwM2mResource;
-import org.eclipse.leshan.core.node.Value;
+import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.codec.InvalidValueException;
 import org.eclipse.leshan.util.Validate;
 
@@ -35,7 +34,7 @@ public class LwM2mNodeOpaqueDecoder {
             throw new InvalidValueException(
                     "Invalid content format, OPAQUE can only be used for single OPAQUE resource", path);
         }
-        return new LwM2mResource(path.getResourceId(), Value.newBinaryValue(content));
+        return LwM2mSingleResource.newBinaryResource(path.getResourceId(), content);
     }
 
 }
