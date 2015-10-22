@@ -18,7 +18,6 @@ package org.eclipse.leshan.client.resource;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
@@ -27,12 +26,6 @@ import org.eclipse.leshan.core.response.WriteResponse;
 public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
 
     private List<ResourceChangedListener> listeners = new ArrayList<ResourceChangedListener>();
-    protected ObjectModel objectModel = null;
-
-    @Override
-    public void setObjectModel(ObjectModel objectModel) {
-        this.objectModel = objectModel;
-    }
 
     @Override
     public void addResourceChangedListener(ResourceChangedListener listener) {

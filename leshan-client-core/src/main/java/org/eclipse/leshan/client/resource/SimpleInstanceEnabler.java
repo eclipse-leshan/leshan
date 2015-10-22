@@ -29,7 +29,8 @@ import org.eclipse.leshan.core.response.WriteResponse;
 
 public class SimpleInstanceEnabler extends BaseInstanceEnabler {
 
-    Map<Integer, LwM2mResource> resources = new HashMap<Integer, LwM2mResource>();
+    protected Map<Integer, LwM2mResource> resources = new HashMap<Integer, LwM2mResource>();
+    protected ObjectModel objectModel;
 
     @Override
     public ReadResponse read(int resourceid) {
@@ -54,9 +55,8 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
         return ExecuteResponse.success();
     }
 
-    @Override
     public void setObjectModel(ObjectModel objectModel) {
-        super.setObjectModel(objectModel);
+        this.objectModel = objectModel;
 
         // initialize resources
         for (ResourceModel resourceModel : objectModel.resources.values()) {

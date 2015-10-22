@@ -44,13 +44,13 @@ public class ObjectEnabler extends BaseObjectEnabler {
 
     // TODO we should manage that in a threadsafe way
     private Map<Integer, LwM2mInstanceEnabler> instances;
-    private Class<? extends LwM2mInstanceEnabler> instanceClass;
+    private LwM2mInstanceEnablerFactory instanceFactory;
 
     public ObjectEnabler(int id, ObjectModel objectModel, Map<Integer, LwM2mInstanceEnabler> instances,
-            Class<? extends LwM2mInstanceEnabler> instanceClass) {
+            LwM2mInstanceEnablerFactory instanceFactory) {
         super(id, objectModel);
         this.instances = new HashMap<Integer, LwM2mInstanceEnabler>(instances);
-        this.instanceClass = instanceClass;
+        this.instanceFactory = instanceFactory;
         for (Entry<Integer, LwM2mInstanceEnabler> entry : this.instances.entrySet()) {
             addInstance(entry.getKey(), entry.getValue());
         }
@@ -64,8 +64,6 @@ public class ObjectEnabler extends BaseObjectEnabler {
     }
 
     public void addInstance(int instanceId, LwM2mInstanceEnabler newInstance) {
-        newInstance.setObjectModel(getObjectModel());
-
         instances.put(instanceId, newInstance);
         listenInstance(newInstance, instanceId);
     }
@@ -80,30 +78,25 @@ public class ObjectEnabler extends BaseObjectEnabler {
 
     @Override
     protected synchronized CreateResponse doCreate(CreateRequest request) {
-        try {
-            Integer instanceId = request.getPath().getObjectInstanceId();
-            if (instanceId == null) {
-                // the client is in charge to generate the id of the new instance
-                if (instances.isEmpty()) {
-                    instanceId = 0;
-                } else {
-                    instanceId = Collections.max(instances.keySet()) + 1;
-                }
+        Integer instanceId = request.getPath().getObjectInstanceId();
+        if (instanceId == null) {
+            // the client is in charge to generate the id of the new instance
+            if (instances.isEmpty()) {
+                instanceId = 0;
+            } else {
+                instanceId = Collections.max(instances.keySet()) + 1;
             }
-
-            LwM2mInstanceEnabler newInstance = instanceClass.newInstance();
-            newInstance.setObjectModel(getObjectModel());
-
-            for (LwM2mResource resource : request.getResources()) {
-                newInstance.write(resource.getId(), resource);
-            }
-            instances.put(instanceId, newInstance);
-            listenInstance(newInstance, instanceId);
-
-            return CreateResponse.success(new LwM2mPath(request.getPath().getObjectId(), instanceId).toString());
-        } catch (InstantiationException | IllegalAccessException e) {
-            return CreateResponse.internalServerError(e.getMessage());
         }
+
+        LwM2mInstanceEnabler newInstance = instanceFactory.create(getObjectModel());
+
+        for (LwM2mResource resource : request.getResources()) {
+            newInstance.write(resource.getId(), resource);
+        }
+        instances.put(instanceId, newInstance);
+        listenInstance(newInstance, instanceId);
+
+        return CreateResponse.success(new LwM2mPath(request.getPath().getObjectId(), instanceId).toString());
     }
 
     @Override
