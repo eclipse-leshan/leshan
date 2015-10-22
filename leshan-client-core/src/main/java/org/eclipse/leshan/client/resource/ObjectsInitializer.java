@@ -28,7 +28,7 @@ import org.eclipse.leshan.util.Validate;
 
 public class ObjectsInitializer {
 
-    protected Map<Integer, Class<? extends LwM2mInstanceEnabler>> classes = new HashMap<Integer, Class<? extends LwM2mInstanceEnabler>>();
+    protected Map<Integer, LwM2mInstanceEnablerFactory> factories = new HashMap<Integer, LwM2mInstanceEnablerFactory>();
     protected Map<Integer, LwM2mInstanceEnabler[]> instances = new HashMap<Integer, LwM2mInstanceEnabler[]>();
     protected LwM2mModel model;
 
@@ -49,25 +49,24 @@ public class ObjectsInitializer {
         }
     }
 
-    public void setClassForObject(int objectId, Class<? extends LwM2mInstanceEnabler> clazz) {
+    public void setFactoryForObject(int objectId, LwM2mInstanceEnablerFactory factory) {
         if (model.getObjectModel(objectId) == null) {
-            throw new IllegalStateException("Cannot set Instance Class for Object " + objectId
+            throw new IllegalStateException("Cannot set Instance Factory for Object " + objectId
                     + " because no model is defined for this id.");
         }
+        Validate.notNull(factory);
+        factories.put(objectId, factory);
+    }
 
+    public void setClassForObject(int objectId, Class<? extends LwM2mInstanceEnabler> clazz) {
         Validate.notNull(clazz);
-        if (instances.containsKey(objectId)) {
-            throw new IllegalStateException("Cannot set Instance Class for Object " + objectId
-                    + " when Instance already exists. Can only have one or the other.");
-        }
-
         // check clazz has a default constructor
         try {
             clazz.getConstructor();
         } catch (NoSuchMethodException e) {
             throw new IllegalStateException("Class must have a default constructor");
         }
-        classes.put(objectId, clazz);
+        setFactoryForObject(objectId, getDefaultFactory(clazz));
     }
 
     public void setInstancesForObject(int objectId, LwM2mInstanceEnabler... instances) {
@@ -79,20 +78,9 @@ public class ObjectsInitializer {
         Validate.notNull(instances);
         Validate.notEmpty(instances);
 
-        if (classes.containsKey(objectId)) {
-            throw new IllegalStateException("Cannot set Instances for Object " + objectId
-                    + " when Instance Class already exists.  Can only have one or the other.");
-        }
-
         if (instances.length > 1 && !objectModel.multiple)
             throw new IllegalStateException("Cannot set more than one instance for the single Object " + objectId);
 
-        // check class of the instance has a default constructor
-        try {
-            instances[0].getClass().getConstructor();
-        } catch (NoSuchMethodException e) {
-            throw new IllegalStateException("Instance must have a class with a default constructor");
-        }
         this.instances.put(objectId, instances);
     }
 
@@ -116,9 +104,7 @@ public class ObjectsInitializer {
             throw new IllegalStateException("Cannot create object for id " + objectId
                     + " because no model is defined for this id.");
         }
-
         return createNodeEnabler(objectModel);
-
     }
 
     public List<ObjectEnabler> create(int... objectId) {
@@ -131,19 +117,28 @@ public class ObjectsInitializer {
         return enablers;
     }
 
-    protected Class<? extends LwM2mInstanceEnabler> getClassFor(ObjectModel objectModel) {
-        // if we have a class for this object id, return it
-        Class<? extends LwM2mInstanceEnabler> clazz = classes.get(objectModel.id);
-        if (clazz != null)
-            return clazz;
+    protected LwM2mInstanceEnablerFactory getFactoryFor(ObjectModel objectModel) {
+        // if we have a factory for this object id, return it
+        LwM2mInstanceEnablerFactory instanceFactory = factories.get(objectModel.id);
+        if (instanceFactory != null)
+            return instanceFactory;
 
-        // if there are no class for this object check in instance list.
+        // if there are no factory for this object check in instance list.
         LwM2mInstanceEnabler[] instances = this.instances.get(objectModel.id);
-        if (instances != null && instances.length > 0)
-            return instances[0].getClass();
-
+        if (instances != null) {
+            for (LwM2mInstanceEnabler instance : instances) {
+                // check if the class of this instance has a default constructors;
+                try {
+                    Class<? extends LwM2mInstanceEnabler> clazz = instance.getClass();
+                    clazz.getConstructor();
+                    return getDefaultFactory(clazz);
+                } catch (NoSuchMethodException e) {
+                    // no default constructor.
+                }
+            }
+        }
         // default class :
-        return SimpleInstanceEnabler.class;
+        return getDefaultFactory(SimpleInstanceEnabler.class);
     }
 
     protected ObjectEnabler createNodeEnabler(ObjectModel objectModel) {
@@ -152,7 +147,7 @@ public class ObjectsInitializer {
         for (int i = 0; i < newInstances.length; i++) {
             instances.put(i, newInstances[i]);
         }
-        return new ObjectEnabler(objectModel.id, objectModel, instances, getClassFor(objectModel));
+        return new ObjectEnabler(objectModel.id, objectModel, instances, getFactoryFor(objectModel));
     }
 
     protected LwM2mInstanceEnabler[] createInstances(ObjectModel objectModel) {
@@ -162,14 +157,24 @@ public class ObjectsInitializer {
         } else {
             // we create instance from class only for single object
             if (!objectModel.multiple) {
-                Class<? extends LwM2mInstanceEnabler> clazz = getClassFor(objectModel);
+                LwM2mInstanceEnablerFactory instanceFactory = getFactoryFor(objectModel);
+                newInstances = new LwM2mInstanceEnabler[] { instanceFactory.create() };
+            }
+        }
+        return newInstances;
+    }
+
+    protected LwM2mInstanceEnablerFactory getDefaultFactory(final Class<? extends LwM2mInstanceEnabler> clazz) {
+        LwM2mInstanceEnablerFactory factory = new LwM2mInstanceEnablerFactory() {
+            @Override
+            public LwM2mInstanceEnabler create() {
                 try {
-                    newInstances = new LwM2mInstanceEnabler[] { clazz.newInstance() };
+                    return clazz.newInstance();
                 } catch (InstantiationException | IllegalAccessException e) {
                     throw new RuntimeException(e);
                 }
             }
-        }
-        return newInstances;
+        };
+        return factory;
     }
 }
