@@ -33,6 +33,7 @@ import org.eclipse.leshan.core.node.codec.Lwm2mNodeEncoderUtil;
 import org.eclipse.leshan.json.JsonArrayEntry;
 import org.eclipse.leshan.json.JsonRootObject;
 import org.eclipse.leshan.json.LwM2mJson;
+import org.eclipse.leshan.util.Base64;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -137,7 +138,7 @@ public class LwM2mNodeJsonEncoder {
                 jsonResource.setFloatValue((((Date) value.value).getTime() / 1000L));
                 break;
             case OPAQUE:
-                jsonResource.setStringValue(javax.xml.bind.DatatypeConverter.printBase64Binary((byte[]) value.value));
+                jsonResource.setStringValue(Base64.encodeBase64String((byte[]) value.value));
             default:
                 throw new IllegalArgumentException("Invalid value type: " + value.type);
             }

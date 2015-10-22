@@ -17,13 +17,12 @@ package org.eclipse.leshan.standalone.servlet.json;
 
 import java.lang.reflect.Type;
 
-import javax.xml.bind.DatatypeConverter;
-
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.Value.DataType;
+import org.eclipse.leshan.util.Hex;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -48,7 +47,7 @@ public class LwM2mNodeSerializer implements JsonSerializer<LwM2mNode> {
                 Object[] values = new Object[rsc.getValues().length];
                 for (int i = 0; i < rsc.getValues().length; i++) {
                     if (rsc.getValue().type == DataType.OPAQUE) {
-                        values[i] = DatatypeConverter.printHexBinary((byte[]) rsc.getValue().value);
+                        values[i] = Hex.encodeHex((byte[]) rsc.getValue().value);
                     } else {
                         values[i] = rsc.getValues()[i].value;
                     }
@@ -56,8 +55,7 @@ public class LwM2mNodeSerializer implements JsonSerializer<LwM2mNode> {
                 element.add("values", context.serialize(values));
             } else {
                 if (rsc.getValue().type == DataType.OPAQUE) {
-                    element.add("value",
-                            context.serialize(DatatypeConverter.printHexBinary((byte[]) rsc.getValue().value)));
+                    element.add("value", context.serialize(Hex.encodeHex((byte[]) rsc.getValue().value)));
                 } else {
                     element.add("value", context.serialize(rsc.getValue().value));
                 }

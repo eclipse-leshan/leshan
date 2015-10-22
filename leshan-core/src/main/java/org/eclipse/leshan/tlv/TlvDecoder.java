@@ -24,10 +24,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.xml.bind.DatatypeConverter;
-
 import org.eclipse.leshan.tlv.Tlv.TlvType;
 import org.eclipse.leshan.util.Charsets;
+import org.eclipse.leshan.util.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,7 +112,7 @@ public class TlvDecoder {
                         tlvs.add(new Tlv(type, null, payload, identifier));
 
                         if (LOG.isTraceEnabled()) {
-                            LOG.trace("payload value: {}", DatatypeConverter.printHexBinary(payload));
+                            LOG.trace("payload value: {}", Hex.encodeHexString(payload));
                         }
                     } catch (BufferOverflowException e) {
                         throw new TlvException("Invalid 'value' length", e);
@@ -139,10 +138,10 @@ public class TlvDecoder {
 
             return tlvs.toArray(new Tlv[] {});
         } catch (TlvException ex) {
-            String printHexBinary = DatatypeConverter.printHexBinary(input.array());
+            String printHexBinary = Hex.encodeHexString(input.array());
             throw new TlvException("Impossible to parse TLV: \n" + printHexBinary, ex);
         } catch (RuntimeException ex) {
-            String printHexBinary = DatatypeConverter.printHexBinary(input.array());
+            String printHexBinary = Hex.encodeHexString(input.array());
             throw new TlvException("Unexpected TLV parse error: \n" + printHexBinary, ex);
         }
     }

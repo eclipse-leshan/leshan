@@ -34,6 +34,7 @@ import org.eclipse.leshan.json.JsonArrayEntry;
 import org.eclipse.leshan.json.JsonRootObject;
 import org.eclipse.leshan.json.LwM2mJson;
 import org.eclipse.leshan.json.LwM2mJsonException;
+import org.eclipse.leshan.util.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -152,7 +153,7 @@ public class LwM2mNodeJsonDecoder {
             case OPAQUE:
                 // If the Resource data type is opaque the string value
                 // holds the Base64 encoded representation of the Resource
-                return Value.newBinaryValue(javax.xml.bind.DatatypeConverter.parseHexBinary((String) value));
+                return Value.newBinaryValue(Base64.decodeBase64((String) value));
             default:
                 // Default is Strung
                 return Value.newStringValue((String) value);

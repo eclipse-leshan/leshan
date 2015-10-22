@@ -18,8 +18,6 @@ package org.eclipse.leshan.server.registration;
 import java.net.InetSocketAddress;
 import java.security.PublicKey;
 
-import javax.xml.bind.DatatypeConverter;
-
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
@@ -31,6 +29,7 @@ import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.client.ClientUpdate;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.SecurityStore;
+import org.eclipse.leshan.util.Hex;
 import org.eclipse.leshan.util.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,14 +89,18 @@ public class RegistrationHandler {
                 } else if (rpk != null) {
                     // Manage RPK authentication
                     // ----------------------------------------------------
-                    LOG.debug("Registration request received using the secure endpoint {} with rpk {}",
-                            registrationEndpoint, DatatypeConverter.printHexBinary(rpk.getEncoded()));
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Registration request received using the secure endpoint {} with rpk {}",
+                                registrationEndpoint, Hex.encodeHexString(rpk.getEncoded()));
+                    }
 
                     if (rpk == null || !rpk.equals(securityInfo.getRawPublicKey())) {
-                        LOG.warn("Invalid rpk for client {}: expected \n'{}'\n but was \n'{}'",
-                                registerRequest.getEndpointName(),
-                                DatatypeConverter.printHexBinary(securityInfo.getRawPublicKey().getEncoded()),
-                                DatatypeConverter.printHexBinary(rpk.getEncoded()));
+                        if (LOG.isWarnEnabled()) {
+                            LOG.warn("Invalid rpk for client {}: expected \n'{}'\n but was \n'{}'",
+                                    registerRequest.getEndpointName(),
+                                    Hex.encodeHexString(securityInfo.getRawPublicKey().getEncoded()),
+                                    Hex.encodeHexString(rpk.getEncoded()));
+                        }
                         return RegisterResponse.forbidden(null);
                     } else {
                         LOG.debug("authenticated client {} using DTLS RPK", registerRequest.getEndpointName());

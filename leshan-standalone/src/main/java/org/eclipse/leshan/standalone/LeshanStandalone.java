@@ -30,8 +30,6 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
 
-import javax.xml.bind.DatatypeConverter;
-
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -42,6 +40,7 @@ import org.eclipse.leshan.standalone.servlet.ClientServlet;
 import org.eclipse.leshan.standalone.servlet.EventServlet;
 import org.eclipse.leshan.standalone.servlet.ObjectSpecServlet;
 import org.eclipse.leshan.standalone.servlet.SecurityServlet;
+import org.eclipse.leshan.util.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,12 +72,12 @@ public class LeshanStandalone {
         PublicKey publicKey = null;
         try {
             // Get point values
-            byte[] publicX = DatatypeConverter
-                    .parseHexBinary("fcc28728c123b155be410fc1c0651da374fc6ebe7f96606e90d927d188894a73");
-            byte[] publicY = DatatypeConverter
-                    .parseHexBinary("d2ffaa73957d76984633fc1cc54d0b763ca0559a9dff9706e9f4557dacc3f52a");
-            byte[] privateS = DatatypeConverter
-                    .parseHexBinary("1dae121ba406802ef07c193c1ee4df91115aabd79c1ed7f4c0ef7ef6a5449400");
+            byte[] publicX = Hex
+                    .decodeHex("fcc28728c123b155be410fc1c0651da374fc6ebe7f96606e90d927d188894a73".toCharArray());
+            byte[] publicY = Hex
+                    .decodeHex("d2ffaa73957d76984633fc1cc54d0b763ca0559a9dff9706e9f4557dacc3f52a".toCharArray());
+            byte[] privateS = Hex
+                    .decodeHex("1dae121ba406802ef07c193c1ee4df91115aabd79c1ed7f4c0ef7ef6a5449400".toCharArray());
 
             // Get Elliptic Curve Parameter spec for secp256r1
             AlgorithmParameters algoParameters = AlgorithmParameters.getInstance("EC");

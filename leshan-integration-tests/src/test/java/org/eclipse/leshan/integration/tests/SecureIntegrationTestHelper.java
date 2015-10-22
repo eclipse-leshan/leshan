@@ -35,8 +35,6 @@ import java.security.spec.KeySpec;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.DatatypeConverter;
-
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoAPEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
@@ -49,11 +47,12 @@ import org.eclipse.leshan.client.resource.ObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
+import org.eclipse.leshan.util.Hex;
 
 public class SecureIntegrationTestHelper extends IntegrationTestHelper {
 
     public final String pskIdentity = "Client_identity";
-    public final byte[] pskKey = DatatypeConverter.parseHexBinary("73656372657450534b");
+    public final byte[] pskKey = Hex.decodeHex("73656372657450534b".toCharArray());
     public final PublicKey clientPublicKey;
     public final PrivateKey clientPrivateKey;
     public final PublicKey serverPublicKey;
@@ -63,12 +62,12 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         // create client credentials
         try {
             // Get point values
-            byte[] publicX = DatatypeConverter
-                    .parseHexBinary("89c048261979208666f2bfb188be1968fc9021c416ce12828c06f4e314c167b5");
-            byte[] publicY = DatatypeConverter
-                    .parseHexBinary("cbf1eb7587f08e01688d9ada4be859137ca49f79394bad9179326b3090967b68");
-            byte[] privateS = DatatypeConverter
-                    .parseHexBinary("e67b68d2aaeb6550f19d98cade3ad62b39532e02e6b422e1f7ea189dabaea5d2");
+            byte[] publicX = Hex
+                    .decodeHex("89c048261979208666f2bfb188be1968fc9021c416ce12828c06f4e314c167b5".toCharArray());
+            byte[] publicY = Hex
+                    .decodeHex("cbf1eb7587f08e01688d9ada4be859137ca49f79394bad9179326b3090967b68".toCharArray());
+            byte[] privateS = Hex
+                    .decodeHex("e67b68d2aaeb6550f19d98cade3ad62b39532e02e6b422e1f7ea189dabaea5d2".toCharArray());
 
             // Get Elliptic Curve Parameter spec for secp256r1
             AlgorithmParameters algoParameters = AlgorithmParameters.getInstance("EC");
@@ -90,12 +89,12 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         // create server credentials
         try {
             // Get point values
-            byte[] publicX = DatatypeConverter
-                    .parseHexBinary("fcc28728c123b155be410fc1c0651da374fc6ebe7f96606e90d927d188894a73");
-            byte[] publicY = DatatypeConverter
-                    .parseHexBinary("d2ffaa73957d76984633fc1cc54d0b763ca0559a9dff9706e9f4557dacc3f52a");
-            byte[] privateS = DatatypeConverter
-                    .parseHexBinary("1dae121ba406802ef07c193c1ee4df91115aabd79c1ed7f4c0ef7ef6a5449400");
+            byte[] publicX = Hex
+                    .decodeHex("fcc28728c123b155be410fc1c0651da374fc6ebe7f96606e90d927d188894a73".toCharArray());
+            byte[] publicY = Hex
+                    .decodeHex("d2ffaa73957d76984633fc1cc54d0b763ca0559a9dff9706e9f4557dacc3f52a".toCharArray());
+            byte[] privateS = Hex
+                    .decodeHex("1dae121ba406802ef07c193c1ee4df91115aabd79c1ed7f4c0ef7ef6a5449400".toCharArray());
 
             // Get Elliptic Curve Parameter spec for secp256r1
             AlgorithmParameters algoParameters = AlgorithmParameters.getInstance("EC");

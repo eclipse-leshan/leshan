@@ -11,15 +11,23 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
  * 
  * Contributors:
- *     Sierra Wireless - initial API and implementation
+ *     Sierra Wireless                               - initial API and implementation
+ *     Kai Hudalla (Bosch Software Innovations GmbH) - remove dependency on
+ *                                                     javax.xml.bind.DatatypeConverter
+ *                                                     which is not available on Android
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec;
 
 import java.util.Date;
 
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.Value;
 import org.eclipse.leshan.core.node.Value.DataType;
+import org.eclipse.leshan.util.Hex;
 import org.eclipse.leshan.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,9 +93,10 @@ public class Lwm2mNodeEncoderUtil {
                 LOG.debug("Trying to convert string value {} to date", value.value);
                 // let's assume we received an ISO 8601 format date
                 try {
-                    return Value.newDateValue(javax.xml.bind.DatatypeConverter.parseDateTime((String) value.value)
-                            .getTime());
-                } catch (IllegalArgumentException e) {
+                    DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
+                    XMLGregorianCalendar cal = datatypeFactory.newXMLGregorianCalendar((String) value.value);
+                    return Value.newDateValue(cal.toGregorianCalendar().getTime());
+                } catch (DatatypeConfigurationException e) {
                     LOG.debug("Unable to convert string to date", e);
                 }
             default:
@@ -110,7 +119,8 @@ public class Lwm2mNodeEncoderUtil {
             if (value.type == DataType.STRING) {
                 // let's assume we received an hexadecimal string
                 LOG.debug("Trying to convert hexadecimal string {} to byte array", value.value);
-                return Value.newBinaryValue(javax.xml.bind.DatatypeConverter.parseHexBinary((String) value.value));
+                // TODO: check if we shouldn't instead assume that the string contains Base64 encoded data
+                return Value.newBinaryValue(Hex.decodeHex(((String) value.value).toCharArray()));
             }
             break;
         default:

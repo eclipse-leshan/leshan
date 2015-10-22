@@ -15,12 +15,14 @@
  *******************************************************************************/
 package org.eclipse.leshan.tlv;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-import javax.xml.bind.DatatypeConverter;
-
-import org.junit.Assert;
+import org.eclipse.leshan.util.Hex;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,27 +38,29 @@ public class TlvDecoderTest {
     public void decode_device_object() throws TlvException {
         // // the /3// from liwblwm2m
         String dataStr = "C800144F70656E204D6F62696C6520416C6C69616E6365C801164C69676874776569676874204D324D20436C69656E74C80209333435303030313233C303312E30860641000141010588070842000ED842011388870841007D42010384C10964C10A0F830B410000C40D5182428FC60E2B30323A3030C10F55";
-        byte[] bytes = DatatypeConverter.parseHexBinary(dataStr);
+        byte[] bytes = Hex.decodeHex(dataStr.toCharArray());
         ByteBuffer b = ByteBuffer.wrap(bytes);
         Tlv[] tlv = TlvDecoder.decode(b);
         LOG.debug(Arrays.toString(tlv));
 
         ByteBuffer buff = TlvEncoder.encode(tlv);
-        Assert.assertTrue(Arrays.equals(bytes, buff.array()));
+        assertTrue(Arrays.equals(bytes, buff.array()));
     }
 
     @Test
     public void decode_broken_tlv() throws TlvException {
         String dataStr = "0011223344556677889900";
-        byte[] bytes = DatatypeConverter.parseHexBinary(dataStr);
+        byte[] bytes = Hex.decodeHex(dataStr.toCharArray());
         ByteBuffer b = ByteBuffer.wrap(bytes);
 
         try {
-            Tlv[] tlv = TlvDecoder.decode(b);
-            Assert.fail();
+            TlvDecoder.decode(b);
+            fail();
         } catch (TlvException ex) {
-
-            Assert.assertEquals("Impossible to parse TLV: \n0011223344556677889900", ex.getMessage());
+            // this is very weak assertion since the format of the exception's message could
+            // be changed any time
+            // TODO: replace with more robust assertion or simply check for TlvException being thrown
+            assertEquals("Impossible to parse TLV: \n0011223344556677889900", ex.getMessage());
         }
     }
 }
