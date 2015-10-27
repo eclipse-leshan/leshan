@@ -28,6 +28,15 @@ import org.eclipse.leshan.util.Validate;
 
 public class ObjectsInitializer {
 
+    protected LwM2mInstanceEnablerFactory defaultFactory = new LwM2mInstanceEnablerFactory() {
+        @Override
+        public LwM2mInstanceEnabler create(ObjectModel model) {
+            SimpleInstanceEnabler simpleInstanceEnabler = new SimpleInstanceEnabler();
+            simpleInstanceEnabler.setObjectModel(model);
+            return simpleInstanceEnabler;
+        }
+    };
+
     protected Map<Integer, LwM2mInstanceEnablerFactory> factories = new HashMap<Integer, LwM2mInstanceEnablerFactory>();
     protected Map<Integer, LwM2mInstanceEnabler[]> instances = new HashMap<Integer, LwM2mInstanceEnabler[]>();
     protected LwM2mModel model;
@@ -66,7 +75,7 @@ public class ObjectsInitializer {
         } catch (NoSuchMethodException e) {
             throw new IllegalStateException("Class must have a default constructor");
         }
-        setFactoryForObject(objectId, getDefaultFactory(clazz));
+        setFactoryForObject(objectId, getClassFactory(clazz));
     }
 
     public void setInstancesForObject(int objectId, LwM2mInstanceEnabler... instances) {
@@ -131,14 +140,14 @@ public class ObjectsInitializer {
                 try {
                     Class<? extends LwM2mInstanceEnabler> clazz = instance.getClass();
                     clazz.getConstructor();
-                    return getDefaultFactory(clazz);
+                    return getClassFactory(clazz);
                 } catch (NoSuchMethodException e) {
                     // no default constructor.
                 }
             }
         }
         // default class :
-        return getDefaultFactory(SimpleInstanceEnabler.class);
+        return defaultFactory;
     }
 
     protected ObjectEnabler createNodeEnabler(ObjectModel objectModel) {
@@ -158,16 +167,16 @@ public class ObjectsInitializer {
             // we create instance from class only for single object
             if (!objectModel.multiple) {
                 LwM2mInstanceEnablerFactory instanceFactory = getFactoryFor(objectModel);
-                newInstances = new LwM2mInstanceEnabler[] { instanceFactory.create() };
+                newInstances = new LwM2mInstanceEnabler[] { instanceFactory.create(objectModel) };
             }
         }
         return newInstances;
     }
 
-    protected LwM2mInstanceEnablerFactory getDefaultFactory(final Class<? extends LwM2mInstanceEnabler> clazz) {
+    protected LwM2mInstanceEnablerFactory getClassFactory(final Class<? extends LwM2mInstanceEnabler> clazz) {
         LwM2mInstanceEnablerFactory factory = new LwM2mInstanceEnablerFactory() {
             @Override
-            public LwM2mInstanceEnabler create() {
+            public LwM2mInstanceEnabler create(ObjectModel model) {
                 try {
                     return clazz.newInstance();
                 } catch (InstantiationException | IllegalAccessException e) {

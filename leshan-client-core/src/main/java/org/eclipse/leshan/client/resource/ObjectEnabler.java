@@ -64,8 +64,6 @@ public class ObjectEnabler extends BaseObjectEnabler {
     }
 
     public void addInstance(int instanceId, LwM2mInstanceEnabler newInstance) {
-        newInstance.setObjectModel(getObjectModel());
-
         instances.put(instanceId, newInstance);
         listenInstance(newInstance, instanceId);
     }
@@ -90,8 +88,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
             }
         }
 
-        LwM2mInstanceEnabler newInstance = instanceFactory.create();
-        newInstance.setObjectModel(getObjectModel());
+        LwM2mInstanceEnabler newInstance = instanceFactory.create(getObjectModel());
 
         for (LwM2mResource resource : request.getResources()) {
             newInstance.write(resource.getId(), resource);

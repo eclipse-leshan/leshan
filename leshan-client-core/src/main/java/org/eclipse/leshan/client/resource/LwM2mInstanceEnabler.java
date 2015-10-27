@@ -15,15 +15,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
 
-import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 
 public interface LwM2mInstanceEnabler {
-
-    void setObjectModel(ObjectModel objectModel);
 
     void addResourceChangedListener(ResourceChangedListener listener);
 
