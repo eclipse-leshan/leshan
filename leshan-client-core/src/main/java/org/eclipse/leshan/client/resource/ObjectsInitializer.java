@@ -60,7 +60,7 @@ public class ObjectsInitializer {
 
     public void setFactoryForObject(int objectId, LwM2mInstanceEnablerFactory factory) {
         if (model.getObjectModel(objectId) == null) {
-            throw new IllegalStateException("Cannot set Instance Factory for Object " + objectId
+            throw new IllegalArgumentException("Cannot set Instance Factory for Object " + objectId
                     + " because no model is defined for this id.");
         }
         Validate.notNull(factory);
@@ -73,7 +73,7 @@ public class ObjectsInitializer {
         try {
             clazz.getConstructor();
         } catch (NoSuchMethodException e) {
-            throw new IllegalStateException("Class must have a default constructor");
+            throw new IllegalArgumentException("Class must have a default constructor");
         }
         setFactoryForObject(objectId, getClassFactory(clazz));
     }
@@ -81,14 +81,14 @@ public class ObjectsInitializer {
     public void setInstancesForObject(int objectId, LwM2mInstanceEnabler... instances) {
         ObjectModel objectModel = model.getObjectModel(objectId);
         if (objectModel == null) {
-            throw new IllegalStateException("Cannot set Instances Class for Object " + objectId
+            throw new IllegalArgumentException("Cannot set Instances Class for Object " + objectId
                     + " because no model is defined for this id.");
         }
         Validate.notNull(instances);
         Validate.notEmpty(instances);
 
         if (instances.length > 1 && !objectModel.multiple)
-            throw new IllegalStateException("Cannot set more than one instance for the single Object " + objectId);
+            throw new IllegalArgumentException("Cannot set more than one instance for the single Object " + objectId);
 
         this.instances.put(objectId, instances);
     }
@@ -110,7 +110,7 @@ public class ObjectsInitializer {
     public ObjectEnabler create(int objectId) {
         ObjectModel objectModel = model.getObjectModel(objectId);
         if (objectModel == null) {
-            throw new IllegalStateException("Cannot create object for id " + objectId
+            throw new IllegalArgumentException("Cannot create object for id " + objectId
                     + " because no model is defined for this id.");
         }
         return createNodeEnabler(objectModel);
