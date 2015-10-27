@@ -114,7 +114,7 @@ public class BootstrapResource extends CoapResource {
                 deleteAll.setDestination(exchange.getSourceAddress());
                 deleteAll.setDestinationPort(exchange.getSourcePort());
 
-                deleteAll.send(e).addMessageObserver(new MessageObserver() {
+                deleteAll.addMessageObserver( new MessageObserver() {
 
                     @Override
                     public void onTimeout() {
@@ -148,6 +148,7 @@ public class BootstrapResource extends CoapResource {
                         LOG.debug("Bootstrap delete {} acknowledgement", endpoint);
                     }
                 });
+                deleteAll.send(e);
             }
         });
     }
@@ -171,7 +172,7 @@ public class BootstrapResource extends CoapResource {
             postSecurity.setDestinationPort(targetPort);
             postSecurity.setPayload(encoded.array());
 
-            postSecurity.send(e).addMessageObserver(new MessageObserver() {
+            postSecurity.addMessageObserver(new MessageObserver() {
 
                 @Override
                 public void onTimeout() {
@@ -205,6 +206,7 @@ public class BootstrapResource extends CoapResource {
                     LOG.debug("Bootstrap security {} acknowledgement", endpoint);
                 }
             });
+            postSecurity.send(e);
 
         } else {
             // we are done, send the servers
@@ -231,7 +233,7 @@ public class BootstrapResource extends CoapResource {
             postServer.setDestination(targetAddress);
             postServer.setDestinationPort(targetPort);
             postServer.setPayload(encoded.array());
-            postServer.send(e).addMessageObserver(new MessageObserver() {
+            postServer.addMessageObserver(new MessageObserver() {
                 @Override
                 public void onTimeout() {
                     LOG.debug("Bootstrap servers {} timeout!", endpoint);
@@ -264,6 +266,7 @@ public class BootstrapResource extends CoapResource {
                     LOG.debug("Bootstrap servers {} acknowledgement", endpoint);
                 }
             });
+            postServer.send(e);
 
         } else {
             // done
