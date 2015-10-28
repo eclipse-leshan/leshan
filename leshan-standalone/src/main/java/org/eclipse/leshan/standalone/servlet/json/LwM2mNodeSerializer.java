@@ -41,13 +41,15 @@ public class LwM2mNodeSerializer implements JsonSerializer<LwM2mNode> {
             element.add("instances", context.serialize(((LwM2mObject) src).getInstances().values()));
         } else if (typeOfSrc == LwM2mObjectInstance.class) {
             element.add("resources", context.serialize(((LwM2mObjectInstance) src).getResources().values()));
-        } else if (typeOfSrc == LwM2mResource.class) {
+        } else if (LwM2mResource.class.isAssignableFrom((Class<?>) typeOfSrc)) {
             LwM2mResource rsc = (LwM2mResource) src;
             if (rsc.isMultiInstances()) {
                 Object[] values = rsc.getValues().values().toArray();
-                if (rsc.getType() == org.eclipse.leshan.core.model.ResourceModel.Type.OPAQUE) {
-                    for (int i = 0; i < values.length; i++) {
+                for (int i = 0; i < values.length; i++) {
+                    if (rsc.getType() == org.eclipse.leshan.core.model.ResourceModel.Type.OPAQUE) {
                         values[i] = DatatypeConverter.printHexBinary((byte[]) values[i]);
+                    } else {
+                        values[i] = values[i];
                     }
                 }
                 element.add("values", context.serialize(values));
