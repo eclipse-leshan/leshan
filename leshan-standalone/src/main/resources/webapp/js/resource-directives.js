@@ -78,7 +78,7 @@ angular.module('resourceDirectives', [])
                             // multiple instances
                             var tab = new Array();
                             for (var i in data.content.values) {
-                                tab.push(data.content.values[i])
+                                tab.push(i+"="+data.content.values[i])
                             }
                             scope.resource.value = tab.join(", ");
                         }

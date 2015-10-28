@@ -47,21 +47,21 @@ angular.module('instanceDirectives', [])
                     
                     // manage read data
                     if (data.status == "CONTENT" && data.content) {
-                    	for(var i in data.content.resources) {
+                        for(var i in data.content.resources) {
                             var tlvresource = data.content.resources[i];
                             resource = lwResources.addResource(scope.parent, scope.instance, tlvresource.id, null)
                             if("value" in tlvresource) {
-	                    		// single value
-	                    		resource.value = tlvresource.value
-	                    	}
-	                    	else if("values" in tlvresource) {
-	                    		// multiple instances
-	                    		var tab = new Array();
-	                            for (var j in tlvresource.values) {
-	                                tab.push(tlvresource.values[j])
-	                            }
-	                            resource.value = tab.join(", ");
-	                    	}
+                                // single value
+                                resource.value = tlvresource.value
+                            }
+                            else if("values" in tlvresource) {
+                                // multiple instances
+                                var tab = new Array();
+                                for (var j in tlvresource.values) {
+                                    tab.push(j+"="+tlvresource.values[j])
+                                }
+                                resource.value = tab.join(", ");
+                            }
                             resource.valuesupposed = false;
                             resource.tooltip = formattedDate;
                         }
