@@ -16,6 +16,7 @@
 package org.eclipse.leshan.standalone.servlet.json;
 
 import java.lang.reflect.Type;
+import java.util.Map.Entry;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -44,15 +45,16 @@ public class LwM2mNodeSerializer implements JsonSerializer<LwM2mNode> {
         } else if (LwM2mResource.class.isAssignableFrom((Class<?>) typeOfSrc)) {
             LwM2mResource rsc = (LwM2mResource) src;
             if (rsc.isMultiInstances()) {
-                Object[] values = rsc.getValues().values().toArray();
-                for (int i = 0; i < values.length; i++) {
+                JsonObject values = new JsonObject();
+                for (Entry<Integer, ?> entry : rsc.getValues().entrySet()) {
                     if (rsc.getType() == org.eclipse.leshan.core.model.ResourceModel.Type.OPAQUE) {
-                        values[i] = DatatypeConverter.printHexBinary((byte[]) values[i]);
+                        values.add(entry.getKey().toString(),
+                                context.serialize(DatatypeConverter.printHexBinary((byte[]) entry.getValue())));
                     } else {
-                        values[i] = values[i];
+                        values.add(entry.getKey().toString(), context.serialize(entry.getValue()));
                     }
                 }
-                element.add("values", context.serialize(values));
+                element.add("values", values);
             } else {
                 if (rsc.getType() == org.eclipse.leshan.core.model.ResourceModel.Type.OPAQUE) {
                     element.add("value", context.serialize(DatatypeConverter.printHexBinary((byte[]) rsc.getValue())));
