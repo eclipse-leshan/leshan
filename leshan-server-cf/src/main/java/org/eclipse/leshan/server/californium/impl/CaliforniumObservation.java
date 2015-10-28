@@ -62,10 +62,6 @@ public final class CaliforniumObservation extends MessageObserverAdapter impleme
 
     @Override
     public void onResponse(Response coapResponse) {
-        // the first answer should not be handle as a NOTIFY.
-        if (coapResponse.getMID() == coapRequest.getMID())
-            return;
-
         // TODO remove the CHANGED test case, the spec say now a successful notify should be a 2.05 content
         if (coapResponse.getCode() == CoAP.ResponseCode.CHANGED || coapResponse.getCode() == CoAP.ResponseCode.CONTENT) {
             try {
