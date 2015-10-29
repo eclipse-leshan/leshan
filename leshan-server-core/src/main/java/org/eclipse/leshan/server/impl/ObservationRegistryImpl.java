@@ -88,7 +88,7 @@ public class ObservationRegistryImpl implements ObservationRegistry, Observation
                     obs.cancel();
                 }
                 clientObservations.clear();
-                observationsByClientAndResource.remove(client.getEndpoint());
+                observationsByClientAndResource.remove(client.getRegistrationId());
             }
         }
         return count;
@@ -104,14 +104,8 @@ public class ObservationRegistryImpl implements ObservationRegistry, Observation
                 LwM2mPath lwM2mResourcePath = new LwM2mPath(resourcepath);
                 Observation observation = clientObservations.get(lwM2mResourcePath);
                 if (observation != null) {
-                    if (LOG.isTraceEnabled()) {
-                        LOG.trace("Canceling {} observation of client {}", resourcepath, client.getEndpoint());
-                    }
+                    // observationsByClientAndResource will be cleaned in ObservationRegistryImpl.cancelled()
                     observation.cancel();
-                    clientObservations.remove(lwM2mResourcePath);
-                    if (clientObservations.isEmpty()) {
-                        observationsByClientAndResource.remove(client.getEndpoint());
-                    }
                 }
             }
         }
@@ -138,8 +132,25 @@ public class ObservationRegistryImpl implements ObservationRegistry, Observation
 
     @Override
     public void cancelled(Observation observation) {
+        // fire cancelled event
         for (ObservationRegistryListener listener : listeners) {
             listener.cancelled(observation);
+        }
+
+        synchronized (this) {
+            // clear the observationsByClientAndResource map
+            Map<LwM2mPath, Observation> observations = observationsByClientAndResource.get(observation
+                    .getRegistrationId());
+            if (observations != null) {
+                LwM2mPath path = observation.getPath();
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("Canceling {} observation of registration {}", path, observation.getRegistrationId());
+                }
+                observations.remove(path);
+                if (observations.isEmpty()) {
+                    observationsByClientAndResource.remove(observation.getRegistrationId());
+                }
+            }
         }
     }
 
