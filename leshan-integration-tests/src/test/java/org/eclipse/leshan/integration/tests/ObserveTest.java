@@ -26,14 +26,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mObject;
+import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.Value;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.ObserveRequest;
+import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
+import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.server.observation.ObservationRegistryListener;
 import org.junit.After;
 import org.junit.Before;
@@ -86,6 +90,73 @@ public class ObserveTest {
         assertEquals(newValue, listener.getContent());
     }
 
+    @Test
+    public void can_observe_instance() throws InterruptedException {
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        TestObservationListener listener = new TestObservationListener();
+        helper.server.getObservationRegistry().addListener(listener);
+
+        // observe device timezone
+        ObserveResponse observeResponse = helper.server.send(helper.getClient(), new ObserveRequest(3, 0));
+        assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
+
+        // an observation response should have been sent
+        Observation observation = observeResponse.getObservation();
+        assertEquals("/3/0", observation.getPath().toString());
+        assertEquals(helper.getClient().getRegistrationId(), observation.getRegistrationId());
+
+        // write device timezone
+        LwM2mResource newValue = new LwM2mResource(15, Value.newStringValue("Europe/Paris"));
+        LwM2mResponse writeResponse = helper.server.send(helper.getClient(), new WriteRequest(3, 0, 15, newValue, null,
+                true));
+
+        // verify result
+        listener.waitForNotification(2000);
+        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
+        assertTrue(listener.receievedNotify().get());
+        assertTrue(listener.getContent() instanceof LwM2mObjectInstance);
+
+        // try to read the object instance for comparing
+        ReadResponse readResp = helper.server.send(helper.getClient(), new ReadRequest(3,0));
+
+        assertEquals(readResp.getContent(), listener.getContent());
+    }
+
+    @Test
+    public void can_observe_object() throws InterruptedException {
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        TestObservationListener listener = new TestObservationListener();
+        helper.server.getObservationRegistry().addListener(listener);
+
+        // observe device timezone
+        ObserveResponse observeResponse = helper.server.send(helper.getClient(), new ObserveRequest(3));
+        assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
+
+        // an observation response should have been sent
+        Observation observation = observeResponse.getObservation();
+        assertEquals("/3", observation.getPath().toString());
+        assertEquals(helper.getClient().getRegistrationId(), observation.getRegistrationId());
+
+        // write device timezone
+        LwM2mResource newValue = new LwM2mResource(15, Value.newStringValue("Europe/Paris"));
+        LwM2mResponse writeResponse = helper.server.send(helper.getClient(), new WriteRequest(3, 0, 15, newValue, null,
+                true));
+
+        // verify result
+        listener.waitForNotification(2000);
+        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
+        assertTrue(listener.receievedNotify().get());
+        assertTrue(listener.getContent() instanceof LwM2mObject);
+
+        // try to read the object for comparing
+        ReadResponse readResp = helper.server.send(helper.getClient(), new ReadRequest(3));
+
+        assertEquals(readResp.getContent(), listener.getContent());
+    }
     private final class TestObservationListener implements ObservationRegistryListener {
 
         private final CountDownLatch latch = new CountDownLatch(1);

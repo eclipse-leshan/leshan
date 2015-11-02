@@ -182,6 +182,8 @@ public class ObjectEnabler extends BaseObjectEnabler {
         instance.addResourceChangedListener(new ResourceChangedListener() {
             @Override
             public void resourceChanged(int resourceId) {
+                getNotifySender().sendNotify(getId() + "");
+                getNotifySender().sendNotify(getId() + "/" + instanceId);
                 getNotifySender().sendNotify(getId() + "/" + instanceId + "/" + resourceId);
             }
         });
