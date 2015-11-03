@@ -5,6 +5,22 @@
 		<div class="col-md-6">
 			<div class="btn-toolbar" role="toolbar">
 				<div class="btn-group">
+					<button type="button" ng-click="instance.observe.status = null; startObserve()"
+							tooltip-html-unsafe={{instance.observe.tooltip}} tooltip-placement="right" tooltip-animation="false" tooltip-append-to-body="true"
+							ng-class="{
+								'btn': true,
+								'btn-xs': true,
+								'btn-default': instance.observe.status == null,
+								'btn-danger': instance.observe.status != null && instance.observe.status != 'CONTENT',
+								'btn-success': instance.observe.status == 'CONTENT' }">Observe <span class="glyphicon glyphicon-play"></span>
+					</button>
+					<button type="button" ng-click="stopObserve()"
+							ng-class="{
+								'btn': true,
+								'btn-xs': true,
+								'btn-default': instance.observe.stop == null,
+								'btn-success': instance.observe.stop == 'success' }"><span class="glyphicon glyphicon-stop"></span>
+					</button>
 					<button type="button" ng-click="instance.read.status = null; read()"
 							tooltip-html-unsafe={{instance.read.tooltip}} tooltip-placement="right" tooltip-animation="false" tooltip-append-to-body="true"
 							ng-class="{
@@ -12,7 +28,8 @@
 								'btn-xs': true,
 								'btn-default': instance.read.status == null,
 								'btn-danger': instance.read.status != null && instance.read.status != 'CONTENT',
-								'btn-success': instance.read.status == 'CONTENT' }">Read</button>
+								'btn-success': instance.read.status == 'CONTENT' }">Read
+					</button>
 				</div>
 				<div class="btn-group">
 					<button type="button" ng-click="instance.write.status = null; write()"
@@ -22,7 +39,8 @@
 								'btn-xs': true,
 								'btn-default': instance.write.status == null,
 								'btn-danger': instance.write.status != null && instance.write.status != 'CHANGED',
-								'btn-success': instance.write.status == 'CHANGED' }">Write</button>
+								'btn-success': instance.write.status == 'CHANGED' }">Write
+					</button>
 				</div>
 				<div class="btn-group">
 					<button type="button" ng-click="instance.del.status = null; del()"
@@ -32,7 +50,8 @@
 								'btn-xs': true,
 								'btn-default': instance.del.status == null,
 								'btn-danger': instance.del.status != null && instance.del.status != 'DELETED',
-								'btn-success': instance.del.status == 'DELETED' }">Delete</button>
+								'btn-success': instance.del.status == 'DELETED' }">Delete
+					</button>
 				</div>
 			</div>
 		</div>
