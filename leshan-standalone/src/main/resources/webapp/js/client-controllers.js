@@ -39,7 +39,7 @@ lwClientControllers.controller('ClientListCtrl', [
         $scope.showClient = function(client) {
             $location.path('/clients/' + client.endpoint);
         };
-        
+
         // get the list of connected clients
         $http.get('api/clients'). error(function(data, status, headers, config){
             $scope.error = "Unable get client list: " + status + " " + data  
@@ -93,7 +93,7 @@ lwClientControllers.controller('ClientDetailCtrl', [
         // update navbar
         angular.element("#navbar").children().removeClass('active');
         angular.element("#client-navlink").addClass('active');
-        
+
         // free resource when controller is destroyed
         $scope.$on('$destroy', function(){
             if ($scope.eventsource){
@@ -161,7 +161,30 @@ lwClientControllers.controller('ClientDetailCtrl', [
 
                         var formattedDate = $filter('date')(new Date(), 'HH:mm:ss.sss');
                         resource.tooltip = formattedDate;
-                    }
+                    } else {
+                        // instance?
+                        var instance = lwResources.findInstance($scope.objects, content.res);
+                        if (instance) {
+                            instance.observed = true;
+                            for(var i in content.val.resources) {
+                                var tlvresource = content.val.resources[i];
+                                resource = lwResources.addResource(instance.parent, instance, tlvresource.id, null)
+                                if("value" in tlvresource) {
+                                    // single value
+                                    resource.value = tlvresource.value
+                                } else if("values" in tlvresource) {
+                                    // multiple instances
+                                    var tab = new Array();
+                                    for (var j in tlvresource.values) {
+                                        tab.push(tlvresource.values[j])
+                                    }
+                                    resource.value = tab.join(", ");
+                                }
+                                resource.valuesupposed = false;
+                                resource.tooltip = formattedDate;
+                            }
+                        }
+                    } // TODO object level
                 });
             }
             $scope.eventsource.addEventListener('NOTIFICATION', notificationCallback, false);

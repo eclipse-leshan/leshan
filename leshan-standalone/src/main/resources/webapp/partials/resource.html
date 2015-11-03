@@ -8,7 +8,7 @@
 				<div ng-show="readable()" class="btn-group">
 					<button type="button" ng-click="resource.observe.status = null; startObserve()"
 							tooltip-html-unsafe={{resource.observe.tooltip}} tooltip-placement="right" tooltip-animation="false" tooltip-append-to-body="true"
-				        	ng-class="{
+							ng-class="{
 								'btn': true,
 								'btn-xs': true,
 								'btn-default': resource.observe.status == null,
@@ -19,12 +19,12 @@
 								'btn': true,
 								'btn-xs': true,
 								'btn-default': resource.observe.stop == null,
-								'btn-success': resource.observe.stop == 'success' }"><span class="glyphicon glyphicon-stop"></button>
- 					</div>
+								'btn-success': resource.observe.stop == 'success' }"><span class="glyphicon glyphicon-stop"></span></button>
+ 				</div>
 				<div ng-show="readable()" class="btn-group">
 					<button type="button" ng-click="resource.read.status = null; read()"
 							tooltip-html-unsafe={{resource.read.tooltip}} tooltip-placement="right" tooltip-animation="false" tooltip-append-to-body="true"
-					        ng-class="{
+							ng-class="{
 								'btn': true,
 								'btn-xs': true,
 								'btn-default': resource.read.status == null,
@@ -57,7 +57,7 @@
 								'btn-xs': true,
 								'btn-default': resource.exec.status == null,
 								'btn-danger':  resource.exec.status != null && resource.exec.status != 'CHANGED',
-								'btn-success': resource.exec.status == 'CHANGED' }"><span class="glyphicon glyphicon-cog"></button>
+								'btn-success': resource.exec.status == 'CHANGED' }"><span class="glyphicon glyphicon-cog"></span></button>
 				</div>
 			</div>
 		</div>
