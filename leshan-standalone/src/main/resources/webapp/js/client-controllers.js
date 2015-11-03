@@ -165,6 +165,7 @@ lwClientControllers.controller('ClientDetailCtrl', [
                         // instance?
                         var instance = lwResources.findInstance($scope.objects, content.res);
                         if (instance) {
+                            instance.observed = true;
                             for(var i in content.val.resources) {
                                 var tlvresource = content.val.resources[i];
                                 resource = lwResources.addResource(instance.parent, instance, tlvresource.id, null)
