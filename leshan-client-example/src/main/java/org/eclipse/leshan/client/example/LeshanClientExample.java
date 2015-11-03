@@ -139,7 +139,7 @@ public class LeshanClientExample {
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    fireResourceChange(13);
+                    fireResourcesChange(13);
                 }
             }, 5000, 5000);
         }
@@ -170,8 +170,7 @@ public class LeshanClientExample {
             case 15:
                 return ReadResponse.success(new LwM2mResource(resourceid, Value.newStringValue(getTimezone())));
             case 16:
-                return ReadResponse
-                        .success(new LwM2mResource(resourceid, Value.newStringValue(getSupportedBinding())));
+                return ReadResponse.success(new LwM2mResource(resourceid, Value.newStringValue(getSupportedBinding())));
             default:
                 return super.read(resourceid);
             }
@@ -193,11 +192,11 @@ public class LeshanClientExample {
                 return WriteResponse.notFound();
             case 14:
                 setUtcOffset((String) value.getValue().value);
-                fireResourceChange(resourceid);
+                fireResourcesChange(resourceid);
                 return WriteResponse.success();
             case 15:
                 setTimezone((String) value.getValue().value);
-                fireResourceChange(resourceid);
+                fireResourcesChange(resourceid);
                 return WriteResponse.success();
             default:
                 return super.write(resourceid, value);
@@ -311,15 +310,13 @@ public class LeshanClientExample {
         private void moveLatitude(float delta) {
             latitude = latitude + delta;
             timestamp = new Date();
-            fireResourceChange(0);
-            fireResourceChange(5);
+            fireResourcesChange(0, 5);
         }
 
         private void moveLongitude(float delta) {
             longitude = longitude + delta;
             timestamp = new Date();
-            fireResourceChange(1);
-            fireResourceChange(5);
+            fireResourcesChange(1, 5);
         }
 
         public String getLatitude() {

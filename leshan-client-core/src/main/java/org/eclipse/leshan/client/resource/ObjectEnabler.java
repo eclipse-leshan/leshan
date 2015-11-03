@@ -181,10 +181,12 @@ public class ObjectEnabler extends BaseObjectEnabler {
     private void listenInstance(LwM2mInstanceEnabler instance, final int instanceId) {
         instance.addResourceChangedListener(new ResourceChangedListener() {
             @Override
-            public void resourceChanged(int resourceId) {
+            public void resourcesChanged(int... resourceIds) {
                 getNotifySender().sendNotify(getId() + "");
                 getNotifySender().sendNotify(getId() + "/" + instanceId);
-                getNotifySender().sendNotify(getId() + "/" + instanceId + "/" + resourceId);
+                for (int resourceId : resourceIds) {
+                    getNotifySender().sendNotify(getId() + "/" + instanceId + "/" + resourceId);
+                }
             }
         });
     }

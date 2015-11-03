@@ -16,5 +16,5 @@
 package org.eclipse.leshan.client.resource;
 
 public interface ResourceChangedListener {
-    void resourceChanged(int resourceId);
+    void resourcesChanged(int... resourceIds);
 }

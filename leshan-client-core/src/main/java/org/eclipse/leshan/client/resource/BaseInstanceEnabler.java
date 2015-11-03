@@ -37,9 +37,9 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
         listeners.remove(listener);
     }
 
-    public void fireResourceChange(int resourceId) {
+    public void fireResourcesChange(int... resourceIds) {
         for (ResourceChangedListener listener : listeners) {
-            listener.resourceChanged(resourceId);
+            listener.resourcesChanged(resourceIds);
         }
     }
 
