@@ -32,7 +32,7 @@ angular.module('instanceDirectives', [])
             scope.instance.read  =  {tooltip : "Read <br/>"   + scope.instance.path};
             scope.instance.write =  {tooltip : "Write <br/>"  + scope.instance.path};
             scope.instance.del  =  {tooltip : "Delete <br/>"   + scope.instance.path};
-            scope.instance.observe = {tooltip : "Observe whole object instance <br/>" + scope.instance.path};
+            scope.instance.observe = {tooltip : "Observe <br/>" + scope.instance.path};
 
             scope.read = function() {
                 var uri = "api/clients/" + $routeParams.clientId + scope.instance.path;
