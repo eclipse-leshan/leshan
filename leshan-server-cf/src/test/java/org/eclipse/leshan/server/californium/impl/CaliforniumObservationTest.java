@@ -20,6 +20,7 @@ import static org.junit.Assert.assertFalse;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.Request;
@@ -32,6 +33,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.ObservationListener;
+import org.eclipse.leshan.server.impl.ObservationRegistryImpl;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -98,6 +100,58 @@ public class CaliforniumObservationTest {
                 support.client.getRegistrationId(), target, model);
         observation.cancel();
         Assert.assertTrue(coapRequest.isCanceled());
+    }
+
+    @Test
+    public void cancelled_Observation_are_removed_from_registry() {
+        // create an observation
+        givenAnObserveRequest(target);
+        CaliforniumObservation observation = new CaliforniumObservation(coapRequest,
+                support.client.getRegistrationId(), target, model);
+        coapRequest.addMessageObserver(observation);
+
+        // add it to registry
+        ObservationRegistryImpl registry = new ObservationRegistryImpl();
+        registry.addObservation(observation);
+
+        // check its presence
+        Set<Observation> observations = registry.getObservations(support.client);
+        Assert.assertFalse(observations.isEmpty());
+        Assert.assertFalse(coapRequest.isCanceled());
+
+        // cancel it
+        observation.cancel();
+        Assert.assertTrue(coapRequest.isCanceled());
+
+        // check its absence
+        observations = registry.getObservations(support.client);
+        Assert.assertTrue(observations.isEmpty());
+    }
+
+    @Test
+    public void cancelled_from_registry_observation_are_removed_from_registry() {
+        // create an observation
+        givenAnObserveRequest(target);
+        CaliforniumObservation observation = new CaliforniumObservation(coapRequest,
+                support.client.getRegistrationId(), target, model);
+        coapRequest.addMessageObserver(observation);
+
+        // add it to registry
+        ObservationRegistryImpl registry = new ObservationRegistryImpl();
+        registry.addObservation(observation);
+
+        // check its presence
+        Set<Observation> observations = registry.getObservations(support.client);
+        Assert.assertFalse(observations.isEmpty());
+        Assert.assertFalse(coapRequest.isCanceled());
+
+        // cancel it
+        registry.cancelObservations(support.client);
+        Assert.assertTrue(coapRequest.isCanceled());
+
+        // check its absence
+        observations = registry.getObservations(support.client);
+        Assert.assertTrue(observations.isEmpty());
     }
 
     private void givenAnObserveRequest(LwM2mPath target) {
