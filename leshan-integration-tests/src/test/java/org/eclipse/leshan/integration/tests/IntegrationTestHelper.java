@@ -68,9 +68,9 @@ public class IntegrationTestHelper {
     LwM2mClient client;
     Client last_registration;
 
-    private CountDownLatch registerLatch;
-    private CountDownLatch deregisterLatch;
-    private CountDownLatch updateLatch;
+    CountDownLatch registerLatch;
+    CountDownLatch deregisterLatch;
+    CountDownLatch updateLatch;
 
     protected List<ObjectModel> createObjectModels() {
         // load default object from the spec
