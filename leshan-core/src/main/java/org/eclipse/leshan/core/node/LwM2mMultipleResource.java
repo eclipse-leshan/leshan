@@ -29,6 +29,11 @@ import java.util.Objects;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.util.Validate;
 
+/**
+ * A resource which contains several resource instances.
+ * 
+ * A resource instance is defined by a numeric identifier and a value. There are accessible via {@link #getValues()}
+ */
 public class LwM2mMultipleResource implements LwM2mResource {
 
     private final int id;
@@ -51,21 +56,33 @@ public class LwM2mMultipleResource implements LwM2mResource {
         return id;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Type getType() {
         return type;
     }
 
+    /**
+     * @exception raise a {@link NoSuchElementException}
+     */
     @Override
     public Object getValue() {
         throw new NoSuchElementException("There is no 'value' on multiple resources, use getValues() instead.");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<Integer, ?> getValues() {
         return values;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isMultiInstances() {
         return true;

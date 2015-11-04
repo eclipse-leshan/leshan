@@ -22,6 +22,9 @@ import java.util.NoSuchElementException;
 
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 
+/**
+ * A resource with a single value.
+ */
 public class LwM2mSingleResource implements LwM2mResource {
 
     private final int id;
@@ -44,21 +47,33 @@ public class LwM2mSingleResource implements LwM2mResource {
         return id;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Type getType() {
         return type;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object getValue() {
         return value;
     }
 
+    /**
+     * @exception raise a {@link NoSuchElementException}
+     */
     @Override
     public Map<Integer, ?> getValues() {
         throw new NoSuchElementException("There is no 'values' on single resources, use getValue() instead.");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isMultiInstances() {
         return false;
