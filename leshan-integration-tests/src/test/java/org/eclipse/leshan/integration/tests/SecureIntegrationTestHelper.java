@@ -39,7 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.californium.core.CoapServer;
-import org.eclipse.californium.core.network.CoAPEndpoint;
+import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
@@ -161,7 +161,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         config.setPskStore(new StaticPskStore(pskIdentity, pskKey));
 
         CoapServer coapServer = new CoapServer();
-        coapServer.addEndpoint(new CoAPEndpoint(new DTLSConnector(config.build()), NetworkConfig.getStandard()));
+        coapServer.addEndpoint(new CoapEndpoint(new DTLSConnector(config.build()), NetworkConfig.getStandard()));
 
         client = new LeshanClient(clientAddress, server.getSecureAddress(), coapServer,
                 new ArrayList<LwM2mObjectEnabler>(objects));
@@ -177,7 +177,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         config.setIdentity(clientPrivateKey, clientPublicKey);
 
         CoapServer coapServer = new CoapServer();
-        coapServer.addEndpoint(new CoAPEndpoint(new DTLSConnector(config.build()), NetworkConfig.getStandard()));
+        coapServer.addEndpoint(new CoapEndpoint(new DTLSConnector(config.build()), NetworkConfig.getStandard()));
         client = new LeshanClient(clientAddress, server.getSecureAddress(), coapServer,
                 new ArrayList<LwM2mObjectEnabler>(objects));
     }
@@ -193,7 +193,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         config.setTrustStore(trustedCertificates);
 
         CoapServer coapServer = new CoapServer();
-        coapServer.addEndpoint(new CoAPEndpoint(new DTLSConnector(config.build()), NetworkConfig.getStandard()));
+        coapServer.addEndpoint(new CoapEndpoint(new DTLSConnector(config.build()), NetworkConfig.getStandard()));
         client = new LeshanClient(clientAddress, server.getSecureAddress(), coapServer,
                 new ArrayList<LwM2mObjectEnabler>(objects));
     }
@@ -208,7 +208,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         config.setIdentity(clientPrivateKey, clientPublicKey);
 
         CoapServer coapServer = new CoapServer();
-        coapServer.addEndpoint(new CoAPEndpoint(new DTLSConnector(config.build()), NetworkConfig.getStandard()));
+        coapServer.addEndpoint(new CoapEndpoint(new DTLSConnector(config.build()), NetworkConfig.getStandard()));
 
         client = new LeshanClient(clientAddress, server.getSecureAddress(), coapServer,
                 new ArrayList<LwM2mObjectEnabler>(objects));
@@ -228,7 +228,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         config.setTrustStore(trustedCertificates);
 
         CoapServer coapServer = new CoapServer();
-        coapServer.addEndpoint(new CoAPEndpoint(new DTLSConnector(config.build()), NetworkConfig.getStandard()));
+        coapServer.addEndpoint(new CoapEndpoint(new DTLSConnector(config.build()), NetworkConfig.getStandard()));
         client = new LeshanClient(clientAddress, server.getSecureAddress(), coapServer,
                 new ArrayList<LwM2mObjectEnabler>(objects));
     }

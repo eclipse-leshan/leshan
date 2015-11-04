@@ -24,7 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.californium.core.CoapServer;
-import org.eclipse.californium.core.network.CoAPEndpoint;
+import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.scandium.DTLSConnector;
@@ -81,9 +81,9 @@ public class LeshanServer implements LwM2mServer {
 
     private final LwM2mModelProvider modelProvider;
 
-    private final CoAPEndpoint nonSecureEndpoint;
+    private final CoapEndpoint nonSecureEndpoint;
 
-    private final CoAPEndpoint secureEndpoint;
+    private final CoapEndpoint secureEndpoint;
 
     /**
      * Initialize a server which will bind to the specified address and port.
@@ -131,7 +131,7 @@ public class LeshanServer implements LwM2mServer {
 
         // default endpoint
         coapServer = new CoapServer();
-        nonSecureEndpoint = new CoAPEndpoint(localAddress);
+        nonSecureEndpoint = new CoapEndpoint(localAddress);
         coapServer.addEndpoint(nonSecureEndpoint);
 
         // secure endpoint
@@ -151,7 +151,7 @@ public class LeshanServer implements LwM2mServer {
             builder.setTrustStore(trustedCertificates);
         }
 
-        secureEndpoint = new CoAPEndpoint(new DTLSConnector(builder.build()), NetworkConfig.getStandard());
+        secureEndpoint = new CoapEndpoint(new DTLSConnector(builder.build()), NetworkConfig.getStandard());
         coapServer.addEndpoint(secureEndpoint);
 
         // define /rd resource

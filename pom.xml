@@ -92,7 +92,7 @@ Contributors:
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <californium.version>1.0.0-RC1</californium.version>
+        <californium.version>1.0.0-RC2</californium.version>
         <log4j.version>[2.0.0, 3)</log4j.version>
         <slf4j.api.version>[1.7.0, 1.8)</slf4j.api.version>
         <jetty.version>9.1.4.v20140401</jetty.version>
