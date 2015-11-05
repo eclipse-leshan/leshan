@@ -122,7 +122,7 @@ public class LwM2mNodeEncoderTest {
         resources.add(LwM2mSingleResource.newStringResource(14, "+02:00"));
         resources.add(LwM2mSingleResource.newStringResource(15, "U"));
 
-        LwM2mObjectInstance oInstance = new LwM2mObjectInstance(0, resources.toArray(new LwM2mResource[0]));
+        LwM2mObjectInstance oInstance = new LwM2mObjectInstance(0, resources);
 
         byte[] encoded = LwM2mNodeEncoder.encode(oInstance, ContentFormat.TLV, new LwM2mPath("/3/0"), model);
 
@@ -169,8 +169,8 @@ public class LwM2mNodeEncoderTest {
         resources.add(LwM2mSingleResource.newStringResource(14, "+02:00"));
         resources.add(LwM2mSingleResource.newStringResource(15, "U"));
 
-        LwM2mObjectInstance oInstance = new LwM2mObjectInstance(0, resources.toArray(new LwM2mResource[0]));
-        LwM2mObject object = new LwM2mObject(3, new LwM2mObjectInstance[] { oInstance });
+        LwM2mObjectInstance oInstance = new LwM2mObjectInstance(0, resources);
+        LwM2mObject object = new LwM2mObject(3, oInstance);
 
         byte[] encoded = LwM2mNodeEncoder.encode(object, ContentFormat.TLV, new LwM2mPath("/3"), model);
 
@@ -217,7 +217,7 @@ public class LwM2mNodeEncoderTest {
         resources.add(LwM2mSingleResource.newStringResource(14, "+02:00"));
         resources.add(LwM2mSingleResource.newStringResource(15, "U"));
 
-        LwM2mObjectInstance oInstance = new LwM2mObjectInstance(0, resources.toArray(new LwM2mResource[0]));
+        LwM2mObjectInstance oInstance = new LwM2mObjectInstance(0, resources);
 
         byte[] encoded = LwM2mNodeEncoder.encode(oInstance, ContentFormat.JSON, new LwM2mPath("/3/0"), model);
 

@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,14 +35,19 @@ public class LwM2mObject implements LwM2mNode {
 
     private final Map<Integer, LwM2mObjectInstance> instances;
 
-    public LwM2mObject(int id, LwM2mObjectInstance[] instances) {
+    public LwM2mObject(int id, Collection<LwM2mObjectInstance> instances) {
         Validate.notNull(instances);
 
         this.id = id;
-        this.instances = new HashMap<>(instances.length);
+        HashMap<Integer, LwM2mObjectInstance> instancesMap = new HashMap<>(instances.size());
         for (LwM2mObjectInstance instance : instances) {
-            this.instances.put(instance.getId(), instance);
+            instancesMap.put(instance.getId(), instance);
         }
+        this.instances = Collections.unmodifiableMap(instancesMap);
+    }
+
+    public LwM2mObject(int id, LwM2mObjectInstance... instances) {
+        this(id, Arrays.asList(instances));
     }
 
     @Override
@@ -62,7 +69,7 @@ public class LwM2mObject implements LwM2mNode {
      * @return the instances
      */
     public Map<Integer, LwM2mObjectInstance> getInstances() {
-        return Collections.unmodifiableMap(instances);
+        return instances;
     }
 
     @Override

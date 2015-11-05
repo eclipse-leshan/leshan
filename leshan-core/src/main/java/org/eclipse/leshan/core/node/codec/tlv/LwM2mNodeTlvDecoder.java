@@ -16,7 +16,9 @@
 package org.eclipse.leshan.core.node.codec.tlv;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -55,21 +57,20 @@ public class LwM2mNodeTlvDecoder {
 
         if (path.isObject()) {
             // object level request
-            final LwM2mObjectInstance[] instances;
+            final List<LwM2mObjectInstance> instances = new ArrayList<>();
 
             // is it an array of resource TLV?
             if (tlvs.length > 0 && //
                     (tlvs[0].getType() == TlvType.MULTIPLE_RESOURCE || tlvs[0].getType() == TlvType.RESOURCE_VALUE)) {
-                instances = new LwM2mObjectInstance[] { parseObjectInstancesTlv(tlvs, path.getObjectId(), 0, model) };
+                instances.add(parseObjectInstancesTlv(tlvs, path.getObjectId(), 0, model));
             } else {
-                instances = new LwM2mObjectInstance[tlvs.length];
                 for (int i = 0; i < tlvs.length; i++) {
                     if (tlvs[i].getType() != TlvType.OBJECT_INSTANCE)
                         throw new InvalidValueException(String.format(
                                 "Expected TLV of type OBJECT_INSTANCE but was %s", tlvs[i].getType().name()), path);
 
-                    instances[i] = parseObjectInstancesTlv(tlvs[i].getChildren(), path.getObjectId(),
-                            tlvs[i].getIdentifier(), model);
+                    instances.add(parseObjectInstancesTlv(tlvs[i].getChildren(), path.getObjectId(),
+                            tlvs[i].getIdentifier(), model));
                 }
             }
             return new LwM2mObject(path.getObjectId(), instances);
@@ -92,9 +93,9 @@ public class LwM2mNodeTlvDecoder {
     private static LwM2mObjectInstance parseObjectInstancesTlv(Tlv[] tlvs, int objectId, int instanceId,
             LwM2mModel model) throws InvalidValueException {
         // read resources
-        LwM2mResource[] resources = new LwM2mResource[tlvs.length];
+        List<LwM2mResource> resources = new ArrayList<>(tlvs.length);
         for (int i = 0; i < tlvs.length; i++) {
-            resources[i] = parseResourceTlv(tlvs[i], objectId, instanceId, model);
+            resources.add(parseResourceTlv(tlvs[i], objectId, instanceId, model));
         }
         return new LwM2mObjectInstance(instanceId, resources);
     }
