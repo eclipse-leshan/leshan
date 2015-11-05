@@ -54,7 +54,7 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     }
 
     @Override
-    public ExecuteResponse execute(int resourceid, byte[] params) {
+    public ExecuteResponse execute(int resourceid, String params) {
         return ExecuteResponse.notFound();
     }
 }

@@ -194,7 +194,7 @@ public class CoapRequestBuilderTest {
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
-        ExecuteRequest request = new ExecuteRequest(3, 0, 12, "params".getBytes(), ContentFormat.TEXT);
+        ExecuteRequest request = new ExecuteRequest(3, 0, 12, "params");
         builder.visit(request);
 
         // verify
@@ -204,7 +204,6 @@ public class CoapRequestBuilderTest {
         assertEquals(12354, coapRequest.getDestinationPort());
         assertEquals("coap://localhost/3/0/12", coapRequest.getURI());
         assertEquals("params", coapRequest.getPayloadString());
-        assertEquals(ContentFormat.TEXT.getCode(), coapRequest.getOptions().getContentFormat());
     }
 
     @Test

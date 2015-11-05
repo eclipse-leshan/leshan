@@ -51,7 +51,7 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
     }
 
     @Override
-    public ExecuteResponse execute(int resourceid, byte[] params) {
+    public ExecuteResponse execute(int resourceid, String params) {
         System.out.println("Execute on resource " + resourceid + " params " + params);
         return ExecuteResponse.success();
     }
