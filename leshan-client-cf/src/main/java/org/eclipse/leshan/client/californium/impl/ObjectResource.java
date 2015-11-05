@@ -213,8 +213,7 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
                 return;
             }
 
-            CreateResponse response = nodeEnabler.create(new CreateRequest(URI,
-                    resources.toArray(new LwM2mResource[0]), contentFormat));
+            CreateResponse response = nodeEnabler.create(new CreateRequest(contentFormat, URI, resources));
             if (response.getCode() == org.eclipse.leshan.ResponseCode.CREATED) {
                 exchange.setLocationPath(response.getLocation());
                 exchange.respond(fromLwM2mCode(response.getCode()));

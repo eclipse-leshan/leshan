@@ -30,7 +30,6 @@ import org.apache.commons.lang.StringUtils;
 import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
-import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
@@ -381,8 +380,8 @@ public class ClientServlet extends HttpServlet {
             if (!(node instanceof LwM2mObjectInstance)) {
                 throw new IllegalArgumentException("payload must contain an object instance");
             }
-            return server.send(client, new CreateRequest(target, ((LwM2mObjectInstance) node).getResources().values()
-                    .toArray(new LwM2mResource[0]), ContentFormat.TLV), TIMEOUT);
+            return server.send(client, new CreateRequest(target, ((LwM2mObjectInstance) node).getResources().values()),
+                    TIMEOUT);
         } else {
             throw new IllegalArgumentException("content type " + req.getContentType()
                     + " not supported for write requests");
