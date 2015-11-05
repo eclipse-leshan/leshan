@@ -116,33 +116,33 @@ public class LwM2mNodeDecoderTest {
     @Test
     public void tlv_device_object_mono_instance() throws Exception {
         LwM2mObjectInstance oInstance = ((LwM2mObject) LwM2mNodeDecoder.decode(DEVICE_CONTENT, ContentFormat.TLV,
-                new LwM2mPath(3), model)).getInstances().get(0);
+                new LwM2mPath(3), model)).getInstance(0);
         assertDeviceInstance(oInstance);
     }
 
     private void assertDeviceInstance(LwM2mObjectInstance oInstance) {
         assertEquals(0, oInstance.getId());
 
-        assertEquals("Open Mobile Alliance", oInstance.getResources().get(0).getValue());
-        assertEquals("Lightweight M2M Client", oInstance.getResources().get(1).getValue());
-        assertEquals("345000123", oInstance.getResources().get(2).getValue());
-        assertEquals("1.0", oInstance.getResources().get(3).getValue());
-        assertNull(oInstance.getResources().get(4));
-        assertNull(oInstance.getResources().get(5));
-        assertEquals(2, oInstance.getResources().get(6).getValues().size());
-        assertEquals(1L, oInstance.getResources().get(6).getValues().get(0));
-        assertEquals(5L, oInstance.getResources().get(6).getValues().get(1));
-        assertEquals(3800L, oInstance.getResources().get(7).getValues().get(0));
-        assertEquals(5000L, oInstance.getResources().get(7).getValues().get(1));
-        assertEquals(125L, oInstance.getResources().get(8).getValues().get(0));
-        assertEquals(900L, oInstance.getResources().get(8).getValues().get(1));
-        assertEquals(100L, oInstance.getResources().get(9).getValue());
-        assertEquals(15L, oInstance.getResources().get(10).getValue());
-        assertEquals(0L, oInstance.getResources().get(11).getValue());
-        assertNull(oInstance.getResources().get(12));
-        assertEquals(new Date(1367491215000L), oInstance.getResources().get(13).getValue());
-        assertEquals("+02:00", oInstance.getResources().get(14).getValue());
-        assertEquals("U", oInstance.getResources().get(15).getValue());
+        assertEquals("Open Mobile Alliance", oInstance.getResource(0).getValue());
+        assertEquals("Lightweight M2M Client", oInstance.getResource(1).getValue());
+        assertEquals("345000123", oInstance.getResource(2).getValue());
+        assertEquals("1.0", oInstance.getResource(3).getValue());
+        assertNull(oInstance.getResource(4));
+        assertNull(oInstance.getResource(5));
+        assertEquals(2, oInstance.getResource(6).getValues().size());
+        assertEquals(1L, oInstance.getResource(6).getValue(0));
+        assertEquals(5L, oInstance.getResource(6).getValue(1));
+        assertEquals(3800L, oInstance.getResource(7).getValue(0));
+        assertEquals(5000L, oInstance.getResource(7).getValue(1));
+        assertEquals(125L, oInstance.getResource(8).getValue(0));
+        assertEquals(900L, oInstance.getResource(8).getValue(1));
+        assertEquals(100L, oInstance.getResource(9).getValue());
+        assertEquals(15L, oInstance.getResource(10).getValue());
+        assertEquals(0L, oInstance.getResource(11).getValue());
+        assertNull(oInstance.getResource(12));
+        assertEquals(new Date(1367491215000L), oInstance.getResource(13).getValue());
+        assertEquals("+02:00", oInstance.getResource(14).getValue());
+        assertEquals("U", oInstance.getResource(15).getValue());
 
     }
 
@@ -163,8 +163,8 @@ public class LwM2mNodeDecoderTest {
 
         assertEquals(6, resource.getId());
         assertEquals(2, resource.getValues().size());
-        assertEquals(1L, resource.getValues().get(0));
-        assertEquals(5L, resource.getValues().get(1));
+        assertEquals(1L, resource.getValue(0));
+        assertEquals(5L, resource.getValue(1));
     }
 
     @Test
@@ -178,8 +178,8 @@ public class LwM2mNodeDecoderTest {
 
         assertEquals(6, resource.getId());
         assertEquals(2, resource.getValues().size());
-        assertEquals(1L, resource.getValues().get(0));
-        assertEquals(5L, resource.getValues().get(1));
+        assertEquals(1L, resource.getValue(0));
+        assertEquals(5L, resource.getValue(1));
     }
 
     @Test
@@ -207,28 +207,7 @@ public class LwM2mNodeDecoderTest {
         LwM2mObjectInstance oInstance = (LwM2mObjectInstance) LwM2mNodeDecoder.decode(b.toString().getBytes(),
                 ContentFormat.JSON, new LwM2mPath(3, 0), model);
 
-        assertEquals(0, oInstance.getId());
-
-        assertEquals("Open Mobile Alliance", oInstance.getResources().get(0).getValue());
-        assertEquals("Lightweight M2M Client", oInstance.getResources().get(1).getValue());
-        assertEquals("345000123", oInstance.getResources().get(2).getValue());
-        assertEquals("1.0", oInstance.getResources().get(3).getValue());
-        assertNull(oInstance.getResources().get(4));
-        assertNull(oInstance.getResources().get(5));
-        assertEquals(2L, oInstance.getResources().get(6).getValues().size());
-        assertEquals(1L, oInstance.getResources().get(6).getValues().get(0));
-        assertEquals(5L, oInstance.getResources().get(6).getValues().get(1));
-        assertEquals(3800L, oInstance.getResources().get(7).getValues().get(0));
-        assertEquals(5000L, oInstance.getResources().get(7).getValues().get(1));
-        assertEquals(125L, oInstance.getResources().get(8).getValues().get(0));
-        assertEquals(900L, oInstance.getResources().get(8).getValues().get(1));
-        assertEquals(100L, oInstance.getResources().get(9).getValue());
-        assertEquals(15L, oInstance.getResources().get(10).getValue());
-        assertEquals(0L, oInstance.getResources().get(11).getValue());
-        assertNull(oInstance.getResources().get(12));
-        assertEquals(new Date(1367491215000L), oInstance.getResources().get(13).getValue());
-        assertEquals("+02:00", oInstance.getResources().get(14).getValue());
-        assertEquals("U", oInstance.getResources().get(15).getValue());
+        assertDeviceInstance(oInstance);
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -257,27 +236,6 @@ public class LwM2mNodeDecoderTest {
         LwM2mObjectInstance oInstance = (LwM2mObjectInstance) LwM2mNodeDecoder.decode(b.toString().getBytes(),
                 ContentFormat.JSON, new LwM2mPath(3, 0), model);
 
-        assertEquals(0, oInstance.getId());
-
-        assertEquals("Open Mobile Alliance", oInstance.getResources().get(0).getValue());
-        assertEquals("Lightweight M2M Client", oInstance.getResources().get(1).getValue());
-        assertEquals("345000123", oInstance.getResources().get(2).getValue());
-        assertEquals("1.0", oInstance.getResources().get(3).getValue());
-        assertNull(oInstance.getResources().get(4));
-        assertNull(oInstance.getResources().get(5));
-        assertEquals(2, oInstance.getResources().get(6).getValues().size());
-        assertEquals(1, oInstance.getResources().get(6).getValues().get(0));
-        assertEquals(5, oInstance.getResources().get(6).getValues().get(1));
-        assertEquals(3800, oInstance.getResources().get(7).getValues().get(0));
-        assertEquals(5000, oInstance.getResources().get(7).getValues().get(1));
-        assertEquals(125, oInstance.getResources().get(8).getValues().get(0));
-        assertEquals((int) 900, oInstance.getResources().get(8).getValues());
-        assertEquals(100, oInstance.getResources().get(9).getValue());
-        assertEquals(15, oInstance.getResources().get(10).getValue());
-        assertEquals(0, oInstance.getResources().get(11).getValue());
-        assertNull(oInstance.getResources().get(12));
-        assertEquals(new Date(1367491215000L), oInstance.getResources().get(13).getValue());
-        assertEquals("+02:00", oInstance.getResources().get(14).getValue());
-        assertEquals("U", oInstance.getResources().get(15).getValue());
+        assertDeviceInstance(oInstance);
     }
 }

@@ -72,6 +72,14 @@ public class LwM2mSingleResource implements LwM2mResource {
     }
 
     /**
+     * @exception raise a {@link NoSuchElementException}
+     */
+    @Override
+    public Object getValue(int id) {
+        throw new NoSuchElementException("There is no 'values' on single resources, use getValue() instead.");
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

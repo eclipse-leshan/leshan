@@ -64,12 +64,19 @@ public class LwM2mObject implements LwM2mNode {
     }
 
     /**
-     * Returns a map of object intances by id.
+     * Returns a map of object instances by id.
      *
      * @return the instances
      */
     public Map<Integer, LwM2mObjectInstance> getInstances() {
         return instances;
+    }
+
+    /**
+     * @return the object instance with the given id or {@code null} if there is no instance for this id.
+     */
+    public LwM2mObjectInstance getInstance(int id) {
+        return instances.get(id);
     }
 
     @Override

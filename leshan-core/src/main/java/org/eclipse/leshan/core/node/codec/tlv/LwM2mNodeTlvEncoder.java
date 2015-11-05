@@ -73,7 +73,7 @@ public class LwM2mNodeTlvEncoder {
             ObjectModel objectModel = model.getObjectModel(object.getId());
             if (objectModel != null && !objectModel.multiple) {
                 // single instance object, the instance is level is not needed
-                tlvs = encodeResources(object.getInstances().get(0).getResources().values());
+                tlvs = encodeResources(object.getInstance(0).getResources().values());
             } else {
                 tlvs = new Tlv[object.getInstances().size()];
                 int i = 0;
