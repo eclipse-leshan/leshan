@@ -225,7 +225,7 @@ public class ClientServlet extends HttpServlet {
             try {
                 Client client = server.getClientRegistry().get(clientEndpoint);
                 if (client != null) {
-                    ExecuteRequest request = new ExecuteRequest(target, IOUtils.toByteArray(req.getInputStream()), null);
+                    ExecuteRequest request = new ExecuteRequest(target, IOUtils.toString(req.getInputStream()));
                     ExecuteResponse cResponse = server.send(client, request, TIMEOUT);
                     processDeviceResponse(req, resp, cResponse);
                 } else {

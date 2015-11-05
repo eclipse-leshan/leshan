@@ -181,10 +181,10 @@ public class LeshanClientExample {
         }
 
         @Override
-        public ExecuteResponse execute(int resourceid, byte[] params) {
+        public ExecuteResponse execute(int resourceid, String params) {
             System.out.println("Execute on Device resource " + resourceid);
-            if (params != null && params.length != 0)
-                System.out.println("\t params " + new String(params));
+            if (params != null && params.length() != 0)
+                System.out.println("\t params " + params);
             return ExecuteResponse.success();
         }
 

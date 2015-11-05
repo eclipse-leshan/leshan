@@ -85,5 +85,5 @@ public interface LwM2mInstanceEnabler {
      *         {@link ExecuteResponse#getCode() response code} to either reflect the success or reason for failure to
      *         execute the operation.
      */
-    ExecuteResponse execute(int resourceid, byte[] params);
+    ExecuteResponse execute(int resourceid, String params);
 }
