@@ -15,8 +15,14 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.response;
 
+import java.util.Date;
+import java.util.Map;
+
 import org.eclipse.leshan.ResponseCode;
+import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.util.Validate;
 
 public class ReadResponse extends AbstractLwM2mResponse {
@@ -53,6 +59,34 @@ public class ReadResponse extends AbstractLwM2mResponse {
 
     public static ReadResponse success(LwM2mNode content) {
         return new ReadResponse(ResponseCode.CONTENT, content, null);
+    }
+
+    public static ReadResponse success(int resourceId, String value) {
+        return new ReadResponse(ResponseCode.CONTENT, LwM2mSingleResource.newStringResource(resourceId, value), null);
+    }
+
+    public static ReadResponse success(int resourceId, Date value) {
+        return new ReadResponse(ResponseCode.CONTENT, LwM2mSingleResource.newDateResource(resourceId, value), null);
+    }
+
+    public static ReadResponse success(int resourceId, long value) {
+        return new ReadResponse(ResponseCode.CONTENT, LwM2mSingleResource.newIntegerResource(resourceId, value), null);
+    }
+
+    public static ReadResponse success(int resourceId, double value) {
+        return new ReadResponse(ResponseCode.CONTENT, LwM2mSingleResource.newFloatResource(resourceId, value), null);
+    }
+
+    public static ReadResponse success(int resourceId, boolean value) {
+        return new ReadResponse(ResponseCode.CONTENT, LwM2mSingleResource.newBooleanResource(resourceId, value), null);
+    }
+
+    public static ReadResponse success(int resourceId, byte[] value) {
+        return new ReadResponse(ResponseCode.CONTENT, LwM2mSingleResource.newBinaryResource(resourceId, value), null);
+    }
+
+    public static ReadResponse success(int resourceId, Map<Integer, ?> value, Type type) {
+        return new ReadResponse(ResponseCode.CONTENT, LwM2mMultipleResource.newResource(resourceId, value, type), null);
     }
 
     public static ReadResponse notFound() {
