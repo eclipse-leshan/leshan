@@ -39,9 +39,8 @@ import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
-import org.eclipse.leshan.core.node.LwM2mMultipleResource;
+import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mResource;
-import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.response.ExecuteResponse;
@@ -152,29 +151,29 @@ public class LeshanClientExample {
             System.out.println("Read on Device Resource " + resourceid);
             switch (resourceid) {
             case 0:
-                return ReadResponse.success(LwM2mSingleResource.newStringResource(resourceid, getManufacturer()));
+                return ReadResponse.success(resourceid, getManufacturer());
             case 1:
-                return ReadResponse.success(LwM2mSingleResource.newStringResource(resourceid, getModelNumber()));
+                return ReadResponse.success(resourceid, getModelNumber());
             case 2:
-                return ReadResponse.success(LwM2mSingleResource.newStringResource(resourceid, getSerialNumber()));
+                return ReadResponse.success(resourceid, getSerialNumber());
             case 3:
-                return ReadResponse.success(LwM2mSingleResource.newStringResource(resourceid, getFirmwareVersion()));
+                return ReadResponse.success(resourceid, getFirmwareVersion());
             case 9:
-                return ReadResponse.success(LwM2mSingleResource.newIntegerResource(resourceid, getBatteryLevel()));
+                return ReadResponse.success(resourceid, getBatteryLevel());
             case 10:
-                return ReadResponse.success(LwM2mSingleResource.newIntegerResource(resourceid, getMemoryFree()));
+                return ReadResponse.success(resourceid, getMemoryFree());
             case 11:
                 Map<Integer, Long> errorCodes = new HashMap<>();
                 errorCodes.put(0, getErrorCode());
-                return ReadResponse.success(LwM2mMultipleResource.newIntegerResource(resourceid, errorCodes));
+                return ReadResponse.success(resourceid, errorCodes, Type.INTEGER);
             case 13:
-                return ReadResponse.success(LwM2mSingleResource.newDateResource(resourceid, getCurrentTime()));
+                return ReadResponse.success(resourceid, getCurrentTime());
             case 14:
-                return ReadResponse.success(LwM2mSingleResource.newStringResource(resourceid, getUtcOffset()));
+                return ReadResponse.success(resourceid, getUtcOffset());
             case 15:
-                return ReadResponse.success(LwM2mSingleResource.newStringResource(resourceid, getTimezone()));
+                return ReadResponse.success(resourceid, getTimezone());
             case 16:
-                return ReadResponse.success(LwM2mSingleResource.newStringResource(resourceid, getSupportedBinding()));
+                return ReadResponse.success(resourceid, getSupportedBinding());
             default:
                 return super.read(resourceid);
             }
@@ -284,11 +283,11 @@ public class LeshanClientExample {
             System.out.println("Read on Location Resource " + resourceid);
             switch (resourceid) {
             case 0:
-                return ReadResponse.success(LwM2mSingleResource.newStringResource(resourceid, getLatitude()));
+                return ReadResponse.success(resourceid, getLatitude());
             case 1:
-                return ReadResponse.success(LwM2mSingleResource.newStringResource(resourceid, getLongitude()));
+                return ReadResponse.success(resourceid, getLongitude());
             case 5:
-                return ReadResponse.success(LwM2mSingleResource.newDateResource(resourceid, getTimestamp()));
+                return ReadResponse.success(resourceid, getTimestamp());
             default:
                 return super.read(resourceid);
             }
