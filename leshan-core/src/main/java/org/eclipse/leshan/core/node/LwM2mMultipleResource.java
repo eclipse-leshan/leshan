@@ -84,6 +84,14 @@ public class LwM2mMultipleResource implements LwM2mResource {
      * {@inheritDoc}
      */
     @Override
+    public Object getValue(int id) {
+        return values.get(id);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public boolean isMultiInstances() {
         return true;
     }

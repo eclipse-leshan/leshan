@@ -69,6 +69,13 @@ public class LwM2mObjectInstance implements LwM2mNode {
         return resources;
     }
 
+    /**
+     * @return the resource with the given id or {@code null} if there is no resource for this id.
+     */
+    public LwM2mResource getResource(int id) {
+        return resources.get(id);
+    }
+
     @Override
     public String toString() {
         return String.format("LwM2mObjectInstance [id=%s, resources=%s]", id, resources);

@@ -122,8 +122,8 @@ public class WriteTest {
         // read the timezone to check the value changed
         ReadResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(3, 0));
         LwM2mObjectInstance instance = (LwM2mObjectInstance) readResponse.getContent();
-        assertEquals(utcOffset, instance.getResources().get(14));
-        assertEquals(timeZone, instance.getResources().get(15));
+        assertEquals(utcOffset, instance.getResource(14));
+        assertEquals(timeZone, instance.getResource(15));
     }
 
     @Test
@@ -143,7 +143,7 @@ public class WriteTest {
         // read the timezone to check the value changed
         ReadResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(3, 0));
         LwM2mObjectInstance instance = (LwM2mObjectInstance) readResponse.getContent();
-        assertEquals(utcOffset, instance.getResources().get(14));
-        assertEquals(timeZone, instance.getResources().get(15));
+        assertEquals(utcOffset, instance.getResource(14));
+        assertEquals(timeZone, instance.getResource(15));
     }
 }
