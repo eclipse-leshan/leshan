@@ -53,7 +53,7 @@ public class DeleteTest {
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         // create ACL instance
-        helper.server.send(helper.getClient(), new CreateRequest(2, 0, new LwM2mResource[0], null));
+        helper.server.send(helper.getClient(), new CreateRequest(2, 0, new LwM2mResource[0]));
 
         // try to delete this instance
         DeleteResponse deleteResponse = helper.server.send(helper.getClient(), new DeleteRequest(2, 0));

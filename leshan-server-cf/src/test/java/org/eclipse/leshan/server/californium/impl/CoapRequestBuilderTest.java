@@ -33,7 +33,6 @@ import org.eclipse.leshan.ObserveSpec;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
-import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
@@ -212,8 +211,7 @@ public class CoapRequestBuilderTest {
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
-        CreateRequest request = new CreateRequest(12, 0, new LwM2mResource[] { LwM2mSingleResource.newStringResource(0,
-                "value") }, ContentFormat.TLV);
+        CreateRequest request = new CreateRequest(12, 0, LwM2mSingleResource.newStringResource(0, "value"));
         builder.visit(request);
 
         // verify

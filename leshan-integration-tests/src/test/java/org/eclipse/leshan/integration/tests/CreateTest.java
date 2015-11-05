@@ -57,8 +57,7 @@ public class CreateTest {
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         // create ACL instance
-        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, 0, new LwM2mResource[0],
-                null));
+        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, 0, new LwM2mResource[0]));
 
         // verify result
         assertEquals(ResponseCode.CREATED, response.getCode());
@@ -71,15 +70,14 @@ public class CreateTest {
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         // create ACL instance
-        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, new LwM2mResource[0],
-                null));
+        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, new LwM2mResource[0]));
 
         // verify result
         assertEquals(ResponseCode.CREATED, response.getCode());
         assertEquals("2/0", response.getLocation());
 
         // create a second ACL instance
-        response = helper.server.send(helper.getClient(), new CreateRequest(2, new LwM2mResource[0], null));
+        response = helper.server.send(helper.getClient(), new CreateRequest(2, new LwM2mResource[0]));
 
         // verify result
         assertEquals(ResponseCode.CREATED, response.getCode());
@@ -94,9 +92,7 @@ public class CreateTest {
 
         // create ACL instance
         LwM2mResource accessControlOwner = LwM2mSingleResource.newIntegerResource(3, 123);
-
-        LwM2mResource[] data = new LwM2mResource[] { accessControlOwner };
-        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, 0, data, null));
+        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, 0, accessControlOwner));
 
         // verify result
         assertEquals(ResponseCode.CREATED, response.getCode());
@@ -110,10 +106,8 @@ public class CreateTest {
 
         // create ACL instance
         LwM2mResource accessControlOwner = LwM2mSingleResource.newIntegerResource(3, 123);
-
-        LwM2mResource[] data = new LwM2mResource[] { accessControlOwner };
-        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, 0, data,
-                ContentFormat.JSON));
+        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(ContentFormat.JSON, 2, 0,
+                accessControlOwner));
 
         // verify result
         assertEquals(ResponseCode.CREATED, response.getCode());
@@ -126,8 +120,8 @@ public class CreateTest {
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         // try to create an instance of object 50
-        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(50, 0, new LwM2mResource[0],
-                null));
+        CreateResponse response = helper.server
+                .send(helper.getClient(), new CreateRequest(50, 0, new LwM2mResource[0]));
 
         // verify result
         assertEquals(ResponseCode.NOT_FOUND, response.getCode());
@@ -143,8 +137,7 @@ public class CreateTest {
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         // create ACL instance
-        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, 0, new LwM2mResource[0],
-                null));
+        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, 0, new LwM2mResource[0]));
 
         // verify result
         assertEquals(ResponseCode.BAD_REQUEST, response.getCode());
@@ -165,8 +158,8 @@ public class CreateTest {
         // create ACL instance
         LwM2mResource accessControlOwner = LwM2mSingleResource.newIntegerResource(3, 123);
         LwM2mResource extraneousResource = LwM2mSingleResource.newIntegerResource(50, 123);
-        LwM2mResource[] data = new LwM2mResource[] { accessControlOwner, extraneousResource };
-        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, 0, data, null));
+        CreateRequest request = new CreateRequest(2, 0, accessControlOwner, extraneousResource);
+        CreateResponse response = helper.server.send(helper.getClient(), request);
 
         // verify result
         assertEquals(ResponseCode.BAD_REQUEST, response.getCode());
@@ -190,8 +183,7 @@ public class CreateTest {
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         // try to create another instance of device object
-        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(3, 0, new LwM2mResource[0],
-                null));
+        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(3, 0, new LwM2mResource[0]));
 
         // verify result
         assertEquals(ResponseCode.METHOD_NOT_ALLOWED, response.getCode());
