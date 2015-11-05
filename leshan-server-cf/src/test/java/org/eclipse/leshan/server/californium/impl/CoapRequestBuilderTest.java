@@ -44,6 +44,7 @@ import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
+import org.eclipse.leshan.core.request.WriteRequest.Mode;
 import org.eclipse.leshan.server.client.Client;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -143,8 +144,7 @@ public class CoapRequestBuilderTest {
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
-        WriteRequest request = new WriteRequest(3, 0, 14, LwM2mSingleResource.newStringResource(14, "value"),
-                ContentFormat.TEXT, false);
+        WriteRequest request = new WriteRequest(Mode.UPDATE, 3, 0, 14, "value");
         builder.visit(request);
 
         // verify
@@ -162,8 +162,7 @@ public class CoapRequestBuilderTest {
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
-        WriteRequest request = new WriteRequest(3, 0, 14, LwM2mSingleResource.newStringResource(14, "value"),
-                ContentFormat.TEXT, true);
+        WriteRequest request = new WriteRequest(Mode.REPLACE, 3, 0, 14, "value");
         builder.visit(request);
 
         // verify

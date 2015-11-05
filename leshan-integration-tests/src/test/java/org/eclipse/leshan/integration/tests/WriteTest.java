@@ -27,6 +27,7 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
+import org.eclipse.leshan.core.request.WriteRequest.Mode;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 import org.junit.After;
@@ -57,9 +58,8 @@ public class WriteTest {
 
         // write device timezone
         final String timeZone = "Europe/Paris";
-        LwM2mResource newValue = LwM2mSingleResource.newStringResource(15, timeZone);
-        WriteResponse response = helper.server.send(helper.getClient(),
-                new WriteRequest(3, 0, 15, newValue, null, true));
+        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE, 3, 0, 15,
+                timeZone));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
@@ -77,9 +77,8 @@ public class WriteTest {
 
         // write device timezone
         final String timeZone = "Europe/Paris";
-        LwM2mResource newValue = LwM2mSingleResource.newStringResource(15, timeZone);
-        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(3, 0, 15, newValue,
-                ContentFormat.JSON, true));
+        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE, 3, 0, 15,
+                timeZone));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
@@ -97,9 +96,8 @@ public class WriteTest {
 
         // try to write unwritable resource like manufacturer on device
         final String manufacturer = "new manufacturer";
-        LwM2mResource newValue = LwM2mSingleResource.newStringResource(0, manufacturer);
-        WriteResponse response = helper.server
-                .send(helper.getClient(), new WriteRequest(3, 0, 0, newValue, null, true));
+        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE, 3, 0, 0,
+                manufacturer));
 
         // verify result
         assertEquals(ResponseCode.METHOD_NOT_ALLOWED, response.getCode());
@@ -113,8 +111,8 @@ public class WriteTest {
         // write device timezone and offset
         LwM2mResource utcOffset = LwM2mSingleResource.newStringResource(14, "+02");
         LwM2mResource timeZone = LwM2mSingleResource.newStringResource(15, "Europe/Paris");
-        LwM2mObjectInstance newValue = new LwM2mObjectInstance(0, utcOffset, timeZone);
-        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest("/3/0", newValue, null, true));
+        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE, 3, 0, utcOffset,
+                timeZone));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
@@ -134,8 +132,8 @@ public class WriteTest {
         // write device timezone and offset
         LwM2mResource utcOffset = LwM2mSingleResource.newStringResource(14, "+02");
         LwM2mResource timeZone = LwM2mSingleResource.newStringResource(15, "Europe/Paris");
-        LwM2mObjectInstance newValue = new LwM2mObjectInstance(0, utcOffset, timeZone);
-        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest("/3/0", newValue, null, true));
+        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE,
+                ContentFormat.JSON, 3, 0, utcOffset, timeZone));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());

@@ -54,6 +54,7 @@ import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
+import org.eclipse.leshan.core.request.WriteRequest.Mode;
 import org.eclipse.leshan.core.response.CreateResponse;
 import org.eclipse.leshan.core.response.DeleteResponse;
 import org.eclipse.leshan.core.response.DiscoverResponse;
@@ -159,7 +160,8 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
             try {
                 LwM2mModel model = new LwM2mModel(nodeEnabler.getObjectModel());
                 lwM2mNode = LwM2mNodeDecoder.decode(coapExchange.getRequestPayload(), contentFormat, path, model);
-                WriteResponse response = nodeEnabler.write(new WriteRequest(URI, lwM2mNode, contentFormat, true));
+                WriteResponse response = nodeEnabler
+                        .write(new WriteRequest(Mode.REPLACE, contentFormat, URI, lwM2mNode));
                 coapExchange.respond(fromLwM2mCode(response.getCode()));
                 return;
             } catch (InvalidValueException e) {
