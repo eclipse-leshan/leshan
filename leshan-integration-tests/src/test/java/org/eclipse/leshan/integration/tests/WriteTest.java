@@ -113,7 +113,7 @@ public class WriteTest {
         // write device timezone and offset
         LwM2mResource utcOffset = LwM2mSingleResource.newStringResource(14, "+02");
         LwM2mResource timeZone = LwM2mSingleResource.newStringResource(15, "Europe/Paris");
-        LwM2mObjectInstance newValue = new LwM2mObjectInstance(0, new LwM2mResource[] { utcOffset, timeZone });
+        LwM2mObjectInstance newValue = new LwM2mObjectInstance(0, utcOffset, timeZone);
         WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest("/3/0", newValue, null, true));
 
         // verify result
@@ -134,7 +134,7 @@ public class WriteTest {
         // write device timezone and offset
         LwM2mResource utcOffset = LwM2mSingleResource.newStringResource(14, "+02");
         LwM2mResource timeZone = LwM2mSingleResource.newStringResource(15, "Europe/Paris");
-        LwM2mObjectInstance newValue = new LwM2mObjectInstance(0, new LwM2mResource[] { utcOffset, timeZone });
+        LwM2mObjectInstance newValue = new LwM2mObjectInstance(0, utcOffset, timeZone);
         WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest("/3/0", newValue, null, true));
 
         // verify result

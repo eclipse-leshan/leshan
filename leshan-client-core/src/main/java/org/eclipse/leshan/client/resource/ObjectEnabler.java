@@ -109,8 +109,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
             for (Entry<Integer, LwM2mInstanceEnabler> entry : instances.entrySet()) {
                 lwM2mObjectInstances.add(getLwM2mObjectInstance(entry.getKey(), entry.getValue()));
             }
-            return ReadResponse.success(new LwM2mObject(getId(), lwM2mObjectInstances
-                    .toArray(new LwM2mObjectInstance[0])));
+            return ReadResponse.success(new LwM2mObject(getId(), lwM2mObjectInstances));
         }
 
         // Manage Instance case
@@ -135,7 +134,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
                     resources.add((LwM2mResource) response.getContent());
             }
         }
-        return new LwM2mObjectInstance(instanceid, resources.toArray(new LwM2mResource[0]));
+        return new LwM2mObjectInstance(instanceid, resources);
     }
 
     @Override

@@ -64,15 +64,7 @@ public class LwM2mNodeJsonDecoder {
         } else if (path.isObjectInstance()) {
             // object instance level request
             Map<Integer, LwM2mResource> resourceMap = parseJsonPayLoadLwM2mResources(jsonObject, path, model);
-            LwM2mResource[] resources = new LwM2mResource[resourceMap.size()];
-            int k = 0;
-            for (Entry<Integer, LwM2mResource> entry : resourceMap.entrySet()) {
-                LwM2mResource resource = entry.getValue();
-                resources[k] = resource;
-                k++;
-            }
-            return new LwM2mObjectInstance(path.getObjectInstanceId(), resources);
-
+            return new LwM2mObjectInstance(path.getObjectInstanceId(), resourceMap.values());
         } else {
             // resource level request
             Map<Integer, LwM2mResource> resourceMap = parseJsonPayLoadLwM2mResources(jsonObject, path, model);
