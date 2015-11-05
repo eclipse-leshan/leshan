@@ -39,6 +39,7 @@ import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
+import org.eclipse.leshan.core.request.WriteRequest.Mode;
 import org.eclipse.leshan.core.request.exception.RequestFailedException;
 import org.eclipse.leshan.core.request.exception.ResourceAccessException;
 import org.eclipse.leshan.core.response.CreateResponse;
@@ -344,8 +345,9 @@ public class ClientServlet extends HttpServlet {
         if ("text/plain".equals(contentType)) {
             String content = IOUtils.toString(req.getInputStream(), parameters.get("charset"));
             int rscId = Integer.valueOf(target.substring(target.lastIndexOf("/") + 1));
-            return server.send(client, new WriteRequest(target, LwM2mSingleResource.newStringResource(rscId, content),
-                    ContentFormat.TEXT, true), TIMEOUT);
+            WriteRequest writeRequest = new WriteRequest(Mode.REPLACE, ContentFormat.TEXT, target,
+                    LwM2mSingleResource.newStringResource(rscId, content));
+            return server.send(client, writeRequest, TIMEOUT);
 
         } else if ("application/json".equals(contentType)) {
             String content = IOUtils.toString(req.getInputStream(), parameters.get("charset"));
@@ -355,7 +357,7 @@ public class ClientServlet extends HttpServlet {
             } catch (JsonSyntaxException e) {
                 throw new IllegalArgumentException("unable to parse json to tlv:" + e.getMessage(), e);
             }
-            return server.send(client, new WriteRequest(target, node, null, true), TIMEOUT);
+            return server.send(client, new WriteRequest(Mode.REPLACE, null, target, node), TIMEOUT);
 
         } else {
             throw new IllegalArgumentException("content type " + req.getContentType()
