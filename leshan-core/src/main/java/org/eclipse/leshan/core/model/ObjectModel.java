@@ -15,13 +15,21 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.model;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An object description
  */
 public class ObjectModel {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ObjectModel.class);
 
     public final int id;
     public final String name;
@@ -32,13 +40,27 @@ public class ObjectModel {
     public final Map<Integer, ResourceModel> resources; // resources by ID
 
     public ObjectModel(int id, String name, String description, boolean multiple, boolean mandatory,
-            Map<Integer, ResourceModel> resources) {
+            ResourceModel... resources) {
+        this(id, name, description, multiple, mandatory, Arrays.asList(resources));
+    }
+
+    public ObjectModel(int id, String name, String description, boolean multiple, boolean mandatory,
+            Collection<ResourceModel> resources) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.multiple = multiple;
         this.mandatory = mandatory;
-        this.resources = Collections.unmodifiableMap(resources);
+
+        Map<Integer, ResourceModel> resourcesMap = new HashMap<>(resources.size());
+        for (ResourceModel resource : resources) {
+            ResourceModel old = resourcesMap.put(resource.id, resource);
+            if (old != null) {
+                LOG.debug("Model already exists for resource {} of object {}. Overriding it.", resource.id, id);
+            }
+            resourcesMap.put(resource.id, resource);
+        }
+        this.resources = Collections.unmodifiableMap(resourcesMap);
     }
 
     @Override

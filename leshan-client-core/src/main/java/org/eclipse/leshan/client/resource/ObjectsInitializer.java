@@ -47,12 +47,7 @@ public class ObjectsInitializer {
 
     public ObjectsInitializer(LwM2mModel model) {
         if (model == null) {
-            List<ObjectModel> objects = ObjectLoader.loadDefault();
-            HashMap<Integer, ObjectModel> map = new HashMap<Integer, ObjectModel>();
-            for (ObjectModel objectModel : objects) {
-                map.put(objectModel.id, objectModel);
-            }
-            this.model = new LwM2mModel(map);
+            this.model = new LwM2mModel(ObjectLoader.loadDefault());
         } else {
             this.model = model;
         }

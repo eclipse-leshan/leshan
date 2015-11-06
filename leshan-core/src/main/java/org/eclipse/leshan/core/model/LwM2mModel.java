@@ -15,30 +15,40 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.model;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A collection of LWM2M object definitions.
  */
 public class LwM2mModel {
 
+    private static final Logger LOG = LoggerFactory.getLogger(LwM2mModel.class);
+
     private final Map<Integer, ObjectModel> objects; // objects by ID
 
-    public LwM2mModel(ObjectModel objectModel) {
-        objects = new HashMap<>();
-        if (objectModel != null) {
-            objects.put(objectModel.id, objectModel);
-        }
+    public LwM2mModel(ObjectModel... objectModels) {
+        this(Arrays.asList(objectModels));
     }
 
-    public LwM2mModel(Map<Integer, ObjectModel> objectModels) {
+    public LwM2mModel(Collection<ObjectModel> objectModels) {
         if (objectModels == null) {
             objects = new HashMap<>();
         } else {
-            objects = new HashMap<>(objectModels);
+            Map<Integer, ObjectModel> map = new HashMap<>();
+            for (ObjectModel model : objectModels) {
+                ObjectModel old = map.put(model.id, model);
+                if (old != null) {
+                    LOG.debug("Model already exists for object {}. Overriding it.", model.id);
+                }
+            }
+            objects = Collections.unmodifiableMap(map);
         }
     }
 
@@ -71,7 +81,7 @@ public class LwM2mModel {
      * @return all the objects descriptions known.
      */
     public Collection<ObjectModel> getObjectModels() {
-        return Collections.unmodifiableCollection(objects.values());
+        return objects.values();
     }
 
 }

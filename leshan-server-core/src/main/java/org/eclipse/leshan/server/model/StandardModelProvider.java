@@ -15,36 +15,16 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.model;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
-import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.server.client.Client;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class StandardModelProvider implements LwM2mModelProvider {
-
-    private static final Logger LOG = LoggerFactory.getLogger(StandardModelProvider.class);
 
     private final LwM2mModel model;
 
     public StandardModelProvider() {
-        // build a single model with default objects
-        List<ObjectModel> models = ObjectLoader.loadDefault();
-
-        Map<Integer, ObjectModel> map = new HashMap<>();
-        for (ObjectModel model : models) {
-            LOG.debug("Loading object: {}", model);
-            ObjectModel old = map.put(model.id, model);
-            if (old != null) {
-                LOG.debug("Model already exists for object {}. Overriding it.", model.id);
-            }
-        }
-        this.model = new LwM2mModel(map);
+        this.model = new LwM2mModel(ObjectLoader.loadDefault());
     }
 
     @Override
