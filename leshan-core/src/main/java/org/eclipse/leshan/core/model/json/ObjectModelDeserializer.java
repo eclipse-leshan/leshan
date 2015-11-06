@@ -16,8 +16,6 @@
 package org.eclipse.leshan.core.model.json;
 
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
@@ -49,11 +47,7 @@ public class ObjectModelDeserializer implements JsonDeserializer<ObjectModel> {
         boolean mandatory = jsonObject.get("mandatory").getAsBoolean();
         String description = jsonObject.get("description").getAsString();
         ResourceModel[] resourceSpecs = context.deserialize(jsonObject.get("resourcedefs"), ResourceModel[].class);
-        Map<Integer, ResourceModel> resources = new HashMap<Integer, ResourceModel>();
-        for (ResourceModel resourceSpec : resourceSpecs) {
-            resources.put(resourceSpec.id, resourceSpec);
-        }
 
-        return new ObjectModel(id, name, description, "multiple".equals(instancetype), mandatory, resources);
+        return new ObjectModel(id, name, description, "multiple".equals(instancetype), mandatory, resourceSpecs);
     }
 }

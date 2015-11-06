@@ -18,8 +18,6 @@ package org.eclipse.leshan.server.californium.impl;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
@@ -27,7 +25,6 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
-import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
@@ -51,11 +48,7 @@ public class CaliforniumObservationTest {
 
     @BeforeClass
     public static void loadModel() {
-        Map<Integer, ObjectModel> models = new HashMap<>();
-        for (ObjectModel model : ObjectLoader.loadDefault()) {
-            models.put(model.id, model);
-        }
-        model = new LwM2mModel(models);
+        model = new LwM2mModel(ObjectLoader.loadDefault());
     }
 
     @Before

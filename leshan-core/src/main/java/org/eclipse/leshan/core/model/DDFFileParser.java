@@ -19,8 +19,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -83,7 +83,7 @@ public class DDFFileParser {
         String description = null;
         boolean multiple = false;
         boolean mandatory = false;
-        Map<Integer, ResourceModel> resources = new HashMap<>();
+        List<ResourceModel> resources = new ArrayList<>();
 
         for (int i = 0; i < object.getChildNodes().getLength(); i++) {
             Node field = object.getChildNodes().item(i);
@@ -107,8 +107,7 @@ public class DDFFileParser {
                 for (int j = 0; j < field.getChildNodes().getLength(); j++) {
                     Node item = field.getChildNodes().item(j);
                     if (item.getNodeName().equals("Item")) {
-                        ResourceModel res = this.parseResource(item);
-                        resources.put(res.id, res);
+                        resources.add(this.parseResource(item));
                     }
                 }
                 break;

@@ -23,8 +23,6 @@ import static org.mockito.Mockito.when;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
@@ -32,7 +30,6 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.leshan.ObserveSpec;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
-import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
@@ -57,11 +54,7 @@ public class CoapRequestBuilderTest {
 
     @BeforeClass
     public static void loadModel() {
-        Map<Integer, ObjectModel> models = new HashMap<>();
-        for (ObjectModel model : ObjectLoader.loadDefault()) {
-            models.put(model.id, model);
-        }
-        model = new LwM2mModel(models);
+        model = new LwM2mModel(ObjectLoader.loadDefault());
     }
 
     private Client newClient() throws UnknownHostException {
