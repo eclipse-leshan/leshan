@@ -15,9 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
-import java.net.InetAddress;
-import java.util.Date;
-
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.core.response.UpdateResponse;
 
@@ -27,50 +24,29 @@ import org.eclipse.leshan.core.response.UpdateResponse;
  */
 public class UpdateRequest implements UplinkRequest<UpdateResponse> {
 
-    private final InetAddress address;
-    private final Integer port;
     private final Long lifeTimeInSec;
     private final String smsNumber;
     private final BindingMode bindingMode;
     private final String registrationId;
     private final LinkObject[] objectLinks;
 
-    public UpdateRequest(String registrationId, InetAddress address, Integer port) {
-        this(registrationId, address, port, null, null, null, null);
-    }
-
-    public UpdateRequest(String registrationId, InetAddress address, Integer port, Long lifetime, String smsNumber,
-            BindingMode binding, LinkObject[] objectLinks) {
-        this(registrationId, address, port, lifetime, smsNumber, binding, objectLinks, null);
-    }
-
-    public UpdateRequest(String registrationId, Long lifetime, String smsNumber, BindingMode binding,
-            LinkObject[] objectLinks) {
-        this(registrationId, null, null, lifetime, smsNumber, binding, objectLinks, null);
-    }
-
     /**
      * Sets all fields.
      * 
      * @param registrationId the ID under which the client is registered
-     * @param address the client's host name or IP address
-     * @param port the UDP port the client uses for communication
      * @param lifetime the number of seconds the client would like its registration to be valid
      * @param smsNumber the SMS number the client can receive messages under
      * @param binding the binding mode(s) the client supports
      * @param objectLinks the objects and object instances the client hosts/supports
-     * @param registrationDate the point in time the client registered with the server (?)
      * @throws NullPointerException if the registration ID is <code>null</code>
      */
-    public UpdateRequest(String registrationId, InetAddress address, Integer port, Long lifetime, String smsNumber,
-            BindingMode binding, LinkObject[] objectLinks, Date registrationDate) {
+    public UpdateRequest(String registrationId, Long lifetime, String smsNumber, BindingMode binding,
+            LinkObject[] objectLinks) {
 
         if (registrationId == null) {
             throw new NullPointerException("Registration ID must not be null");
         }
         this.registrationId = registrationId;
-        this.address = address;
-        this.port = port;
         this.objectLinks = objectLinks;
         this.lifeTimeInSec = lifetime;
         this.bindingMode = binding;
@@ -79,14 +55,6 @@ public class UpdateRequest implements UplinkRequest<UpdateResponse> {
 
     public String getRegistrationId() {
         return registrationId;
-    }
-
-    public InetAddress getAddress() {
-        return address;
-    }
-
-    public Integer getPort() {
-        return port;
     }
 
     public LinkObject[] getObjectLinks() {

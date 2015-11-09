@@ -15,10 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.security.PublicKey;
-
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.core.response.RegisterResponse;
 
@@ -28,21 +24,20 @@ import org.eclipse.leshan.core.response.RegisterResponse;
  */
 public class RegisterRequest implements UplinkRequest<RegisterResponse> {
 
-    private String endpointName = null;
-    private Long lifetime = null;
-    private String lwVersion = null;
-    private BindingMode bindingMode = null;
-    private String smsNumber = null;
-    private LinkObject[] objectLinks = null;
-    private InetSocketAddress registrationEndpoint = null;
-    private InetAddress sourceAddress = null;
-    private int sourcePort;
-    private String pskIdentity = null;
-    private PublicKey publicKey = null;
-    private String X509Identity = null;
+    private final String endpointName;
+    private final Long lifetime;
+    private final String lwVersion;
+    private final BindingMode bindingMode;
+    private final String smsNumber;
+    private final LinkObject[] objectLinks;
 
     public RegisterRequest(String endpointName) {
         this.endpointName = endpointName;
+        this.lifetime = null;
+        this.lwVersion = null;
+        this.bindingMode = null;
+        this.smsNumber = null;
+        this.objectLinks = null;
     }
 
     public RegisterRequest(String endpointName, Long lifetime, String lwVersion, BindingMode bindingMode,
@@ -53,32 +48,6 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
         this.bindingMode = bindingMode;
         this.smsNumber = smsNumber;
         this.objectLinks = objectLinks;
-    }
-
-    public RegisterRequest(String endpointName, Long lifetime, String lwVersion, BindingMode bindingMode,
-            String smsNumber, LinkObject[] objectLinks, InetAddress sourceAddress, int sourcePort,
-            InetSocketAddress registrationEndpoint, String pskIdentity, PublicKey publicKey, String X509Identity) {
-        this.endpointName = endpointName;
-        this.lifetime = lifetime;
-        this.lwVersion = lwVersion;
-        this.bindingMode = bindingMode;
-        this.smsNumber = smsNumber;
-        this.objectLinks = objectLinks;
-
-        this.sourceAddress = sourceAddress;
-        this.sourcePort = sourcePort;
-        this.registrationEndpoint = registrationEndpoint;
-        this.pskIdentity = pskIdentity;
-        this.publicKey = publicKey;
-        this.X509Identity = X509Identity;
-    }
-
-    public InetAddress getSourceAddress() {
-        return sourceAddress;
-    }
-
-    public int getSourcePort() {
-        return sourcePort;
     }
 
     public String getEndpointName() {
@@ -103,26 +72,6 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
 
     public LinkObject[] getObjectLinks() {
         return objectLinks;
-    }
-
-    public InetSocketAddress getRegistrationEndpoint() {
-        return registrationEndpoint;
-    }
-
-    public boolean isSecure() {
-        return pskIdentity != null || publicKey != null || X509Identity != null;
-    }
-
-    public String getPskIdentity() {
-        return pskIdentity;
-    }
-
-    public PublicKey getSourcePublicKey() {
-        return publicKey;
-    }
-
-    public String getX509Identity() {
-        return X509Identity;
     }
 
     @Override
