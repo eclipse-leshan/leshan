@@ -31,6 +31,14 @@ public class BootstrapMain {
 
     private static final Logger LOG = LoggerFactory.getLogger(BootstrapMain.class);
 
+    private static String parseHost(String iface) {
+        return iface.substring(0, iface.lastIndexOf(':'));
+    }
+
+    private static int parsePort(String iface) {
+        return Integer.parseInt(iface.substring(iface.lastIndexOf(':') + 1, iface.length()));
+    }
+
     public static void main(String[] args) {
 
         BootstrapStoreImpl bsStore = new BootstrapStoreImpl();
@@ -45,12 +53,9 @@ public class BootstrapMain {
         if (iface == null || iface.isEmpty() || ifaces == null || ifaces.isEmpty()) {
             bsServer = new LwM2mBootstrapServerImpl(bsStore, securityStore);
         } else {
-            String[] add = iface.split(":");
-            String[] adds = ifaces.split(":");
-
             // user specified the iface to be bound
-            bsServer = new LwM2mBootstrapServerImpl(new InetSocketAddress(add[0], Integer.parseInt(add[1])),
-                    new InetSocketAddress(adds[0], Integer.parseInt(adds[1])), bsStore, securityStore);
+            bsServer = new LwM2mBootstrapServerImpl(new InetSocketAddress(parseHost(iface), parsePort(iface)),
+                    new InetSocketAddress(parseHost(ifaces), parsePort(ifaces)), bsStore, securityStore);
         }
 
         bsServer.start();
