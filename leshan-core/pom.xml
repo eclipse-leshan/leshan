@@ -22,7 +22,7 @@ Contributors:
     <parent>
         <groupId>org.eclipse.leshan</groupId>
         <artifactId>leshan</artifactId>
-        <version>0.1.11-M6-SNAPSHOT</version>
+        <version>0.1.11-M6</version>
     </parent>
     <artifactId>leshan-core</artifactId>
     <packaging>bundle</packaging>
