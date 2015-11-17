@@ -31,6 +31,7 @@ import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.server.resources.CoapExchange;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
@@ -172,6 +173,9 @@ public class BootstrapResource extends CoapResource {
             postSecurity.setDestinationPort(targetPort);
             postSecurity.setPayload(encoded.array());
 
+            // TLV format
+            postSecurity.getOptions().setContentFormat(ContentFormat.TLV.getCode());
+
             postSecurity.addMessageObserver(new MessageObserver() {
 
                 @Override
@@ -233,6 +237,10 @@ public class BootstrapResource extends CoapResource {
             postServer.setDestination(targetAddress);
             postServer.setDestinationPort(targetPort);
             postServer.setPayload(encoded.array());
+
+            // TLV format
+            postServer.getOptions().setContentFormat(ContentFormat.TLV.getCode());
+
             postServer.addMessageObserver(new MessageObserver() {
                 @Override
                 public void onTimeout() {
