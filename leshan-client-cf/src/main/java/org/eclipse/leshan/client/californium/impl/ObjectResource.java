@@ -100,8 +100,12 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
         // Manage Discover Request
         if (exchange.getRequestOptions().getAccept() == MediaTypeRegistry.APPLICATION_LINK_FORMAT) {
             DiscoverResponse response = nodeEnabler.discover(new DiscoverRequest(URI));
-            exchange.respond(fromLwM2mCode(response.getCode()), LinkObject.serialyse(response.getObjectLinks()),
-                    MediaTypeRegistry.APPLICATION_LINK_FORMAT);
+            if (response.getCode().isError()) {
+                exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
+            } else {
+                exchange.respond(fromLwM2mCode(response.getCode()), LinkObject.serialyse(response.getObjectLinks()),
+                        MediaTypeRegistry.APPLICATION_LINK_FORMAT);
+            }
         }
         // Manage Observe Request
         else if (exchange.getRequestOptions().hasObserve()) {
@@ -114,7 +118,7 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
                 exchange.respond(ResponseCode.CONTENT, LwM2mNodeEncoder.encode(content, contentFormat, path, model));
                 return;
             } else {
-                exchange.respond(fromLwM2mCode(response.getCode()));
+                exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
                 return;
             }
         }
@@ -129,7 +133,7 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
                 exchange.respond(ResponseCode.CONTENT, LwM2mNodeEncoder.encode(content, contentFormat, path, model));
                 return;
             } else {
-                exchange.respond(fromLwM2mCode(response.getCode()));
+                exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
                 return;
             }
         }
@@ -149,7 +153,7 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
         // Manage Write Attributes Request
         if (spec != null) {
             WriteAttributesResponse response = nodeEnabler.writeAttributes(new WriteAttributesRequest(URI, spec));
-            coapExchange.respond(fromLwM2mCode(response.getCode()));
+            coapExchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
             return;
         }
         // Manage Write Request (replace)
@@ -162,7 +166,7 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
                 lwM2mNode = LwM2mNodeDecoder.decode(coapExchange.getRequestPayload(), contentFormat, path, model);
                 WriteResponse response = nodeEnabler
                         .write(new WriteRequest(Mode.REPLACE, contentFormat, URI, lwM2mNode));
-                coapExchange.respond(fromLwM2mCode(response.getCode()));
+                coapExchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
                 return;
             } catch (InvalidValueException e) {
                 coapExchange.respond(ResponseCode.INTERNAL_SERVER_ERROR);
@@ -181,7 +185,7 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
         if (path.isResource()) {
             ExecuteResponse response = nodeEnabler.execute(new ExecuteRequest(URI, new String(exchange
                     .getRequestPayload())));
-            exchange.respond(fromLwM2mCode(response.getCode()));
+            exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
             return;
         }
 
@@ -219,7 +223,7 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
                 exchange.respond(fromLwM2mCode(response.getCode()));
                 return;
             } else {
-                exchange.respond(fromLwM2mCode(response.getCode()));
+                exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
                 return;
             }
         } catch (InvalidValueException e) {
@@ -233,7 +237,7 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
         // Manage Delete Request
         String URI = coapExchange.getRequestOptions().getUriPathString();
         DeleteResponse response = nodeEnabler.delete(new DeleteRequest(URI));
-        coapExchange.respond(fromLwM2mCode(response.getCode()));
+        coapExchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
     }
 
     @Override
@@ -274,6 +278,8 @@ public class ObjectResource extends CoapResource implements LinkFormattable, Not
             return ResponseCode.METHOD_NOT_ALLOWED;
         case FORBIDDEN:
             return ResponseCode.FORBIDDEN;
+        case INTERNAL_SERVER_ERROR:
+            return ResponseCode.INTERNAL_SERVER_ERROR;
         default:
             throw new IllegalArgumentException("Invalid CoAP code for LWM2M response: " + code);
         }

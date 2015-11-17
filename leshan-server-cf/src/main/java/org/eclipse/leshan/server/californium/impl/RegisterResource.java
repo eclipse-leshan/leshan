@@ -182,9 +182,7 @@ public class RegisterResource extends CoapResource {
             exchange.setLocationPath(RESOURCE_NAME + "/" + response.getRegistrationID());
             exchange.respond(ResponseCode.CREATED);
         } else {
-            // TODO we lost specific message error with this refactoring
-            // exchange.respond(fromLwM2mCode(response.getCode()),"error message");
-            exchange.respond(fromLwM2mCode(response.getCode()));
+            exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
         }
     }
 
@@ -215,7 +213,7 @@ public class RegisterResource extends CoapResource {
         UpdateResponse updateResponse = registrationHandler.update(sender, updateRequest);
 
         // Create CoAP Response from LwM2m request
-        exchange.respond(fromLwM2mCode(updateResponse.getCode()));
+        exchange.respond(fromLwM2mCode(updateResponse.getCode()), updateResponse.getErrorMessage());
     }
 
     private void handleDeregister(CoapExchange exchange, String registrationId) {
@@ -229,7 +227,7 @@ public class RegisterResource extends CoapResource {
         DeregisterResponse deregisterResponse = registrationHandler.deregister(sender, deregisterRequest);
 
         // Create CoAP Response from LwM2m request
-        exchange.respond(fromLwM2mCode(deregisterResponse.getCode()));
+        exchange.respond(fromLwM2mCode(deregisterResponse.getCode()), deregisterResponse.getErrorMessage());
     }
 
     private Identity extractIdentity(CoapExchange exchange) {
@@ -280,6 +278,8 @@ public class RegisterResource extends CoapResource {
             return ResponseCode.METHOD_NOT_ALLOWED;
         case FORBIDDEN:
             return ResponseCode.FORBIDDEN;
+        case INTERNAL_SERVER_ERROR:
+            return ResponseCode.INTERNAL_SERVER_ERROR;
         default:
             throw new IllegalArgumentException("Invalid CoAP code for LWM2M response: " + code);
         }
