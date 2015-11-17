@@ -17,10 +17,9 @@ package org.eclipse.leshan.server.registration;
 
 import java.net.InetSocketAddress;
 import java.security.PublicKey;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.eclipse.leshan.core.request.DeregisterRequest;
+import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.response.DeregisterResponse;
@@ -52,118 +51,48 @@ public class RegistrationHandler {
         this.securityStore = securityStore;
     }
 
-    public RegisterResponse register(RegisterRequest registerRequest) {
+    public RegisterResponse register(Identity sender, RegisterRequest registerRequest, InetSocketAddress serverEndpoint) {
 
-        if (registerRequest.getEndpointName() == null || registerRequest.getEndpointName().isEmpty()) {
+        if (registerRequest.getEndpointName() == null || registerRequest.getEndpointName().isEmpty() || sender == null) {
             return RegisterResponse.badRequest(null);
+        }
+
+        // We must check if the client is using the right identity.
+        if (!isAuthorized(registerRequest.getEndpointName(), sender)) {
+            return RegisterResponse.forbidden(null);
+        }
+
+        Client client = new Client(RegistrationHandler.createRegistrationId(), registerRequest.getEndpointName(),
+                sender.getPeerAddress().getAddress(), sender.getPeerAddress().getPort(),
+                registerRequest.getLwVersion(), registerRequest.getLifetime(), registerRequest.getSmsNumber(),
+                registerRequest.getBindingMode(), registerRequest.getObjectLinks(), serverEndpoint);
+
+        if (clientRegistry.registerClient(client)) {
+            LOG.debug("New registered client: {}", client);
+            return RegisterResponse.success(client.getRegistrationId());
         } else {
-            // register
-            String registrationId = RegistrationHandler.createRegistrationId();
-
-            // do we have security information for this client?
-            SecurityInfo securityInfo = securityStore.getByEndpoint(registerRequest.getEndpointName());
-
-            // which end point did the client post this request to?
-            InetSocketAddress registrationEndpoint = registerRequest.getRegistrationEndpoint();
-
-            // if this is a secure end-point, we must check that the registering client is using the right identity.
-            if (registerRequest.isSecure()) {
-                PublicKey rpk = registerRequest.getSourcePublicKey();
-                String pskIdentity = registerRequest.getPskIdentity();
-                String X509Identity = registerRequest.getX509Identity();
-
-                if (securityInfo == null) {
-                    LOG.debug("A client {} without security info try to connect through the secure endpont",
-                            registerRequest.getEndpointName());
-                    return RegisterResponse.forbidden(null);
-                } else if (pskIdentity != null) {
-                    // Manage PSK authentication
-                    // ----------------------------------------------------
-                    LOG.debug("Registration request received using the secure endpoint {} with identity {}",
-                            registrationEndpoint, pskIdentity);
-
-                    if (pskIdentity == null || !pskIdentity.equals(securityInfo.getIdentity())) {
-                        LOG.warn("Invalid identity for client {}: expected '{}' but was '{}'",
-                                registerRequest.getEndpointName(), securityInfo.getIdentity(), pskIdentity);
-                        return RegisterResponse.forbidden(null);
-                    } else {
-                        LOG.debug("authenticated client {} using DTLS PSK", registerRequest.getEndpointName());
-                    }
-                } else if (rpk != null) {
-                    // Manage RPK authentication
-                    // ----------------------------------------------------
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Registration request received using the secure endpoint {} with rpk {}",
-                                registrationEndpoint, Hex.encodeHexString(rpk.getEncoded()));
-                    }
-
-                    if (rpk == null || !rpk.equals(securityInfo.getRawPublicKey())) {
-                        if (LOG.isWarnEnabled()) {
-                            LOG.warn("Invalid rpk for client {}: expected \n'{}'\n but was \n'{}'",
-                                    registerRequest.getEndpointName(),
-                                    Hex.encodeHexString(securityInfo.getRawPublicKey().getEncoded()),
-                                    Hex.encodeHexString(rpk.getEncoded()));
-                        }
-                        return RegisterResponse.forbidden(null);
-                    } else {
-                        LOG.debug("authenticated client {} using DTLS RPK", registerRequest.getEndpointName());
-                    }
-                } else if (X509Identity != null) {
-                    // Manage X509 certificate authentication
-                    // ----------------------------------------------------
-                    LOG.debug("Registration request received using the secure endpoint {} with X509 identity {}",
-                            registrationEndpoint, X509Identity);
-
-                    String endpointFromCert = null;
-                    String endpointFromReq = registerRequest.getEndpointName();
-
-                    if (!securityInfo.useX509Cert()) {
-                        LOG.warn("Client {} is not supposed to use X509 certificate to authenticate", endpointFromReq);
-                        return RegisterResponse.forbidden(null);
-                    }
-
-                    Matcher endpointMatcher = Pattern.compile("CN=.*?,").matcher(X509Identity);
-                    if (endpointMatcher.find()) {
-                        endpointFromCert = endpointMatcher.group().substring(3, endpointMatcher.group().length() - 1);
-                    }
-
-                    if (endpointFromCert == null || !endpointFromCert.equals(endpointFromReq)) {
-                        LOG.warn("Invalid certificate endpoint for client {}: expected \n'{}'\n but was \n'{}'",
-                                endpointFromReq, endpointFromReq, endpointFromCert);
-                        return RegisterResponse.forbidden(null);
-                    } else {
-                        LOG.debug("authenticated client {} using DTLS X509 certificates", endpointFromReq);
-                    }
-                } else {
-                    LOG.warn("Unable to authenticate client {}: unknown authentication mode.",
-                            registerRequest.getEndpointName());
-                    return RegisterResponse.forbidden(null);
-                }
-            } else {
-                if (securityInfo != null) {
-                    LOG.warn("client {} must connect using DTLS ", registerRequest.getEndpointName());
-                    return RegisterResponse.badRequest(null);
-                }
-            }
-
-            Client client = new Client(registrationId, registerRequest.getEndpointName(),
-                    registerRequest.getSourceAddress(), registerRequest.getSourcePort(),
-                    registerRequest.getLwVersion(), registerRequest.getLifetime(), registerRequest.getSmsNumber(),
-                    registerRequest.getBindingMode(), registerRequest.getObjectLinks(), registrationEndpoint);
-
-            if (clientRegistry.registerClient(client)) {
-                LOG.debug("New registered client: {}", client);
-                return RegisterResponse.success(client.getRegistrationId());
-            } else {
-                return RegisterResponse.forbidden(null);
-            }
+            return RegisterResponse.forbidden(null);
         }
     }
 
-    public UpdateResponse update(UpdateRequest updateRequest) {
-        Client client = clientRegistry.updateClient(new ClientUpdate(updateRequest.getRegistrationId(), updateRequest
-                .getAddress(), updateRequest.getPort(), updateRequest.getLifeTimeInSec(), updateRequest.getSmsNumber(),
-                updateRequest.getBindingMode(), updateRequest.getObjectLinks()));
+    public UpdateResponse update(Identity sender, UpdateRequest updateRequest) {
+
+        if (sender == null) {
+            return UpdateResponse.badRequest(null);
+        }
+
+        // We must check if the client is using the right identity.
+        Client client = clientRegistry.findByRegistrationId(updateRequest.getRegistrationId());
+        if (client == null) {
+            return UpdateResponse.notFound();
+        }
+        if (!isAuthorized(client.getEndpoint(), sender)) {
+            return UpdateResponse.badRequest("forbidden");
+        }
+
+        client = clientRegistry.updateClient(new ClientUpdate(updateRequest.getRegistrationId(), sender
+                .getPeerAddress().getAddress(), sender.getPeerAddress().getPort(), updateRequest.getLifeTimeInSec(),
+                updateRequest.getSmsNumber(), updateRequest.getBindingMode(), updateRequest.getObjectLinks()));
         if (client == null) {
             return UpdateResponse.notFound();
         } else {
@@ -171,7 +100,20 @@ public class RegistrationHandler {
         }
     }
 
-    public DeregisterResponse deregister(DeregisterRequest deregisterRequest) {
+    public DeregisterResponse deregister(Identity sender, DeregisterRequest deregisterRequest) {
+        if (sender == null) {
+            return DeregisterResponse.badRequest(null);
+        }
+
+        // We must check if the client is using the right identity.
+        Client client = clientRegistry.findByRegistrationId(deregisterRequest.getRegistrationID());
+        if (client == null) {
+            return DeregisterResponse.notFound();
+        }
+        if (!isAuthorized(client.getEndpoint(), sender)) {
+            return DeregisterResponse.badRequest("forbidden");
+        }
+
         Client unregistered = clientRegistry.deregisterClient(deregisterRequest.getRegistrationID());
         if (unregistered != null) {
             return DeregisterResponse.success();
@@ -183,5 +125,87 @@ public class RegistrationHandler {
 
     private static String createRegistrationId() {
         return RandomStringUtils.random(10, true, true);
+    }
+
+    /**
+     * Return true if the client with the given lightweight M2M endPoint is authorized to communicate with the given
+     * security parameters.
+     * 
+     * @param lwM2mEndPointName the lightweight M2M endPoint name
+     * @param clientIdentity the identity at TLS level
+     * @return true if device get authorization
+     */
+    private boolean isAuthorized(String lwM2mEndPointName, Identity clientIdentity) {
+        // do we have security information for this client?
+        SecurityInfo expectedSecurityInfo = securityStore.getByEndpoint(lwM2mEndPointName);
+
+        // if this is a secure end-point, we must check that the registering client is using the right identity.
+        if (clientIdentity.isSecure()) {
+            if (expectedSecurityInfo == null) {
+                LOG.debug("A client {} without security info try to connect through the secure endpont",
+                        lwM2mEndPointName);
+                return false;
+            } else if (clientIdentity.isPSK()) {
+                // Manage PSK authentication
+                // ----------------------------------------------------
+                String pskIdentity = clientIdentity.getPskIdentity();
+                LOG.debug("Registration request received using the secure endpoint with identity {}", pskIdentity);
+
+                if (pskIdentity == null || !pskIdentity.equals(expectedSecurityInfo.getIdentity())) {
+                    LOG.warn("Invalid identity for client {}: expected '{}' but was '{}'", lwM2mEndPointName,
+                            expectedSecurityInfo.getIdentity(), pskIdentity);
+                    return false;
+                } else {
+                    LOG.debug("authenticated client {} using DTLS PSK", lwM2mEndPointName);
+                }
+            } else if (clientIdentity.isRPK()) {
+                // Manage RPK authentication
+                // ----------------------------------------------------
+                PublicKey publicKey = clientIdentity.getRawPublicKey();
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Registration request received using the secure endpoint with rpk {}",
+                            Hex.encodeHexString(publicKey.getEncoded()));
+                }
+
+                if (publicKey == null || !publicKey.equals(expectedSecurityInfo.getRawPublicKey())) {
+                    if (LOG.isWarnEnabled()) {
+                        LOG.warn("Invalid rpk for client {}: expected \n'{}'\n but was \n'{}'", lwM2mEndPointName,
+                                Hex.encodeHexString(expectedSecurityInfo.getRawPublicKey().getEncoded()),
+                                Hex.encodeHexString(publicKey.getEncoded()));
+                    }
+                    return false;
+                } else {
+                    LOG.debug("authenticated client {} using DTLS RPK", lwM2mEndPointName);
+                }
+            } else if (clientIdentity.isX509()) {
+                // Manage X509 certificate authentication
+                // ----------------------------------------------------
+                String x509CommonName = clientIdentity.getX509CommonName();
+                LOG.debug("Registration request received using the secure endpoint with X509 identity {}",
+                        x509CommonName);
+
+                if (!expectedSecurityInfo.useX509Cert()) {
+                    LOG.warn("Client {} is not supposed to use X509 certificate to authenticate", lwM2mEndPointName);
+                    return false;
+                }
+
+                if (!x509CommonName.equals(lwM2mEndPointName)) {
+                    LOG.warn("Invalid certificate common name for client {}: expected \n'{}'\n but was \n'{}'",
+                            lwM2mEndPointName, lwM2mEndPointName, x509CommonName);
+                    return false;
+                } else {
+                    LOG.debug("authenticated client {} using DTLS X509 certificates", lwM2mEndPointName);
+                }
+            } else {
+                LOG.warn("Unable to authenticate client {}: unknown authentication mode.", lwM2mEndPointName);
+                return false;
+            }
+        } else {
+            if (expectedSecurityInfo != null) {
+                LOG.warn("client {} must connect using DTLS ", lwM2mEndPointName);
+                return false;
+            }
+        }
+        return true;
     }
 }
