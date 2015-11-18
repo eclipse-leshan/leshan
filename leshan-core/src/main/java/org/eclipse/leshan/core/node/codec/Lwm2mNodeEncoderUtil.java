@@ -59,6 +59,30 @@ public class Lwm2mNodeEncoderUtil {
         // Let's do some magic to try to convert this value...
 
         switch (expectedType) {
+        case INTEGER:
+            switch (currentType) {
+            case FLOAT:
+                LOG.debug("Trying to convert float value {} to integer", value);
+                Long longValue = ((Double) value).longValue();
+                if ((double) value == longValue.doubleValue()) {
+                    return longValue;
+                }
+            default:
+                break;
+            }
+            break;
+        case FLOAT:
+            switch (currentType) {
+            case INTEGER:
+                LOG.debug("Trying to convert integer value {} to float", value);
+                Double floatValue = ((Long) value).doubleValue();
+                if ((long) value == floatValue.longValue()) {
+                    return floatValue;
+                }
+            default:
+                break;
+            }
+            break;
         case BOOLEAN:
             switch (currentType) {
             case STRING:

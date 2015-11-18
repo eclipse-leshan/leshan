@@ -17,6 +17,7 @@ package org.eclipse.leshan.core.node.codec;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import org.eclipse.leshan.core.model.ResourceModel.Type;
@@ -44,4 +45,49 @@ public class Lwm2mNodeEncoderUtilTest {
         Lwm2mNodeEncoderUtil.convertValue(hexString, Type.STRING, Type.OPAQUE);
     }
 
+    @Test
+    public void testConvertPositiveFloatToInteger() {
+        double floatValue = 10.0d;
+        Object convertValue = Lwm2mNodeEncoderUtil.convertValue(floatValue, Type.FLOAT, Type.INTEGER);
+        assertEquals(10l, convertValue);
+    }
+
+    @Test
+    public void testConvertNegativeFloatToInteger() {
+        double floatValue = -2015.0d;
+        Object convertValue = Lwm2mNodeEncoderUtil.convertValue(floatValue, Type.FLOAT, Type.INTEGER);
+        assertEquals(-2015l, convertValue);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConvertFloatToIntegerDetectsInvalidConvertion() {
+        double floatValue = 10.5d;
+        Lwm2mNodeEncoderUtil.convertValue(floatValue, Type.FLOAT, Type.INTEGER);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConvertMaxFloatToIntegerDetectsInvalidConvertion() {
+        double floatValue = Double.MAX_VALUE;
+        Lwm2mNodeEncoderUtil.convertValue(floatValue, Type.FLOAT, Type.INTEGER);
+    }
+
+    @Test
+    public void testConvertPositiveIntegerToFloat() {
+        long longValue = 999l;
+        Object convertValue = Lwm2mNodeEncoderUtil.convertValue(longValue, Type.INTEGER, Type.FLOAT);
+        assertEquals(999.0d, convertValue);
+    }
+
+    @Test
+    public void testConvertNegativeIntegerToFloat() {
+        long longValue = -10l;
+        Object convertValue = Lwm2mNodeEncoderUtil.convertValue(longValue, Type.INTEGER, Type.FLOAT);
+        assertEquals(-10.0d, convertValue);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConvertIntegerToFloatDetectsInvalidConvertion() {
+        long longValue = 9223372036854775806l;
+        Lwm2mNodeEncoderUtil.convertValue(longValue, Type.INTEGER, Type.FLOAT);
+    }
 }
