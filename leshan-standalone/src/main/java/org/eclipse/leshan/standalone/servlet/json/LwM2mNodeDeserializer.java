@@ -110,10 +110,10 @@ public class LwM2mNodeDeserializer implements JsonDeserializer<LwM2mNode> {
         if (val.isString())
             return org.eclipse.leshan.core.model.ResourceModel.Type.STRING;
         if (val.isNumber()) {
-            if (val.getAsDouble() == (long) val.getAsLong()) {
-                return org.eclipse.leshan.core.model.ResourceModel.Type.BOOLEAN;
+            if (val.getAsDouble() == (double) val.getAsLong()) {
+                return org.eclipse.leshan.core.model.ResourceModel.Type.INTEGER;
             } else {
-                return org.eclipse.leshan.core.model.ResourceModel.Type.BOOLEAN;
+                return org.eclipse.leshan.core.model.ResourceModel.Type.FLOAT;
             }
         }
         // use string as default value
