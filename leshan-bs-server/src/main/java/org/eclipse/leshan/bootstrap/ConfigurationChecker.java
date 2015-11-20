@@ -41,8 +41,6 @@ public class ConfigurationChecker {
                 assertIf(ArrayUtils.isEmpty(sec.secretKey), "pre-shared-key mode, secret key must not be empty");
                 assertIf(ArrayUtils.isEmpty(sec.publicKeyOrId),
                         "pre-shared-key mode, public key or id must not be empty");
-                assertIf(ArrayUtils.isEmpty(sec.serverPublicKeyOrId),
-                        "pre-shared-key mode, server public key or ID must not be empty");
                 break;
             case RPK:
                 assertIf(ArrayUtils.isEmpty(sec.secretKey), "pre-shared-key mode, secret key must not be empty");
