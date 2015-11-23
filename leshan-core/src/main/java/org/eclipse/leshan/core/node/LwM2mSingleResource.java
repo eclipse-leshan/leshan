@@ -39,6 +39,57 @@ public class LwM2mSingleResource implements LwM2mResource {
         this.type = type;
     }
 
+    public static LwM2mSingleResource newResource(int id, Object value, Type type) {
+        switch (type) {
+        case INTEGER:
+            if (value instanceof Long)
+                break;
+        case FLOAT:
+            if (value instanceof Double)
+                break;
+        case BOOLEAN:
+            if (value instanceof Boolean)
+                break;
+        case OPAQUE:
+            if (value instanceof byte[])
+                break;
+        case STRING:
+            if (value instanceof String)
+                break;
+        case TIME:
+            if (value instanceof Date)
+                break;
+            throw new IllegalArgumentException("Value does not match the given datatype");
+        default:
+            throw new IllegalArgumentException(String.format("Type %s is not supported", type.name()));
+        }
+        return new LwM2mSingleResource(id, value, type);
+    }
+
+    public static LwM2mSingleResource newStringResource(int id, String value) {
+        return new LwM2mSingleResource(id, value, Type.STRING);
+    }
+
+    public static LwM2mSingleResource newIntegerResource(int id, long value) {
+        return new LwM2mSingleResource(id, value, Type.INTEGER);
+    }
+
+    public static LwM2mSingleResource newBooleanResource(int id, boolean value) {
+        return new LwM2mSingleResource(id, value, Type.BOOLEAN);
+    }
+
+    public static LwM2mSingleResource newFloatResource(int id, double value) {
+        return new LwM2mSingleResource(id, value, Type.FLOAT);
+    }
+
+    public static LwM2mSingleResource newDateResource(int id, Date value) {
+        return new LwM2mSingleResource(id, value, Type.TIME);
+    }
+
+    public static LwM2mSingleResource newBinaryResource(int id, byte[] value) {
+        return new LwM2mSingleResource(id, value, Type.OPAQUE);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -131,54 +182,9 @@ public class LwM2mSingleResource implements LwM2mResource {
         return true;
     }
 
-    public static LwM2mSingleResource newResource(int id, Object value, Type type) {
-        switch (type) {
-        case INTEGER:
-            if (value instanceof Long)
-                break;
-        case FLOAT:
-            if (value instanceof Double)
-                break;
-        case BOOLEAN:
-            if (value instanceof Boolean)
-                break;
-        case OPAQUE:
-            if (value instanceof byte[])
-                break;
-        case STRING:
-            if (value instanceof String)
-                break;
-        case TIME:
-            if (value instanceof Date)
-                break;
-            throw new IllegalArgumentException("Value does not match the given datatype");
-        default:
-            throw new IllegalArgumentException(String.format("Type %s is not supported", type.name()));
-        }
-        return new LwM2mSingleResource(id, value, type);
+    @Override
+    public String toString() {
+        return String.format("LwM2mSingleResource [id=%s, value=%s, type=%s]", id, value, type);
     }
 
-    public static LwM2mSingleResource newStringResource(int id, String value) {
-        return new LwM2mSingleResource(id, value, Type.STRING);
-    }
-
-    public static LwM2mSingleResource newIntegerResource(int id, long value) {
-        return new LwM2mSingleResource(id, value, Type.INTEGER);
-    }
-
-    public static LwM2mSingleResource newBooleanResource(int id, boolean value) {
-        return new LwM2mSingleResource(id, value, Type.BOOLEAN);
-    }
-
-    public static LwM2mSingleResource newFloatResource(int id, double value) {
-        return new LwM2mSingleResource(id, value, Type.FLOAT);
-    }
-
-    public static LwM2mSingleResource newDateResource(int id, Date value) {
-        return new LwM2mSingleResource(id, value, Type.TIME);
-    }
-
-    public static LwM2mSingleResource newBinaryResource(int id, byte[] value) {
-        return new LwM2mSingleResource(id, value, Type.OPAQUE);
-    }
 }
