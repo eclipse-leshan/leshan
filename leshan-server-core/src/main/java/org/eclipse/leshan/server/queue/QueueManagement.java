@@ -28,7 +28,7 @@ public interface QueueManagement {
 
     /**
      * Get all requests for a given client endpoint.
-     *
+     * 
      * @param endpoint client endpoint
      * @return list of queue requests
      */

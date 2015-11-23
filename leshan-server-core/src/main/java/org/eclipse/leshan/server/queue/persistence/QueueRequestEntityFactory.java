@@ -16,8 +16,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.queue.persistence;
 
-import java.util.concurrent.TimeUnit;
-
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 
@@ -31,11 +29,8 @@ public interface QueueRequestEntityFactory {
      *
      * @param endpoint client's endpoint name
      * @param request request
-     * @param timeToLive time to live for request
-     * @param timeToLiveTimeUnit the time unit of the {@code timeToLive} above
      *
      * @return new QueueRequestEntity
      */
-    QueueRequestEntity newQueueRequestEntity(String endpoint, DownlinkRequest<LwM2mResponse> request, long timeToLive,
-            TimeUnit timeToLiveTimeUnit);
+    QueueRequestEntity newQueueRequestEntity(String endpoint, DownlinkRequest<LwM2mResponse> request);
 }

@@ -16,8 +16,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.queue;
 
-import java.util.Calendar;
-
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 
@@ -28,7 +26,7 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 public interface QueueRequest {
 
     /**
-     * @return a request ID assigned to this queue request
+     * @return a response ID assigned to this queue request
      */
     long getRequestId();
 
@@ -41,17 +39,6 @@ public interface QueueRequest {
      * @return the actual downlink request which is to be send
      */
     DownlinkRequest<LwM2mResponse> getDownlinkRequest();
-
-    /**
-     * @return calendar date, when the time-to-send for the request expires and the sender will not anymore try to send
-     *         it.
-     */
-    Calendar getSendExpiration();
-
-    /**
-     * @return true, if the time interval for sending the request passed, i.e. send time is elapsed.
-     */
-    boolean isSendExpirationReached();
 
     /**
      * @return the current state of this request

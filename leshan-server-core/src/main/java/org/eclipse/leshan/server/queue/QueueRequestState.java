@@ -18,30 +18,23 @@ package org.eclipse.leshan.server.queue;
 
 /**
  * Possible valid states in a lifetime of a queue request.
- *
+ * 
  * @see QueueRequest
  */
 public enum QueueRequestState {
     /** Request was put into the queue. */
-    ENQUEUED,
-
+    NEW,
     /** Request is being processed, i.e. sending. */
     PROCESSING,
-
     /**
      * Request is being processed, but user deleted it. In this state the running request gets executed until the next
      * timeout or success. In case of success the request gets handled as it was not deleted, i.e. response callback
      * gets called. In case of timeout the request gets deleted and the error callback with
      * {@link QueueRequestDeletedException} gets called.
      */
-    PROCESSING_DELETED,
-
+    CANCELED,
     /** Request could not be sent to the client and was deferred. */
     DEFERRED,
-
     /** Request was sent successfully. */
-    EXECUTED,
-
-    /** Request has been elapsed. */
-    TTL_ELAPSED
+    EXECUTED
 }

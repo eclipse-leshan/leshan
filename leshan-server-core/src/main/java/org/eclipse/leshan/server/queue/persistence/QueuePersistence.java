@@ -23,7 +23,7 @@ import org.eclipse.leshan.server.queue.QueueRequestState;
 /**
  * Queue persistence implementations provide basic operations to handle persistence of queue requests, which are passed
  * around as entities (QueueRequestEntity object instances).
- *
+ * 
  * @see QueueRequestEntity
  */
 public interface QueuePersistence {
@@ -52,21 +52,12 @@ public interface QueuePersistence {
 
     /**
      * Retrieves a particular queue request entity for given client's endpoint and queue request ID.
-     *
+     * 
      * @param endpoint client's endpoint
      * @param requestId request ID
      * @return queue request entity
      */
     QueueRequestEntity retrieveByRequestId(String endpoint, long requestId);
-
-    /**
-     * Retrieves a list of queue request entities sorted ascending by their expiration dates, for all clients. The
-     * maximum number of returned elements in the list is limited by the given parameter.
-     *
-     * @param limit maximum number of queue request entities returned
-     * @return list of queue request sorted ascending by their expiration dates
-     */
-    List<QueueRequestEntity> retrieveSortedBySendExpirationAsc(int limit);
 
     /**
      * Updates the queue request entity in the persistence.
@@ -86,7 +77,7 @@ public interface QueuePersistence {
 
     /**
      * Updates the state of the given queue request to the given new state.
-     *
+     * 
      * @param entity entity to update state
      * @param newState new state value
      * @return updated queue request entity
