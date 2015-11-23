@@ -28,8 +28,8 @@ public interface QueueRequestEntity {
     /**
      * a request ID is used to keep the natural ascending order of queue requests in the queue. In a specific
      * persistence implementation, it can be, for instance, a record ID field of the particular queue request.
-     *
-     * @return ID request ID
+     * 
+     * @return ID
      */
     long getRequestId();
 
@@ -42,17 +42,6 @@ public interface QueueRequestEntity {
      * @return the actual downlink request which is to be send
      */
     DownlinkRequest<LwM2mResponse> getDownlinkRequest();
-
-    /**
-     * @return duration within this request entity will be considered for execution. Time unit is persistence dependent.
-     */
-    long getTimeToLive();
-
-    /**
-     * @return timestamp of the date, when the time-to-send for the request expires and the sender will not anymore try
-     *         to send it. Time unit is persistence dependent.
-     */
-    long getSendExpiration();
 
     /**
      * @return the current state of this request
