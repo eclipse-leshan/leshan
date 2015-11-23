@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.util.Validate;
 
 /**
  * A resource with a single value.
@@ -34,6 +35,7 @@ public class LwM2mSingleResource implements LwM2mResource {
     private final Type type;
 
     protected LwM2mSingleResource(int id, Object value, Type type) {
+        Validate.notNull(value);
         this.id = id;
         this.value = value;
         this.type = type;

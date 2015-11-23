@@ -15,12 +15,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.*;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.junit.Test;
 
 public class LwM2MResourceTest {
@@ -117,4 +117,31 @@ public class LwM2MResourceTest {
         assertNotEquals(LwM2mMultipleResource.newStringResource(10, values1),
                 LwM2mMultipleResource.newBinaryResource(10, values2));
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void string_resource_with_null_value() {
+        LwM2mSingleResource.newStringResource(1, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void generic_resource_with_null_value() {
+        LwM2mSingleResource.newResource(1, null, Type.INTEGER);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void integer_multi_instances_resource_with_null_value() {
+        Map<Integer, Long> values = new HashMap<>();
+        values.put(2, 2L);
+        values.put(3, null);
+        LwM2mMultipleResource.newIntegerResource(0, values);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void generic_multi_instances_resource_with_null_value() {
+        Map<Integer, String> values = new HashMap<>();
+        values.put(2, "value");
+        values.put(3, null);
+        LwM2mMultipleResource.newResource(0, values, Type.STRING);
+    }
+
 }

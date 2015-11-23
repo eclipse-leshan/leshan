@@ -75,26 +75,32 @@ public class LwM2mMultipleResource implements LwM2mResource {
     }
 
     public static LwM2mMultipleResource newStringResource(int id, Map<Integer, String> values) {
+        Validate.noNullElements(values.values());
         return new LwM2mMultipleResource(id, values, Type.STRING);
     }
 
     public static LwM2mMultipleResource newIntegerResource(int id, Map<Integer, Long> values) {
+        Validate.noNullElements(values.values());
         return new LwM2mMultipleResource(id, values, Type.INTEGER);
     }
 
     public static LwM2mMultipleResource newBooleanResource(int id, Map<Integer, Boolean> values) {
+        Validate.noNullElements(values.values());
         return new LwM2mMultipleResource(id, values, Type.BOOLEAN);
     }
 
     public static LwM2mMultipleResource newFloatResource(int id, Map<Integer, Double> values) {
+        Validate.noNullElements(values.values());
         return new LwM2mMultipleResource(id, values, Type.FLOAT);
     }
 
     public static LwM2mMultipleResource newDateResource(int id, Map<Integer, Date> values) {
+        Validate.noNullElements(values.values());
         return new LwM2mMultipleResource(id, values, Type.TIME);
     }
 
     public static LwM2mMultipleResource newBinaryResource(int id, Map<Integer, byte[]> values) {
+        Validate.noNullElements(values.values());
         return new LwM2mMultipleResource(id, values, Type.OPAQUE);
     }
 
