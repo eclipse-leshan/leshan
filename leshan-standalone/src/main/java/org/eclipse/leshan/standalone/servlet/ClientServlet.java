@@ -76,11 +76,11 @@ public class ClientServlet extends HttpServlet {
 
     private final Gson gson;
 
-    public ClientServlet(LwM2mServer server) {
+    public ClientServlet(LwM2mServer server, int securePort) {
         this.server = server;
 
         GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeHierarchyAdapter(Client.class, new ClientSerializer());
+        gsonBuilder.registerTypeHierarchyAdapter(Client.class, new ClientSerializer(securePort));
         gsonBuilder.registerTypeHierarchyAdapter(LwM2mResponse.class, new ResponseSerializer());
         gsonBuilder.registerTypeHierarchyAdapter(LwM2mNode.class, new LwM2mNodeSerializer());
         gsonBuilder.registerTypeHierarchyAdapter(LwM2mNode.class, new LwM2mNodeDeserializer());

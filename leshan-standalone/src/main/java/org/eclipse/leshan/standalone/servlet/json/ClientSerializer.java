@@ -17,7 +17,6 @@ package org.eclipse.leshan.standalone.servlet.json;
 
 import java.lang.reflect.Type;
 
-import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.client.Client;
 
 import com.google.gson.JsonElement;
@@ -26,6 +25,12 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
 public class ClientSerializer implements JsonSerializer<Client> {
+
+    private final int securePort;
+
+    public ClientSerializer(int securePort) {
+        this.securePort = securePort;
+    }
 
     @Override
     public JsonElement serialize(Client src, Type typeOfSrc, JsonSerializationContext context) {
@@ -41,8 +46,7 @@ public class ClientSerializer implements JsonSerializer<Client> {
         element.addProperty("bindingMode", src.getBindingMode().toString());
         element.add("rootPath", context.serialize(src.getRootPath()));
         element.add("objectLinks", context.serialize(src.getSortedObjectLinks()));
-        element.add("secure",
-                context.serialize(src.getRegistrationEndpointAddress().getPort() == LeshanServerBuilder.PORT_DTLS));
+        element.add("secure", context.serialize(src.getRegistrationEndpointAddress().getPort() == securePort));
 
         return element;
     }

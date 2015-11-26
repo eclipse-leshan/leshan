@@ -131,7 +131,7 @@ public class EventServlet extends HttpServlet {
         }
     };
 
-    public EventServlet(LeshanServer server) {
+    public EventServlet(LeshanServer server, int securePort) {
         this.server = server;
         server.getClientRegistry().addListener(this.clientRegistryListener);
         server.getObservationRegistry().addListener(this.observationRegistryListener);
@@ -143,7 +143,7 @@ public class EventServlet extends HttpServlet {
         }
 
         GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeHierarchyAdapter(Client.class, new ClientSerializer());
+        gsonBuilder.registerTypeHierarchyAdapter(Client.class, new ClientSerializer(securePort));
         gsonBuilder.registerTypeHierarchyAdapter(LwM2mNode.class, new LwM2mNodeSerializer());
         gsonBuilder.setDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
         this.gson = gsonBuilder.create();

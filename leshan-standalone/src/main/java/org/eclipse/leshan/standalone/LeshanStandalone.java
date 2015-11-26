@@ -117,11 +117,12 @@ public class LeshanStandalone {
         server.setHandler(root);
 
         // Create Servlet
-        EventServlet eventServlet = new EventServlet(lwServer);
+        EventServlet eventServlet = new EventServlet(lwServer, lwServer.getSecureAddress().getPort());
         ServletHolder eventServletHolder = new ServletHolder(eventServlet);
         root.addServlet(eventServletHolder, "/event/*");
 
-        ServletHolder clientServletHolder = new ServletHolder(new ClientServlet(lwServer));
+        ServletHolder clientServletHolder = new ServletHolder(new ClientServlet(lwServer, lwServer.getSecureAddress()
+                .getPort()));
         root.addServlet(clientServletHolder, "/api/clients/*");
 
         ServletHolder securityServletHolder = new ServletHolder(new SecurityServlet(lwServer.getSecurityRegistry()));
