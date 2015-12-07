@@ -128,7 +128,7 @@ public class LeshanStandalone {
         ServletHolder securityServletHolder = new ServletHolder(new SecurityServlet(lwServer.getSecurityRegistry()));
         root.addServlet(securityServletHolder, "/api/security/*");
 
-        ServletHolder objectSpecServletHolder = new ServletHolder(new ObjectSpecServlet());
+        ServletHolder objectSpecServletHolder = new ServletHolder(new ObjectSpecServlet(lwServer.getModelProvider()));
         root.addServlet(objectSpecServletHolder, "/api/objectspecs/*");
 
         // Start jetty

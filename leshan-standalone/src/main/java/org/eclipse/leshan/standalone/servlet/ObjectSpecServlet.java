@@ -43,14 +43,14 @@ public class ObjectSpecServlet extends HttpServlet {
 
     private final LwM2mModelProvider modelProvider;
 
-    public ObjectSpecServlet() {
+    public ObjectSpecServlet(LwM2mModelProvider pModelProvider) {
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeHierarchyAdapter(ObjectModel.class, new ObjectModelSerializer());
         gsonBuilder.registerTypeHierarchyAdapter(ResourceModel.class, new ResourceModelSerializer());
         this.gson = gsonBuilder.create();
 
-        // TODO use the provider from the server and return a model by client
-        modelProvider = new StandardModelProvider();
+        // use the provider from the server and return a model by client
+        modelProvider = pModelProvider;
     }
 
     @Override
