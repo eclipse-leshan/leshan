@@ -66,18 +66,7 @@ Contributors:
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Export-Package>
-                            org.eclipse.leshan,
-                            org.eclipse.leshan.core.model,
-                            org.eclipse.leshan.core.model.json,
-                            org.eclipse.leshan.core.node,  
-                            org.eclipse.leshan.core.node.codec,
-                            org.eclipse.leshan.core.request,
-                            org.eclipse.leshan.core.request.exception,
-                            org.eclipse.leshan.core.response,
-							org.eclipse.leshan.tlv,
-                            org.eclipse.leshan.util                                      
-                        </Export-Package>
+                        <_exportcontents>!*.impl.*, !*.internal.*, *</_exportcontents>
                         <Import-Package>
                             org.slf4j;version="1.6",
                             org.eclipse.californium.*;version="[1.0.0, 1.1)",
