@@ -65,13 +65,8 @@ Contributors:
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <_exportcontents>!*.impl.*, !*.internal.*, *</_exportcontents>
-                        <Import-Package>
-                            org.slf4j;version="1.6",
-                            org.eclipse.californium.*;version="[1.0.0, 1.1)",
-                            org.apache.commons.lang.*;version="[2.6, 3)",
-                            *
-                        </Import-Package>
+                        <_exportcontents>!oma-objects-spec.json, !*.impl.*, !*.internal.*, *</_exportcontents>
+                        <Import-Package>*</Import-Package>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                     </instructions>
                 </configuration>
