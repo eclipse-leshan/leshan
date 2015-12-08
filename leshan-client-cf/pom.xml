@@ -69,41 +69,9 @@ Contributors:
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Export-Package>
-                            org.eclipse.leshan.client.californium,
-                            org.eclipse.leshan.client.californium.impl,
-                        </Export-Package>
-                        <Import-Package>
-                            javax.xml.bind, 
-                            javax.xml.parsers, 
-                            org.w3c.dom, 
-                            org.xml.sax,
-                            javax.crypto,
-                            javax.crypto.spec,
-                            javax.security.auth.x500,
-                            org.slf4j;version="1.6",
-                            org.eclipse.californium.core,
-                            org.eclipse.californium.core.coap,
-                            org.eclipse.californium.core.network,
-                            org.eclipse.californium.core.network.interceptors,
-                            org.eclipse.californium.core.server,
-                            org.eclipse.californium.core.server.resources,
-                            org.eclipse.californium.core.observe,
-                            org.eclipse.californium.elements,
-                            org.eclipse.leshan,
-                            org.eclipse.leshan.core.model,
-                            org.eclipse.leshan.core.node,
-                            org.eclipse.leshan.core.node.codec,
-                            org.eclipse.leshan.core.request,
-                            org.eclipse.leshan.core.request.exception,
-                            org.eclipse.leshan.core.response,
-                            org.eclipse.leshan.tlv,
-                            org.eclipse.leshan.util,
-                            org.eclipse.leshan.client,
-                            org.eclipse.leshan.client.request,
-                            org.eclipse.leshan.client.resource,
-                            org.eclipse.leshan.client.util,
-                        </Import-Package>
+                        <_exportcontents>!*.impl.*, !*.internal.*, *</_exportcontents>
+                        <Import-Package>*</Import-Package>
+                        <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                     </instructions>
                 </configuration>
             </plugin>

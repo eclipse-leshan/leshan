@@ -61,17 +61,9 @@ Contributors:
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Export-Package>
-                            org.eclipse.leshan.client,
-                            org.eclipse.leshan.client.request,
-                            org.eclipse.leshan.client.resource,
-                            org.eclipse.leshan.client.util
-                        </Export-Package>
-                        <Import-Package>
-                            org.slf4j;version="${slf4j.api.version}",
-                            org.eclipse.leshan.*;version="${project.version}",
-                            *
-                        </Import-Package>
+                        <_exportcontents>!*.impl.*, !*.internal.*, *</_exportcontents>
+                        <Import-Package>*</Import-Package>
+                        <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                     </instructions>
                 </configuration>
             </plugin>
