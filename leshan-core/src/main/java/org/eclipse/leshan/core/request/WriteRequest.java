@@ -22,7 +22,6 @@ import java.util.Map;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mNode;
-import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
@@ -55,56 +54,6 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
     private final LwM2mNode node;
     private final ContentFormat contentFormat;
     private final Mode mode;
-
-    // ***************** write object ****************** //
-
-    /**
-     * Request to write an <b>Object</b>.
-     * 
-     * @param mode the mode of the request : replace or update.
-     * @param contentFormat Format of the payload (TLV or JSON).
-     * @param objectId the id of the object to write.
-     * @param instances the list of instance object to write.
-     */
-    public WriteRequest(final Mode mode, final ContentFormat contentFormat, final int objectId,
-            final Collection<LwM2mObjectInstance> instances) {
-        this(mode, contentFormat, new LwM2mPath(objectId), new LwM2mObject(objectId, instances));
-    }
-
-    /**
-     * Request to write an <b>Object</b> using the TLV content format.
-     * 
-     * @param mode the mode of the request : replace or update.
-     * @param objectId the id of the object to write.
-     * @param instances the list of instance object to write.
-     */
-    public WriteRequest(final Mode mode, final int objectId, final Collection<LwM2mObjectInstance> instances) {
-        this(mode, ContentFormat.TLV, new LwM2mPath(objectId), new LwM2mObject(objectId, instances));
-    }
-
-    /**
-     * Request to write an <b>Object</b> using the TLV content format.
-     * 
-     * @param mode the mode of the request : replace or update.
-     * @param contentFormat Format of the payload (TLV or JSON).
-     * @param objectId the id of the object to write.
-     * @param instances the list of instance object to write.
-     */
-    public WriteRequest(final Mode mode, final ContentFormat contentFormat, final int objectId,
-            final LwM2mObjectInstance... instances) {
-        this(mode, contentFormat, new LwM2mPath(objectId), new LwM2mObject(objectId, instances));
-    }
-
-    /**
-     * Request to write an <b>Object</b> using the TLV content format.
-     * 
-     * @param mode the mode of the request : replace or update.
-     * @param objectId the id of the object to write.
-     * @param instances the list of instance object to write.
-     */
-    public WriteRequest(final Mode mode, final int objectId, final LwM2mObjectInstance... instances) {
-        this(mode, ContentFormat.TLV, new LwM2mPath(objectId), new LwM2mObject(objectId, instances));
-    }
 
     // ***************** write instance ****************** //
 
@@ -278,18 +227,13 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
                 throw new IllegalArgumentException(String.format("path '%s' and node type '%s' does not match",
                         target.toString(), node.getClass().getSimpleName()));
             }
-        }
-        if (getPath().isObjectInstance()) {
+        } else if (getPath().isObjectInstance()) {
             if (!(node instanceof LwM2mObjectInstance)) {
                 throw new IllegalArgumentException(String.format("path '%s' and node type '%s' does not match",
                         target.toString(), node.getClass().getSimpleName()));
             }
-        }
-        if (getPath().isObject()) {
-            if (!(node instanceof LwM2mObject)) {
-                throw new IllegalArgumentException(String.format("path '%s' and node type '%s' does not match",
-                        target.toString(), node.getClass().getSimpleName()));
-            }
+        } else if (getPath().isObject()) {
+            throw new IllegalArgumentException("write request cannot target an object: " + target.toString());
         }
 
         // Validate content format

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2015 Sierra Wireless and others.
+ * Copyright (c) 2015 Sierra Wireless and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -11,12 +11,21 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
  * 
  * Contributors:
- *     Zebra Technologies - initial API and implementation
+ *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.resource;
+package org.eclipse.leshan.client.servers;
 
-public interface LinkFormattable {
+import org.eclipse.leshan.core.request.BindingMode;
 
-    String asLinkFormat();
+public class DmServerInfo extends ServerInfo {
 
+    public long lifetime;
+    public BindingMode binding;
+
+    // TODO add missing information like SMS number
+
+    @Override
+    public String toString() {
+        return String.format("DM Server [uri=%s, lifetime=%s, binding=%s]", serverUri, lifetime, binding);
+    }
 }

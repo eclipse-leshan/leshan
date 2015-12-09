@@ -25,6 +25,7 @@ import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.request.UplinkRequestVisitor;
 import org.eclipse.leshan.core.request.exception.ResourceAccessException;
+import org.eclipse.leshan.core.response.BootstrapResponse;
 import org.eclipse.leshan.core.response.DeregisterResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.RegisterResponse;
@@ -127,8 +128,18 @@ public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements Upli
 
     @Override
     public void visit(final BootstrapRequest request) {
-        throw new UnsupportedOperationException(
-                "The Bootstrap Interface has not yet been fully implemented on the Leshan Client.");
+        switch (coapResponse.getCode()) {
+        case CHANGED:
+            lwM2mresponse = BootstrapResponse.success();
+            break;
+        case BAD_REQUEST:
+        case INTERNAL_SERVER_ERROR:
+            lwM2mresponse = new BootstrapResponse(fromCoapCode(coapResponse.getCode().value),
+                    coapResponse.getPayloadString());
+            break;
+        default:
+            handleUnexpectedResponseCode(coapRequest, coapResponse);
+        }
     }
 
     @SuppressWarnings("unchecked")

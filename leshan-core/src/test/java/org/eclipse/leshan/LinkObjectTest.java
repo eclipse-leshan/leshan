@@ -84,7 +84,7 @@ public class LinkObjectTest {
         LinkObject obj2 = new LinkObject("/2/1");
         LinkObject obj3 = new LinkObject("/3");
 
-        String res = LinkObject.serialyse(obj1, obj2, obj3);
+        String res = LinkObject.serialize(obj1, obj2, obj3);
 
         Assert.assertEquals("</1/0/1>, </2/1>, </3>", res);
 
@@ -104,7 +104,7 @@ public class LinkObjectTest {
         attributesObj3.put("empty", null);
         LinkObject obj3 = new LinkObject("/3", attributesObj3);
 
-        String res = LinkObject.serialyse(obj1, obj2, obj3);
+        String res = LinkObject.serialize(obj1, obj2, obj3);
 
         Assert.assertEquals("</1/0/1>;number=12, </2/1>;string=\"stringval\", </3>;empty", res);
 
@@ -116,7 +116,7 @@ public class LinkObjectTest {
         attributesObj1.put("number", 12);
         LinkObject obj1 = new LinkObject("/", attributesObj1);
 
-        String res = LinkObject.serialyse(obj1);
+        String res = LinkObject.serialize(obj1);
 
         Assert.assertEquals("</>;number=12", res);
 
@@ -135,7 +135,7 @@ public class LinkObjectTest {
         LinkObject obj2 = new LinkObject("/2", attributesObj2);
 
         LinkObject[] input = new LinkObject[] { obj1, obj2 };
-        String strObjs = LinkObject.serialyse(input);
+        String strObjs = LinkObject.serialize(input);
         System.out.println(strObjs);
         LinkObject[] output = LinkObject.parse(strObjs.getBytes());
 
@@ -147,7 +147,7 @@ public class LinkObjectTest {
     public void parse_then_serialyse_with_rt_attribute() {
         String input = "</lwm2m>;rt=\"oma.lwm2m\", </lwm2m/1/101>, </lwm2m/1/102>, </lwm2m/2/0>";
         LinkObject[] objs = LinkObject.parse(input.getBytes());
-        String ouput = LinkObject.serialyse(objs);
+        String ouput = LinkObject.serialize(objs);
         Assert.assertEquals(input, ouput);
 
     }

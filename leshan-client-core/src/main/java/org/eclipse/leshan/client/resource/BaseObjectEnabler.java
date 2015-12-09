@@ -20,14 +20,17 @@ import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.DiscoverRequest;
 import org.eclipse.leshan.core.request.ExecuteRequest;
+import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
+import org.eclipse.leshan.core.response.BootstrapWriteResponse;
 import org.eclipse.leshan.core.response.CreateResponse;
 import org.eclipse.leshan.core.response.DeleteResponse;
 import org.eclipse.leshan.core.response.DiscoverResponse;
@@ -49,17 +52,17 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public int getId() {
+    public synchronized int getId() {
         return id;
     }
 
     @Override
-    public ObjectModel getObjectModel() {
+    public synchronized ObjectModel getObjectModel() {
         return objectModel;
     }
 
     @Override
-    public final CreateResponse create(CreateRequest request) {
+    public synchronized final CreateResponse create(Identity identity, CreateRequest request) {
         // we can not create new instance on single object
         if (objectModel != null && !objectModel.multiple) {
             return CreateResponse.methodNotAllowed();
@@ -76,29 +79,29 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public final ReadResponse read(ReadRequest request) {
+    public synchronized final ReadResponse read(Identity identity, ReadRequest request) {
         LwM2mPath path = request.getPath();
 
-        // check if the resource is readable
-        if (path.isResource()) {
+        // check if the resource is readable.
+        if (path.isResource() && identity != null) {
             ResourceModel resourceModel = objectModel.resources.get(path.getResourceId());
             if (resourceModel != null && !resourceModel.operations.isReadable()) {
                 return ReadResponse.methodNotAllowed();
             }
         }
 
-        return doRead(request);
+        return doRead(request, identity);
 
         // TODO we could do a validation of response.getContent by comparing with the spec.
     }
 
-    protected ReadResponse doRead(ReadRequest request) {
+    protected ReadResponse doRead(ReadRequest request, Identity identity) {
         // This should be a not implemented error, but this is not defined in the spec.
         return ReadResponse.internalServerError("not implemented");
     }
 
     @Override
-    public final WriteResponse write(WriteRequest request) {
+    public synchronized final WriteResponse write(Identity identity, WriteRequest request) {
         LwM2mPath path = request.getPath();
 
         // check if the resource is writable
@@ -120,7 +123,29 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public final DeleteResponse delete(DeleteRequest request) {
+    public synchronized final BootstrapWriteResponse write(Identity identity, BootstrapWriteRequest request) {
+        LwM2mPath path = request.getPath();
+
+        // check if the resource is writable
+        if (path.isResource()) {
+            ResourceModel resourceModel = objectModel.resources.get(path.getResourceId());
+            if (resourceModel != null && !resourceModel.operations.isWritable()) {
+                return BootstrapWriteResponse.badRequest(null);
+            }
+        }
+
+        // TODO we could do a validation of request.getNode() by comparing with resourceSpec information
+
+        return doWrite(request);
+    }
+
+    protected BootstrapWriteResponse doWrite(BootstrapWriteRequest request) {
+        // This should be a not implemented error, but this is not defined in the spec.
+        return BootstrapWriteResponse.internalServerError("not implemented");
+    }
+
+    @Override
+    public synchronized final DeleteResponse delete(Identity identity, DeleteRequest request) {
         // we can not create new instance on single object
         if (objectModel != null && !objectModel.multiple) {
             return DeleteResponse.methodNotAllowed();
@@ -135,7 +160,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public final ExecuteResponse execute(ExecuteRequest request) {
+    public synchronized final ExecuteResponse execute(Identity identity, ExecuteRequest request) {
         LwM2mPath path = request.getPath();
 
         // only resource could be executed
@@ -158,14 +183,14 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public WriteAttributesResponse writeAttributes(WriteAttributesRequest request) {
+    public synchronized WriteAttributesResponse writeAttributes(Identity identity, WriteAttributesRequest request) {
         // TODO should be implemented here to be available for all object enabler
         // This should be a not implemented error, but this is not defined in the spec.
         return WriteAttributesResponse.internalServerError("not implemented");
     }
 
     @Override
-    public DiscoverResponse discover(DiscoverRequest request) {
+    public synchronized DiscoverResponse discover(Identity identity, DiscoverRequest request) {
         LwM2mPath path = request.getPath();
         if (path.isObject()) {
 
@@ -200,8 +225,8 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public ObserveResponse observe(ObserveRequest request) {
-        ReadResponse readResponse = this.read(new ReadRequest(request.getPath().toString()));
+    public synchronized ObserveResponse observe(Identity identity, ObserveRequest request) {
+        ReadResponse readResponse = this.read(identity, new ReadRequest(request.getPath().toString()));
         return new ObserveResponse(readResponse.getCode(), readResponse.getContent(), null,
                 readResponse.getErrorMessage());
     }

@@ -16,7 +16,6 @@
 
 package org.eclipse.leshan.integration.tests;
 
-import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.ENDPOINT_IDENTIFIER;
 import static org.junit.Assert.assertEquals;
 
 import org.eclipse.leshan.ResponseCode;
@@ -25,7 +24,6 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ReadRequest;
-import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
 import org.eclipse.leshan.core.response.ReadResponse;
@@ -43,19 +41,17 @@ public class WriteTest {
         helper.server.start();
         helper.createClient();
         helper.client.start();
+        helper.waitForRegistration(1);
     }
 
     @After
     public void stop() {
-        helper.server.stop();
         helper.client.stop();
+        helper.server.stop();
     }
 
     @Test
     public void can_write_replace_resource() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // write device timezone
         final String timeZone = "Europe/Paris";
         WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE, 3, 0, 15,
@@ -72,9 +68,6 @@ public class WriteTest {
 
     @Test
     public void can_write_replace_resource_in_json() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // write device timezone
         final String timeZone = "Europe/Paris";
         WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE, 3, 0, 15,
@@ -91,9 +84,6 @@ public class WriteTest {
 
     @Test
     public void cannot_write_non_writable_resource() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // try to write unwritable resource like manufacturer on device
         final String manufacturer = "new manufacturer";
         WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE, 3, 0, 0,
@@ -105,9 +95,6 @@ public class WriteTest {
 
     @Test
     public void can_write_object_instance() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // write device timezone and offset
         LwM2mResource utcOffset = LwM2mSingleResource.newStringResource(14, "+02");
         LwM2mResource timeZone = LwM2mSingleResource.newStringResource(15, "Europe/Paris");
@@ -126,9 +113,6 @@ public class WriteTest {
 
     @Test
     public void can_write_object_instance_in_json() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // write device timezone and offset
         LwM2mResource utcOffset = LwM2mSingleResource.newStringResource(14, "+02");
         LwM2mResource timeZone = LwM2mSingleResource.newStringResource(15, "Europe/Paris");

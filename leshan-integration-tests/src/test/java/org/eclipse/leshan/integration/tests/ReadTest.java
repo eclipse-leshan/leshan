@@ -19,7 +19,6 @@ package org.eclipse.leshan.integration.tests;
 import static org.eclipse.leshan.ResponseCode.CONTENT;
 import static org.eclipse.leshan.ResponseCode.METHOD_NOT_ALLOWED;
 import static org.eclipse.leshan.ResponseCode.NOT_FOUND;
-import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.ENDPOINT_IDENTIFIER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -27,7 +26,6 @@ import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.request.ReadRequest;
-import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.junit.After;
 import org.junit.Before;
@@ -44,21 +42,19 @@ public class ReadTest {
         helper.server.start();
         helper.createClient();
         helper.client.start();
+        helper.waitForRegistration(1);
     }
 
     @After
     public void stop() {
-        helper.server.stop();
         helper.client.stop();
+        helper.server.stop();
     }
 
     // TODO we must the object TLV encoding
     @Ignore
     @Test
     public void can_read_empty_object() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // read ACL object
         ReadResponse response = helper.server.send(helper.getClient(), new ReadRequest(2));
 
@@ -74,9 +70,6 @@ public class ReadTest {
     @Ignore
     @Test
     public void can_read_object() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // read device object
         ReadResponse response = helper.server.send(helper.getClient(), new ReadRequest(3));
 
@@ -92,9 +85,6 @@ public class ReadTest {
 
     @Test
     public void can_read_object_instance() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // read device single instance
         ReadResponse response = helper.server.send(helper.getClient(), new ReadRequest(3, 0));
 
@@ -107,9 +97,6 @@ public class ReadTest {
 
     @Test
     public void can_read_resource() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // read device model number
         ReadResponse response = helper.server.send(helper.getClient(), new ReadRequest(3, 0, 1));
 
@@ -118,14 +105,11 @@ public class ReadTest {
 
         LwM2mResource resource = (LwM2mResource) response.getContent();
         assertEquals(1, resource.getId());
-        assertEquals("Model Number", resource.getValue());
+        assertEquals(IntegrationTestHelper.MODEL_NUMBER, resource.getValue());
     }
 
     @Test
     public void cannot_read_non_readable_resource() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // read device reboot resource
         ReadResponse response = helper.server.send(helper.getClient(), new ReadRequest(3, 0, 4));
 
@@ -135,9 +119,6 @@ public class ReadTest {
 
     @Test
     public void cannot_read_non_existent_object() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // read object "50"
         ReadResponse response = helper.server.send(helper.getClient(), new ReadRequest(50));
 
@@ -147,9 +128,6 @@ public class ReadTest {
 
     @Test
     public void cannot_read_non_existent_instance() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // read 2nd Device resource
         ReadResponse response = helper.server.send(helper.getClient(), new ReadRequest(3, 1));
 
@@ -159,9 +137,6 @@ public class ReadTest {
 
     @Test
     public void cannot_read_non_existent_resource() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // read device 50 resource
         ReadResponse response = helper.server.send(helper.getClient(), new ReadRequest(3, 0, 50));
 

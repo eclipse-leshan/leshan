@@ -21,6 +21,9 @@ import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
+import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
+import org.eclipse.leshan.core.request.BootstrapFinishRequest;
+import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ContentFormatHelper;
 import org.eclipse.leshan.core.request.CreateRequest;
@@ -108,6 +111,42 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         coapRequest = Request.newGet();
         coapRequest.setObserve();
         setTarget(coapRequest, destination, request.getPath());
+    }
+
+    @Override
+    public void visit(BootstrapWriteRequest request) {
+        coapRequest = Request.newPut();
+        ContentFormat format = request.getContentFormat();
+        if (format == null) {
+            format = ContentFormatHelper.compute(request.getPath(), request.getNode(), model);
+        }
+        coapRequest.getOptions().setContentFormat(format.getCode());
+        coapRequest.setPayload(LwM2mNodeEncoder.encode(request.getNode(), format, request.getPath(), model));
+        setTarget(coapRequest, destination, request.getPath());
+    }
+
+    @Override
+    public void visit(BootstrapDeleteRequest request) {
+        coapRequest = Request.newDelete();
+        setTarget(coapRequest, destination, request.getPath());
+    }
+
+    @Override
+    public void visit(BootstrapFinishRequest request) {
+        coapRequest = Request.newPost();
+        coapRequest.setDestination(destination.getAddress());
+        coapRequest.setDestinationPort(destination.getPort());
+
+        // root path
+        if (destination.getRootPath() != null) {
+            for (String rootPath : destination.getRootPath().split("/")) {
+                if (!StringUtils.isEmpty(rootPath)) {
+                    coapRequest.getOptions().addUriPath(rootPath);
+                }
+            }
+        }
+
+        coapRequest.getOptions().addUriPath("bs");
     }
 
     private final void setTarget(Request coapRequest, Client client, LwM2mPath path) {

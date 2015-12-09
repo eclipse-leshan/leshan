@@ -111,7 +111,7 @@
         "operations": "NONE",
         "instancetype": "single",
         "mandatory": true,
-        "type": "integer",
+        "type": "string",
         "range": "",
         "units": "",
         "description": ""

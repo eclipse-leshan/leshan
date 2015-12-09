@@ -31,7 +31,7 @@ public class LinkFormatHelperTest {
         ObjectModel locationModel = getObjectModel(6);
 
         LinkObject[] linkObjects = LinkFormatHelper.getObjectDescription(locationModel, null);
-        String strLinkObjects = LinkObject.serialyse(linkObjects);
+        String strLinkObjects = LinkObject.serialize(linkObjects);
 
         assertEquals("</6>, </6/0/0>, </6/0/1>, </6/0/2>, </6/0/3>, </6/0/4>, </6/0/5>", strLinkObjects);
     }
@@ -41,7 +41,7 @@ public class LinkFormatHelperTest {
         ObjectModel locationModel = getObjectModel(6);
 
         LinkObject[] linkObjects = LinkFormatHelper.getObjectDescription(locationModel, "rp");
-        String strLinkObjects = LinkObject.serialyse(linkObjects);
+        String strLinkObjects = LinkObject.serialize(linkObjects);
 
         assertEquals("</rp/6>, </rp/6/0/0>, </rp/6/0/1>, </rp/6/0/2>, </rp/6/0/3>, </rp/6/0/4>, </rp/6/0/5>",
                 strLinkObjects);
@@ -52,7 +52,7 @@ public class LinkFormatHelperTest {
         ObjectModel locationModel = getObjectModel(6);
 
         LinkObject[] linkObjects = LinkFormatHelper.getObjectDescription(locationModel, "");
-        String strLinkObjects = LinkObject.serialyse(linkObjects);
+        String strLinkObjects = LinkObject.serialize(linkObjects);
 
         assertEquals("</6>, </6/0/0>, </6/0/1>, </6/0/2>, </6/0/3>, </6/0/4>, </6/0/5>", strLinkObjects);
     }
@@ -62,7 +62,7 @@ public class LinkFormatHelperTest {
         ObjectModel locationModel = getObjectModel(6);
 
         LinkObject[] linkObjects = LinkFormatHelper.getObjectDescription(locationModel, "/");
-        String strLinkObjects = LinkObject.serialyse(linkObjects);
+        String strLinkObjects = LinkObject.serialize(linkObjects);
 
         assertEquals("</6>, </6/0/0>, </6/0/1>, </6/0/2>, </6/0/3>, </6/0/4>, </6/0/5>", strLinkObjects);
     }
@@ -72,7 +72,7 @@ public class LinkFormatHelperTest {
         ObjectModel locationModel = getObjectModel(6);
 
         LinkObject[] linkObjects = LinkFormatHelper.getObjectDescription(locationModel, "/r/t/");
-        String strLinkObjects = LinkObject.serialyse(linkObjects);
+        String strLinkObjects = LinkObject.serialize(linkObjects);
 
         assertEquals("</r/t/6>, </r/t/6/0/0>, </r/t/6/0/1>, </r/t/6/0/2>, </r/t/6/0/3>, </r/t/6/0/4>, </r/t/6/0/5>",
                 strLinkObjects);

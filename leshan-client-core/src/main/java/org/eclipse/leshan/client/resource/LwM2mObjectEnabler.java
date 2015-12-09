@@ -18,14 +18,17 @@ package org.eclipse.leshan.client.resource;
 import java.util.List;
 
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.DiscoverRequest;
 import org.eclipse.leshan.core.request.ExecuteRequest;
+import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
+import org.eclipse.leshan.core.response.BootstrapWriteResponse;
 import org.eclipse.leshan.core.response.CreateResponse;
 import org.eclipse.leshan.core.response.DeleteResponse;
 import org.eclipse.leshan.core.response.DiscoverResponse;
@@ -43,21 +46,23 @@ public interface LwM2mObjectEnabler {
 
     List<Integer> getAvailableInstanceIds();
 
-    CreateResponse create(CreateRequest request);
+    CreateResponse create(Identity identity, CreateRequest request);
 
-    ReadResponse read(ReadRequest request);
+    ReadResponse read(Identity identity, ReadRequest request);
 
-    WriteResponse write(WriteRequest request);
+    WriteResponse write(Identity identity, WriteRequest request);
 
-    DeleteResponse delete(DeleteRequest request);
+    BootstrapWriteResponse write(Identity identity, BootstrapWriteRequest request);
 
-    ExecuteResponse execute(ExecuteRequest request);
+    DeleteResponse delete(Identity identity, DeleteRequest request);
 
-    WriteAttributesResponse writeAttributes(WriteAttributesRequest request);
+    ExecuteResponse execute(Identity identity, ExecuteRequest request);
 
-    DiscoverResponse discover(DiscoverRequest request);
+    WriteAttributesResponse writeAttributes(Identity identity, WriteAttributesRequest request);
 
-    ObserveResponse observe(ObserveRequest request);
+    DiscoverResponse discover(Identity identity, DiscoverRequest request);
+
+    ObserveResponse observe(Identity identity, ObserveRequest request);
 
     void setNotifySender(NotifySender sender);
 }

@@ -17,12 +17,10 @@
 
 package org.eclipse.leshan.integration.tests;
 
-import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.ENDPOINT_IDENTIFIER;
 import static org.junit.Assert.assertEquals;
 
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.request.ExecuteRequest;
-import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.junit.After;
 import org.junit.Before;
@@ -38,19 +36,17 @@ public class ExecuteTest {
         helper.server.start();
         helper.createClient();
         helper.client.start();
+        helper.waitForRegistration(1);
     }
 
     @After
     public void stop() {
-        helper.server.stop();
         helper.client.stop();
+        helper.server.stop();
     }
 
     @Test
     public void cannot_execute_read_only_resource() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // execute manufacturer resource on device
         ExecuteResponse response = helper.server.send(helper.getClient(), new ExecuteRequest(3, 0, 0));
 
@@ -60,9 +56,6 @@ public class ExecuteTest {
 
     @Test
     public void cannot_execute_read_write_resource() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // execute current time resource on device
         ExecuteResponse response = helper.server.send(helper.getClient(), new ExecuteRequest(3, 0, 13));
 
@@ -72,9 +65,6 @@ public class ExecuteTest {
 
     @Test
     public void cannot_execute_nonexisting_resource_on_existing_object() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         final int nonExistingResourceId = 9999;
         // execute non existing resource on device
         ExecuteResponse response = helper.server.send(helper.getClient(),
@@ -86,9 +76,6 @@ public class ExecuteTest {
 
     @Test
     public void cannot_execute_nonexisting_resource_on_non_existing_object() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         final int nonExistingObjectId = 9999;
         ExecuteResponse response = helper.server.send(helper.getClient(),
                 new ExecuteRequest(nonExistingObjectId, 0, 0));
@@ -99,9 +86,6 @@ public class ExecuteTest {
 
     @Test
     public void can_execute_resource() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // execute reboot resource on device
         ExecuteResponse response = helper.server.send(helper.getClient(), new ExecuteRequest(3, 0, 4));
 
@@ -111,9 +95,6 @@ public class ExecuteTest {
 
     @Test
     public void can_execute_resource_with_parameters() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // execute reboot after 60 seconds on device
         ExecuteResponse response = helper.server.send(helper.getClient(), new ExecuteRequest(3, 0, 4, "60"));
 

@@ -230,6 +230,7 @@ public class RegisterResource extends CoapResource {
         exchange.respond(fromLwM2mCode(deregisterResponse.getCode()), deregisterResponse.getErrorMessage());
     }
 
+    // TODO leshan-core-cf: this code should be factorized in a leshan-core-cf project.
     private Identity extractIdentity(CoapExchange exchange) {
         InetSocketAddress peerAddress = new InetSocketAddress(exchange.getSourceAddress(), exchange.getSourcePort());
 
@@ -254,7 +255,7 @@ public class RegisterResource extends CoapResource {
         return Identity.unsecure(peerAddress);
     }
 
-    // TODO leshan-code-cf: this code should be factorize in a leshan-core-cf project.
+    // TODO leshan-core-cf: this code should be factorized in a leshan-core-cf project.
     // duplicated from org.eclipse.leshan.client.californium.impl.ObjectResource
     public static ResponseCode fromLwM2mCode(final org.eclipse.leshan.ResponseCode code) {
         Validate.notNull(code);

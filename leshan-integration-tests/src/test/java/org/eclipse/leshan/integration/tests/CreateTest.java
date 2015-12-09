@@ -16,7 +16,6 @@
 
 package org.eclipse.leshan.integration.tests;
 
-import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.ENDPOINT_IDENTIFIER;
 import static org.junit.Assert.assertEquals;
 
 import org.eclipse.leshan.ResponseCode;
@@ -25,7 +24,6 @@ import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
-import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.response.CreateResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.junit.After;
@@ -43,19 +41,17 @@ public class CreateTest {
         helper.server.start();
         helper.createClient();
         helper.client.start();
+        helper.waitForRegistration(1);
     }
 
     @After
     public void stop() {
-        helper.server.stop();
         helper.client.stop();
+        helper.server.stop();
     }
 
     @Test
     public void can_create_instance_of_object() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // create ACL instance
         CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, 0, new LwM2mResource[0]));
 
@@ -66,9 +62,6 @@ public class CreateTest {
 
     @Test
     public void can_create_instance_of_object_without_instance_id() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // create ACL instance
         CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, new LwM2mResource[0]));
 
@@ -87,9 +80,6 @@ public class CreateTest {
 
     @Test
     public void can_create_specific_instance_of_object() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // create ACL instance
         LwM2mResource accessControlOwner = LwM2mSingleResource.newIntegerResource(3, 123);
         CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, 0, accessControlOwner));
@@ -101,9 +91,6 @@ public class CreateTest {
 
     @Test
     public void can_create_specific_instance_of_object_with_json() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // create ACL instance
         LwM2mResource accessControlOwner = LwM2mSingleResource.newIntegerResource(3, 123);
         CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(ContentFormat.JSON, 2, 0,
@@ -116,9 +103,6 @@ public class CreateTest {
 
     @Test
     public void cannot_create_instance_of_object() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // try to create an instance of object 50
         CreateResponse response = helper.server
                 .send(helper.getClient(), new CreateRequest(50, 0, new LwM2mResource[0]));
@@ -133,9 +117,6 @@ public class CreateTest {
     @Ignore
     @Test
     public void cannot_create_instance_without_all_required_resources() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // create ACL instance
         CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, 0, new LwM2mResource[0]));
 
@@ -152,9 +133,6 @@ public class CreateTest {
     @Ignore
     @Test
     public void cannot_create_instance_with_extraneous_resources() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // create ACL instance
         LwM2mResource accessControlOwner = LwM2mSingleResource.newIntegerResource(3, 123);
         LwM2mResource extraneousResource = LwM2mSingleResource.newIntegerResource(50, 123);
@@ -179,9 +157,6 @@ public class CreateTest {
 
     @Test
     public void cannot_create_mandatory_single_object() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // try to create another instance of device object
         CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(3, 0, new LwM2mResource[0]));
 

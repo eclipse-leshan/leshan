@@ -26,6 +26,9 @@ import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.InvalidValueException;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
+import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
+import org.eclipse.leshan.core.request.BootstrapFinishRequest;
+import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
@@ -37,6 +40,9 @@ import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.exception.ResourceAccessException;
+import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
+import org.eclipse.leshan.core.response.BootstrapFinishResponse;
+import org.eclipse.leshan.core.response.BootstrapWriteResponse;
 import org.eclipse.leshan.core.response.CreateResponse;
 import org.eclipse.leshan.core.response.DeleteResponse;
 import org.eclipse.leshan.core.response.DiscoverResponse;
@@ -270,6 +276,48 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         case INTERNAL_SERVER_ERROR:
             lwM2mresponse = new ObserveResponse(fromCoapCode(coapResponse.getCode().value), null, null,
                     coapResponse.getPayloadString());
+            break;
+        default:
+            handleUnexpectedResponseCode(client.getEndpoint(), coapRequest, coapResponse);
+        }
+    }
+
+    @Override
+    public void visit(final BootstrapWriteRequest request) {
+        switch (coapResponse.getCode()) {
+        case CHANGED:
+            lwM2mresponse = BootstrapWriteResponse.success();
+            break;
+        case BAD_REQUEST:
+            lwM2mresponse = BootstrapWriteResponse.badRequest(coapResponse.getPayloadString());
+            break;
+        default:
+            handleUnexpectedResponseCode(client.getEndpoint(), coapRequest, coapResponse);
+        }
+    }
+
+    @Override
+    public void visit(final BootstrapDeleteRequest request) {
+        switch (coapResponse.getCode()) {
+        case DELETED:
+            lwM2mresponse = BootstrapDeleteResponse.success();
+            break;
+        case METHOD_NOT_ALLOWED:
+            lwM2mresponse = BootstrapDeleteResponse.methodNotAllowed(null);
+            break;
+        default:
+            handleUnexpectedResponseCode(client.getEndpoint(), coapRequest, coapResponse);
+        }
+    }
+
+    @Override
+    public void visit(final BootstrapFinishRequest request) {
+        switch (coapResponse.getCode()) {
+        case DELETED:
+            lwM2mresponse = BootstrapFinishResponse.success();
+            break;
+        case BAD_REQUEST:
+            lwM2mresponse = BootstrapFinishResponse.badRequest(coapResponse.getPayloadString());
             break;
         default:
             handleUnexpectedResponseCode(client.getEndpoint(), coapRequest, coapResponse);

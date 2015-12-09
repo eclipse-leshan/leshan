@@ -18,6 +18,8 @@ package org.eclipse.leshan.core.request;
 import java.net.InetSocketAddress;
 import java.security.PublicKey;
 
+import org.eclipse.leshan.util.Validate;
+
 /**
  * A request sender identity.
  */
@@ -29,6 +31,7 @@ public class Identity {
     private final String x509CommonName;
 
     private Identity(InetSocketAddress peerAddress, String pskIdentity, PublicKey rawPublicKey, String x509CommonName) {
+        Validate.notNull(peerAddress);
         this.peerAddress = peerAddress;
         this.pskIdentity = pskIdentity;
         this.rawPublicKey = rawPublicKey;

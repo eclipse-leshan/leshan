@@ -18,13 +18,11 @@ package org.eclipse.leshan.integration.tests;
 
 import static org.eclipse.leshan.ResponseCode.CONTENT;
 import static org.eclipse.leshan.ResponseCode.NOT_FOUND;
-import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.ENDPOINT_IDENTIFIER;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.core.request.DiscoverRequest;
-import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.response.DiscoverResponse;
 import org.junit.After;
 import org.junit.Before;
@@ -40,19 +38,17 @@ public class DiscoverTest {
         helper.server.start();
         helper.createClient();
         helper.client.start();
+        helper.waitForRegistration(1);
     }
 
     @After
     public void stop() {
-        helper.server.stop();
         helper.client.stop();
+        helper.server.stop();
     }
 
     @Test
     public void can_discover_object() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // read ACL object
         DiscoverResponse response = helper.server.send(helper.getClient(), new DiscoverRequest(2));
 
@@ -65,9 +61,6 @@ public class DiscoverTest {
 
     @Test
     public void cant_discover_non_existent_object() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // read ACL object
         DiscoverResponse response = helper.server.send(helper.getClient(), new DiscoverRequest(4));
 
@@ -77,9 +70,6 @@ public class DiscoverTest {
 
     @Test
     public void can_discover_object_instance() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // read ACL object
         DiscoverResponse response = helper.server.send(helper.getClient(), new DiscoverRequest(3, 0));
 
@@ -92,9 +82,6 @@ public class DiscoverTest {
 
     @Test
     public void cant_discover_non_existent_instance() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // read ACL object
         DiscoverResponse response = helper.server.send(helper.getClient(), new DiscoverRequest(3, 1));
 
@@ -104,9 +91,6 @@ public class DiscoverTest {
 
     @Test
     public void can_discover_resource() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // read ACL object
         DiscoverResponse response = helper.server.send(helper.getClient(), new DiscoverRequest(3, 0, 0));
 
@@ -119,9 +103,6 @@ public class DiscoverTest {
 
     @Test
     public void cant_discover_resource_of_non_existent_object() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // read ACL object
         DiscoverResponse response = helper.server.send(helper.getClient(), new DiscoverRequest(4, 0, 0));
 
@@ -131,9 +112,6 @@ public class DiscoverTest {
 
     @Test
     public void cant_discover_resource_of_non_existent_instance() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // read ACL object
         DiscoverResponse response = helper.server.send(helper.getClient(), new DiscoverRequest(3, 1, 0));
 
@@ -143,9 +121,6 @@ public class DiscoverTest {
 
     @Test
     public void cant_discover_resource_of_non_existent_instance_and_resource() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // read ACL object
         DiscoverResponse response = helper.server.send(helper.getClient(), new DiscoverRequest(3, 1, 20));
 
@@ -155,9 +130,6 @@ public class DiscoverTest {
 
     @Test
     public void cant_discover_resource_of_non_existent_resource() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // read ACL object
         DiscoverResponse response = helper.server.send(helper.getClient(), new DiscoverRequest(3, 0, 20));
 

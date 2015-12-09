@@ -16,7 +16,6 @@
 
 package org.eclipse.leshan.integration.tests;
 
-import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.ENDPOINT_IDENTIFIER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -32,7 +31,6 @@ import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
-import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -53,19 +51,17 @@ public class ObserveTest {
         helper.server.start();
         helper.createClient();
         helper.client.start();
+        helper.waitForRegistration(1);
     }
 
     @After
     public void stop() {
-        helper.server.stop();
         helper.client.stop();
+        helper.server.stop();
     }
 
     @Test
     public void can_observe_resource() throws InterruptedException {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         TestObservationListener listener = new TestObservationListener();
         helper.server.getObservationRegistry().addListener(listener);
 
@@ -91,9 +87,6 @@ public class ObserveTest {
 
     @Test
     public void can_observe_instance() throws InterruptedException {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         TestObservationListener listener = new TestObservationListener();
         helper.server.getObservationRegistry().addListener(listener);
 
@@ -124,9 +117,6 @@ public class ObserveTest {
 
     @Test
     public void can_observe_object() throws InterruptedException {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         TestObservationListener listener = new TestObservationListener();
         helper.server.getObservationRegistry().addListener(listener);
 

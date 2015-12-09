@@ -196,7 +196,7 @@ public class LinkObject {
     public static final String INVALID_LINK_PAYLOAD = "<>";
     private static final String TRAILER = ", ";
 
-    public static String serialyse(LinkObject... linkObjects) {
+    public static String serialize(LinkObject... linkObjects) {
         try {
             final StringBuilder builder = new StringBuilder();
             for (final LinkObject link : linkObjects) {

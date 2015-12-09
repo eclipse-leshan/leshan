@@ -16,14 +16,12 @@
 
 package org.eclipse.leshan.integration.tests;
 
-import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.ENDPOINT_IDENTIFIER;
 import static org.junit.Assert.assertEquals;
 
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
-import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.response.DeleteResponse;
 import org.junit.After;
 import org.junit.Before;
@@ -39,19 +37,17 @@ public class DeleteTest {
         helper.server.start();
         helper.createClient();
         helper.client.start();
+        helper.waitForRegistration(1);
     }
 
     @After
     public void stop() {
-        helper.server.stop();
         helper.client.stop();
+        helper.server.stop();
     }
 
     @Test
     public void delete_created_object_instance() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // create ACL instance
         helper.server.send(helper.getClient(), new CreateRequest(2, 0, new LwM2mResource[0]));
 
@@ -64,9 +60,6 @@ public class DeleteTest {
 
     @Test
     public void cannot_delete_unknown_object_instance() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // try to create an instance of object 50
         DeleteResponse response = helper.server.send(helper.getClient(), new DeleteRequest(2, 0));
 
@@ -76,9 +69,6 @@ public class DeleteTest {
 
     @Test
     public void cannot_delete_single_manadatory_object_instance() {
-        // client registration
-        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
-
         // try to create an instance of object 50
         DeleteResponse response = helper.server.send(helper.getClient(), new DeleteRequest(3, 0));
 

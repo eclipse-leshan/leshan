@@ -34,4 +34,10 @@ public interface DownlinkRequestVisitor {
     void visit(DeleteRequest request);
 
     void visit(ObserveRequest request);
+
+    void visit(BootstrapWriteRequest request);
+
+    void visit(BootstrapDeleteRequest request);
+
+    void visit(BootstrapFinishRequest request);
 }

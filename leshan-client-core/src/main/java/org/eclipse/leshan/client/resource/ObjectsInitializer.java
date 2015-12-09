@@ -88,10 +88,10 @@ public class ObjectsInitializer {
         this.instances.put(objectId, instances);
     }
 
-    public List<ObjectEnabler> createMandatory() {
+    public List<LwM2mObjectEnabler> createMandatory() {
         Collection<ObjectModel> objectModels = model.getObjectModels();
 
-        List<ObjectEnabler> enablers = new ArrayList<ObjectEnabler>();
+        List<LwM2mObjectEnabler> enablers = new ArrayList<LwM2mObjectEnabler>();
         for (ObjectModel objectModel : objectModels) {
             if (objectModel.mandatory) {
                 ObjectEnabler objectEnabler = createNodeEnabler(objectModel);
@@ -102,7 +102,7 @@ public class ObjectsInitializer {
         return enablers;
     }
 
-    public ObjectEnabler create(int objectId) {
+    public LwM2mObjectEnabler create(int objectId) {
         ObjectModel objectModel = model.getObjectModel(objectId);
         if (objectModel == null) {
             throw new IllegalArgumentException("Cannot create object for id " + objectId
@@ -111,10 +111,10 @@ public class ObjectsInitializer {
         return createNodeEnabler(objectModel);
     }
 
-    public List<ObjectEnabler> create(int... objectId) {
-        List<ObjectEnabler> enablers = new ArrayList<ObjectEnabler>();
+    public List<LwM2mObjectEnabler> create(int... objectId) {
+        List<LwM2mObjectEnabler> enablers = new ArrayList<LwM2mObjectEnabler>();
         for (int i = 0; i < objectId.length; i++) {
-            ObjectEnabler objectEnabler = create(objectId[i]);
+            LwM2mObjectEnabler objectEnabler = create(objectId[i]);
             if (objectEnabler != null)
                 enablers.add(objectEnabler);
         }
