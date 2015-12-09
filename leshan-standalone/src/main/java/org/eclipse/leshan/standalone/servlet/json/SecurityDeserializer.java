@@ -29,9 +29,8 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
 
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
 import org.eclipse.leshan.server.security.SecurityInfo;
+import org.eclipse.leshan.util.Hex;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -74,8 +73,8 @@ public class SecurityDeserializer implements JsonDeserializer<SecurityInfo> {
                 byte[] key;
                 try {
                     key = Hex.decodeHex(psk.get("key").getAsString().toCharArray());
-                } catch (DecoderException e) {
-                    throw new JsonParseException(e);
+                } catch (IllegalArgumentException e) {
+                    throw new JsonParseException("key parameter must be a valid hex string", e);
                 }
 
                 info = SecurityInfo.newPreSharedKeyInfo(endpoint, identity, key);
@@ -94,7 +93,7 @@ public class SecurityDeserializer implements JsonDeserializer<SecurityInfo> {
                             parameterSpec);
 
                     key = KeyFactory.getInstance("EC").generatePublic(keySpec);
-                } catch (DecoderException | InvalidKeySpecException | NoSuchAlgorithmException
+                } catch (IllegalArgumentException | InvalidKeySpecException | NoSuchAlgorithmException
                         | InvalidParameterSpecException e) {
                     throw new JsonParseException("Invalid security info content", e);
                 }
