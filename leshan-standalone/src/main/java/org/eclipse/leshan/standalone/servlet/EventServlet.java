@@ -16,20 +16,11 @@
 package org.eclipse.leshan.standalone.servlet;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Set;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.californium.core.network.Endpoint;
-import org.eclipse.jetty.continuation.Continuation;
-import org.eclipse.jetty.continuation.ContinuationListener;
-import org.eclipse.jetty.continuation.ContinuationSupport;
 import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.observation.Observation;
@@ -42,13 +33,15 @@ import org.eclipse.leshan.standalone.servlet.json.LwM2mNodeSerializer;
 import org.eclipse.leshan.standalone.servlet.log.CoapMessage;
 import org.eclipse.leshan.standalone.servlet.log.CoapMessageListener;
 import org.eclipse.leshan.standalone.servlet.log.CoapMessageTracer;
+import org.eclipse.leshan.standalone.utils.EventSource;
+import org.eclipse.leshan.standalone.utils.EventSourceServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-public class EventServlet extends HttpServlet {
+public class EventServlet extends EventSourceServlet {
 
     private static final String EVENT_DEREGISTRATION = "DEREGISTRATION";
 
@@ -68,19 +61,11 @@ public class EventServlet extends HttpServlet {
 
     private final Gson gson;
 
-    private final byte[] EVENT = "event: ".getBytes();
-
-    private final byte[] DATA = "data: ".getBytes();
-
-    private final byte[] VOID = ": ".getBytes();
-
-    private static final byte[] TERMINATION = new byte[] { '\r', '\n' };
-
-    private final Set<Continuation> continuations = new ConcurrentHashSet<>();
-
     private final CoapMessageTracer coapMessageTracer;
 
     private final LeshanServer server;
+
+    private Set<LeshanEventSource> eventSources = new ConcurrentHashSet<>();
 
     private final ClientRegistryListener clientRegistryListener = new ClientRegistryListener() {
 
@@ -154,79 +139,10 @@ public class EventServlet extends HttpServlet {
             LOG.debug("Dispatching {} event from endpoint {}", event, endpoint);
         }
 
-        Collection<Continuation> disconnected = new ArrayList<>();
-
-        for (Continuation c : continuations) {
-            Object endpointAttribute = c.getAttribute(QUERY_PARAM_ENDPOINT);
-            if (endpointAttribute == null || endpointAttribute.equals(endpoint)) {
-                try {
-                    OutputStream output = c.getServletResponse().getOutputStream();
-                    output.write(EVENT);
-                    output.write(event.getBytes("UTF-8"));
-                    output.write(TERMINATION);
-                    output.write(DATA);
-                    output.write(data.getBytes("UTF-8"));
-                    output.write(TERMINATION);
-                    output.write(TERMINATION);
-                    output.flush();
-                    c.getServletResponse().flushBuffer();
-                } catch (IOException e) {
-                    LOG.debug("Disconnected SSE client");
-                    disconnected.add(c);
-                }
+        for (LeshanEventSource eventSource : eventSources) {
+            if (eventSource.getEndpoint() == null || eventSource.getEndpoint().equals(endpoint)) {
+                eventSource.sentEvent(event, data);
             }
-        }
-        if (!disconnected.isEmpty()) {
-            continuations.removeAll(disconnected);
-            cleanCoapListener(endpoint);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("text/event-stream");
-        OutputStream output = resp.getOutputStream();
-        output.write(VOID);
-        output.write("waiting for events".getBytes());
-        output.write(TERMINATION);
-        output.flush();
-        resp.flushBuffer();
-
-        Continuation c = ContinuationSupport.getContinuation(req);
-        c.setTimeout(0);
-        c.addContinuationListener(new ContinuationListener() {
-
-            @Override
-            public void onTimeout(Continuation continuation) {
-                LOG.debug("continuation closed");
-                continuation.complete();
-            }
-
-            @Override
-            public void onComplete(Continuation continuation) {
-                LOG.debug("continuation completed");
-                continuations.remove(continuation);
-
-                String endpoint = (String) continuation.getAttribute(QUERY_PARAM_ENDPOINT);
-                if (endpoint != null) {
-                    cleanCoapListener(endpoint);
-                }
-            }
-        });
-
-        String endpoint = req.getParameter(QUERY_PARAM_ENDPOINT);
-        if (endpoint != null) {
-            // mark continuation as notification listener for endpoint
-            c.setAttribute(QUERY_PARAM_ENDPOINT, endpoint);
-            coapMessageTracer.addListener(endpoint, new ClientCoapListener(endpoint));
-
-        }
-        synchronized (this) {
-            continuations.add(c);
-            c.suspend(resp);
         }
     }
 
@@ -247,14 +163,55 @@ public class EventServlet extends HttpServlet {
     }
 
     private void cleanCoapListener(String endpoint) {
-        // remove the listener if there is no more continuation for this endpoint
-        for (Continuation c : continuations) {
-            String cEndpoint = (String) c.getAttribute(QUERY_PARAM_ENDPOINT);
-            if (cEndpoint != null && cEndpoint.equals(endpoint)) {
-                // still used
+        // remove the listener if there is no more eventSources for this endpoint
+        for (LeshanEventSource eventSource : eventSources) {
+            if (eventSource.getEndpoint() == null || eventSource.getEndpoint().equals(endpoint)) {
                 return;
             }
         }
         coapMessageTracer.removeListener(endpoint);
+    }
+
+    @Override
+    protected EventSource newEventSource(HttpServletRequest req) {
+        String endpoint = req.getParameter(QUERY_PARAM_ENDPOINT);
+        return new LeshanEventSource(endpoint);
+    }
+
+    private class LeshanEventSource implements EventSource {
+
+        private String endpoint;
+        private Emitter emitter;
+
+        public LeshanEventSource(String endpoint) {
+            this.endpoint = endpoint;
+        }
+
+        @Override
+        public void onOpen(Emitter emitter) throws IOException {
+            this.emitter = emitter;
+            eventSources.add(this);
+            if (endpoint != null) {
+                coapMessageTracer.addListener(endpoint, new ClientCoapListener(endpoint));
+            }
+        }
+
+        @Override
+        public void onClose() {
+            cleanCoapListener(endpoint);
+            eventSources.remove(this);
+        }
+
+        public void sentEvent(String event, String data) {
+            try {
+                emitter.event(event, data);
+            } catch (IOException e) {
+                onClose();
+            }
+        }
+
+        public String getEndpoint() {
+            return endpoint;
+        }
     }
 }
