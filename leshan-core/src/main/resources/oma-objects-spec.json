@@ -1383,7 +1383,7 @@
         "operations": "R",
         "instancetype": "single",
         "mandatory": false,
-        "type": "float",
+        "type": "string",
         "range": "",
         "units": "",
         "description": "Measurement Units Definition e.g. “Cel” for Temperature in Celsius."
