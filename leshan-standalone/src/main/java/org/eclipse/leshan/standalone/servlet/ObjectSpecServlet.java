@@ -28,7 +28,6 @@ import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.json.ObjectModelSerializer;
 import org.eclipse.leshan.core.model.json.ResourceModelSerializer;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
-import org.eclipse.leshan.server.model.StandardModelProvider;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
