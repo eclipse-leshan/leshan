@@ -24,6 +24,11 @@ public class WriteAttributesResponse extends AbstractLwM2mResponse {
     }
 
     @Override
+    public boolean isSuccess() {
+        return getCode() == ResponseCode.CHANGED;
+    }
+
+    @Override
     public String toString() {
         if (errorMessage != null)
             return String.format("WriteAttributesResponse [code=%s, errormessage=%s]", code, errorMessage);

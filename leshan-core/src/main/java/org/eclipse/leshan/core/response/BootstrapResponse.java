@@ -22,4 +22,9 @@ public class BootstrapResponse extends AbstractLwM2mResponse {
     public BootstrapResponse(final ResponseCode code, final String errorMessage) {
         super(code, errorMessage);
     }
+
+    @Override
+    public boolean isSuccess() {
+        return getCode() == ResponseCode.CHANGED;
+    }
 }

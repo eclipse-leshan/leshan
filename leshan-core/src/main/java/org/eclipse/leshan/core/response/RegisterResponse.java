@@ -34,6 +34,11 @@ public class RegisterResponse extends AbstractLwM2mResponse {
     }
 
     @Override
+    public boolean isSuccess() {
+        return getCode() == ResponseCode.CREATED;
+    }
+
+    @Override
     public String toString() {
         if (errorMessage != null)
             return String.format("RegisterResponse [code=%s, errormessage=%s]", code, errorMessage);

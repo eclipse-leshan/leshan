@@ -24,6 +24,11 @@ public class ExecuteResponse extends AbstractLwM2mResponse {
     }
 
     @Override
+    public boolean isSuccess() {
+        return getCode() == ResponseCode.CHANGED;
+    }
+
+    @Override
     public String toString() {
         if (errorMessage != null)
             return String.format("ExecuteResponse [code=%s, errormessage=%s]", code, errorMessage);

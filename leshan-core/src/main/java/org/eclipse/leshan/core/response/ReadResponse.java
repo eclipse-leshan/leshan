@@ -38,6 +38,11 @@ public class ReadResponse extends AbstractLwM2mResponse {
         this.content = content;
     }
 
+    @Override
+    public boolean isSuccess() {
+        return getCode() == ResponseCode.CONTENT;
+    }
+
     /**
      * Get the {@link LwM2mNode} value returned as response payload.
      *

@@ -24,6 +24,11 @@ public class DeleteResponse extends AbstractLwM2mResponse {
     }
 
     @Override
+    public boolean isSuccess() {
+        return getCode() == ResponseCode.DELETED;
+    }
+
+    @Override
     public String toString() {
         if (errorMessage != null)
             return String.format("DeleteResponse [code=%s, errormessage=%s]", code, errorMessage);

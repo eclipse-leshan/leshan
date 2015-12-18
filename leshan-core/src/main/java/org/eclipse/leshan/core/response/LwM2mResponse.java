@@ -37,4 +37,13 @@ public interface LwM2mResponse {
      */
     String getErrorMessage();
 
+    /**
+     * @return true if the request was successfully done.
+     */
+    boolean isSuccess();
+
+    /**
+     * @return true if we get an error or unexpected code.
+     */
+    boolean isFailure();
 }

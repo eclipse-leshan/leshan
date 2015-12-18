@@ -21,7 +21,7 @@ import org.eclipse.leshan.util.Validate;
 /**
  * A base class for concrete LWM2M response.
  */
-public class AbstractLwM2mResponse implements LwM2mResponse {
+public abstract class AbstractLwM2mResponse implements LwM2mResponse {
 
     protected final ResponseCode code;
     protected final String errorMessage;
@@ -42,5 +42,10 @@ public class AbstractLwM2mResponse implements LwM2mResponse {
     @Override
     public String getErrorMessage() {
         return errorMessage;
+    }
+
+    @Override
+    public boolean isFailure() {
+        return !isSuccess();
     }
 }

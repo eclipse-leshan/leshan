@@ -45,6 +45,11 @@ public class DiscoverResponse extends AbstractLwM2mResponse {
     }
 
     @Override
+    public boolean isSuccess() {
+        return getCode() == ResponseCode.CONTENT;
+    }
+
+    @Override
     public String toString() {
         if (errorMessage != null)
             return String.format("DiscoverResponse [code=%s, errormessage=%s]", code, errorMessage);
