@@ -16,9 +16,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 import java.util.Date;
 
@@ -173,6 +171,30 @@ public class LwM2mNodeDecoderTest {
         assertEquals(2, resource.getValues().size());
         assertEquals(1L, resource.getValue(0));
         assertEquals(5L, resource.getValue(1));
+    }
+
+    @Test(expected = InvalidValueException.class)
+    public void tlv_multi_instance_object__missing_instance_tlv() throws InvalidValueException {
+
+        byte[] content = TlvEncoder.encode(
+                new Tlv[] { new Tlv(TlvType.RESOURCE_VALUE, null, "value1".getBytes(), 1),
+                                        new Tlv(TlvType.RESOURCE_VALUE, null, "value1".getBytes(), 2) }).array();
+
+        LwM2mNodeDecoder.decode(content, ContentFormat.TLV, new LwM2mPath(9), model);
+    }
+
+    @Test
+    public void tlv_unknown_object__missing_instance_tlv() throws InvalidValueException {
+
+        byte[] content = TlvEncoder.encode(
+                new Tlv[] { new Tlv(TlvType.RESOURCE_VALUE, null, "value1".getBytes(), 1),
+                                        new Tlv(TlvType.RESOURCE_VALUE, null, "value1".getBytes(), 2) }).array();
+
+        LwM2mObject obj = (LwM2mObject) LwM2mNodeDecoder
+                .decode(content, ContentFormat.TLV, new LwM2mPath(10234), model);
+
+        assertEquals(1, obj.getInstances().size());
+        assertEquals(2, obj.getInstance(0).getResources().size());
     }
 
     @Test

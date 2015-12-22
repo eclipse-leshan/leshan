@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
@@ -59,10 +60,22 @@ public class LwM2mNodeTlvDecoder {
             // object level request
             final List<LwM2mObjectInstance> instances = new ArrayList<>();
 
-            // is it an array of resource TLV?
+            // is it an array of TLV resources?
             if (tlvs.length > 0 && //
                     (tlvs[0].getType() == TlvType.MULTIPLE_RESOURCE || tlvs[0].getType() == TlvType.RESOURCE_VALUE)) {
-                instances.add(parseObjectInstancesTlv(tlvs, path.getObjectId(), 0, model));
+
+                ObjectModel oModel = model.getObjectModel(path.getObjectId());
+                if (oModel == null) {
+                    LOG.warn("No model for object {}. The tlv is decoded assuming this is a single instance object",
+                            path.getObjectId());
+                    instances.add(parseObjectInstancesTlv(tlvs, path.getObjectId(), 0, model));
+                } else if (!oModel.multiple) {
+                    instances.add(parseObjectInstancesTlv(tlvs, path.getObjectId(), 0, model));
+                } else {
+                    throw new InvalidValueException("Object instance TLV is mandatory for multiple instances object",
+                            path);
+                }
+
             } else {
                 for (int i = 0; i < tlvs.length; i++) {
                     if (tlvs[i].getType() != TlvType.OBJECT_INSTANCE)
