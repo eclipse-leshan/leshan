@@ -25,6 +25,7 @@ import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class ExecuteTest {
@@ -46,7 +47,7 @@ public class ExecuteTest {
     }
 
     @Test
-    public void cannot_execute_write_only_resource() {
+    public void cannot_execute_read_only_resource() {
         // client registration
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
@@ -58,12 +59,63 @@ public class ExecuteTest {
     }
 
     @Test
+    public void cannot_execute_read_write_resource() {
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        // execute current time resource on device
+        ExecuteResponse response = helper.server.send(helper.getClient(), new ExecuteRequest(3, 0, 13));
+
+        // verify result
+        assertEquals(ResponseCode.METHOD_NOT_ALLOWED, response.getCode());
+    }
+
+    //TODO: Does this has to be implemented ?
+    @Ignore
+    @Test
+    public void cannot_execute_nonexisting_resource_on_existing_object() {
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        final int nonExistingResourceId = 9999;
+        // execute non existing resource on device
+        ExecuteResponse response = helper.server.send(helper.getClient(), new ExecuteRequest(3, 0, nonExistingResourceId));
+
+        // verify result
+        assertEquals(ResponseCode.NOT_FOUND, response.getCode());
+    }
+
+    @Test
+    public void cannot_execute_nonexisting_resource_on_non_existing_object() {
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        final int nonExistingObjectId = 9999;
+        ExecuteResponse response = helper.server.send(helper.getClient(), new ExecuteRequest(nonExistingObjectId, 0, 0));
+
+        // verify result
+        assertEquals(ResponseCode.NOT_FOUND, response.getCode());
+    }
+
+    @Test
     public void can_execute_resource() {
         // client registration
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         // execute reboot resource on device
         ExecuteResponse response = helper.server.send(helper.getClient(), new ExecuteRequest(3, 0, 4));
+
+        // verify result
+        assertEquals(ResponseCode.CHANGED, response.getCode());
+    }
+
+    @Test
+    public void can_execute_resource_with_parameters() {
+        // client registration
+        helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
+
+        // execute reboot after 60 seconds on device
+        ExecuteResponse response = helper.server.send(helper.getClient(), new ExecuteRequest(3, 0, 4, "60"));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
