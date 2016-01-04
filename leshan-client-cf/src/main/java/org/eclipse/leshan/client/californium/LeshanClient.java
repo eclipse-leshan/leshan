@@ -43,17 +43,18 @@ public class LeshanClient implements LwM2mClient {
     private final CaliforniumLwM2mClientRequestSender requestSender;
     private final List<LwM2mObjectEnabler> objectEnablers;
 
-    public LeshanClient(final InetSocketAddress serverAddress, final List<LwM2mObjectEnabler> objectEnablers) {
+    public LeshanClient(final InetSocketAddress serverAddress,
+            final List<? extends LwM2mObjectEnabler> objectEnablers) {
         this(new InetSocketAddress("0", 0), serverAddress, new CoapServer(), objectEnablers);
     }
 
     public LeshanClient(final InetSocketAddress clientAddress, final InetSocketAddress serverAddress,
-            final List<LwM2mObjectEnabler> objectEnablers) {
+            final List<? extends LwM2mObjectEnabler> objectEnablers) {
         this(clientAddress, serverAddress, new CoapServer(), objectEnablers);
     }
 
     public LeshanClient(final InetSocketAddress clientAddress, final InetSocketAddress serverAddress,
-            final CoapServer serverLocal, final List<LwM2mObjectEnabler> objectEnablers) {
+            final CoapServer serverLocal, final List<? extends LwM2mObjectEnabler> objectEnablers) {
 
         Validate.notNull(clientAddress);
         Validate.notNull(serverLocal);
@@ -69,8 +70,8 @@ public class LeshanClient implements LwM2mClient {
         this.objectEnablers = new ArrayList<>(objectEnablers);
         for (LwM2mObjectEnabler enabler : objectEnablers) {
             if (clientSideServer.getRoot().getChild(Integer.toString(enabler.getId())) != null) {
-                throw new IllegalArgumentException("Trying to load Client Object of name '" + enabler.getId()
-                        + "' when one was already added.");
+                throw new IllegalArgumentException(
+                        "Trying to load Client Object of name '" + enabler.getId() + "' when one was already added.");
             }
 
             final ObjectResource clientObject = new ObjectResource(enabler);

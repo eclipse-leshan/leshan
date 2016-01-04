@@ -12,6 +12,8 @@
  * 
  * Contributors:
  *     Zebra Technologies - initial API and implementation
+ *     Kai Hudalla (Bosch Software Innovations GmbH) - move LeshanClient constructor tests
+ *                                                     to separate (unit) test class
  *******************************************************************************/
 
 package org.eclipse.leshan.integration.tests;
@@ -22,17 +24,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.HashMap;
-
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.ResponseCode;
-import org.eclipse.leshan.client.californium.LeshanClient;
-import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
-import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
-import org.eclipse.leshan.client.resource.ObjectEnabler;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
@@ -80,21 +73,6 @@ public class RegistrationTest {
         assertArrayEquals(LinkObject.parse("</>;rt=\"oma.lwm2m\",</2>,</3/0>".getBytes()), client.getObjectLinks());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void fail_to_create_client_with_null() {
-        helper.client = new LeshanClient(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void fail_to_create_client_with_same_object_twice() {
-        ObjectEnabler objectEnabler = new ObjectEnabler(1, null, new HashMap<Integer, LwM2mInstanceEnabler>(), null);
-        ObjectEnabler objectEnabler2 = new ObjectEnabler(1, null, new HashMap<Integer, LwM2mInstanceEnabler>(), null);
-        ArrayList<LwM2mObjectEnabler> objects = new ArrayList<>();
-        objects.add(objectEnabler);
-        objects.add(objectEnabler2);
-        helper.client = new LeshanClient(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), objects);
-    }
-
     @Test
     public void registered_device_exists_async() throws InterruptedException {
         final Callback<RegisterResponse> callback = new Callback<>();
@@ -136,8 +114,8 @@ public class RegistrationTest {
 
         // do an update
         final Long updatedLifetime = 1337l;
-        final UpdateResponse updateResponse = helper.client.send(new UpdateRequest(response.getRegistrationID(),
-                updatedLifetime, null, null, null));
+        final UpdateResponse updateResponse = helper.client
+                .send(new UpdateRequest(response.getRegistrationID(), updatedLifetime, null, null, null));
 
         // verify result
         final Client client = helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER);
@@ -152,8 +130,8 @@ public class RegistrationTest {
         RegisterResponse response = helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         // do an update
-        final DeregisterResponse deregisteredResponse = helper.client.send(new DeregisterRequest(response
-                .getRegistrationID()));
+        final DeregisterResponse deregisteredResponse = helper.client
+                .send(new DeregisterRequest(response.getRegistrationID()));
 
         // verify result
         assertEquals(ResponseCode.DELETED, deregisteredResponse.getCode());
