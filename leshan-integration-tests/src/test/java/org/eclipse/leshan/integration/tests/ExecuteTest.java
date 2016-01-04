@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Zebra Technologies - initial API and implementation
+ *     Kiran Pradeep - add more test cases
  *******************************************************************************/
 
 package org.eclipse.leshan.integration.tests;
@@ -25,7 +26,6 @@ import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class ExecuteTest {
@@ -70,8 +70,6 @@ public class ExecuteTest {
         assertEquals(ResponseCode.METHOD_NOT_ALLOWED, response.getCode());
     }
 
-    //TODO: Does this has to be implemented ?
-    @Ignore
     @Test
     public void cannot_execute_nonexisting_resource_on_existing_object() {
         // client registration
@@ -79,7 +77,8 @@ public class ExecuteTest {
 
         final int nonExistingResourceId = 9999;
         // execute non existing resource on device
-        ExecuteResponse response = helper.server.send(helper.getClient(), new ExecuteRequest(3, 0, nonExistingResourceId));
+        ExecuteResponse response = helper.server.send(helper.getClient(),
+                new ExecuteRequest(3, 0, nonExistingResourceId));
 
         // verify result
         assertEquals(ResponseCode.NOT_FOUND, response.getCode());
@@ -91,7 +90,8 @@ public class ExecuteTest {
         helper.client.send(new RegisterRequest(ENDPOINT_IDENTIFIER));
 
         final int nonExistingObjectId = 9999;
-        ExecuteResponse response = helper.server.send(helper.getClient(), new ExecuteRequest(nonExistingObjectId, 0, 0));
+        ExecuteResponse response = helper.server.send(helper.getClient(),
+                new ExecuteRequest(nonExistingObjectId, 0, 0));
 
         // verify result
         assertEquals(ResponseCode.NOT_FOUND, response.getCode());

@@ -12,6 +12,7 @@
  *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Kai Hudalla (Bosch Software Innovations GmbH) - check resource ID when executing resources
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
 
@@ -27,9 +28,12 @@ import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SimpleInstanceEnabler extends BaseInstanceEnabler {
 
+    private static Logger LOG = LoggerFactory.getLogger(SimpleInstanceEnabler.class);
     protected Map<Integer, LwM2mResource> resources = new HashMap<Integer, LwM2mResource>();
     protected ObjectModel objectModel;
 
@@ -52,8 +56,12 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
 
     @Override
     public ExecuteResponse execute(int resourceid, String params) {
-        System.out.println("Execute on resource " + resourceid + " params " + params);
-        return ExecuteResponse.success();
+        if (objectModel.resources.containsKey(resourceid)) {
+            LOG.info("Executing resource [{}] with params [{}]", resourceid, params);
+            return ExecuteResponse.success();
+        } else {
+            return ExecuteResponse.notFound();
+        }
     }
 
     public void setObjectModel(ObjectModel objectModel) {
