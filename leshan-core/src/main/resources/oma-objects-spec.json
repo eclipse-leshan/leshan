@@ -852,11 +852,22 @@
       },
       {
         "id": 6,
-        "name": "StartOrReset",
+        "name": "StartOrStop",
         "operations": "E",
         "instancetype": "single",
         "mandatory": true,
         "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 7,
+        "name": "Collection Duration",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "integer",
         "range": "",
         "units": "",
         "description": ""
