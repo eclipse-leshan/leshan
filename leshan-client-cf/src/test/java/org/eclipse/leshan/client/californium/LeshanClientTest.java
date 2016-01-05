@@ -20,6 +20,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
@@ -35,11 +36,9 @@ public class LeshanClientTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void fail_to_create_client_with_same_object_twice() {
-        ObjectEnabler objectEnabler = new ObjectEnabler(1, null, new HashMap<Integer, LwM2mInstanceEnabler>(), null);
-        ObjectEnabler objectEnabler2 = new ObjectEnabler(1, null, new HashMap<Integer, LwM2mInstanceEnabler>(), null);
-        ArrayList<LwM2mObjectEnabler> objects = new ArrayList<>();
-        objects.add(objectEnabler);
-        objects.add(objectEnabler2);
+        List<LwM2mObjectEnabler> objects = new ArrayList<>();
+        objects.add(new ObjectEnabler(1, null, new HashMap<Integer, LwM2mInstanceEnabler>(), null));
+        objects.add(new ObjectEnabler(1, null, new HashMap<Integer, LwM2mInstanceEnabler>(), null));
         new LeshanClient(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), objects);
     }
 }

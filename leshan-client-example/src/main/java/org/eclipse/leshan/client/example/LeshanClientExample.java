@@ -20,7 +20,6 @@ package org.eclipse.leshan.client.example;
 
 import java.net.InetSocketAddress;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -36,7 +35,6 @@ import java.util.UUID;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
-import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
@@ -60,8 +58,8 @@ public class LeshanClientExample {
 
     public static void main(final String[] args) {
         if (args.length != 4 && args.length != 2) {
-            System.out
-                    .println("Usage:\njava -jar target/leshan-client-example-*-SNAPSHOT-jar-with-dependencies.jar [ClientIP] [ClientPort] ServerIP ServerPort");
+            System.out.println(
+                    "Usage:\njava -jar target/leshan-client-example-*-SNAPSHOT-jar-with-dependencies.jar [ClientIP] [ClientPort] ServerIP ServerPort");
         } else {
             if (args.length == 4)
                 new LeshanClientExample(args[0], Integer.parseInt(args[1]), args[2], Integer.parseInt(args[3]));
@@ -85,8 +83,7 @@ public class LeshanClientExample {
         final InetSocketAddress clientAddress = new InetSocketAddress(localHostName, localPort);
         final InetSocketAddress serverAddress = new InetSocketAddress(serverHostName, serverPort);
 
-        final LeshanClient client = new LeshanClient(clientAddress, serverAddress, new ArrayList<LwM2mObjectEnabler>(
-                enablers));
+        final LeshanClient client = new LeshanClient(clientAddress, serverAddress, enablers);
 
         // Start the client
         client.start();
@@ -103,8 +100,8 @@ public class LeshanClientExample {
         if (response.getCode() != ResponseCode.CREATED) {
             // TODO Should we have a error message on response ?
             // System.err.println("\tDevice Registration Error: " + response.getErrorMessage());
-            System.err
-                    .println("If you're having issues connecting to the LWM2M endpoint, try using the DTLS port instead");
+            System.err.println(
+                    "If you're having issues connecting to the LWM2M endpoint, try using the DTLS port instead");
             return;
         }
 
