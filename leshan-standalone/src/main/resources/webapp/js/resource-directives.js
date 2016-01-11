@@ -32,7 +32,8 @@ angular.module('resourceDirectives', [])
             scope.resource.exec  =  {tooltip : "Execute <br/>"+ scope.resource.path};
             scope.resource.execwithparams = {tooltip : "Execute with paramaters<br/>"+ scope.resource.path};
             scope.resource.observe  =  {tooltip : "Observe <br/>"+ scope.resource.path};
-            
+            scope.resource.uploadFile =  {tooltip : "Upload File <br/>"  + scope.resource.path};
+
             scope.readable = function() {
                 if(scope.resource.def.hasOwnProperty("operations")) {
                     return scope.resource.def.operations.indexOf("R") != -1;
@@ -53,6 +54,15 @@ angular.module('resourceDirectives', [])
                 if(scope.resource.def.instancetype != "multiple") {
                     if(scope.resource.def.hasOwnProperty("operations")) {
                         return scope.resource.def.operations.indexOf("E") != -1;
+                    }
+                }
+                return false;
+            }
+
+            scope.uploadable = function() {
+                if(scope.resource.def.instancetype != "multiple") {
+                    if(scope.resource.def.hasOwnProperty("operations")) {
+                        return scope.resource.def.operations.indexOf("U") != -1;
                     }
                 }
                 return false;
@@ -180,6 +190,134 @@ angular.module('resourceDirectives', [])
 
                 $('#writeModal').modal('show');
             };
+
+            /*
+            scope.uploadFile = function() {
+                $('#uploadFileModalLabel').text(scope.resource.def.name);
+                $('#uploadFileInputValue').val(scope.resource.value);
+                $('#uploadFileSubmit').unbind();
+                $('#uploadFileSubmit').click(function(e) {
+                    e.preventDefault();
+                    var value = $('#uploadFileInputValue').val();
+
+                    alert("value : " + value);
+                    var f = document.getElementById('uploadFileInputValue').files[0];
+                    var r = new FileReader();
+                    //r.readAsArrayBuffer(f);
+                    var fileContent;
+                    r.onloadend = function(e){
+                        fileContent = e.target.result;
+                        //send you binary data via $http or $resource or do anything else with it
+                        alert("fileContent : " + fileContent.size + fileContent.toString())
+                    };
+                    //r.readAsBinaryString(f);
+                    //r.readAsText(f);
+                    r.readAsArrayBuffer(f);
+                    alert("hi rr!!")
+                    //alert("fileContent  : " + fileContent + " \n - new Uint8Array(r.result) : " + new Uint8Array(r.result));
+
+                    if(value) {
+                        $('#uploadFileModal').modal('hide');
+
+                        var rsc = {};
+                        rsc["id"] = scope.resource.def.id;
+                        //value = lwResources.getTypedValue(value, scope.resource.def.type);
+                        value = lwResources.getTypedValue(fileContent, scope.resource.def.type);
+                        //value = new Uint8Array(r.result);
+                        alert("r.result : " + r.result + " - fileContent : " + fileContent)
+                        rsc["value"] = value;
+//'Content-Encoding': 'BINARY' , 'Content-Transfer-Encoding': 'BINARY',  'Accept-Encoding': 'BINARY' --> did not work
+                        $http({method: 'PUT', url: "api/clients/" + $routeParams.clientId + scope.resource.path,
+                            data: rsc, timeout:300000, responseType: 'arraybuffer',
+                            transformRequest: [],
+                            headers:{'Content-Type': 'multipart/form-data'}})
+                            .success(function(data, status, headers, config) {
+                                uploadFile = scope.resource.uploadFile;
+                                uploadFile.date = new Date();
+                                var formattedDate = $filter('date')(uploadFile.date, 'HH:mm:ss.sss');
+                                uploadFile.status = data.status;
+                                uploadFile.tooltip = formattedDate + "<br/>" + uploadFile.status;
+
+                                if (data.status == "CHANGED") {
+                                    scope.resource.value = value;
+                                    scope.resource.valuesupposed = true;
+                                    scope.resource.tooltip = formattedDate;
+                                }
+                            }).error(function(data, status, headers, config) {
+                            errormessage = "Unable to uploadFile resource " + scope.resource.path + " for "+ $routeParams.clientId + " : " + status +" "+ data
+                            dialog.open(errormessage);
+                            console.error(errormessage)
+                        });;
+                    }
+                });
+
+                $('#uploadFileModal').modal('show');
+            };
+*/
+
+            scope.uploadFile = function() {
+                $('#uploadFileModalLabel').text(scope.resource.def.name);
+                $('#uploadFileInputValue').val(scope.resource.value);
+                $('#uploadFileSubmit').unbind();
+                $('#uploadFileSubmit').click(function(e) {
+                    e.preventDefault();
+                    var value = $('#uploadFileInputValue').val();
+
+                    var f = document.getElementById('uploadFileInputValue').files[0];
+                    var r = new FileReader();
+                    //r.readAsArrayBuffer(f);
+                    var fileContent;
+                    r.onloadend = function(e){
+                        var binary = "";
+                        var bytes = new Uint8Array(e.target.result);
+                        var length = bytes.byteLength;
+                        for (var i = 0; i < length; i++) {
+                            binary += String.fromCharCode(bytes[i]);
+                        }
+                        fileContent = binary;
+                        alert("fileContent : " + fileContent);
+                    };
+                    //r.readAsBinaryString(f);
+                    //r.readAsText(f);
+                    r.readAsArrayBuffer(f);
+                    alert("hi rr!!")
+
+                    if(value) {
+                        $('#uploadFileModal').modal('hide');
+
+                        var rsc = {};
+                        rsc["id"] = scope.resource.def.id;
+                        //value = lwResources.getTypedValue(value, scope.resource.def.type);
+                        value = lwResources.getTypedValue(fileContent, scope.resource.def.type);
+                        rsc["value"] = value;
+//'Content-Encoding': 'BINARY' , 'Content-Transfer-Encoding': 'BINARY',  'Accept-Encoding': 'BINARY' --> did not work
+                        $http({method: 'PUT', url: "api/clients/" + $routeParams.clientId + scope.resource.path,
+                            data: rsc, timeout:300000, //responseType: 'arraybuffer',
+                            //transformRequest: [],
+                            headers:{'Content-Type': 'multipart/form-data'}})
+                            .success(function(data, status, headers, config) {
+                                uploadFile = scope.resource.uploadFile;
+                                uploadFile.date = new Date();
+                                var formattedDate = $filter('date')(uploadFile.date, 'HH:mm:ss.sss');
+                                uploadFile.status = data.status;
+                                uploadFile.tooltip = formattedDate + "<br/>" + uploadFile.status;
+
+                                if (data.status == "CHANGED") {
+                                    scope.resource.value = value;
+                                    scope.resource.valuesupposed = true;
+                                    scope.resource.tooltip = formattedDate;
+                                }
+                            }).error(function(data, status, headers, config) {
+                            errormessage = "Unable to uploadFile resource " + scope.resource.path + " for "+ $routeParams.clientId + " : " + status +" "+ data
+                            dialog.open(errormessage);
+                            console.error(errormessage)
+                        });;
+                    }
+                });
+
+                $('#uploadFileModal').modal('show');
+            };
+
 
             scope.exec = function() {
                 $http.post("api/clients/" + $routeParams.clientId+ scope.resource.path)

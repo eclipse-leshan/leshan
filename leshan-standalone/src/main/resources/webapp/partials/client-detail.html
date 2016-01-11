@@ -69,7 +69,7 @@
 			<div class="modal-body">
 				<form class="form-horizontal" role="form">
 					<div class="form-group">
-						<label for="inputEmail3" class="col-sm-2 control-label">Value</label>
+						<label for="writeInputValue" class="col-sm-2 control-label">Value</label>
 						<div class="col-sm-10">
 							<input class="form-control" id="writeInputValue">
 						</div>
@@ -79,6 +79,34 @@
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 				<button type="button" class="btn btn-primary" data-dismiss="modal" id="writeSubmit">Update</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Upload File modal -->
+<div class="modal bs-example-modal-sm" id="uploadFileModal" tabindex="-1" role="dialog"
+	 aria-labelledby="uploadFileModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"
+						aria-hidden="true">&times;</button>
+				<h4 class="modal-title" id="uploadFileModalLabel"></h4>
+			</div>
+			<div class="modal-body">
+				<form class="form-horizontal" role="form">
+					<div class="form-group">
+						<label for="uploadFileInputValue" class="col-sm-2 control-label">Select File</label>
+						<div class="col-sm-10">
+							<input type="file" id="uploadFileInputValue" name="uploadFileInputValue" value="Select File11">
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-primary" data-dismiss="modal" id="uploadFileSubmit">Upload File</button>
 			</div>
 		</div>
 	</div>

@@ -41,6 +41,18 @@
 								'btn-danger': resource.write.status != null && resource.write.status != 'CHANGED',
 								'btn-success': resource.write.status == 'CHANGED' }">Write</button>
 				</div>
+				<!-- Upload file TODO JB write() where is that getting used.-->
+				<div ng-show="uploadable()" class="btn-group">
+					<button type="button" ng-click="resource.uploadFile.status = null; uploadFile()"
+							tooltip-html-unsafe={{resource.uploadFile.tooltip}} tooltip-placement="right" tooltip-animation="false" tooltip-append-to-body="true"
+							ng-class="{
+								'btn': true,
+								'btn-xs': true,
+								'btn-default': resource.uploadFile.status == null,
+								'btn-danger': resource.uploadFile.status != null && resource.uploadFile.status != 'CHANGED',
+								'btn-success': resource.uploadFile.status == 'CHANGED' }">Upload</button>
+				</div>
+
 				<div ng-show="executable()" class="btn-group">
 					<button type="button" ng-click="resource.exec.status = null; exec();"
 							tooltip-html-unsafe={{resource.exec.tooltip}} tooltip-placement="right" tooltip-animation="false" tooltip-append-to-body="true"

@@ -631,7 +631,7 @@
     "name": "Firmware Update",
     "id": 5,
     "instancetype": "single",
-    "mandatory": false,
+    "mandatory": true,
     "description": "",
     "resourcedefs": [
       {
@@ -648,9 +648,9 @@
       {
         "id": 1,
         "name": "Package URI",
-        "operations": "W",
+        "operations": "RW",
         "instancetype": "single",
-        "mandatory": true,
+        "mandatory": false,
         "type": "string",
         "range": "0-255 bytes",
         "units": "",
@@ -697,6 +697,17 @@
         "mandatory": true,
         "type": "integer",
         "range": "0-6",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 6,
+        "name": "Upload Firmware Update File",
+        "operations": "RU",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "opaque",
+        "range": "",
         "units": "",
         "description": ""
       }
@@ -852,22 +863,11 @@
       },
       {
         "id": 6,
-        "name": "StartOrStop",
+        "name": "StartOrReset",
         "operations": "E",
         "instancetype": "single",
         "mandatory": true,
         "type": "string",
-        "range": "",
-        "units": "",
-        "description": ""
-      },
-      {
-        "id": 7,
-        "name": "Collection Duration",
-        "operations": "RW",
-        "instancetype": "single",
-        "mandatory": false,
-        "type": "integer",
         "range": "",
         "units": "",
         "description": ""
@@ -878,7 +878,7 @@
     "name": "Software Management",
     "id": 9,
     "instancetype": "multiple",
-    "mandatory": false,
+    "mandatory": true,
     "description": "",
     "resourcedefs": [
       {
@@ -1394,7 +1394,7 @@
         "operations": "R",
         "instancetype": "single",
         "mandatory": false,
-        "type": "string",
+        "type": "float",
         "range": "",
         "units": "",
         "description": "Measurement Units Definition e.g. “Cel” for Temperature in Celsius."
@@ -2527,6 +2527,68 @@
         "range": "",
         "units": "",
         "description": "If present, the type of sensor defined as the UCUM Unit Definition e.g. “Cel” for Temperature in Celcius."
+      }
+    ]
+  },
+  {
+    "name": "Heart Beat",
+    "id": 500,
+    "instancetype": "single",
+    "mandatory": true,
+    "description": "",
+    "resourcedefs": [
+      {
+        "id": 1,
+        "name": "Log Message",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": "Write log messages here ..."
+      }
+    ]
+  },
+  {
+    "name": "TSV2 Demo Object",
+    "id": 1024,
+    "instancetype": "single",
+    "mandatory": true,
+    "description": "",
+    "resourcedefs": [
+      {
+        "id": 0,
+        "name": "Status Value",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "integer",
+        "range": "",
+        "units": "",
+        "description": "Trip Saver Status as a Value"
+      },
+      {
+        "id": 1,
+        "name": "Exec Placeholder",
+        "operations": "E",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "opaque",
+        "range": "",
+        "units": "",
+        "description": "Placeholder"
+      },
+      {
+        "id": 2,
+        "name": "Firmware Version",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "float",
+        "range": "",
+        "units": "",
+        "description": "Trip Saver Firmware Version"
       }
     ]
   }

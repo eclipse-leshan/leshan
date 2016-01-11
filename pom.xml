@@ -46,7 +46,7 @@ Contributors:
         <module>leshan-client-core</module>
         <module>leshan-client-cf</module>
 
-        <module>leshan-integration-tests</module> 
+        <module>leshan-integration-tests</module>
 
         <module>leshan-client-example</module>
         <module>leshan-standalone</module>
@@ -105,7 +105,7 @@ Contributors:
         <californium.version>1.0.0-RC2</californium.version>
         <log4j.version>2.1</log4j.version>
         <slf4j.api.version>1.7.10</slf4j.api.version>
-        <jetty.version>9.1.4.v20140401</jetty.version>
+        <jetty.version>9.3.6.v20151106</jetty.version>
     </properties>
 
     <distributionManagement>
@@ -201,50 +201,50 @@ Contributors:
 
         <pluginManagement>
             <plugins>
-	            <plugin>
-	                <groupId>org.apache.maven.plugins</groupId>
-	                <artifactId>maven-compiler-plugin</artifactId>
-	                <version>3.3</version>
-	                <configuration>
-	                    <encoding>UTF-8</encoding>
-	                    <source>1.7</source>
-	                    <target>1.7</target>
-	                    <debug>true</debug>
-	                    <optimize>true</optimize>
-	                    <showDeprecations>true</showDeprecations>
-	                </configuration>
-	            </plugin>
-	            <plugin>
-	                <groupId>org.apache.maven.plugins</groupId>
-	                <artifactId>maven-surefire-plugin</artifactId>
-	                <version>2.19</version>
-	                <configuration>
-	                    <parallel>classes</parallel>
-	                    <threadCount>4</threadCount>
-	                    <excludes>
-	                        <exclude>**/*$*</exclude>
-	                    </excludes>
-	                </configuration>
-	            </plugin>
-	            <plugin>
-	                <artifactId>maven-jar-plugin</artifactId>
-	                <version>2.6</version>
-	                <configuration>
-	                    <archive>
-	                        <manifestEntries>
-	                            <Implementation-Version>${project.version}</Implementation-Version>
-	                        </manifestEntries>
-	                    </archive>
-	                </configuration>
-	            </plugin>
-	            <plugin>
-	                <groupId>org.apache.maven.plugins</groupId>
-	                <artifactId>maven-javadoc-plugin</artifactId>
-	                <version>2.10.3</version>
-	                <configuration>
-	                    <excludePackageNames>org.eclipse.leshan.util</excludePackageNames>
-	                </configuration>
-	            </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.3</version>
+                    <configuration>
+                        <encoding>UTF-8</encoding>
+                        <source>1.7</source>
+                        <target>1.7</target>
+                        <debug>true</debug>
+                        <optimize>true</optimize>
+                        <showDeprecations>true</showDeprecations>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.19</version>
+                    <configuration>
+                        <parallel>classes</parallel>
+                        <threadCount>4</threadCount>
+                        <excludes>
+                            <exclude>**/*$*</exclude>
+                        </excludes>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>2.6</version>
+                    <configuration>
+                        <archive>
+                            <manifestEntries>
+                                <Implementation-Version>${project.version}</Implementation-Version>
+                            </manifestEntries>
+                        </archive>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>2.10.3</version>
+                    <configuration>
+                        <excludePackageNames>org.eclipse.leshan.util</excludePackageNames>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-eclipse-plugin</artifactId>
@@ -276,21 +276,21 @@ Contributors:
                     <artifactId>maven-bundle-plugin</artifactId>
                     <version>3.0.1</version>
                 </plugin>
-	            <plugin>
-	                <groupId>org.codehaus.mojo</groupId>
-	                <artifactId>buildnumber-maven-plugin</artifactId>
-	                <version>1.4</version>
-	                <executions>
-	                    <execution>
-	                        <goals>
-	                            <goal>create</goal>
-	                        </goals>
-	                    </execution>
-	                </executions>
-	                <configuration>
-	                    <getRevisionOnlyOnce>true</getRevisionOnlyOnce>
-	                </configuration>
-	            </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>buildnumber-maven-plugin</artifactId>
+                    <version>1.4</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>create</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <getRevisionOnlyOnce>true</getRevisionOnlyOnce>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
