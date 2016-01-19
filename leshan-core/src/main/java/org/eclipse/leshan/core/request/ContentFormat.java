@@ -20,10 +20,10 @@ package org.eclipse.leshan.core.request;
  */
 public enum ContentFormat {
 
-    // TODO: update media type codes once they have been assigned by IANA
-    LINK("application/link-format", 40), TEXT("application/vnd.oma.lwm2m+text", 1541), TLV(
+    // TODO: update TLV and JSON media type codes once they have been assigned by IANA
+    LINK("application/link-format", 40), TEXT("text/plain", 0), TLV(
             "application/vnd.oma.lwm2m+tlv", 1542), JSON("application/vnd.oma.lwm2m+json", 1543), OPAQUE(
-            "application/vnd.oma.lwm2m+opaque", 1544);
+            "application/octet-stream", 42);
 
     private final String mediaType;
     private final int code;
