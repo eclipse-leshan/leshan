@@ -21,6 +21,7 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.BootstrapRequest;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
@@ -47,7 +48,7 @@ public class CoapClientRequestBuilder implements UplinkRequestVisitor {
     public void visit(final RegisterRequest request) {
         coapRequest = Request.newPost();
         buildRequestSettings();
-
+        coapRequest.getOptions().setContentFormat(ContentFormat.LINK.getCode());
         coapRequest.getOptions().addUriPath("rd");
         coapRequest.getOptions().addUriQuery("ep=" + request.getEndpointName());
 
@@ -91,8 +92,10 @@ public class CoapClientRequestBuilder implements UplinkRequestVisitor {
             coapRequest.getOptions().addUriQuery("b=" + bindingMode.toString());
 
         LinkObject[] linkObjects = request.getObjectLinks();
-        if (linkObjects != null)
+        if (linkObjects != null) {
+            coapRequest.getOptions().setContentFormat(ContentFormat.LINK.getCode());
             coapRequest.setPayload(LinkObject.serialize(linkObjects));
+        }
     }
 
     @Override
