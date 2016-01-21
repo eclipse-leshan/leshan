@@ -18,6 +18,18 @@
 
 var lwClientControllers = angular.module('clientControllers', []);
 
+// Update client in a list of clients (replaces the client with the same endpoint))
+function updateClient(updated, clients) {
+    return clients.reduce(function(accu, client) {
+        if (updated.endpoint === client.endpoint) {
+            accu.push(updated);
+        } else {
+            accu.push(client);
+        }
+        return accu;
+    }, []);
+}
+
 lwClientControllers.controller('ClientListCtrl', [
     '$scope',
     '$http',
@@ -42,8 +54,8 @@ lwClientControllers.controller('ClientListCtrl', [
 
         // get the list of connected clients
         $http.get('api/clients'). error(function(data, status, headers, config){
-            $scope.error = "Unable get client list: " + status + " " + data  
-            console.error($scope.error)
+            $scope.error = "Unable get client list: " + status + " " + data;
+            console.error($scope.error);
         }).success(function(data, status, headers, config) {
             $scope.clients = data;
 
@@ -59,9 +71,19 @@ lwClientControllers.controller('ClientListCtrl', [
                     var client = JSON.parse(msg.data);
                     $scope.clients.push(client);
                 });
-            }
+            };
+
+            var updateCallback =  function(msg) {
+                $scope.$apply(function() {
+                    var client = JSON.parse(msg.data);
+                    $scope.clients = updateClient(client, $scope.clients);
+                });
+            };
+            
             $scope.eventsource.addEventListener('REGISTRATION', registerCallback, false);
 
+            $scope.eventsource.addEventListener('UPDATED', updateCallback, false);
+            
             var getClientIdx = function(client) {
                 for (var i = 0; i < $scope.clients.length; i++) {
                     if ($scope.clients[i].registrationId == client.registrationId) {
@@ -69,7 +91,7 @@ lwClientControllers.controller('ClientListCtrl', [
                     }
                 }
                 return -1;
-            }
+            };
             var deregisterCallback = function(msg) {
                 $scope.$apply(function() {
                     var clientIdx = getClientIdx(JSON.parse(msg.data));
@@ -77,7 +99,7 @@ lwClientControllers.controller('ClientListCtrl', [
                         $scope.clients.splice(clientIdx, 1);
                     }
                 });
-            }
+            };
             $scope.eventsource.addEventListener('DEREGISTRATION', deregisterCallback, false);
         });
 }]);
@@ -186,7 +208,7 @@ lwClientControllers.controller('ClientDetailCtrl', [
                         }
                     } // TODO object level
                 });
-            }
+            };
             $scope.eventsource.addEventListener('NOTIFICATION', notificationCallback, false);
 
             $scope.coaplogs = [];
@@ -197,13 +219,14 @@ lwClientControllers.controller('ClientDetailCtrl', [
                     console.log(log);
                     $scope.coaplogs.push(log);
                 });
-            }
+            };
             $scope.eventsource.addEventListener('COAPLOG', coapLogCallback, false);
 
             // coap logs hidden by default
             $scope.coapLogsCollapsed = true;
             $scope.toggleCoapLogs = function() {
                 $scope.coapLogsCollapsed = !$scope.coapLogsCollapsed;
-            }
+            };
         });
-}]);
+
+    }]);
