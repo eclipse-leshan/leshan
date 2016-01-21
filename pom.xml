@@ -90,15 +90,16 @@ Contributors:
                 <role>developer</role>
             </roles>
         </developer>
+        <developer>
+            <id>sbernard</id>
+            <name>Simon Bernard</name>
+            <email>sbernard@sierrawireless.com</email>
+            <organization>Sierra Wireless</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
     </developers>
-
-    <repositories>
-        <repository>
-            <id>Californium</id>
-            <name>Eclipse-Californium</name>
-            <url>https://repo.eclipse.org/content/groups/californium/</url>
-        </repository>
-    </repositories>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -109,11 +110,6 @@ Contributors:
     </properties>
 
     <distributionManagement>
-        <snapshotRepository>
-            <id>repo.eclipse.org</id>
-            <name>Californium Repository - Snapshots</name>
-            <url>https://repo.eclipse.org/content/repositories/leshan-snapshots/</url>
-        </snapshotRepository>
         <repository>
             <id>ossrh</id>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
@@ -132,7 +128,7 @@ Contributors:
             </modules>
         </profile>
         <profile>
-            <!-- this profile generate all the needed artifact and signatures needed for releasing on maven central -->
+            <!-- this profile generate all the needed artifact and signatures needed, then release it on maven central -->
             <id>release</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
@@ -142,7 +138,7 @@ Contributors:
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.5</version>
+                        <version>1.6</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -176,6 +172,17 @@ Contributors:
                                 </goals>
                             </execution>
                         </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.5</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
