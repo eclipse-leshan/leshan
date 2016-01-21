@@ -8,6 +8,7 @@
 				<th>Client Endpoint</th>
 				<th>Registration ID</th>
 				<th>Registration Date</th>
+                                <th>Last Update</th>
 				<th></th>
 			</tr>
 		</thead>
@@ -16,6 +17,7 @@
 				<td><a ng-href="#/clients/{{client.endpoint}}"> <strong>{{client.endpoint}}</strong></a></td>
 				<td>{{client.registrationId}}</td>
 				<td>{{client.registrationDate | date:'medium'}}</td>
+                                <td>{{client.lastUpdate | date:'medium'}}</td>
 				<td><span ng-class="{hidden: client.secure == false}" class="glyphicon glyphicon-lock"></span></td>
 			</tr>
 		</tbody>
