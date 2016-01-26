@@ -75,6 +75,10 @@ Contributors:
     <build>
         <plugins>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>2.4</version>
@@ -97,6 +101,31 @@ Contributors:
                     </goals>
                   </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <version>1.5.3</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <file>${project.build.directory}/classes/webapp/index.html</file>
+                    <replacements>
+                        <replacement>
+                            <token>@commit-id@</token>
+                            <value>${buildNumber}</value>
+                        </replacement>
+                        <replacement>
+                            <token>@version@</token>
+                            <value>${project.version}</value>
+                        </replacement>
+                    </replacements>
+                </configuration>
             </plugin>
         </plugins>
     </build>
