@@ -17,7 +17,6 @@ package org.eclipse.leshan.bootstrap;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -68,11 +67,8 @@ public class BootstrapStoreImpl implements BootstrapStore {
 
     public void addConfig(String endpoint, BootstrapConfig config) throws ConfigurationException {
         ConfigurationChecker.verify(config);
-        // check the configuration
         bootstrapByEndpoint.put(endpoint, config);
-        //
-        // TODO save to JSON format
-        // saveToFile();
+        saveToFile();
     }
 
     public Map<String, BootstrapConfig> getBootstrapConfigs() {
@@ -89,37 +85,37 @@ public class BootstrapStoreImpl implements BootstrapStore {
 
     @SuppressWarnings("unchecked")
     private void loadFromFile() {
-
         try {
             File file = new File(filename);
+            if (file.exists()) {
+                try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
+                    bootstrapByEndpoint.putAll((Map<String, BootstrapConfig>) in.readObject());
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Could not load bootstrap infos from file", e);
+        }
+    }
 
+    private synchronized void saveToFile() {
+        try {
+            // Create file if it does not exists.
+            File file = new File(filename);
             if (!file.exists()) {
-                // create parents if needed
                 File parent = file.getParentFile();
                 if (parent != null) {
                     parent.mkdirs();
                 }
                 file.createNewFile();
-
-            } else {
-
-                try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
-                    bootstrapByEndpoint.putAll((Map<String, BootstrapConfig>) in.readObject());
-                }
             }
-        } catch (FileNotFoundException e) {
-            // fine
-        } catch (Exception e) {
-            LOG.debug("Could not load bootstrap infos from file", e);
-        }
-    }
 
-    private void saveToFile() {
-        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename))) {
-            Map<String, BootstrapConfig> copy = new HashMap<>(bootstrapByEndpoint);
-            out.writeObject(copy);
+            // Write file
+            try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename))) {
+                Map<String, BootstrapConfig> copy = new HashMap<>(bootstrapByEndpoint);
+                out.writeObject(copy);
+            }
         } catch (Exception e) {
-            LOG.debug("Could not save bootstrap infos to file", e);
+            LOG.error("Could not save bootstrap infos to file", e);
         }
     }
 }

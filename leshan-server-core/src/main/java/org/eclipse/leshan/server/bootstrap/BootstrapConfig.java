@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,14 +25,15 @@ import org.eclipse.leshan.core.request.BindingMode;
 /**
  * A client configuration to be pushed by a bootstrap operation
  */
-public class BootstrapConfig {
+@SuppressWarnings("serial")
+public class BootstrapConfig implements Serializable {
 
     public Map<Integer, ServerConfig> servers = new HashMap<>();
 
     public Map<Integer, ServerSecurity> security = new HashMap<>();
 
     /** server configuration (object 1) */
-    static public class ServerConfig {
+    static public class ServerConfig implements Serializable {
         public int shortId;
         public int lifetime = 86400;
         public int defaultMinPeriod = 1;
@@ -50,7 +52,7 @@ public class BootstrapConfig {
     }
 
     /** security configuration (object 0) */
-    static public class ServerSecurity {
+    static public class ServerSecurity implements Serializable {
         public String uri;
         public boolean bootstrapServer = false;
         public SecurityMode securityMode;
