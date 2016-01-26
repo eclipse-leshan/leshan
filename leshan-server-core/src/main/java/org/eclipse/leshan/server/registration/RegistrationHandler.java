@@ -67,6 +67,8 @@ public class RegistrationHandler {
                 registerRequest.getLwVersion(), registerRequest.getLifetime(), registerRequest.getSmsNumber(),
                 registerRequest.getBindingMode(), registerRequest.getObjectLinks(), serverEndpoint);
 
+        client.setRegistrationQueryParams(registerRequest.getQueryParameters());
+
         if (clientRegistry.registerClient(client)) {
             LOG.debug("New registered client: {}", client);
             return RegisterResponse.success(client.getRegistrationId());

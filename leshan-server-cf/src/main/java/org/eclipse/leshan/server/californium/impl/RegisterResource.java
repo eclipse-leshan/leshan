@@ -18,7 +18,9 @@ package org.eclipse.leshan.server.californium.impl;
 import java.net.InetSocketAddress;
 import java.security.Principal;
 import java.security.PublicKey;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -167,9 +169,20 @@ public class RegisterResource extends CoapResource {
         if (request.getPayload() != null) {
             objectLinks = LinkObject.parse(request.getPayload());
         }
+
+        Map<String, String> registerParams = new HashMap<String, String>();
+        for (String param : request.getOptions().getUriQuery()) {
+            if (param != null) {
+                String[] tokens = param.split("\\=");
+                if (tokens != null && tokens.length == 2) {
+                    registerParams.put(tokens[0], tokens[1]);
+                }
+            }
+        }
+
         // Create request
         RegisterRequest registerRequest = new RegisterRequest(endpoint, lifetime, lwVersion, binding, smsNumber,
-                objectLinks);
+                objectLinks, registerParams);
 
         // Handle request
         // -------------------------------

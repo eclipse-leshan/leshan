@@ -15,6 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.core.response.RegisterResponse;
 
@@ -30,6 +33,7 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
     private final BindingMode bindingMode;
     private final String smsNumber;
     private final LinkObject[] objectLinks;
+    private final Map<String, String> queryParameters;
 
     public RegisterRequest(String endpointName) {
         this.endpointName = endpointName;
@@ -38,16 +42,18 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
         this.bindingMode = null;
         this.smsNumber = null;
         this.objectLinks = null;
+        this.queryParameters = new HashMap<String, String>();
     }
 
     public RegisterRequest(String endpointName, Long lifetime, String lwVersion, BindingMode bindingMode,
-            String smsNumber, LinkObject[] objectLinks) {
+            String smsNumber, LinkObject[] objectLinks, Map<String, String> queryParameters) {
         this.endpointName = endpointName;
         this.lifetime = lifetime;
         this.lwVersion = lwVersion;
         this.bindingMode = bindingMode;
         this.smsNumber = smsNumber;
         this.objectLinks = objectLinks;
+        this.queryParameters = queryParameters;
     }
 
     public String getEndpointName() {
@@ -74,8 +80,13 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
         return objectLinks;
     }
 
+    public Map<String, String> getQueryParameters() {
+        return queryParameters;
+    }
+
     @Override
     public void accept(UplinkRequestVisitor visitor) {
         visitor.visit(this);
     }
+
 }

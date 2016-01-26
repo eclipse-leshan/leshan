@@ -20,6 +20,8 @@ import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.core.request.BindingMode;
@@ -61,6 +63,8 @@ public class Client {
     private final String registrationId;
 
     private final LinkObject[] objectLinks;
+
+    private Map<String, String> registrationQueryParams = new HashMap<String, String>();
 
     /** The location where LWM2M objects are hosted on the device */
     private final String rootPath;
@@ -273,6 +277,14 @@ public class Client {
 
     public boolean isAlive() {
         return lastUpdate.getTime() + lifeTimeInSec * 1000 > System.currentTimeMillis();
+    }
+
+    public Map<String, String> getRegistrationQueryParams() {
+        return registrationQueryParams;
+    }
+
+    public void setRegistrationQueryParams(Map<String, String> registrationQueryParams) {
+        this.registrationQueryParams = registrationQueryParams;
     }
 
     @Override
