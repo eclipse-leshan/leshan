@@ -68,9 +68,15 @@ public class ClientUpdate {
         // to extend the client registration's time-to-live period ...
         Date lastUpdate = new Date();
 
-        return new Client(client.getRegistrationId(), client.getEndpoint(), address, port, client.getLwM2mVersion(),
-                lifeTimeInSec, smsNumber, bindingMode, linkObject, client.getRegistrationEndpointAddress(),
-                client.getRegistrationDate(), lastUpdate);
+        Client.Builder builder = new Client.Builder(client.getRegistrationId(), client.getEndpoint(), address, port,
+                client.getRegistrationEndpointAddress());
+
+        builder.lwm2mVersion(client.getLwM2mVersion()).lifeTimeInSec(lifeTimeInSec).smsNumber(smsNumber)
+                .bindingMode(bindingMode).objectLinks(linkObject).registrationDate(client.getRegistrationDate())
+                .lastUpdate(lastUpdate);
+
+        return builder.build();
+
     }
 
     public String getRegistrationId() {

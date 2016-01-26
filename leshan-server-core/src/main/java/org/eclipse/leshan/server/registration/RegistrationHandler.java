@@ -17,6 +17,7 @@ package org.eclipse.leshan.server.registration;
 
 import java.net.InetSocketAddress;
 import java.security.PublicKey;
+import java.util.Date;
 
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.Identity;
@@ -62,10 +63,16 @@ public class RegistrationHandler {
             return RegisterResponse.forbidden(null);
         }
 
-        Client client = new Client(RegistrationHandler.createRegistrationId(), registerRequest.getEndpointName(),
-                sender.getPeerAddress().getAddress(), sender.getPeerAddress().getPort(),
-                registerRequest.getLwVersion(), registerRequest.getLifetime(), registerRequest.getSmsNumber(),
-                registerRequest.getBindingMode(), registerRequest.getObjectLinks(), serverEndpoint);
+        Client.Builder builder = new Client.Builder(RegistrationHandler.createRegistrationId(),
+                registerRequest.getEndpointName(), sender.getPeerAddress().getAddress(), sender.getPeerAddress()
+                        .getPort(), serverEndpoint);
+
+        builder.lwm2mVersion(registerRequest.getLwVersion()).lifeTimeInSec(registerRequest.getLifetime())
+                .bindingMode(registerRequest.getBindingMode()).objectLinks(registerRequest.getObjectLinks())
+                .smsNumber(registerRequest.getSmsNumber()).registrationDate(new Date()).lastUpdate(new Date())
+                .additionalRegistrationAttributes(registerRequest.getAdditionalAttributes());
+
+        Client client = builder.build();
 
         if (clientRegistry.registerClient(client)) {
             LOG.debug("New registered client: {}", client);

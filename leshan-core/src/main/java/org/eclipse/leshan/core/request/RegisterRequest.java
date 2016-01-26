@@ -15,6 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.core.response.RegisterResponse;
 
@@ -30,6 +34,7 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
     private final BindingMode bindingMode;
     private final String smsNumber;
     private final LinkObject[] objectLinks;
+    private final Map<String, String> additionalAttributes;
 
     public RegisterRequest(String endpointName) {
         this.endpointName = endpointName;
@@ -38,16 +43,21 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
         this.bindingMode = null;
         this.smsNumber = null;
         this.objectLinks = null;
+        this.additionalAttributes = Collections.unmodifiableMap(new HashMap<String, String>());
     }
 
     public RegisterRequest(String endpointName, Long lifetime, String lwVersion, BindingMode bindingMode,
-            String smsNumber, LinkObject[] objectLinks) {
+            String smsNumber, LinkObject[] objectLinks, Map<String, String> additionalAttributes) {
         this.endpointName = endpointName;
         this.lifetime = lifetime;
         this.lwVersion = lwVersion;
         this.bindingMode = bindingMode;
         this.smsNumber = smsNumber;
         this.objectLinks = objectLinks;
+        if (additionalAttributes == null)
+            this.additionalAttributes = Collections.unmodifiableMap(new HashMap<String, String>());
+        else
+            this.additionalAttributes = Collections.unmodifiableMap(additionalAttributes);
     }
 
     public String getEndpointName() {
@@ -74,8 +84,13 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
         return objectLinks;
     }
 
+    public Map<String, String> getAdditionalAttributes() {
+        return additionalAttributes;
+    }
+
     @Override
     public void accept(UplinkRequestVisitor visitor) {
         visitor.visit(this);
     }
+
 }

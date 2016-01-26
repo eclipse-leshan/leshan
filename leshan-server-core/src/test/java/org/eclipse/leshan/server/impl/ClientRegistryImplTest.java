@@ -84,7 +84,10 @@ public class ClientRegistryImplTest {
     }
 
     private void givenASimpleClient(Long lifetime) {
-        client = new Client(registrationId, ep, address, port, null, lifetime, sms, binding, objectLinks,
+
+        Client.Builder builder = new Client.Builder(registrationId, ep, address, port,
                 InetSocketAddress.createUnresolved("localhost", 5683));
+
+        client = builder.lifeTimeInSec(lifetime).smsNumber(sms).bindingMode(binding).objectLinks(objectLinks).build();
     }
 }

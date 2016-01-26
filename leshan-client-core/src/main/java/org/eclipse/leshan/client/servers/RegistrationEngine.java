@@ -134,7 +134,7 @@ public class RegistrationEngine {
                 dmInfo.getAddress(),
                 dmInfo.isSecure(),
                 new RegisterRequest(endpoint, dmInfo.lifetime, null, dmInfo.binding, null, LinkFormatHelper
-                        .getClientDescription(objectEnablers.values(), null)), null);
+                        .getClientDescription(objectEnablers.values(), null), null), null);
         if (response == null) {
             registrationID = null;
             LOG.error("Registration failed: timeout");
