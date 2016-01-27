@@ -1,33 +1,42 @@
 /*******************************************************************************
  * Copyright (c) 2013-2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v10.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
 package org.eclipse.leshan.standalone.servlet;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.MultipartConfigElement;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+//import org.apache.http.entity.ContentType;
 import org.eclipse.jetty.http.HttpFields;
+import org.eclipse.jetty.util.MultiPartInputStreamParser;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
@@ -64,14 +73,16 @@ import com.google.gson.JsonSyntaxException;
 /**
  * Service HTTP REST API calls.
  */
+@MultipartConfig
 public class ClientServlet extends HttpServlet {
 
     private static final Logger LOG = LoggerFactory.getLogger(ClientServlet.class);
 
-    private static final long TIMEOUT = 5000; // ms
+    private static final long TIMEOUT = 300000; // ms
 
     private static final long serialVersionUID = 1L;
 
+    //private static final MultipartConfigElement MULTI_PART_CONFIG = new MultipartConfigElement(System.getProperty("java.io.tmpdir"));
     private final LwM2mServer server;
 
     private final Gson gson;
@@ -358,7 +369,61 @@ public class ClientServlet extends HttpServlet {
             }
             return server.send(client, new WriteRequest(Mode.REPLACE, null, target, node), TIMEOUT);
 
-        } else {
+        }  else if ("multipart/form-data".equals(contentType)) {
+            /*Collection<Part> parts;
+            try {
+                parts = req.getParts();
+            } catch (ServletException e) {
+                e.printStackTrace();
+            }*/
+
+            String content = IOUtils.toString(req.getInputStream(), parameters.get("charset"));
+            //System.out.println("content len : " + content.length() + "   byteArray size : " + byteArray.length);
+            /*byte[] byteArray = IOUtils.toByteArray(req.getInputStream());
+            System.out.println("byteArray size : " + byteArray.length);*/
+
+
+
+
+            /*File saveFile = new File("C:\\Leshan\\leshan\\leshan-standalone\\target\\classes\\test\\testFile.txt");
+            // opens input stream of the request for reading data
+            InputStream inputStream = req.getInputStream();
+
+            // opens an output stream for writing file
+            FileOutputStream outputStream = new FileOutputStream(saveFile);
+
+            byte[] buffer = new byte[100000];
+            int bytesRead = -1;
+            System.out.println("Receiving data...");
+
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+
+            System.out.println("Data received.");
+            outputStream.close();
+            inputStream.close();
+
+            System.out.println("File written to: " + saveFile.getAbsolutePath());
+*/
+
+            LwM2mNode node;
+            try {
+                //String content="test";
+                node = gson.fromJson(content, LwM2mNode.class);
+
+            } catch (JsonSyntaxException e) {
+                throw new IllegalArgumentException("unable to parse json to tlv:" + e.getMessage(), e);
+            }
+
+            return server.send(client, new WriteRequest(Mode.REPLACE, null, target, node), TIMEOUT);
+
+/*            String[] resource = target.split("/");
+            WriteRequest writeRequest = new WriteRequest(WriteRequest.Mode.REPLACE, Integer.valueOf(resource[1]),
+                    Integer.valueOf(resource[2]), Integer.valueOf(resource[3]), byteArray);
+            return server.send(client,writeRequest, TIMEOUT);*/
+
+        }else {
             throw new IllegalArgumentException("content type " + req.getContentType()
                     + " not supported for write requests");
         }

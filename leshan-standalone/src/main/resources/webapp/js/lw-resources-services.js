@@ -249,6 +249,7 @@ myModule.factory('lwResources',["$http", function($http) {
 
     var getTypedValue = function(strValue, type) {
         var val = strValue;
+        alert("type : " +type )
         if(type != undefined) {
             switch(type) {
                 case "integer":

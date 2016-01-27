@@ -41,6 +41,18 @@
 								'btn-danger': instance.write.status != null && instance.write.status != 'CHANGED',
 								'btn-success': instance.write.status == 'CHANGED' }">Write</button>
 				</div>
+				<!-- Upload button
+				<div class="btn-group">
+					<button type="button" ng-click="instance.upload.status = null; upload()"
+							tooltip-html-unsafe={{instance.upload.tooltip}} tooltip-placement="right" tooltip-animation="false" tooltip-append-to-body="true"
+							ng-class="{
+								'btn': true,
+								'btn-xs': true,
+								'btn-default': instance.upload.status == null,
+								'btn-danger': instance.upload.status != null && instance.upload.status != 'CHANGED',
+								'btn-success': instance.upload.status == 'CHANGED' }">Upload</button>
+				</div>
+				-->
 				<div class="btn-group">
 					<button type="button" ng-click="instance.del.status = null; del()"
 							tooltip-html-unsafe={{instance.del.tooltip}} tooltip-placement="right" tooltip-animation="false" tooltip-append-to-body="true"
