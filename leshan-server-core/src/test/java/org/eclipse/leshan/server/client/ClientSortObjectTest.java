@@ -21,7 +21,6 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
 import org.eclipse.leshan.LinkObject;
-import org.eclipse.leshan.server.client.Client;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -33,8 +32,11 @@ public class ClientSortObjectTest {
         objs[0] = new LinkObject("/0/1024/2");
         objs[1] = new LinkObject("/0/2");
         objs[2] = null;
-        Client c = new Client("registrationId", "endpoint", Inet4Address.getByName("127.0.0.1"), 1, "1.0", null, null,
-                null, objs, new InetSocketAddress(212));
+
+        Client.Builder builder = new Client.Builder("registrationId", "endpoint", Inet4Address.getByName("127.0.0.1"),
+                1, new InetSocketAddress(212)).objectLinks(objs);
+
+        Client c = builder.build();
 
         LinkObject[] res = c.getSortedObjectLinks();
         Assert.assertEquals(3, res.length);

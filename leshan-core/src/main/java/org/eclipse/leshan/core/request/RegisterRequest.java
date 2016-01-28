@@ -33,7 +33,7 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
     private final BindingMode bindingMode;
     private final String smsNumber;
     private final LinkObject[] objectLinks;
-    private final Map<String, String> queryParameters;
+    private final Map<String, String> otherParameters;
 
     public RegisterRequest(String endpointName) {
         this.endpointName = endpointName;
@@ -42,7 +42,7 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
         this.bindingMode = null;
         this.smsNumber = null;
         this.objectLinks = null;
-        this.queryParameters = new HashMap<String, String>();
+        this.otherParameters = new HashMap<String, String>();
     }
 
     public RegisterRequest(String endpointName, Long lifetime, String lwVersion, BindingMode bindingMode,
@@ -53,7 +53,7 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
         this.bindingMode = bindingMode;
         this.smsNumber = smsNumber;
         this.objectLinks = objectLinks;
-        this.queryParameters = queryParameters;
+        this.otherParameters = queryParameters;
     }
 
     public String getEndpointName() {
@@ -80,8 +80,8 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
         return objectLinks;
     }
 
-    public Map<String, String> getQueryParameters() {
-        return queryParameters;
+    public Map<String, String> getOtherParameters() {
+        return otherParameters;
     }
 
     @Override
