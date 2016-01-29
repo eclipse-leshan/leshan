@@ -76,7 +76,7 @@ public class Client {
             Long lifetimeInSec, String smsNumber, BindingMode bindingMode, LinkObject[] objectLinks,
             InetSocketAddress registrationEndpointAddress,
 
-            Date registrationDate, Date lastUpdate, Map<String, String> otherRegistrationAttributes) {
+            Date registrationDate, Date lastUpdate, Map<String, String> additionalRegistrationAttributes) {
 
         Validate.notNull(registrationId);
         Validate.notEmpty(endpoint);
@@ -109,9 +109,9 @@ public class Client {
         this.bindingMode = bindingMode == null ? BindingMode.U : bindingMode;
         this.registrationDate = registrationDate == null ? new Date() : registrationDate;
         this.lastUpdate = lastUpdate == null ? new Date() : lastUpdate;
-        this.additionalRegistrationAttributes = otherRegistrationAttributes == null ? Collections
+        this.additionalRegistrationAttributes = additionalRegistrationAttributes == null ? Collections
                 .unmodifiableMap(new HashMap<String, String>()) : Collections
-                .unmodifiableMap(otherRegistrationAttributes);
+                .unmodifiableMap(additionalRegistrationAttributes);
 
     }
 

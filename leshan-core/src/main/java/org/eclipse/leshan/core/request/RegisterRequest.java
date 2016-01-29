@@ -34,7 +34,7 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
     private final BindingMode bindingMode;
     private final String smsNumber;
     private final LinkObject[] objectLinks;
-    private final Map<String, String> additionalParameters;
+    private final Map<String, String> additionalAttributes;
 
     public RegisterRequest(String endpointName) {
         this.endpointName = endpointName;
@@ -43,18 +43,18 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
         this.bindingMode = null;
         this.smsNumber = null;
         this.objectLinks = null;
-        this.additionalParameters = Collections.unmodifiableMap(new HashMap<String, String>());
+        this.additionalAttributes = Collections.unmodifiableMap(new HashMap<String, String>());
     }
 
     public RegisterRequest(String endpointName, Long lifetime, String lwVersion, BindingMode bindingMode,
-            String smsNumber, LinkObject[] objectLinks, Map<String, String> additionalParameters) {
+            String smsNumber, LinkObject[] objectLinks, Map<String, String> additionalAttributes) {
         this.endpointName = endpointName;
         this.lifetime = lifetime;
         this.lwVersion = lwVersion;
         this.bindingMode = bindingMode;
         this.smsNumber = smsNumber;
         this.objectLinks = objectLinks;
-        this.additionalParameters = Collections.unmodifiableMap(additionalParameters);
+        this.additionalAttributes = Collections.unmodifiableMap(additionalAttributes);
     }
 
     public String getEndpointName() {
@@ -81,8 +81,8 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
         return objectLinks;
     }
 
-    public Map<String, String> getAdditionalParameters() {
-        return additionalParameters;
+    public Map<String, String> getAdditionalAttributes() {
+        return additionalAttributes;
     }
 
     @Override
