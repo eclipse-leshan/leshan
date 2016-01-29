@@ -30,7 +30,10 @@ public class BasicTestSupport {
 
     public void givenASimpleClient() throws UnknownHostException {
         registrationAddress = InetSocketAddress.createUnresolved("localhost", 5683);
-        client = new Client("ID", "urn:client", InetAddress.getLocalHost(), 10000, "1.0", 10000L, null, null, null,
+
+        Client.Builder builder = new Client.Builder("ID", "urn:client", InetAddress.getLocalHost(), 10000,
                 registrationAddress);
+
+        client = builder.build();
     }
 }

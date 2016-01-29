@@ -18,8 +18,11 @@ package org.eclipse.leshan.server.client;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.core.request.BindingMode;
@@ -62,27 +65,20 @@ public class Client {
 
     private final LinkObject[] objectLinks;
 
+    private final Map<String, String> additionalRegistrationAttributes;
+
     /** The location where LWM2M objects are hosted on the device */
     private final String rootPath;
 
     private final Date lastUpdate;
 
-    public Client(String registrationId, String endpoint, InetAddress address, int port,
-            InetSocketAddress registrationEndpointAddress) {
-        this(registrationId, endpoint, address, port, null, null, null, null, null, registrationEndpointAddress);
-    }
-
-    public Client(String registrationId, String endpoint, InetAddress address, int port, String lwM2mVersion,
+    protected Client(String registrationId, String endpoint, InetAddress address, int port, String lwM2mVersion,
             Long lifetimeInSec, String smsNumber, BindingMode bindingMode, LinkObject[] objectLinks,
-            InetSocketAddress registrationEndpointAddress) {
-        this(registrationId, endpoint, address, port, lwM2mVersion, lifetimeInSec, smsNumber, bindingMode, objectLinks,
-                registrationEndpointAddress, null, null);
-    }
+            InetSocketAddress registrationEndpointAddress,
 
-    public Client(String registrationId, String endpoint, InetAddress address, int port, String lwM2mVersion,
-            Long lifetimeInSec, String smsNumber, BindingMode bindingMode, LinkObject[] objectLinks,
-            InetSocketAddress registrationEndpointAddress, Date registrationDate, Date lastUpdate) {
+            Date registrationDate, Date lastUpdate, Map<String, String> additionalRegistrationAttributes) {
 
+        Validate.notNull(registrationId);
         Validate.notEmpty(endpoint);
         Validate.notNull(address);
         Validate.notNull(port);
@@ -92,9 +88,10 @@ public class Client {
         this.endpoint = endpoint;
         this.address = address;
         this.port = port;
+        this.smsNumber = smsNumber;
+        this.registrationEndpointAddress = registrationEndpointAddress;
 
         this.objectLinks = objectLinks;
-
         // extract the root objects path from the object links
         String rootPath = "/";
         if (objectLinks != null) {
@@ -107,13 +104,15 @@ public class Client {
         }
         this.rootPath = rootPath;
 
-        this.registrationDate = registrationDate == null ? new Date() : registrationDate;
         this.lifeTimeInSec = lifetimeInSec == null ? DEFAULT_LIFETIME_IN_SEC : lifetimeInSec;
         this.lwM2mVersion = lwM2mVersion == null ? DEFAULT_LWM2M_VERSION : lwM2mVersion;
         this.bindingMode = bindingMode == null ? BindingMode.U : bindingMode;
-        this.smsNumber = smsNumber;
-        this.registrationEndpointAddress = registrationEndpointAddress;
+        this.registrationDate = registrationDate == null ? new Date() : registrationDate;
         this.lastUpdate = lastUpdate == null ? new Date() : lastUpdate;
+        this.additionalRegistrationAttributes = additionalRegistrationAttributes == null ? Collections
+                .unmodifiableMap(new HashMap<String, String>()) : Collections
+                .unmodifiableMap(additionalRegistrationAttributes);
+
     }
 
     public String getRegistrationId() {
@@ -275,6 +274,10 @@ public class Client {
         return lastUpdate.getTime() + lifeTimeInSec * 1000 > System.currentTimeMillis();
     }
 
+    public Map<String, String> getAdditionalRegistrationParams() {
+        return additionalRegistrationAttributes;
+    }
+
     @Override
     public String toString() {
         return String
@@ -308,4 +311,86 @@ public class Client {
             return false;
         }
     }
+
+    public static class Builder {
+        private final String registrationId;
+        private final String endpoint;
+        private final InetAddress address;
+        private final int port;
+        private final InetSocketAddress registrationEndpointAddress;
+
+        private Date registrationDate;
+        private Date lastUpdate;
+        private Long lifeTimeInSec;
+        private String smsNumber;
+        private BindingMode bindingMode;
+        private String lwM2mVersion;
+        private LinkObject[] objectLinks;
+        private Map<String, String> additionalRegistrationAttributes;
+
+        public Builder(String registrationId, String endpoint, InetAddress address, int port,
+                InetSocketAddress registrationEndpointAddress) {
+
+            Validate.notNull(registrationId);
+            Validate.notEmpty(endpoint);
+            Validate.notNull(address);
+            Validate.notNull(port);
+            Validate.notNull(registrationEndpointAddress);
+            this.registrationId = registrationId;
+            this.endpoint = endpoint;
+            this.address = address;
+            this.port = port;
+            this.registrationEndpointAddress = registrationEndpointAddress;
+
+        }
+
+        public Builder registrationDate(Date registrationDate) {
+            this.registrationDate = registrationDate;
+            return this;
+        }
+
+        public Builder lastUpdate(Date lastUpdate) {
+            this.lastUpdate = lastUpdate;
+            return this;
+        }
+
+        public Builder lifeTimeInSec(Long lifetimeInSec) {
+            this.lifeTimeInSec = lifetimeInSec;
+            return this;
+        }
+
+        public Builder smsNumber(String smsNumber) {
+            this.smsNumber = smsNumber;
+            return this;
+        }
+
+        public Builder bindingMode(BindingMode bindingMode) {
+            this.bindingMode = bindingMode;
+            return this;
+        }
+
+        public Builder lwm2mVersion(String lwm2mVersion) {
+            this.lwM2mVersion = lwm2mVersion;
+            return this;
+        }
+
+        public Builder objectLinks(LinkObject[] objectLinks) {
+            this.objectLinks = objectLinks;
+            return this;
+        }
+
+        public Builder additionalRegistrationAttributes(Map<String, String> additionalRegistrationAttributes) {
+            this.additionalRegistrationAttributes = additionalRegistrationAttributes;
+            return this;
+        }
+
+        public Client build() {
+            return new Client(Builder.this.registrationId, Builder.this.endpoint, Builder.this.address,
+                    Builder.this.port, Builder.this.lwM2mVersion, Builder.this.lifeTimeInSec, Builder.this.smsNumber,
+                    this.bindingMode, this.objectLinks, this.registrationEndpointAddress, this.registrationDate,
+                    this.lastUpdate, this.additionalRegistrationAttributes);
+        }
+
+    }
+
 }
