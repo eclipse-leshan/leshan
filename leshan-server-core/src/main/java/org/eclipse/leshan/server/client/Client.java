@@ -65,15 +65,14 @@ public class Client {
 
     private final LinkObject[] objectLinks;
 
-    private Map<String, String> additionalRegistrationAttributes = new HashMap<String, String>();
+    private final Map<String, String> additionalRegistrationAttributes;
 
     /** The location where LWM2M objects are hosted on the device */
     private final String rootPath;
 
     private final Date lastUpdate;
 
-    @Deprecated
-    public Client(String registrationId, String endpoint, InetAddress address, int port, String lwM2mVersion,
+    protected Client(String registrationId, String endpoint, InetAddress address, int port, String lwM2mVersion,
             Long lifetimeInSec, String smsNumber, BindingMode bindingMode, LinkObject[] objectLinks,
             InetSocketAddress registrationEndpointAddress,
 
@@ -277,10 +276,6 @@ public class Client {
 
     public Map<String, String> getAdditionalRegistrationParams() {
         return additionalRegistrationAttributes;
-    }
-
-    public void setAdditionalRegistrationParams(Map<String, String> additionalRegistrationParams) {
-        this.additionalRegistrationAttributes = Collections.unmodifiableMap(additionalRegistrationParams);
     }
 
     @Override
