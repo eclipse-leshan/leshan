@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,7 +34,7 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
     private final BindingMode bindingMode;
     private final String smsNumber;
     private final LinkObject[] objectLinks;
-    private final Map<String, String> otherParameters;
+    private final Map<String, String> additionalParameters;
 
     public RegisterRequest(String endpointName) {
         this.endpointName = endpointName;
@@ -42,18 +43,18 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
         this.bindingMode = null;
         this.smsNumber = null;
         this.objectLinks = null;
-        this.otherParameters = new HashMap<String, String>();
+        this.additionalParameters = Collections.unmodifiableMap(new HashMap<String, String>());
     }
 
     public RegisterRequest(String endpointName, Long lifetime, String lwVersion, BindingMode bindingMode,
-            String smsNumber, LinkObject[] objectLinks, Map<String, String> queryParameters) {
+            String smsNumber, LinkObject[] objectLinks, Map<String, String> additionalParameters) {
         this.endpointName = endpointName;
         this.lifetime = lifetime;
         this.lwVersion = lwVersion;
         this.bindingMode = bindingMode;
         this.smsNumber = smsNumber;
         this.objectLinks = objectLinks;
-        this.otherParameters = queryParameters;
+        this.additionalParameters = Collections.unmodifiableMap(additionalParameters);
     }
 
     public String getEndpointName() {
@@ -80,8 +81,8 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
         return objectLinks;
     }
 
-    public Map<String, String> getOtherParameters() {
-        return otherParameters;
+    public Map<String, String> getAdditionalParameters() {
+        return additionalParameters;
     }
 
     @Override

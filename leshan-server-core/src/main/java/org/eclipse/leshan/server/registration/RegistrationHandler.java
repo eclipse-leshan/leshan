@@ -70,7 +70,7 @@ public class RegistrationHandler {
         builder = builder.lwm2mVersion(registerRequest.getLwVersion()).lifeTimeInSec(registerRequest.getLifetime())
                 .bindingMode(registerRequest.getBindingMode()).objectLinks(registerRequest.getObjectLinks())
                 .smsNumber(registerRequest.getSmsNumber()).registrationDate(new Date()).lastUpdate(new Date())
-                .otherRegistrationAttributes(registerRequest.getOtherParameters());
+                .additionalRegistrationAttributes(registerRequest.getAdditionalParameters());
 
         Client client = builder.build();
 

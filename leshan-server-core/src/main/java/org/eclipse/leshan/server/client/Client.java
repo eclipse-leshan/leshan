@@ -18,6 +18,7 @@ package org.eclipse.leshan.server.client;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -64,7 +65,7 @@ public class Client {
 
     private final LinkObject[] objectLinks;
 
-    private Map<String, String> otherRegistrationAttributes = new HashMap<String, String>();
+    private Map<String, String> additionalRegistrationAttributes = new HashMap<String, String>();
 
     /** The location where LWM2M objects are hosted on the device */
     private final String rootPath;
@@ -109,8 +110,9 @@ public class Client {
         this.bindingMode = bindingMode == null ? BindingMode.U : bindingMode;
         this.registrationDate = registrationDate == null ? new Date() : registrationDate;
         this.lastUpdate = lastUpdate == null ? new Date() : lastUpdate;
-        this.otherRegistrationAttributes = otherRegistrationAttributes == null ? new HashMap<String, String>()
-                : otherRegistrationAttributes;
+        this.additionalRegistrationAttributes = otherRegistrationAttributes == null ? Collections
+                .unmodifiableMap(new HashMap<String, String>()) : Collections
+                .unmodifiableMap(otherRegistrationAttributes);
 
     }
 
@@ -273,12 +275,12 @@ public class Client {
         return lastUpdate.getTime() + lifeTimeInSec * 1000 > System.currentTimeMillis();
     }
 
-    public Map<String, String> getRegistrationQueryParams() {
-        return otherRegistrationAttributes;
+    public Map<String, String> getAdditionalRegistrationParams() {
+        return additionalRegistrationAttributes;
     }
 
-    public void setRegistrationQueryParams(Map<String, String> registrationQueryParams) {
-        this.otherRegistrationAttributes = registrationQueryParams;
+    public void setAdditionalRegistrationParams(Map<String, String> additionalRegistrationParams) {
+        this.additionalRegistrationAttributes = Collections.unmodifiableMap(additionalRegistrationParams);
     }
 
     @Override
@@ -329,7 +331,7 @@ public class Client {
         private BindingMode bindingMode;
         private String lwM2mVersion;
         private LinkObject[] objectLinks;
-        private Map<String, String> otherRegistrationAttributes;
+        private Map<String, String> additionalRegistrationAttributes;
 
         public Builder(String registrationId, String endpoint, InetAddress address, int port,
                 InetSocketAddress registrationEndpointAddress) {
@@ -382,8 +384,8 @@ public class Client {
             return this;
         }
 
-        public Builder otherRegistrationAttributes(Map<String, String> otherRegistrationAttributes) {
-            this.otherRegistrationAttributes = otherRegistrationAttributes;
+        public Builder additionalRegistrationAttributes(Map<String, String> additionalRegistrationAttributes) {
+            this.additionalRegistrationAttributes = additionalRegistrationAttributes;
             return this;
         }
 
@@ -391,7 +393,7 @@ public class Client {
             return new Client(Builder.this.registrationId, Builder.this.endpoint, Builder.this.address,
                     Builder.this.port, Builder.this.lwM2mVersion, Builder.this.lifeTimeInSec, Builder.this.smsNumber,
                     this.bindingMode, this.objectLinks, this.registrationEndpointAddress, this.registrationDate,
-                    this.lastUpdate, this.otherRegistrationAttributes);
+                    this.lastUpdate, this.additionalRegistrationAttributes);
         }
 
     }

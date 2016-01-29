@@ -88,7 +88,6 @@ public class RegisterResource extends CoapResource {
         try {
             super.handleRequest(exchange);
         } catch (Exception e) {
-            e.printStackTrace();
             LOG.error("Exception while handling a request on the /rd resource", e);
             exchange.sendResponse(new Response(ResponseCode.INTERNAL_SERVER_ERROR));
         }
@@ -153,7 +152,7 @@ public class RegisterResource extends CoapResource {
         BindingMode binding = null;
         LinkObject[] objectLinks = null;
 
-        Map<String, String> registerParams = new HashMap<String, String>();
+        Map<String, String> additionalParams = new HashMap<String, String>();
 
         // Get parameters
         for (String param : request.getOptions().getUriQuery()) {
@@ -170,7 +169,7 @@ public class RegisterResource extends CoapResource {
             } else {
                 String[] tokens = param.split("\\=");
                 if (tokens != null && tokens.length == 2) {
-                    registerParams.put(tokens[0], tokens[1]);
+                    additionalParams.put(tokens[0], tokens[1]);
                 }
             }
         }
@@ -181,7 +180,7 @@ public class RegisterResource extends CoapResource {
 
         // Create request
         RegisterRequest registerRequest = new RegisterRequest(endpoint, lifetime, lwVersion, binding, smsNumber,
-                objectLinks, registerParams);
+                objectLinks, additionalParams);
 
         // Handle request
         // -------------------------------
