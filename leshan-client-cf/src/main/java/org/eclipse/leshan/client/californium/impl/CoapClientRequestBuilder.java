@@ -16,6 +16,8 @@
 package org.eclipse.leshan.client.californium.impl;
 
 import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map.Entry;
 
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.leshan.LinkObject;
@@ -50,27 +52,36 @@ public class CoapClientRequestBuilder implements UplinkRequestVisitor {
         buildRequestSettings();
         coapRequest.getOptions().setContentFormat(ContentFormat.LINK.getCode());
         coapRequest.getOptions().addUriPath("rd");
-        coapRequest.getOptions().addUriQuery("ep=" + request.getEndpointName());
+
+        HashMap<String, String> attributes = new HashMap<>();
+        attributes.putAll(request.getAdditionalAttributes());
+
+        attributes.put("ep", request.getEndpointName());
 
         Long lifetime = request.getLifetime();
         if (lifetime != null)
-            coapRequest.getOptions().addUriQuery("lt=" + lifetime);
+            attributes.put("lt", lifetime.toString());
 
         String smsNumber = request.getSmsNumber();
         if (smsNumber != null)
-            coapRequest.getOptions().addUriQuery("sms=" + smsNumber);
+            attributes.put("sms", smsNumber);
 
         String lwVersion = request.getLwVersion();
         if (lwVersion != null)
-            coapRequest.getOptions().addUriQuery("lwm2m=" + lwVersion);
+            attributes.put("lwm2m", lwVersion);
 
         BindingMode bindingMode = request.getBindingMode();
         if (bindingMode != null)
-            coapRequest.getOptions().addUriQuery("b=" + bindingMode.toString());
+            attributes.put("b", bindingMode.toString());
+
+        for (Entry<String, String> attr : attributes.entrySet()) {
+            coapRequest.getOptions().addUriQuery(attr.getKey() + "=" + attr.getValue());
+        }
 
         LinkObject[] linkObjects = request.getObjectLinks();
         if (linkObjects != null)
             coapRequest.setPayload(LinkObject.serialize(linkObjects));
+
     }
 
     @Override
