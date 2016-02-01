@@ -23,7 +23,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoapEndpoint;
-import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.scandium.DTLSConnector;
@@ -57,6 +56,10 @@ public class LeshanClient implements LwM2mClient {
     private final RegistrationEngine engine;
     private final BootstrapHandler bootstrapHandler;
 
+    private CoapEndpoint secureEndpoint;
+
+    private CoapEndpoint nonSecureEndpoint;
+
     public LeshanClient(final String endpoint, final InetSocketAddress localAddress,
             InetSocketAddress localSecureAddress, final List<? extends LwM2mObjectEnabler> objectEnablers) {
 
@@ -76,7 +79,7 @@ public class LeshanClient implements LwM2mClient {
         }
 
         // Create CoAP non secure endpoint
-        final Endpoint nonSecureEndpoint = new CoapEndpoint(localAddress);
+        nonSecureEndpoint = new CoapEndpoint(localAddress);
 
         // Create CoAP secure endpoint
         LwM2mObjectEnabler securityEnabler = this.objectEnablers.get(LwM2mId.SECURITY);
@@ -86,11 +89,10 @@ public class LeshanClient implements LwM2mClient {
 
         Builder builder = new DtlsConnectorConfig.Builder(localSecureAddress);
         builder.setPskStore(new SecurityObjectPskStore(securityEnabler));
-        final Endpoint secureEndpoint = new CoapEndpoint(new DTLSConnector(builder.build()),
-                NetworkConfig.getStandard());
+        secureEndpoint = new CoapEndpoint(new DTLSConnector(builder.build()), NetworkConfig.getStandard());
 
         // Create sender
-        requestSender = new CaliforniumLwM2mClientRequestSender(secureEndpoint, nonSecureEndpoint, this);
+        requestSender = new CaliforniumLwM2mClientRequestSender(secureEndpoint, nonSecureEndpoint);
 
         // Create registration engine
         bootstrapHandler = new BootstrapHandler(this.objectEnablers);
@@ -153,5 +155,13 @@ public class LeshanClient implements LwM2mClient {
 
     public CoapServer getCoapServer() {
         return clientSideServer;
+    }
+
+    public InetSocketAddress getNonSecureAddress() {
+        return nonSecureEndpoint.getAddress();
+    }
+
+    public InetSocketAddress getSecureAddress() {
+        return secureEndpoint.getAddress();
     }
 }

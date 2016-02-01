@@ -25,7 +25,6 @@ import org.eclipse.californium.core.coap.MessageObserverAdapter;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
-import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.request.LwM2mClientRequestSender;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.core.request.exception.RequestFailedException;
@@ -41,8 +40,7 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
     private final Endpoint nonSecureEndpoint;
     private final Endpoint secureEndpoint;
 
-    public CaliforniumLwM2mClientRequestSender(final Endpoint secureEndpoint, final Endpoint nonSecureEndpoint,
-            final LwM2mClient client) {
+    public CaliforniumLwM2mClientRequestSender(final Endpoint secureEndpoint, final Endpoint nonSecureEndpoint) {
         this.secureEndpoint = secureEndpoint;
         this.nonSecureEndpoint = nonSecureEndpoint;
     }

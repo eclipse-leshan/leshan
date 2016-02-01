@@ -27,12 +27,16 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
+import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.client.californium.LeshanClient;
+import org.eclipse.leshan.client.californium.impl.CaliforniumLwM2mClientRequestSender;
 import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectEnabler;
+import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.server.client.Client;
 import org.junit.After;
 import org.junit.Before;
@@ -90,5 +94,43 @@ public class RegistrationTest {
         objects.add(objectEnabler2);
         helper.client = new LeshanClient("test", new InetSocketAddress(InetAddress.getLoopbackAddress(), 0),
                 new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), objects);
+    }
+
+    @Test
+    public void register_with_additional_attributes() {
+        // Check registration
+        assertTrue(helper.server.getClientRegistry().allClients().isEmpty());
+
+        // HACK to be able to send a Registration request with additional attributes
+        LeshanClient lclient = (LeshanClient) helper.client;
+        lclient.getCoapServer().start();
+        Endpoint secureEndpoint = lclient.getCoapServer().getEndpoint(lclient.getSecureAddress());
+        Endpoint nonSecureEndpoint = lclient.getCoapServer().getEndpoint(lclient.getNonSecureAddress());
+        CaliforniumLwM2mClientRequestSender sender = new CaliforniumLwM2mClientRequestSender(secureEndpoint,
+                nonSecureEndpoint);
+
+        // Create Request with additional attributes
+        Map<String, String> additionalAttributes = new HashMap<>();
+        additionalAttributes.put("key1", "value1");
+        additionalAttributes.put("imei", "2136872368");
+        LinkObject[] linkObjects = LinkObject.parse("</>;rt=\"oma.lwm2m\",</0/0>,</1/0>,</2>,</3/0>".getBytes());
+        RegisterRequest registerRequest = new RegisterRequest(ENDPOINT_IDENTIFIER, null, null, null, null, linkObjects,
+                additionalAttributes);
+
+        // Send request
+        sender.send(helper.server.getNonSecureAddress(), false, registerRequest, 5l);
+        helper.waitForRegistration(2);
+
+        // Check we are register withe the expected attributes
+        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+        Client client = helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER);
+        assertNotNull(client);
+        assertNotNull(helper.last_registration);
+        assertEquals(additionalAttributes, helper.last_registration.getAdditionalRegistrationParams());
+        // TODO </0/0> should not be part of the object links
+        assertArrayEquals(LinkObject.parse("</>;rt=\"oma.lwm2m\",</0/0>,</1/0>,</2>,</3/0>".getBytes()),
+                client.getObjectLinks());
+
+        lclient.getCoapServer().stop();
     }
 }

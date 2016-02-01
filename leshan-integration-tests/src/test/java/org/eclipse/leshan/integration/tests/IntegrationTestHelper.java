@@ -50,6 +50,8 @@ public class IntegrationTestHelper {
 
     LeshanServer server;
     LwM2mClient client;
+    Client last_registration;
+
     private CountDownLatch registerLatch;
     private CountDownLatch deregisterLatch;
     private CountDownLatch updateLatch;
@@ -123,6 +125,7 @@ public class IntegrationTestHelper {
             @Override
             public void registered(Client client) {
                 if (client.getEndpoint().equals(ENDPOINT_IDENTIFIER)) {
+                    last_registration = client;
                     registerLatch.countDown();
                 }
             }
