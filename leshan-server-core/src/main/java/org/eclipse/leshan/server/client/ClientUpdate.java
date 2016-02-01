@@ -73,7 +73,7 @@ public class ClientUpdate {
 
         builder.lwm2mVersion(client.getLwM2mVersion()).lifeTimeInSec(lifeTimeInSec).smsNumber(smsNumber)
                 .bindingMode(bindingMode).objectLinks(linkObject).registrationDate(client.getRegistrationDate())
-                .lastUpdate(lastUpdate);
+                .lastUpdate(lastUpdate).additionalRegistrationAttributes(client.getAdditionalRegistrationAttributes());
 
         return builder.build();
 

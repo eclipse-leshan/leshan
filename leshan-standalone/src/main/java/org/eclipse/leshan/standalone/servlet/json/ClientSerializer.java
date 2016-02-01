@@ -48,6 +48,7 @@ public class ClientSerializer implements JsonSerializer<Client> {
         element.add("rootPath", context.serialize(src.getRootPath()));
         element.add("objectLinks", context.serialize(src.getSortedObjectLinks()));
         element.add("secure", context.serialize(src.getRegistrationEndpointAddress().getPort() == securePort));
+        element.add("additionalRegistrationAttributes", context.serialize(src.getAdditionalRegistrationAttributes()));
 
         return element;
     }

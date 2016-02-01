@@ -274,7 +274,7 @@ public class Client {
         return lastUpdate.getTime() + lifeTimeInSec * 1000 > System.currentTimeMillis();
     }
 
-    public Map<String, String> getAdditionalRegistrationParams() {
+    public Map<String, String> getAdditionalRegistrationAttributes() {
         return additionalRegistrationAttributes;
     }
 

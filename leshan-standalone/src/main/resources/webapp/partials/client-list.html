@@ -14,7 +14,8 @@
 		</thead>
 		<tbody>
 			<tr ng-repeat="client in clients" ng-click="showClient(client)">
-				<td><a ng-href="#/clients/{{client.endpoint}}"> <strong>{{client.endpoint}}</strong></a></td>
+				<td><a ng-href="#/clients/{{client.endpoint}}"> <strong>{{client.endpoint}}</strong></a> 
+				<i class="glyphicon glyphicon-info-sign" tooltip-html-unsafe="{{clientTooltip(client)}}"></i></td>
 				<td>{{client.registrationId}}</td>
 				<td>{{client.registrationDate | date:'medium'}}</td>
 				<td>{{client.lastUpdate | date:'medium'}}</td>
