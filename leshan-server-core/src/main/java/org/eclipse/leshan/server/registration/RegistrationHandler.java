@@ -67,7 +67,7 @@ public class RegistrationHandler {
                 registerRequest.getEndpointName(), sender.getPeerAddress().getAddress(), sender.getPeerAddress()
                         .getPort(), serverEndpoint);
 
-        builder.lwm2mVersion(registerRequest.getLwVersion()).lifeTimeInSec(registerRequest.getLifetime())
+        builder.protocolVersion(registerRequest.getLwVersion()).lifeTimeInSec(registerRequest.getLifetime())
                 .bindingMode(registerRequest.getBindingMode()).objectLinks(registerRequest.getObjectLinks())
                 .smsNumber(registerRequest.getSmsNumber()).registrationDate(new Date()).lastUpdate(new Date())
                 .additionalRegistrationAttributes(registerRequest.getAdditionalAttributes());

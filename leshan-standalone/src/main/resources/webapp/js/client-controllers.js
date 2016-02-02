@@ -54,12 +54,9 @@ lwClientControllers.controller('ClientListCtrl', [
 
         // the tooltip message to display for a client (all standard attributes, plus additional ones)
         $scope.clientTooltip = function(client) {
-            var standard = ["Lifetime : " + client.lifetime + "s",
-                            "Binding mode : " + client.bindingMode];
-
-            if (client.lwm2mVersion) {
-                standard.push("Lwm2m version : " + client.lwm2mVersion);
-            }
+            var standard = ["Lifetime: " + client.lifetime + "s",
+                            "Binding mode: " + client.bindingMode,
+                            "Protocol version: " + client.protocolVersion];
 
             var tooltip = standard.join("<br/>");
             if (client.additionalRegistrationAttributes) {

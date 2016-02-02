@@ -71,7 +71,7 @@ public class ClientUpdate {
         Client.Builder builder = new Client.Builder(client.getRegistrationId(), client.getEndpoint(), address, port,
                 client.getRegistrationEndpointAddress());
 
-        builder.lwm2mVersion(client.getLwM2mVersion()).lifeTimeInSec(lifeTimeInSec).smsNumber(smsNumber)
+        builder.protocolVersion(client.getProtocolVersion()).lifeTimeInSec(lifeTimeInSec).smsNumber(smsNumber)
                 .bindingMode(bindingMode).objectLinks(linkObject).registrationDate(client.getRegistrationDate())
                 .lastUpdate(lastUpdate).additionalRegistrationAttributes(client.getAdditionalRegistrationAttributes());
 

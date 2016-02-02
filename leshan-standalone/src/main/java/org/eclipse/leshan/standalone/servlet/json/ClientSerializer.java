@@ -42,7 +42,7 @@ public class ClientSerializer implements JsonSerializer<Client> {
         element.add("lastUpdate", context.serialize(src.getLastUpdate()));
         element.addProperty("address", src.getAddress().toString() + ":" + src.getPort());
         element.addProperty("smsNumber", src.getSmsNumber());
-        element.addProperty("lwM2MmVersion", src.getLwM2mVersion());
+        element.addProperty("protocolVersion", src.getProtocolVersion());
         element.addProperty("lifetime", src.getLifeTimeInSec());
         element.addProperty("bindingMode", src.getBindingMode().toString());
         element.add("rootPath", context.serialize(src.getRootPath()));
