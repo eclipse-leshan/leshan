@@ -8,8 +8,8 @@
 [The specification](http://member.openmobilealliance.org/ftp/Public_documents/DM/LightweightM2M/).  
 [Introduction to LWM2M](http://fr.slideshare.net/zdshelby/oma-lightweightm2-mtutorial).  
 
-Leshan provides libraries which help people to develop their own Lightweight M2M server and client.
-The project also provides a Lightweight M2M standalone server as an example of the Leshan Server API and for testing purpose.
+Leshan provides libraries which help people to develop their own Lightweight M2M server and client.  
+The project also provides a client, a server and a bootstrap server demonstration as an example of the Leshan API and for testing purpose.
 
 Contact
 -------
@@ -21,27 +21,41 @@ Access to [leshan-dev archives](https://dev.eclipse.org/mhonarc/lists/leshan-dev
 Test Server Sandbox
 ------------
 
-You can try live our server demo instance on: http://leshan.eclipse.org/  
+You can try live our servers demos instances:
+
+* The **lwm2m server** at http://leshan.eclipse.org/  
+   _(coap://leshan.eclipse.org:5683  and coaps://leshan.eclipse.org:5684)_  
+* The **bootstrap server** at http://leshan.eclipse.org/bs/  
+   _(coap://leshan.eclipse.org:5783  and coaps://leshan.eclipse.org:5784)_  
+
 (Automatic deployment of master branch)
 
-Test Server locally
+Test Leshan locally
 -----------------------
-Get and run the last binary of our demo server :
+Get and run the last binary of our demo **server** :
 ```
 wget https://hudson.eclipse.org/leshan/job/leshan/lastSuccessfulBuild/artifact/leshan-standalone.jar
 java -jar ./leshan-standalone.jar
+```
+Get and run the last binary of our demo **client** :
+```
+wget https://hudson.eclipse.org/leshan/job/leshan/lastSuccessfulBuild/artifact/leshan-client-example.jar
+java -jar ./leshan-client-example.jar
+```
+Get and run the last binary of our **boostrap** demo server :
+```
+wget https://hudson.eclipse.org/leshan/job/leshan/lastSuccessfulBuild/artifact/leshan-bs-server.jar
+java -jar ./leshan-bs-server.jar
 ```
 
 Compile & Run
 -------------
 
 ```
-mvn install
-cd leshan-standalone
-mvn assembly:assembly -DdescriptorId=jar-with-dependencies
+mvn clean install
 ```
 
-Run:
+Run demo **server**:
 ```
 java -jar target/leshan-standalone-*-SNAPSHOT-jar-with-dependencies.jar 
 ```
@@ -49,22 +63,17 @@ java -jar target/leshan-standalone-*-SNAPSHOT-jar-with-dependencies.jar
 Connect on Leshan demo UI: http://localhost:8080  
 Leshan provides a very simple UI to get the list of connected clients and interact with clients resources.
 
-Now you can register a LWM2M client.  
-You could try the LeshanDevice example, the [Eclipse Wakaama](http://eclipse.org/wakaama) test client or script samples of its lua binding [lualwm2m] (https://github.com/sbernard31/lualwm2m).
- 
-To build the LeshanDevice example, first compile:
+Now you can register a LWM2M client by running our **client** example:
 ```
-mvn install
-cd leshan-client-example
-mvn assembly:assembly -DdescriptorId=jar-with-dependencies
+java -jar target/leshan-client-example-*-SNAPSHOT-jar-with-dependencies.jar 
 ```
+or trying the [Eclipse Wakaama](http://eclipse.org/wakaama) test client or script samples of its lua binding [lualwm2m] (https://github.com/sbernard31/lualwm2m).
 
-Then run, setting the hostname and port of the server:
-```
-java -jar target/leshan-client-example-*-SNAPSHOT-jar-with-dependencies.jar localhost 5683
-```
 
-The list of the registered clients: http://localhost:8080/api/clients
+You can also try our **bootstrap** demo server:
+```
+java -jar target/leshan-bs-server-*-SNAPSHOT-jar-with-dependencies.jar 
+```
 
 ![Leshan](https://eclipse.org/leshan/img/capture_for_github.png)
 
@@ -93,8 +102,8 @@ Modules
 `Leshan-client-core` : client lwm2m logic.  
 `Leshan-client-cf` : client implementation based on [californium](https://github.com/eclipse/californium).  
 `Leshan-all` : every previous modules in 1 jar.  
-`Leshan-client-example` : a sample of client API.  
-`Leshan-standalone` : a demo server with a web UI.  
-`Leshan-bs-server` : a bootstarp demo server.  
+`Leshan-client-example` : a simple demo client.  
+`Leshan-standalone` : a lwm2m demo server with a web UI.  
+`Leshan-bs-server` : a bootstarp demo server with a web UI.  
 `Leshan-integration-tests` : integration automatic tests.  
 
