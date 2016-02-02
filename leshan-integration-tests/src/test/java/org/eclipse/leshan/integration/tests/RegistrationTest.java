@@ -118,10 +118,10 @@ public class RegistrationTest {
                 additionalAttributes);
 
         // Send request
-        sender.send(helper.server.getNonSecureAddress(), false, registerRequest, 5l);
-        helper.waitForRegistration(2);
+        sender.send(helper.server.getNonSecureAddress(), false, registerRequest, 5000l);
+        helper.waitForRegistration(1);
 
-        // Check we are register withe the expected attributes
+        // Check we are registered with the expected attributes
         assertEquals(1, helper.server.getClientRegistry().allClients().size());
         Client client = helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER);
         assertNotNull(client);
