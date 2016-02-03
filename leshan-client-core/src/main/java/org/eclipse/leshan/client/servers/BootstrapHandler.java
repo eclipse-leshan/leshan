@@ -100,12 +100,8 @@ public class BootstrapHandler {
         return false;
     }
 
-    public boolean waitBoostrapFinished(long timeInSeconds) {
-        try {
-            return bootstrappingLatch.await(timeInSeconds, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            return false;
-        }
+    public boolean waitBoostrapFinished(long timeInSeconds) throws InterruptedException {
+        return bootstrappingLatch.await(timeInSeconds, TimeUnit.SECONDS);
     }
 
     public synchronized void closeSession() {

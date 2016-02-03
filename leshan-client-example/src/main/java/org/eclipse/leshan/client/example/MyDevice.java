@@ -16,8 +16,12 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MyDevice extends BaseInstanceEnabler {
+
+    private static final Logger LOG = LoggerFactory.getLogger(MyDevice.class);
 
     public MyDevice() {
         // notify new date each 5 second
@@ -32,7 +36,7 @@ public class MyDevice extends BaseInstanceEnabler {
 
     @Override
     public ReadResponse read(int resourceid) {
-        System.out.println("Read on Device Resource " + resourceid);
+        LOG.info("Read on Device Resource " + resourceid);
         switch (resourceid) {
         case 0:
             return ReadResponse.success(resourceid, getManufacturer());
@@ -65,7 +69,7 @@ public class MyDevice extends BaseInstanceEnabler {
 
     @Override
     public ExecuteResponse execute(int resourceid, String params) {
-        System.out.println("Execute on Device resource " + resourceid);
+        LOG.info("Execute on Device resource " + resourceid);
         if (params != null && params.length() != 0)
             System.out.println("\t params " + params);
         return ExecuteResponse.success();
@@ -73,7 +77,7 @@ public class MyDevice extends BaseInstanceEnabler {
 
     @Override
     public WriteResponse write(int resourceid, LwM2mResource value) {
-        System.out.println("Write on Device Resource " + resourceid + " value " + value);
+        LOG.info("Write on Device Resource " + resourceid + " value " + value);
         switch (resourceid) {
         case 13:
             return WriteResponse.notFound();

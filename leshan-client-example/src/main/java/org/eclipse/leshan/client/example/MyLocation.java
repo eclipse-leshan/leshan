@@ -5,8 +5,13 @@ import java.util.Random;
 
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.core.response.ReadResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MyLocation extends BaseInstanceEnabler {
+
+    private static final Logger LOG = LoggerFactory.getLogger(MyLocation.class);
+
     private Random random;
     private float latitude;
     private float longitude;
@@ -21,7 +26,7 @@ public class MyLocation extends BaseInstanceEnabler {
 
     @Override
     public ReadResponse read(int resourceid) {
-        System.out.println("Read on Location Resource " + resourceid);
+        LOG.info("Read on Location Resource " + resourceid);
         switch (resourceid) {
         case 0:
             return ReadResponse.success(resourceid, getLatitude());

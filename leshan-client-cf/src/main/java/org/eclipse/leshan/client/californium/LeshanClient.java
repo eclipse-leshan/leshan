@@ -124,7 +124,6 @@ public class LeshanClient implements LwM2mClient {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                LOG.debug("Deregistering on shutdown");
                 LeshanClient.this.destroy();
             }
         });
@@ -132,20 +131,26 @@ public class LeshanClient implements LwM2mClient {
 
     @Override
     public void start() {
+        LOG.info("Starting Leshan client ...");
         clientSideServer.start();
         engine.start();
+        LOG.info("Leshan client started.");
     }
 
     @Override
     public void stop() {
+        LOG.info("Stopping Leshan Client ...");
         engine.stop();
         clientSideServer.stop();
+        LOG.info("Leshan client stopped.");
     }
 
     @Override
     public void destroy() {
+        LOG.info("Destroying Leshan client ...");
         engine.stop();
         clientSideServer.destroy();
+        LOG.info("Leshan client destroyed.");
     }
 
     @Override

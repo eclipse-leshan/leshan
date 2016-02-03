@@ -47,7 +47,7 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
 
     @Override
     public <T extends LwM2mResponse> T send(final InetSocketAddress serverAddress, final boolean secure,
-            final UplinkRequest<T> request, Long timeout) {
+            final UplinkRequest<T> request, Long timeout) throws InterruptedException {
         // Create the CoAP request from LwM2m request
         final CoapClientRequestBuilder coapClientRequestBuilder = new CoapClientRequestBuilder(serverAddress);
         request.accept(coapClientRequestBuilder);
@@ -219,7 +219,7 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
             latch.countDown();
         }
 
-        public T waitForResponse() {
+        public T waitForResponse() throws InterruptedException {
             try {
                 boolean timeElapsed = false;
                 if (timeout != null) {
@@ -230,10 +230,6 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
                 if (timeElapsed || coapTimeout.get()) {
                     coapRequest.cancel();
                 }
-            } catch (final InterruptedException e) {
-                // no idea why some other thread should have interrupted this thread
-                // but anyway, go ahead as if the timeout had been reached
-                LOG.debug("Caught an unexpected InterruptedException during execution of CoAP request", e);
             } finally {
                 coapRequest.removeMessageObserver(this);
             }

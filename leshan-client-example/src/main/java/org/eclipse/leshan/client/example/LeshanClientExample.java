@@ -44,38 +44,37 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.util.Hex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/*
- * To build: 
- * mvn assembly:assembly -DdescriptorId=jar-with-dependencies
- * To use:
- * java -jar target/leshan-client-*-SNAPSHOT-jar-with-dependencies.jar 127.0.0.1 5683
- */
 public class LeshanClientExample {
+
+    private static final Logger LOG = LoggerFactory.getLogger(LeshanClientExample.class);
 
     private final static String DEFAULT_ENDPOINT = "LeshanClientExample";
     private final static MyLocation locationInstance = new MyLocation();
+    private final static String USAGE = "java -jar leshan-client-example.jar [OPTION]";
 
     public static void main(final String[] args) {
+
         // Define options for command line tools
         Options options = new Options();
 
         options.addOption("h", "help", false, "Display help information.");
         options.addOption("n", true, String.format(
-                "Set the endpoint name of the Client. Default: the local hostname or '%s' if we can not find it.",
-                DEFAULT_ENDPOINT));
+                "Set the endpoint name of the Client.\nDefault: the local hostname or '%s' if any.", DEFAULT_ENDPOINT));
         options.addOption("b", false, "If present use bootstrap.");
-        options.addOption("lh", true, "Set the local address of the Client. Default: any local address.");
+        options.addOption("lh", true, "Set the local address of the Client.\n  Default: any local address.");
         options.addOption("lp", true,
-                "Set the local port of the Client. Default: A valid port value is between 0 and 65535..");
-        options.addOption("slh", true, "Set the secure local address of the Client. Default: any local address.");
+                "Set the local port of the Client.\n  Default: A valid port value is between 0 and 65535.");
+        options.addOption("slh", true, "Set the secure local address of the Client.\nDefault: any local address.");
         options.addOption("slp", true,
-                "Set the secure local port of the Client. Default: A valid port value is between 0 and 65535..");
-        options.addOption("u", true, "Set the device management or bootstrap server URL. Default: localhost:5683.");
+                "Set the secure local port of the Client.\nDefault: A valid port value is between 0 and 65535.");
+        options.addOption("u", true, "Set the LWM2M or Bootstrap server URL.\nDefault: localhost:5683.");
         options.addOption("i", true,
-                "Set the device management or bootstrap server PSK identity in ascii. Use none secure mode if not set.");
+                "Set the LWM2M or Bootstrap server PSK identity in ascii.\nUse none secure mode if not set.");
         options.addOption("p", true,
-                "Set the device management or bootstrap server Pre-Shared-Key in hexadecimal. Use none secure mode if not set.");
+                "Set the LWM2M or Bootstrap server Pre-Shared-Key in hexa.\nUse none secure mode if not set.");
         HelpFormatter formatter = new HelpFormatter();
         formatter.setOptionComparator(null);
 
@@ -85,27 +84,27 @@ public class LeshanClientExample {
             cl = new DefaultParser().parse(options, args);
         } catch (ParseException e) {
             System.err.println("Parsing failed.  Reason: " + e.getMessage());
-            formatter.printHelp("LeshanClientExample", options);
+            formatter.printHelp(USAGE, options);
             return;
         }
 
         // Print help
         if (cl.hasOption("help")) {
-            formatter.printHelp("LeshanClientExample", options);
+            formatter.printHelp(USAGE, options);
             return;
         }
 
         // Abort if unexpected options
         if (cl.getArgs().length > 0) {
             System.out.println("Unexpected option or arguments : " + cl.getArgList());
-            formatter.printHelp("LeshanClientExample", options);
+            formatter.printHelp(USAGE, options);
             return;
         }
 
         // Abort if we have not identity and key for psk.
         if ((cl.hasOption("i") && !cl.hasOption("p")) || !cl.hasOption("i") && cl.hasOption("p")) {
             System.out.println("You should precise identity and Pre-Shared-Key if you want to connect in PSK");
-            formatter.printHelp("LeshanClientExample", options);
+            formatter.printHelp(USAGE, options);
             return;
         }
 
@@ -117,7 +116,7 @@ public class LeshanClientExample {
             try {
                 endpoint = InetAddress.getLocalHost().getHostName();
             } catch (UnknownHostException e) {
-                endpoint = "LeshanClientExample";
+                endpoint = DEFAULT_ENDPOINT;
             }
         }
 
@@ -198,12 +197,13 @@ public class LeshanClientExample {
         builder.setObjects(enablers);
         final LeshanClient client = builder.build();
 
+        LOG.info("Press 'w','a','s','d' to change reported Location.");
+
         // Start the client
         client.start();
 
         // Change the location through the Console
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Press 'w','a','s','d' to change reported Location.");
         while (scanner.hasNext()) {
             String nextMove = scanner.next();
             locationInstance.moveLocation(nextMove);

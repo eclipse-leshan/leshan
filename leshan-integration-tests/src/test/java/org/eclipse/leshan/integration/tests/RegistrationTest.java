@@ -97,7 +97,7 @@ public class RegistrationTest {
     }
 
     @Test
-    public void register_with_additional_attributes() {
+    public void register_with_additional_attributes() throws InterruptedException {
         // Check registration
         assertTrue(helper.server.getClientRegistry().allClients().isEmpty());
 

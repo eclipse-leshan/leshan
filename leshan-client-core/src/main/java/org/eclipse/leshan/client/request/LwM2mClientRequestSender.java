@@ -31,7 +31,7 @@ public interface LwM2mClientRequestSender {
      *         timeout) expires.
      */
     <T extends LwM2mResponse> T send(final InetSocketAddress server, final boolean secure,
-            final UplinkRequest<T> request, Long timeout);
+            final UplinkRequest<T> request, Long timeout) throws InterruptedException;
 
     /**
      * Send a Lightweight M2M request asynchronously.
