@@ -52,6 +52,25 @@ lwClientControllers.controller('ClientListCtrl', [
             $location.path('/clients/' + client.endpoint);
         };
 
+        // the tooltip message to display for a client (all standard attributes, plus additional ones)
+        $scope.clientTooltip = function(client) {
+            var standard = ["Lifetime: " + client.lifetime + "s",
+                            "Binding mode: " + client.bindingMode,
+                            "Protocol version: " + client.lwM2mVersion];
+
+            var tooltip = standard.join("<br/>");
+            if (client.additionalRegistrationAttributes) {
+                var attributes = client.additionalRegistrationAttributes;
+                var additionals = [];
+                for (key in attributes) {
+                    var value = attributes[key];
+                    additionals.push(key + " : " + value);
+                };
+                tooltip = tooltip + "<hr/>" + additionals.join("<br/>");
+            }
+            return tooltip;
+        };
+
         // get the list of connected clients
         $http.get('api/clients'). error(function(data, status, headers, config){
             $scope.error = "Unable get client list: " + status + " " + data;
