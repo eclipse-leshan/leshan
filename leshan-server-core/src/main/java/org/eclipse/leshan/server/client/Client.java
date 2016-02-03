@@ -52,7 +52,7 @@ public class Client {
 
     private final String smsNumber;
 
-    private final String protocolVersion;
+    private final String lwM2mVersion;
 
     private final BindingMode bindingMode;
 
@@ -72,7 +72,7 @@ public class Client {
 
     private final Date lastUpdate;
 
-    protected Client(String registrationId, String endpoint, InetAddress address, int port, String protocolVersion,
+    protected Client(String registrationId, String endpoint, InetAddress address, int port, String lwM2mVersion,
             Long lifetimeInSec, String smsNumber, BindingMode bindingMode, LinkObject[] objectLinks,
             InetSocketAddress registrationEndpointAddress,
 
@@ -105,7 +105,7 @@ public class Client {
         this.rootPath = rootPath;
 
         this.lifeTimeInSec = lifetimeInSec == null ? DEFAULT_LIFETIME_IN_SEC : lifetimeInSec;
-        this.protocolVersion = protocolVersion == null ? DEFAULT_LWM2M_VERSION : protocolVersion;
+        this.lwM2mVersion = lwM2mVersion == null ? DEFAULT_LWM2M_VERSION : lwM2mVersion;
         this.bindingMode = bindingMode == null ? BindingMode.U : bindingMode;
         this.registrationDate = registrationDate == null ? new Date() : registrationDate;
         this.lastUpdate = lastUpdate == null ? new Date() : lastUpdate;
@@ -242,16 +242,8 @@ public class Client {
         return smsNumber;
     }
 
-    public String getProtocolVersion() {
-        return protocolVersion;
-    }
-
-    /**
-     * @deprecated use {@link #getProtocolVersion()} instead
-     */
-    @Deprecated()
-    public String getLwm2mVersion() {
-        return protocolVersion;
+    public String getLwM2mVersion() {
+        return lwM2mVersion;
     }
 
     public BindingMode getBindingMode() {
@@ -289,10 +281,9 @@ public class Client {
     @Override
     public String toString() {
         return String
-                .format("Client [registrationDate=%s, address=%s, port=%s, registrationEndpoint=%s, lifeTimeInSec=%s, smsNumber=%s, protocolVersion=%s, bindingMode=%s, endpoint=%s, registrationId=%s, objectLinks=%s, lastUpdate=%s]",
+                .format("Client [registrationDate=%s, address=%s, port=%s, registrationEndpoint=%s, lifeTimeInSec=%s, smsNumber=%s, lwM2mVersion=%s, bindingMode=%s, endpoint=%s, registrationId=%s, objectLinks=%s, lastUpdate=%s]",
                         registrationDate, address, port, registrationEndpointAddress, lifeTimeInSec, smsNumber,
-                        protocolVersion, bindingMode, endpoint, registrationId, Arrays.toString(objectLinks),
-                        lastUpdate);
+                        lwM2mVersion, bindingMode, endpoint, registrationId, Arrays.toString(objectLinks), lastUpdate);
     }
 
     /**
@@ -333,7 +324,7 @@ public class Client {
         private Long lifeTimeInSec;
         private String smsNumber;
         private BindingMode bindingMode;
-        private String protocolVersion;
+        private String lwM2mVersion;
         private LinkObject[] objectLinks;
         private Map<String, String> additionalRegistrationAttributes;
 
@@ -378,8 +369,8 @@ public class Client {
             return this;
         }
 
-        public Builder protocolVersion(String protocolVersion) {
-            this.protocolVersion = protocolVersion;
+        public Builder lwM2mVersion(String lwM2mVersion) {
+            this.lwM2mVersion = lwM2mVersion;
             return this;
         }
 
@@ -395,9 +386,9 @@ public class Client {
 
         public Client build() {
             return new Client(Builder.this.registrationId, Builder.this.endpoint, Builder.this.address,
-                    Builder.this.port, Builder.this.protocolVersion, Builder.this.lifeTimeInSec,
-                    Builder.this.smsNumber, this.bindingMode, this.objectLinks, this.registrationEndpointAddress,
-                    this.registrationDate, this.lastUpdate, this.additionalRegistrationAttributes);
+                    Builder.this.port, Builder.this.lwM2mVersion, Builder.this.lifeTimeInSec, Builder.this.smsNumber,
+                    this.bindingMode, this.objectLinks, this.registrationEndpointAddress, this.registrationDate,
+                    this.lastUpdate, this.additionalRegistrationAttributes);
         }
 
     }

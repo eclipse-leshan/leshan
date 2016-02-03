@@ -56,7 +56,7 @@ lwClientControllers.controller('ClientListCtrl', [
         $scope.clientTooltip = function(client) {
             var standard = ["Lifetime: " + client.lifetime + "s",
                             "Binding mode: " + client.bindingMode,
-                            "Protocol version: " + client.protocolVersion];
+                            "Protocol version: " + client.lwM2mVersion];
 
             var tooltip = standard.join("<br/>");
             if (client.additionalRegistrationAttributes) {
