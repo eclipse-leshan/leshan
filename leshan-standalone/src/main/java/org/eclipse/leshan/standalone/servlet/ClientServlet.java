@@ -146,6 +146,10 @@ public class ClientServlet extends HttpServlet {
             LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.getWriter().append(e.getMessage()).flush();
+        } catch (InterruptedException e) {
+            LOG.warn("Thread Interrupted", e);
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.getWriter().append(e.getMessage()).flush();
         }
     }
 
@@ -181,6 +185,10 @@ public class ClientServlet extends HttpServlet {
             LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.getWriter().append(e.getMessage()).flush();
+        } catch (InterruptedException e) {
+            LOG.warn("Thread Interrupted", e);
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.getWriter().append(e.getMessage()).flush();
         }
     }
 
@@ -213,6 +221,10 @@ public class ClientServlet extends HttpServlet {
                 LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 resp.getWriter().append(e.getMessage()).flush();
+            } catch (InterruptedException e) {
+                LOG.warn("Thread Interrupted", e);
+                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                resp.getWriter().append(e.getMessage()).flush();
             }
             return;
         }
@@ -239,6 +251,10 @@ public class ClientServlet extends HttpServlet {
                 LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 resp.getWriter().append(e.getMessage()).flush();
+            } catch (InterruptedException e) {
+                LOG.warn("Thread Interrupted", e);
+                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                resp.getWriter().append(e.getMessage()).flush();
             }
             return;
         }
@@ -260,6 +276,10 @@ public class ClientServlet extends HttpServlet {
                 resp.getWriter().append(e.getMessage()).flush();
             } catch (ResourceAccessException | RequestFailedException e) {
                 LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
+                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                resp.getWriter().append(e.getMessage()).flush();
+            } catch (InterruptedException e) {
+                LOG.warn("Thread Interrupted", e);
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 resp.getWriter().append(e.getMessage()).flush();
             }
@@ -316,6 +336,10 @@ public class ClientServlet extends HttpServlet {
             LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.getWriter().append(e.getMessage()).flush();
+        } catch (InterruptedException e) {
+            LOG.warn("Interrupted request", e);
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.getWriter().append(e.getMessage()).flush();
         }
     }
 
@@ -337,7 +361,7 @@ public class ClientServlet extends HttpServlet {
 
     // TODO refactor the code to remove this method.
     private WriteResponse writeRequest(Client client, String target, HttpServletRequest req, HttpServletResponse resp)
-            throws IOException {
+            throws IOException, InterruptedException {
         Map<String, String> parameters = new HashMap<String, String>();
         String contentType = HttpFields.valueParameters(req.getContentType(), parameters);
 
@@ -366,7 +390,7 @@ public class ClientServlet extends HttpServlet {
 
     // TODO refactor the code to remove this method.
     private CreateResponse createRequest(Client client, String target, HttpServletRequest req, HttpServletResponse resp)
-            throws IOException {
+            throws IOException, InterruptedException {
         Map<String, String> parameters = new HashMap<String, String>();
         String contentType = HttpFields.valueParameters(req.getContentType(), parameters);
         if ("application/json".equals(contentType)) {

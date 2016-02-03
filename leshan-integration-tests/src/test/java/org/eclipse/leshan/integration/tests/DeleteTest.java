@@ -47,7 +47,7 @@ public class DeleteTest {
     }
 
     @Test
-    public void delete_created_object_instance() {
+    public void delete_created_object_instance() throws InterruptedException {
         // create ACL instance
         helper.server.send(helper.getClient(), new CreateRequest(2, 0, new LwM2mResource[0]));
 
@@ -59,7 +59,7 @@ public class DeleteTest {
     }
 
     @Test
-    public void cannot_delete_unknown_object_instance() {
+    public void cannot_delete_unknown_object_instance() throws InterruptedException {
         // try to create an instance of object 50
         DeleteResponse response = helper.server.send(helper.getClient(), new DeleteRequest(2, 0));
 
@@ -68,7 +68,7 @@ public class DeleteTest {
     }
 
     @Test
-    public void cannot_delete_single_manadatory_object_instance() {
+    public void cannot_delete_single_manadatory_object_instance() throws InterruptedException {
         // try to create an instance of object 50
         DeleteResponse response = helper.server.send(helper.getClient(), new DeleteRequest(3, 0));
 

@@ -51,7 +51,7 @@ public class CreateTest {
     }
 
     @Test
-    public void can_create_instance_of_object() {
+    public void can_create_instance_of_object() throws InterruptedException {
         // create ACL instance
         CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, 0, new LwM2mResource[0]));
 
@@ -61,7 +61,7 @@ public class CreateTest {
     }
 
     @Test
-    public void can_create_instance_of_object_without_instance_id() {
+    public void can_create_instance_of_object_without_instance_id() throws InterruptedException {
         // create ACL instance
         CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, new LwM2mResource[0]));
 
@@ -79,7 +79,7 @@ public class CreateTest {
     }
 
     @Test
-    public void can_create_specific_instance_of_object() {
+    public void can_create_specific_instance_of_object() throws InterruptedException {
         // create ACL instance
         LwM2mResource accessControlOwner = LwM2mSingleResource.newIntegerResource(3, 123);
         CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, 0, accessControlOwner));
@@ -90,7 +90,7 @@ public class CreateTest {
     }
 
     @Test
-    public void can_create_specific_instance_of_object_with_json() {
+    public void can_create_specific_instance_of_object_with_json() throws InterruptedException {
         // create ACL instance
         LwM2mResource accessControlOwner = LwM2mSingleResource.newIntegerResource(3, 123);
         CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(ContentFormat.JSON, 2, 0,
@@ -102,7 +102,7 @@ public class CreateTest {
     }
 
     @Test
-    public void cannot_create_instance_of_object() {
+    public void cannot_create_instance_of_object() throws InterruptedException {
         // try to create an instance of object 50
         CreateResponse response = helper.server
                 .send(helper.getClient(), new CreateRequest(50, 0, new LwM2mResource[0]));
@@ -116,7 +116,7 @@ public class CreateTest {
     // but you will not make a create with this two resource.
     @Ignore
     @Test
-    public void cannot_create_instance_without_all_required_resources() {
+    public void cannot_create_instance_without_all_required_resources() throws InterruptedException {
         // create ACL instance
         CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, 0, new LwM2mResource[0]));
 
@@ -132,7 +132,7 @@ public class CreateTest {
     // TODO we must probably implement this.
     @Ignore
     @Test
-    public void cannot_create_instance_with_extraneous_resources() {
+    public void cannot_create_instance_with_extraneous_resources() throws InterruptedException {
         // create ACL instance
         LwM2mResource accessControlOwner = LwM2mSingleResource.newIntegerResource(3, 123);
         LwM2mResource extraneousResource = LwM2mSingleResource.newIntegerResource(50, 123);
@@ -156,7 +156,7 @@ public class CreateTest {
     }
 
     @Test
-    public void cannot_create_mandatory_single_object() {
+    public void cannot_create_mandatory_single_object() throws InterruptedException {
         // try to create another instance of device object
         CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(3, 0, new LwM2mResource[0]));
 

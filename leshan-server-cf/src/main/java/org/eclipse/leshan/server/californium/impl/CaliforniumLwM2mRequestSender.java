@@ -64,7 +64,8 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
     }
 
     @Override
-    public <T extends LwM2mResponse> T send(final Client destination, final DownlinkRequest<T> request, Long timeout) {
+    public <T extends LwM2mResponse> T send(final Client destination, final DownlinkRequest<T> request, Long timeout)
+            throws InterruptedException {
 
         // Retrieve the objects definition
         final LwM2mModel model = modelProvider.getObjectModel(destination);
@@ -248,7 +249,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
             latch.countDown();
         }
 
-        public T waitForResponse() {
+        public T waitForResponse() throws InterruptedException {
             try {
                 boolean timeElapsed = false;
                 if (timeout != null) {
@@ -259,10 +260,6 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
                 if (timeElapsed || coapTimeout.get()) {
                     coapRequest.cancel();
                 }
-            } catch (final InterruptedException e) {
-                // no idea why some other thread should have interrupted this thread
-                // but anyway, go ahead as if the timeout had been reached
-                LOG.debug("Caught an unexpected InterruptedException during execution of CoAP request", e);
             } finally {
                 coapRequest.removeMessageObserver(this);
             }

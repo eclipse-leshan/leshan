@@ -51,7 +51,7 @@ public class WriteTest {
     }
 
     @Test
-    public void can_write_replace_resource() {
+    public void can_write_replace_resource() throws InterruptedException {
         // write device timezone
         final String timeZone = "Europe/Paris";
         WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE, 3, 0, 15,
@@ -67,7 +67,7 @@ public class WriteTest {
     }
 
     @Test
-    public void can_write_replace_resource_in_json() {
+    public void can_write_replace_resource_in_json() throws InterruptedException {
         // write device timezone
         final String timeZone = "Europe/Paris";
         WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE, 3, 0, 15,
@@ -83,7 +83,7 @@ public class WriteTest {
     }
 
     @Test
-    public void cannot_write_non_writable_resource() {
+    public void cannot_write_non_writable_resource() throws InterruptedException {
         // try to write unwritable resource like manufacturer on device
         final String manufacturer = "new manufacturer";
         WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE, 3, 0, 0,
@@ -94,7 +94,7 @@ public class WriteTest {
     }
 
     @Test
-    public void can_write_object_instance() {
+    public void can_write_object_instance() throws InterruptedException {
         // write device timezone and offset
         LwM2mResource utcOffset = LwM2mSingleResource.newStringResource(14, "+02");
         LwM2mResource timeZone = LwM2mSingleResource.newStringResource(15, "Europe/Paris");
@@ -112,7 +112,7 @@ public class WriteTest {
     }
 
     @Test
-    public void can_write_object_instance_in_json() {
+    public void can_write_object_instance_in_json() throws InterruptedException {
         // write device timezone and offset
         LwM2mResource utcOffset = LwM2mSingleResource.newStringResource(14, "+02");
         LwM2mResource timeZone = LwM2mSingleResource.newStringResource(15, "Europe/Paris");

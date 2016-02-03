@@ -59,7 +59,7 @@ public interface LwM2mServer {
      * @return the response or <code>null</code> if the CoAP timeout expires ( see
      *         http://tools.ietf.org/html/rfc7252#section-4.2 ).
      */
-    <T extends LwM2mResponse> T send(Client destination, DownlinkRequest<T> request);
+    <T extends LwM2mResponse> T send(Client destination, DownlinkRequest<T> request) throws InterruptedException;
 
     /**
      * Sends a Lightweight M2M request synchronously. Will block until a response is received from the remote client.
@@ -69,7 +69,8 @@ public interface LwM2mServer {
      * @param timeout the request timeout in millisecond
      * @return the response or <code>null</code> if the timeout expires (given parameter or CoAP timeout).
      */
-    <T extends LwM2mResponse> T send(Client destination, DownlinkRequest<T> request, long timeout);
+    <T extends LwM2mResponse> T send(Client destination, DownlinkRequest<T> request, long timeout)
+            throws InterruptedException;
 
     /**
      * Sends a Lightweight M2M request asynchronously.

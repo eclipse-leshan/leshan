@@ -54,7 +54,7 @@ public class ReadTest {
     // TODO we must the object TLV encoding
     @Ignore
     @Test
-    public void can_read_empty_object() {
+    public void can_read_empty_object() throws InterruptedException {
         // read ACL object
         ReadResponse response = helper.server.send(helper.getClient(), new ReadRequest(2));
 
@@ -69,7 +69,7 @@ public class ReadTest {
     // TODO we must the object TLV encoding
     @Ignore
     @Test
-    public void can_read_object() {
+    public void can_read_object() throws InterruptedException {
         // read device object
         ReadResponse response = helper.server.send(helper.getClient(), new ReadRequest(3));
 
@@ -84,7 +84,7 @@ public class ReadTest {
     }
 
     @Test
-    public void can_read_object_instance() {
+    public void can_read_object_instance() throws InterruptedException {
         // read device single instance
         ReadResponse response = helper.server.send(helper.getClient(), new ReadRequest(3, 0));
 
@@ -96,7 +96,7 @@ public class ReadTest {
     }
 
     @Test
-    public void can_read_resource() {
+    public void can_read_resource() throws InterruptedException {
         // read device model number
         ReadResponse response = helper.server.send(helper.getClient(), new ReadRequest(3, 0, 1));
 
@@ -109,7 +109,7 @@ public class ReadTest {
     }
 
     @Test
-    public void cannot_read_non_readable_resource() {
+    public void cannot_read_non_readable_resource() throws InterruptedException {
         // read device reboot resource
         ReadResponse response = helper.server.send(helper.getClient(), new ReadRequest(3, 0, 4));
 
@@ -118,7 +118,7 @@ public class ReadTest {
     }
 
     @Test
-    public void cannot_read_non_existent_object() {
+    public void cannot_read_non_existent_object() throws InterruptedException {
         // read object "50"
         ReadResponse response = helper.server.send(helper.getClient(), new ReadRequest(50));
 
@@ -127,7 +127,7 @@ public class ReadTest {
     }
 
     @Test
-    public void cannot_read_non_existent_instance() {
+    public void cannot_read_non_existent_instance() throws InterruptedException {
         // read 2nd Device resource
         ReadResponse response = helper.server.send(helper.getClient(), new ReadRequest(3, 1));
 
@@ -136,7 +136,7 @@ public class ReadTest {
     }
 
     @Test
-    public void cannot_read_non_existent_resource() {
+    public void cannot_read_non_existent_resource() throws InterruptedException {
         // read device 50 resource
         ReadResponse response = helper.server.send(helper.getClient(), new ReadRequest(3, 0, 50));
 

@@ -48,7 +48,7 @@ public class DiscoverTest {
     }
 
     @Test
-    public void can_discover_object() {
+    public void can_discover_object() throws InterruptedException {
         // read ACL object
         DiscoverResponse response = helper.server.send(helper.getClient(), new DiscoverRequest(2));
 
@@ -60,7 +60,7 @@ public class DiscoverTest {
     }
 
     @Test
-    public void cant_discover_non_existent_object() {
+    public void cant_discover_non_existent_object() throws InterruptedException {
         // read ACL object
         DiscoverResponse response = helper.server.send(helper.getClient(), new DiscoverRequest(4));
 
@@ -69,7 +69,7 @@ public class DiscoverTest {
     }
 
     @Test
-    public void can_discover_object_instance() {
+    public void can_discover_object_instance() throws InterruptedException {
         // read ACL object
         DiscoverResponse response = helper.server.send(helper.getClient(), new DiscoverRequest(3, 0));
 
@@ -81,7 +81,7 @@ public class DiscoverTest {
     }
 
     @Test
-    public void cant_discover_non_existent_instance() {
+    public void cant_discover_non_existent_instance() throws InterruptedException {
         // read ACL object
         DiscoverResponse response = helper.server.send(helper.getClient(), new DiscoverRequest(3, 1));
 
@@ -90,7 +90,7 @@ public class DiscoverTest {
     }
 
     @Test
-    public void can_discover_resource() {
+    public void can_discover_resource() throws InterruptedException {
         // read ACL object
         DiscoverResponse response = helper.server.send(helper.getClient(), new DiscoverRequest(3, 0, 0));
 
@@ -102,7 +102,7 @@ public class DiscoverTest {
     }
 
     @Test
-    public void cant_discover_resource_of_non_existent_object() {
+    public void cant_discover_resource_of_non_existent_object() throws InterruptedException {
         // read ACL object
         DiscoverResponse response = helper.server.send(helper.getClient(), new DiscoverRequest(4, 0, 0));
 
@@ -111,7 +111,7 @@ public class DiscoverTest {
     }
 
     @Test
-    public void cant_discover_resource_of_non_existent_instance() {
+    public void cant_discover_resource_of_non_existent_instance() throws InterruptedException {
         // read ACL object
         DiscoverResponse response = helper.server.send(helper.getClient(), new DiscoverRequest(3, 1, 0));
 
@@ -120,7 +120,7 @@ public class DiscoverTest {
     }
 
     @Test
-    public void cant_discover_resource_of_non_existent_instance_and_resource() {
+    public void cant_discover_resource_of_non_existent_instance_and_resource() throws InterruptedException {
         // read ACL object
         DiscoverResponse response = helper.server.send(helper.getClient(), new DiscoverRequest(3, 1, 20));
 
@@ -129,7 +129,7 @@ public class DiscoverTest {
     }
 
     @Test
-    public void cant_discover_resource_of_non_existent_resource() {
+    public void cant_discover_resource_of_non_existent_resource() throws InterruptedException {
         // read ACL object
         DiscoverResponse response = helper.server.send(helper.getClient(), new DiscoverRequest(3, 0, 20));
 

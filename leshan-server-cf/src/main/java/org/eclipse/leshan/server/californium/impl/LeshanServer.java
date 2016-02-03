@@ -244,12 +244,14 @@ public class LeshanServer implements LwM2mServer {
     }
 
     @Override
-    public <T extends LwM2mResponse> T send(final Client destination, final DownlinkRequest<T> request) {
+    public <T extends LwM2mResponse> T send(final Client destination, final DownlinkRequest<T> request)
+            throws InterruptedException {
         return requestSender.send(destination, request, null);
     }
 
     @Override
-    public <T extends LwM2mResponse> T send(final Client destination, final DownlinkRequest<T> request, long timeout) {
+    public <T extends LwM2mResponse> T send(final Client destination, final DownlinkRequest<T> request, long timeout)
+            throws InterruptedException {
         return requestSender.send(destination, request, timeout);
     }
 
