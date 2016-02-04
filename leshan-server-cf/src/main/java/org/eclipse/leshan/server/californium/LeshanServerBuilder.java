@@ -47,7 +47,7 @@ public class LeshanServerBuilder {
     private ClientRegistry clientRegistry;
     private LwM2mModelProvider modelProvider;
     private InetSocketAddress localAddress;
-    private InetSocketAddress localAddressSecure;
+    private InetSocketAddress localSecureAddress;
 
     public LeshanServerBuilder setLocalAddress(String hostname, int port) {
         if (hostname == null) {
@@ -63,17 +63,17 @@ public class LeshanServerBuilder {
         return this;
     }
 
-    public LeshanServerBuilder setLocalAddressSecure(String hostname, int port) {
+    public LeshanServerBuilder setLocalSecureAddress(String hostname, int port) {
         if (hostname == null) {
-            this.localAddressSecure = new InetSocketAddress(port);
+            this.localSecureAddress = new InetSocketAddress(port);
         } else {
-            this.localAddressSecure = new InetSocketAddress(hostname, port);
+            this.localSecureAddress = new InetSocketAddress(hostname, port);
         }
         return this;
     }
 
-    public LeshanServerBuilder setLocalAddressSecure(InetSocketAddress localAddressSecure) {
-        this.localAddressSecure = localAddressSecure;
+    public LeshanServerBuilder setLocalSecureAddress(InetSocketAddress localSecureAddress) {
+        this.localSecureAddress = localSecureAddress;
         return this;
     }
 
@@ -100,8 +100,8 @@ public class LeshanServerBuilder {
     public LeshanServer build() {
         if (localAddress == null)
             localAddress = new InetSocketAddress((InetAddress) null, PORT);
-        if (localAddressSecure == null)
-            localAddressSecure = new InetSocketAddress((InetAddress) null, PORT_DTLS);
+        if (localSecureAddress == null)
+            localSecureAddress = new InetSocketAddress((InetAddress) null, PORT_DTLS);
         if (clientRegistry == null)
             clientRegistry = new ClientRegistryImpl();
         if (securityRegistry == null)
@@ -111,7 +111,7 @@ public class LeshanServerBuilder {
         if (modelProvider == null) {
             modelProvider = new StandardModelProvider();
         }
-        return new LeshanServer(localAddress, localAddressSecure, clientRegistry, securityRegistry,
+        return new LeshanServer(localAddress, localSecureAddress, clientRegistry, securityRegistry,
                 observationRegistry, modelProvider);
     }
 }

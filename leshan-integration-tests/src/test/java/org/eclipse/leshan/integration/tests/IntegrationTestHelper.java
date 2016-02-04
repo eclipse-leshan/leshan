@@ -86,7 +86,7 @@ public class IntegrationTestHelper {
     public void createServer() {
         LeshanServerBuilder builder = new LeshanServerBuilder();
         builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-        builder.setLocalAddressSecure(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
+        builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         builder.setSecurityRegistry(new SecurityRegistryImpl() {
             // TODO we should separate SecurityRegistryImpl in 2 registries :
             // InMemorySecurityRegistry and PersistentSecurityRegistry

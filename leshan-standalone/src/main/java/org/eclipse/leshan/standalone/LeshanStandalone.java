@@ -147,7 +147,7 @@ public class LeshanStandalone {
         // Prepare LWM2M server
         LeshanServerBuilder builder = new LeshanServerBuilder();
         builder.setLocalAddress(localAddress, localPort);
-        builder.setLocalAddressSecure(secureLocalAddress, secureLocalPort);
+        builder.setLocalSecureAddress(secureLocalAddress, secureLocalPort);
 
         // Get public and private server key
         PrivateKey privateKey = null;

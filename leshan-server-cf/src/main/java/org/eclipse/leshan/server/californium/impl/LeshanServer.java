@@ -89,17 +89,17 @@ public class LeshanServer implements LwM2mServer {
      * Initialize a server which will bind to the specified address and port.
      *
      * @param localAddress the address to bind the CoAP server.
-     * @param localAddressSecure the address to bind the CoAP server for DTLS connection.
+     * @param localSecureAddress the address to bind the CoAP server for DTLS connection.
      * @param clientRegistry the registered {@link Client} registry.
      * @param securityRegistry the {@link SecurityInfo} registry.
      * @param observationRegistry the {@link Observation} registry.
      * @param modelProvider provides the objects description for each client.
      */
-    public LeshanServer(InetSocketAddress localAddress, InetSocketAddress localAddressSecure,
+    public LeshanServer(InetSocketAddress localAddress, InetSocketAddress localSecureAddress,
             final ClientRegistry clientRegistry, final SecurityRegistry securityRegistry,
             final ObservationRegistry observationRegistry, final LwM2mModelProvider modelProvider) {
         Validate.notNull(localAddress, "IP address cannot be null");
-        Validate.notNull(localAddressSecure, "Secure IP address cannot be null");
+        Validate.notNull(localSecureAddress, "Secure IP address cannot be null");
         Validate.notNull(clientRegistry, "clientRegistry cannot be null");
         Validate.notNull(securityRegistry, "securityRegistry cannot be null");
         Validate.notNull(observationRegistry, "observationRegistry cannot be null");
@@ -135,7 +135,7 @@ public class LeshanServer implements LwM2mServer {
         coapServer.addEndpoint(nonSecureEndpoint);
 
         // secure endpoint
-        Builder builder = new DtlsConnectorConfig.Builder(localAddressSecure);
+        Builder builder = new DtlsConnectorConfig.Builder(localSecureAddress);
         builder.setPskStore(new LwM2mPskStore(this.securityRegistry, this.clientRegistry));
         PrivateKey privateKey = this.securityRegistry.getServerPrivateKey();
         PublicKey publicKey = this.securityRegistry.getServerPublicKey();

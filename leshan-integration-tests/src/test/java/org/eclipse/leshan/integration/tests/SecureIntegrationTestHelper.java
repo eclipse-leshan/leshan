@@ -231,7 +231,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
     public void createServerWithRPK() {
         LeshanServerBuilder builder = new LeshanServerBuilder();
         builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-        builder.setLocalAddressSecure(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
+        builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         builder.setSecurityRegistry(new SecurityRegistryImpl(serverPrivateKey, serverPublicKey) {
             // TODO we should separate SecurityRegistryImpl in 2 registries :
             // InMemorySecurityRegistry and PersistentSecurityRegistry
@@ -252,7 +252,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
     public void createServerWithX509Cert(Certificate[] trustedCertificates) {
         LeshanServerBuilder builder = new LeshanServerBuilder();
         builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-        builder.setLocalAddressSecure(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
+        builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
 
         builder.setSecurityRegistry(new SecurityRegistryImpl(serverPrivateKeyFromCert, serverX509CertChain,
                 trustedCertificates) {
