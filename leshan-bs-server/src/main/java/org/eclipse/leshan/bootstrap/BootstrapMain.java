@@ -16,8 +16,14 @@
 
 package org.eclipse.leshan.bootstrap;
 
+import java.net.BindException;
 import java.net.InetSocketAddress;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -31,54 +37,117 @@ public class BootstrapMain {
 
     private static final Logger LOG = LoggerFactory.getLogger(BootstrapMain.class);
 
-    private static String parseHost(String iface) {
-        return iface.substring(0, iface.lastIndexOf(':'));
-    }
-
-    private static int parsePort(String iface) {
-        return Integer.parseInt(iface.substring(iface.lastIndexOf(':') + 1, iface.length()));
-    }
+    private final static String USAGE = "java -jar leshan-bs-server.jar [OPTION]";
+    private final static String FOOTER = "All options could be passed using environment variables.(using long option name in uppercase)";
 
     public static void main(String[] args) {
 
+        // Define options for command line tools
+        Options options = new Options();
+
+        options.addOption("h", "help", false, "Display help information.");
+        options.addOption("lh", "coaphost", true, "Set the local CoAP address.\n  Default: any local address.");
+        options.addOption("lp", "coapport", true, "Set the local CoAP port.\n  Default: 5683.");
+        options.addOption("slh", "coapshost", true, "Set the secure local CoAP address.\nDefault: any local address.");
+        options.addOption("slp", "coapsport", true, "Set the secure local CoAP port.\nDefault: 5684.");
+        options.addOption("wp", "webport", true, "Set the HTTP port for web server.\nDefault: 8080.");
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.setOptionComparator(null);
+
+        // Parse arguments
+        CommandLine cl = null;
+        try {
+            cl = new DefaultParser().parse(options, args);
+        } catch (ParseException e) {
+            System.err.println("Parsing failed.  Reason: " + e.getMessage());
+            formatter.printHelp(USAGE, null, options, FOOTER);
+            return;
+        }
+
+        // Print help
+        if (cl.hasOption("help")) {
+            formatter.printHelp(USAGE, null, options, FOOTER);
+            return;
+        }
+
+        // Abort if unexpected options
+        if (cl.getArgs().length > 0) {
+            System.out.println("Unexpected option or arguments : " + cl.getArgList());
+            formatter.printHelp(USAGE, null, options, FOOTER);
+            return;
+        }
+
+        // Get local address
+        String localAddress = System.getenv("COAPHOST");
+        if (cl.hasOption("lh")) {
+            localAddress = cl.getOptionValue("lh");
+        }
+        if (localAddress == null)
+            localAddress = "0.0.0.0";
+        String localPortOption = System.getenv("COAPPORT");
+        if (cl.hasOption("lp")) {
+            localPortOption = cl.getOptionValue("lp");
+        }
+        int localPort = 0;
+        if (localPortOption != null) {
+            localPort = Integer.parseInt(localPortOption);
+        }
+
+        // Get secure local address
+        String secureLocalAddress = System.getenv("COAPSHOST");
+        if (cl.hasOption("slh")) {
+            secureLocalAddress = cl.getOptionValue("slh");
+        }
+        if (secureLocalAddress == null)
+            secureLocalAddress = "0.0.0.0";
+        String secureLocalPortOption = System.getenv("COAPSPORT");
+        if (cl.hasOption("slp")) {
+            secureLocalPortOption = cl.getOptionValue("slp");
+        }
+        int secureLocalPort = 0;
+        if (secureLocalPortOption != null) {
+            secureLocalPort = Integer.parseInt(secureLocalPortOption);
+        }
+
+        // Get http port
+        String webPortOption = System.getenv("WEBPORT");
+        if (cl.hasOption("wp")) {
+            webPortOption = cl.getOptionValue("wp");
+        }
+        int webPort = 8080;
+        if (webPortOption != null) {
+            webPort = Integer.parseInt(webPortOption);
+        }
+
+        try {
+            createAndStartServer(webPort, localAddress, localPort, secureLocalAddress, secureLocalPort);
+        } catch (BindException e) {
+            System.out.println(String.format("Web port %s is alreay used, you could change it using 'webport' option.",
+                    webPort));
+            formatter.printHelp(USAGE, null, options, FOOTER);
+        } catch (Exception e) {
+            LOG.error("Jetty stopped with unexcepted error ...", e);
+        }
+    }
+
+    public static void createAndStartServer(int webPort, String localAddress, int localPort, String secureLocalAddress,
+            int secureLocalPort) throws Exception {
+
+        // Prepare and start bootstrap server
         BootstrapStoreImpl bsStore = new BootstrapStoreImpl();
         SecurityStore securityStore = new BootstrapSecurityStore(bsStore);
 
-        // use those ENV variables for specifying the interface to be bound for coap and coaps
-        String iface = System.getenv("COAPIFACE");
-        String ifaces = System.getenv("COAPSIFACE");
-
-        LwM2mBootstrapServerImpl bsServer;
-
-        if (iface == null || iface.isEmpty() || ifaces == null || ifaces.isEmpty()) {
-            bsServer = new LwM2mBootstrapServerImpl(bsStore, securityStore);
-        } else {
-            // user specified the iface to be bound
-            bsServer = new LwM2mBootstrapServerImpl(new InetSocketAddress(parseHost(iface), parsePort(iface)),
-                    new InetSocketAddress(parseHost(ifaces), parsePort(ifaces)), bsStore, securityStore);
-        }
-
+        LwM2mBootstrapServerImpl bsServer = new LwM2mBootstrapServerImpl(
+                new InetSocketAddress(localAddress, localPort), new InetSocketAddress(secureLocalAddress,
+                        secureLocalPort), bsStore, securityStore);
         bsServer.start();
-        // now prepare and start jetty
 
-        String webPort = System.getenv("PORT");
-
-        if (webPort == null || webPort.isEmpty()) {
-            webPort = System.getProperty("PORT");
-        }
-
-        if (webPort == null || webPort.isEmpty()) {
-            webPort = "8080";
-        }
-
-        Server server = new Server(Integer.valueOf(webPort));
+        // Now prepare and start jetty
+        Server server = new Server(webPort);
         WebAppContext root = new WebAppContext();
 
         root.setContextPath("/");
-        // root.setDescriptor(webappDirLocation + "/WEB-INF/web.xml");
         root.setResourceBase(BootstrapMain.class.getClassLoader().getResource("webapp").toExternalForm());
-
-        // root.setResourceBase(webappDirLocation);
         root.setParentLoaderPriority(true);
 
         ServletHolder bsServletHolder = new ServletHolder(new BootstrapServlet(bsStore));
@@ -86,11 +155,6 @@ public class BootstrapMain {
 
         server.setHandler(root);
 
-        try {
-            server.start();
-        } catch (Exception e) {
-            LOG.error("jetty error", e);
-        }
-
+        server.start();
     }
 }

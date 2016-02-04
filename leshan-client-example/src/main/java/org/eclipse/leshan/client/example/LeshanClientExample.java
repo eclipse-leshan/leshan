@@ -64,12 +64,12 @@ public class LeshanClientExample {
         options.addOption("n", true, String.format(
                 "Set the endpoint name of the Client.\nDefault: the local hostname or '%s' if any.", DEFAULT_ENDPOINT));
         options.addOption("b", false, "If present use bootstrap.");
-        options.addOption("lh", true, "Set the local address of the Client.\n  Default: any local address.");
+        options.addOption("lh", true, "Set the local CoAP address of the Client.\n  Default: any local address.");
         options.addOption("lp", true,
-                "Set the local port of the Client.\n  Default: A valid port value is between 0 and 65535.");
-        options.addOption("slh", true, "Set the secure local address of the Client.\nDefault: any local address.");
+                "Set the local CoAP port of the Client.\n  Default: A valid port value is between 0 and 65535.");
+        options.addOption("slh", true, "Set the secure local CoAP address of the Client.\nDefault: any local address.");
         options.addOption("slp", true,
-                "Set the secure local port of the Client.\nDefault: A valid port value is between 0 and 65535.");
+                "Set the secure local CoAP port of the Client.\nDefault: A valid port value is between 0 and 65535.");
         options.addOption("u", true, "Set the LWM2M or Bootstrap server URL.\nDefault: localhost:5683.");
         options.addOption("i", true,
                 "Set the LWM2M or Bootstrap server PSK identity in ascii.\nUse none secure mode if not set.");

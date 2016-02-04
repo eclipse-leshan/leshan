@@ -16,6 +16,7 @@
 package org.eclipse.leshan.standalone;
 
 import java.math.BigInteger;
+import java.net.BindException;
 import java.security.AlgorithmParameters;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -30,6 +31,11 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -48,36 +54,112 @@ public class LeshanStandalone {
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanStandalone.class);
 
-    private Server server;
-    private LeshanServer lwServer;
+    private final static String USAGE = "java -jar leshan-standalone.jar [OPTION]";
+    private final static String FOOTER = "All options could be passed using environment variables.(using long option name in uppercase)";
 
-    public void start() {
-        // Use those ENV variables for specifying the interface to be bound for coap and coaps
-        String iface = System.getenv("COAPIFACE");
-        String ifaces = System.getenv("COAPSIFACE");
+    public static void main(String[] args) {
+        // Define options for command line tools
+        Options options = new Options();
 
-        // Build LWM2M server
+        options.addOption("h", "help", false, "Display help information.");
+        options.addOption("lh", "coaphost", true, "Set the local CoAP address.\n  Default: any local address.");
+        options.addOption("lp", "coapport", true, "Set the local CoAP port.\n  Default: 5683.");
+        options.addOption("slh", "coapshost", true, "Set the secure local CoAP address.\nDefault: any local address.");
+        options.addOption("slp", "coapsport", true, "Set the secure local CoAP port.\nDefault: 5684.");
+        options.addOption("wp", "webport", true, "Set the HTTP port for web server.\nDefault: 8080.");
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.setOptionComparator(null);
+
+        // Parse arguments
+        CommandLine cl = null;
+        try {
+            cl = new DefaultParser().parse(options, args);
+        } catch (ParseException e) {
+            System.err.println("Parsing failed.  Reason: " + e.getMessage());
+            formatter.printHelp(USAGE, null, options, FOOTER);
+            return;
+        }
+
+        // Print help
+        if (cl.hasOption("help")) {
+            formatter.printHelp(USAGE, null, options, FOOTER);
+            return;
+        }
+
+        // Abort if unexpected options
+        if (cl.getArgs().length > 0) {
+            System.out.println("Unexpected option or arguments : " + cl.getArgList());
+            formatter.printHelp(USAGE, null, options, FOOTER);
+            return;
+        }
+
+        // get local address
+        String localAddress = System.getenv("COAPHOST");
+        if (cl.hasOption("lh")) {
+            localAddress = cl.getOptionValue("lh");
+        }
+        String localPortOption = System.getenv("COAPPORT");
+        if (cl.hasOption("lp")) {
+            localPortOption = cl.getOptionValue("lp");
+        }
+        int localPort = 0;
+        if (localPortOption != null) {
+            localPort = Integer.parseInt(localPortOption);
+        }
+
+        // get secure local address
+        String secureLocalAddress = System.getenv("COAPSHOST");
+        if (cl.hasOption("slh")) {
+            secureLocalAddress = cl.getOptionValue("slh");
+        }
+        String secureLocalPortOption = System.getenv("COAPSPORT");
+        if (cl.hasOption("slp")) {
+            secureLocalPortOption = cl.getOptionValue("slp");
+        }
+        int secureLocalPort = 0;
+        if (secureLocalPortOption != null) {
+            secureLocalPort = Integer.parseInt(secureLocalPortOption);
+        }
+
+        // get http port
+        String webPortOption = System.getenv("WEBPORT");
+        if (cl.hasOption("wp")) {
+            webPortOption = cl.getOptionValue("wp");
+        }
+        int webPort = 8080;
+        if (webPortOption != null) {
+            webPort = Integer.parseInt(webPortOption);
+        }
+
+        try {
+            createAndStartServer(webPort, localAddress, localPort, secureLocalAddress, secureLocalPort);
+        } catch (BindException e) {
+            System.out.println(String.format("Web port %s is alreay used, you could change it using 'webport' option.",
+                    webPort));
+            formatter.printHelp(USAGE, null, options, FOOTER);
+        } catch (Exception e) {
+            LOG.error("Jetty stopped with unexcepted error ...", e);
+        }
+    }
+
+    public static void createAndStartServer(int webPort, String localAddress, int localPort, String secureLocalAddress,
+            int secureLocalPort) throws Exception {
+        // Prepare LWM2M server
         LeshanServerBuilder builder = new LeshanServerBuilder();
-        if (iface != null && !iface.isEmpty()) {
-            builder.setLocalAddress(iface.substring(0, iface.lastIndexOf(':')),
-                Integer.parseInt(iface.substring(iface.lastIndexOf(':') + 1, iface.length())));
-        }
-        if (ifaces != null && !ifaces.isEmpty()) {
-            builder.setLocalAddressSecure(ifaces.substring(0, ifaces.lastIndexOf(':')),
-                Integer.parseInt(ifaces.substring(ifaces.lastIndexOf(':') + 1, ifaces.length())));
-        }
+        builder.setLocalAddress(localAddress, localPort);
+        builder.setLocalAddressSecure(secureLocalAddress, secureLocalPort);
 
         // Get public and private server key
         PrivateKey privateKey = null;
         PublicKey publicKey = null;
         try {
             // Get point values
-            byte[] publicX = Hex
-                    .decodeHex("fcc28728c123b155be410fc1c0651da374fc6ebe7f96606e90d927d188894a73".toCharArray());
-            byte[] publicY = Hex
-                    .decodeHex("d2ffaa73957d76984633fc1cc54d0b763ca0559a9dff9706e9f4557dacc3f52a".toCharArray());
-            byte[] privateS = Hex
-                    .decodeHex("1dae121ba406802ef07c193c1ee4df91115aabd79c1ed7f4c0ef7ef6a5449400".toCharArray());
+            byte[] publicX = Hex.decodeHex("fcc28728c123b155be410fc1c0651da374fc6ebe7f96606e90d927d188894a73"
+                    .toCharArray());
+            byte[] publicY = Hex.decodeHex("d2ffaa73957d76984633fc1cc54d0b763ca0559a9dff9706e9f4557dacc3f52a"
+                    .toCharArray());
+            byte[] privateS = Hex.decodeHex("1dae121ba406802ef07c193c1ee4df91115aabd79c1ed7f4c0ef7ef6a5449400"
+                    .toCharArray());
 
             // Get Elliptic Curve Parameter spec for secp256r1
             AlgorithmParameters algoParameters = AlgorithmParameters.getInstance("EC");
@@ -98,21 +180,15 @@ public class LeshanStandalone {
             LOG.warn("Unable to load RPK.", e);
         }
 
-        lwServer = builder.build();
+        // Create and start LWM2M server
+        LeshanServer lwServer = builder.build();
         lwServer.start();
 
-        // Now prepare and start jetty
-        String webPort = System.getenv("PORT");
-        if (webPort == null || webPort.isEmpty()) {
-            webPort = System.getProperty("PORT");
-        }
-        if (webPort == null || webPort.isEmpty()) {
-            webPort = "8080";
-        }
-        server = new Server(Integer.valueOf(webPort));
+        // Now prepare Jetty
+        Server server = new Server(webPort);
         WebAppContext root = new WebAppContext();
         root.setContextPath("/");
-        root.setResourceBase(this.getClass().getClassLoader().getResource("webapp").toExternalForm());
+        root.setResourceBase(LeshanStandalone.class.getClassLoader().getResource("webapp").toExternalForm());
         root.setParentLoaderPriority(true);
         server.setHandler(root);
 
@@ -131,24 +207,7 @@ public class LeshanStandalone {
         ServletHolder objectSpecServletHolder = new ServletHolder(new ObjectSpecServlet(lwServer.getModelProvider()));
         root.addServlet(objectSpecServletHolder, "/api/objectspecs/*");
 
-        // Start jetty
-        try {
-            server.start();
-        } catch (Exception e) {
-            LOG.error("jetty error", e);
-        }
-    }
-
-    public void stop() {
-        try {
-            lwServer.destroy();
-            server.stop();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static void main(String[] args) {
-        new LeshanStandalone().start();
+        // Start Jetty
+        server.start();
     }
 }

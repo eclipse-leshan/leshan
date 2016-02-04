@@ -50,7 +50,11 @@ public class LeshanServerBuilder {
     private InetSocketAddress localAddressSecure;
 
     public LeshanServerBuilder setLocalAddress(String hostname, int port) {
-        this.localAddress = new InetSocketAddress(hostname, port);
+        if (hostname == null) {
+            this.localAddress = new InetSocketAddress(port);
+        } else {
+            this.localAddress = new InetSocketAddress(hostname, port);
+        }
         return this;
     }
 
@@ -60,7 +64,11 @@ public class LeshanServerBuilder {
     }
 
     public LeshanServerBuilder setLocalAddressSecure(String hostname, int port) {
-        this.localAddressSecure = new InetSocketAddress(hostname, port);
+        if (hostname == null) {
+            this.localAddressSecure = new InetSocketAddress(port);
+        } else {
+            this.localAddressSecure = new InetSocketAddress(hostname, port);
+        }
         return this;
     }
 
