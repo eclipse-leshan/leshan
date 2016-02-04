@@ -102,7 +102,7 @@ public class LeshanStandalone {
         if (cl.hasOption("lp")) {
             localPortOption = cl.getOptionValue("lp");
         }
-        int localPort = 0;
+        int localPort = LeshanServerBuilder.PORT;
         if (localPortOption != null) {
             localPort = Integer.parseInt(localPortOption);
         }
@@ -116,7 +116,7 @@ public class LeshanStandalone {
         if (cl.hasOption("slp")) {
             secureLocalPortOption = cl.getOptionValue("slp");
         }
-        int secureLocalPort = 0;
+        int secureLocalPort = LeshanServerBuilder.PORT_DTLS;
         if (secureLocalPortOption != null) {
             secureLocalPort = Integer.parseInt(secureLocalPortOption);
         }
@@ -209,5 +209,6 @@ public class LeshanStandalone {
 
         // Start Jetty
         server.start();
+        LOG.info("Web server started at {}.", server.getURI());
     }
 }

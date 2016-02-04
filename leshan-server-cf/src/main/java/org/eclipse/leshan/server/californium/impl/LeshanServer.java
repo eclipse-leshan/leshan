@@ -183,7 +183,7 @@ public class LeshanServer implements LwM2mServer {
         // Start server
         coapServer.start();
 
-        LOG.info("LW-M2M server started");
+        LOG.info("LWM2M server started at coap://{}, coaps://{}.", getNonSecureAddress(), getSecureAddress());
     }
 
     @Override
@@ -202,7 +202,7 @@ public class LeshanServer implements LwM2mServer {
             ((Stoppable) observationRegistry).stop();
         }
 
-        LOG.info("LW-M2M server stopped");
+        LOG.info("LWM2M server stopped.");
     }
 
     public void destroy() {
@@ -220,7 +220,7 @@ public class LeshanServer implements LwM2mServer {
             ((Destroyable) observationRegistry).destroy();
         }
 
-        LOG.info("LW-M2M server destroyed");
+        LOG.info("LWM2M server destroyed.");
     }
 
     @Override

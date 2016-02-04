@@ -96,7 +96,7 @@ public class LwM2mBootstrapServerImpl implements LwM2mBootstrapServer {
      */
     public void start() {
         coapServer.start();
-        LOG.info("LW-M2M server started");
+        LOG.info("Bootstrap server started at coap://{}, coaps://{}.", getNonSecureAddress(), getSecureAddress());
     }
 
     /**
@@ -104,6 +104,7 @@ public class LwM2mBootstrapServerImpl implements LwM2mBootstrapServer {
      */
     public void stop() {
         coapServer.stop();
+        LOG.info("Bootstrap server stopped.");
     }
 
     /**
@@ -111,6 +112,7 @@ public class LwM2mBootstrapServerImpl implements LwM2mBootstrapServer {
      */
     public void destroy() {
         coapServer.destroy();
+        LOG.info("Bootstrap server destroyed.");
     }
 
     public InetSocketAddress getNonSecureAddress() {

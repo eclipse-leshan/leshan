@@ -28,6 +28,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.leshan.bootstrap.servlet.BootstrapServlet;
+import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LwM2mBootstrapServerImpl;
 import org.eclipse.leshan.server.security.SecurityStore;
 import org.slf4j.Logger;
@@ -88,7 +89,7 @@ public class BootstrapMain {
         if (cl.hasOption("lp")) {
             localPortOption = cl.getOptionValue("lp");
         }
-        int localPort = 0;
+        int localPort = LeshanServerBuilder.PORT;
         if (localPortOption != null) {
             localPort = Integer.parseInt(localPortOption);
         }
@@ -104,7 +105,7 @@ public class BootstrapMain {
         if (cl.hasOption("slp")) {
             secureLocalPortOption = cl.getOptionValue("slp");
         }
-        int secureLocalPort = 0;
+        int secureLocalPort = LeshanServerBuilder.PORT_DTLS;
         if (secureLocalPortOption != null) {
             secureLocalPort = Integer.parseInt(secureLocalPortOption);
         }
@@ -156,5 +157,6 @@ public class BootstrapMain {
         server.setHandler(root);
 
         server.start();
+        LOG.info("Web server started at {}.", server.getURI());
     }
 }
