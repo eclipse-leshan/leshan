@@ -274,7 +274,7 @@ public class Client {
         return lastUpdate.getTime() + lifeTimeInSec * 1000 > System.currentTimeMillis();
     }
 
-    public Map<String, String> getAdditionalRegistrationParams() {
+    public Map<String, String> getAdditionalRegistrationAttributes() {
         return additionalRegistrationAttributes;
     }
 
@@ -369,8 +369,8 @@ public class Client {
             return this;
         }
 
-        public Builder lwm2mVersion(String lwm2mVersion) {
-            this.lwM2mVersion = lwm2mVersion;
+        public Builder lwM2mVersion(String lwM2mVersion) {
+            this.lwM2mVersion = lwM2mVersion;
             return this;
         }
 
