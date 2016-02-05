@@ -52,6 +52,7 @@ public class RegistrationEngine {
     private static final Logger LOG = LoggerFactory.getLogger(RegistrationEngine.class);
     // TODO bootstrap timeout should be configurable
     private static final int BS_TIMEOUT = 93; // in seconds (93s is the COAP MAX_TRANSMIT_WAIT with default config)
+    private static final long DEREGISTRATION_TIMEOUT = 1000; // in ms, de-registration is only used on stop for now.
     // TODO time between bootstrap retry should be configurable and incremental
     private static final int BS_RETRY = 10 * 60; // in seconds
 
@@ -169,7 +170,7 @@ public class RegistrationEngine {
         // Send deregister request
         LOG.info("Trying to deregister to {} ...", dmInfo.serverUri);
         DeregisterResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(), new DeregisterRequest(
-                registrationID), null);
+                registrationID), DEREGISTRATION_TIMEOUT);
         if (response == null) {
             registrationID = null;
             LOG.error("Deregistration failed: Timeout.");
