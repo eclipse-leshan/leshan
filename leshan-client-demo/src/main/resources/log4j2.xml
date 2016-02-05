@@ -16,7 +16,7 @@ Contributors:
     Sierra Wireless - initial API and implementation
 
  -->
-<Configuration status="warn" strict="true" name="leshan standalone"
+<Configuration status="warn" strict="true" name="leshan client demo"
                packages="org.apache.logging.log4j.test">
 
   <Appenders>

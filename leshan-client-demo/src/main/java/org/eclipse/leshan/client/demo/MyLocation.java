@@ -1,4 +1,4 @@
-package org.eclipse.leshan.client.example;
+package org.eclipse.leshan.client.demo;
 
 import java.util.Date;
 import java.util.Random;

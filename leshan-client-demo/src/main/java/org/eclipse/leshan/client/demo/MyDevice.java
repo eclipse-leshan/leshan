@@ -1,4 +1,4 @@
-package org.eclipse.leshan.client.example;
+package org.eclipse.leshan.client.demo;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -95,7 +95,7 @@ public class MyDevice extends BaseInstanceEnabler {
     }
 
     private String getManufacturer() {
-        return "Leshan Example Device";
+        return "Leshan Demo Device";
     }
 
     private String getModelNumber() {

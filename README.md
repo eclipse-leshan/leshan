@@ -39,8 +39,8 @@ java -jar ./leshan-standalone.jar
 ```
 Get and run the last binary of our demo **client** :
 ```
-wget https://hudson.eclipse.org/leshan/job/leshan/lastSuccessfulBuild/artifact/leshan-client-example.jar
-java -jar ./leshan-client-example.jar
+wget https://hudson.eclipse.org/leshan/job/leshan/lastSuccessfulBuild/artifact/leshan-client-demo.jar
+java -jar ./leshan-client-demo.jar
 ```
 Get and run the last binary of our **boostrap** demo server :
 ```
@@ -63,9 +63,9 @@ java -jar target/leshan-standalone-*-SNAPSHOT-jar-with-dependencies.jar
 Connect on Leshan demo UI: http://localhost:8080  
 Leshan provides a very simple UI to get the list of connected clients and interact with clients resources.
 
-Now you can register a LWM2M client by running our **client** example:
+Now you can register a LWM2M client by running our **client** demo:
 ```
-java -jar target/leshan-client-example-*-SNAPSHOT-jar-with-dependencies.jar 
+java -jar target/leshan-client-demo-*-SNAPSHOT-jar-with-dependencies.jar 
 ```
 or trying the [Eclipse Wakaama](http://eclipse.org/wakaama) test client or script samples of its lua binding [lualwm2m] (https://github.com/sbernard31/lualwm2m).
 
@@ -102,7 +102,7 @@ Modules
 `Leshan-client-core` : client lwm2m logic.  
 `Leshan-client-cf` : client implementation based on [californium](https://github.com/eclipse/californium).  
 `Leshan-all` : every previous modules in 1 jar.  
-`Leshan-client-example` : a simple demo client.  
+`Leshan-client-demo` : a simple demo client.  
 `Leshan-standalone` : a lwm2m demo server with a web UI.  
 `Leshan-bs-server` : a bootstarp demo server with a web UI.  
 `Leshan-integration-tests` : integration automatic tests.  

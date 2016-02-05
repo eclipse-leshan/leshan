@@ -16,7 +16,7 @@
  *     Bosch Software Innovations GmbH, - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.leshan.client.example;
+package org.eclipse.leshan.client.demo;
 
 import static org.eclipse.leshan.LwM2mId.DEVICE;
 import static org.eclipse.leshan.LwM2mId.LOCATION;
@@ -47,13 +47,13 @@ import org.eclipse.leshan.util.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LeshanClientExample {
+public class LeshanClientDemo {
 
-    private static final Logger LOG = LoggerFactory.getLogger(LeshanClientExample.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LeshanClientDemo.class);
 
-    private final static String DEFAULT_ENDPOINT = "LeshanClientExample";
+    private final static String DEFAULT_ENDPOINT = "LeshanClientDemo";
     private final static MyLocation locationInstance = new MyLocation();
-    private final static String USAGE = "java -jar leshan-client-example.jar [OPTION]";
+    private final static String USAGE = "java -jar leshan-client-demo.jar [OPTION]";
 
     public static void main(final String[] args) {
 

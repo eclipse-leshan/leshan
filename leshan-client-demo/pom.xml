@@ -22,8 +22,8 @@ Contributors:
         <artifactId>leshan</artifactId>
         <version>0.1.11-M8-SNAPSHOT</version>
     </parent>
-    <artifactId>leshan-client-example</artifactId>
-    <name>leshan - client example</name>
+    <artifactId>leshan-client-demo</artifactId>
+    <name>leshan - client demo</name>
     <description>A demonstration client built upon the Leshan client.</description>
 
     <dependencies>
@@ -58,7 +58,7 @@ Contributors:
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.eclipse.leshan.client.example.LeshanClientExample</mainClass>
+                            <mainClass>org.eclipse.leshan.client.demo.LeshanClientDemo</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
