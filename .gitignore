@@ -1,9 +1,7 @@
 # Leshan config files #
 leshan-core/ddffiles
-leshan-standalone/Californium.properties
-leshan-standalone/data
-leshan-bs-server/data
-Californium.properties
+**/Californium.properties
+**/data/*.data
 
 # Binary files #
 *.class

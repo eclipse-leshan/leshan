@@ -34,8 +34,8 @@ Test Leshan locally
 -----------------------
 Get and run the last binary of our demo **server** :
 ```
-wget https://hudson.eclipse.org/leshan/job/leshan/lastSuccessfulBuild/artifact/leshan-standalone.jar
-java -jar ./leshan-standalone.jar
+wget https://hudson.eclipse.org/leshan/job/leshan/lastSuccessfulBuild/artifact/leshan-server-demo.jar
+java -jar ./leshan-server-demo.jar
 ```
 Get and run the last binary of our demo **client** :
 ```
@@ -57,7 +57,7 @@ mvn clean install
 
 Run demo **server**:
 ```
-java -jar target/leshan-standalone-*-SNAPSHOT-jar-with-dependencies.jar 
+java -jar target/leshan-server-demo-*-SNAPSHOT-jar-with-dependencies.jar 
 ```
 
 Connect on Leshan demo UI: http://localhost:8080  
@@ -103,7 +103,7 @@ Modules
 `Leshan-client-cf` : client implementation based on [californium](https://github.com/eclipse/californium).  
 `Leshan-all` : every previous modules in 1 jar.  
 `Leshan-client-demo` : a simple demo client.  
-`Leshan-standalone` : a lwm2m demo server with a web UI.  
+`Leshan-server-demo` : a lwm2m demo server with a web UI.  
 `Leshan-bs-server` : a bootstarp demo server with a web UI.  
 `Leshan-integration-tests` : integration automatic tests.  
 
