@@ -50,7 +50,7 @@ Contributors:
 
         <module>leshan-server-demo</module>
         <module>leshan-client-demo</module>
-        <module>leshan-bs-server</module>
+        <module>leshan-bsserver-demo</module>
     </modules>
 
     <scm>

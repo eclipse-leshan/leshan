@@ -44,8 +44,8 @@ java -jar ./leshan-client-demo.jar
 ```
 Get and run the last binary of our **boostrap** demo server :
 ```
-wget https://hudson.eclipse.org/leshan/job/leshan/lastSuccessfulBuild/artifact/leshan-bs-server.jar
-java -jar ./leshan-bs-server.jar
+wget https://hudson.eclipse.org/leshan/job/leshan/lastSuccessfulBuild/artifact/leshan-bsserver-demo.jar
+java -jar ./leshan-bsserver-demo.jar
 ```
 
 Compile & Run
@@ -72,7 +72,7 @@ or trying the [Eclipse Wakaama](http://eclipse.org/wakaama) test client or scrip
 
 You can also try our **bootstrap** demo server:
 ```
-java -jar target/leshan-bs-server-*-SNAPSHOT-jar-with-dependencies.jar 
+java -jar target/leshan-bsserver-demo-*-SNAPSHOT-jar-with-dependencies.jar 
 ```
 
 ![Leshan](https://eclipse.org/leshan/img/capture_for_github.png)
@@ -104,6 +104,6 @@ Modules
 `Leshan-all` : every previous modules in 1 jar.  
 `Leshan-client-demo` : a simple demo client.  
 `Leshan-server-demo` : a lwm2m demo server with a web UI.  
-`Leshan-bs-server` : a bootstarp demo server with a web UI.  
+`Leshan-bsserver-demo` : a bootstarp demo server with a web UI.  
 `Leshan-integration-tests` : integration automatic tests.  
 

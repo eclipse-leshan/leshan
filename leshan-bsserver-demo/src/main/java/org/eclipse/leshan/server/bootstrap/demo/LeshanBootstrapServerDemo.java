@@ -14,7 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.leshan.bootstrap;
+package org.eclipse.leshan.server.bootstrap.demo;
 
 import java.net.BindException;
 import java.net.InetSocketAddress;
@@ -27,18 +27,18 @@ import org.apache.commons.cli.ParseException;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
-import org.eclipse.leshan.bootstrap.servlet.BootstrapServlet;
+import org.eclipse.leshan.server.bootstrap.demo.servlet.BootstrapServlet;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LwM2mBootstrapServerImpl;
 import org.eclipse.leshan.server.security.SecurityStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BootstrapMain {
+public class LeshanBootstrapServerDemo {
 
-    private static final Logger LOG = LoggerFactory.getLogger(BootstrapMain.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LeshanBootstrapServerDemo.class);
 
-    private final static String USAGE = "java -jar leshan-bs-server.jar [OPTION]";
+    private final static String USAGE = "java -jar leshan-bsserver-demo.jar [OPTION]";
     private final static String FOOTER = "All options could be passed using environment variables.(using long option name in uppercase)";
 
     public static void main(String[] args) {
@@ -148,7 +148,7 @@ public class BootstrapMain {
         WebAppContext root = new WebAppContext();
 
         root.setContextPath("/");
-        root.setResourceBase(BootstrapMain.class.getClassLoader().getResource("webapp").toExternalForm());
+        root.setResourceBase(LeshanBootstrapServerDemo.class.getClassLoader().getResource("webapp").toExternalForm());
         root.setParentLoaderPriority(true);
 
         ServletHolder bsServletHolder = new ServletHolder(new BootstrapServlet(bsStore));

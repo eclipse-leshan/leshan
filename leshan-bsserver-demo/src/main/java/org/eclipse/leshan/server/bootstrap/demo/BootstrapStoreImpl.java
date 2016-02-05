@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.bootstrap;
+package org.eclipse.leshan.server.bootstrap.demo;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,9 +26,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.Validate;
-import org.eclipse.leshan.bootstrap.ConfigurationChecker.ConfigurationException;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapStore;
+import org.eclipse.leshan.server.bootstrap.demo.ConfigurationChecker.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

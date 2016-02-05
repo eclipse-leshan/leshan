@@ -22,9 +22,9 @@ Contributors:
         <artifactId>leshan</artifactId>
         <version>0.1.11-M8-SNAPSHOT</version>
     </parent>
-    <artifactId>leshan-bs-server</artifactId>
-    <name>leshan - standalone bootstrap server</name>
-    <description>A LWM2M bootstrap server running an embedded Jetty server</description>
+    <artifactId>leshan-bsserver-demo</artifactId>
+    <name>leshan - bootstrap server demo</name>
+    <description>A LWM2M bootstrap demonstration server running an embedded Jetty server</description>
 
     <dependencies>
         <dependency>
@@ -89,7 +89,7 @@ Contributors:
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.eclipse.leshan.bootstrap.BootstrapMain</mainClass>
+                            <mainClass>org.eclipse.leshan.server.bootstrap.demo.LeshanBootstrapServerDemo</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

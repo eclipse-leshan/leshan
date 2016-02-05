@@ -14,7 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.leshan.bootstrap.servlet;
+package org.eclipse.leshan.server.bootstrap.demo.servlet;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -26,9 +26,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.Charsets;
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.leshan.bootstrap.BootstrapStoreImpl;
-import org.eclipse.leshan.bootstrap.ConfigurationChecker.ConfigurationException;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
+import org.eclipse.leshan.server.bootstrap.demo.BootstrapStoreImpl;
+import org.eclipse.leshan.server.bootstrap.demo.ConfigurationChecker.ConfigurationException;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
