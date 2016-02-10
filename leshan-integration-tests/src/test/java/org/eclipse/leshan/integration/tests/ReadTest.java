@@ -29,7 +29,6 @@ import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class ReadTest {
@@ -51,8 +50,6 @@ public class ReadTest {
         helper.server.stop();
     }
 
-    // TODO we must the object TLV encoding
-    @Ignore
     @Test
     public void can_read_empty_object() throws InterruptedException {
         // read ACL object
@@ -66,8 +63,6 @@ public class ReadTest {
         assertTrue(object.getInstances().isEmpty());
     }
 
-    // TODO we must the object TLV encoding
-    @Ignore
     @Test
     public void can_read_object() throws InterruptedException {
         // read device object
