@@ -10,8 +10,8 @@
         <thead>
             <tr>
                 <th>Client Endpoint</th>
-                <th>Bootstrap</th>
-                <th>Device Management</th>
+                <th>LWM2M Bootstrap Server</th>
+                <th>LWM2M Server</th>
                 <th></th>
             </tr>
         </thead>

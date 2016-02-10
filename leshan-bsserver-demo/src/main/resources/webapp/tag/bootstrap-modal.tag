@@ -17,7 +17,7 @@
                         </div>
 
                         <div class="form-group" >
-                            <label for="dmUrl" class="col-sm-4 control-label">Device Management URL:</label>
+                            <label for="dmUrl" class="col-sm-4 control-label">LWM2M Server URL</label>
                             <div class="col-sm-8">
                                 <input class="form-control" id="dmUrl" placeholder={default_uri()}>
                             </div>
