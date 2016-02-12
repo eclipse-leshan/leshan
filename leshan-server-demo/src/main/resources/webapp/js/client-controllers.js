@@ -52,6 +52,11 @@ lwClientControllers.controller('ClientListCtrl', [
             $location.path('/clients/' + client.endpoint);
         };
 
+        // add function to show Firmware Update page
+        $scope.showFirmwareUpdate = function(client) {
+            $location.path('/clients/' + client.endpoint + '/fwupdate');
+        };
+
         // the tooltip message to display for a client (all standard attributes, plus additional ones)
         $scope.clientTooltip = function(client) {
             var standard = ["Lifetime: " + client.lifetime + "s",
@@ -250,4 +255,56 @@ lwClientControllers.controller('ClientDetailCtrl', [
                 $scope.coapLogsCollapsed = !$scope.coapLogsCollapsed;
             };
         });
+    }]);
+
+
+lwClientControllers.controller('ClientFwUpdateCtrl', [
+    '$scope',
+    '$location',
+    '$routeParams',
+    '$http',
+    'lwResources',
+    '$filter',
+    function($scope, $location, $routeParams, $http, lwResources,$filter) {
+        // update navbar
+        angular.element("#navbar").children().removeClass('active');
+        angular.element("#client-navlink").addClass('active');
+
+        // free resource when controller is destroyed
+        $scope.$on('$destroy', function(){
+            if ($scope.eventsource){
+                $scope.eventsource.close()
+            }
+        });
+
+        $scope.clientId = $routeParams.clientId;
+        
+        // listen for deregistration + fw update logs + coap logs
+        $scope.eventsource = new EventSource('event?ep=' + $routeParams.clientId);
+
+        
+        var deregisterCallback = function(msg) {
+            $scope.$apply(function() {
+                $scope.deregistered = true;
+            });
+        }
+        $scope.eventsource.addEventListener('DEREGISTRATION', deregisterCallback, false);
+        
+        $scope.coaplogs = [];
+        var coapLogCallback = function(msg) {
+            $scope.$apply(function() {
+                var log = JSON.parse(msg.data);
+                log.date = $filter('date')(new Date(log.timestamp), 'HH:mm:ss.sss');
+                console.log(log);
+                $scope.coaplogs.push(log);
+            });
+        };
+        $scope.eventsource.addEventListener('COAPLOG', coapLogCallback, false);
+
+        // coap logs hidden by default
+        $scope.coapLogsCollapsed = true;
+        $scope.toggleCoapLogs = function() {
+            $scope.coapLogsCollapsed = !$scope.coapLogsCollapsed;
+        };
+
     }]);

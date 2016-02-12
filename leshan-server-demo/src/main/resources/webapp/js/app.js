@@ -34,8 +34,9 @@ var leshanApp = angular.module('leshanApp',[
 
 leshanApp.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
     $routeProvider.
-        when('/clients',           { templateUrl : 'partials/client-list.html',   controller : 'ClientListCtrl' }).
-        when('/clients/:clientId', { templateUrl : 'partials/client-detail.html', controller : 'ClientDetailCtrl' }).
-        when('/security',          { templateUrl : 'partials/security-list.html', controller : 'SecurityCtrl' }).
+        when('/clients',                    { templateUrl : 'partials/client-list.html',     controller : 'ClientListCtrl' }).
+        when('/clients/:clientId',          { templateUrl : 'partials/client-detail.html',   controller : 'ClientDetailCtrl' }).
+        when('/clients/:clientId/fwupdate', { templateUrl : 'partials/client-fwupdate.html', controller : 'ClientFwUpdateCtrl' }).
+        when('/security',                   { templateUrl : 'partials/security-list.html',   controller : 'SecurityCtrl' }).
         otherwise({ redirectTo : '/clients' });
 }]);

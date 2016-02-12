@@ -1,0 +1,80 @@
+<div ng-if='!deregistered'>
+	<ol class="breadcrumb">
+  		<li><a href="#/clients/">Clients</a></li>
+  		<li class="active">{{ clientId }}</li>
+	</ol>
+	
+	<h4>Firmware Update</h4>
+
+	<hr>
+
+	<form class="form-horizontal">
+		<div class="form-group">
+			<label class="col-sm-3 control-label" for="packageUri">Download package URI</label>
+			<div class="col-sm-6"> 
+				<input class="form-control" id="packageUri" placeholder="http://package.bin">
+			</div>
+			<div class="col-sm-3"> 
+				<button type="submit" class="btn btn-default">Start update</button>
+			</div> 
+		</div>
+		
+	</form>
+
+	<hr>
+
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h3 class="panel-title">Progress</h3>
+		</div>
+		<div class="panel-body">plop</div>
+	</div>
+
+	<!-- CoAP logs -->
+	
+	<div class="coaplogs">
+		<div class="row">
+			<div class="col-md-11"></div>
+			<div class="col-md-1">
+				<button class="btn btn-default btn-xs coaplogs-button" ng-click="toggleCoapLogs()">CoAP messages</button>
+			</div>
+		</div> 
+		<div collapse="coapLogsCollapsed" class="coaplogs-panel">
+			<table class="table coaplogs-header">
+		        <thead>
+		            <tr>
+						<th class="col-md-1">Time</th>
+						<th class="col-md-1">CoAP Message</th>
+						<th class="col-md-1">MID</th>
+						<th class="col-md-1">Token</th>
+						<th class="col-md-4">Options</th>
+						<th class="col-md-4">Payload</th>
+		            </tr>
+		        </thead>
+		  	</table>
+			<div class="coaplogs-table">
+				<table class="table table-striped">
+				    <tbody>
+						<tr ng-repeat="log in coaplogs">
+							<td class="col-md-1">{{log.date}}</td>
+							<td class="col-md-1"><span class="glyphicon" ng-class="{'glyphicon-arrow-left' : !log.incoming, 'glyphicon-arrow-right' : log.incoming}" aria-hidden="true"></span>  {{log.type}}-{{log.code}}</td>
+							<td class="col-md-1">{{log.mId}}</td>
+							<td class="col-md-1">{{log.token}}</td>
+							<td class="col-md-4">{{log.options}}</td>
+							<td class="col-md-4">{{log.payload}}</td>
+						</tr>
+				    </tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+</div>
+
+<div ng-if='error'>
+	<div class="alert alert-danger">{{error}}</div>
+</div>
+
+<div ng-if='deregistered'>
+	<h4>Client <b>{{clientId}}</b> is no more registered.</h4>
+</div>
