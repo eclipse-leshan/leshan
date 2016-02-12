@@ -53,7 +53,8 @@ lwClientControllers.controller('ClientListCtrl', [
         };
 
         // add function to show Firmware Update page
-        $scope.showFirmwareUpdate = function(client) {
+        $scope.showFirmwareUpdate = function(client, event) {
+        	event.stopPropagation();
             $location.path('/clients/' + client.endpoint + '/fwupdate');
         };
 
@@ -275,9 +276,46 @@ lwClientControllers.controller('ClientFwUpdateCtrl', [
             if ($scope.eventsource){
                 $scope.eventsource.close()
             }
+            if ($scope.fweventsource){
+                $scope.fweventsource.close()
+            }
         });
 
         $scope.clientId = $routeParams.clientId;
+        
+       
+        // listen fw udpate notifications
+        $scope.fweventsource = new EventSource('api/fwupdate?ep=' + $routeParams.clientId);
+        
+        $scope.fwlogs = [];
+        var fwUpdateLog = function(msg) {
+            $scope.$apply(function() {
+            	console.log(msg);
+            	var log = JSON.parse(msg.data);
+                log.date = $filter('date')(new Date(log.date), 'HH:mm:ss.sss');
+                $scope.fwlogs.push(log);
+            });
+        }
+        $scope.fweventsource.addEventListener('FW_UPDATE_LOG', fwUpdateLog, false);
+        
+        
+        // add function to show Firmware Update page
+        $scope.startUpdate = function() {
+        	console.log("start Update");
+        	if ($scope.packageUri) {
+        		console.log("start Update");
+        	console.log($scope.packageUri);
+        		  $http({method: 'POST', url: "api/fwupdate/" + $routeParams.clientId, data: $scope.packageUri, headers:{'Content-Type': 'text/plain'}})
+        	        .error(function(data, status, headers, config) {
+        	            $scope.error = "Firmware update error for client " + $routeParams.clientId+" : "+ status + " " + data;  
+        	            console.error($scope.error);
+        	        })
+        	        .success(function(data, status, headers, config) {
+        	            console.log("youpi");
+        	        });
+            }
+        };
+        
         
         // listen for deregistration + fw update logs + coap logs
         $scope.eventsource = new EventSource('event?ep=' + $routeParams.clientId);
@@ -295,7 +333,6 @@ lwClientControllers.controller('ClientFwUpdateCtrl', [
             $scope.$apply(function() {
                 var log = JSON.parse(msg.data);
                 log.date = $filter('date')(new Date(log.timestamp), 'HH:mm:ss.sss');
-                console.log(log);
                 $scope.coaplogs.push(log);
             });
         };

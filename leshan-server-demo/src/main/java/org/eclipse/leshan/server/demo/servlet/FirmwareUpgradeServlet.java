@@ -15,10 +15,11 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.demo.servlet;
 
+import static org.eclipse.leshan.server.demo.servlet.FirmwareUpgradeServlet.UpdateState.*;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -49,10 +50,31 @@ import com.google.gson.GsonBuilder;
 
 public class FirmwareUpgradeServlet extends EventSourceServlet {
 
-    private static final int IDLE = 0;
-    private static final int DOWNLOADING = 1;
-    private static final int DOWNLOADED = 2;
-    private static final int UPDATING = 3;
+    /**
+     * Update state values (Resource 5.0.3)
+     */
+    public enum UpdateState {
+
+        IDLE(0L), //
+        DOWNLOADING(1L), //
+        DOWNLOADED(2L), //
+        UPDATING(3L); //
+
+        final long value;
+
+        private UpdateState(Long val) {
+            this.value = val;
+        }
+
+        static UpdateState fromValue(Object value) {
+            for (UpdateState u : values()) {
+                if (value.equals(u.value)) {
+                    return u;
+                }
+            }
+            return null;
+        }
+    }
 
     private static final long serialVersionUID = 1L;
 
@@ -67,7 +89,6 @@ public class FirmwareUpgradeServlet extends EventSourceServlet {
         this.server = server;
 
         GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.setDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
         this.gson = gsonBuilder.create();
     }
 
@@ -126,81 +147,94 @@ public class FirmwareUpgradeServlet extends EventSourceServlet {
             // Start Firmware update
             try {
                 // write package URI
-                sendLog(endpoint, "INFO", String.format("Writing package URI '%s' ...", packageURI.toString()));
+                sendLog(endpoint, "DEBUG", String.format("Writing package URI '%s'...", packageURI.toString()));
                 WriteResponse writePackageResp = server.send(client,
                         new WriteRequest(Mode.REPLACE, 5, 0, 1, packageURI.toString()));
                 if (writePackageResp.isSuccess()) {
-                    sendLog(endpoint, "INFO", String.format("Package URI writed."));
+                    sendLog(endpoint, "INFO", String.format("Package URI written"));
                 } else {
-                    sendLog(endpoint, "ERROR", String.format("Unable to write package URI: '%s' '%s'.",
-                            writePackageResp.getCode().toString(), writePackageResp.getErrorMessage()));
+                    sendLog(endpoint, "ERROR", String.format("Unable to write package URI: %s %s", writePackageResp
+                            .getCode().toString(), writePackageResp.getErrorMessage()));
                     return;
                 }
 
                 // Poll Firmware update State, wait for DOWNLOADED state
-                sendLog(endpoint, "INFO", String.format("Watching download state ..."));
+                sendLog(endpoint, "DEBUG", String.format("Watching download state..."));
                 boolean downloaded = false;
                 do {
                     Thread.sleep(2000); // sleep 2s.
                     ReadResponse readStateResp = server.send(client, new ReadRequest(5, 0, 3));
                     if (readStateResp.isSuccess()) {
                         Object state = ((LwM2mSingleResource) readStateResp.getContent()).getValue();
-                        sendLog(endpoint, "INFO", String.format("Current state '%d' ...", state));
-                        downloaded = state.equals(DOWNLOADED);
+                        sendLog(endpoint, "DEBUG", String.format("Current state: %s...", UpdateState.fromValue(state)));
+                        downloaded = state.equals(DOWNLOADED.value);
                     } else {
-                        sendLog(endpoint, "ERROR", String.format("Unable to read state: '%s' '%s'.", readStateResp
-                                .getCode().toString(), readStateResp.getErrorMessage()));
+                        sendLog(endpoint, "ERROR", String.format("Unable to read state: %s %s", readStateResp.getCode()
+                                .toString(), readStateResp.getErrorMessage()));
                         return;
                     }
                 } while (!downloaded);
-                sendLog(endpoint, "INFO", String.format("Package downloaded."));
+                sendLog(endpoint, "INFO", String.format("Package downloaded"));
 
                 // Ask for update
-                sendLog(endpoint, "INFO", String.format("Starting update ..."));
+                sendLog(endpoint, "DEBUG", String.format("Starting update..."));
                 ExecuteResponse execUpdateResp = server.send(client, new ExecuteRequest(5, 0, 2));
                 if (execUpdateResp.isSuccess()) {
+                    sendLog(endpoint, "INFO", String.format("Update started"));
                 } else {
-                    sendLog(endpoint, "ERROR", String.format("Unable to start update: '%s' '%s'.", execUpdateResp
-                            .getCode().toString(), execUpdateResp.getErrorMessage()));
+                    sendLog(endpoint, "ERROR", String.format("Unable to start update: %s %s", execUpdateResp.getCode()
+                            .toString(), execUpdateResp.getErrorMessage()));
                     return;
                 }
 
                 // Poll Firmware update State, wait for IDLE (success) or DOWNLOADED(failure) state
-                sendLog(endpoint, "INFO", String.format("Watching update state ..."));
+                sendLog(endpoint, "DEBUG", String.format("Watching update state..."));
                 boolean idle = false;
                 do {
                     Thread.sleep(2000); // sleep 2s.
                     ReadResponse readStateResp = server.send(client, new ReadRequest(5, 0, 3));
                     if (readStateResp.isSuccess()) {
                         Object state = ((LwM2mSingleResource) readStateResp.getContent()).getValue();
-                        if (state.equals(DOWNLOADED)) {
-                            sendLog(endpoint, "ERROR", String.format("Update failed: '%s' '%s'", readStateResp
-                                    .getCode().toString(), readStateResp.getErrorMessage()));
+                        if (state.equals(DOWNLOADED.value)) {
+                            sendLog(endpoint, "ERROR", String.format("Update failed: %s %s", readStateResp.getCode()
+                                    .toString(), readStateResp.getErrorMessage()));
                             return;
                         } else {
-                            sendLog(endpoint, "INFO", String.format("Current state '%d' ...", state));
-                            idle = state.equals(IDLE);
+                            sendLog(endpoint, "DEBUG",
+                                    String.format("Current state: %s...", UpdateState.fromValue(state)));
+                            idle = state.equals(IDLE.value);
                         }
                     } else {
-                        sendLog(endpoint, "ERROR", String.format("Unable to read state: '%s' '%s'.", readStateResp
-                                .getCode().toString(), readStateResp.getErrorMessage()));
+                        sendLog(endpoint, "ERROR", String.format("Unable to read state: %s %s", readStateResp.getCode()
+                                .toString(), readStateResp.getErrorMessage()));
                         return;
                     }
                 } while (!idle);
-                sendLog(endpoint, "SUCCESS", String.format("Firmware updated !"));
+
+                // read version
+                ReadResponse readVersionResp = server.send(client, new ReadRequest(3, 0, 3));
+                if (readVersionResp.isSuccess()) {
+                    Object version = ((LwM2mSingleResource) readVersionResp.getContent()).getValue();
+                    sendLog(endpoint, "INFO", String.format("Final firmware version: %s", version));
+                } else {
+                    sendLog(endpoint, "WARNING", String.format("Unable to read version: %s %s.", readVersionResp
+                            .getCode().toString(), readVersionResp.getErrorMessage()));
+                }
+
+                sendLog(endpoint, "SUCCESS", String.format("Firmware updated!"));
 
             } catch (InterruptedException e) {
-                sendLog(endpoint, "ERROR", String.format("Thread was interrupted ... '%s'", e.getMessage()));
+                sendLog(endpoint, "ERROR", String.format("Thread was interrupted... '%s'", e.getMessage()));
                 return;
             }
         }
     }
 
-    private synchronized void sendLog(String status, String message, String endpoint) {
+    private synchronized void sendLog(String endpoint, String status, String message) {
         for (FirmwareUpdateEventSource eventSource : eventSources) {
             if (eventSource.getEndpoint() == null || eventSource.getEndpoint().equals(endpoint)) {
                 eventSource.sentEvent(EVENT_FIRMWARE_UPDATE_LOG,
-                        gson.toJson(new FirmwareUpdateLog(status, message, new Date())));
+                        gson.toJson(new FirmwareUpdateLog(status, message, System.currentTimeMillis())));
             }
         }
     }
@@ -248,9 +282,9 @@ public class FirmwareUpgradeServlet extends EventSourceServlet {
 
         public String status;
         public String message;
-        public Date date;
+        public long date;
 
-        public FirmwareUpdateLog(String status, String message, Date date) {
+        public FirmwareUpdateLog(String status, String message, long date) {
             this.status = status;
             this.message = message;
             this.date = date;

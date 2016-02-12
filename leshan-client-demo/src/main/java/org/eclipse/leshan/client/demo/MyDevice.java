@@ -23,6 +23,8 @@ public class MyDevice extends BaseInstanceEnabler {
 
     private static final Logger LOG = LoggerFactory.getLogger(MyDevice.class);
 
+    String firmwareVersion = "1.0.0";
+
     public MyDevice() {
         // notify new date each 5 second
         Timer timer = new Timer();
@@ -107,7 +109,7 @@ public class MyDevice extends BaseInstanceEnabler {
     }
 
     private String getFirmwareVersion() {
-        return "1.0.0";
+        return firmwareVersion;
     }
 
     private long getErrorCode() {

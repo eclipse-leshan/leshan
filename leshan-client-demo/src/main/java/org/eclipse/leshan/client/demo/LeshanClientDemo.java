@@ -18,14 +18,8 @@
 
 package org.eclipse.leshan.client.demo;
 
-import static org.eclipse.leshan.LwM2mId.DEVICE;
-import static org.eclipse.leshan.LwM2mId.LOCATION;
-import static org.eclipse.leshan.LwM2mId.SECURITY;
-import static org.eclipse.leshan.LwM2mId.SERVER;
-import static org.eclipse.leshan.client.object.Security.noSec;
-import static org.eclipse.leshan.client.object.Security.noSecBootstap;
-import static org.eclipse.leshan.client.object.Security.psk;
-import static org.eclipse.leshan.client.object.Security.pskBootstrap;
+import static org.eclipse.leshan.LwM2mId.*;
+import static org.eclipse.leshan.client.object.Security.*;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -52,6 +46,8 @@ public class LeshanClientDemo {
     private static final Logger LOG = LoggerFactory.getLogger(LeshanClientDemo.class);
 
     private final static String DEFAULT_ENDPOINT = "LeshanClientDemo";
+    private final static MyDevice device = new MyDevice();
+    private final static MyFirmwareUpdate fwUpdate = new MyFirmwareUpdate(device);
     private final static MyLocation locationInstance = new MyLocation();
     private final static String USAGE = "java -jar leshan-client-demo.jar [OPTION]";
 
@@ -186,9 +182,10 @@ public class LeshanClientDemo {
                 initializer.setInstancesForObject(SERVER, new Server(123, 30, BindingMode.U, false));
             }
         }
-        initializer.setClassForObject(DEVICE, MyDevice.class);
+        initializer.setInstancesForObject(DEVICE, device);
+        initializer.setInstancesForObject(FIRMWARE, fwUpdate);
         initializer.setInstancesForObject(LOCATION, locationInstance);
-        List<LwM2mObjectEnabler> enablers = initializer.create(SECURITY, SERVER, DEVICE, LOCATION);
+        List<LwM2mObjectEnabler> enablers = initializer.create(SECURITY, SERVER, DEVICE, FIRMWARE, LOCATION);
 
         // Create client
         LeshanClientBuilder builder = new LeshanClientBuilder(endpoint);

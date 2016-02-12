@@ -48,6 +48,11 @@ code {
 	height: 60px;
 }
 
+.table > tbody > tr > td {
+     vertical-align: middle;
+}
+
+
 .navbar-default .navbar-nav>.active>a,
 .navbar-default .navbar-nav>.active>a:hover,
 .navbar-default .navbar-nav > .active > a:focus {
