@@ -43,6 +43,7 @@ import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.demo.servlet.ClientServlet;
 import org.eclipse.leshan.server.demo.servlet.EventServlet;
+import org.eclipse.leshan.server.demo.servlet.FirmwareUpgradeServlet;
 import org.eclipse.leshan.server.demo.servlet.ObjectSpecServlet;
 import org.eclipse.leshan.server.demo.servlet.SecurityServlet;
 import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
@@ -206,6 +207,9 @@ public class LeshanServerDemo {
 
         ServletHolder objectSpecServletHolder = new ServletHolder(new ObjectSpecServlet(lwServer.getModelProvider()));
         root.addServlet(objectSpecServletHolder, "/api/objectspecs/*");
+
+        ServletHolder firmwareUpdateServletHolder = new ServletHolder(new FirmwareUpgradeServlet(lwServer));
+        root.addServlet(firmwareUpdateServletHolder, "/api/fwupdate/*");
 
         // Start Jetty
         server.start();
