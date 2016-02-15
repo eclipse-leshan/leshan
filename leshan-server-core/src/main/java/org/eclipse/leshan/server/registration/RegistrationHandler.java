@@ -16,7 +16,6 @@
 package org.eclipse.leshan.server.registration;
 
 import java.net.InetSocketAddress;
-import java.security.PublicKey;
 import java.util.Date;
 
 import org.eclipse.leshan.core.request.DeregisterRequest;
@@ -29,9 +28,9 @@ import org.eclipse.leshan.core.response.UpdateResponse;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.security.SecurityCheck;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.SecurityStore;
-import org.eclipse.leshan.util.Hex;
 import org.eclipse.leshan.util.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -145,74 +144,7 @@ public class RegistrationHandler {
     private boolean isAuthorized(String lwM2mEndPointName, Identity clientIdentity) {
         // do we have security information for this client?
         SecurityInfo expectedSecurityInfo = securityStore.getByEndpoint(lwM2mEndPointName);
-
-        // if this is a secure end-point, we must check that the registering client is using the right identity.
-        if (clientIdentity.isSecure()) {
-            if (expectedSecurityInfo == null) {
-                LOG.debug("A client {} without security info try to connect through the secure endpont",
-                        lwM2mEndPointName);
-                return false;
-            } else if (clientIdentity.isPSK()) {
-                // Manage PSK authentication
-                // ----------------------------------------------------
-                String pskIdentity = clientIdentity.getPskIdentity();
-                LOG.debug("Registration request received using the secure endpoint with identity {}", pskIdentity);
-
-                if (pskIdentity == null || !pskIdentity.equals(expectedSecurityInfo.getIdentity())) {
-                    LOG.warn("Invalid identity for client {}: expected '{}' but was '{}'", lwM2mEndPointName,
-                            expectedSecurityInfo.getIdentity(), pskIdentity);
-                    return false;
-                } else {
-                    LOG.debug("authenticated client {} using DTLS PSK", lwM2mEndPointName);
-                }
-            } else if (clientIdentity.isRPK()) {
-                // Manage RPK authentication
-                // ----------------------------------------------------
-                PublicKey publicKey = clientIdentity.getRawPublicKey();
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Registration request received using the secure endpoint with rpk {}",
-                            Hex.encodeHexString(publicKey.getEncoded()));
-                }
-
-                if (publicKey == null || !publicKey.equals(expectedSecurityInfo.getRawPublicKey())) {
-                    if (LOG.isWarnEnabled()) {
-                        LOG.warn("Invalid rpk for client {}: expected \n'{}'\n but was \n'{}'", lwM2mEndPointName,
-                                Hex.encodeHexString(expectedSecurityInfo.getRawPublicKey().getEncoded()),
-                                Hex.encodeHexString(publicKey.getEncoded()));
-                    }
-                    return false;
-                } else {
-                    LOG.debug("authenticated client {} using DTLS RPK", lwM2mEndPointName);
-                }
-            } else if (clientIdentity.isX509()) {
-                // Manage X509 certificate authentication
-                // ----------------------------------------------------
-                String x509CommonName = clientIdentity.getX509CommonName();
-                LOG.debug("Registration request received using the secure endpoint with X509 identity {}",
-                        x509CommonName);
-
-                if (!expectedSecurityInfo.useX509Cert()) {
-                    LOG.warn("Client {} is not supposed to use X509 certificate to authenticate", lwM2mEndPointName);
-                    return false;
-                }
-
-                if (!x509CommonName.equals(lwM2mEndPointName)) {
-                    LOG.warn("Invalid certificate common name for client {}: expected \n'{}'\n but was \n'{}'",
-                            lwM2mEndPointName, lwM2mEndPointName, x509CommonName);
-                    return false;
-                } else {
-                    LOG.debug("authenticated client {} using DTLS X509 certificates", lwM2mEndPointName);
-                }
-            } else {
-                LOG.warn("Unable to authenticate client {}: unknown authentication mode.", lwM2mEndPointName);
-                return false;
-            }
-        } else {
-            if (expectedSecurityInfo != null) {
-                LOG.warn("client {} must connect using DTLS ", lwM2mEndPointName);
-                return false;
-            }
-        }
-        return true;
+        return SecurityCheck.checkSecurityInfo(lwM2mEndPointName, clientIdentity, expectedSecurityInfo);
     }
+
 }
