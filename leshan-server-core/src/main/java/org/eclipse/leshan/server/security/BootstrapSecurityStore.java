@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2015 Sierra Wireless and others.
+ * Copyright (c) 2016 Sierra Wireless and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -13,30 +13,25 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.bootstrap;
+package org.eclipse.leshan.server.security;
 
-import org.eclipse.leshan.server.security.BootstrapSecurityStore;
+import java.util.List;
 
-/**
- * 
- * A Lightweight M2M server in charge of handling device bootstrap on the /bs resource.
- *
- */
-public interface LwM2mBootstrapServer {
+public interface BootstrapSecurityStore {
 
     /**
-     * Access to the bootstrap configuration store. It's used for sending configuration to the devices initiating a
-     * bootstrap.
+     * Returns all acceptable security information for a given end-point.
+     * 
+     * @param endpoint the client end-point
+     * @return the security information of <code>null</code> if not found.
      */
-    BootstrapStore getBoostrapStore();
+    List<SecurityInfo> getAllByEndpoint(String endpoint);
 
     /**
-     * security store used for DTLS authentication on the bootstrap ressource.
+     * Returns the security information for an identity.
+     * 
+     * @param identity of the client
+     * @return the security information of <code>null</code> if not found.
      */
-    BootstrapSecurityStore getBootstrapSecurityStore();
-
-    void start();
-
-    void stop();
-
+    SecurityInfo getByIdentity(String identity);
 }

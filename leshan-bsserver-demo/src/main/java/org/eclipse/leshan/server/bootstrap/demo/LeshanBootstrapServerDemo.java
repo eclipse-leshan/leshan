@@ -30,7 +30,9 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.BootstrapServlet;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LwM2mBootstrapServerImpl;
-import org.eclipse.leshan.server.security.SecurityStore;
+import org.eclipse.leshan.server.impl.BootstrapAuthServiceImpl;
+import org.eclipse.leshan.server.security.BootstrapAuthService;
+import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -136,11 +138,12 @@ public class LeshanBootstrapServerDemo {
 
         // Prepare and start bootstrap server
         BootstrapStoreImpl bsStore = new BootstrapStoreImpl();
-        SecurityStore securityStore = new BootstrapSecurityStore(bsStore);
+        BootstrapSecurityStore securityStore = new BootstrapSecurityStoreImpl(bsStore);
+        BootstrapAuthService bsAuthService = new BootstrapAuthServiceImpl(securityStore);
 
         LwM2mBootstrapServerImpl bsServer = new LwM2mBootstrapServerImpl(
                 new InetSocketAddress(localAddress, localPort), new InetSocketAddress(secureLocalAddress,
-                        secureLocalPort), bsStore, securityStore);
+                        secureLocalPort), bsStore, securityStore, bsAuthService);
         bsServer.start();
 
         // Now prepare and start jetty

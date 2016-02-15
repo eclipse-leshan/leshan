@@ -26,7 +26,8 @@ import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.server.bootstrap.BootstrapStore;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapServer;
-import org.eclipse.leshan.server.security.SecurityStore;
+import org.eclipse.leshan.server.security.BootstrapAuthService;
+import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,21 +50,22 @@ public class LwM2mBootstrapServerImpl implements LwM2mBootstrapServer {
     private final CoapEndpoint secureEndpoint;
 
     private final BootstrapStore bsStore;
+    private final BootstrapSecurityStore bsSecurityStore;
 
-    private final SecurityStore securityStore;
-
-    public LwM2mBootstrapServerImpl(BootstrapStore bsStore, SecurityStore securityStore) {
+    public LwM2mBootstrapServerImpl(BootstrapStore bsStore, BootstrapSecurityStore securityStore,
+            BootstrapAuthService bsAuthService) {
         this(new InetSocketAddress((InetAddress) null, PORT), new InetSocketAddress((InetAddress) null, PORT_DTLS),
-                bsStore, securityStore);
+                bsStore, securityStore, bsAuthService);
 
     }
 
     public LwM2mBootstrapServerImpl(InetSocketAddress localAddress, InetSocketAddress localAddressSecure,
-            BootstrapStore bsStore, SecurityStore securityStore) {
+            BootstrapStore bsStore, BootstrapSecurityStore bsSecurityStore, BootstrapAuthService bsAuthService) {
         Validate.notNull(bsStore, "bootstrap store must not be null");
 
         this.bsStore = bsStore;
-        this.securityStore = securityStore;
+        this.bsSecurityStore = bsSecurityStore;
+
         // init CoAP server
         coapServer = new CoapServer();
         nonSecureEndpoint = new CoapEndpoint(localAddress);
@@ -71,24 +73,25 @@ public class LwM2mBootstrapServerImpl implements LwM2mBootstrapServer {
 
         // init DTLS server
         Builder builder = new DtlsConnectorConfig.Builder(localAddressSecure);
-        builder.setPskStore(new LwM2mPskStore(this.securityStore));
+        builder.setPskStore(new LwM2mBootstrapPskStore(this.bsSecurityStore));
 
         secureEndpoint = new CoapEndpoint(new DTLSConnector(builder.build()), NetworkConfig.getStandard());
         coapServer.addEndpoint(secureEndpoint);
 
         // define /bs ressource
-        BootstrapResource bsResource = new BootstrapResource(bsStore);
+
+        BootstrapResource bsResource = new BootstrapResource(bsStore, bsAuthService);
         coapServer.add(bsResource);
+    }
+
+    @Override
+    public BootstrapSecurityStore getBootstrapSecurityStore() {
+        return bsSecurityStore;
     }
 
     @Override
     public BootstrapStore getBoostrapStore() {
         return bsStore;
-    }
-
-    @Override
-    public SecurityStore getSecurityStore() {
-        return securityStore;
     }
 
     /**

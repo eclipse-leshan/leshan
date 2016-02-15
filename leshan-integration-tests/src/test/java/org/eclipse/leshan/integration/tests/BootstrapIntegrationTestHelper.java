@@ -26,14 +26,16 @@ import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
 import org.eclipse.leshan.server.bootstrap.BootstrapStore;
 import org.eclipse.leshan.server.bootstrap.SecurityMode;
 import org.eclipse.leshan.server.californium.impl.LwM2mBootstrapServerImpl;
+import org.eclipse.leshan.server.security.BootstrapAuthService;
+import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
-import org.eclipse.leshan.server.security.SecurityStore;
 
 /**
  * Helper for running a server and executing a client against it.
@@ -76,20 +78,27 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
                 return bsConfig;
             }
         };
-        SecurityStore securityStore = new SecurityStore() {
+        BootstrapSecurityStore securityStore = new BootstrapSecurityStore() {
             @Override
             public SecurityInfo getByIdentity(String identity) {
                 return null;
             }
 
             @Override
-            public SecurityInfo getByEndpoint(String endpoint) {
+            public List<SecurityInfo> getAllByEndpoint(String endpoint) {
                 return null;
             }
         };
 
+        BootstrapAuthService bsAuthService = new BootstrapAuthService() {
+            @Override
+            public boolean authenticate(String endpoint, Identity clientIdentity) {
+                return true;
+            }
+        };
+
         bootstrapServer = new LwM2mBootstrapServerImpl(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0),
-                new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), bsStore, securityStore);
+                new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), bsStore, securityStore, bsAuthService);
     }
 
     public void createClient() {

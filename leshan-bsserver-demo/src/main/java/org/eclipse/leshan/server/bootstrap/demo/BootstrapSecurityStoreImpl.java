@@ -16,23 +16,24 @@
 package org.eclipse.leshan.server.bootstrap.demo;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.Charsets;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
-import org.eclipse.leshan.server.bootstrap.SecurityMode;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
+import org.eclipse.leshan.server.bootstrap.SecurityMode;
+import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
-import org.eclipse.leshan.server.security.SecurityStore;
 
 /**
  * A DTLS security store using the provisioned bootstrap information for finding the DTLS/PSK credentials.
  */
-public class BootstrapSecurityStore implements SecurityStore {
+public class BootstrapSecurityStoreImpl implements BootstrapSecurityStore {
 
     private final BootstrapStoreImpl bsStore;
 
-    public BootstrapSecurityStore(BootstrapStoreImpl bsStore) {
+    public BootstrapSecurityStoreImpl(BootstrapStoreImpl bsStore) {
         this.bsStore = bsStore;
     }
 
@@ -40,10 +41,12 @@ public class BootstrapSecurityStore implements SecurityStore {
     public SecurityInfo getByIdentity(String identity) {
         byte[] identityBytes = identity.getBytes(Charsets.UTF_8);
         for (Map.Entry<String, BootstrapConfig> e : bsStore.getBootstrapConfigs().entrySet()) {
-            for (Map.Entry<Integer, BootstrapConfig.ServerSecurity> ec : e.getValue().security.entrySet()) {
-                if (ec.getValue().bootstrapServer && ec.getValue().securityMode == SecurityMode.PSK
-                        && Arrays.equals(ec.getValue().publicKeyOrId, identityBytes)) {
-                    return SecurityInfo.newPreSharedKeyInfo(e.getKey(), identity, ec.getValue().secretKey);
+            BootstrapConfig bsConfig = e.getValue();
+            for (Map.Entry<Integer, BootstrapConfig.ServerSecurity> ec : bsConfig.security.entrySet()) {
+                ServerSecurity serverSecurity = ec.getValue();
+                if (serverSecurity.bootstrapServer && serverSecurity.securityMode == SecurityMode.PSK
+                        && Arrays.equals(serverSecurity.publicKeyOrId, identityBytes)) {
+                    return SecurityInfo.newPreSharedKeyInfo(e.getKey(), identity, serverSecurity.secretKey);
                 }
             }
         }
@@ -51,17 +54,20 @@ public class BootstrapSecurityStore implements SecurityStore {
     }
 
     @Override
-    public SecurityInfo getByEndpoint(String endpoint) {
-        BootstrapConfig bootstrap = bsStore.getBootstrap(endpoint);
+    public List<SecurityInfo> getAllByEndpoint(String endpoint) {
 
-        for (Map.Entry<Integer, BootstrapConfig.ServerSecurity> e : bootstrap.security.entrySet()) {
+        BootstrapConfig bsConfig = bsStore.getBootstrap(endpoint);
+
+        for (Map.Entry<Integer, BootstrapConfig.ServerSecurity> e : bsConfig.security.entrySet()) {
             ServerSecurity value = e.getValue();
             if (value.bootstrapServer && value.securityMode == SecurityMode.PSK) {
                 // got it!
-                return SecurityInfo.newPreSharedKeyInfo(endpoint, new String(value.publicKeyOrId, Charsets.UTF_8),
-                        value.secretKey);
+                SecurityInfo securityInfo = SecurityInfo.newPreSharedKeyInfo(endpoint, new String(value.publicKeyOrId,
+                        Charsets.UTF_8), value.secretKey);
+                return Arrays.asList(securityInfo);
             }
         }
         return null;
+
     }
 }
