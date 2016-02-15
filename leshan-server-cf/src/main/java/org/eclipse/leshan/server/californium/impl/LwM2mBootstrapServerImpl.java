@@ -26,6 +26,7 @@ import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.server.bootstrap.BootstrapStore;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapServer;
+import org.eclipse.leshan.server.security.BootstrapAuthService;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
@@ -51,14 +52,15 @@ public class LwM2mBootstrapServerImpl implements LwM2mBootstrapServer {
     private final BootstrapStore bsStore;
     private final BootstrapSecurityStore bsSecurityStore;
 
-    public LwM2mBootstrapServerImpl(BootstrapStore bsStore, BootstrapSecurityStore securityStore) {
+    public LwM2mBootstrapServerImpl(BootstrapStore bsStore, BootstrapSecurityStore securityStore,
+            BootstrapAuthService bsAuthService) {
         this(new InetSocketAddress((InetAddress) null, PORT), new InetSocketAddress((InetAddress) null, PORT_DTLS),
-                bsStore, securityStore);
+                bsStore, securityStore, bsAuthService);
 
     }
 
     public LwM2mBootstrapServerImpl(InetSocketAddress localAddress, InetSocketAddress localAddressSecure,
-            BootstrapStore bsStore, BootstrapSecurityStore bsSecurityStore) {
+            BootstrapStore bsStore, BootstrapSecurityStore bsSecurityStore, BootstrapAuthService bsAuthService) {
         Validate.notNull(bsStore, "bootstrap store must not be null");
 
         this.bsStore = bsStore;
@@ -78,7 +80,7 @@ public class LwM2mBootstrapServerImpl implements LwM2mBootstrapServer {
 
         // define /bs ressource
 
-        BootstrapResource bsResource = new BootstrapResource(bsStore);
+        BootstrapResource bsResource = new BootstrapResource(bsStore, bsAuthService);
         coapServer.add(bsResource);
     }
 
