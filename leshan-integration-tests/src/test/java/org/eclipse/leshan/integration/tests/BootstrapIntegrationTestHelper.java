@@ -32,8 +32,8 @@ import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
 import org.eclipse.leshan.server.bootstrap.BootstrapStore;
 import org.eclipse.leshan.server.bootstrap.SecurityMode;
 import org.eclipse.leshan.server.californium.impl.LwM2mBootstrapServerImpl;
+import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
-import org.eclipse.leshan.server.security.SecurityStore;
 
 /**
  * Helper for running a server and executing a client against it.
@@ -76,14 +76,14 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
                 return bsConfig;
             }
         };
-        SecurityStore securityStore = new SecurityStore() {
+        BootstrapSecurityStore securityStore = new BootstrapSecurityStore() {
             @Override
             public SecurityInfo getByIdentity(String identity) {
                 return null;
             }
 
             @Override
-            public SecurityInfo getByEndpoint(String endpoint) {
+            public List<SecurityInfo> getAllByEndpoint(String endpoint) {
                 return null;
             }
         };
