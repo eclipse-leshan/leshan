@@ -18,7 +18,7 @@ package org.eclipse.leshan.server.security;
 import org.eclipse.leshan.core.request.Identity;
 
 /**
- * Interface for the authentication of a device trying to bootstrap.
+ * Authentication of a device trying to bootstrap. Allows you to reject a device using custom business rules.
  */
 public interface BootstrapAuthService {
     /**
@@ -26,7 +26,7 @@ public interface BootstrapAuthService {
      * 
      * @param endpoint
      * @param clientIdentity typically extracted from LWM2M Exchange
-     * @return
+     * @return <code>false</code> for declining bootstrap authorization
      */
     public boolean authenticate(String endpoint, Identity clientIdentity);
 }

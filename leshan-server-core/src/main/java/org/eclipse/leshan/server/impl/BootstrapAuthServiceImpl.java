@@ -23,6 +23,9 @@ import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityCheck;
 import org.eclipse.leshan.server.security.SecurityInfo;
 
+/**
+ * Authorize for bootstrap using the security information of a {@link BootstrapSecurityStore}
+ */
 public class BootstrapAuthServiceImpl implements BootstrapAuthService {
 
     private BootstrapSecurityStore bsSecurityStore;
