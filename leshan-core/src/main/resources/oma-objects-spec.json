@@ -1627,7 +1627,7 @@
       {
         "id": 5604,
         "name": "Max Range Value",
-        "operations": "E",
+        "operations": "R",
         "instancetype": "single",
         "mandatory": false,
         "type": "float",
