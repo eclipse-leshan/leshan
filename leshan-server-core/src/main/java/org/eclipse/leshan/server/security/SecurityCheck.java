@@ -38,26 +38,24 @@ public class SecurityCheck {
      * 
      */
     public static boolean checkSecurityInfos(String endpoint, Identity clientIdentity, List<SecurityInfo> securityInfos) {
-
-        // Client is presenting itself as not secure, but we have known Security info ;
-        // we must refuse it.
-        if (!clientIdentity.isSecure() && securityInfos != null && !securityInfos.isEmpty()) {
+        // if this is a secure end-point, we must check that the registering client is using the right identity.
+        if (clientIdentity.isSecure()) {
+            if (securityInfos == null || securityInfos.isEmpty()) {
+                LOG.warn("A client {} without security info try to connect through the secure endpont", endpoint);
+                return false;
+            } else {
+                for (SecurityInfo securityInfo : securityInfos) {
+                    if (checkSecurityInfo(endpoint, clientIdentity, securityInfo)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        } else if (securityInfos != null && !securityInfos.isEmpty()) {
             LOG.warn("client {} must connect using DTLS ", endpoint);
             return false;
         }
-
-        if (clientIdentity.isSecure() && (securityInfos == null || securityInfos.isEmpty())) {
-            LOG.warn("A client {} without security info try to connect through the secure endpont", endpoint);
-            return false;
-        }
-
-        for (SecurityInfo securityInfo : securityInfos) {
-            if (checkSecurityInfo(endpoint, clientIdentity, securityInfo)) {
-                return true;
-            }
-        }
-        return false;
-
+        return true;
     }
 
     /**

@@ -18,6 +18,7 @@ package org.eclipse.leshan.integration.tests;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.leshan.LwM2mId;
@@ -26,16 +27,18 @@ import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
-import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
 import org.eclipse.leshan.server.bootstrap.BootstrapStore;
 import org.eclipse.leshan.server.bootstrap.SecurityMode;
 import org.eclipse.leshan.server.californium.impl.LwM2mBootstrapServerImpl;
+import org.eclipse.leshan.server.impl.BootstrapAuthServiceImpl;
 import org.eclipse.leshan.server.security.BootstrapAuthService;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
+import org.eclipse.leshan.util.Charsets;
+import org.eclipse.leshan.util.Hex;
 
 /**
  * Helper for running a server and executing a client against it.
@@ -43,9 +46,13 @@ import org.eclipse.leshan.server.security.SecurityInfo;
  */
 public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
 
+    // public static final String SECURE_ENDPOINT_IDENTIFIER = "secureclient";
+    public static final String SECURE_PSK_ID = "Client_identity";
+    public static final byte[] SECURE_PSK_KEY = Hex.decodeHex("73656372657450534b".toCharArray());
+
     LwM2mBootstrapServerImpl bootstrapServer;
 
-    public void createBootstrapServer() {
+    public void createBootstrapServer(BootstrapSecurityStore securityStore) {
 
         BootstrapStore bsStore = new BootstrapStore() {
             @Override
@@ -78,7 +85,95 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
                 return bsConfig;
             }
         };
-        BootstrapSecurityStore securityStore = new BootstrapSecurityStore() {
+
+        if (securityStore == null) {
+            securityStore = dummyBsSecurityStore();
+        }
+
+        BootstrapAuthService bsAuthService = new BootstrapAuthServiceImpl(securityStore);
+
+        bootstrapServer = new LwM2mBootstrapServerImpl(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0),
+                new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), bsStore, securityStore, bsAuthService);
+    }
+
+    public void createClient() {
+        ObjectsInitializer initializer = new ObjectsInitializer();
+
+        // set only the bootstrap server instance (security)
+        String bsUrl = "coap://" + bootstrapServer.getNonSecureAddress().getHostString() + ":"
+                + bootstrapServer.getNonSecureAddress().getPort();
+
+        Security security = new Security(bsUrl, true, 3, new byte[0], new byte[0], new byte[0], 12345);
+
+        initializer.setInstancesForObject(LwM2mId.SECURITY, security);
+
+        initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan",
+                IntegrationTestHelper.MODEL_NUMBER, "12345", "U"));
+        List<LwM2mObjectEnabler> objects = initializer.createMandatory();
+        objects.add(initializer.create(2));
+
+        LeshanClientBuilder builder = new LeshanClientBuilder(IntegrationTestHelper.ENDPOINT_IDENTIFIER);
+        builder.setObjects(objects);
+        client = builder.build();
+    }
+
+    public void createPSKClient(String pskIdentity, byte[] pskKey) {
+        ObjectsInitializer initializer = new ObjectsInitializer();
+
+        String bsUrl = "coaps://" + bootstrapServer.getSecureAddress().getHostString() + ":"
+                + bootstrapServer.getSecureAddress().getPort();
+
+        byte[] pskId = pskIdentity.getBytes(Charsets.UTF_8);
+
+        Security security = Security.pskBootstrap(bsUrl, 42, pskId, pskKey);
+
+        initializer.setInstancesForObject(LwM2mId.SECURITY, security);
+
+        initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan",
+                IntegrationTestHelper.MODEL_NUMBER, "12345", "U"));
+        List<LwM2mObjectEnabler> objects = initializer.createMandatory();
+        objects.add(initializer.create(2));
+
+        LeshanClientBuilder builder = new LeshanClientBuilder(ENDPOINT_IDENTIFIER);
+        builder.setObjects(objects);
+        client = builder.build();
+    }
+
+    public static BootstrapSecurityStore bsSecurityStore() {
+
+        return new BootstrapSecurityStore() {
+            @Override
+            public SecurityInfo getByIdentity(String identity) {
+                if (BootstrapIntegrationTestHelper.SECURE_PSK_ID.equals(identity)) {
+                    return pskSecurityInfo();
+                } else {
+                    return null;
+                }
+            }
+
+            @Override
+            public List<SecurityInfo> getAllByEndpoint(String endpoint) {
+                if (IntegrationTestHelper.ENDPOINT_IDENTIFIER.equals(endpoint)) {
+                    SecurityInfo info = pskSecurityInfo();
+                    return Arrays.asList(info);
+                } else {
+                    return Arrays.asList();
+                }
+
+            }
+
+        };
+    }
+
+    public static SecurityInfo pskSecurityInfo() {
+        SecurityInfo info = SecurityInfo.newPreSharedKeyInfo(BootstrapIntegrationTestHelper.ENDPOINT_IDENTIFIER,
+                BootstrapIntegrationTestHelper.SECURE_PSK_ID, BootstrapIntegrationTestHelper.SECURE_PSK_KEY);
+        return info;
+    }
+
+    private BootstrapSecurityStore dummyBsSecurityStore() {
+        return new BootstrapSecurityStore() {
+
             @Override
             public SecurityInfo getByIdentity(String identity) {
                 return null;
@@ -89,35 +184,6 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
                 return null;
             }
         };
-
-        BootstrapAuthService bsAuthService = new BootstrapAuthService() {
-            @Override
-            public boolean authenticate(String endpoint, Identity clientIdentity) {
-                return true;
-            }
-        };
-
-        bootstrapServer = new LwM2mBootstrapServerImpl(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0),
-                new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), bsStore, securityStore, bsAuthService);
-    }
-
-    public void createClient() {
-        ObjectsInitializer initializer = new ObjectsInitializer();
-
-        // set only the bootstrap server instance (security)
-        initializer.setInstancesForObject(LwM2mId.SECURITY, new Security("coap://"
-                + bootstrapServer.getNonSecureAddress().getHostString() + ":"
-                + bootstrapServer.getNonSecureAddress().getPort(), true, 3, new byte[0], new byte[0], new byte[0],
-                12345));
-
-        initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan",
-                IntegrationTestHelper.MODEL_NUMBER, "12345", "U"));
-        List<LwM2mObjectEnabler> objects = initializer.createMandatory();
-        objects.add(initializer.create(2));
-
-        LeshanClientBuilder builder = new LeshanClientBuilder(IntegrationTestHelper.ENDPOINT_IDENTIFIER);
-        builder.setObjects(objects);
-        client = builder.build();
     }
 
 }

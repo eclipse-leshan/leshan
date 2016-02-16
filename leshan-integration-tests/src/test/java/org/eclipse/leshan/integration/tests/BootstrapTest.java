@@ -15,9 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests;
 
-import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.ENDPOINT_IDENTIFIER;
 import static org.junit.Assert.*;
 
+import org.eclipse.leshan.util.Hex;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,16 +32,11 @@ public class BootstrapTest {
         helper.createServer();
         helper.server.start();
 
-        // Bootstrap server
-        helper.createBootstrapServer();
-        helper.bootstrapServer.start();
-
-        helper.createClient();
-        helper.client.start();
     }
 
     @After
     public void stop() {
+
         helper.client.stop();
         helper.bootstrapServer.stop();
         helper.server.stop();
@@ -49,10 +44,50 @@ public class BootstrapTest {
 
     @Test
     public void bootstrap() {
-        helper.waitForRegistration(2);
+        // Bootstrap server
+        helper.createBootstrapServer(null);
+        helper.bootstrapServer.start();
+
+        helper.createClient();
+        helper.client.start();
+
+        helper.waitForRegistration(1);
 
         // check the client is registered
         assertEquals(1, helper.server.getClientRegistry().allClients().size());
-        assertNotNull(helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER));
+        assertNotNull(helper.server.getClientRegistry().get(BootstrapIntegrationTestHelper.ENDPOINT_IDENTIFIER));
     }
+
+    @Test
+    public void bootstrapSecure() {
+
+        // Bootstrap server
+        helper.createBootstrapServer(BootstrapIntegrationTestHelper.bsSecurityStore());
+        helper.bootstrapServer.start();
+
+        helper.createPSKClient("Client_identity", Hex.decodeHex("73656372657450534b".toCharArray()));
+        helper.client.start();
+
+        helper.waitForRegistration(1);
+
+        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+        assertNotNull(helper.server.getClientRegistry().get(IntegrationTestHelper.ENDPOINT_IDENTIFIER));
+    }
+
+    @Test
+    public void bootstrapSecureWithBadCredentials() {
+
+        // Bootstrap server
+        helper.createBootstrapServer(BootstrapIntegrationTestHelper.bsSecurityStore());
+        helper.bootstrapServer.start();
+
+        helper.createPSKClient("Client_identity", Hex.decodeHex("010101010101010101".toCharArray()));
+        helper.client.start();
+
+        helper.waitForRegistration(1);
+
+        assertEquals(0, helper.server.getClientRegistry().allClients().size());
+        assertNull(helper.server.getClientRegistry().get(IntegrationTestHelper.ENDPOINT_IDENTIFIER));
+    }
+
 }
