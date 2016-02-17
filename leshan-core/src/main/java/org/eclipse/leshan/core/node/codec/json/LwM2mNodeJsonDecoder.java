@@ -75,8 +75,9 @@ public class LwM2mNodeJsonDecoder {
     private static Map<Integer, LwM2mResource> parseJsonPayLoadLwM2mResources(JsonRootObject jsonObject,
             LwM2mPath path, LwM2mModel model) throws InvalidValueException {
         Map<Integer, LwM2mResource> lwM2mResourceMap = new HashMap<>();
-        Map<Integer, Map<Integer, Object>> multiResourceMap = new HashMap<>();
+        Map<Integer, Map<Integer, JsonArrayEntry>> multiResourceMap = new HashMap<>();
 
+        // we does not support base name for now
         if (jsonObject.getBaseName() != null && !jsonObject.getBaseName().isEmpty()) {
             throw new UnsupportedOperationException("Basename support is not implemented.");
         }
@@ -86,35 +87,38 @@ public class LwM2mNodeJsonDecoder {
             String[] resourcePath = resourceElt.getName().split("/");
             Integer resourceId = Integer.valueOf(resourcePath[0]);
 
-            if (!multiResourceMap.isEmpty() && multiResourceMap.get(resourceId) != null) {
-                multiResourceMap.get(resourceId).put(Integer.valueOf(resourcePath[1]), resourceElt.getResourceValue());
+            Map<Integer, JsonArrayEntry> multiResource = multiResourceMap.get(resourceId);
+            if (multiResource != null) {
+                multiResource.put(Integer.valueOf(resourcePath[1]), resourceElt);
                 continue;
             }
             if (resourcePath.length > 1) {
                 // multi resource
                 // store multi resource values in a map
-                Map<Integer, Object> values = new HashMap<>();
-                values.put(Integer.valueOf(resourcePath[1]), resourceElt.getResourceValue());
-                multiResourceMap.put(resourceId, values);
+                Map<Integer, JsonArrayEntry> jsonEntries = new HashMap<>();
+                jsonEntries.put(Integer.valueOf(resourcePath[1]), resourceElt);
+                multiResourceMap.put(resourceId, jsonEntries);
             } else {
                 // single resource
                 LwM2mPath rscPath = new LwM2mPath(path.getObjectId(), path.getObjectInstanceId(), resourceId);
-                Type expectedType = getResourceType(rscPath, model);
+                Type expectedType = getResourceType(rscPath, model, resourceElt);
                 LwM2mResource res = LwM2mSingleResource.newResource(resourceId,
                         parseJsonValue(resourceElt.getResourceValue(), expectedType, rscPath), expectedType);
                 lwM2mResourceMap.put(resourceId, res);
             }
         }
 
-        for (Map.Entry<Integer, Map<Integer, Object>> entry : multiResourceMap.entrySet()) {
+        for (Map.Entry<Integer, Map<Integer, JsonArrayEntry>> entry : multiResourceMap.entrySet()) {
             Integer key = entry.getKey();
-            Map<Integer, Object> values = entry.getValue();
+            Map<Integer, JsonArrayEntry> jsonEntries = entry.getValue();
 
-            if (values != null && !values.isEmpty()) {
+            if (jsonEntries != null && !jsonEntries.isEmpty()) {
                 LwM2mPath rscPath = new LwM2mPath(path.getObjectId(), path.getObjectInstanceId(), key);
-                Type expectedType = getResourceType(rscPath, model);
-                for (Entry<Integer, Object> e : values.entrySet()) {
-                    values.put(e.getKey(), parseJsonValue(e.getValue(), expectedType, rscPath));
+                Type expectedType = getResourceType(rscPath, model, jsonEntries.values().iterator().next());
+                Map<Integer, Object> values = new HashMap<>();
+                for (Entry<Integer, JsonArrayEntry> e : jsonEntries.entrySet()) {
+
+                    values.put(e.getKey(), parseJsonValue(e.getValue().getResourceValue(), expectedType, rscPath));
                 }
                 LwM2mResource res = LwM2mMultipleResource.newResource(key, values, expectedType);
                 lwM2mResourceMap.put(key, res);
@@ -154,11 +158,15 @@ public class LwM2mNodeJsonDecoder {
         }
     }
 
-    public static Type getResourceType(LwM2mPath rscPath, LwM2mModel model) throws InvalidValueException {
+    public static Type getResourceType(LwM2mPath rscPath, LwM2mModel model, JsonArrayEntry resourceElt)
+            throws InvalidValueException {
         ResourceModel rscDesc = model.getResourceModel(rscPath.getObjectId(), rscPath.getResourceId());
         if (rscDesc == null || rscDesc.type == null) {
-            LOG.trace("unknown type for resource : {}", rscPath);
-            // no resource description... string
+            Type type = resourceElt.getType();
+            if (type != null)
+                return type;
+
+            LOG.trace("unknown type for resource use string as default: {}", rscPath);
             return Type.STRING;
         } else {
             return rscDesc.type;

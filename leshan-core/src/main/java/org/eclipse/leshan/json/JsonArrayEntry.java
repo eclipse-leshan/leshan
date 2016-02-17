@@ -17,6 +17,9 @@
 
 package org.eclipse.leshan.json;
 
+import org.eclipse.leshan.core.model.ResourceModel;
+import org.eclipse.leshan.core.model.ResourceModel.Type;
+
 import com.google.gson.annotations.SerializedName;
 
 public class JsonArrayEntry {
@@ -38,6 +41,23 @@ public class JsonArrayEntry {
 
     @SerializedName("t")
     private Integer time;
+
+    public ResourceModel.Type getType() {
+        if (booleanValue != null) {
+            return Type.BOOLEAN;
+        }
+        if (floatValue != null) {
+            return Type.FLOAT;
+        }
+        if (objectLinkValue != null) {
+            // TODO handle object link or not ..
+            return null;
+        }
+        if (stringValue != null) {
+            return Type.STRING;
+        }
+        return null;
+    }
 
     public String getName() {
         return name;
