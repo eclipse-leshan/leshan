@@ -16,7 +16,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 
 import java.util.Date;
 
@@ -252,5 +254,23 @@ public class LwM2mNodeDecoderTest {
                 ContentFormat.JSON, new LwM2mPath(3, 0), model);
 
         assertDeviceInstance(oInstance);
+    }
+
+    @Test
+    public void json_custom_object_instance() throws InvalidValueException {
+        // json content for instance 0 of device object
+        StringBuilder b = new StringBuilder();
+        b.append("{\"e\":[");
+        b.append("{\"n\":\"0\",\"sv\":\"a string\"},");
+        b.append("{\"n\":\"1\",\"v\":10.5},");
+        b.append("{\"n\":\"2\",\"bv\":true}]}");
+        LwM2mObjectInstance oInstance = (LwM2mObjectInstance) LwM2mNodeDecoder.decode(b.toString().getBytes(),
+                ContentFormat.JSON, new LwM2mPath(1024, 0), model);
+
+        assertEquals(0, oInstance.getId());
+
+        assertEquals("a string", oInstance.getResource(0).getValue());
+        assertEquals(10.5, oInstance.getResource(1).getValue());
+        assertEquals(true, oInstance.getResource(2).getValue());
     }
 }
