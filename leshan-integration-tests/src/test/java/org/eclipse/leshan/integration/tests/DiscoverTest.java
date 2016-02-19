@@ -43,7 +43,7 @@ public class DiscoverTest {
 
     @After
     public void stop() {
-        helper.client.stop();
+        helper.client.stop(false);
         helper.server.stop();
     }
 

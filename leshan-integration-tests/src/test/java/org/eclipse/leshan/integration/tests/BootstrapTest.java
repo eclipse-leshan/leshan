@@ -15,7 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import org.eclipse.leshan.util.Hex;
 import org.junit.After;
@@ -37,7 +39,7 @@ public class BootstrapTest {
     @After
     public void stop() {
 
-        helper.client.stop();
+        helper.client.stop(true);
         helper.bootstrapServer.stop();
         helper.server.stop();
     }
