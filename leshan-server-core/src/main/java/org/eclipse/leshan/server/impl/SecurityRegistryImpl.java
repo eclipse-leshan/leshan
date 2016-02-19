@@ -18,6 +18,7 @@ package org.eclipse.leshan.server.impl;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.security.PrivateKey;
@@ -26,8 +27,8 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
@@ -48,10 +49,10 @@ public class SecurityRegistryImpl implements SecurityRegistry {
     private static final Logger LOG = LoggerFactory.getLogger(SecurityRegistryImpl.class);
 
     // by client end-point
-    private Map<String, SecurityInfo> securityByEp = new ConcurrentHashMap<>();
+    private Map<String, SecurityInfo> securityByEp = new HashMap<>();
 
     // by PSK identity
-    private Map<String, SecurityInfo> securityByIdentity = new ConcurrentHashMap<>();
+    private Map<String, SecurityInfo> securityByIdentity = new HashMap<>();
 
     // the name of the file used to persist the registry content
     private final String filename;
@@ -92,10 +93,10 @@ public class SecurityRegistryImpl implements SecurityRegistry {
     public SecurityRegistryImpl(String file, PrivateKey serverPrivateKey, PublicKey serverPublicKey) {
         Validate.notEmpty(file);
 
-        this.filename = file;
+        filename = file;
         this.serverPrivateKey = serverPrivateKey;
         this.serverPublicKey = serverPublicKey;
-        this.loadFromFile();
+        loadFromFile();
     }
 
     /**
@@ -107,18 +108,18 @@ public class SecurityRegistryImpl implements SecurityRegistry {
         Validate.notEmpty(serverX509CertChain);
         Validate.notEmpty(trustedCertificates);
 
-        this.filename = file;
+        filename = file;
         this.serverPrivateKey = serverPrivateKey;
         this.serverX509CertChain = serverX509CertChain;
         this.trustedCertificates = trustedCertificates;
-        this.loadFromFile();
+        loadFromFile();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public SecurityInfo getByEndpoint(String endpoint) {
+    public synchronized SecurityInfo getByEndpoint(String endpoint) {
         return securityByEp.get(endpoint);
     }
 
@@ -126,17 +127,16 @@ public class SecurityRegistryImpl implements SecurityRegistry {
      * {@inheritDoc}
      */
     @Override
-    public SecurityInfo getByIdentity(String identity) {
+    public synchronized SecurityInfo getByIdentity(String identity) {
         return securityByIdentity.get(identity);
     }
 
     @Override
-    public Collection<SecurityInfo> getAll() {
+    public synchronized Collection<SecurityInfo> getAll() {
         return Collections.unmodifiableCollection(securityByEp.values());
     }
 
-    @Override
-    public synchronized SecurityInfo add(SecurityInfo info) throws NonUniqueSecurityInfoException {
+    private synchronized SecurityInfo addToRegistry(SecurityInfo info) throws NonUniqueSecurityInfoException {
         String identity = info.getIdentity();
         if (identity != null) {
             SecurityInfo infoByIdentity = securityByIdentity.get(info.getIdentity());
@@ -149,7 +149,13 @@ public class SecurityRegistryImpl implements SecurityRegistry {
 
         SecurityInfo previous = securityByEp.put(info.getEndpoint(), info);
 
-        this.saveToFile();
+        return previous;
+    }
+
+    @Override
+    public synchronized SecurityInfo add(SecurityInfo info) throws NonUniqueSecurityInfoException {
+        SecurityInfo previous = addToRegistry(info);
+        saveToFile();
 
         return previous;
     }
@@ -163,57 +169,48 @@ public class SecurityRegistryImpl implements SecurityRegistry {
             }
             securityByEp.remove(endpoint);
 
-            this.saveToFile();
+            saveToFile();
         }
         return info;
     }
 
-    // /////// File persistence
-
     protected void loadFromFile() {
+        File file = new File(filename);
+        if (!file.exists()) {
+            return;
+        }
+
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));) {
+            SecurityInfo[] infos = (SecurityInfo[]) in.readObject();
+
+            if (infos != null) {
+                for (SecurityInfo info : infos) {
+                    addToRegistry(info);
+                }
+                if (infos.length > 0) {
+                    LOG.debug("{} security infos loaded", infos.length);
+                }
+            }
+        } catch (NonUniqueSecurityInfoException | IOException | ClassNotFoundException e) {
+            LOG.error("Could not load security infos from file", e);
+        }
+    }
+
+    protected void saveToFile() {
         try {
             File file = new File(filename);
-
             if (!file.exists()) {
-                // create parents if needed
                 File parent = file.getParentFile();
                 if (parent != null) {
                     parent.mkdirs();
                 }
                 file.createNewFile();
-
-            } else {
-
-                try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));) {
-                    SecurityInfo[] infos = (SecurityInfo[]) in.readObject();
-
-                    if (infos != null) {
-                        for (SecurityInfo info : infos) {
-                            try {
-                                this.add(info);
-                            } catch (NonUniqueSecurityInfoException e) {
-                                // ignore it (should not occur)
-                            }
-                        }
-                    }
-
-                    if (infos != null && infos.length > 0) {
-                        LOG.info("{} security infos loaded", infos.length);
-                    }
-                } catch (Exception e) {
-                    LOG.debug("Could not load security infos from file", e);
-                }
             }
-        } catch (Exception e) {
-            LOG.debug("Could not load security infos from file", e);
-        }
-    }
-
-    protected void saveToFile() {
-        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename));) {
-            out.writeObject(this.getAll().toArray(new SecurityInfo[0]));
-        } catch (Exception e) {
-            LOG.debug("Could not save security infos to file", e);
+            try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename));) {
+                out.writeObject(this.getAll().toArray(new SecurityInfo[0]));
+            }
+        } catch (IOException e) {
+            LOG.error("Could not save security infos to file", e);
         }
     }
 
