@@ -36,7 +36,7 @@ public class SecurityTest {
 
     @After
     public void stop() {
-        helper.client.stop();
+        helper.client.stop(false);
         helper.server.destroy();
     }
 

@@ -79,7 +79,7 @@ public class RegistrationTest {
         assertEquals(1, helper.server.getClientRegistry().allClients().size());
 
         // Check deregistration
-        helper.client.stop();
+        helper.client.stop(true);
         helper.waitForDeregistration(1);
         assertTrue(helper.server.getClientRegistry().allClients().isEmpty());
     }

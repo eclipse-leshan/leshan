@@ -286,12 +286,13 @@ public class RegistrationEngine {
         }
     }
 
-    public void stop() {
+    public void stop(boolean deregister) {
         // TODO we should manage the case where we stop in the middle of a bootstrap session ...
         schedExecutor.shutdownNow();
         try {
             schedExecutor.awaitTermination(BS_TIMEOUT, TimeUnit.SECONDS);
-            deregister();
+            if (deregister)
+                deregister();
         } catch (InterruptedException e) {
         }
     }

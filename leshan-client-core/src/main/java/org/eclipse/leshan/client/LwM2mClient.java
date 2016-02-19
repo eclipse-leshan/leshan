@@ -29,13 +29,17 @@ public interface LwM2mClient {
     /**
      * Stops the client, i.e. unbinds it from all ports. Frees as much system resources as possible to still be able to
      * be started.
+     * 
+     * @param deregister if true the device will send deregister request before.
      */
-    public void stop();
+    public void stop(boolean deregister);
 
     /**
      * Destroys the client, i.e. unbinds from all ports and frees all system resources.
+     * 
+     * @param deregister if true the device will send deregister request before.
      */
-    void destroy();
+    void destroy(boolean deregister);
 
     Collection<LwM2mObjectEnabler> getObjectEnablers();
 
