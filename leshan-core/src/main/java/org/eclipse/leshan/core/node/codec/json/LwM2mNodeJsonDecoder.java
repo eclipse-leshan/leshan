@@ -87,8 +87,9 @@ public class LwM2mNodeJsonDecoder {
             String[] resourcePath = resourceElt.getName().split("/");
             Integer resourceId = Integer.valueOf(resourcePath[0]);
 
-            if (!multiResourceMap.isEmpty() && multiResourceMap.get(resourceId) != null) {
-                multiResourceMap.get(resourceId).put(Integer.valueOf(resourcePath[1]), resourceElt);
+            Map<Integer, JsonArrayEntry> multiResource = multiResourceMap.get(resourceId);
+            if (multiResource != null) {
+                multiResource.put(Integer.valueOf(resourcePath[1]), resourceElt);
                 continue;
             }
             if (resourcePath.length > 1) {
