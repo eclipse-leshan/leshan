@@ -85,9 +85,15 @@ public class LwM2mNodeEncoderTest {
                 "/3/0/6"), model);
     }
 
-    @Test
-    public void tlv_encode_device_object_instance() {
+    // device instance encoded as an array of resources
+    private static byte[] ENCODED_DEVICE = new byte[] { -56, 0, 20, 79, 112, 101, 110, 32, 77, 111, 98, 105, 108, 101,
+                            32, 65, 108, 108, 105, 97, 110, 99, 101, -56, 1, 22, 76, 105, 103, 104, 116, 119, 101, 105,
+                            103, 104, 116, 32, 77, 50, 77, 32, 67, 108, 105, 101, 110, 116, -56, 2, 9, 51, 52, 53, 48,
+                            48, 48, 49, 50, 51, -61, 3, 49, 46, 48, -122, 6, 65, 0, 1, 65, 1, 5, -120, 7, 8, 66, 0, 14,
+                            -40, 66, 1, 19, -120, -121, 8, 65, 0, 125, 66, 1, 3, -124, -63, 9, 100, -63, 10, 15, -63,
+                            11, 0, -60, 13, 81, -126, 66, -113, -58, 14, 43, 48, 50, 58, 48, 48, -63, 15, 85 };
 
+    private Collection<LwM2mResource> getDeviceResources() {
         Collection<LwM2mResource> resources = new ArrayList<>();
 
         resources.add(LwM2mSingleResource.newStringResource(0, "Open Mobile Alliance"));
@@ -117,103 +123,52 @@ public class LwM2mNodeEncoderTest {
         resources.add(LwM2mSingleResource.newStringResource(14, "+02:00"));
         resources.add(LwM2mSingleResource.newStringResource(15, "U"));
 
-        LwM2mObjectInstance oInstance = new LwM2mObjectInstance(0, resources);
+        return resources;
+    }
 
+    @Test
+    public void tlv_encode_device_object_instance_as_resources_array() {
+        LwM2mObjectInstance oInstance = new LwM2mObjectInstance(0, getDeviceResources());
         byte[] encoded = LwM2mNodeEncoder.encode(oInstance, ContentFormat.TLV, new LwM2mPath("/3/0"), model);
 
-        // tlvs content the resources array
-        byte[] expected = new byte[] { -56, 0, 20, 79, 112, 101, 110, 32, 77, 111, 98, 105, 108, 101, 32, 65, 108, 108,
-                                105, 97, 110, 99, 101, -56, 1, 22, 76, 105, 103, 104, 116, 119, 101, 105, 103, 104,
-                                116, 32, 77, 50, 77, 32, 67, 108, 105, 101, 110, 116, -56, 2, 9, 51, 52, 53, 48, 48,
-                                48, 49, 50, 51, -61, 3, 49, 46, 48, -122, 6, 65, 0, 1, 65, 1, 5, -120, 7, 8, 66, 0, 14,
-                                -40, 66, 1, 19, -120, -121, 8, 65, 0, 125, 66, 1, 3, -124, -63, 9, 100, -63, 10, 15,
-                                -63, 11, 0, -60, 13, 81, -126, 66, -113, -58, 14, 43, 48, 50, 58, 48, 48, -63, 15, 85 };
+        Assert.assertArrayEquals(ENCODED_DEVICE, encoded);
+    }
 
-        Assert.assertArrayEquals(expected, encoded);
+    @Test
+    public void tlv_encode_device_object_instance_as_resources_array__undefined_instance_id() {
+        LwM2mObjectInstance oInstance = new LwM2mObjectInstance(LwM2mObjectInstance.UNDEFINED, getDeviceResources());
+        byte[] encoded = LwM2mNodeEncoder.encode(oInstance, ContentFormat.TLV, new LwM2mPath("/3"), model);
+
+        Assert.assertArrayEquals(ENCODED_DEVICE, encoded);
+    }
+
+    @Test
+    public void tlv_encode_device_object_instance_as_instance() {
+        LwM2mObjectInstance oInstance = new LwM2mObjectInstance(0, getDeviceResources());
+        byte[] encoded = LwM2mNodeEncoder.encode(oInstance, ContentFormat.TLV, new LwM2mPath("/3"), model);
+
+        // TLV instance = { type=INSTANCE, instanceId=0, length=DEVICE_ENCODED.lentgh, value=DEVICE_ENCODED }
+        byte[] instanceTlv = new byte[ENCODED_DEVICE.length + 3];
+        System.arraycopy(new byte[] { 8, 0, 119 }, 0, instanceTlv, 0, 3);
+        System.arraycopy(ENCODED_DEVICE, 0, instanceTlv, 3, ENCODED_DEVICE.length);
+
+        Assert.assertArrayEquals(instanceTlv, encoded);
     }
 
     @Test
     public void tlv_encode_device_object() {
 
-        Collection<LwM2mResource> resources = new ArrayList<>();
-
-        resources.add(LwM2mSingleResource.newStringResource(0, "Open Mobile Alliance"));
-        resources.add(LwM2mSingleResource.newStringResource(1, "Lightweight M2M Client"));
-        resources.add(LwM2mSingleResource.newStringResource(2, "345000123"));
-        resources.add(LwM2mSingleResource.newStringResource(3, "1.0"));
-
-        Map<Integer, Long> values = new HashMap<>();
-        values.put(0, 1L);
-        values.put(1, 5L);
-        resources.add(LwM2mMultipleResource.newIntegerResource(6, values));
-
-        values = new HashMap<>();
-        values.put(0, 3800L);
-        values.put(1, 5000L);
-        resources.add(LwM2mMultipleResource.newIntegerResource(7, values));
-
-        values = new HashMap<>();
-        values.put(0, 125L);
-        values.put(1, 900L);
-        resources.add(LwM2mMultipleResource.newIntegerResource(8, values));
-
-        resources.add(LwM2mSingleResource.newIntegerResource(9, 100));
-        resources.add(LwM2mSingleResource.newIntegerResource(10, 15));
-        resources.add(LwM2mSingleResource.newIntegerResource(11, 0));
-        resources.add(LwM2mSingleResource.newDateResource(13, new Date(1367491215000L)));
-        resources.add(LwM2mSingleResource.newStringResource(14, "+02:00"));
-        resources.add(LwM2mSingleResource.newStringResource(15, "U"));
-
-        LwM2mObjectInstance oInstance = new LwM2mObjectInstance(0, resources);
-        LwM2mObject object = new LwM2mObject(3, oInstance);
-
+        LwM2mObject object = new LwM2mObject(3, new LwM2mObjectInstance(0, getDeviceResources()));
         byte[] encoded = LwM2mNodeEncoder.encode(object, ContentFormat.TLV, new LwM2mPath("/3"), model);
 
-        // tlvs content the resources array
-        byte[] expected = new byte[] { -56, 0, 20, 79, 112, 101, 110, 32, 77, 111, 98, 105, 108, 101, 32, 65, 108, 108,
-                                105, 97, 110, 99, 101, -56, 1, 22, 76, 105, 103, 104, 116, 119, 101, 105, 103, 104,
-                                116, 32, 77, 50, 77, 32, 67, 108, 105, 101, 110, 116, -56, 2, 9, 51, 52, 53, 48, 48,
-                                48, 49, 50, 51, -61, 3, 49, 46, 48, -122, 6, 65, 0, 1, 65, 1, 5, -120, 7, 8, 66, 0, 14,
-                                -40, 66, 1, 19, -120, -121, 8, 65, 0, 125, 66, 1, 3, -124, -63, 9, 100, -63, 10, 15,
-                                -63, 11, 0, -60, 13, 81, -126, 66, -113, -58, 14, 43, 48, 50, 58, 48, 48, -63, 15, 85 };
-
-        Assert.assertArrayEquals(expected, encoded);
+        // encoded as an array of resource TLVs
+        Assert.assertArrayEquals(ENCODED_DEVICE, encoded);
     }
 
     @Test
     public void json_encode_device_object_instance() {
 
-        Collection<LwM2mResource> resources = new ArrayList<>();
-
-        resources.add(LwM2mSingleResource.newStringResource(0, "Open Mobile Alliance"));
-        resources.add(LwM2mSingleResource.newStringResource(1, "Lightweight M2M Client"));
-        resources.add(LwM2mSingleResource.newStringResource(2, "345000123"));
-        resources.add(LwM2mSingleResource.newStringResource(3, "1.0"));
-
-        Map<Integer, Long> values = new HashMap<>();
-        values.put(0, 1L);
-        values.put(1, 5L);
-        resources.add(LwM2mMultipleResource.newIntegerResource(6, values));
-
-        values = new HashMap<>();
-        values.put(0, 3800L);
-        values.put(1, 5000L);
-        resources.add(LwM2mMultipleResource.newIntegerResource(7, values));
-
-        values = new HashMap<>();
-        values.put(0, 125L);
-        values.put(1, 900L);
-        resources.add(LwM2mMultipleResource.newIntegerResource(8, values));
-
-        resources.add(LwM2mSingleResource.newIntegerResource(9, 100));
-        resources.add(LwM2mSingleResource.newIntegerResource(10, 15));
-        resources.add(LwM2mSingleResource.newIntegerResource(11, 0));
-        resources.add(LwM2mSingleResource.newDateResource(13, new Date(1367491215000L)));
-        resources.add(LwM2mSingleResource.newStringResource(14, "+02:00"));
-        resources.add(LwM2mSingleResource.newStringResource(15, "U"));
-
-        LwM2mObjectInstance oInstance = new LwM2mObjectInstance(0, resources);
-
+        LwM2mObjectInstance oInstance = new LwM2mObjectInstance(0, getDeviceResources());
         byte[] encoded = LwM2mNodeEncoder.encode(oInstance, ContentFormat.JSON, new LwM2mPath("/3/0"), model);
 
         StringBuilder b = new StringBuilder();

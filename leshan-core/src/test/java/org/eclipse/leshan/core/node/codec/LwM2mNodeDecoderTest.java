@@ -96,8 +96,8 @@ public class LwM2mNodeDecoderTest {
         assertEquals(value, resource.getValue());
     }
 
-    // tlv content for instance 0 of device object
-    private final static byte[] DEVICE_CONTENT = new byte[] { -56, 0, 20, 79, 112, 101, 110, 32, 77, 111, 98, 105, 108,
+    // tlv content for instance 0 of device object (encoded as an array of resource TLVs)
+    private final static byte[] ENCODED_DEVICE = new byte[] { -56, 0, 20, 79, 112, 101, 110, 32, 77, 111, 98, 105, 108,
                             101, 32, 65, 108, 108, 105, 97, 110, 99, 101, -56, 1, 22, 76, 105, 103, 104, 116, 119, 101,
                             105, 103, 104, 116, 32, 77, 50, 77, 32, 67, 108, 105, 101, 110, 116, -56, 2, 9, 51, 52, 53,
                             48, 48, 48, 49, 50, 51, -61, 3, 49, 46, 48, -122, 6, 65, 0, 1, 65, 1, 5, -120, 7, 8, 66, 0,
@@ -106,7 +106,7 @@ public class LwM2mNodeDecoderTest {
 
     @Test
     public void tlv_device_object_mono_instance() throws Exception {
-        LwM2mObjectInstance oInstance = ((LwM2mObject) LwM2mNodeDecoder.decode(DEVICE_CONTENT, ContentFormat.TLV,
+        LwM2mObjectInstance oInstance = ((LwM2mObject) LwM2mNodeDecoder.decode(ENCODED_DEVICE, ContentFormat.TLV,
                 new LwM2mPath(3), model)).getInstance(0);
         assertDeviceInstance(oInstance);
     }
@@ -138,10 +138,31 @@ public class LwM2mNodeDecoderTest {
     }
 
     @Test
-    public void tlv_device_object_instance0() throws InvalidValueException {
+    public void tlv_device_object_instance0_from_resources_tlv() throws InvalidValueException {
 
-        LwM2mObjectInstance oInstance = (LwM2mObjectInstance) LwM2mNodeDecoder.decode(DEVICE_CONTENT,
+        LwM2mObjectInstance oInstance = (LwM2mObjectInstance) LwM2mNodeDecoder.decode(ENCODED_DEVICE,
                 ContentFormat.TLV, new LwM2mPath(3, 0), model);
+        assertDeviceInstance(oInstance);
+    }
+
+    @Test
+    public void tlv_device_object_instance0_from_resources_tlv__instance_expected() throws InvalidValueException {
+
+        LwM2mObjectInstance oInstance = (LwM2mObjectInstance) LwM2mNodeDecoder.decode(ENCODED_DEVICE,
+                ContentFormat.TLV, new LwM2mPath(3), model, LwM2mObjectInstance.class);
+        assertDeviceInstance(oInstance);
+    }
+
+    @Test
+    public void tlv_device_object_instance0_from_instance_tlv() throws InvalidValueException {
+
+        // TLV instance = { type=INSTANCE, instanceId=0, length=DEVICE_ENCODED.lentgh, value=DEVICE_ENCODED }
+        byte[] instanceTlv = new byte[ENCODED_DEVICE.length + 3];
+        System.arraycopy(new byte[] { 8, 0, 119 }, 0, instanceTlv, 0, 3);
+        System.arraycopy(ENCODED_DEVICE, 0, instanceTlv, 3, ENCODED_DEVICE.length);
+
+        LwM2mObjectInstance oInstance = (LwM2mObjectInstance) LwM2mNodeDecoder.decode(instanceTlv, ContentFormat.TLV,
+                new LwM2mPath(3, 0), model);
         assertDeviceInstance(oInstance);
     }
 

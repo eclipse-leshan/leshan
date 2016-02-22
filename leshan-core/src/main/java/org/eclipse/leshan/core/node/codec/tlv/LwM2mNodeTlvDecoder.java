@@ -44,20 +44,23 @@ public class LwM2mNodeTlvDecoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeTlvDecoder.class);
 
-    public static LwM2mNode decode(byte[] content, LwM2mPath path, LwM2mModel model) throws InvalidValueException {
+    public static <T extends LwM2mNode> T decode(byte[] content, LwM2mPath path, LwM2mModel model, Class<T> nodeClass)
+            throws InvalidValueException {
         try {
             Tlv[] tlvs = TlvDecoder.decode(ByteBuffer.wrap(content));
-            return parseTlv(tlvs, path, model);
+            return parseTlv(tlvs, path, model, nodeClass);
         } catch (TlvException e) {
             throw new InvalidValueException("Unable to decode tlv.", path, e);
         }
     }
 
-    private static LwM2mNode parseTlv(Tlv[] tlvs, LwM2mPath path, LwM2mModel model) throws InvalidValueException {
+    @SuppressWarnings("unchecked")
+    private static <T extends LwM2mNode> T parseTlv(Tlv[] tlvs, LwM2mPath path, LwM2mModel model, Class<T> nodeClass)
+            throws InvalidValueException {
         LOG.trace("Parsing TLV content for path {}: {}", path, tlvs);
 
-        if (path.isObject()) {
-            // object level request
+        // Object
+        if (nodeClass == LwM2mObject.class) {
             final List<LwM2mObjectInstance> instances = new ArrayList<>();
 
             // is it an array of TLV resources?
@@ -68,9 +71,9 @@ public class LwM2mNodeTlvDecoder {
                 if (oModel == null) {
                     LOG.warn("No model for object {}. The tlv is decoded assuming this is a single instance object",
                             path.getObjectId());
-                    instances.add(parseObjectInstancesTlv(tlvs, path.getObjectId(), 0, model));
+                    instances.add(parseObjectInstanceTlv(tlvs, path.getObjectId(), 0, model));
                 } else if (!oModel.multiple) {
-                    instances.add(parseObjectInstancesTlv(tlvs, path.getObjectId(), 0, model));
+                    instances.add(parseObjectInstanceTlv(tlvs, path.getObjectId(), 0, model));
                 } else {
                     throw new InvalidValueException("Object instance TLV is mandatory for multiple instances object",
                             path);
@@ -82,33 +85,65 @@ public class LwM2mNodeTlvDecoder {
                         throw new InvalidValueException(String.format(
                                 "Expected TLV of type OBJECT_INSTANCE but was %s", tlvs[i].getType().name()), path);
 
-                    instances.add(parseObjectInstancesTlv(tlvs[i].getChildren(), path.getObjectId(),
+                    instances.add(parseObjectInstanceTlv(tlvs[i].getChildren(), path.getObjectId(),
                             tlvs[i].getIdentifier(), model));
                 }
             }
-            return new LwM2mObject(path.getObjectId(), instances);
+            return (T) new LwM2mObject(path.getObjectId(), instances);
+        }
 
-        } else if (path.isObjectInstance()) {
-            // object instance level request
-            return parseObjectInstancesTlv(tlvs, path.getObjectId(), path.getObjectInstanceId(), model);
-        } else {
-            // resource level request
-            if (tlvs.length == 1 && tlvs[0].getType() != TlvType.RESOURCE_INSTANCE) {
-                return parseResourceTlv(tlvs[0], path.getObjectId(), path.getObjectInstanceId(), model);
+        // Object instance
+        else if (nodeClass == LwM2mObjectInstance.class) {
+
+            if (tlvs.length == 1 && tlvs[0].getType() == TlvType.OBJECT_INSTANCE) {
+                if (path.isObjectInstance() && tlvs[0].getIdentifier() != path.getObjectInstanceId()) {
+                    throw new InvalidValueException("Id conflict between path and instance TLV", path);
+                }
+                // object instance TLV
+                return (T) parseObjectInstanceTlv(tlvs[0].getChildren(), path.getObjectId(), tlvs[0].getIdentifier(),
+                        model);
             } else {
-                Type expectedType = getResourceType(path, model);
-                return LwM2mMultipleResource.newResource(path.getResourceId(),
-                        parseTlvValues(tlvs, expectedType, path), expectedType);
+                // array of TLV resources
+                // try to retrieve the instanceId from the path or the model
+                Integer instanceId = path.getObjectInstanceId();
+                if (instanceId == null) {
+                    // single instance object?
+                    ObjectModel oModel = model.getObjectModel(path.getObjectId());
+                    if (oModel != null && !oModel.multiple) {
+                        instanceId = 0;
+                    } else {
+                        instanceId = LwM2mObjectInstance.UNDEFINED;
+                    }
+                }
+                return (T) parseObjectInstanceTlv(tlvs, path.getObjectId(), instanceId, model);
             }
         }
+
+        // Resource
+        else if (nodeClass == LwM2mResource.class) {
+
+            if (tlvs.length == 1 && tlvs[0].getType() != TlvType.RESOURCE_INSTANCE) {
+                if (path.isResource() && path.getResourceId() != tlvs[0].getIdentifier()) {
+                    throw new InvalidValueException("Id conflict between path and resource TLV", path);
+                }
+                return (T) parseResourceTlv(tlvs[0], path.getObjectId(), path.getObjectInstanceId(), model);
+            } else {
+                Type expectedRscType = getResourceType(path, model);
+                return (T) LwM2mMultipleResource.newResource(path.getResourceId(),
+                        parseTlvValues(tlvs, expectedRscType, path), expectedRscType);
+            }
+        } else {
+            throw new IllegalArgumentException("invalid node class: " + nodeClass);
+        }
+
     }
 
-    private static LwM2mObjectInstance parseObjectInstancesTlv(Tlv[] tlvs, int objectId, int instanceId,
+    private static LwM2mObjectInstance parseObjectInstanceTlv(Tlv[] rscTlvs, int objectId, int instanceId,
             LwM2mModel model) throws InvalidValueException {
         // read resources
-        List<LwM2mResource> resources = new ArrayList<>(tlvs.length);
-        for (int i = 0; i < tlvs.length; i++) {
-            resources.add(parseResourceTlv(tlvs[i], objectId, instanceId, model));
+        List<LwM2mResource> resources = new ArrayList<>(rscTlvs.length);
+        for (int i = 0; i < rscTlvs.length; i++) {
+            resources.add(parseResourceTlv(rscTlvs[i], objectId, instanceId, model));
         }
         return new LwM2mObjectInstance(instanceId, resources);
     }

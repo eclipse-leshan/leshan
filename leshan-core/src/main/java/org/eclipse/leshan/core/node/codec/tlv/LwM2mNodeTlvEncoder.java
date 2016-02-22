@@ -39,6 +39,9 @@ import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * TLV encoder for {@link LwM2mNode}.
+ */
 public class LwM2mNodeTlvEncoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeTlvEncoder.class);
@@ -49,7 +52,7 @@ public class LwM2mNodeTlvEncoder {
         Validate.notNull(model);
 
         InternalEncoder internalEncoder = new InternalEncoder();
-        internalEncoder.objectId = path.getObjectId();
+        internalEncoder.path = path;
         internalEncoder.model = model;
         node.accept(internalEncoder);
         return internalEncoder.out.toByteArray();
@@ -58,7 +61,7 @@ public class LwM2mNodeTlvEncoder {
     private static class InternalEncoder implements LwM2mNodeVisitor {
 
         // visitor inputs
-        private int objectId;
+        private LwM2mPath path;
         private LwM2mModel model;
 
         // visitor output
@@ -66,7 +69,7 @@ public class LwM2mNodeTlvEncoder {
 
         @Override
         public void visit(LwM2mObject object) {
-            LOG.trace("Encoding object instances {} into TLV", object);
+            LOG.trace("Encoding object {} into TLV", object);
 
             Tlv[] tlvs = null;
 
@@ -75,6 +78,7 @@ public class LwM2mNodeTlvEncoder {
                 // single instance object, the instance is level is not needed
                 tlvs = encodeResources(object.getInstance(0).getResources().values());
             } else {
+                // encoded as an array of instances
                 tlvs = new Tlv[object.getInstances().size()];
                 int i = 0;
                 for (Entry<Integer, LwM2mObjectInstance> instance : object.getInstances().entrySet()) {
@@ -95,11 +99,20 @@ public class LwM2mNodeTlvEncoder {
         public void visit(LwM2mObjectInstance instance) {
             LOG.trace("Encoding object instance {} into TLV", instance);
 
-            // The instance is encoded as an array of resource TLVs.
-            Tlv[] rTlvs = encodeResources(instance.getResources().values());
+            Tlv[] tlvs;
+            if (path.isObjectInstance() || instance.getId() == LwM2mObjectInstance.UNDEFINED) {
+                // the instanceId is part of the request path or is undefined
+                // so the instance TLV layer is not needed.
+                // encoded as an array of resource TLVs
+                tlvs = encodeResources(instance.getResources().values());
+            } else {
+                // encoded as an instance TLV
+                Tlv[] resources = encodeResources(instance.getResources().values());
+                tlvs = new Tlv[] { new Tlv(TlvType.OBJECT_INSTANCE, resources, null, instance.getId()) };
+            }
 
             try {
-                out.write(TlvEncoder.encode(rTlvs).array());
+                out.write(TlvEncoder.encode(tlvs).array());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -129,7 +142,7 @@ public class LwM2mNodeTlvEncoder {
         }
 
         private Tlv encodeResource(LwM2mResource resource) {
-            ResourceModel rSpec = model.getResourceModel(objectId, resource.getId());
+            ResourceModel rSpec = model.getResourceModel(path.getObjectId(), resource.getId());
             Type expectedType = rSpec != null ? rSpec.type : resource.getType();
 
             Tlv rTlv = null;
