@@ -148,7 +148,7 @@ public class LeshanClient implements LwM2mClient {
     @Override
     public void destroy(boolean deregister) {
         LOG.info("Destroying Leshan client ...");
-        engine.stop(deregister);
+        engine.destroy(deregister);
         clientSideServer.destroy();
         LOG.info("Leshan client destroyed.");
     }

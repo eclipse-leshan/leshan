@@ -17,6 +17,7 @@ package org.eclipse.leshan.client.servers;
 
 import java.util.Map;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -63,6 +64,7 @@ public class RegistrationEngine {
 
     // registration update
     private String registrationID;
+    private Future<?> registerFuture;
     private ScheduledFuture<?> updateFuture;
     private final ScheduledExecutorService schedExecutor = Executors.newScheduledThreadPool(2);
 
@@ -76,7 +78,8 @@ public class RegistrationEngine {
     }
 
     public void start() {
-        schedExecutor.submit(new RegistrationTask());
+        stop(false); // stop without de-register
+        registerFuture = schedExecutor.submit(new RegistrationTask());
     }
 
     private boolean bootstrap() throws InterruptedException {
@@ -248,7 +251,7 @@ public class RegistrationEngine {
 
     private void scheduleRegistration() {
         LOG.info("Unable to connect to any server, next retry in {}s...", BS_RETRY);
-        schedExecutor.schedule(new RegistrationTask(), BS_RETRY, TimeUnit.SECONDS);
+        registerFuture = schedExecutor.schedule(new RegistrationTask(), BS_RETRY, TimeUnit.SECONDS);
     }
 
     private void scheduleUpdate(DmServerInfo dmInfo) {
@@ -282,11 +285,28 @@ public class RegistrationEngine {
 
     private void cancelUpdateTask() {
         if (updateFuture != null) {
-            updateFuture.cancel(false);
+            updateFuture.cancel(true);
+        }
+    }
+
+    private void cancelRegistrationTask() {
+        if (registerFuture != null) {
+            registerFuture.cancel(true);
         }
     }
 
     public void stop(boolean deregister) {
+        cancelUpdateTask();
+        // TODO we should manage the case where we stop in the middle of a bootstrap session ...
+        cancelRegistrationTask();
+        try {
+            if (deregister)
+                deregister();
+        } catch (InterruptedException e) {
+        }
+    }
+
+    public void destroy(boolean deregister) {
         // TODO we should manage the case where we stop in the middle of a bootstrap session ...
         schedExecutor.shutdownNow();
         try {
