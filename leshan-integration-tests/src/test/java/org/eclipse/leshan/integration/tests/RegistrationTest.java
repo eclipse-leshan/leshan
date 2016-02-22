@@ -38,6 +38,7 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectEnabler;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.server.client.Client;
+import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -82,6 +83,62 @@ public class RegistrationTest {
         helper.client.stop(true);
         helper.waitForDeregistration(1);
         assertTrue(helper.server.getClientRegistry().allClients().isEmpty());
+    }
+
+    @Test
+    public void register_update_deregister_reregister() throws NonUniqueSecurityInfoException, InterruptedException {
+        // Check registration
+        assertTrue(helper.server.getClientRegistry().allClients().isEmpty());
+
+        helper.client.start();
+        helper.waitForRegistration(1);
+
+        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+        assertNotNull(helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER));
+
+        // Check for update
+        helper.waitForUpdate(LIFETIME);
+        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+
+        // Check de-registration
+        helper.client.stop(true);
+        helper.waitForDeregistration(1);
+        assertTrue(helper.server.getClientRegistry().allClients().isEmpty());
+
+        // Check new registration
+        helper.resetLatch();
+        helper.client.start();
+        helper.waitForRegistration(1);
+        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+        assertNotNull(helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER));
+    }
+
+    @Test
+    public void register_update_reregister() throws NonUniqueSecurityInfoException, InterruptedException {
+        // Check registration
+        assertTrue(helper.server.getClientRegistry().allClients().isEmpty());
+
+        helper.client.start();
+        helper.waitForRegistration(1);
+
+        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+        assertNotNull(helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER));
+
+        // Check for update
+        helper.waitForUpdate(LIFETIME);
+        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+
+        // check stop do not de-register
+        helper.client.stop(false);
+        helper.waitForDeregistration(1);
+        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+
+        // check new registration
+        helper.resetLatch();
+        helper.client.start();
+        helper.waitForRegistration(1);
+        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+        assertNotNull(helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER));
     }
 
     // TODO not really a registration test

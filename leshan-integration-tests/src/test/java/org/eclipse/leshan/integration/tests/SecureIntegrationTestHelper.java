@@ -160,7 +160,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
                 LwM2mId.SECURITY,
                 Security.psk("coaps://" + server.getSecureAddress().getHostString() + ":"
                         + server.getSecureAddress().getPort(), 12345, pskIdentity.getBytes(Charsets.UTF_8), pskKey));
-        initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, 30, BindingMode.U, false));
+        initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.U, false));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345", "U"));
         List<LwM2mObjectEnabler> objects = initializer.createMandatory();
         objects.add(initializer.create(2));
@@ -180,7 +180,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
                 Security.rpk("coaps://" + server.getSecureAddress().getHostString() + ":"
                         + server.getSecureAddress().getPort(), 12345, clientPublicKey.getEncoded(),
                         clientPrivateKey.getEncoded(), serverPublicKey.getEncoded()));
-        initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, 30, BindingMode.U, false));
+        initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.U, false));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345", "U"));
         List<LwM2mObjectEnabler> objects = initializer.createMandatory();
         objects.add(initializer.create(2));
@@ -208,7 +208,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
                 LwM2mId.SECURITY,
                 Security.noSec("coaps://" + server.getSecureAddress().getHostString() + ":"
                         + server.getSecureAddress().getPort(), 12345));
-        initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, 30, BindingMode.U, false));
+        initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.U, false));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345", "U"));
         List<LwM2mObjectEnabler> objects = initializer.createMandatory();
         objects.add(initializer.create(2));
