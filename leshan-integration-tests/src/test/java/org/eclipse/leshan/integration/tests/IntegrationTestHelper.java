@@ -104,9 +104,7 @@ public class IntegrationTestHelper {
         server = builder.build();
 
         // monitor client registration
-        registerLatch = new CountDownLatch(1);
-        deregisterLatch = new CountDownLatch(1);
-        updateLatch = new CountDownLatch(1);
+        resetLatch();
         server.getClientRegistry().addListener(new ClientRegistryListener() {
             @Override
             public void updated(Client clientUpdated) {
@@ -130,6 +128,12 @@ public class IntegrationTestHelper {
                 }
             }
         });
+    }
+
+    public void resetLatch() {
+        registerLatch = new CountDownLatch(1);
+        deregisterLatch = new CountDownLatch(1);
+        updateLatch = new CountDownLatch(1);
     }
 
     public boolean waitForRegistration(long timeInSeconds) {

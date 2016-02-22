@@ -16,7 +16,9 @@
 package org.eclipse.leshan.integration.tests;
 
 import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.ENDPOINT_IDENTIFIER;
+import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.LIFETIME;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -24,6 +26,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 
+import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.junit.After;
@@ -36,7 +39,7 @@ public class SecurityTest {
 
     @After
     public void stop() {
-        helper.client.stop(false);
+        helper.client.stop(true);
         helper.server.destroy();
     }
 
@@ -55,6 +58,81 @@ public class SecurityTest {
 
         assertEquals(1, helper.server.getClientRegistry().allClients().size());
         assertNotNull(helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER));
+    }
+
+    // TODO reactive this test when https://github.com/eclipse/californium/pull/11 will be integrated.
+    @Ignore
+    @Test
+    public void register_update_deregister_reregister_device_with_psk_to_server_with_psk()
+            throws NonUniqueSecurityInfoException {
+        helper.createServer(); // default server support PSK
+        helper.server.start();
+
+        helper.createPSKClient();
+
+        helper.server.getSecurityRegistry().add(
+                SecurityInfo.newPreSharedKeyInfo(ENDPOINT_IDENTIFIER, helper.pskIdentity, helper.pskKey));
+
+        // Check for registration
+        helper.client.start();
+        helper.waitForRegistration(1);
+        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+        assertNotNull(helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER));
+
+        // Check for update
+        helper.waitForUpdate(LIFETIME);
+        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+
+        // Check de-registration
+        helper.client.stop(true);
+        helper.waitForDeregistration(1);
+        assertTrue(helper.server.getClientRegistry().allClients().isEmpty());
+
+        // check new registration
+        helper.resetLatch();
+        helper.client.start();
+        helper.waitForRegistration(1);
+        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+        assertNotNull(helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER));
+    }
+
+    // TODO reactive this test when https://github.com/eclipse/californium/pull/11 will be integrated.
+    @Ignore
+    @Test
+    public void register_update_reregister_device_with_psk_to_server_with_psk() throws NonUniqueSecurityInfoException {
+        helper.createServer(); // default server support PSK
+        helper.server.start();
+
+        helper.createPSKClient();
+
+        helper.server.getSecurityRegistry().add(
+                SecurityInfo.newPreSharedKeyInfo(ENDPOINT_IDENTIFIER, helper.pskIdentity, helper.pskKey));
+
+        // Check for registration
+        helper.client.start();
+        helper.waitForRegistration(1);
+        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+        Client registration = helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER);
+        assertNotNull(registration);
+
+        // Check for update
+        helper.waitForUpdate(LIFETIME);
+        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+
+        // check stop do not de-register
+        helper.client.stop(false);
+        helper.waitForDeregistration(1);
+        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+
+        // check new registration
+        helper.resetLatch();
+        helper.client.start();
+        helper.waitForRegistration(1);
+        Client newRegistration = helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER);
+        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+        assertNotNull(newRegistration);
+        assertNotEquals(registration.getRegistrationId(), newRegistration.getRegistrationId());
+
     }
 
     @Test
