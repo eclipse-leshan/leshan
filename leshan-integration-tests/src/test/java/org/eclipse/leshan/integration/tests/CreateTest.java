@@ -18,7 +18,10 @@ package org.eclipse.leshan.integration.tests;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Arrays;
+
 import org.eclipse.leshan.ResponseCode;
+import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -51,26 +54,18 @@ public class CreateTest {
     }
 
     @Test
-    public void can_create_instance_of_object() throws InterruptedException {
-        // create ACL instance
-        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, 0, new LwM2mResource[0]));
-
-        // verify result
-        assertEquals(ResponseCode.CREATED, response.getCode());
-        assertEquals("2/0", response.getLocation());
-    }
-
-    @Test
     public void can_create_instance_of_object_without_instance_id() throws InterruptedException {
         // create ACL instance
-        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, new LwM2mResource[0]));
+        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2,
+                new LwM2mResource[] { LwM2mSingleResource.newIntegerResource(0, 123) }));
 
         // verify result
         assertEquals(ResponseCode.CREATED, response.getCode());
         assertEquals("2/0", response.getLocation());
 
         // create a second ACL instance
-        response = helper.server.send(helper.getClient(), new CreateRequest(2, new LwM2mResource[0]));
+        response = helper.server.send(helper.getClient(), new CreateRequest(2,
+                new LwM2mResource[] { LwM2mSingleResource.newIntegerResource(0, 123) }));
 
         // verify result
         assertEquals(ResponseCode.CREATED, response.getCode());
@@ -81,31 +76,34 @@ public class CreateTest {
     @Test
     public void can_create_specific_instance_of_object() throws InterruptedException {
         // create ACL instance
-        LwM2mResource accessControlOwner = LwM2mSingleResource.newIntegerResource(3, 123);
-        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, 0, accessControlOwner));
+        LwM2mObjectInstance instance = new LwM2mObjectInstance(12, Arrays.<LwM2mResource> asList(LwM2mSingleResource
+                .newIntegerResource(3, 123)));
+        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, instance));
 
         // verify result
         assertEquals(ResponseCode.CREATED, response.getCode());
-        assertEquals("2/0", response.getLocation());
+        assertEquals("2/12", response.getLocation());
     }
 
+    // TODO JSON encoding: instance id is missing (support of basename tag probably needed)
+    @Ignore
     @Test
     public void can_create_specific_instance_of_object_with_json() throws InterruptedException {
         // create ACL instance
-        LwM2mResource accessControlOwner = LwM2mSingleResource.newIntegerResource(3, 123);
-        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(ContentFormat.JSON, 2, 0,
-                accessControlOwner));
+        LwM2mObjectInstance instance = new LwM2mObjectInstance(12, Arrays.<LwM2mResource> asList(LwM2mSingleResource
+                .newIntegerResource(3, 123)));
+        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(ContentFormat.JSON, 2,
+                instance));
 
         // verify result
         assertEquals(ResponseCode.CREATED, response.getCode());
-        assertEquals("2/0", response.getLocation());
+        assertEquals("2/12", response.getLocation());
     }
 
     @Test
     public void cannot_create_instance_of_object() throws InterruptedException {
         // try to create an instance of object 50
-        CreateResponse response = helper.server
-                .send(helper.getClient(), new CreateRequest(50, 0, new LwM2mResource[0]));
+        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(50, new LwM2mResource[0]));
 
         // verify result
         assertEquals(ResponseCode.NOT_FOUND, response.getCode());
@@ -118,7 +116,7 @@ public class CreateTest {
     @Test
     public void cannot_create_instance_without_all_required_resources() throws InterruptedException {
         // create ACL instance
-        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, 0, new LwM2mResource[0]));
+        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, new LwM2mResource[0]));
 
         // verify result
         assertEquals(ResponseCode.BAD_REQUEST, response.getCode());
@@ -134,9 +132,9 @@ public class CreateTest {
     @Test
     public void cannot_create_instance_with_extraneous_resources() throws InterruptedException {
         // create ACL instance
-        LwM2mResource accessControlOwner = LwM2mSingleResource.newIntegerResource(3, 123);
-        LwM2mResource extraneousResource = LwM2mSingleResource.newIntegerResource(50, 123);
-        CreateRequest request = new CreateRequest(2, 0, accessControlOwner, extraneousResource);
+        LwM2mObjectInstance instance = new LwM2mObjectInstance(0, Arrays.<LwM2mResource> asList(
+                LwM2mSingleResource.newIntegerResource(3, 123), LwM2mSingleResource.newIntegerResource(50, 123)));
+        CreateRequest request = new CreateRequest(2, instance);
         CreateResponse response = helper.server.send(helper.getClient(), request);
 
         // verify result
@@ -158,7 +156,8 @@ public class CreateTest {
     @Test
     public void cannot_create_mandatory_single_object() throws InterruptedException {
         // try to create another instance of device object
-        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(3, 0, new LwM2mResource[0]));
+        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(3,
+                new LwM2mResource[] { LwM2mSingleResource.newIntegerResource(3, 123) }));
 
         // verify result
         assertEquals(ResponseCode.METHOD_NOT_ALLOWED, response.getCode());

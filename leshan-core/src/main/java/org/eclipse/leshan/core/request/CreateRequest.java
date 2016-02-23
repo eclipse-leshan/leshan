@@ -20,19 +20,22 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.response.CreateResponse;
+import org.eclipse.leshan.util.Validate;
 
 /**
  * A Lightweight M2M request for creating Object Instance(s) within the LWM2M Client.
  */
 public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
 
+    private final Integer instanceId;
     private final List<LwM2mResource> resources;
     private final ContentFormat contentFormat;
 
-    // ***************** constructor without object instance id ******************* /
+    // ***************** constructors without object id ******************* /
 
     /**
      * Creates a request for creating an instance of a particular object without specifying the id of this new instance.
@@ -43,7 +46,7 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
      * @param resources the resource values for the new instance
      */
     public CreateRequest(ContentFormat contentFormat, int objectId, LwM2mResource... resources) {
-        this(contentFormat, new LwM2mPath(objectId), resources);
+        this(contentFormat, new LwM2mPath(objectId), null, resources);
     }
 
     /**
@@ -54,7 +57,7 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
      * @param resources the resource values for the new instance
      */
     public CreateRequest(int objectId, LwM2mResource... resources) {
-        this(null, new LwM2mPath(objectId), resources);
+        this(null, new LwM2mPath(objectId), null, resources);
     }
 
     /**
@@ -66,7 +69,7 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
      * @param resources the resource values for the new instance
      */
     public CreateRequest(ContentFormat contentFormat, int objectId, Collection<LwM2mResource> resources) {
-        this(contentFormat, new LwM2mPath(objectId), resources.toArray(new LwM2mResource[resources.size()]));
+        this(contentFormat, objectId, resources.toArray(new LwM2mResource[resources.size()]));
     }
 
     /**
@@ -77,57 +80,31 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
      * @param resources the resource values for the new instance
      */
     public CreateRequest(int objectId, Collection<LwM2mResource> resources) {
-        this(null, objectId, resources.toArray(new LwM2mResource[resources.size()]));
+        this(objectId, resources.toArray(new LwM2mResource[resources.size()]));
     }
 
-    // ***************** constructor with object instance id ******************* /
+    // ***************** constructor with object instance ******************* /
 
     /**
      * Creates a request for creating an instance of a particular object.
      * 
      * @param contentFormat the payload format
      * @param objectId the object id
-     * @param objectInstanceId the id of the new instance
-     * @param resources the resource values for the new instance
+     * @param instance the object instance
      */
-    public CreateRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, LwM2mResource... resources) {
-        this(contentFormat, new LwM2mPath(objectId, objectInstanceId), resources);
+    public CreateRequest(ContentFormat contentFormat, int objectId, LwM2mObjectInstance instance) {
+        this(contentFormat, new LwM2mPath(objectId), instance.getId(), instance.getResources().values()
+                .toArray(new LwM2mResource[0]));
     }
 
     /**
      * Creates a request for creating an instance of a particular object using the TLV content format.
      * 
      * @param objectId the object id
-     * @param objectInstanceId the id of the new instance
-     * @param resources the resource values for the new instance
+     * @param instance the object instance
      */
-    public CreateRequest(int objectId, int objectInstanceId, LwM2mResource... resources) {
-        this(null, new LwM2mPath(objectId, objectInstanceId), resources);
-    }
-
-    /**
-     * Creates a request for creating an instance of a particular object.
-     * 
-     * @param contentFormat the payload format
-     * @param objectId the object id
-     * @param objectInstanceId the id of the new instance
-     * @param resources the resource values for the new instance
-     */
-    public CreateRequest(ContentFormat contentFormat, int objectId, int objectInstanceId,
-            Collection<LwM2mResource> resources) {
-        this(contentFormat, new LwM2mPath(objectId, objectInstanceId), resources.toArray(new LwM2mResource[resources
-                .size()]));
-    }
-
-    /**
-     * Creates a request for creating an instance of a particular object using the TLV content format.
-     * 
-     * @param objectId the object id
-     * @param objectInstanceId the id of the new instance
-     * @param resources the resource values for the new instance
-     */
-    public CreateRequest(int objectId, int objectInstanceId, Collection<LwM2mResource> resources) {
-        this(null, new LwM2mPath(objectId, objectInstanceId), resources.toArray(new LwM2mResource[resources.size()]));
+    public CreateRequest(int objectId, LwM2mObjectInstance instance) {
+        this(null, objectId, instance);
     }
 
     // ***************** string path constructor ******************* /
@@ -138,7 +115,7 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
      * @param resources the resource values for the new instance
      */
     public CreateRequest(String path, Collection<LwM2mResource> resources) {
-        this(null, new LwM2mPath(path), resources.toArray(new LwM2mResource[resources.size()]));
+        this(path, resources.toArray(new LwM2mResource[resources.size()]));
     }
 
     /**
@@ -149,7 +126,7 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
      * @param resources the resource values for the new instance
      */
     public CreateRequest(ContentFormat contentFormat, String path, Collection<LwM2mResource> resources) {
-        this(contentFormat, new LwM2mPath(path), resources.toArray(new LwM2mResource[resources.size()]));
+        this(contentFormat, path, resources.toArray(new LwM2mResource[resources.size()]));
     }
 
     /**
@@ -159,7 +136,7 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
      * @param resources the resource values for the new instance
      */
     public CreateRequest(String path, LwM2mResource... resources) {
-        this(null, new LwM2mPath(path), resources);
+        this(null, new LwM2mPath(path), null, resources);
     }
 
     /**
@@ -170,18 +147,20 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
      * @param resources the resource values for the new instance
      */
     public CreateRequest(ContentFormat contentFormat, String path, LwM2mResource... resources) {
-        this(contentFormat, new LwM2mPath(path), resources);
+        this(contentFormat, new LwM2mPath(path), null, resources);
     }
 
     // ***************** generic constructor ******************* /
 
-    private CreateRequest(ContentFormat format, LwM2mPath target, LwM2mResource[] resources) {
+    private CreateRequest(ContentFormat format, LwM2mPath target, Integer instanceId, LwM2mResource[] resources) {
         super(target);
 
-        if (target.isResource()) {
-            throw new IllegalArgumentException("Cannot create a resource node");
+        if (!target.isObject()) {
+            throw new IllegalArgumentException("Create request must target an object");
         }
 
+        Validate.isTrue(instanceId == null || instanceId >= 0, "Invalid instance id: " + instanceId);
+        this.instanceId = instanceId;
         this.resources = Collections.unmodifiableList(Arrays.asList(resources));
         this.contentFormat = format != null ? format : ContentFormat.TLV; // default to TLV
     }
@@ -193,6 +172,13 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
 
     public List<LwM2mResource> getResources() {
         return resources;
+    }
+
+    /**
+     * @return the id of the new instance. <code>null</code> if not assigned by the server.
+     */
+    public Integer getInstanceId() {
+        return instanceId;
     }
 
     public ContentFormat getContentFormat() {

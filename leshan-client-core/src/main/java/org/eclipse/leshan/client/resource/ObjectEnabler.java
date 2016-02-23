@@ -81,7 +81,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
 
     @Override
     protected CreateResponse doCreate(CreateRequest request) {
-        Integer instanceId = request.getPath().getObjectInstanceId();
+        Integer instanceId = request.getInstanceId();
         if (instanceId == null) {
             // the client is in charge to generate the id of the new instance
             if (instances.isEmpty()) {
@@ -170,8 +170,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
             for (LwM2mObjectInstance instanceNode : ((LwM2mObject) request.getNode()).getInstances().values()) {
                 LwM2mInstanceEnabler instanceEnabler = instances.get(instanceNode.getId());
                 if (instanceEnabler == null) {
-                    doCreate(new CreateRequest(path.getObjectId(), path.getObjectInstanceId(), instanceNode
-                            .getResources().values()));
+                    doCreate(new CreateRequest(path.getObjectId(), instanceNode));
                 } else {
                     doWrite(new WriteRequest(Mode.REPLACE, path.getObjectId(), path.getObjectInstanceId(), instanceNode
                             .getResources().values()));
@@ -185,8 +184,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
             LwM2mObjectInstance instanceNode = (LwM2mObjectInstance) request.getNode();
             LwM2mInstanceEnabler instanceEnabler = instances.get(path.getObjectInstanceId());
             if (instanceEnabler == null) {
-                doCreate(new CreateRequest(path.getObjectId(), path.getObjectInstanceId(), instanceNode.getResources()
-                        .values()));
+                doCreate(new CreateRequest(path.getObjectId(), instanceNode));
             } else {
                 doWrite(new WriteRequest(Mode.REPLACE, request.getContentFormat(), path.getObjectId(),
                         path.getObjectInstanceId(), instanceNode.getResources().values()));
@@ -198,7 +196,8 @@ public class ObjectEnabler extends BaseObjectEnabler {
         LwM2mResource resource = (LwM2mResource) request.getNode();
         LwM2mInstanceEnabler instanceEnabler = instances.get(path.getObjectInstanceId());
         if (instanceEnabler == null) {
-            doCreate(new CreateRequest(path.getObjectId(), path.getObjectInstanceId(), resource));
+            doCreate(new CreateRequest(path.getObjectId(),
+                    new LwM2mObjectInstance(path.getObjectInstanceId(), resource)));
         } else {
             instanceEnabler.write(path.getResourceId(), resource);
         }
