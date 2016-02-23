@@ -15,14 +15,13 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
@@ -30,6 +29,7 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.leshan.ObserveSpec;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
+import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
@@ -42,6 +42,9 @@ import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
 import org.eclipse.leshan.server.client.Client;
+import org.eclipse.leshan.tlv.Tlv;
+import org.eclipse.leshan.tlv.Tlv.TlvType;
+import org.eclipse.leshan.tlv.TlvDecoder;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -199,12 +202,12 @@ public class CoapRequestBuilderTest {
     }
 
     @Test
-    public void build_create_request() throws Exception {
+    public void build_create_request__without_instance_id() throws Exception {
         Client client = newClient();
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
-        CreateRequest request = new CreateRequest(12, 0, LwM2mSingleResource.newStringResource(0, "value"));
+        CreateRequest request = new CreateRequest(12, LwM2mSingleResource.newStringResource(0, "value"));
         builder.visit(request);
 
         // verify
@@ -212,9 +215,36 @@ public class CoapRequestBuilderTest {
         assertEquals(CoAP.Code.POST, coapRequest.getCode());
         assertEquals("127.0.0.1", coapRequest.getDestination().getHostAddress());
         assertEquals(12354, coapRequest.getDestinationPort());
-        assertEquals("coap://localhost/12/0", coapRequest.getURI());
-        assertNotNull(coapRequest.getPayload());
+        assertEquals("coap://localhost/12", coapRequest.getURI());
         assertEquals(ContentFormat.TLV.getCode(), coapRequest.getOptions().getContentFormat());
+        assertNotNull(coapRequest.getPayload());
+        // assert it is encoded as array of resources TLV
+        Tlv[] tlvs = TlvDecoder.decode(ByteBuffer.wrap(coapRequest.getPayload()));
+        assertEquals(TlvType.RESOURCE_VALUE, tlvs[0].getType());
+    }
+
+    @Test
+    public void build_create_request__with_instance_id() throws Exception {
+        Client client = newClient();
+
+        // test
+        CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
+        CreateRequest request = new CreateRequest(12, new LwM2mObjectInstance(26,
+                LwM2mSingleResource.newStringResource(0, "value")));
+        builder.visit(request);
+
+        // verify
+        Request coapRequest = builder.getRequest();
+        assertEquals(CoAP.Code.POST, coapRequest.getCode());
+        assertEquals("127.0.0.1", coapRequest.getDestination().getHostAddress());
+        assertEquals(12354, coapRequest.getDestinationPort());
+        assertEquals("coap://localhost/12", coapRequest.getURI());
+        assertEquals(ContentFormat.TLV.getCode(), coapRequest.getOptions().getContentFormat());
+        assertNotNull(coapRequest.getPayload());
+        // assert it is encoded as array of instance TLV
+        Tlv[] tlvs = TlvDecoder.decode(ByteBuffer.wrap(coapRequest.getPayload()));
+        assertEquals(TlvType.OBJECT_INSTANCE, tlvs[0].getType());
+        assertEquals(26, tlvs[0].getIdentifier());
     }
 
     @Test

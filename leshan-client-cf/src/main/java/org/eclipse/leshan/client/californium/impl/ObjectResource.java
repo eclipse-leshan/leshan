@@ -15,11 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.impl;
 
-import static org.eclipse.leshan.client.californium.impl.ResourceUtil.extractIdentity;
-import static org.eclipse.leshan.client.californium.impl.ResourceUtil.fromLwM2mCode;
+import static org.eclipse.leshan.client.californium.impl.ResourceUtil.*;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.californium.core.CoapResource;
@@ -39,10 +36,8 @@ import org.eclipse.leshan.client.servers.BootstrapHandler;
 import org.eclipse.leshan.client.util.ObserveSpecParser;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
-import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.codec.InvalidValueException;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
@@ -160,8 +155,8 @@ public class ObjectResource extends CoapResource implements NotifySender {
 
         // Manage Write Attributes Request
         if (spec != null) {
-            WriteAttributesResponse response = nodeEnabler.writeAttributes(identity,
-                    new WriteAttributesRequest(URI, spec));
+            WriteAttributesResponse response = nodeEnabler.writeAttributes(identity, new WriteAttributesRequest(URI,
+                    spec));
             coapExchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
             return;
         }
@@ -178,8 +173,8 @@ public class ObjectResource extends CoapResource implements NotifySender {
                             lwM2mNode, contentFormat));
                     coapExchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
                 } else {
-                    WriteResponse response = nodeEnabler.write(identity, new WriteRequest(Mode.REPLACE, contentFormat, URI,
-                                    lwM2mNode));
+                    WriteResponse response = nodeEnabler.write(identity, new WriteRequest(Mode.REPLACE, contentFormat,
+                            URI, lwM2mNode));
                     coapExchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
                 }
 
@@ -202,8 +197,8 @@ public class ObjectResource extends CoapResource implements NotifySender {
 
         // Manage Execute Request
         if (path.isResource()) {
-            ExecuteResponse response = nodeEnabler.execute(
-                    identity, new ExecuteRequest(URI, new String(exchange.getRequestPayload())));
+            ExecuteResponse response = nodeEnabler.execute(identity,
+                    new ExecuteRequest(URI, new String(exchange.getRequestPayload())));
             exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
             return;
         }
@@ -212,31 +207,28 @@ public class ObjectResource extends CoapResource implements NotifySender {
         try {
             ContentFormat contentFormat = ContentFormat.fromCode(exchange.getRequestOptions().getContentFormat());
             LwM2mModel model = new LwM2mModel(nodeEnabler.getObjectModel());
-            LwM2mNode lwM2mNode = LwM2mNodeDecoder.decode(exchange.getRequestPayload(), contentFormat, path, model);
 
-            Collection<LwM2mResource> resources = null;
-            if (lwM2mNode instanceof LwM2mObject) {
-                LwM2mObject object = (LwM2mObject) lwM2mNode;
-                if (object.getInstances().size() == 0) {
-                    resources = Collections.emptyList();
-                } else {
-                    if (object.getInstances().size() == 1) {
-                        LwM2mObjectInstance newInstance = object.getInstances().values().iterator().next();
-                        resources = newInstance.getResources().values();
-                    }
-                }
-            } else if (lwM2mNode instanceof LwM2mObjectInstance) {
-                LwM2mObjectInstance newInstance = (LwM2mObjectInstance) lwM2mNode;
-                resources = newInstance.getResources().values();
-            }
+            // decode the payload as an instance
+            LwM2mObjectInstance newInstance = LwM2mNodeDecoder.decode(exchange.getRequestPayload(), contentFormat,
+                    new LwM2mPath(path.getObjectId()), model, LwM2mObjectInstance.class);
 
-            if (resources == null) {
-                LOG.debug("Invalid create request payload: {}", lwM2mNode);
+            if (newInstance.getResources().isEmpty()) {
+                LOG.debug("Invalid create request payload: {}", newInstance);
                 exchange.respond(ResponseCode.BAD_REQUEST);
                 return;
             }
 
-            CreateResponse response = nodeEnabler.create(identity, new CreateRequest(contentFormat, URI, resources));
+            CreateRequest createRequest = null;
+            if (newInstance.getId() != LwM2mObjectInstance.UNDEFINED) {
+                createRequest = new CreateRequest(contentFormat, path.getObjectId(), newInstance);
+            } else {
+                // the instance Id was not part of the create request payload.
+                // will be assigned by the client.
+                createRequest = new CreateRequest(contentFormat, path.getObjectId(), newInstance.getResources()
+                        .values());
+            }
+
+            CreateResponse response = nodeEnabler.create(identity, createRequest);
             if (response.getCode() == org.eclipse.leshan.ResponseCode.CREATED) {
                 exchange.setLocationPath(response.getLocation());
                 exchange.respond(fromLwM2mCode(response.getCode()));

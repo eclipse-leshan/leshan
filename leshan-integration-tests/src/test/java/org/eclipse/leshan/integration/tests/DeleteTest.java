@@ -18,8 +18,12 @@ package org.eclipse.leshan.integration.tests;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Arrays;
+
 import org.eclipse.leshan.ResponseCode;
+import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.response.DeleteResponse;
@@ -49,7 +53,10 @@ public class DeleteTest {
     @Test
     public void delete_created_object_instance() throws InterruptedException {
         // create ACL instance
-        helper.server.send(helper.getClient(), new CreateRequest(2, 0, new LwM2mResource[0]));
+        helper.server.send(
+                helper.getClient(),
+                new CreateRequest(2, new LwM2mObjectInstance(0, Arrays.asList(new LwM2mResource[] { LwM2mSingleResource
+                        .newIntegerResource(0, 123) }))));
 
         // try to delete this instance
         DeleteResponse deleteResponse = helper.server.send(helper.getClient(), new DeleteRequest(2, 0));

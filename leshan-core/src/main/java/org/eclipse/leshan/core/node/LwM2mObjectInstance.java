@@ -28,6 +28,9 @@ import org.eclipse.leshan.util.Validate;
  */
 public class LwM2mObjectInstance implements LwM2mNode {
 
+    /** Undefined instance Id */
+    public static final int UNDEFINED = -1;
+
     private final int id;
 
     private final Map<Integer, LwM2mResource> resources;
