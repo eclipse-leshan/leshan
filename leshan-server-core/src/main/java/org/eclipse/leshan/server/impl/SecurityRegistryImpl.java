@@ -29,6 +29,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
@@ -47,6 +50,11 @@ import org.slf4j.LoggerFactory;
 public class SecurityRegistryImpl implements SecurityRegistry {
 
     private static final Logger LOG = LoggerFactory.getLogger(SecurityRegistryImpl.class);
+
+    // lock for the two maps
+    private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+    private final Lock readLock = readWriteLock.readLock();
+    private final Lock writeLock = readWriteLock.writeLock();
 
     // by client end-point
     private Map<String, SecurityInfo> securityByEp = new HashMap<>();
@@ -119,59 +127,88 @@ public class SecurityRegistryImpl implements SecurityRegistry {
      * {@inheritDoc}
      */
     @Override
-    public synchronized SecurityInfo getByEndpoint(String endpoint) {
-        return securityByEp.get(endpoint);
+    public SecurityInfo getByEndpoint(String endpoint) {
+        readLock.lock();
+        try {
+            return securityByEp.get(endpoint);
+        } finally {
+            readLock.unlock();
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public synchronized SecurityInfo getByIdentity(String identity) {
-        return securityByIdentity.get(identity);
-    }
-
-    @Override
-    public synchronized Collection<SecurityInfo> getAll() {
-        return Collections.unmodifiableCollection(securityByEp.values());
-    }
-
-    private synchronized SecurityInfo addToRegistry(SecurityInfo info) throws NonUniqueSecurityInfoException {
-        String identity = info.getIdentity();
-        if (identity != null) {
-            SecurityInfo infoByIdentity = securityByIdentity.get(info.getIdentity());
-            if (infoByIdentity != null && !info.getEndpoint().equals(infoByIdentity.getEndpoint())) {
-                throw new NonUniqueSecurityInfoException("PSK Identity " + info.getIdentity() + " is already used");
-            }
-
-            securityByIdentity.put(info.getIdentity(), info);
+    public SecurityInfo getByIdentity(String identity) {
+        readLock.lock();
+        try {
+            return securityByIdentity.get(identity);
+        } finally {
+            readLock.unlock();
         }
-
-        SecurityInfo previous = securityByEp.put(info.getEndpoint(), info);
-
-        return previous;
     }
 
     @Override
-    public synchronized SecurityInfo add(SecurityInfo info) throws NonUniqueSecurityInfoException {
-        SecurityInfo previous = addToRegistry(info);
-        saveToFile();
-
-        return previous;
+    public Collection<SecurityInfo> getAll() {
+        readLock.lock();
+        try {
+            return Collections.unmodifiableCollection(securityByEp.values());
+        } finally {
+            readLock.unlock();
+        }
     }
 
-    @Override
-    public synchronized SecurityInfo remove(String endpoint) {
-        SecurityInfo info = securityByEp.get(endpoint);
-        if (info != null) {
-            if (info.getIdentity() != null) {
-                securityByIdentity.remove(info.getIdentity());
+    private SecurityInfo addToRegistry(SecurityInfo info) throws NonUniqueSecurityInfoException {
+        writeLock.lock();
+        try {
+            String identity = info.getIdentity();
+            if (identity != null) {
+                SecurityInfo infoByIdentity = securityByIdentity.get(info.getIdentity());
+                if (infoByIdentity != null && !info.getEndpoint().equals(infoByIdentity.getEndpoint())) {
+                    throw new NonUniqueSecurityInfoException("PSK Identity " + info.getIdentity() + " is already used");
+                }
+
+                securityByIdentity.put(info.getIdentity(), info);
             }
-            securityByEp.remove(endpoint);
 
+            SecurityInfo previous = securityByEp.put(info.getEndpoint(), info);
+
+            return previous;
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    @Override
+    public SecurityInfo add(SecurityInfo info) throws NonUniqueSecurityInfoException {
+        writeLock.lock();
+        try {
+            SecurityInfo previous = addToRegistry(info);
             saveToFile();
+            return previous;
+        } finally {
+            writeLock.unlock();
         }
-        return info;
+    }
+
+    @Override
+    public SecurityInfo remove(String endpoint) {
+        writeLock.lock();
+        try {
+            SecurityInfo info = securityByEp.get(endpoint);
+            if (info != null) {
+                if (info.getIdentity() != null) {
+                    securityByIdentity.remove(info.getIdentity());
+                }
+                securityByEp.remove(endpoint);
+
+                saveToFile();
+            }
+            return info;
+        } finally {
+            writeLock.unlock();
+        }
     }
 
     protected void loadFromFile() {
