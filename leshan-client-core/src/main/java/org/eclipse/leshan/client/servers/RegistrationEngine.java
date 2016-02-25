@@ -180,7 +180,7 @@ public class RegistrationEngine {
             return false;
         } else if (response.isSuccess() || response.getCode() == ResponseCode.NOT_FOUND) {
             registrationID = null;
-            cancelUpdateTask();
+            cancelUpdateTask(true);
             LOG.info("De-register response {} {}.", response.getCode(), response.getErrorMessage());
             return true;
         } else {
@@ -190,7 +190,7 @@ public class RegistrationEngine {
     }
 
     private boolean update() throws InterruptedException {
-        cancelUpdateTask();
+        cancelUpdateTask(false);
 
         ServersInfo serversInfo = ServersInfoExtractor.getInfo(objectEnablers);
         DmServerInfo dmInfo = serversInfo.deviceMangements.values().iterator().next();
@@ -283,9 +283,9 @@ public class RegistrationEngine {
         }
     }
 
-    private void cancelUpdateTask() {
+    private void cancelUpdateTask(boolean mayinterrupt) {
         if (updateFuture != null) {
-            updateFuture.cancel(true);
+            updateFuture.cancel(mayinterrupt);
         }
     }
 
@@ -296,7 +296,7 @@ public class RegistrationEngine {
     }
 
     public void stop(boolean deregister) {
-        cancelUpdateTask();
+        cancelUpdateTask(true);
         // TODO we should manage the case where we stop in the middle of a bootstrap session ...
         cancelRegistrationTask();
         try {
