@@ -41,6 +41,8 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
+import org.eclipse.leshan.server.demo.cluster.RedisClientRegistry;
+import org.eclipse.leshan.server.demo.cluster.RedisSecurityRegistry;
 import org.eclipse.leshan.server.demo.servlet.ClientServlet;
 import org.eclipse.leshan.server.demo.servlet.EventServlet;
 import org.eclipse.leshan.server.demo.servlet.ObjectSpecServlet;
@@ -49,6 +51,10 @@ import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
 import org.eclipse.leshan.util.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.util.Pool;
 
 public class LeshanServerDemo {
 
@@ -67,6 +73,8 @@ public class LeshanServerDemo {
         options.addOption("slh", "coapshost", true, "Set the secure local CoAP address.\nDefault: any local address.");
         options.addOption("slp", "coapsport", true, "Set the secure local CoAP port.\nDefault: 5684.");
         options.addOption("wp", "webport", true, "Set the HTTP port for web server.\nDefault: 8080.");
+        options.addOption("r", "redis", true,
+                "Set the redis hostname:port for running in cluster mode.\nDefault: none, no redis connection.");
         HelpFormatter formatter = new HelpFormatter();
         formatter.setOptionComparator(null);
 
@@ -131,11 +139,17 @@ public class LeshanServerDemo {
             webPort = Integer.parseInt(webPortOption);
         }
 
+        // get the Redis hostname:port
+        String redisUrl = null;
+        if (cl.hasOption("r")) {
+            redisUrl = cl.getOptionValue("r");
+        }
+
         try {
-            createAndStartServer(webPort, localAddress, localPort, secureLocalAddress, secureLocalPort);
+            createAndStartServer(webPort, localAddress, localPort, secureLocalAddress, secureLocalPort, redisUrl);
         } catch (BindException e) {
-            System.out.println(String.format("Web port %s is alreay used, you could change it using 'webport' option.",
-                    webPort));
+            System.out.println(
+                    String.format("Web port %s is alreay used, you could change it using 'webport' option.", webPort));
             formatter.printHelp(USAGE, null, options, FOOTER);
         } catch (Exception e) {
             LOG.error("Jetty stopped with unexcepted error ...", e);
@@ -143,23 +157,32 @@ public class LeshanServerDemo {
     }
 
     public static void createAndStartServer(int webPort, String localAddress, int localPort, String secureLocalAddress,
-            int secureLocalPort) throws Exception {
+            int secureLocalPort, String redisUrl) throws Exception {
         // Prepare LWM2M server
         LeshanServerBuilder builder = new LeshanServerBuilder();
         builder.setLocalAddress(localAddress, localPort);
         builder.setLocalSecureAddress(secureLocalAddress, secureLocalPort);
+
+        // connect to redis if needed
+        Pool<Jedis> jedis = null;
+        if (redisUrl != null) {
+            String[] parts = redisUrl.split("\\:");
+
+            // TODO: support sentinel pool and make pool configurable
+            jedis = new JedisPool(parts[0], parts.length > 1 ? Integer.valueOf(parts[1]) : 6379);
+        }
 
         // Get public and private server key
         PrivateKey privateKey = null;
         PublicKey publicKey = null;
         try {
             // Get point values
-            byte[] publicX = Hex.decodeHex("fcc28728c123b155be410fc1c0651da374fc6ebe7f96606e90d927d188894a73"
-                    .toCharArray());
-            byte[] publicY = Hex.decodeHex("d2ffaa73957d76984633fc1cc54d0b763ca0559a9dff9706e9f4557dacc3f52a"
-                    .toCharArray());
-            byte[] privateS = Hex.decodeHex("1dae121ba406802ef07c193c1ee4df91115aabd79c1ed7f4c0ef7ef6a5449400"
-                    .toCharArray());
+            byte[] publicX = Hex
+                    .decodeHex("fcc28728c123b155be410fc1c0651da374fc6ebe7f96606e90d927d188894a73".toCharArray());
+            byte[] publicY = Hex
+                    .decodeHex("d2ffaa73957d76984633fc1cc54d0b763ca0559a9dff9706e9f4557dacc3f52a".toCharArray());
+            byte[] privateS = Hex
+                    .decodeHex("1dae121ba406802ef07c193c1ee4df91115aabd79c1ed7f4c0ef7ef6a5449400".toCharArray());
 
             // Get Elliptic Curve Parameter spec for secp256r1
             AlgorithmParameters algoParameters = AlgorithmParameters.getInstance("EC");
@@ -175,9 +198,17 @@ public class LeshanServerDemo {
             publicKey = KeyFactory.getInstance("EC").generatePublic(publicKeySpec);
             privateKey = KeyFactory.getInstance("EC").generatePrivate(privateKeySpec);
 
-            builder.setSecurityRegistry(new SecurityRegistryImpl(privateKey, publicKey));
+            if (jedis == null) {
+                // in memory security registry (with file persistence)
+                builder.setSecurityRegistry(new SecurityRegistryImpl(privateKey, publicKey));
+            } else {
+                // use Redis
+                builder.setSecurityRegistry(new RedisSecurityRegistry(jedis, privateKey, publicKey));
+                builder.setClientRegistry(new RedisClientRegistry(jedis));
+            }
         } catch (InvalidKeySpecException | NoSuchAlgorithmException | InvalidParameterSpecException e) {
-            LOG.warn("Unable to load RPK.", e);
+            LOG.error("Unable to initialize RPK.", e);
+            System.exit(-1);
         }
 
         // Create and start LWM2M server
@@ -196,8 +227,8 @@ public class LeshanServerDemo {
         ServletHolder eventServletHolder = new ServletHolder(eventServlet);
         root.addServlet(eventServletHolder, "/event/*");
 
-        ServletHolder clientServletHolder = new ServletHolder(new ClientServlet(lwServer, lwServer.getSecureAddress()
-                .getPort()));
+        ServletHolder clientServletHolder = new ServletHolder(
+                new ClientServlet(lwServer, lwServer.getSecureAddress().getPort()));
         root.addServlet(clientServletHolder, "/api/clients/*");
 
         ServletHolder securityServletHolder = new ServletHolder(new SecurityServlet(lwServer.getSecurityRegistry()));

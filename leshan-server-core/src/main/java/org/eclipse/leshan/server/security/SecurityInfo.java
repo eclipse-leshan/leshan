@@ -83,6 +83,9 @@ public class SecurityInfo implements Serializable {
         return endpoint;
     }
 
+    /**
+     * The Pre-Shared-Key identity
+     */
     public String getIdentity() {
         return identity;
     }
