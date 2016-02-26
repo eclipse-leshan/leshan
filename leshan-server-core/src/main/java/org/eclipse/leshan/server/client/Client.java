@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.client;
 
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
@@ -31,7 +32,9 @@ import org.eclipse.leshan.util.Validate;
 /**
  * An immutable structure which represent a LW-M2M client registered on the server
  */
-public class Client {
+public class Client implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private static final long DEFAULT_LIFETIME_IN_SEC = 86400L;
 
@@ -109,9 +112,9 @@ public class Client {
         this.bindingMode = bindingMode == null ? BindingMode.U : bindingMode;
         this.registrationDate = registrationDate == null ? new Date() : registrationDate;
         this.lastUpdate = lastUpdate == null ? new Date() : lastUpdate;
-        this.additionalRegistrationAttributes = additionalRegistrationAttributes == null ? Collections
-                .unmodifiableMap(new HashMap<String, String>()) : Collections
-                .unmodifiableMap(additionalRegistrationAttributes);
+        this.additionalRegistrationAttributes = additionalRegistrationAttributes == null
+                ? Collections.unmodifiableMap(new HashMap<String, String>())
+                : Collections.unmodifiableMap(additionalRegistrationAttributes);
 
     }
 
@@ -280,10 +283,10 @@ public class Client {
 
     @Override
     public String toString() {
-        return String
-                .format("Client [registrationDate=%s, address=%s, port=%s, registrationEndpoint=%s, lifeTimeInSec=%s, smsNumber=%s, lwM2mVersion=%s, bindingMode=%s, endpoint=%s, registrationId=%s, objectLinks=%s, lastUpdate=%s]",
-                        registrationDate, address, port, registrationEndpointAddress, lifeTimeInSec, smsNumber,
-                        lwM2mVersion, bindingMode, endpoint, registrationId, Arrays.toString(objectLinks), lastUpdate);
+        return String.format(
+                "Client [registrationDate=%s, address=%s, port=%s, registrationEndpoint=%s, lifeTimeInSec=%s, smsNumber=%s, lwM2mVersion=%s, bindingMode=%s, endpoint=%s, registrationId=%s, objectLinks=%s, lastUpdate=%s]",
+                registrationDate, address, port, registrationEndpointAddress, lifeTimeInSec, smsNumber, lwM2mVersion,
+                bindingMode, endpoint, registrationId, Arrays.toString(objectLinks), lastUpdate);
     }
 
     /**
