@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +31,9 @@ import org.eclipse.leshan.util.StringUtils;
  */
 // TODO this class should not have a lwM2M flavor.
 // TODO we should have a look at org.eclipse.californium.core.coap.LinkFormat
-public class LinkObject {
+public class LinkObject implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private final String url;
 
