@@ -12,6 +12,7 @@
  *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - use ObserveRelationFilter
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.impl;
 
@@ -24,8 +25,6 @@ import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Exchange;
-import org.eclipse.californium.core.observe.ObserveRelation;
-import org.eclipse.californium.core.observe.ObserveRelationContainer;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.LinkObject;
@@ -256,7 +255,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
 
     @Override
     public void sendNotify(String URI) {
-        notifyObserverRelationsForResource(URI);
+    	changed(new ResourceObserveFilter(URI));
     }
 
     /*
@@ -268,29 +267,4 @@ public class ObjectResource extends CoapResource implements NotifySender {
         return this;
     }
 
-    /*
-     * TODO: Observe HACK we should see if this could not be integrated in californium
-     * http://dev.eclipse.org/mhonarc/lists/cf-dev/msg00181.html
-     */
-    private ObserveRelationContainer observeRelations = new ObserveRelationContainer();
-
-    @Override
-    public void addObserveRelation(ObserveRelation relation) {
-        super.addObserveRelation(relation);
-        observeRelations.add(relation);
-    }
-
-    @Override
-    public void removeObserveRelation(ObserveRelation relation) {
-        super.removeObserveRelation(relation);
-        observeRelations.remove(relation);
-    }
-
-    protected void notifyObserverRelationsForResource(String URI) {
-        for (ObserveRelation relation : observeRelations) {
-            if (relation.getExchange().getRequest().getOptions().getUriPathString().equals(URI)) {
-                relation.notifyObservers();
-            }
-        }
-    }
 }
