@@ -12,15 +12,16 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - use ExtendedIdentity
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.impl;
 
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
+import org.eclipse.leshan.client.request.ExtendedIdentity;
 import org.eclipse.leshan.client.servers.BootstrapHandler;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
-import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
 import org.eclipse.leshan.util.StringUtils;
 
@@ -43,7 +44,7 @@ public class RootResource extends CoapResource {
             return;
         }
 
-        Identity identity = ResourceUtil.extractIdentity(exchange);
+        ExtendedIdentity identity = ResourceUtil.extractIdentity(exchange, bootstrapHandler);
         BootstrapDeleteResponse response = bootstrapHandler.delete(identity, new BootstrapDeleteRequest());
         exchange.respond(ResourceUtil.fromLwM2mCode(response.getCode()), response.getErrorMessage());
     }

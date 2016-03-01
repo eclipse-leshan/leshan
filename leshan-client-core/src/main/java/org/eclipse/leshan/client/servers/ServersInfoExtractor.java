@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - use ExtendedIdentity.SYSTEM
  *******************************************************************************/
 package org.eclipse.leshan.client.servers;
 
@@ -24,6 +25,7 @@ import static org.eclipse.leshan.LwM2mId.SERVER;
 import static org.eclipse.leshan.LwM2mId.SRV_BINDING;
 import static org.eclipse.leshan.LwM2mId.SRV_LIFETIME;
 import static org.eclipse.leshan.LwM2mId.SRV_SERVER_ID;
+import static org.eclipse.leshan.client.request.ExtendedIdentity.SYSTEM;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -51,8 +53,8 @@ public class ServersInfoExtractor {
             return null;
 
         ServersInfo infos = new ServersInfo();
-        LwM2mObject securities = (LwM2mObject) securityEnabler.read(null, new ReadRequest(SECURITY)).getContent();
-        LwM2mObject servers = (LwM2mObject) serverEnabler.read(null, new ReadRequest(SERVER)).getContent();
+        LwM2mObject securities = (LwM2mObject) securityEnabler.read(SYSTEM, new ReadRequest(SECURITY)).getContent();
+        LwM2mObject servers = (LwM2mObject) serverEnabler.read(SYSTEM, new ReadRequest(SERVER)).getContent();
 
         for (LwM2mObjectInstance security : securities.getInstances().values()) {
             try {
@@ -88,6 +90,10 @@ public class ServersInfoExtractor {
                 }
             } catch (URISyntaxException e) {
                 LOG.error(String.format("Invalid URI %s", (String) security.getResource(SEC_SERVER_URI).getValue()), e);
+            } catch (Throwable e) {
+                LOG.error("Error", e);
+                e.printStackTrace();
+                throw e;
             }
         }
         return infos;

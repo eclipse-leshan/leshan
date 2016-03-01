@@ -13,6 +13,7 @@
  * Contributors:
  *     Zebra Technologies - initial API and implementation
  *     Kiran Pradeep - add more test cases
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add test for execute security object
  *******************************************************************************/
 
 package org.eclipse.leshan.integration.tests;
@@ -79,6 +80,14 @@ public class ExecuteTest {
         final int nonExistingObjectId = 9999;
         ExecuteResponse response = helper.server
                 .send(helper.getClient(), new ExecuteRequest(nonExistingObjectId, 0, 0));
+
+        // verify result
+        assertEquals(ResponseCode.NOT_FOUND, response.getCode());
+    }
+
+    @Test
+    public void cannot_execute_security_object() throws InterruptedException {
+        ExecuteResponse response = helper.server.send(helper.getClient(), new ExecuteRequest(0, 0, 0));
 
         // verify result
         assertEquals(ResponseCode.NOT_FOUND, response.getCode());

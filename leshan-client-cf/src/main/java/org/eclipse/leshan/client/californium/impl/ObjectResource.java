@@ -13,6 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - use ObserveRelationFilter
+ *     Achim Kraus (Bosch Software Innovations GmbH) - use ExtendedIdentity
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.impl;
 
@@ -29,6 +30,7 @@ import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.ObserveSpec;
+import org.eclipse.leshan.client.request.ExtendedIdentity;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.NotifySender;
 import org.eclipse.leshan.client.servers.BootstrapHandler;
@@ -47,7 +49,6 @@ import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.DiscoverRequest;
 import org.eclipse.leshan.core.request.ExecuteRequest;
-import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
@@ -95,8 +96,8 @@ public class ObjectResource extends CoapResource implements NotifySender {
 
     @Override
     public void handleGET(CoapExchange exchange) {
+        ExtendedIdentity identity = extractIdentity(exchange, bootstrapHandler);
         String URI = exchange.getRequestOptions().getUriPathString();
-        Identity identity = extractIdentity(exchange);
 
         // Manage Discover Request
         if (exchange.getRequestOptions().getAccept() == MediaTypeRegistry.APPLICATION_LINK_FORMAT) {
@@ -142,8 +143,9 @@ public class ObjectResource extends CoapResource implements NotifySender {
 
     @Override
     public void handlePUT(final CoapExchange coapExchange) {
+        ExtendedIdentity identity = extractIdentity(coapExchange, bootstrapHandler);
+
         String URI = coapExchange.getRequestOptions().getUriPathString();
-        Identity identity = extractIdentity(coapExchange);
 
         // get Observe Spec
         ObserveSpec spec = null;
@@ -167,7 +169,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
             try {
                 LwM2mModel model = new LwM2mModel(nodeEnabler.getObjectModel());
                 lwM2mNode = LwM2mNodeDecoder.decode(coapExchange.getRequestPayload(), contentFormat, path, model);
-                if (bootstrapHandler.isBootstrapServer(identity)) {
+                if (identity.isBootstrap()) {
                     BootstrapWriteResponse response = nodeEnabler.write(identity, new BootstrapWriteRequest(path,
                             lwM2mNode, contentFormat));
                     coapExchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
@@ -189,8 +191,8 @@ public class ObjectResource extends CoapResource implements NotifySender {
 
     @Override
     public void handlePOST(final CoapExchange exchange) {
+        ExtendedIdentity identity = extractIdentity(exchange, bootstrapHandler);
         String URI = exchange.getRequestOptions().getUriPathString();
-        Identity identity = extractIdentity(exchange);
 
         LwM2mPath path = new LwM2mPath(URI);
 
@@ -247,7 +249,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
     public void handleDELETE(final CoapExchange coapExchange) {
         // Manage Delete Request
         String URI = coapExchange.getRequestOptions().getUriPathString();
-        Identity identity = extractIdentity(coapExchange);
+        ExtendedIdentity identity = extractIdentity(coapExchange, bootstrapHandler);
 
         DeleteResponse response = nodeEnabler.delete(identity, new DeleteRequest(URI));
         coapExchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());

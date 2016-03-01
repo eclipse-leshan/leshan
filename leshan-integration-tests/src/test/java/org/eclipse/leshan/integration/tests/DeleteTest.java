@@ -13,6 +13,7 @@
  * Contributors:
  *     Zebra Technologies - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - add test for deleting a resource
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add test for delete security object
  *******************************************************************************/
 
 package org.eclipse.leshan.integration.tests;
@@ -98,4 +99,13 @@ public class DeleteTest {
         // verify result
         assertEquals(ResponseCode.METHOD_NOT_ALLOWED, response.getCode());
     }
+
+    @Test
+    public void cannot_delete_security_object_instance() throws InterruptedException {
+        DeleteResponse response = helper.server.send(helper.getClient(), new DeleteRequest(0, 0));
+
+        // verify result
+        assertEquals(ResponseCode.NOT_FOUND, response.getCode());
+    }
+
 }
