@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Zebra Technologies - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add test for read security object
  *******************************************************************************/
 
 package org.eclipse.leshan.integration.tests;
@@ -134,6 +135,15 @@ public class ReadTest {
     public void cannot_read_non_existent_resource() throws InterruptedException {
         // read device 50 resource
         ReadResponse response = helper.server.send(helper.getClient(), new ReadRequest(3, 0, 50));
+
+        // verify result
+        assertEquals(NOT_FOUND, response.getCode());
+    }
+
+    @Test
+    public void cannot_read_security_resource() throws InterruptedException {
+        // read device 50 resource
+        ReadResponse response = helper.server.send(helper.getClient(), new ReadRequest(0, 0, 0));
 
         // verify result
         assertEquals(NOT_FOUND, response.getCode());

@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Zebra Technologies - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add test for create security object
  *******************************************************************************/
 
 package org.eclipse.leshan.integration.tests;
@@ -162,4 +163,14 @@ public class CreateTest {
         // verify result
         assertEquals(ResponseCode.METHOD_NOT_ALLOWED, response.getCode());
     }
+
+    @Test
+    public void cannot_create_instance_of_security_object() throws InterruptedException {
+        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(0,
+                new LwM2mResource[] { LwM2mSingleResource.newStringResource(0, "new.dest") }));
+
+        // verify result
+        assertEquals(ResponseCode.NOT_FOUND, response.getCode());
+    }
+
 }

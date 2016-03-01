@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - use ServerIdentity.SYSTEM
  *******************************************************************************/
 package org.eclipse.leshan.client.servers;
 
@@ -24,6 +25,7 @@ import static org.eclipse.leshan.LwM2mId.SERVER;
 import static org.eclipse.leshan.LwM2mId.SRV_BINDING;
 import static org.eclipse.leshan.LwM2mId.SRV_LIFETIME;
 import static org.eclipse.leshan.LwM2mId.SRV_SERVER_ID;
+import static org.eclipse.leshan.client.request.ServerIdentity.SYSTEM;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -51,8 +53,8 @@ public class ServersInfoExtractor {
             return null;
 
         ServersInfo infos = new ServersInfo();
-        LwM2mObject securities = (LwM2mObject) securityEnabler.read(null, new ReadRequest(SECURITY)).getContent();
-        LwM2mObject servers = (LwM2mObject) serverEnabler.read(null, new ReadRequest(SERVER)).getContent();
+        LwM2mObject securities = (LwM2mObject) securityEnabler.read(SYSTEM, new ReadRequest(SECURITY)).getContent();
+        LwM2mObject servers = (LwM2mObject) serverEnabler.read(SYSTEM, new ReadRequest(SERVER)).getContent();
 
         for (LwM2mObjectInstance security : securities.getInstances().values()) {
             try {

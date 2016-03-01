@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - use ServerIdentity.SYSTEM
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.impl;
 
@@ -20,6 +21,7 @@ import static org.eclipse.leshan.LwM2mId.SEC_PUBKEY_IDENTITY;
 import static org.eclipse.leshan.LwM2mId.SEC_SECRET_KEY;
 import static org.eclipse.leshan.LwM2mId.SEC_SECURITY_MODE;
 import static org.eclipse.leshan.LwM2mId.SEC_SERVER_URI;
+import static org.eclipse.leshan.client.request.ServerIdentity.SYSTEM;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -51,7 +53,7 @@ public class SecurityObjectPskStore implements PskStore {
         if (identity == null)
             return null;
 
-        LwM2mObject securities = (LwM2mObject) securityEnabler.read(null, new ReadRequest(SECURITY)).getContent();
+        LwM2mObject securities = (LwM2mObject) securityEnabler.read(SYSTEM, new ReadRequest(SECURITY)).getContent();
         for (LwM2mObjectInstance security : securities.getInstances().values()) {
             long securityMode = (long) security.getResource(SEC_SECURITY_MODE).getValue();
             // TODO use SecurityMode from serve.core ?
@@ -70,7 +72,7 @@ public class SecurityObjectPskStore implements PskStore {
         if (inetAddress == null)
             return null;
 
-        LwM2mObject securities = (LwM2mObject) securityEnabler.read(null, new ReadRequest(SECURITY)).getContent();
+        LwM2mObject securities = (LwM2mObject) securityEnabler.read(SYSTEM, new ReadRequest(SECURITY)).getContent();
         for (LwM2mObjectInstance security : securities.getInstances().values()) {
             long securityMode = (long) security.getResource(SEC_SECURITY_MODE).getValue();
             // TODO use SecurityMode from server.core ?
