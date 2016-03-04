@@ -125,7 +125,7 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
 
         byte[] pskId = pskIdentity.getBytes(Charsets.UTF_8);
 
-        Security security = Security.pskBootstrap(bsUrl, 42, pskId, pskKey);
+        Security security = Security.pskBootstrap(bsUrl, pskId, pskKey);
 
         initializer.setInstancesForObject(LwM2mId.SECURITY, security);
 

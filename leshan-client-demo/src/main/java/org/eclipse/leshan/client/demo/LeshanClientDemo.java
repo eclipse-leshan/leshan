@@ -174,9 +174,9 @@ public class LeshanClientDemo {
         ObjectsInitializer initializer = new ObjectsInitializer();
         if (needBootstrap) {
             if (pskIdentity == null)
-                initializer.setInstancesForObject(SECURITY, noSecBootstap(serverURI, 123));
+                initializer.setInstancesForObject(SECURITY, noSecBootstap(serverURI));
             else
-                initializer.setInstancesForObject(SECURITY, pskBootstrap(serverURI, 123, pskIdentity, pskKey));
+                initializer.setInstancesForObject(SECURITY, pskBootstrap(serverURI, pskIdentity, pskKey));
         } else {
             if (pskIdentity == null) {
                 initializer.setInstancesForObject(SECURITY, noSec(serverURI, 123));
