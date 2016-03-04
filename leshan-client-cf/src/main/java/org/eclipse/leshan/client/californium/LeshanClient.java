@@ -28,6 +28,7 @@ import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
+import org.eclipse.californium.scandium.dtls.InMemoryConnectionStore;
 import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.californium.impl.BootstrapResource;
@@ -37,6 +38,7 @@ import org.eclipse.leshan.client.californium.impl.RootResource;
 import org.eclipse.leshan.client.californium.impl.SecurityObjectPskStore;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.servers.BootstrapHandler;
+import org.eclipse.leshan.client.servers.BootstrapListener;
 import org.eclipse.leshan.client.servers.RegistrationEngine;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
@@ -89,13 +91,22 @@ public class LeshanClient implements LwM2mClient {
 
         Builder builder = new DtlsConnectorConfig.Builder(localSecureAddress);
         builder.setPskStore(new SecurityObjectPskStore(securityEnabler));
-        secureEndpoint = new CoapEndpoint(new DTLSConnector(builder.build()), NetworkConfig.getStandard());
+        final InMemoryConnectionStore inMemoryConnectionStore = new InMemoryConnectionStore();
+        secureEndpoint = new CoapEndpoint(new DTLSConnector(builder.build(), inMemoryConnectionStore),
+                NetworkConfig.getStandard());
 
         // Create sender
         requestSender = new CaliforniumLwM2mClientRequestSender(secureEndpoint, nonSecureEndpoint);
 
         // Create registration engine
         bootstrapHandler = new BootstrapHandler(this.objectEnablers);
+        bootstrapHandler.addBootstrapListener(new BootstrapListener() {
+            @Override
+            public void bootstrapFinished() {
+                // TODO we need a scandium or californium API to close all the current session.
+                inMemoryConnectionStore.clear();
+            }
+        });
 
         // Create registration engine
         engine = new RegistrationEngine(endpoint, this.objectEnablers, requestSender, bootstrapHandler);
