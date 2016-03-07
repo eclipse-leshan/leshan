@@ -36,6 +36,7 @@ import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistryListener;
+import org.eclipse.leshan.server.client.ClientUpdate;
 import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
 
 /**
@@ -107,7 +108,7 @@ public class IntegrationTestHelper {
         resetLatch();
         server.getClientRegistry().addListener(new ClientRegistryListener() {
             @Override
-            public void updated(Client clientUpdated) {
+            public void updated(ClientUpdate update, Client clientUpdated) {
                 if (clientUpdated.getEndpoint().equals(ENDPOINT_IDENTIFIER)) {
                     updateLatch.countDown();
                 }
