@@ -43,6 +43,7 @@ import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.client.ClientRegistryListener;
+import org.eclipse.leshan.server.client.ClientUpdate;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
@@ -116,7 +117,7 @@ public class LeshanServer implements LwM2mServer {
         this.clientRegistry.addListener(new ClientRegistryListener() {
 
             @Override
-            public void updated(final Client clientUpdated) {
+            public void updated(final ClientUpdate update, final Client clientUpdated) {
             }
 
             @Override

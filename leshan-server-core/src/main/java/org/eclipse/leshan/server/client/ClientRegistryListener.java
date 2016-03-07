@@ -30,9 +30,10 @@ public interface ClientRegistryListener {
     /**
      * Invoked when a client has been updated.
      *
+     * @param update the registration properties to update
      * @param clientUpdated the client after the update
      */
-    void updated(Client clientUpdated);
+    void updated(ClientUpdate update, Client clientUpdated);
 
     /**
      * Invoked when a new client has been unregistered from the server.

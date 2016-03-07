@@ -99,7 +99,7 @@ public class ClientRegistryImpl implements ClientRegistry, Startable, Stoppable 
 
             // notify listener
             for (ClientRegistryListener l : listeners) {
-                l.updated(clientUpdated);
+                l.updated(update, clientUpdated);
             }
             return clientUpdated;
         }

@@ -27,6 +27,7 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistryListener;
+import org.eclipse.leshan.server.client.ClientUpdate;
 import org.eclipse.leshan.server.demo.servlet.json.ClientSerializer;
 import org.eclipse.leshan.server.demo.servlet.json.LwM2mNodeSerializer;
 import org.eclipse.leshan.server.demo.servlet.log.CoapMessage;
@@ -76,7 +77,7 @@ public class EventServlet extends EventSourceServlet {
         }
 
         @Override
-        public void updated(Client clientUpdated) {
+        public void updated(ClientUpdate update, Client clientUpdated) {
             String jClient = EventServlet.this.gson.toJson(clientUpdated);
             sendEvent(EVENT_UPDATED, jClient, clientUpdated.getEndpoint());
         };
