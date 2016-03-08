@@ -18,15 +18,15 @@ package org.eclipse.leshan.server.californium;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
+import org.eclipse.californium.core.observe.InMemoryObservationStore;
 import org.eclipse.leshan.server.LwM2mServer;
+import org.eclipse.leshan.server.californium.impl.CaliforniumObservationRegistryImpl;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.impl.ClientRegistryImpl;
-import org.eclipse.leshan.server.impl.ObservationRegistryImpl;
 import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StandardModelProvider;
-import org.eclipse.leshan.server.observation.ObservationRegistry;
 import org.eclipse.leshan.server.security.SecurityRegistry;
 
 /**
@@ -43,7 +43,7 @@ public class LeshanServerBuilder {
     public static final int PORT_DTLS = 5684;
 
     private SecurityRegistry securityRegistry;
-    private ObservationRegistry observationRegistry;
+    private CaliforniumObservationRegistry observationRegistry;
     private ClientRegistry clientRegistry;
     private LwM2mModelProvider modelProvider;
     private InetSocketAddress localAddress;
@@ -82,7 +82,7 @@ public class LeshanServerBuilder {
         return this;
     }
 
-    public LeshanServerBuilder setObservationRegistry(ObservationRegistry observationRegistry) {
+    public LeshanServerBuilder setObservationRegistry(CaliforniumObservationRegistry observationRegistry) {
         this.observationRegistry = observationRegistry;
         return this;
     }
@@ -106,12 +106,13 @@ public class LeshanServerBuilder {
             clientRegistry = new ClientRegistryImpl();
         if (securityRegistry == null)
             securityRegistry = new SecurityRegistryImpl();
-        if (observationRegistry == null)
-            observationRegistry = new ObservationRegistryImpl();
-        if (modelProvider == null) {
+        if (modelProvider == null)
             modelProvider = new StandardModelProvider();
-        }
-        return new LeshanServer(localAddress, localSecureAddress, clientRegistry, securityRegistry,
-                observationRegistry, modelProvider);
+        if (observationRegistry == null)
+            observationRegistry = new CaliforniumObservationRegistryImpl(new InMemoryObservationStore(), clientRegistry,
+                    modelProvider);
+
+        return new LeshanServer(localAddress, localSecureAddress, clientRegistry, securityRegistry, observationRegistry,
+                modelProvider);
     }
 }

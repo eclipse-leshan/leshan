@@ -15,9 +15,13 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.observation;
 
+import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.observation.Observation;
-import org.eclipse.leshan.core.observation.ObservationListener;
 
-public interface ObservationRegistryListener extends ObservationListener {
+public interface ObservationRegistryListener {
     void newObservation(Observation observation);
+
+    void cancelled(Observation observation);
+
+    void newValue(Observation observation, LwM2mNode value);
 }

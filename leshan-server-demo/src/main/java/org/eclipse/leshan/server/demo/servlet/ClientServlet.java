@@ -329,7 +329,7 @@ public class ClientServlet extends HttpServlet {
                 String target = StringUtils.substringsBetween(req.getPathInfo(), clientEndpoint, "/observe")[0];
                 Client client = server.getClientRegistry().get(clientEndpoint);
                 if (client != null) {
-                    server.getObservationRegistry().cancelObservation(client, target);
+                    server.getObservationRegistry().cancelObservations(client, target);
                     resp.setStatus(HttpServletResponse.SC_OK);
                 } else {
                     resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);

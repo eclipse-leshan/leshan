@@ -27,6 +27,7 @@ import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
+import org.eclipse.californium.core.observe.InMemoryObservationStore;
 import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Security;
@@ -39,15 +40,14 @@ import org.eclipse.leshan.integration.tests.util.QueueModeLeshanServer;
 import org.eclipse.leshan.integration.tests.util.QueuedModeLeshanClient;
 import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.californium.impl.CaliforniumLwM2mRequestSender;
+import org.eclipse.leshan.server.californium.impl.CaliforniumObservationRegistryImpl;
 import org.eclipse.leshan.server.californium.impl.RegisterResource;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.impl.ClientRegistryImpl;
-import org.eclipse.leshan.server.impl.ObservationRegistryImpl;
 import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StandardModelProvider;
-import org.eclipse.leshan.server.observation.ObservationRegistry;
 import org.eclipse.leshan.server.queue.QueuedRequestFactory;
 import org.eclipse.leshan.server.queue.impl.InMemoryMessageStore;
 import org.eclipse.leshan.server.queue.impl.QueuedRequestFactoryImpl;
@@ -114,8 +114,13 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         createCoapServer(clientRegistry, securityRegistry);
         final InMemoryMessageStore inMemoryMessageStore = new InMemoryMessageStore();
         final QueuedRequestFactory queuedRequestFactory = new QueuedRequestFactoryImpl();
-        final ObservationRegistry observationRegistry = new ObservationRegistryImpl();
         final LwM2mModelProvider modelProvider = new StandardModelProvider();
+        final CaliforniumObservationRegistryImpl observationRegistry = new CaliforniumObservationRegistryImpl(
+                new InMemoryObservationStore(), clientRegistry, modelProvider);
+        observationRegistry.setSecureEndpoint(secureEndpoint);
+        secureEndpoint.addNotificationListener(observationRegistry);
+        observationRegistry.setNonSecureEndpoint(noSecureEndpoint);
+        noSecureEndpoint.addNotificationListener(observationRegistry);
         final LwM2mRequestSender delegateSender = new CaliforniumLwM2mRequestSender(
                 new HashSet<>(coapServer.getEndpoints()), observationRegistry, modelProvider);
         final QueuedRequestSender requestSender = QueuedRequestSender.builder().setMessageStore(inMemoryMessageStore)
