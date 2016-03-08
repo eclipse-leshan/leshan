@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2015 Sierra Wireless and others.
+ * Copyright (c) 2016 Sierra Wireless and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -13,13 +13,14 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.observation;
+package org.eclipse.leshan.server.californium;
 
-import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.californium.core.observe.NotificationListener;
+import org.eclipse.californium.core.observe.ObserveRequestStore;
+import org.eclipse.leshan.server.observation.ObservationRegistry;
 
-public interface ObservationListener {
+public interface CaliforniumObservationRegistry extends ObservationRegistry, NotificationListener {
 
-    void cancelled(Observation observation);
+    ObserveRequestStore getObserveRequestStore();
 
-    void newValue(Observation observation, LwM2mNode value);
 }

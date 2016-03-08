@@ -26,6 +26,7 @@ import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.InvalidValueException;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
+import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
@@ -261,9 +262,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse);
             if (coapResponse.getOptions().hasObserve()) {
                 // observe request succeed so we can add and observation to registry
-                final CaliforniumObservation observation = new CaliforniumObservation(coapRequest,
-                        client.getRegistrationId(), request.getPath(), model);
-                coapRequest.addMessageObserver(observation);
+                Observation observation = new Observation(coapRequest.getToken(), client.getRegistrationId(),
+                        request.getPath());
                 observationRegistry.addObservation(observation);
                 // add the observation to an ObserveResponse instance
                 lwM2mresponse = new ObserveResponse(ResponseCode.CONTENT, content, observation, null);

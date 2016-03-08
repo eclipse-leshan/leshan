@@ -21,30 +21,42 @@ import org.eclipse.leshan.core.node.LwM2mPath;
  * An observation of a resource provided by a LWM2M Client.
  * 
  */
-public interface Observation {
+public class Observation {
+
+    private byte[] id;
+    private LwM2mPath path;
+    private String registrationId;
+
+    public Observation(byte[] id, String registrationId, LwM2mPath path) {
+        super();
+        this.id = id;
+        this.path = path;
+        this.registrationId = registrationId;
+    }
+
+    /**
+     * Get the id of this observation.
+     * 
+     */
+    public byte[] getId() {
+        return id;
+    }
 
     /**
      * Get the registration ID link to this observation.
      * 
      * @return the registration ID
      */
-    String getRegistrationId();
+    public String getRegistrationId() {
+        return registrationId;
+    }
 
     /**
      * Gets the observed resource path.
      * 
      * @return the resource path
      */
-    LwM2mPath getPath();
-
-    /**
-     * Cancels the observation.
-     * 
-     * As a result the observer will no longer get notified about changes to the resource.
-     */
-    void cancel();
-
-    void addListener(ObservationListener listener);
-
-    void removeListener(ObservationListener listener);
+    public LwM2mPath getPath() {
+        return path;
+    }
 }
