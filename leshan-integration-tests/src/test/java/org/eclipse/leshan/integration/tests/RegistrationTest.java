@@ -72,7 +72,7 @@ public class RegistrationTest {
         Client client = helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER);
         assertNotNull(client);
         // TODO </0/0> should not be part of the object links
-        assertArrayEquals(LinkObject.parse("</>;rt=\"oma.lwm2m\",</0/0>,</1/0>,</2>,</3/0>".getBytes()),
+        assertArrayEquals(LinkObject.parse("</>;rt=\"oma.lwm2m\",</1/0>,</2>,</3/0>".getBytes()),
                 client.getObjectLinks());
 
         // Check for update

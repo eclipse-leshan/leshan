@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.leshan.LinkObject;
+import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -59,6 +60,10 @@ public final class LinkFormatHelper {
             }
         });
         for (LwM2mObjectEnabler objectEnabler : objEnablerList) {
+            // skip the security Object
+            if (objectEnabler.getId() == LwM2mId.SECURITY)
+                continue;
+
             List<Integer> availableInstance = objectEnabler.getAvailableInstanceIds();
             if (availableInstance.isEmpty()) {
                 String objectInstanceUrl = getPath("/", root, Integer.toString(objectEnabler.getId()));
