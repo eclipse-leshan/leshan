@@ -12,6 +12,7 @@
  *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - deny delete of resource
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
 
@@ -146,8 +147,14 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
     @Override
     public synchronized final DeleteResponse delete(Identity identity, DeleteRequest request) {
-        // we can not create new instance on single object
-        if (objectModel != null && !objectModel.multiple) {
+        LwM2mPath path = request.getPath();
+
+        if (path.isResource()) {
+            return DeleteResponse.methodNotAllowed();
+        }
+
+        // we can not delete on single object
+    	if (objectModel != null && !objectModel.multiple) {
             return DeleteResponse.methodNotAllowed();
         }
 
