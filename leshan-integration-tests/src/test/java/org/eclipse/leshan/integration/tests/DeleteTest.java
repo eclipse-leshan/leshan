@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Zebra Technologies - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add test for deleting a resource
  *******************************************************************************/
 
 package org.eclipse.leshan.integration.tests;
@@ -63,6 +64,21 @@ public class DeleteTest {
 
         // verify result
         assertEquals(ResponseCode.DELETED, deleteResponse.getCode());
+    }
+
+    @Test
+    public void cannot_delete_resource_of_created_object_instance() throws InterruptedException {
+        // create ACL instance
+        helper.server.send(
+                helper.getClient(),
+                new CreateRequest(2, new LwM2mObjectInstance(0, Arrays.asList(new LwM2mResource[] { LwM2mSingleResource
+                        .newIntegerResource(0, 123) }))));
+
+        // try to delete this instance
+        DeleteResponse deleteResponse = helper.server.send(helper.getClient(), new DeleteRequest("/2/0/0"));
+
+        // verify result
+        assertEquals(ResponseCode.METHOD_NOT_ALLOWED, deleteResponse.getCode());
     }
 
     @Test
