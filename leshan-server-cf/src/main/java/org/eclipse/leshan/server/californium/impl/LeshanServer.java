@@ -21,12 +21,17 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
+import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.core.server.resources.CoapExchange;
+import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
@@ -131,7 +136,12 @@ public class LeshanServer implements LwM2mServer {
         });
 
         // default endpoint
-        coapServer = new CoapServer();
+        coapServer = new CoapServer() {
+            @Override
+            protected Resource createRoot() {
+                return new RootResource();
+            }
+        };
         nonSecureEndpoint = new CoapEndpoint(localAddress);
         coapServer.addEndpoint(nonSecureEndpoint);
 
@@ -156,8 +166,8 @@ public class LeshanServer implements LwM2mServer {
         coapServer.addEndpoint(secureEndpoint);
 
         // define /rd resource
-        final RegisterResource rdResource = new RegisterResource(new RegistrationHandler(this.clientRegistry,
-                this.securityRegistry));
+        final RegisterResource rdResource = new RegisterResource(
+                new RegistrationHandler(this.clientRegistry, this.securityRegistry));
         coapServer.add(rdResource);
 
         // create sender
@@ -275,5 +285,24 @@ public class LeshanServer implements LwM2mServer {
 
     public InetSocketAddress getSecureAddress() {
         return secureEndpoint.getAddress();
+    }
+
+    /**
+     * The Leshan Root Resource.
+     */
+    private class RootResource extends CoapResource {
+
+        public RootResource() {
+            super("");
+        }
+
+        @Override
+        public void handleGET(CoapExchange exchange) {
+            exchange.respond(ResponseCode.NOT_FOUND);
+        }
+
+        public List<Endpoint> getEndpoints() {
+            return coapServer.getEndpoints();
+        }
     }
 }
