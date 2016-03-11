@@ -167,8 +167,8 @@ public class LeshanClientDemo {
     }
 
     public static void createAndStartClient(String endpoint, String localAddress, int localPort,
-            String secureLocalAddress, int secureLocalPort, boolean needBootstrap, String serverURI,
-            byte[] pskIdentity, byte[] pskKey) {
+            String secureLocalAddress, int secureLocalPort, boolean needBootstrap, String serverURI, byte[] pskIdentity,
+            byte[] pskKey) {
 
         // Initialize object list
         ObjectsInitializer initializer = new ObjectsInitializer();
@@ -201,6 +201,14 @@ public class LeshanClientDemo {
 
         // Start the client
         client.start();
+
+        // De-register on shutdown and stop client.
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                client.destroy(true); // send de-registration request before destroy
+            }
+        });
 
         // Change the location through the Console
         Scanner scanner = new Scanner(System.in);

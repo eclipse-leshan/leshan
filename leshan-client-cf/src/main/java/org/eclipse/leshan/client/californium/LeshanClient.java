@@ -74,8 +74,8 @@ public class LeshanClient implements LwM2mClient {
         this.objectEnablers = new ConcurrentHashMap<>();
         for (LwM2mObjectEnabler enabler : objectEnablers) {
             if (this.objectEnablers.containsKey(enabler.getId())) {
-                throw new IllegalArgumentException(String.format(
-                        "There is several objectEnablers with the same id %d.", enabler.getId()));
+                throw new IllegalArgumentException(
+                        String.format("There is several objectEnablers with the same id %d.", enabler.getId()));
             }
             this.objectEnablers.put(enabler.getId(), enabler);
         }
@@ -130,14 +130,6 @@ public class LeshanClient implements LwM2mClient {
 
         // Create CoAP resources needed for the bootstrap sequence
         clientSideServer.add(new BootstrapResource(bootstrapHandler));
-
-        // De-register on shutdown and stop client.
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                LeshanClient.this.destroy(true); // send de-registration request before destroy
-            }
-        });
     }
 
     @Override
