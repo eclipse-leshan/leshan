@@ -23,6 +23,10 @@
                         <p>
                             <strong>{ security.uri }</strong><br/>
                             security mode : {security.securityMode}<br/>
+                            <span if={security.securityMode !== 'NO_SEC'}>
+                                Id : <code> {toAscii(security.publicKeyOrId)} </code> </br>
+                                secret : <code> {toHex(security.secretKey)} </code> </br>
+                            </span>
                         </p>
                     </div>
                 </td>
