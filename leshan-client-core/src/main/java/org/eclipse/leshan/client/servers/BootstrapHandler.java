@@ -83,8 +83,8 @@ public class BootstrapHandler {
             // Delete all security instance (except bootstrap one)
             // TODO do not delete boostrap server (see 5.2.5.2 Bootstrap Delete)
             LwM2mObjectEnabler securityObject = objects.get(SECURITY);
-            for (Integer instanceId : serverObject.getAvailableInstanceIds()) {
-                securityObject.delete(identity, new DeleteRequest(SERVER, instanceId));
+            for (Integer instanceId : securityObject.getAvailableInstanceIds()) {
+                securityObject.delete(identity, new DeleteRequest(SECURITY, instanceId));
             }
 
             return BootstrapDeleteResponse.success();
