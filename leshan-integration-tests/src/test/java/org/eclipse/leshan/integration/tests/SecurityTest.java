@@ -50,8 +50,8 @@ public class SecurityTest {
 
         helper.createPSKClient();
 
-        helper.server.getSecurityRegistry().add(
-                SecurityInfo.newPreSharedKeyInfo(ENDPOINT_IDENTIFIER, helper.pskIdentity, helper.pskKey));
+        helper.server.getSecurityRegistry()
+                .add(SecurityInfo.newPreSharedKeyInfo(ENDPOINT_IDENTIFIER, helper.pskIdentity, helper.pskKey));
 
         helper.client.start();
         helper.waitForRegistration(1);
@@ -60,8 +60,6 @@ public class SecurityTest {
         assertNotNull(helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER));
     }
 
-    // TODO reactive this test when https://github.com/eclipse/californium/pull/11 will be integrated.
-    @Ignore
     @Test
     public void register_update_deregister_reregister_device_with_psk_to_server_with_psk()
             throws NonUniqueSecurityInfoException {
@@ -70,8 +68,8 @@ public class SecurityTest {
 
         helper.createPSKClient();
 
-        helper.server.getSecurityRegistry().add(
-                SecurityInfo.newPreSharedKeyInfo(ENDPOINT_IDENTIFIER, helper.pskIdentity, helper.pskKey));
+        helper.server.getSecurityRegistry()
+                .add(SecurityInfo.newPreSharedKeyInfo(ENDPOINT_IDENTIFIER, helper.pskIdentity, helper.pskKey));
 
         // Check for registration
         helper.client.start();
@@ -96,8 +94,6 @@ public class SecurityTest {
         assertNotNull(helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER));
     }
 
-    // TODO reactive this test when https://github.com/eclipse/californium/pull/11 will be integrated.
-    @Ignore
     @Test
     public void register_update_reregister_device_with_psk_to_server_with_psk() throws NonUniqueSecurityInfoException {
         helper.createServer(); // default server support PSK
@@ -105,8 +101,8 @@ public class SecurityTest {
 
         helper.createPSKClient();
 
-        helper.server.getSecurityRegistry().add(
-                SecurityInfo.newPreSharedKeyInfo(ENDPOINT_IDENTIFIER, helper.pskIdentity, helper.pskKey));
+        helper.server.getSecurityRegistry()
+                .add(SecurityInfo.newPreSharedKeyInfo(ENDPOINT_IDENTIFIER, helper.pskIdentity, helper.pskKey));
 
         // Check for registration
         helper.client.start();
@@ -142,8 +138,8 @@ public class SecurityTest {
 
         helper.createPSKClient();
 
-        helper.server.getSecurityRegistry().add(
-                SecurityInfo.newPreSharedKeyInfo(ENDPOINT_IDENTIFIER, "bad_psk_identity", helper.pskKey));
+        helper.server.getSecurityRegistry()
+                .add(SecurityInfo.newPreSharedKeyInfo(ENDPOINT_IDENTIFIER, "bad_psk_identity", helper.pskKey));
 
         helper.client.start();
         boolean timedout = !helper.waitForRegistration(1);
@@ -158,8 +154,8 @@ public class SecurityTest {
 
         helper.createPSKClient();
 
-        helper.server.getSecurityRegistry().add(
-                SecurityInfo.newPreSharedKeyInfo(ENDPOINT_IDENTIFIER, helper.pskIdentity, "bad_key".getBytes()));
+        helper.server.getSecurityRegistry()
+                .add(SecurityInfo.newPreSharedKeyInfo(ENDPOINT_IDENTIFIER, helper.pskIdentity, "bad_key".getBytes()));
 
         helper.client.start();
         boolean timedout = !helper.waitForRegistration(1);
@@ -174,8 +170,8 @@ public class SecurityTest {
 
         helper.createPSKClient();
 
-        helper.server.getSecurityRegistry().add(
-                SecurityInfo.newPreSharedKeyInfo("bad_endpoint", helper.pskIdentity, helper.pskKey));
+        helper.server.getSecurityRegistry()
+                .add(SecurityInfo.newPreSharedKeyInfo("bad_endpoint", helper.pskIdentity, helper.pskKey));
 
         helper.client.start();
         boolean timedout = !helper.waitForRegistration(1);
@@ -192,8 +188,8 @@ public class SecurityTest {
 
         helper.createRPKClient();
 
-        helper.server.getSecurityRegistry().add(
-                SecurityInfo.newRawPublicKeyInfo(ENDPOINT_IDENTIFIER, helper.clientPublicKey));
+        helper.server.getSecurityRegistry()
+                .add(SecurityInfo.newRawPublicKeyInfo(ENDPOINT_IDENTIFIER, helper.clientPublicKey));
 
         helper.client.start();
         helper.waitForRegistration(1);
@@ -213,8 +209,8 @@ public class SecurityTest {
 
         // as it is complex to create a public key, I use the server one :p as bad client public key
         PublicKey bad_client_public_key = helper.server.getSecurityRegistry().getServerPublicKey();
-        helper.server.getSecurityRegistry().add(
-                SecurityInfo.newRawPublicKeyInfo(ENDPOINT_IDENTIFIER, bad_client_public_key));
+        helper.server.getSecurityRegistry()
+                .add(SecurityInfo.newRawPublicKeyInfo(ENDPOINT_IDENTIFIER, bad_client_public_key));
 
         helper.client.start();
         boolean timedout = !helper.waitForRegistration(1);
@@ -231,8 +227,8 @@ public class SecurityTest {
 
         helper.createRPKClient();
 
-        helper.server.getSecurityRegistry().add(
-                SecurityInfo.newRawPublicKeyInfo("bad_endpoint", helper.clientPublicKey));
+        helper.server.getSecurityRegistry()
+                .add(SecurityInfo.newRawPublicKeyInfo("bad_endpoint", helper.clientPublicKey));
 
         helper.client.start();
         boolean timedout = !helper.waitForRegistration(1);
@@ -362,8 +358,8 @@ public class SecurityTest {
         helper.createRPKClient();
         helper.client.start();
 
-        helper.server.getSecurityRegistry().add(
-                SecurityInfo.newRawPublicKeyInfo(ENDPOINT_IDENTIFIER, helper.clientPublicKey));
+        helper.server.getSecurityRegistry()
+                .add(SecurityInfo.newRawPublicKeyInfo(ENDPOINT_IDENTIFIER, helper.clientPublicKey));
 
         helper.client.start();
         helper.waitForRegistration(1);
