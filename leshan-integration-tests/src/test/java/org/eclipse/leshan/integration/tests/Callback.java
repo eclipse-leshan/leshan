@@ -29,6 +29,7 @@ public class Callback<T extends LwM2mResponse> implements ResponseCallback<T>, E
     private final CountDownLatch latch;
     private final AtomicBoolean called;
     private T response;
+    private Exception exception;
 
     public Callback() {
         called = new AtomicBoolean(false);
@@ -44,6 +45,7 @@ public class Callback<T extends LwM2mResponse> implements ResponseCallback<T>, E
 
     @Override
     public void onError(Exception e) {
+        exception = e;
         called.set(true);
         latch.countDown();
     }
@@ -52,8 +54,8 @@ public class Callback<T extends LwM2mResponse> implements ResponseCallback<T>, E
         return called;
     }
 
-    public void waitForResponse(long timeout) throws InterruptedException {
-        latch.await(timeout, TimeUnit.MILLISECONDS);
+    public boolean waitForResponse(long timeout) throws InterruptedException {
+        return latch.await(timeout, TimeUnit.MILLISECONDS);
     }
 
     public ResponseCode getResponseCode() {
@@ -66,5 +68,9 @@ public class Callback<T extends LwM2mResponse> implements ResponseCallback<T>, E
 
     public T getResponse() {
         return response;
+    }
+
+    public Exception getException() {
+        return exception;
     }
 }
