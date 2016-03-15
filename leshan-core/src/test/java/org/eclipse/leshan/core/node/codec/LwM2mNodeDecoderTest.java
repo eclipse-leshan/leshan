@@ -248,7 +248,7 @@ public class LwM2mNodeDecoderTest {
         assertDeviceInstance(oInstance);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void json_device_object_instance0_with_root_basename() throws InvalidValueException {
         // json content for instance 0 of device object
         StringBuilder b = new StringBuilder();
@@ -266,7 +266,7 @@ public class LwM2mNodeDecoderTest {
         b.append("{\"n\":\"3/0/8/1\",\"v\":900},");
         b.append("{\"n\":\"3/0/9\",\"v\":100},");
         b.append("{\"n\":\"3/0/10\",\"v\":15},");
-        b.append("{\"n\":\"3/0/11/0\",\"v\":0},");
+        b.append("{\"n\":\"3/0/11\",\"v\":0},");
         b.append("{\"n\":\"3/0/13\",\"v\":1367491215},");
         b.append("{\"n\":\"3/0/14\",\"sv\":\"+02:00\"},");
         b.append("{\"n\":\"3/0/15\",\"sv\":\"U\"}]}");
