@@ -90,10 +90,6 @@ public class ServersInfoExtractor {
                 }
             } catch (URISyntaxException e) {
                 LOG.error(String.format("Invalid URI %s", (String) security.getResource(SEC_SERVER_URI).getValue()), e);
-            } catch (Throwable e) {
-                LOG.error("Error", e);
-                e.printStackTrace();
-                throw e;
             }
         }
         return infos;

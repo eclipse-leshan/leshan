@@ -169,7 +169,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
             try {
                 LwM2mModel model = new LwM2mModel(nodeEnabler.getObjectModel());
                 lwM2mNode = LwM2mNodeDecoder.decode(coapExchange.getRequestPayload(), contentFormat, path, model);
-                if (identity.isBootstrap()) {
+                if (identity.isLwm2mBootstrapServer()) {
                     BootstrapWriteResponse response = nodeEnabler.write(identity, new BootstrapWriteRequest(path,
                             lwM2mNode, contentFormat));
                     coapExchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());

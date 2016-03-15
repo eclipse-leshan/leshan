@@ -93,7 +93,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     public synchronized final ReadResponse read(ExtendedIdentity identity, ReadRequest request) {
         LwM2mPath path = request.getPath();
 
-        if (identity.isBootstrap()) {
+        if (identity.isLwm2mBootstrapServer()) {
             // read is not supported for bootstrap
             return ReadResponse.methodNotAllowed();
         }
@@ -127,7 +127,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     public synchronized final WriteResponse write(ExtendedIdentity identity, WriteRequest request) {
         LwM2mPath path = request.getPath();
 
-        if (identity.isBootstrap()) {
+        if (identity.isLwm2mBootstrapServer()) {
             // write is not supported for bootstrap, use bootstrap write
             return WriteResponse.methodNotAllowed();
         }
@@ -160,9 +160,9 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     public synchronized final BootstrapWriteResponse write(ExtendedIdentity identity, BootstrapWriteRequest request) {
         LwM2mPath path = request.getPath();
 
-        if (!identity.isBootstrap()) {
+        if (!identity.isLwm2mBootstrapServer()) {
             // write is not supported for bootstrap, use bootstrap write
-            return BootstrapWriteResponse.internalServerError("bootstrap write request decoding error");
+            return BootstrapWriteResponse.internalServerError("bootstrap write request from LWM2M server");
         }
 
         // check if the resource is writable
@@ -185,7 +185,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
     @Override
     public synchronized final DeleteResponse delete(ExtendedIdentity identity, DeleteRequest request) {
-        if (!identity.isBootstrap() && !identity.isSystem()) {
+        if (!identity.isLwm2mBootstrapServer() && !identity.isSystem()) {
 
             if (id == LwM2mId.SECURITY) {
                 return DeleteResponse.notFound();
@@ -196,7 +196,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
                 return DeleteResponse.methodNotAllowed();
             }
 
-            // we can not create new instance on single object
+            // we can not delete instance on single object
             if (objectModel != null && !objectModel.multiple) {
                 return DeleteResponse.methodNotAllowed();
             }
@@ -214,7 +214,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     public synchronized final ExecuteResponse execute(ExtendedIdentity identity, ExecuteRequest request) {
         LwM2mPath path = request.getPath();
 
-        if (identity.isBootstrap()) {
+        if (identity.isLwm2mBootstrapServer()) {
             // execute is not supported for bootstrap
             return ExecuteResponse.methodNotAllowed();
         }
@@ -253,7 +253,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     @Override
     public synchronized DiscoverResponse discover(ExtendedIdentity identity, DiscoverRequest request) {
 
-        if (identity.isBootstrap()) {
+        if (identity.isLwm2mBootstrapServer()) {
             // discover is not supported for bootstrap
             return DiscoverResponse.methodNotAllowed();
         }

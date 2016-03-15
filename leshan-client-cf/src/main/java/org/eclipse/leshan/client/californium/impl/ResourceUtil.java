@@ -43,10 +43,10 @@ public class ResourceUtil {
         Identity identity = extractIdentity(exchange);
 
         if (bootstrapHandler.isBootstrapServer(identity)) {
-            return ExtendedIdentity.bootstrap(identity);
+            return ExtendedIdentity.createLwm2mBootstrapServerIdentity(identity);
         }
 
-        return ExtendedIdentity.dataManagement(identity);
+        return ExtendedIdentity.createLwm2mServerIdentity(identity);
     }
 
     // TODO leshan-core-cf: this code should be factorized in a leshan-core-cf project.
