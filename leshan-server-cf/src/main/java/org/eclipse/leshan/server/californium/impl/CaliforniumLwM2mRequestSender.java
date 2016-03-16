@@ -17,9 +17,11 @@ package org.eclipse.leshan.server.californium.impl;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -51,7 +53,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
     private final Set<Endpoint> endpoints;
     private final ObservationRegistry observationRegistry;
     private final LwM2mModelProvider modelProvider;
-    private final Map<String/* registration id */, ArrayList<Request> /* pending coap Request */> pendingRequests = new HashMap<>();
+    private final ConcurrentMap<String/* registration id */, List<Request> /* pending coap Request */> pendingRequests = new ConcurrentHashMap<>();
 
     /**
      * @param endpoints the CoAP endpoints to use for sending requests
@@ -81,8 +83,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         final Request coapRequest = coapRequestBuilder.getRequest();
 
         // Send CoAP request synchronously
-        final SyncRequestObserver<T> syncMessageObserver = new SyncRequestObserver<T>(coapRequest, destination,
-                timeout) {
+        final SyncRequestObserver<T> syncMessageObserver = new SyncRequestObserver<T>(coapRequest, destination, timeout) {
             @Override
             public T buildResponse(final Response coapResponse) {
                 // Build LwM2m response
@@ -117,17 +118,17 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         final Request coapRequest = coapRequestBuilder.getRequest();
 
         // Add CoAP request callback
-        coapRequest.addMessageObserver(
-                new AsyncRequestObserver<T>(coapRequest, destination, responseCallback, errorCallback) {
-                    @Override
-                    public T buildResponse(final Response coapResponse) {
-                        // Build LwM2m response
-                        final LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<T>(coapRequest,
-                                coapResponse, client, model, observationRegistry);
-                        request.accept(lwm2mResponseBuilder);
-                        return lwm2mResponseBuilder.getResponse();
-                    }
-                });
+        coapRequest.addMessageObserver(new AsyncRequestObserver<T>(coapRequest, destination, responseCallback,
+                errorCallback) {
+            @Override
+            public T buildResponse(final Response coapResponse) {
+                // Build LwM2m response
+                final LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<T>(coapRequest,
+                        coapResponse, client, model, observationRegistry);
+                request.accept(lwm2mResponseBuilder);
+                return lwm2mResponseBuilder.getResponse();
+            }
+        });
 
         // Store pending request to cancel it on deregistration
         addPendingRequest(destination.getRegistrationId(), coapRequest);
@@ -137,22 +138,23 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         endpoint.sendRequest(coapRequest);
     }
 
-    public synchronized void cancelPendingRequests(String registrationId) {
-        ArrayList<Request> requests = pendingRequests.get(registrationId);
+    public void cancelPendingRequests(String registrationId) {
+        List<Request> requests = pendingRequests.remove(registrationId);
         if (requests != null) {
             for (Request coapRequest : requests) {
                 coapRequest.cancel();
-                removePendingRequest(registrationId, coapRequest);
             }
         }
     }
 
-    private synchronized void addPendingRequest(String registrationId, Request coapRequest) {
+    private void addPendingRequest(String registrationId, Request coapRequest) {
         // Get or create all pending requests for this registrationId
-        ArrayList<Request> requests = pendingRequests.get(registrationId);
+        List<Request> requests = pendingRequests.get(registrationId);
         if (requests == null) {
-            requests = new ArrayList<>();
-            pendingRequests.put(registrationId, requests);
+            requests = Collections.synchronizedList(new ArrayList<Request>());
+            List<Request> availableRequests = pendingRequests.putIfAbsent(registrationId, requests);
+            if (null != availableRequests)
+                requests = availableRequests;
         }
 
         // Add the request
@@ -160,8 +162,8 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         requests.add(coapRequest);
     }
 
-    private synchronized void removePendingRequest(String registrationId, Request coapRequest) {
-        ArrayList<Request> requests = pendingRequests.get(registrationId);
+    private void removePendingRequest(String registrationId, Request coapRequest) {
+        List<Request> requests = pendingRequests.get(registrationId);
         if (requests != null) {
             requests.remove(coapRequest);
         }
@@ -228,8 +230,8 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
                 return ep;
             }
         }
-        throw new IllegalStateException(
-                "can't find the client endpoint for address : " + client.getRegistrationEndpointAddress());
+        throw new IllegalStateException("can't find the client endpoint for address : "
+                + client.getRegistrationEndpointAddress());
     }
 
     // ////// Request Observer Class definition/////////////
@@ -252,8 +254,8 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         ResponseCallback<T> responseCallback;
         ErrorCallback errorCallback;
 
-        AsyncRequestObserver(final Request coapRequest, final Client client, final ResponseCallback<T> responseCallback,
-                final ErrorCallback errorCallback) {
+        AsyncRequestObserver(final Request coapRequest, final Client client,
+                final ResponseCallback<T> responseCallback, final ErrorCallback errorCallback) {
             super(coapRequest, client);
             this.responseCallback = responseCallback;
             this.errorCallback = errorCallback;
