@@ -16,10 +16,10 @@
 package org.eclipse.leshan.server.californium.impl;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -51,7 +51,9 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
     private final Set<Endpoint> endpoints;
     private final ObservationRegistry observationRegistry;
     private final LwM2mModelProvider modelProvider;
-    private final Map<String/* registration id */, ArrayList<Request> /* pending coap Request */> pendingRequests = new HashMap<>();
+    // A map which contains all pending CoAP requests
+    // This is mainly used to cancel request and avoid retransmission on de-registration
+    private final NavigableMap<String/* registrationId#requestHashcode */, Request /* pending coap Request */> pendingRequests = new ConcurrentSkipListMap<>();
 
     /**
      * @param endpoints the CoAP endpoints to use for sending requests
@@ -137,34 +139,41 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         endpoint.sendRequest(coapRequest);
     }
 
-    public synchronized void cancelPendingRequests(String registrationId) {
-        ArrayList<Request> requests = pendingRequests.get(registrationId);
-        if (requests != null) {
-            for (Request coapRequest : requests) {
-                coapRequest.cancel();
-                removePendingRequest(registrationId, coapRequest);
-            }
-        }
+    private String getFloorKey(String registrationId) {
+        if (registrationId == null)
+            return null;
+        return registrationId + '#';
     }
 
-    private synchronized void addPendingRequest(String registrationId, Request coapRequest) {
-        // Get or create all pending requests for this registrationId
-        ArrayList<Request> requests = pendingRequests.get(registrationId);
-        if (requests == null) {
-            requests = new ArrayList<>();
-            pendingRequests.put(registrationId, requests);
-        }
+    private String getCeilingKey(String registrationId) {
+        if (registrationId == null)
+            return null;
+        return registrationId + "#A";
+    }
 
-        // Add the request
+    private String getKey(String registrationId, Request coapRequest) {
+        if (registrationId == null || coapRequest == null)
+            return null;
+        return registrationId + '#' + coapRequest.hashCode();
+    }
+
+    public void cancelPendingRequests(String registrationId) {
+        SortedMap<String, Request> requests = pendingRequests.subMap(getFloorKey(registrationId),
+                getCeilingKey(registrationId));
+        System.out.println(requests.size());
+        for (Request coapRequest : requests.values()) {
+            coapRequest.cancel();
+        }
+        requests.clear();
+    }
+
+    private void addPendingRequest(String registrationId, Request coapRequest) {
         coapRequest.addMessageObserver(new CleanerMessageObserver(registrationId, coapRequest));
-        requests.add(coapRequest);
+        pendingRequests.put(getKey(registrationId, coapRequest), coapRequest);
     }
 
-    private synchronized void removePendingRequest(String registrationId, Request coapRequest) {
-        ArrayList<Request> requests = pendingRequests.get(registrationId);
-        if (requests != null) {
-            requests.remove(coapRequest);
-        }
+    private void removePendingRequest(String registrationId, Request coapRequest) {
+        pendingRequests.remove(getKey(registrationId, coapRequest));
     }
 
     private class CleanerMessageObserver implements MessageObserver {
@@ -184,16 +193,12 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
         @Override
         public void onResponse(Response response) {
-            // we ignore response for observer request
-            // TODO remove this test when we will integrate the new observation registry implementation.
-            if (coapRequest.getOptions() == null
-                    || !(coapRequest.getOptions().hasObserve() && coapRequest.getOptions().getObserve() == 0)) {
-                removePendingRequest(registrationId, coapRequest);
-            }
+            removePendingRequest(registrationId, coapRequest);
         }
 
         @Override
         public void onAcknowledgement() {
+            // we can remove the request on acknowledgement as we only want to avoid CoAP retransmission.
             removePendingRequest(registrationId, coapRequest);
         }
 
