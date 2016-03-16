@@ -85,25 +85,6 @@ public class LwM2mNodeJsonDecoder {
 			}
 			if (jsonObject.getBaseName().length() > 1) {
 				LwM2mPath bnPath = new LwM2mPath(jsonObject.getBaseName());
-
-				// check returned base name path is under requested path
-				if (bnPath.getObjectId() != path.getObjectId()) {
-						throw new InvalidValueException("Basename path does not match requested path.", bnPath);
-				}
-				if (path.getObjectInstanceId() != null) {
-					if (bnPath.getObjectInstanceId() != null) {
-						if (bnPath.getObjectInstanceId() != path.getObjectInstanceId()) {
-							throw new InvalidValueException("Basename path does not match requested path.", bnPath);
-						}
-						if (path.getResourceId() != null) {
-							if (bnPath.getResourceId() != null) {
-								if (bnPath.getResourceId() != path.getResourceId()) {
-									throw new InvalidValueException("Basename path does not match requested path.", bnPath);
-								}
-							}
-						}
-					}
-				}
 			}
         }
 
@@ -113,13 +94,9 @@ public class LwM2mNodeJsonDecoder {
 			Integer resourceId = null;
 			Integer resourceInstanceId = null;
 
-			if ((jsonObject.getBaseName() != null && !jsonObject.getBaseName().isEmpty()) || resourceElt.getName().startsWith("/")) {
-				String fullPathStr;
-				if (jsonObject.getBaseName() != null) {
-					fullPathStr = jsonObject.getBaseName() + resourceElt.getName();
-				} else {
-					fullPathStr = resourceElt.getName();
-				}
+			if (jsonObject.getBaseName() != null && !jsonObject.getBaseName().isEmpty()) {
+				String fullPathStr = jsonObject.getBaseName() + resourceElt.getName();
+				
 				fullPathStr = fullPathStr.substring(1);
 				resourcePath = fullPathStr.split("/");
 				switch (resourcePath.length) {
@@ -188,14 +165,11 @@ public class LwM2mNodeJsonDecoder {
                 // multi resource
                 // store multi resource values in a map
 				Map<Integer, JsonArrayEntry> multiResource = multiResourceMap.get(resourceId);
-				if (multiResource != null) {
-					multiResource.put(resourceInstanceId, resourceElt);
-					continue;
-				} else {
-					Map<Integer, JsonArrayEntry> jsonEntries = new HashMap<>();
-					jsonEntries.put(resourceInstanceId, resourceElt);
-					multiResourceMap.put(resourceId, jsonEntries);
-				}
+                if (multiResource == null) {
+                    multiResource = new HashMap<>();
+                    multiResourceMap.put(resourceId, multiResource);
+                } 
+                multiResource.put(resourceInstanceId, resourceElt);
             } else {
                 // single resource
                 LwM2mPath rscPath = new LwM2mPath(objectId, instanceId, resourceId);
