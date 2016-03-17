@@ -20,13 +20,16 @@ import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.ENDPOIN
 import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.LIFETIME;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.californium.core.network.Endpoint;
@@ -36,7 +39,9 @@ import org.eclipse.leshan.client.californium.impl.CaliforniumLwM2mClientRequestS
 import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectEnabler;
+import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
+import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.junit.After;
@@ -83,6 +88,79 @@ public class RegistrationTest {
         helper.client.stop(true);
         helper.waitForDeregistration(1);
         assertTrue(helper.server.getClientRegistry().allClients().isEmpty());
+    }
+
+    @Test
+    public void deregister_cancel_pending_request() throws InterruptedException {
+        // Check registration
+        assertTrue(helper.server.getClientRegistry().allClients().isEmpty());
+
+        helper.client.start();
+        helper.waitForRegistration(1);
+
+        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+        Client client = helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER);
+        assertNotNull(client);
+        assertArrayEquals(LinkObject.parse("</>;rt=\"oma.lwm2m\",</1/0>,</2>,</3/0>".getBytes()),
+                client.getObjectLinks());
+
+        // Stop client with out de-registration
+        helper.client.stop(false);
+
+        // Send a read which should be retransmitted.
+        Callback<ReadResponse> callback = new Callback<ReadResponse>();
+        helper.server.send(client, new ReadRequest(3, 0, 1), callback, callback);
+
+        // Restart client (de-registration/re-registration)
+        helper.client.start();
+
+        // Check the request was cancelled.
+        boolean timedout = !callback.waitForResponse(1000);
+        assertFalse("Response or Error expected", timedout);
+        assertTrue("Response or Error expected", callback.isCalled().get());
+        assertNull("No response expected", callback.getResponse());
+        assertNotNull("Exception expected", callback.getException());
+    }
+
+    @Test
+    public void deregister_cancel_multiple_pending_request() throws InterruptedException {
+        // Check registration
+        assertTrue(helper.server.getClientRegistry().allClients().isEmpty());
+
+        helper.client.start();
+        helper.waitForRegistration(1);
+
+        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+        Client client = helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER);
+        assertNotNull(client);
+        assertArrayEquals(LinkObject.parse("</>;rt=\"oma.lwm2m\",</1/0>,</2>,</3/0>".getBytes()),
+                client.getObjectLinks());
+
+        // Stop client with out de-registration
+        helper.client.stop(false);
+
+        // Send multiple reads which should be retransmitted.
+        List<Callback<ReadResponse>> callbacks = new ArrayList<Callback<ReadResponse>>();
+
+        for (int index = 0; index < 4; ++index) {
+            Callback<ReadResponse> callback = new Callback<ReadResponse>();
+            helper.server.send(client, new ReadRequest(3, 0, 1), callback, callback);
+            callbacks.add(callback);
+        }
+
+        // Restart client (de-registration/re-registration)
+        helper.client.start();
+
+        // Check the request was cancelled.
+        int index = 0;
+        for (Callback<ReadResponse> callback : callbacks) {
+            boolean timedout = !callback.waitForResponse(1000);
+            assertFalse("Response or Error expected, no timeout, call " + index, timedout);
+            assertTrue("Response or Error expected, call " + index, callback.isCalled().get());
+            assertNull("No response expected, call " + index, callback.getResponse());
+            assertNotNull("Exception expected, call " + index, callback.getException());
+            ++index;
+        }
     }
 
     @Test

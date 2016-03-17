@@ -128,6 +128,7 @@ public class LeshanServer implements LwM2mServer {
             @Override
             public void unregistered(final Client client) {
                 LeshanServer.this.observationRegistry.cancelObservations(client);
+                requestSender.cancelPendingRequests(client.getRegistrationId());
             }
 
             @Override
