@@ -151,10 +151,10 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         return registrationId + "#A";
     }
 
-    private String getKey(String registrationId, Request coapRequest) {
-        if (registrationId == null || coapRequest == null)
+    private String getKey(String registrationId, int id) {
+        if (registrationId == null)
             return null;
-        return registrationId + '#' + coapRequest.hashCode();
+        return registrationId + '#' + id;
     }
 
     public void cancelPendingRequests(String registrationId) {
@@ -168,23 +168,28 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
     }
 
     private void addPendingRequest(String registrationId, Request coapRequest) {
-        coapRequest.addMessageObserver(new CleanerMessageObserver(registrationId, coapRequest));
-        pendingRequests.put(getKey(registrationId, coapRequest), coapRequest);
+        CleanerMessageObserver observer = new CleanerMessageObserver(registrationId, coapRequest);
+        coapRequest.addMessageObserver(observer);
+        pendingRequests.put(observer.getRequestKey(), coapRequest);
     }
 
-    private void removePendingRequest(String registrationId, Request coapRequest) {
-        pendingRequests.remove(getKey(registrationId, coapRequest));
+    private void removePendingRequest(String key, Request coapRequest) {
+        pendingRequests.remove(key, coapRequest);
     }
 
     private class CleanerMessageObserver implements MessageObserver {
 
-        private String registrationId;
+        private final String requestKey;
         private Request coapRequest;
 
         public CleanerMessageObserver(String registrationId, Request coapRequest) {
             super();
-            this.registrationId = registrationId;
+            requestKey = getKey(registrationId, hashCode());
             this.coapRequest = coapRequest;
+        }
+
+        public String getRequestKey() {
+            return requestKey;
         }
 
         @Override
@@ -193,28 +198,28 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
         @Override
         public void onResponse(Response response) {
-            removePendingRequest(registrationId, coapRequest);
+            removePendingRequest(requestKey, coapRequest);
         }
 
         @Override
         public void onAcknowledgement() {
             // we can remove the request on acknowledgement as we only want to avoid CoAP retransmission.
-            removePendingRequest(registrationId, coapRequest);
+            removePendingRequest(requestKey, coapRequest);
         }
 
         @Override
         public void onReject() {
-            removePendingRequest(registrationId, coapRequest);
+            removePendingRequest(requestKey, coapRequest);
         }
 
         @Override
         public void onTimeout() {
-            removePendingRequest(registrationId, coapRequest);
+            removePendingRequest(requestKey, coapRequest);
         }
 
         @Override
         public void onCancel() {
-            removePendingRequest(registrationId, coapRequest);
+            removePendingRequest(requestKey, coapRequest);
         }
     }
 
@@ -233,8 +238,8 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
                 return ep;
             }
         }
-        throw new IllegalStateException(
-                "can't find the client endpoint for address : " + client.getRegistrationEndpointAddress());
+        throw new IllegalStateException("can't find the client endpoint for address : "
+                + client.getRegistrationEndpointAddress());
     }
 
     // ////// Request Observer Class definition/////////////
