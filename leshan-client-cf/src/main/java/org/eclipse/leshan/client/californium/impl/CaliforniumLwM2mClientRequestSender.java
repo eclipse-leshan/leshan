@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Zebra Technologies - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add RequestCanceler
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.impl;
 
@@ -26,7 +27,9 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.client.request.LwM2mClientRequestSender;
+import org.eclipse.leshan.client.request.RequestCanceler;
 import org.eclipse.leshan.core.request.UplinkRequest;
+import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.request.exception.RequestFailedException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -82,7 +85,7 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
     }
 
     @Override
-    public <T extends LwM2mResponse> void send(final InetSocketAddress serverAddress, final boolean secure,
+    public <T extends LwM2mResponse> RequestCanceler send(final InetSocketAddress serverAddress, final boolean secure,
             final UplinkRequest<T> request, final ResponseCallback<T> responseCallback,
             final ErrorCallback errorCallback) {
         // Create the CoAP request from LwM2m request
@@ -114,6 +117,12 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
             secureEndpoint.sendRequest(coapRequest);
         else
             nonSecureEndpoint.sendRequest(coapRequest);
+        return new RequestCanceler() {
+            @Override
+            public void cancel() {
+                coapRequest.cancel();
+            }
+        };
     }
 
     // ////// Request Observer Class definition/////////////
@@ -163,7 +172,7 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
 
         @Override
         public void onCancel() {
-            errorCallback.onError(new RequestFailedException("Canceled request"));
+            errorCallback.onError(new RequestCanceledException("Canceled request"));
         }
 
         @Override

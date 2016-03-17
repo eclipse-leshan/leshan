@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Zebra Technologies - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add RequestCanceler
  *******************************************************************************/
 package org.eclipse.leshan.client.request;
 
@@ -36,7 +37,7 @@ public interface LwM2mClientRequestSender {
     /**
      * Send a Lightweight M2M request asynchronously.
      */
-    <T extends LwM2mResponse> void send(final InetSocketAddress server, final boolean secure,
+    <T extends LwM2mResponse> RequestCanceler send(final InetSocketAddress server, final boolean secure,
             final UplinkRequest<T> request, final ResponseCallback<T> responseCallback,
             final ErrorCallback errorCallback);
 }
