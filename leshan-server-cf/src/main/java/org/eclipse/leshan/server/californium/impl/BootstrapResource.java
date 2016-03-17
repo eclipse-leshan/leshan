@@ -130,6 +130,15 @@ public class BootstrapResource extends CoapResource {
         }
         final String endpoint = endpointTmp;
 
+        // Check security of the endpoint
+        Identity clientIdentity = extractIdentity(exchange);
+
+        if (!bsAuthService.authenticate(endpoint, clientIdentity)) {
+            exchange.respond(ResponseCode.UNAUTHORIZED);
+            return;
+        }
+
+        // Get the desired bootstrap config for the endpoint
         final BootstrapConfig cfg = bsStore.getBootstrap(endpoint);
 
         if (cfg == null) {
@@ -138,14 +147,6 @@ public class BootstrapResource extends CoapResource {
             return;
         }
         exchange.respond(ResponseCode.CHANGED);
-
-        // Check security of the endpoint
-        Identity clientIdentity = extractIdentity(exchange);
-
-        if (!bsAuthService.authenticate(endpoint, clientIdentity)) {
-            exchange.respond(ResponseCode.UNAUTHORIZED);
-            return;
-        }
 
         // now push the config
 
@@ -161,7 +162,7 @@ public class BootstrapResource extends CoapResource {
                 deleteAll.setDestination(exchange.getSourceAddress());
                 deleteAll.setDestinationPort(exchange.getSourcePort());
 
-                deleteAll.addMessageObserver( new MessageObserver() {
+                deleteAll.addMessageObserver(new MessageObserver() {
 
                     @Override
                     public void onTimeout() {
