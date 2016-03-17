@@ -20,8 +20,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.eclipse.leshan.util.Charsets;
 import org.eclipse.leshan.util.StringUtils;
@@ -38,12 +36,6 @@ public class LinkObject implements Serializable {
     private final String url;
 
     private final Map<String, Object> attributes;
-
-    private final Integer objectId;
-
-    private final Integer objectInstanceId;
-
-    private final Integer resourceId;
 
     /**
      * Creates a new link object without attributes.
@@ -67,18 +59,6 @@ public class LinkObject implements Serializable {
         } else {
             this.attributes = Collections.unmodifiableMap(new HashMap<String, Object>());
         }
-
-        Matcher mat = Pattern.compile("(/(\\d+))(/(\\d+))?(/(\\d+))?").matcher(url);
-
-        if (mat.find()) {
-            objectId = mat.group(2) == null ? null : new Integer(mat.group(2));
-            objectInstanceId = mat.group(4) == null ? null : new Integer(mat.group(4));
-            resourceId = mat.group(6) == null ? null : new Integer(mat.group(6));
-        } else {
-            objectId = null;
-            objectInstanceId = null;
-            resourceId = null;
-        }
     }
 
     public String getUrl() {
@@ -92,26 +72,6 @@ public class LinkObject implements Serializable {
      */
     public Map<String, Object> getAttributes() {
         return attributes;
-    }
-
-    // TODO Object id, instance id and resource id is not really a LinkObject concept
-    // we should remove this.
-    @Deprecated
-    public String getPath() {
-        StringBuilder sb = new StringBuilder("/");
-        if (objectId != null) {
-            sb.append(objectId);
-        }
-
-        if (objectInstanceId != null) {
-            sb.append("/").append(objectInstanceId);
-        }
-
-        if (resourceId != null) {
-            sb.append("/").append(resourceId);
-        }
-
-        return sb.toString();
     }
 
     @Override
@@ -137,23 +97,6 @@ public class LinkObject implements Serializable {
             }
         }
         return builder.toString();
-    }
-
-    // TODO Object id, instance id and resource id is not really a LinkObject concept
-    // we should remove this 3 methods below.
-    @Deprecated
-    public Integer getObjectId() {
-        return objectId;
-    }
-
-    @Deprecated
-    public Integer getObjectInstanceId() {
-        return objectInstanceId;
-    }
-
-    @Deprecated
-    public Integer getResourceId() {
-        return resourceId;
     }
 
     public static LinkObject[] parse(byte[] content) {
