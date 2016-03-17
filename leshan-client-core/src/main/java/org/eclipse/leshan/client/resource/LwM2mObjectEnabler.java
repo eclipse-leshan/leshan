@@ -12,13 +12,13 @@
  *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
- *     Achim Kraus (Bosch Software Innovations GmbH) - use ExtendedIdentity
+ *     Achim Kraus (Bosch Software Innovations GmbH) - use ServerIdentity
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
 
 import java.util.List;
 
-import org.eclipse.leshan.client.request.ExtendedIdentity;
+import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.CreateRequest;
@@ -47,23 +47,23 @@ public interface LwM2mObjectEnabler {
 
     List<Integer> getAvailableInstanceIds();
 
-    CreateResponse create(ExtendedIdentity identity, CreateRequest request);
+    CreateResponse create(ServerIdentity identity, CreateRequest request);
 
-    ReadResponse read(ExtendedIdentity identity, ReadRequest request);
+    ReadResponse read(ServerIdentity identity, ReadRequest request);
 
-    WriteResponse write(ExtendedIdentity identity, WriteRequest request);
+    WriteResponse write(ServerIdentity identity, WriteRequest request);
 
-    BootstrapWriteResponse write(ExtendedIdentity identity, BootstrapWriteRequest request);
+    BootstrapWriteResponse write(ServerIdentity identity, BootstrapWriteRequest request);
 
-    DeleteResponse delete(ExtendedIdentity identity, DeleteRequest request);
+    DeleteResponse delete(ServerIdentity identity, DeleteRequest request);
 
-    ExecuteResponse execute(ExtendedIdentity identity, ExecuteRequest request);
+    ExecuteResponse execute(ServerIdentity identity, ExecuteRequest request);
 
-    WriteAttributesResponse writeAttributes(ExtendedIdentity identity, WriteAttributesRequest request);
+    WriteAttributesResponse writeAttributes(ServerIdentity identity, WriteAttributesRequest request);
 
-    DiscoverResponse discover(ExtendedIdentity identity, DiscoverRequest request);
+    DiscoverResponse discover(ServerIdentity identity, DiscoverRequest request);
 
-    ObserveResponse observe(ExtendedIdentity identity, ObserveRequest request);
+    ObserveResponse observe(ServerIdentity identity, ObserveRequest request);
 
     void setNotifySender(NotifySender sender);
 }

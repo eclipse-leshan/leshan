@@ -12,7 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
- *     Achim Kraus (Bosch Software Innovations GmbH) - use ExtendedIdentity.SYSTEM
+ *     Achim Kraus (Bosch Software Innovations GmbH) - use ServerIdentity.SYSTEM
  *******************************************************************************/
 package org.eclipse.leshan.client.servers;
 
@@ -25,7 +25,7 @@ import static org.eclipse.leshan.LwM2mId.SERVER;
 import static org.eclipse.leshan.LwM2mId.SRV_BINDING;
 import static org.eclipse.leshan.LwM2mId.SRV_LIFETIME;
 import static org.eclipse.leshan.LwM2mId.SRV_SERVER_ID;
-import static org.eclipse.leshan.client.request.ExtendedIdentity.SYSTEM;
+import static org.eclipse.leshan.client.request.ServerIdentity.SYSTEM;
 
 import java.net.URI;
 import java.net.URISyntaxException;

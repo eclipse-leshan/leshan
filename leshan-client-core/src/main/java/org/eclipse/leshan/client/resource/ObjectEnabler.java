@@ -12,7 +12,7 @@
  *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
- *     Achim Kraus (Bosch Software Innovations GmbH) - use ExtendedIdentity
+ *     Achim Kraus (Bosch Software Innovations GmbH) - use ServerIdentity
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
 
@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.eclipse.leshan.ResponseCode;
-import org.eclipse.leshan.client.request.ExtendedIdentity;
+import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mObject;
@@ -104,7 +104,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
     }
 
     @Override
-    protected ReadResponse doRead(ReadRequest request, ExtendedIdentity identity) {
+    protected ReadResponse doRead(ReadRequest request, ServerIdentity identity) {
         LwM2mPath path = request.getPath();
 
         // Manage Object case
@@ -129,10 +129,10 @@ public class ObjectEnabler extends BaseObjectEnabler {
         return instance.read(path.getResourceId());
     }
 
-    LwM2mObjectInstance getLwM2mObjectInstance(int instanceid, LwM2mInstanceEnabler instance, ExtendedIdentity identity) {
+    LwM2mObjectInstance getLwM2mObjectInstance(int instanceid, LwM2mInstanceEnabler instance, ServerIdentity identity) {
         List<LwM2mResource> resources = new ArrayList<>();
         for (ResourceModel resourceModel : getObjectModel().resources.values()) {
-            // if internal request (null identity) or readable
+            // check, if internal request (SYSTEM) or readable
             if (identity.isSystem() || resourceModel.operations.isReadable()) {
                 ReadResponse response = instance.read(resourceModel.id);
                 if (response.getCode() == ResponseCode.CONTENT && response.getContent() instanceof LwM2mResource)

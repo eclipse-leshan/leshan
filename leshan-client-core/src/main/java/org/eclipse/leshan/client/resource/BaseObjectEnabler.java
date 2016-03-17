@@ -13,14 +13,14 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - deny delete of resource
- *     Achim Kraus (Bosch Software Innovations GmbH) - use ExtendedIdentity to 
+ *     Achim Kraus (Bosch Software Innovations GmbH) - use ServerIdentity to 
  *                                                     protect the security object
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
 
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.LwM2mId;
-import org.eclipse.leshan.client.request.ExtendedIdentity;
+import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
@@ -66,7 +66,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized final CreateResponse create(ExtendedIdentity identity, CreateRequest request) {
+    public synchronized final CreateResponse create(ServerIdentity identity, CreateRequest request) {
         // we can not create new instance on single object
 
         if (!identity.isSystem()) {
@@ -90,7 +90,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized final ReadResponse read(ExtendedIdentity identity, ReadRequest request) {
+    public synchronized final ReadResponse read(ServerIdentity identity, ReadRequest request) {
         LwM2mPath path = request.getPath();
 
         if (identity.isLwm2mBootstrapServer()) {
@@ -118,13 +118,13 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         // TODO we could do a validation of response.getContent by comparing with the spec.
     }
 
-    protected ReadResponse doRead(ReadRequest request, ExtendedIdentity identity) {
+    protected ReadResponse doRead(ReadRequest request, ServerIdentity identity) {
         // This should be a not implemented error, but this is not defined in the spec.
         return ReadResponse.internalServerError("not implemented");
     }
 
     @Override
-    public synchronized final WriteResponse write(ExtendedIdentity identity, WriteRequest request) {
+    public synchronized final WriteResponse write(ServerIdentity identity, WriteRequest request) {
         LwM2mPath path = request.getPath();
 
         if (identity.isLwm2mBootstrapServer()) {
@@ -157,7 +157,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized final BootstrapWriteResponse write(ExtendedIdentity identity, BootstrapWriteRequest request) {
+    public synchronized final BootstrapWriteResponse write(ServerIdentity identity, BootstrapWriteRequest request) {
         LwM2mPath path = request.getPath();
 
         if (!identity.isLwm2mBootstrapServer()) {
@@ -184,7 +184,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized final DeleteResponse delete(ExtendedIdentity identity, DeleteRequest request) {
+    public synchronized final DeleteResponse delete(ServerIdentity identity, DeleteRequest request) {
         if (!identity.isLwm2mBootstrapServer() && !identity.isSystem()) {
 
             if (id == LwM2mId.SECURITY) {
@@ -211,7 +211,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized final ExecuteResponse execute(ExtendedIdentity identity, ExecuteRequest request) {
+    public synchronized final ExecuteResponse execute(ServerIdentity identity, ExecuteRequest request) {
         LwM2mPath path = request.getPath();
 
         if (identity.isLwm2mBootstrapServer()) {
@@ -243,7 +243,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized WriteAttributesResponse writeAttributes(ExtendedIdentity identity,
+    public synchronized WriteAttributesResponse writeAttributes(ServerIdentity identity,
             WriteAttributesRequest request) {
         // TODO should be implemented here to be available for all object enabler
         // This should be a not implemented error, but this is not defined in the spec.
@@ -251,7 +251,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized DiscoverResponse discover(ExtendedIdentity identity, DiscoverRequest request) {
+    public synchronized DiscoverResponse discover(ServerIdentity identity, DiscoverRequest request) {
 
         if (identity.isLwm2mBootstrapServer()) {
             // discover is not supported for bootstrap
@@ -296,7 +296,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized ObserveResponse observe(ExtendedIdentity identity, ObserveRequest request) {
+    public synchronized ObserveResponse observe(ServerIdentity identity, ObserveRequest request) {
         ReadResponse readResponse = this.read(identity, new ReadRequest(request.getPath().toString()));
         return new ObserveResponse(readResponse.getCode(), readResponse.getContent(), null,
                 readResponse.getErrorMessage());

@@ -27,7 +27,7 @@ import org.eclipse.leshan.core.request.Identity;
  * @author Achim Kraus (Bosch Software Innovations GmbH)
  *
  */
-public class ExtendedIdentity extends Identity {
+public class ServerIdentity extends Identity {
 
     enum Role {
         /**
@@ -48,7 +48,7 @@ public class ExtendedIdentity extends Identity {
     /**
      * Identity for system calls.
      */
-    public final static ExtendedIdentity SYSTEM = new ExtendedIdentity(Identity.unsecure(InetSocketAddress
+    public final static ServerIdentity SYSTEM = new ServerIdentity(Identity.unsecure(InetSocketAddress
             .createUnresolved("system", 1)), Role.SYSTEM);
 
     /**
@@ -57,13 +57,13 @@ public class ExtendedIdentity extends Identity {
     private final Role role;
 
     /**
-     * Create ExtendedIdentity using a Identity and the related role. Intended to be used by calling
+     * Create ServerIdentity using a Identity and the related role. Intended to be used by calling
      * {@link #createLwm2mBootstrapServerIdentity(Identity)} or {@link #createLwm2mServerIdentity(Identity)}.
      * 
      * @param identity identity to be used
      * @param role related role
      */
-    private ExtendedIdentity(final Identity identity, final Role role) {
+    private ServerIdentity(final Identity identity, final Role role) {
         super(identity);
         this.role = role;
     }
@@ -105,23 +105,23 @@ public class ExtendedIdentity extends Identity {
     }
 
     /**
-     * Create a extended identity with role {@link Role#LWM2M_BOOTSTRAP_SERVER}.
+     * Create a server identity with role {@link Role#LWM2M_BOOTSTRAP_SERVER}.
      * 
      * @param identity identity to be used
-     * @return extended identity with {@link Role#LWM2M_BOOTSTRAP_SERVER} associated.
+     * @return server identity with {@link Role#LWM2M_BOOTSTRAP_SERVER} associated.
      */
-    public static ExtendedIdentity createLwm2mBootstrapServerIdentity(final Identity identity) {
-        return new ExtendedIdentity(identity, Role.LWM2M_BOOTSTRAP_SERVER);
+    public static ServerIdentity createLwm2mBootstrapServerIdentity(final Identity identity) {
+        return new ServerIdentity(identity, Role.LWM2M_BOOTSTRAP_SERVER);
     }
 
     /**
-     * Create a extended identity with role {@link Role#LWM2M_SERVER}.
+     * Create a server identity with role {@link Role#LWM2M_SERVER}.
      * 
      * @param identity identity to be used
-     * @return extended identity with {@link Role#LWM2M_SERVER} associated.
+     * @return server identity with {@link Role#LWM2M_SERVER} associated.
      */
-    public static ExtendedIdentity createLwm2mServerIdentity(final Identity identity) {
-        return new ExtendedIdentity(identity, Role.LWM2M_SERVER);
+    public static ServerIdentity createLwm2mServerIdentity(final Identity identity) {
+        return new ServerIdentity(identity, Role.LWM2M_SERVER);
     }
 
 }

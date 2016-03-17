@@ -12,14 +12,14 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
- *     Achim Kraus (Bosch Software Innovations GmbH) - use ExtendedIdentity
+ *     Achim Kraus (Bosch Software Innovations GmbH) - use ServerIdentity
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.impl;
 
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
-import org.eclipse.leshan.client.request.ExtendedIdentity;
+import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.servers.BootstrapHandler;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.response.BootstrapFinishResponse;
@@ -38,7 +38,7 @@ public class BootstrapResource extends CoapResource {
 
     @Override
     public void handlePOST(CoapExchange exchange) {
-        ExtendedIdentity identity = ResourceUtil.extractIdentity(exchange, bootstrapHandler);
+        ServerIdentity identity = ResourceUtil.extractServerIdentity(exchange, bootstrapHandler);
         BootstrapFinishResponse response = bootstrapHandler.finished(identity, new BootstrapFinishRequest());
         exchange.respond(ResourceUtil.fromLwM2mCode(response.getCode()), response.getErrorMessage());
     }
