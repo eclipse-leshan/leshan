@@ -175,7 +175,7 @@ public class Client implements Serializable {
 
         Arrays.sort(res, new Comparator<LinkObject>() {
 
-            /* sort by objectid, object instance and ressource */
+            /* sort by path */
             @Override
             public int compare(LinkObject o1, LinkObject o2) {
                 if (o1 == null && o2 == null)
@@ -184,57 +184,41 @@ public class Client implements Serializable {
                     return -1;
                 if (o2 == null)
                     return 1;
-                // by object
-                Integer oi1 = o1.getObjectId();
-                Integer oi2 = o2.getObjectId();
+                // by URL
+                String[] url1 = o1.getUrl().split("/");
+                String[] url2 = o2.getUrl().split("/");
 
-                if (oi1 == null && oi2 == null) {
-                    return 0;
-                }
-                if (oi1 == null) {
-                    return -1;
-                }
-                if (oi2 == null) {
-                    return 1;
-                }
-                int oicomp = oi1.compareTo(oi2);
-                if (oicomp != 0) {
-                    return oicomp;
-                }
+                for (int i = 0; i < url1.length && i < url2.length; i++) {
+                    // is it two numbers?
+                    if (isNumber(url1[i]) && isNumber(url2[i])) {
+                        int cmp = Integer.parseInt(url1[i]) - Integer.parseInt(url2[i]);
+                        if (cmp != 0) {
+                            return cmp;
+                        }
+                    } else {
 
-                Integer oii1 = o1.getObjectInstanceId();
-                Integer oii2 = o2.getObjectInstanceId();
-                if (oii1 == null && oii2 == null) {
-                    return 0;
-                }
-                if (oii1 == null) {
-                    return -1;
-                }
-                if (oii2 == null) {
-                    return 1;
-                }
-                int oiicomp = oii1.compareTo(oii2);
-                if (oiicomp != 0) {
-                    return oiicomp;
+                        int v = url1[i].compareTo(url2[i]);
+
+                        if (v != 0) {
+                            return v;
+                        }
+                    }
                 }
 
-                Integer or1 = o1.getResourceId();
-                Integer or2 = o2.getResourceId();
-                if (or1 == null && or2 == null) {
-                    return 0;
-                }
-                if (or1 == null) {
-                    return -1;
-                }
-                if (or2 == null) {
-                    return 1;
-                }
-                return or1.compareTo(or2);
-
+                return url1.length - url2.length;
             }
         });
 
         return res;
+    }
+
+    private static boolean isNumber(String s) {
+        try {
+            Integer.parseInt(s);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     public synchronized Long getLifeTimeInSec() {
