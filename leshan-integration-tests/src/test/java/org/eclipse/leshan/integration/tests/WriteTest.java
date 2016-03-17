@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Zebra Technologies - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add test for write security object
  *******************************************************************************/
 
 package org.eclipse.leshan.integration.tests;
@@ -91,6 +92,16 @@ public class WriteTest {
 
         // verify result
         assertEquals(ResponseCode.METHOD_NOT_ALLOWED, response.getCode());
+    }
+
+    @Test
+    public void cannot_write_security_resource() throws InterruptedException {
+        // try to write unwritable resource like manufacturer on device
+        final String uri = "new.dest.server";
+        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE, 0, 0, 0, uri));
+
+        // verify result
+        assertEquals(ResponseCode.NOT_FOUND, response.getCode());
     }
 
     @Test

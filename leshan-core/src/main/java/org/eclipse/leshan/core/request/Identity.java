@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add protected constructor for sub-classing
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
@@ -36,6 +37,13 @@ public class Identity {
         this.pskIdentity = pskIdentity;
         this.rawPublicKey = rawPublicKey;
         this.x509CommonName = x509CommonName;
+    }
+
+    protected Identity(Identity identity) {
+        this.peerAddress = identity.peerAddress;
+        this.pskIdentity = identity.pskIdentity;
+        this.rawPublicKey = identity.rawPublicKey;
+        this.x509CommonName = identity.x509CommonName;
     }
 
     public InetSocketAddress getPeerAddress() {

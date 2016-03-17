@@ -13,10 +13,14 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - deny delete of resource
+ *     Achim Kraus (Bosch Software Innovations GmbH) - use ServerIdentity to 
+ *                                                     protect the security object
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
 
 import org.eclipse.leshan.LinkObject;
+import org.eclipse.leshan.LwM2mId;
+import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
@@ -26,7 +30,6 @@ import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.DiscoverRequest;
 import org.eclipse.leshan.core.request.ExecuteRequest;
-import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
@@ -63,10 +66,17 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized final CreateResponse create(Identity identity, CreateRequest request) {
+    public synchronized final CreateResponse create(ServerIdentity identity, CreateRequest request) {
         // we can not create new instance on single object
-        if (objectModel != null && !objectModel.multiple) {
-            return CreateResponse.methodNotAllowed();
+
+        if (!identity.isSystem()) {
+            if (objectModel != null && !objectModel.multiple) {
+                return CreateResponse.methodNotAllowed();
+            }
+
+            if (id == LwM2mId.SECURITY) {
+                return CreateResponse.notFound();
+            }
         }
 
         // TODO we could do a validation of request.getObjectInstance() by comparing with resourceSpec information.
@@ -80,14 +90,26 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized final ReadResponse read(Identity identity, ReadRequest request) {
+    public synchronized final ReadResponse read(ServerIdentity identity, ReadRequest request) {
         LwM2mPath path = request.getPath();
 
-        // check if the resource is readable.
-        if (path.isResource() && identity != null) {
-            ResourceModel resourceModel = objectModel.resources.get(path.getResourceId());
-            if (resourceModel != null && !resourceModel.operations.isReadable()) {
-                return ReadResponse.methodNotAllowed();
+        if (identity.isLwm2mBootstrapServer()) {
+            // read is not supported for bootstrap
+            return ReadResponse.methodNotAllowed();
+        }
+
+        if (!identity.isSystem()) {
+            if (id == LwM2mId.SECURITY) {
+                // read the security object is forbidden
+                return ReadResponse.notFound();
+            }
+
+            // check if the resource is readable.
+            if (path.isResource()) {
+                ResourceModel resourceModel = objectModel.resources.get(path.getResourceId());
+                if (resourceModel != null && !resourceModel.operations.isReadable()) {
+                    return ReadResponse.methodNotAllowed();
+                }
             }
         }
 
@@ -96,20 +118,31 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         // TODO we could do a validation of response.getContent by comparing with the spec.
     }
 
-    protected ReadResponse doRead(ReadRequest request, Identity identity) {
+    protected ReadResponse doRead(ReadRequest request, ServerIdentity identity) {
         // This should be a not implemented error, but this is not defined in the spec.
         return ReadResponse.internalServerError("not implemented");
     }
 
     @Override
-    public synchronized final WriteResponse write(Identity identity, WriteRequest request) {
+    public synchronized final WriteResponse write(ServerIdentity identity, WriteRequest request) {
         LwM2mPath path = request.getPath();
 
-        // check if the resource is writable
-        if (path.isResource()) {
-            ResourceModel resourceModel = objectModel.resources.get(path.getResourceId());
-            if (resourceModel != null && !resourceModel.operations.isWritable()) {
-                return WriteResponse.methodNotAllowed();
+        if (identity.isLwm2mBootstrapServer()) {
+            // write is not supported for bootstrap, use bootstrap write
+            return WriteResponse.methodNotAllowed();
+        }
+
+        if (!identity.isSystem()) {
+            if (id == LwM2mId.SECURITY) {
+                return WriteResponse.notFound();
+            }
+
+            // check if the resource is writable
+            if (path.isResource()) {
+                ResourceModel resourceModel = objectModel.resources.get(path.getResourceId());
+                if (resourceModel != null && !resourceModel.operations.isWritable()) {
+                    return WriteResponse.methodNotAllowed();
+                }
             }
         }
 
@@ -124,8 +157,13 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized final BootstrapWriteResponse write(Identity identity, BootstrapWriteRequest request) {
+    public synchronized final BootstrapWriteResponse write(ServerIdentity identity, BootstrapWriteRequest request) {
         LwM2mPath path = request.getPath();
+
+        if (!identity.isLwm2mBootstrapServer()) {
+            // write is not supported for bootstrap, use bootstrap write
+            return BootstrapWriteResponse.internalServerError("bootstrap write request from LWM2M server");
+        }
 
         // check if the resource is writable
         if (path.isResource()) {
@@ -146,16 +184,22 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized final DeleteResponse delete(Identity identity, DeleteRequest request) {
-        LwM2mPath path = request.getPath();
+    public synchronized final DeleteResponse delete(ServerIdentity identity, DeleteRequest request) {
+        if (!identity.isLwm2mBootstrapServer() && !identity.isSystem()) {
 
-        if (path.isResource()) {
-            return DeleteResponse.methodNotAllowed();
-        }
+            if (id == LwM2mId.SECURITY) {
+                return DeleteResponse.notFound();
+            }
 
-        // we can not delete on single object
-        if (objectModel != null && !objectModel.multiple) {
-            return DeleteResponse.methodNotAllowed();
+            LwM2mPath path = request.getPath();
+            if (path.isResource()) {
+                return DeleteResponse.methodNotAllowed();
+            }
+
+            // we can not delete instance on single object
+            if (objectModel != null && !objectModel.multiple) {
+                return DeleteResponse.methodNotAllowed();
+            }
         }
 
         return doDelete(request);
@@ -167,8 +211,17 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized final ExecuteResponse execute(Identity identity, ExecuteRequest request) {
+    public synchronized final ExecuteResponse execute(ServerIdentity identity, ExecuteRequest request) {
         LwM2mPath path = request.getPath();
+
+        if (identity.isLwm2mBootstrapServer()) {
+            // execute is not supported for bootstrap
+            return ExecuteResponse.methodNotAllowed();
+        }
+
+        if (id == LwM2mId.SECURITY) {
+            return ExecuteResponse.notFound();
+        }
 
         // only resource could be executed
         if (!path.isResource()) {
@@ -190,14 +243,25 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized WriteAttributesResponse writeAttributes(Identity identity, WriteAttributesRequest request) {
+    public synchronized WriteAttributesResponse writeAttributes(ServerIdentity identity,
+            WriteAttributesRequest request) {
         // TODO should be implemented here to be available for all object enabler
         // This should be a not implemented error, but this is not defined in the spec.
         return WriteAttributesResponse.internalServerError("not implemented");
     }
 
     @Override
-    public synchronized DiscoverResponse discover(Identity identity, DiscoverRequest request) {
+    public synchronized DiscoverResponse discover(ServerIdentity identity, DiscoverRequest request) {
+
+        if (identity.isLwm2mBootstrapServer()) {
+            // discover is not supported for bootstrap
+            return DiscoverResponse.methodNotAllowed();
+        }
+
+        if (id == LwM2mId.SECURITY) {
+            return DiscoverResponse.notFound();
+        }
+
         LwM2mPath path = request.getPath();
         if (path.isObject()) {
 
@@ -232,7 +296,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized ObserveResponse observe(Identity identity, ObserveRequest request) {
+    public synchronized ObserveResponse observe(ServerIdentity identity, ObserveRequest request) {
         ReadResponse readResponse = this.read(identity, new ReadRequest(request.getPath().toString()));
         return new ObserveResponse(readResponse.getCode(), readResponse.getContent(), null,
                 readResponse.getErrorMessage());

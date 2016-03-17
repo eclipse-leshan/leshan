@@ -12,6 +12,7 @@
  *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - use ServerIdentity
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
 
@@ -23,6 +24,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.eclipse.leshan.ResponseCode;
+import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mObject;
@@ -33,7 +35,6 @@ import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.ExecuteRequest;
-import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
@@ -103,7 +104,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
     }
 
     @Override
-    protected ReadResponse doRead(ReadRequest request, Identity identity) {
+    protected ReadResponse doRead(ReadRequest request, ServerIdentity identity) {
         LwM2mPath path = request.getPath();
 
         // Manage Object case
@@ -128,11 +129,11 @@ public class ObjectEnabler extends BaseObjectEnabler {
         return instance.read(path.getResourceId());
     }
 
-    LwM2mObjectInstance getLwM2mObjectInstance(int instanceid, LwM2mInstanceEnabler instance, Identity identity) {
+    LwM2mObjectInstance getLwM2mObjectInstance(int instanceid, LwM2mInstanceEnabler instance, ServerIdentity identity) {
         List<LwM2mResource> resources = new ArrayList<>();
         for (ResourceModel resourceModel : getObjectModel().resources.values()) {
-            // if internal request (null identity) or readable
-            if (identity == null || resourceModel.operations.isReadable()) {
+            // check, if internal request (SYSTEM) or readable
+            if (identity.isSystem() || resourceModel.operations.isReadable()) {
                 ReadResponse response = instance.read(resourceModel.id);
                 if (response.getCode() == ResponseCode.CONTENT && response.getContent() instanceof LwM2mResource)
                     resources.add((LwM2mResource) response.getContent());

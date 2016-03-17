@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - use ServerIdentity
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.impl;
 
@@ -27,14 +28,33 @@ import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.scandium.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.scandium.auth.RawPublicKeyIdentity;
+import org.eclipse.leshan.client.request.ServerIdentity;
+import org.eclipse.leshan.client.servers.BootstrapHandler;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.util.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ResourceUtil {
+    private static final Logger LOG = LoggerFactory.getLogger(ResourceUtil.class);
+
+    // TODO: validate addresses using the security object instances?
+    // in case of multiple bootstrap instances of the security object,
+    // using BootstrapHandler may be not the right choice, because it
+    // handles the current bootstrap server.
+    public static ServerIdentity extractServerIdentity(CoapExchange exchange, BootstrapHandler bootstrapHandler) {
+        Identity identity = extractIdentity(exchange);
+
+        if (bootstrapHandler.isBootstrapServer(identity)) {
+            return ServerIdentity.createLwm2mBootstrapServerIdentity(identity);
+        }
+
+        return ServerIdentity.createLwm2mServerIdentity(identity);
+    }
 
     // TODO leshan-core-cf: this code should be factorized in a leshan-core-cf project.
     // duplicated from org.eclipse.leshan.server.californium.impl.RegisterResource
-    public static Identity extractIdentity(CoapExchange exchange) {
+    private static Identity extractIdentity(CoapExchange exchange) {
         InetSocketAddress peerAddress = new InetSocketAddress(exchange.getSourceAddress(), exchange.getSourcePort());
 
         Principal senderIdentity = exchange.advanced().getRequest().getSenderIdentity();
@@ -51,7 +71,9 @@ public class ResourceUtil {
                     String x509CommonName = endpointMatcher.group().substring(3, endpointMatcher.group().length() - 1);
                     return Identity.x509(peerAddress, x509CommonName);
                 } else {
-                    return null;
+                    // TODO may be a other Identity type is better?
+                    LOG.warn("x509 certificate without CN from " + peerAddress);
+                    return Identity.unsecure(peerAddress);
                 }
             }
         }
