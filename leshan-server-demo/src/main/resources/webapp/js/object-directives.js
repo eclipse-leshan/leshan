@@ -62,7 +62,7 @@ angular.module('objectDirectives', [])
                         } 
                     }
                     // Send request
-                    var instancepath  = scope.object.path + "/" + instance.id
+                    var instancepath  = scope.object.path
                     $http({method: 'POST', url: "api/clients/" + $routeParams.clientId + instancepath, data: payload, headers:{'Content-Type': 'application/json'}})
                     .success(function(data, status, headers, config) {
                         create = scope.object.create;
