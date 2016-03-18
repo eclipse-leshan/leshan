@@ -17,6 +17,7 @@ package org.eclipse.leshan.server.security;
 
 import java.io.Serializable;
 import java.security.PublicKey;
+import java.util.Arrays;
 
 import org.eclipse.leshan.util.Validate;
 
@@ -101,4 +102,48 @@ public class SecurityInfo implements Serializable {
     public boolean useX509Cert() {
         return useX509Cert;
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((endpoint == null) ? 0 : endpoint.hashCode());
+        result = prime * result + ((identity == null) ? 0 : identity.hashCode());
+        result = prime * result + Arrays.hashCode(preSharedKey);
+        result = prime * result + ((rawPublicKey == null) ? 0 : rawPublicKey.hashCode());
+        result = prime * result + (useX509Cert ? 1231 : 1237);
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        SecurityInfo other = (SecurityInfo) obj;
+        if (endpoint == null) {
+            if (other.endpoint != null)
+                return false;
+        } else if (!endpoint.equals(other.endpoint))
+            return false;
+        if (identity == null) {
+            if (other.identity != null)
+                return false;
+        } else if (!identity.equals(other.identity))
+            return false;
+        if (!Arrays.equals(preSharedKey, other.preSharedKey))
+            return false;
+        if (rawPublicKey == null) {
+            if (other.rawPublicKey != null)
+                return false;
+        } else if (!rawPublicKey.equals(other.rawPublicKey))
+            return false;
+        if (useX509Cert != other.useX509Cert)
+            return false;
+        return true;
+    }
+
 }
