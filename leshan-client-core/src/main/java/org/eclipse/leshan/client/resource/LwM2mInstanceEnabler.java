@@ -13,6 +13,8 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Kai Hudalla (Bosch Software Innovations GmbH) - add documentation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add reset() for 
+ *                                                     REPLACE/UPDATE implementation
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
 
@@ -86,4 +88,13 @@ public interface LwM2mInstanceEnabler {
      *         execute the operation.
      */
     ExecuteResponse execute(int resourceid, String params);
+
+    /**
+     * Reset the current value of one of this LWM2M object instance's resources. Only used for implementation of REPLACE
+     * to cleanup none mandatory resources.
+     * 
+     * @param resourceId the ID of the resource to be reseted
+     */
+    void reset(int resourceId);
+
 }

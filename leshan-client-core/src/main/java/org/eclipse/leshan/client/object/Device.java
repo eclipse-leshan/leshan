@@ -12,6 +12,8 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add reset() for 
+ *                                                     REPLACE/UPDATE implementation
  *******************************************************************************/
 package org.eclipse.leshan.client.object;
 
@@ -106,6 +108,20 @@ public class Device extends BaseInstanceEnabler {
             return ExecuteResponse.internalServerError("not implemented");
         } else {
             return super.execute(resourceid, params);
+        }
+    }
+
+    @Override
+    public void reset(int resourceid) {
+        switch (resourceid) {
+        case 14:
+            utcOffset = new SimpleDateFormat("X").format(Calendar.getInstance().getTime());
+            break;
+        case 15:
+            timezone = TimeZone.getDefault().getID();
+            break;
+        default:
+            super.reset(resourceid);
         }
     }
 

@@ -13,11 +13,14 @@
  * Contributors:
  *     Zebra Technologies - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - add test for write security object
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add test for update and replace instances
  *******************************************************************************/
 
 package org.eclipse.leshan.integration.tests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
@@ -120,6 +123,74 @@ public class WriteTest {
         LwM2mObjectInstance instance = (LwM2mObjectInstance) readResponse.getContent();
         assertEquals(utcOffset, instance.getResource(14));
         assertEquals(timeZone, instance.getResource(15));
+    }
+
+    @Test
+    public void can_write_replacing_object_instance() throws InterruptedException {
+        // setup server object
+        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE, 1, 0, 3, 60));
+
+        // verify result
+        assertEquals(ResponseCode.CHANGED, response.getCode());
+
+        // write server object
+        LwM2mResource lifetime = LwM2mSingleResource.newIntegerResource(1, 120);
+        LwM2mResource defaultMinPeriod = LwM2mSingleResource.newIntegerResource(2, 10);
+        LwM2mResource notificationStoring = LwM2mSingleResource.newBooleanResource(6, false);
+        LwM2mResource binding = LwM2mSingleResource.newStringResource(7, "U");
+        response = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE, 1, 0, lifetime,
+                defaultMinPeriod, notificationStoring, binding));
+
+        // verify result
+        assertEquals(ResponseCode.CHANGED, response.getCode());
+
+        // read the values to check the value changed
+        ReadResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(1, 0));
+        LwM2mObjectInstance instance = (LwM2mObjectInstance) readResponse.getContent();
+        assertEquals(lifetime, instance.getResource(1));
+        assertEquals(defaultMinPeriod, instance.getResource(2));
+        assertEquals(notificationStoring, instance.getResource(6));
+        assertEquals(binding, instance.getResource(7));
+        assertNull(instance.getResource(3)); // removed not contained optional writable resource
+    }
+
+    @Test
+    public void cannot_write_replacing_incomplete_object_instance() throws InterruptedException {
+        // write server object
+        LwM2mResource lifetime = LwM2mSingleResource.newIntegerResource(1, 120);
+        LwM2mResource defaultMinPeriod = LwM2mSingleResource.newIntegerResource(2, 10);
+        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE, 1, 0, lifetime,
+                defaultMinPeriod));
+
+        // verify result
+        assertEquals(ResponseCode.BAD_REQUEST, response.getCode());
+    }
+
+    @Test
+    public void can_write_updating_object_instance() throws InterruptedException {
+        // setup server object
+        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE, 1, 0, 3, 60));
+
+        // verify result
+        assertEquals(ResponseCode.CHANGED, response.getCode());
+        // write server object
+        LwM2mResource lifetime = LwM2mSingleResource.newIntegerResource(1, 120);
+        LwM2mResource defaultMinPeriod = LwM2mSingleResource.newIntegerResource(2, 10);
+        response = helper.server.send(helper.getClient(), new WriteRequest(Mode.UPDATE, 1, 0, lifetime,
+                defaultMinPeriod));
+
+        // verify result
+        assertEquals(ResponseCode.CHANGED, response.getCode());
+
+        // read the values to check the value changed
+        ReadResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(1, 0));
+        LwM2mObjectInstance instance = (LwM2mObjectInstance) readResponse.getContent();
+        assertEquals(lifetime, instance.getResource(1));
+        assertEquals(defaultMinPeriod, instance.getResource(2));
+        // no resources are removed when updating
+        assertNotNull(instance.getResource(3));
+        assertNotNull(instance.getResource(6));
+        assertNotNull(instance.getResource(7));
     }
 
     @Test
