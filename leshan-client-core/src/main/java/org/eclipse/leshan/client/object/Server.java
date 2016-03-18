@@ -81,6 +81,13 @@ public class Server extends BaseInstanceEnabler {
 
         switch (resourceid) {
 
+        case 0:
+            if (value.getType() != Type.INTEGER) {
+                return WriteResponse.badRequest("invalid type");
+            }
+            shortServerId = ((Long) value.getValue()).intValue();
+            return WriteResponse.success();
+
         case 1:
             if (value.getType() != Type.INTEGER) {
                 return WriteResponse.badRequest("invalid type");

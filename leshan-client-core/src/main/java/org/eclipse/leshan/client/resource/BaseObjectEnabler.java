@@ -118,12 +118,12 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
             }
         }
 
-        return doRead(request, identity);
+        return doRead(identity, request);
 
         // TODO we could do a validation of response.getContent by comparing with the spec.
     }
 
-    protected ReadResponse doRead(ReadRequest request, ServerIdentity identity) {
+    protected ReadResponse doRead(ServerIdentity identity, ReadRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
         return ReadResponse.internalServerError("not implemented");
     }
@@ -185,37 +185,26 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
         // TODO we could do a validation of request.getNode() by comparing with resourceSpec information
 
-        return doWrite(request);
+        return doWrite(identity, request);
     }
 
-    protected WriteResponse doWrite(WriteRequest request) {
+    protected WriteResponse doWrite(ServerIdentity identity, WriteRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
         return WriteResponse.internalServerError("not implemented");
     }
 
     @Override
     public synchronized final BootstrapWriteResponse write(ServerIdentity identity, BootstrapWriteRequest request) {
-        LwM2mPath path = request.getPath();
 
         // We should not get a bootstrapWriteRequest from a LWM2M server
         if (!identity.isLwm2mBootstrapServer()) {
             return BootstrapWriteResponse.internalServerError("bootstrap write request from LWM2M server");
         }
 
-        // check if the resource is writable
-        if (path.isResource()) {
-            ResourceModel resourceModel = objectModel.resources.get(path.getResourceId());
-            if (resourceModel != null && !resourceModel.operations.isWritable()) {
-                return BootstrapWriteResponse.badRequest(null);
-            }
-        }
-
-        // TODO we could do a validation of request.getNode() by comparing with resourceSpec information
-
-        return doWrite(request);
+        return doWrite(identity, request);
     }
 
-    protected BootstrapWriteResponse doWrite(BootstrapWriteRequest request) {
+    protected BootstrapWriteResponse doWrite(ServerIdentity identity, BootstrapWriteRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
         return BootstrapWriteResponse.internalServerError("not implemented");
     }
