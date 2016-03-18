@@ -12,6 +12,8 @@
  *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add reset() for 
+ *                                                     REPLACE/UPDATE implementation
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
 
@@ -57,4 +59,9 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     public ExecuteResponse execute(int resourceid, String params) {
         return ExecuteResponse.notFound();
     }
+
+    @Override
+    public void reset(int resourceid) {
+    }
+
 }

@@ -12,6 +12,8 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add defaultMinPeriod/defaultMaxPeriod
+ *                                                     and reset() for REPLACE/UPDATE implementation
  *******************************************************************************/
 package org.eclipse.leshan.client.object;
 
@@ -31,6 +33,8 @@ public class Server extends BaseInstanceEnabler {
 
     private int shortServerId;
     private long lifetime;
+    private Long defaultMinPeriod;
+    private Long defaultMaxPeriod;
     private BindingMode binding;
     private boolean notifyWhenDisable;
 
@@ -51,6 +55,16 @@ public class Server extends BaseInstanceEnabler {
         case 1: // lifetime
             return ReadResponse.success(resourceid, lifetime);
 
+        case 2: // default min period
+            if (null == defaultMinPeriod)
+                return ReadResponse.notFound();
+            return ReadResponse.success(resourceid, defaultMinPeriod);
+
+        case 3: // default max period
+            if (null == defaultMaxPeriod)
+                return ReadResponse.notFound();
+            return ReadResponse.success(resourceid, defaultMaxPeriod);
+
         case 6: // notification storing when disable or offline
             return ReadResponse.success(resourceid, notifyWhenDisable);
 
@@ -66,6 +80,27 @@ public class Server extends BaseInstanceEnabler {
     public WriteResponse write(int resourceid, LwM2mResource value) {
 
         switch (resourceid) {
+
+        case 1:
+            if (value.getType() != Type.INTEGER) {
+                return WriteResponse.badRequest("invalid type");
+            }
+            lifetime = (Long) value.getValue();
+            return WriteResponse.success();
+
+        case 2:
+            if (value.getType() != Type.INTEGER) {
+                return WriteResponse.badRequest("invalid type");
+            }
+            defaultMinPeriod = (Long) value.getValue();
+            return WriteResponse.success();
+
+        case 3:
+            if (value.getType() != Type.INTEGER) {
+                return WriteResponse.badRequest("invalid type");
+            }
+            defaultMaxPeriod = (Long) value.getValue();
+            return WriteResponse.success();
 
         case 6: // notification storing when disable or offline
             if (value.getType() != Type.BOOLEAN) {
@@ -98,6 +133,20 @@ public class Server extends BaseInstanceEnabler {
             return ExecuteResponse.internalServerError("not implemented");
         } else {
             return super.execute(resourceid, params);
+        }
+    }
+
+    @Override
+    public void reset(int resourceid) {
+        switch (resourceid) {
+        case 2:
+            defaultMinPeriod = null;
+            break;
+        case 3:
+            defaultMaxPeriod = null;
+            break;
+        default:
+            super.reset(resourceid);
         }
     }
 

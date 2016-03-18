@@ -13,16 +13,19 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - use ServerIdentity
+ *     Achim Kraus (Bosch Software Innovations GmbH) - implement REPLACE/UPDATE
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -151,9 +154,27 @@ public class ObjectEnabler extends BaseObjectEnabler {
         if (instance == null)
             return WriteResponse.notFound();
 
-        if (path.getResourceId() == null) {
-            for (LwM2mResource resource : ((LwM2mObjectInstance) request.getNode()).getResources().values()) {
-                instance.write(resource.getId(), resource);
+        if (path.isObjectInstance()) {
+            // instance write
+            Map<Integer, LwM2mResource> writeResources = ((LwM2mObjectInstance) request.getNode()).getResources();
+            if (request.isReplaceRequest()) {
+                Collection<ResourceModel> modelResources = getObjectModel().resources.values();
+                // REPLACE
+                for (ResourceModel resourceModel : modelResources) {
+                    if (id == LwM2mId.SECURITY || resourceModel.operations.isWritable()) {
+                        LwM2mResource writeResource = writeResources.get(resourceModel.id);
+                        if (null != writeResource) {
+                            instance.write(resourceModel.id, writeResource);
+                        } else {
+                            instance.reset(resourceModel.id);
+                        }
+                    }
+                }
+            } else {
+                // UPDATE
+                for (LwM2mResource resource : writeResources.values()) {
+                    instance.write(resource.getId(), resource);
+                }
             }
             return WriteResponse.success();
         }
@@ -217,22 +238,24 @@ public class ObjectEnabler extends BaseObjectEnabler {
 
     @Override
     protected DeleteResponse doDelete(DeleteRequest request) {
-        LwM2mPath path = request.getPath();
-        if (!instances.containsKey(path.getObjectInstanceId())) {
-            return DeleteResponse.notFound();
+        if (null != instances.remove(request.getPath().getObjectInstanceId())) {
+            return DeleteResponse.success();
         }
-        instances.remove(request.getPath().getObjectInstanceId());
-        return DeleteResponse.success();
+        return DeleteResponse.notFound();
     }
 
     private void listenInstance(LwM2mInstanceEnabler instance, final int instanceId) {
         instance.addResourceChangedListener(new ResourceChangedListener() {
             @Override
             public void resourcesChanged(int... resourceIds) {
-                getNotifySender().sendNotify(getId() + "");
-                getNotifySender().sendNotify(getId() + "/" + instanceId);
-                for (int resourceId : resourceIds) {
-                    getNotifySender().sendNotify(getId() + "/" + instanceId + "/" + resourceId);
+                NotifySender sender = getNotifySender();
+                if (null != sender) {
+                    // check, if sender is available
+                    sender.sendNotify(getId() + "");
+                    sender.sendNotify(getId() + "/" + instanceId);
+                    for (int resourceId : resourceIds) {
+                        sender.sendNotify(getId() + "/" + instanceId + "/" + resourceId);
+                    }
                 }
             }
         });

@@ -13,6 +13,8 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Kai Hudalla (Bosch Software Innovations GmbH) - check resource ID when executing resources
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add reset() for 
+ *                                                     REPLACE/UPDATE implementation
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
 
@@ -47,8 +49,7 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
 
     @Override
     public WriteResponse write(int resourceid, LwM2mResource value) {
-        LwM2mResource previousValue = resources.get(resourceid);
-        resources.put(resourceid, value);
+        LwM2mResource previousValue = resources.put(resourceid, value);
         if (!value.equals(previousValue))
             fireResourcesChange(resourceid);
         return WriteResponse.success();
@@ -62,6 +63,11 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
         } else {
             return ExecuteResponse.notFound();
         }
+    }
+
+    @Override
+    public void reset(int resourceid) {
+        resources.remove(resourceid);
     }
 
     public void setObjectModel(ObjectModel objectModel) {
