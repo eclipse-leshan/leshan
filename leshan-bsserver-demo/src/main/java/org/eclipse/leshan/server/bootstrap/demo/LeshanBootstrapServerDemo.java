@@ -12,6 +12,8 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add parameter for 
+ *                                                     configuration filename
  *******************************************************************************/
 
 package org.eclipse.leshan.server.bootstrap.demo;
@@ -44,7 +46,6 @@ public class LeshanBootstrapServerDemo {
     private final static String FOOTER = "All options could be passed using environment variables.(using long option name in uppercase)";
 
     public static void main(String[] args) {
-
         // Define options for command line tools
         Options options = new Options();
 
@@ -54,6 +55,8 @@ public class LeshanBootstrapServerDemo {
         options.addOption("slh", "coapshost", true, "Set the secure local CoAP address.\nDefault: any local address.");
         options.addOption("slp", "coapsport", true, "Set the secure local CoAP port.\nDefault: 5684.");
         options.addOption("wp", "webport", true, "Set the HTTP port for web server.\nDefault: 8080.");
+        options.addOption("cfg", "configfile", true,
+                "Set the filename for the configuration.\nDefault: " + BootstrapStoreImpl.DEFAULT_FILE + ".");
         HelpFormatter formatter = new HelpFormatter();
         formatter.setOptionComparator(null);
 
@@ -122,11 +125,19 @@ public class LeshanBootstrapServerDemo {
             webPort = Integer.parseInt(webPortOption);
         }
 
+        String configFilename = System.getenv("CONFIGFILE");
+        if (cl.hasOption("cfg")) {
+            configFilename = cl.getOptionValue("cfg");
+        }
+        if (configFilename == null) {
+            configFilename = BootstrapStoreImpl.DEFAULT_FILE;
+        }
+
         try {
-            createAndStartServer(webPort, localAddress, localPort, secureLocalAddress, secureLocalPort);
+            createAndStartServer(webPort, localAddress, localPort, secureLocalAddress, secureLocalPort, configFilename);
         } catch (BindException e) {
-            System.out.println(String.format("Web port %s is alreay used, you could change it using 'webport' option.",
-                    webPort));
+            System.out.println(
+                    String.format("Web port %s is alreay used, you could change it using 'webport' option.", webPort));
             formatter.printHelp(USAGE, null, options, FOOTER);
         } catch (Exception e) {
             LOG.error("Jetty stopped with unexcepted error ...", e);
@@ -134,16 +145,15 @@ public class LeshanBootstrapServerDemo {
     }
 
     public static void createAndStartServer(int webPort, String localAddress, int localPort, String secureLocalAddress,
-            int secureLocalPort) throws Exception {
+            int secureLocalPort, String configFilename) throws Exception {
 
         // Prepare and start bootstrap server
-        BootstrapStoreImpl bsStore = new BootstrapStoreImpl();
+        BootstrapStoreImpl bsStore = new BootstrapStoreImpl(configFilename);
         BootstrapSecurityStore securityStore = new BootstrapSecurityStoreImpl(bsStore);
         BootstrapAuthService bsAuthService = new BootstrapAuthServiceImpl(securityStore);
 
-        LwM2mBootstrapServerImpl bsServer = new LwM2mBootstrapServerImpl(
-                new InetSocketAddress(localAddress, localPort), new InetSocketAddress(secureLocalAddress,
-                        secureLocalPort), bsStore, securityStore, bsAuthService);
+        LwM2mBootstrapServerImpl bsServer = new LwM2mBootstrapServerImpl(new InetSocketAddress(localAddress, localPort),
+                new InetSocketAddress(secureLocalAddress, secureLocalPort), bsStore, securityStore, bsAuthService);
         bsServer.start();
 
         // Now prepare and start jetty
