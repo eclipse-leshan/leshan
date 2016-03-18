@@ -185,37 +185,26 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
         // TODO we could do a validation of request.getNode() by comparing with resourceSpec information
 
-        return doWrite(request);
+        return doWrite(request, identity);
     }
 
-    protected WriteResponse doWrite(WriteRequest request) {
+    protected WriteResponse doWrite(WriteRequest request, ServerIdentity identity) {
         // This should be a not implemented error, but this is not defined in the spec.
         return WriteResponse.internalServerError("not implemented");
     }
 
     @Override
     public synchronized final BootstrapWriteResponse write(ServerIdentity identity, BootstrapWriteRequest request) {
-        LwM2mPath path = request.getPath();
 
         // We should not get a bootstrapWriteRequest from a LWM2M server
         if (!identity.isLwm2mBootstrapServer()) {
             return BootstrapWriteResponse.internalServerError("bootstrap write request from LWM2M server");
         }
 
-        // check if the resource is writable
-        if (path.isResource()) {
-            ResourceModel resourceModel = objectModel.resources.get(path.getResourceId());
-            if (resourceModel != null && !resourceModel.operations.isWritable()) {
-                return BootstrapWriteResponse.badRequest(null);
-            }
-        }
-
-        // TODO we could do a validation of request.getNode() by comparing with resourceSpec information
-
-        return doWrite(request);
+        return doWrite(request, identity);
     }
 
-    protected BootstrapWriteResponse doWrite(BootstrapWriteRequest request) {
+    protected BootstrapWriteResponse doWrite(BootstrapWriteRequest request, ServerIdentity identity) {
         // This should be a not implemented error, but this is not defined in the spec.
         return BootstrapWriteResponse.internalServerError("not implemented");
     }
@@ -283,8 +272,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized WriteAttributesResponse writeAttributes(ServerIdentity identity,
-            WriteAttributesRequest request) {
+    public synchronized WriteAttributesResponse writeAttributes(ServerIdentity identity, WriteAttributesRequest request) {
         // TODO should be implemented here to be available for all object enabler
         // This should be a not implemented error, but this is not defined in the spec.
         return WriteAttributesResponse.internalServerError("not implemented");
