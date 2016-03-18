@@ -14,6 +14,8 @@
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - use ObserveRelationFilter
  *     Achim Kraus (Bosch Software Innovations GmbH) - use ServerIdentity
+ *     Achim Kraus (Bosch Software Innovations GmbH) - implement POST "/oid/iid" 
+ *                                                     as UPDATE instance
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.impl;
 
@@ -203,11 +205,25 @@ public class ObjectResource extends CoapResource implements NotifySender {
             return;
         }
 
+        ContentFormat contentFormat = ContentFormat.fromCode(exchange.getRequestOptions().getContentFormat());
+        LwM2mModel model = new LwM2mModel(nodeEnabler.getObjectModel());
+
+        // Manage Update Instance
+        if (path.isObjectInstance()) {
+            try {
+                LwM2mNode lwM2mNode = LwM2mNodeDecoder.decode(exchange.getRequestPayload(), contentFormat, path, model);
+                WriteResponse response = nodeEnabler.write(identity, new WriteRequest(Mode.UPDATE, contentFormat, URI,
+                        lwM2mNode));
+                exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
+            } catch (InvalidValueException e) {
+                LOG.warn("Unable to decode payload to write", e);
+                exchange.respond(ResponseCode.BAD_REQUEST);
+            }
+            return;
+        }
+
         // Manage Create Request
         try {
-            ContentFormat contentFormat = ContentFormat.fromCode(exchange.getRequestOptions().getContentFormat());
-            LwM2mModel model = new LwM2mModel(nodeEnabler.getObjectModel());
-
             // decode the payload as an instance
             LwM2mObjectInstance newInstance = LwM2mNodeDecoder.decode(exchange.getRequestPayload(), contentFormat,
                     new LwM2mPath(path.getObjectId()), model, LwM2mObjectInstance.class);

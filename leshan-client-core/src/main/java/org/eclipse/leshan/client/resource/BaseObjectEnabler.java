@@ -15,8 +15,13 @@
  *     Achim Kraus (Bosch Software Innovations GmbH) - deny delete of resource
  *     Achim Kraus (Bosch Software Innovations GmbH) - use ServerIdentity to 
  *                                                     protect the security object
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add resource checks for 
+ *                                                     REPLACE/UPDAT implementation
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.LwM2mId;
@@ -24,6 +29,7 @@ import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
+import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.CreateRequest;
@@ -46,7 +52,7 @@ import org.eclipse.leshan.core.response.WriteResponse;
 
 public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
-    int id;
+    final int id;
     private NotifySender notifySender;
     private ObjectModel objectModel;
 
@@ -131,17 +137,48 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
             return WriteResponse.methodNotAllowed();
         }
 
-        if (!identity.isSystem()) {
-            // write the security object is forbidden
-            if (id == LwM2mId.SECURITY) {
-                return WriteResponse.notFound();
-            }
+        // write the security object is forbidden
+        if (LwM2mId.SECURITY == id && !identity.isSystem()) {
+            return WriteResponse.notFound();
+        }
 
+        if (path.isResource()) {
+            // resource write:
             // check if the resource is writable
-            if (path.isResource()) {
+            if (LwM2mId.SECURITY != id) { // security resources are writable by SYSTEM
                 ResourceModel resourceModel = objectModel.resources.get(path.getResourceId());
                 if (resourceModel != null && !resourceModel.operations.isWritable()) {
                     return WriteResponse.methodNotAllowed();
+                }
+            }
+        } else if (path.isObjectInstance()) {
+            // instance write:
+            // check if all resources are writable
+            if (LwM2mId.SECURITY != id) { // security resources are writable by SYSTEM
+                ObjectModel model = getObjectModel();
+                for (Integer writeResourceId : ((LwM2mObjectInstance) request.getNode()).getResources().keySet()) {
+                    ResourceModel resourceModel = model.resources.get(writeResourceId);
+                    if (null != resourceModel && !resourceModel.operations.isWritable()) {
+                        return WriteResponse.methodNotAllowed();
+                    }
+                }
+            }
+
+            if (request.isReplaceRequest()) {
+                // REPLACE
+                // check, if all mandatory writable resources are provided
+                // Collect all mandatory writable resource IDs from the model
+                Set<Integer> mandatoryResources = new HashSet<Integer>();
+                for (ResourceModel resourceModel : getObjectModel().resources.values()) {
+                    if (resourceModel.mandatory && (LwM2mId.SECURITY == id || resourceModel.operations.isWritable()))
+                        mandatoryResources.add(resourceModel.id);
+                }
+                // Afterwards remove the provided resource IDs from that set
+                for (Integer writeResourceId : ((LwM2mObjectInstance) request.getNode()).getResources().keySet()) {
+                    mandatoryResources.remove(writeResourceId);
+                }
+                if (!mandatoryResources.isEmpty()) {
+                    return WriteResponse.badRequest("mandatory writable resources missing!");
                 }
             }
         }
@@ -216,11 +253,12 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     public synchronized final ExecuteResponse execute(ServerIdentity identity, ExecuteRequest request) {
         LwM2mPath path = request.getPath();
 
+        // execute is not supported for bootstrap
         if (identity.isLwm2mBootstrapServer()) {
-            // execute is not supported for bootstrap
             return ExecuteResponse.methodNotAllowed();
         }
 
+        // execute on security object is forbidden
         if (id == LwM2mId.SECURITY) {
             return ExecuteResponse.notFound();
         }
