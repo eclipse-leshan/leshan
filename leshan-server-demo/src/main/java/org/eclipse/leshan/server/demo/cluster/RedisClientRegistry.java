@@ -15,12 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.demo.cluster;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,6 +25,7 @@ import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.client.ClientRegistryListener;
 import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.demo.cluster.serialization.ClientSerDes;
 import org.eclipse.leshan.util.Validate;
 
 import redis.clients.jedis.Jedis;
@@ -152,7 +147,7 @@ public class RedisClientRegistry implements ClientRegistry {
 
             // notify listener
             for (ClientRegistryListener l : listeners) {
-                l.updated(clientUpdated);
+                l.updated(update, clientUpdated);
             }
             return clientUpdated;
         }
@@ -161,25 +156,29 @@ public class RedisClientRegistry implements ClientRegistry {
     @Override
     public Client deregisterClient(String registrationId) {
         try (Jedis j = pool.getResource()) {
+            byte[] regKey = (REG_EP + registrationId).getBytes();
+            byte[] delRegKey = ("TODELETE#" + REG_EP + registrationId).getBytes();
+
             // first rename for atomicity
-            if (!"OK".equals(j.rename((REG_EP + registrationId).getBytes(),
-                    ("TODELETE#" + REG_EP + registrationId).getBytes()))) {
-                System.err.println("del meh");
+            if (!"OK".equals(j.rename(regKey, delRegKey))) {
                 return null;
             }
 
             // fetch the client ep by registration ID index
-            byte[] key = j.get(("TODELETE#" + REG_EP + registrationId).getBytes());
+            byte[] key = j.get(delRegKey);
             if (key == null) {
                 return null;
             }
-            byte[] data = j.get(ByteArrayUtils.concatenate(EP_CLIENT.getBytes(), key));
+
+            byte[] epKey = ByteArrayUtils.concatenate(EP_CLIENT.getBytes(), key);
+            byte[] data = j.get(epKey);
 
             Client c = deserialize(data);
 
             // delete everything
-            j.del(("TODELETE#" + REG_EP + registrationId).getBytes());
-            j.del(ByteArrayUtils.concatenate(EP_CLIENT.getBytes(), key));
+            j.del(delRegKey);
+            j.del(epKey);
+
             for (ClientRegistryListener l : listeners) {
                 l.unregistered(c);
             }
@@ -200,25 +199,6 @@ public class RedisClientRegistry implements ClientRegistry {
         }
     }
 
-    private byte[] serialize(Client client) {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        try (ObjectOutput out = new ObjectOutputStream(bos)) {
-            out.writeObject(client);
-            return bos.toByteArray();
-        } catch (IOException e) {
-            throw new IllegalStateException("Client is not serializable", e);
-        }
-    }
-
-    private Client deserialize(byte[] data) {
-        ByteArrayInputStream bis = new ByteArrayInputStream(data);
-        try (ObjectInputStream in = new ObjectInputStream(bis)) {
-            return (Client) in.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            throw new IllegalStateException("Client is not deserializable", e);
-        }
-    }
-
     @Override
     public void addListener(ClientRegistryListener listener) {
         listeners.add(listener);
@@ -227,6 +207,14 @@ public class RedisClientRegistry implements ClientRegistry {
     @Override
     public void removeListener(ClientRegistryListener listener) {
         listeners.remove(listener);
+    }
+
+    private byte[] serialize(Client client) {
+        return ClientSerDes.serialize(client);
+    }
+
+    private Client deserialize(byte[] data) {
+        return ClientSerDes.deserialize(data);
     }
 
 }

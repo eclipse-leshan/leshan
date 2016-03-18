@@ -208,50 +208,50 @@ Contributors:
 
         <pluginManagement>
             <plugins>
-	            <plugin>
-	                <groupId>org.apache.maven.plugins</groupId>
-	                <artifactId>maven-compiler-plugin</artifactId>
-	                <version>3.3</version>
-	                <configuration>
-	                    <encoding>UTF-8</encoding>
-	                    <source>1.7</source>
-	                    <target>1.7</target>
-	                    <debug>true</debug>
-	                    <optimize>true</optimize>
-	                    <showDeprecations>true</showDeprecations>
-	                </configuration>
-	            </plugin>
-	            <plugin>
-	                <groupId>org.apache.maven.plugins</groupId>
-	                <artifactId>maven-surefire-plugin</artifactId>
-	                <version>2.19</version>
-	                <configuration>
-	                    <parallel>classes</parallel>
-	                    <threadCount>4</threadCount>
-	                    <excludes>
-	                        <exclude>**/*$*</exclude>
-	                    </excludes>
-	                </configuration>
-	            </plugin>
-	            <plugin>
-	                <artifactId>maven-jar-plugin</artifactId>
-	                <version>2.6</version>
-	                <configuration>
-	                    <archive>
-	                        <manifestEntries>
-	                            <Implementation-Version>${project.version}</Implementation-Version>
-	                        </manifestEntries>
-	                    </archive>
-	                </configuration>
-	            </plugin>
-	            <plugin>
-	                <groupId>org.apache.maven.plugins</groupId>
-	                <artifactId>maven-javadoc-plugin</artifactId>
-	                <version>2.10.3</version>
-	                <configuration>
-	                    <excludePackageNames>org.eclipse.leshan.util</excludePackageNames>
-	                </configuration>
-	            </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.3</version>
+                    <configuration>
+                        <encoding>UTF-8</encoding>
+                        <source>1.7</source>
+                        <target>1.7</target>
+                        <debug>true</debug>
+                        <optimize>true</optimize>
+                        <showDeprecations>true</showDeprecations>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.19</version>
+                    <configuration>
+                        <parallel>classes</parallel>
+                        <threadCount>4</threadCount>
+                        <excludes>
+                            <exclude>**/*$*</exclude>
+                        </excludes>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>2.6</version>
+                    <configuration>
+                        <archive>
+                            <manifestEntries>
+                                <Implementation-Version>${project.version}</Implementation-Version>
+                            </manifestEntries>
+                        </archive>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>2.10.3</version>
+                    <configuration>
+                        <excludePackageNames>org.eclipse.leshan.util</excludePackageNames>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-eclipse-plugin</artifactId>
@@ -283,21 +283,21 @@ Contributors:
                     <artifactId>maven-bundle-plugin</artifactId>
                     <version>3.0.1</version>
                 </plugin>
-	            <plugin>
-	                <groupId>org.codehaus.mojo</groupId>
-	                <artifactId>buildnumber-maven-plugin</artifactId>
-	                <version>1.4</version>
-	                <executions>
-	                    <execution>
-	                        <goals>
-	                            <goal>create</goal>
-	                        </goals>
-	                    </execution>
-	                </executions>
-	                <configuration>
-	                    <getRevisionOnlyOnce>true</getRevisionOnlyOnce>
-	                </configuration>
-	            </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>buildnumber-maven-plugin</artifactId>
+                    <version>1.4</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>create</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <getRevisionOnlyOnce>true</getRevisionOnlyOnce>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -353,6 +353,11 @@ Contributors:
                 <groupId>com.google.code.gson</groupId>
                 <artifactId>gson</artifactId>
                 <version>2.2.4</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eclipsesource.minimal-json</groupId>
+                <artifactId>minimal-json</artifactId>
+                <version>0.9.4</version>
             </dependency>
             <dependency>
                 <groupId>commons-lang</groupId>

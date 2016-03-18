@@ -15,12 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.demo.cluster;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
@@ -28,6 +22,7 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.LinkedList;
 
+import org.eclipse.leshan.server.demo.cluster.serialization.SecurityInfoSerDes;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.SecurityRegistry;
@@ -170,21 +165,10 @@ public class RedisSecurityRegistry implements SecurityRegistry {
     }
 
     private byte[] serialize(SecurityInfo secInfo) {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        try (ObjectOutput out = new ObjectOutputStream(bos)) {
-            out.writeObject(secInfo);
-            return bos.toByteArray();
-        } catch (IOException e) {
-            throw new IllegalStateException("SecurityInfo is not serializable", e);
-        }
+        return SecurityInfoSerDes.serialize(secInfo);
     }
 
     private SecurityInfo deserialize(byte[] data) {
-        ByteArrayInputStream bis = new ByteArrayInputStream(data);
-        try (ObjectInputStream in = new ObjectInputStream(bis)) {
-            return (SecurityInfo) in.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            throw new IllegalStateException("SecurityInfo is not deserializable", e);
-        }
+        return SecurityInfoSerDes.deserialize(data);
     }
 }
