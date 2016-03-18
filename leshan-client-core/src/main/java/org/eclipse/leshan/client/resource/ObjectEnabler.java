@@ -18,14 +18,12 @@
 package org.eclipse.leshan.client.resource;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -146,7 +144,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
     }
 
     @Override
-    protected WriteResponse doWrite(WriteRequest request) {
+    protected WriteResponse doWrite(WriteRequest request, ServerIdentity identity) {
         LwM2mPath path = request.getPath();
 
         // Manage Instance case
@@ -158,11 +156,11 @@ public class ObjectEnabler extends BaseObjectEnabler {
             // instance write
             Map<Integer, LwM2mResource> writeResources = ((LwM2mObjectInstance) request.getNode()).getResources();
             if (request.isReplaceRequest()) {
-                Collection<ResourceModel> modelResources = getObjectModel().resources.values();
                 // REPLACE
-                for (ResourceModel resourceModel : modelResources) {
-                    if (id == LwM2mId.SECURITY || resourceModel.operations.isWritable()) {
-                        LwM2mResource writeResource = writeResources.get(resourceModel.id);
+                writeResources = new HashMap<Integer, LwM2mResource>(writeResources); // make them modifiable
+                for (ResourceModel resourceModel : getObjectModel().resources.values()) {
+                    if (!identity.isLwm2mServer() || resourceModel.operations.isWritable()) {
+                        LwM2mResource writeResource = writeResources.remove(resourceModel.id);
                         if (null != writeResource) {
                             instance.write(resourceModel.id, writeResource);
                         } else {
@@ -170,11 +168,10 @@ public class ObjectEnabler extends BaseObjectEnabler {
                         }
                     }
                 }
-            } else {
-                // UPDATE
-                for (LwM2mResource resource : writeResources.values()) {
-                    instance.write(resource.getId(), resource);
-                }
+            }
+            // UPDATE and resources currently not in the model
+            for (LwM2mResource resource : writeResources.values()) {
+                instance.write(resource.getId(), resource);
             }
             return WriteResponse.success();
         }
@@ -184,7 +181,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
     }
 
     @Override
-    protected BootstrapWriteResponse doWrite(BootstrapWriteRequest request) {
+    protected BootstrapWriteResponse doWrite(BootstrapWriteRequest request, ServerIdentity identity) {
         LwM2mPath path = request.getPath();
 
         // Manage Object case
@@ -194,8 +191,8 @@ public class ObjectEnabler extends BaseObjectEnabler {
                 if (instanceEnabler == null) {
                     doCreate(new CreateRequest(path.getObjectId(), instanceNode));
                 } else {
-                    doWrite(new WriteRequest(Mode.REPLACE, path.getObjectId(), path.getObjectInstanceId(),
-                            instanceNode.getResources().values()));
+                    doWrite(new WriteRequest(Mode.REPLACE, path.getObjectId(), path.getObjectInstanceId(), instanceNode
+                            .getResources().values()), identity);
                 }
             }
             return BootstrapWriteResponse.success();
@@ -209,7 +206,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
                 doCreate(new CreateRequest(path.getObjectId(), instanceNode));
             } else {
                 doWrite(new WriteRequest(Mode.REPLACE, request.getContentFormat(), path.getObjectId(),
-                        path.getObjectInstanceId(), instanceNode.getResources().values()));
+                        path.getObjectInstanceId(), instanceNode.getResources().values()), identity);
             }
             return BootstrapWriteResponse.success();
         }
