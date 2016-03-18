@@ -12,14 +12,18 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add json as storage format
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap.demo;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStreamWriter;
+import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +36,10 @@ import org.eclipse.leshan.server.bootstrap.demo.ConfigurationChecker.Configurati
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+
 /**
  * Simple bootstrap store implementation storing bootstrap information in memory
  */
@@ -40,9 +48,11 @@ public class BootstrapStoreImpl implements BootstrapStore {
     private static final Logger LOG = LoggerFactory.getLogger(BootstrapStoreImpl.class);
 
     // default location for persistence
-    private static final String DEFAULT_FILE = "data/bootstrap.data";
+    public static final String DEFAULT_FILE = "data/bootstrap.data";
 
     private final String filename;
+    private final Gson gson;
+    private final Type gsonType;
 
     public BootstrapStoreImpl() {
         this(DEFAULT_FILE);
@@ -53,7 +63,16 @@ public class BootstrapStoreImpl implements BootstrapStore {
      */
     public BootstrapStoreImpl(String filename) {
         Validate.notEmpty(filename);
-
+        if (filename.endsWith(".json")) {
+            GsonBuilder builder = new GsonBuilder();
+            builder.setPrettyPrinting();
+            this.gson = builder.create();
+            this.gsonType = new TypeToken<Map<String, BootstrapConfig>>() {
+            }.getType();
+        } else {
+            this.gson = null;
+            this.gsonType = null;
+        }
         this.filename = filename;
         this.loadFromFile();
     }
@@ -88,8 +107,15 @@ public class BootstrapStoreImpl implements BootstrapStore {
         try {
             File file = new File(filename);
             if (file.exists()) {
-                try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
-                    bootstrapByEndpoint.putAll((Map<String, BootstrapConfig>) in.readObject());
+                if (null == gson) {
+                    try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
+                        bootstrapByEndpoint.putAll((Map<String, BootstrapConfig>) in.readObject());
+                    }
+                } else {
+                    try (InputStreamReader in = new InputStreamReader(new FileInputStream(file))) {
+                        Map<String, BootstrapConfig> config = gson.fromJson(in, gsonType);
+                        bootstrapByEndpoint.putAll(config);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -110,9 +136,15 @@ public class BootstrapStoreImpl implements BootstrapStore {
             }
 
             // Write file
-            try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename))) {
-                Map<String, BootstrapConfig> copy = new HashMap<>(bootstrapByEndpoint);
-                out.writeObject(copy);
+            if (null == gson) {
+                try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename))) {
+                    Map<String, BootstrapConfig> copy = new HashMap<>(bootstrapByEndpoint);
+                    out.writeObject(copy);
+                }
+            } else {
+                try (OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(filename))) {
+                    out.write(gson.toJson(getBootstrapConfigs(), gsonType));
+                }
             }
         } catch (Exception e) {
             LOG.error("Could not save bootstrap infos to file", e);
