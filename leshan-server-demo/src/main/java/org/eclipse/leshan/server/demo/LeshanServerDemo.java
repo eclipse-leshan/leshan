@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add server extensions
  *******************************************************************************/
 package org.eclipse.leshan.server.demo;
 
@@ -41,6 +42,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
+import org.eclipse.leshan.server.demo.extensions.LeshanServerExtensionsManager;
 import org.eclipse.leshan.server.demo.servlet.ClientServlet;
 import org.eclipse.leshan.server.demo.servlet.EventServlet;
 import org.eclipse.leshan.server.demo.servlet.ObjectSpecServlet;
@@ -67,6 +69,8 @@ public class LeshanServerDemo {
         options.addOption("slh", "coapshost", true, "Set the secure local CoAP address.\nDefault: any local address.");
         options.addOption("slp", "coapsport", true, "Set the secure local CoAP port.\nDefault: 5684.");
         options.addOption("wp", "webport", true, "Set the HTTP port for web server.\nDefault: 8080.");
+        options.addOption("ex", "extensions", true, "Set extensions filename.\nDefault: none.");
+        options.addOption("tag", "extensiontags", true, "Set extension tags.\nDefault: none.");
         HelpFormatter formatter = new HelpFormatter();
         formatter.setOptionComparator(null);
 
@@ -131,8 +135,21 @@ public class LeshanServerDemo {
             webPort = Integer.parseInt(webPortOption);
         }
 
+        // get extensions filename
+        String extensions = System.getenv("EXTENSIONS");
+        if (cl.hasOption("ex")) {
+            extensions = cl.getOptionValue("ex");
+        }
+
+        // get extensions tags
+        String extensionTags = System.getenv("EXTENSIONTAGS");
+        if (cl.hasOption("tag")) {
+            extensionTags = cl.getOptionValue("tag");
+        }
+
         try {
-            createAndStartServer(webPort, localAddress, localPort, secureLocalAddress, secureLocalPort);
+            createAndStartServer(webPort, localAddress, localPort, secureLocalAddress, secureLocalPort, extensions,
+                    extensionTags);
         } catch (BindException e) {
             System.out.println(String.format("Web port %s is alreay used, you could change it using 'webport' option.",
                     webPort));
@@ -143,7 +160,7 @@ public class LeshanServerDemo {
     }
 
     public static void createAndStartServer(int webPort, String localAddress, int localPort, String secureLocalAddress,
-            int secureLocalPort) throws Exception {
+            int secureLocalPort, String extensions, String extensionTags) throws Exception {
         // Prepare LWM2M server
         LeshanServerBuilder builder = new LeshanServerBuilder();
         builder.setLocalAddress(localAddress, localPort);
@@ -182,7 +199,18 @@ public class LeshanServerDemo {
 
         // Create and start LWM2M server
         LeshanServer lwServer = builder.build();
+
+        // check for extensions
+        LeshanServerExtensionsManager manager = null;
+        if (null != extensions && !extensions.isEmpty()) {
+            manager = new LeshanServerExtensionsManager();
+            manager.loadExtensions(lwServer, extensions, extensionTags);
+        }
+
         lwServer.start();
+        if (null != manager) {
+            manager.startAutoStarting();
+        }
 
         // Now prepare Jetty
         Server server = new Server(webPort);

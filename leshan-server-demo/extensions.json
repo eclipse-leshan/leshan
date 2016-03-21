@@ -1,0 +1,62 @@
+[
+  {
+    "name": "FileResource",
+    "className": "org.eclipse.leshan.server.demo.extensions.FileResourceExtension",
+    "configuration": {
+      "ROOT": "files",
+      "MAX_FILE_LENGTH": "2000000"
+    }
+  },
+  {
+    "tags" : [
+      "TRACE"
+    ],
+    "name": "MessageTracer",
+    "className": "org.eclipse.leshan.server.demo.extensions.MessageTracerExtension"
+  },
+  {
+    "name": "ClientSetup",
+    "className": "org.eclipse.leshan.server.demo.extensions.clientsetup.ClientSetupExtension",
+    "configuration": {
+      "FILE": "clientsetups.json",
+      "DELAY_IN_MS": "3000"
+    }
+  },
+  {
+    "tags" : [
+      "ROBUSTNESS_TEST"
+    ],
+    "name": "MessageDelayer",
+    "className": "org.eclipse.leshan.server.demo.extensions.MessageDelayerExtension",
+    "configuration": {
+      "MAX_DELAY_IN_MS": "5000",
+      "MAX_DELAYED_MESSAGES": "2000",
+      "MAX_UNDELAYED_MESSAGES": "2000"
+    }
+  },
+  {
+    "tags" : [
+      "ROBUSTNESS_TEST"
+    ],
+    "name": "MultiRequests",
+    "className": "org.eclipse.leshan.server.demo.extensions.MultiRequestExtension",
+    "configuration": {
+      "MULTI_REQUESTS": "3",
+      "NORMAL_OPERATION": "4"
+    }
+  },
+  {
+    "tags" : [
+      "ROBUSTNESS_TEST"
+    ],
+    "name": "Toggle",
+    "className": "org.eclipse.leshan.server.demo.extensions.ToggleExtension",
+    "configuration": {
+      "START_ENABLED": "false",
+      "ENABLED_TIME_IN_S": "600",
+      "DISABLED_TIME_IN_S": "600",
+      "MessageDelayer": "TOGGLE",
+      "MultiRequests": "TOGGLE"
+    }
+  }
+]
