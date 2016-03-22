@@ -72,7 +72,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized final CreateResponse create(ServerIdentity identity, CreateRequest request) {
+    public synchronized CreateResponse create(ServerIdentity identity, CreateRequest request) {
         if (!identity.isSystem()) {
             // we can not create new instance on single object
             if (objectModel != null && !objectModel.multiple) {
@@ -95,7 +95,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized final ReadResponse read(ServerIdentity identity, ReadRequest request) {
+    public synchronized ReadResponse read(ServerIdentity identity, ReadRequest request) {
         LwM2mPath path = request.getPath();
 
         // read is not supported for bootstrap
@@ -129,7 +129,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized final WriteResponse write(ServerIdentity identity, WriteRequest request) {
+    public synchronized WriteResponse write(ServerIdentity identity, WriteRequest request) {
         LwM2mPath path = request.getPath();
 
         // write is not supported for bootstrap, use bootstrap write
@@ -194,7 +194,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized final BootstrapWriteResponse write(ServerIdentity identity, BootstrapWriteRequest request) {
+    public synchronized BootstrapWriteResponse write(ServerIdentity identity, BootstrapWriteRequest request) {
 
         // We should not get a bootstrapWriteRequest from a LWM2M server
         if (!identity.isLwm2mBootstrapServer()) {
@@ -210,7 +210,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized final DeleteResponse delete(ServerIdentity identity, DeleteRequest request) {
+    public synchronized DeleteResponse delete(ServerIdentity identity, DeleteRequest request) {
         if (!identity.isLwm2mBootstrapServer() && !identity.isSystem()) {
 
             // delete the security object is forbidden
@@ -239,7 +239,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized final ExecuteResponse execute(ServerIdentity identity, ExecuteRequest request) {
+    public synchronized ExecuteResponse execute(ServerIdentity identity, ExecuteRequest request) {
         LwM2mPath path = request.getPath();
 
         // execute is not supported for bootstrap
