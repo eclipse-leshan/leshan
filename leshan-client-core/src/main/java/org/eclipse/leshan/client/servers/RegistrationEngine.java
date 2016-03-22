@@ -136,11 +136,10 @@ public class RegistrationEngine {
 
         // send register request
         LOG.info("Trying to register to {} ...", dmInfo.serverUri);
-        RegisterResponse response = sender.send(
-                dmInfo.getAddress(),
-                dmInfo.isSecure(),
-                new RegisterRequest(endpoint, dmInfo.lifetime, null, dmInfo.binding, null, LinkFormatHelper
-                        .getClientDescription(objectEnablers.values(), null), null), null);
+        RegisterResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(),
+                new RegisterRequest(endpoint, dmInfo.lifetime, null, dmInfo.binding, null,
+                        LinkFormatHelper.getClientDescription(objectEnablers.values(), null), null),
+                null);
         if (response == null) {
             registrationID = null;
             LOG.error("Registration failed: Timeout.");
@@ -172,8 +171,8 @@ public class RegistrationEngine {
 
         // Send deregister request
         LOG.info("Trying to deregister to {} ...", dmInfo.serverUri);
-        DeregisterResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(), new DeregisterRequest(
-                registrationID), DEREGISTRATION_TIMEOUT);
+        DeregisterResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(),
+                new DeregisterRequest(registrationID), DEREGISTRATION_TIMEOUT);
         if (response == null) {
             registrationID = null;
             LOG.error("Deregistration failed: Timeout.");
@@ -201,8 +200,8 @@ public class RegistrationEngine {
 
         // Send update
         LOG.info("Trying to update registration to {} ...", dmInfo.serverUri);
-        final UpdateResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(), new UpdateRequest(
-                registrationID, null, null, null, null), null);
+        final UpdateResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(),
+                new UpdateRequest(registrationID, null, null, null, null), null);
         if (response == null) {
             registrationID = null;
             LOG.error("Registration update failed: Timeout.");
@@ -315,5 +314,12 @@ public class RegistrationEngine {
                 deregister();
         } catch (InterruptedException e) {
         }
+    }
+
+    /**
+     * @return the current registration Id or <code>null</code> if the client is not registered.
+     */
+    public String getRegistrationId() {
+        return registrationID;
     }
 }

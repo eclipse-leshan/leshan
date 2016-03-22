@@ -172,4 +172,14 @@ public class LeshanClient implements LwM2mClient {
     public InetSocketAddress getSecureAddress() {
         return secureEndpoint.getAddress();
     }
+
+    /**
+     * Returns the current registration Id (meaningful only because this client implementation supports only one LWM2M
+     * server).
+     * 
+     * @return the client registration Id or <code>null</code> if the client is not registered
+     */
+    public String getRegistrationId() {
+        return engine.getRegistrationId();
+    }
 }
