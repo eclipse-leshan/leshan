@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium;
 
+import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.observe.NotificationListener;
 import org.eclipse.californium.core.observe.ObserveRequestStore;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
@@ -23,4 +24,7 @@ public interface CaliforniumObservationRegistry extends ObservationRegistry, Not
 
     ObserveRequestStore getObserveRequestStore();
 
+    void setNonSecureEndpoint(Endpoint endpoint);
+
+    void setSecureEndpoint(Endpoint endpoint);
 }

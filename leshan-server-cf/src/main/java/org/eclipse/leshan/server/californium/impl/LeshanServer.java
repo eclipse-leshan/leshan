@@ -143,8 +143,10 @@ public class LeshanServer implements LwM2mServer {
                 return new RootResource();
             }
         };
-        nonSecureEndpoint = new CoapEndpoint(localAddress, NetworkConfig.getStandard(), this.observationRegistry,
+        nonSecureEndpoint = new CoapEndpoint(localAddress, NetworkConfig.getStandard(),
                 this.observationRegistry.getObserveRequestStore());
+        nonSecureEndpoint.addNotificationListener(observationRegistry);
+        observationRegistry.setNonSecureEndpoint(nonSecureEndpoint);
         coapServer.addEndpoint(nonSecureEndpoint);
 
         // secure endpoint
@@ -165,7 +167,9 @@ public class LeshanServer implements LwM2mServer {
         }
 
         secureEndpoint = new CoapEndpoint(new DTLSConnector(builder.build()), NetworkConfig.getStandard(),
-                this.observationRegistry, this.observationRegistry.getObserveRequestStore());
+                this.observationRegistry.getObserveRequestStore());
+        secureEndpoint.addNotificationListener(observationRegistry);
+        observationRegistry.setSecureEndpoint(secureEndpoint);
         coapServer.addEndpoint(secureEndpoint);
 
         // define /rd resource

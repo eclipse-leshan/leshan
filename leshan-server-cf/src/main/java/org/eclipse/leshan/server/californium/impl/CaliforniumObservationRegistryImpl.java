@@ -26,6 +26,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
+import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.Exchange.KeyToken;
 import org.eclipse.californium.core.observe.NotificationListener;
 import org.eclipse.californium.core.observe.ObserveRequestStore;
@@ -45,14 +46,16 @@ import org.eclipse.leshan.server.observation.ObservationRegistryListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CaliforniumObservationRegistryImpl implements CaliforniumObservationRegistry, ObservationRegistry,
-        NotificationListener {
+public class CaliforniumObservationRegistryImpl
+        implements CaliforniumObservationRegistry, ObservationRegistry, NotificationListener {
 
     private final Logger LOG = LoggerFactory.getLogger(CaliforniumObservationRegistry.class);
 
     private final ObserveRequestStore requestStore;
     private final ClientRegistry clientRegistry;
     private final LwM2mModelProvider modelProvider;
+    private Endpoint secureEndpoint;
+    private Endpoint nonSecureEndpoint;
 
     private final List<ObservationRegistryListener> listeners = new CopyOnWriteArrayList<>();
     private final Map<KeyToken, Observation> observations = new ConcurrentHashMap<KeyToken, Observation>();
@@ -71,6 +74,16 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
         for (ObservationRegistryListener listener : listeners) {
             listener.newObservation(observation);
         }
+    }
+
+    @Override
+    public void setNonSecureEndpoint(Endpoint endpoint) {
+        nonSecureEndpoint = endpoint;
+    }
+
+    @Override
+    public void setSecureEndpoint(Endpoint endpoint) {
+        secureEndpoint = endpoint;
     }
 
     @Override
@@ -106,8 +119,11 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
         if (observation == null)
             return;
 
-        requestStore.remove(observation.getId());
-        this.observations.remove(new KeyToken(observation.getId()));
+        if (secureEndpoint != null)
+            secureEndpoint.cancelObservation(observation.getId());
+        if (nonSecureEndpoint != null)
+            nonSecureEndpoint.cancelObservation(observation.getId());
+        observations.remove(new KeyToken(observation.getId()));
 
         for (ObservationRegistryListener listener : listeners) {
             listener.cancelled(observation);
@@ -168,7 +184,8 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
         if (listeners.isEmpty())
             return;
 
-        if (coapResponse.getCode() == CoAP.ResponseCode.CHANGED || coapResponse.getCode() == CoAP.ResponseCode.CONTENT) {
+        if (coapResponse.getCode() == CoAP.ResponseCode.CHANGED
+                || coapResponse.getCode() == CoAP.ResponseCode.CONTENT) {
             try {
                 // get observation for this request
                 Observation observation = observations.get(new KeyToken(coapResponse.getToken()));
