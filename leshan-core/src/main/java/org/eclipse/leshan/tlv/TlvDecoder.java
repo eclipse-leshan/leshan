@@ -94,7 +94,9 @@ public class TlvDecoder {
                         break;
                     case 0b0001_1000:
                         // 24 bit length
-                        length = ((input.get() & 0xFF) << 16) + input.getShort() & 0xFFFF;
+                        int b = input.get() & 0x000000FF;
+                        int s = input.getShort() & 0x0000FFFF;
+                        length = (b << 16) | s;
                         break;
                     default:
                         throw new TlvException("unknown length type: " + (typeByte & 0b0001_1000));
