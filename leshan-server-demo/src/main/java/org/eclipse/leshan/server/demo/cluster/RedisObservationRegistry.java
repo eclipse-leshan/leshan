@@ -26,6 +26,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
+import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.serialization.DataParser;
 import org.eclipse.californium.core.network.serialization.DataSerializer;
 import org.eclipse.californium.core.observe.NotificationListener;
@@ -62,6 +63,8 @@ public class RedisObservationRegistry
     private final ObserveRequestStore requestStore;
     private final ClientRegistry clientRegistry;
     private final LwM2mModelProvider modelProvider;
+    private Endpoint nonSecureEndpoint;
+    private Endpoint secureEndpoint;
 
     private final List<ObservationRegistryListener> listeners = new CopyOnWriteArrayList<>();
 
@@ -97,6 +100,16 @@ public class RedisObservationRegistry
     }
 
     @Override
+    public void setNonSecureEndpoint(Endpoint endpoint) {
+        nonSecureEndpoint = endpoint;
+    }
+
+    @Override
+    public void setSecureEndpoint(Endpoint endpoint) {
+        secureEndpoint = endpoint;
+    }
+
+    @Override
     public int cancelObservations(Client client) {
         // check registration id
         String registrationId = client.getRegistrationId();
@@ -129,7 +142,10 @@ public class RedisObservationRegistry
         if (observation == null)
             return;
 
-        requestStore.remove(observation.getId());
+        if (secureEndpoint != null)
+            secureEndpoint.cancelObservation(observation.getId());
+        if (nonSecureEndpoint != null)
+            nonSecureEndpoint.cancelObservation(observation.getId());
 
         try (Jedis j = pool.getResource()) {
             j.del(toTokenKey(observation.getId()));
