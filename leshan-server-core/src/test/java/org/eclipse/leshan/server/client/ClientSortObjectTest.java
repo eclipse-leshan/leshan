@@ -41,7 +41,7 @@ public class ClientSortObjectTest {
         LinkObject[] res = c.getSortedObjectLinks();
         Assert.assertEquals(3, res.length);
         Assert.assertNull(res[0]);
-        Assert.assertEquals("/0/2", res[1].getPath());
-        Assert.assertEquals("/0/1024/2", res[2].getPath());
+        Assert.assertEquals("/0/2", res[1].getUrl());
+        Assert.assertEquals("/0/1024/2", res[2].getUrl());
     }
 }
