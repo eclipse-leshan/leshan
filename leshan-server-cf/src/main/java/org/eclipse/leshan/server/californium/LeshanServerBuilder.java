@@ -18,7 +18,7 @@ package org.eclipse.leshan.server.californium;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
-import org.eclipse.californium.core.observe.InMemoryObserveRequestStore;
+import org.eclipse.californium.core.observe.InMemoryObservationStore;
 import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.californium.impl.CaliforniumObservationRegistryImpl;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
@@ -109,10 +109,10 @@ public class LeshanServerBuilder {
         if (modelProvider == null)
             modelProvider = new StandardModelProvider();
         if (observationRegistry == null)
-            observationRegistry = new CaliforniumObservationRegistryImpl(new InMemoryObserveRequestStore(),
-                    clientRegistry, modelProvider);
+            observationRegistry = new CaliforniumObservationRegistryImpl(new InMemoryObservationStore(), clientRegistry,
+                    modelProvider);
 
-        return new LeshanServer(localAddress, localSecureAddress, clientRegistry, securityRegistry,
-                observationRegistry, modelProvider);
+        return new LeshanServer(localAddress, localSecureAddress, clientRegistry, securityRegistry, observationRegistry,
+                modelProvider);
     }
 }

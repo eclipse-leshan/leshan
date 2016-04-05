@@ -30,7 +30,8 @@ import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.serialization.DataParser;
 import org.eclipse.californium.core.network.serialization.DataSerializer;
 import org.eclipse.californium.core.observe.NotificationListener;
-import org.eclipse.californium.core.observe.ObserveRequestStore;
+import org.eclipse.californium.core.observe.ObservationStore;
+import org.eclipse.californium.elements.CorrelationContext;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -60,7 +61,7 @@ public class RedisObservationRegistry
 
     private final Logger LOG = LoggerFactory.getLogger(RedisObservationRegistry.class);
 
-    private final ObserveRequestStore requestStore;
+    private final ObservationStore observationStore;
     private final ClientRegistry clientRegistry;
     private final LwM2mModelProvider modelProvider;
     private Endpoint nonSecureEndpoint;
@@ -83,7 +84,7 @@ public class RedisObservationRegistry
         this.pool = pool;
         this.modelProvider = modelProvider;
         this.clientRegistry = clientRegistry;
-        this.requestStore = new RedisObserveRequestStore(pool);
+        this.observationStore = new RedisObservationStore(pool);
     }
 
     @Override
@@ -211,8 +212,8 @@ public class RedisObservationRegistry
         }
     }
 
-    public ObserveRequestStore getObserveRequestStore() {
-        return requestStore;
+    public ObservationStore getObservationStore() {
+        return observationStore;
     }
 
     @Override
@@ -327,23 +328,23 @@ public class RedisObservationRegistry
     }
 
     /**
-     * An {@link ObserveRequestStore} storing requests in a Redis store.
+     * An {@link ObservationStore} storing requests in a Redis store.
      * 
      * The CoAP request is serialized using the Californium network serialization (see {@link DataParser} and
      * {@link DataSerializer})
      */
-    private static class RedisObserveRequestStore implements ObserveRequestStore {
+    private static class RedisObservationStore implements ObservationStore {
 
         private final Pool<Jedis> pool;
 
-        public RedisObserveRequestStore(Pool<Jedis> pool) {
+        public RedisObservationStore(Pool<Jedis> pool) {
             this.pool = pool;
         }
 
         @Override
-        public void add(Request request) {
+        public void add(org.eclipse.californium.core.observe.Observation obs) {
             try (Jedis j = pool.getResource()) {
-                j.set(request.getToken(), new DataSerializer().serializeRequest(request));
+                j.set(obs.getRequest().getToken(), new DataSerializer().serializeRequest(obs.getRequest()));
             }
         }
 
@@ -355,15 +356,22 @@ public class RedisObservationRegistry
         }
 
         @Override
-        public Request get(byte[] token) {
+        public org.eclipse.californium.core.observe.Observation get(byte[] token) {
             try (Jedis j = pool.getResource()) {
                 byte[] req = j.get(token);
                 if (req == null) {
                     return null;
                 } else {
-                    return new DataParser(req).parseRequest();
+                    // TODO handle security context
+                    return new org.eclipse.californium.core.observe.Observation(new DataParser(req).parseRequest(),
+                            null);
                 }
             }
+        }
+
+        @Override
+        public void setContext(byte[] token, CorrelationContext correlationContext) {
+            // TODO handle security context
         }
 
     }

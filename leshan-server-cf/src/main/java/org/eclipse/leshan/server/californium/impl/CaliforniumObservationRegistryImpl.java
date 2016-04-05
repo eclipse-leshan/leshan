@@ -29,7 +29,7 @@ import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.Exchange.KeyToken;
 import org.eclipse.californium.core.observe.NotificationListener;
-import org.eclipse.californium.core.observe.ObserveRequestStore;
+import org.eclipse.californium.core.observe.ObservationStore;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -51,7 +51,7 @@ public class CaliforniumObservationRegistryImpl
 
     private final Logger LOG = LoggerFactory.getLogger(CaliforniumObservationRegistry.class);
 
-    private final ObserveRequestStore requestStore;
+    private final ObservationStore observationStore;
     private final ClientRegistry clientRegistry;
     private final LwM2mModelProvider modelProvider;
     private Endpoint secureEndpoint;
@@ -60,9 +60,9 @@ public class CaliforniumObservationRegistryImpl
     private final List<ObservationRegistryListener> listeners = new CopyOnWriteArrayList<>();
     private final Map<KeyToken, Observation> observations = new ConcurrentHashMap<KeyToken, Observation>();
 
-    public CaliforniumObservationRegistryImpl(ObserveRequestStore store, ClientRegistry clientRegistry,
+    public CaliforniumObservationRegistryImpl(ObservationStore store, ClientRegistry clientRegistry,
             LwM2mModelProvider modelProvider) {
-        this.requestStore = store;
+        this.observationStore = store;
         this.modelProvider = modelProvider;
         this.clientRegistry = clientRegistry;
     }
@@ -163,8 +163,8 @@ public class CaliforniumObservationRegistryImpl
         return result;
     }
 
-    public ObserveRequestStore getObserveRequestStore() {
-        return requestStore;
+    public ObservationStore getObservationStore() {
+        return observationStore;
     }
 
     @Override

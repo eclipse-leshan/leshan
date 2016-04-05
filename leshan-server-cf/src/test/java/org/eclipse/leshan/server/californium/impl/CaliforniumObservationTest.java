@@ -20,7 +20,7 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.eclipse.californium.core.coap.Request;
-import org.eclipse.californium.core.observe.InMemoryObserveRequestStore;
+import org.eclipse.californium.core.observe.InMemoryObservationStore;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.californium.CaliforniumObservationRegistry;
@@ -41,7 +41,7 @@ public class CaliforniumObservationTest {
     @Before
     public void setUp() throws Exception {
         support.givenASimpleClient();
-        registry = new CaliforniumObservationRegistryImpl(new InMemoryObserveRequestStore(), new ClientRegistryImpl(),
+        registry = new CaliforniumObservationRegistryImpl(new InMemoryObservationStore(), new ClientRegistryImpl(),
                 new StandardModelProvider());
     }
 
@@ -119,7 +119,7 @@ public class CaliforniumObservationTest {
         coapRequest.getOptions().addUriPath(String.valueOf(target.getResourceId()));
         coapRequest.setDestination(support.client.getAddress());
         coapRequest.setDestinationPort(support.client.getPort());
-        registry.getObserveRequestStore().add(coapRequest);
+        registry.getObservationStore().add(new org.eclipse.californium.core.observe.Observation(coapRequest, null));
         Observation observation = new Observation(coapRequest.getToken(), registrationId, target);
         registry.addObservation(observation);
         return observation;
