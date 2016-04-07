@@ -27,8 +27,11 @@ import org.eclipse.leshan.server.client.ClientRegistryListener;
 import org.eclipse.leshan.server.client.ClientUpdate;
 import org.eclipse.leshan.server.demo.cluster.serialization.ClientSerDes;
 import org.eclipse.leshan.util.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.util.Pool;
@@ -37,14 +40,14 @@ import redis.clients.util.Pool;
  * A client registry storing registration in Redis.
  * 
  * the main key is the client end-point and the registration key is used as a secondary index
- * 
- * TODO
- * 
- * - receive key expiration event (see http://redis.io/topics/notifications)
  */
 public class RedisClientRegistry implements ClientRegistry {
 
+    private static final Logger LOG = LoggerFactory.getLogger(RedisClientRegistry.class);
+
     private static final String EP_CLIENT = "EP#CLIENT#";
+
+    private static final String EXPIRE = "EXPIRE#";
 
     private static final String REG_EP = "REG#EP#";
 
@@ -52,8 +55,36 @@ public class RedisClientRegistry implements ClientRegistry {
 
     private final List<ClientRegistryListener> listeners = new CopyOnWriteArrayList<>();
 
-    public RedisClientRegistry(Pool<Jedis> pool) {
-        this.pool = pool;
+    public RedisClientRegistry(Pool<Jedis> p) {
+        this.pool = p;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final String pattern = "__keyspace@0__:" + EXPIRE + EP_CLIENT;
+                do {
+                    try (Jedis j = pool.getResource()) {
+                        // TODO not sure this is a good idea to set config here
+                        j.configSet("notify-keyspace-events", "Kx");
+                        j.psubscribe(new JedisPubSub() {
+                            @Override
+                            public void onPMessage(String pattern, String channel, String message) {
+                                String endpoint = channel.substring(pattern.length() - 1);
+                                handleRegistrationExpiration(endpoint);
+                            }
+                        }, pattern + "*");
+                    } catch (Throwable e) {
+                        LOG.warn("Redis PSUBSCRIBE interrupted.", e);
+                    }
+
+                    // wait & re-launch
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                    }
+                    LOG.warn("Relaunch Redis PSUBSCRIBE.");
+                } while (true);
+            }
+        }).start();
     }
 
     @Override
@@ -98,7 +129,10 @@ public class RedisClientRegistry implements ClientRegistry {
             byte[] k = (EP_CLIENT + client.getEndpoint()).getBytes();
             byte[] old = j.getSet(k, data);
 
-            j.expire(k, client.getLifeTimeInSec().intValue());
+            // create expire key
+            j.setex(ByteArrayUtils.concatenate(EXPIRE.getBytes(), k), client.getLifeTimeInSec().intValue(),
+                    new byte[0]);
+            j.expire(k, client.getLifeTimeInSec().intValue() + 60);
 
             // secondary index
             byte[] idx = (REG_EP + client.getRegistrationId()).getBytes();
@@ -139,7 +173,9 @@ public class RedisClientRegistry implements ClientRegistry {
             // store the new client
             byte[] k = (EP_CLIENT + clientUpdated.getEndpoint()).getBytes();
 
-            j.setex(k, clientUpdated.getLifeTimeInSec().intValue(), serialize(clientUpdated));
+            // update expiratation
+            j.setex(ByteArrayUtils.concatenate(EXPIRE.getBytes(), k), c.getLifeTimeInSec().intValue(), new byte[0]);
+            j.setex(k, clientUpdated.getLifeTimeInSec().intValue() + 60, serialize(clientUpdated));
 
             byte[] idx = (REG_EP + clientUpdated.getRegistrationId()).getBytes();
 
@@ -178,6 +214,7 @@ public class RedisClientRegistry implements ClientRegistry {
             // delete everything
             j.del(delRegKey);
             j.del(epKey);
+            j.del((EXPIRE + key).getBytes());
 
             for (ClientRegistryListener l : listeners) {
                 l.unregistered(c);
@@ -197,6 +234,35 @@ public class RedisClientRegistry implements ClientRegistry {
 
             return deserialize(data);
         }
+    }
+
+    private void handleRegistrationExpiration(final String endpoint) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try (Jedis j = pool.getResource()) {
+                    // rename to be able to do GET/DEL in an atomic way
+                    String key = EP_CLIENT + endpoint;
+                    byte[] atomicKey = ("TODELETE#" + key).getBytes();
+                    if (!"OK".equals(j.rename(key.getBytes(), atomicKey)))
+                        return;
+
+                    // get the client
+                    byte[] val = j.get(atomicKey);
+                    Client c = deserialize(val);
+
+                    // remove client
+                    j.del(atomicKey);
+
+                    // raise event
+                    for (ClientRegistryListener listener : listeners) {
+                        listener.unregistered(c);
+                    }
+                } catch (Throwable e) {
+                    LOG.error("Unexpected exception pending registration expiration.", e);
+                }
+            }
+        }).start();
     }
 
     @Override
