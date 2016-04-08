@@ -24,8 +24,14 @@ import org.eclipse.leshan.core.response.ObserveResponse;
  */
 public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
 
-    public ObserveRequest(String target) {
-        super(new LwM2mPath(target));
+    /**
+     * Creates a request for observing future changes of a particular LWM2M node (object, object instance or resource).
+     * 
+     * @param path the path to the LWM2M node to observe
+     * @throw IllegalArgumentException if the path is not valid
+     */
+    public ObserveRequest(String path) {
+        super(new LwM2mPath(path));
     }
 
     /**

@@ -59,10 +59,11 @@ public class ReadRequest extends AbstractDownlinkRequest<ReadResponse> {
     /**
      * Create a request for reading an object/instance/resource targeted by a specific path.
      * 
-     * @param target the target path
+     * @param path the path to the LWM2M node to read
+     * @throws IllegalArgumentException if the target path is not valid
      */
-    public ReadRequest(String target) {
-        super(new LwM2mPath(target));
+    public ReadRequest(String path) {
+        super(new LwM2mPath(path));
     }
 
     private ReadRequest(LwM2mPath target) {

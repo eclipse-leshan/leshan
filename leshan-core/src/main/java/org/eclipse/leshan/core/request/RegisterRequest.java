@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.core.response.RegisterResponse;
+import org.eclipse.leshan.util.Validate;
 
 /**
  * A Lightweight M2M request for sending the LWM2M Client properties required by the LWM2M Server to contact the LWM2M
@@ -36,18 +37,12 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
     private final LinkObject[] objectLinks;
     private final Map<String, String> additionalAttributes;
 
-    public RegisterRequest(String endpointName) {
-        this.endpointName = endpointName;
-        this.lifetime = null;
-        this.lwVersion = null;
-        this.bindingMode = null;
-        this.smsNumber = null;
-        this.objectLinks = null;
-        this.additionalAttributes = Collections.unmodifiableMap(new HashMap<String, String>());
-    }
-
     public RegisterRequest(String endpointName, Long lifetime, String lwVersion, BindingMode bindingMode,
             String smsNumber, LinkObject[] objectLinks, Map<String, String> additionalAttributes) {
+
+        Validate.notNull(endpointName);
+        Validate.noNullElements(objectLinks);
+
         this.endpointName = endpointName;
         this.lifetime = lifetime;
         this.lwVersion = lwVersion;

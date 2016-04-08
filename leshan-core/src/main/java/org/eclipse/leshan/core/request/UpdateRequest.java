@@ -17,6 +17,7 @@ package org.eclipse.leshan.core.request;
 
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.core.response.UpdateResponse;
+import org.eclipse.leshan.util.Validate;
 
 /**
  * A Lightweight M2M request for updating the LWM2M Client properties required by the LWM2M Server to contact the LWM2M
@@ -43,9 +44,7 @@ public class UpdateRequest implements UplinkRequest<UpdateResponse> {
     public UpdateRequest(String registrationId, Long lifetime, String smsNumber, BindingMode binding,
             LinkObject[] objectLinks) {
 
-        if (registrationId == null) {
-            throw new NullPointerException("Registration ID must not be null");
-        }
+        Validate.notNull(registrationId);
         this.registrationId = registrationId;
         this.objectLinks = objectLinks;
         this.lifeTimeInSec = lifetime;

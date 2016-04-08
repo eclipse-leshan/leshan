@@ -17,6 +17,7 @@ package org.eclipse.leshan.core.request;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.response.DeleteResponse;
+import org.eclipse.leshan.util.Validate;
 
 /**
  * A Lightweight M2M request for deleting an Object Instance within the LWM2M Client.
@@ -33,12 +34,19 @@ public class DeleteRequest extends AbstractDownlinkRequest<DeleteResponse> {
         this(new LwM2mPath(objectId, objectInstanceId));
     }
 
-    public DeleteRequest(final String target) {
-        super(new LwM2mPath(target));
+    /**
+     * Creates a request for deleting a particular object instance implemented by a client.
+     *
+     * @param path the path of the instance to delete
+     * @throw IllegalArgumentException if the path is not valid
+     */
+    public DeleteRequest(final String path) {
+        super(new LwM2mPath(path));
     }
 
     private DeleteRequest(final LwM2mPath target) {
         super(target);
+        Validate.isTrue(target.isObjectInstance(), "Only object instance can be delete.");
     }
 
     @Override

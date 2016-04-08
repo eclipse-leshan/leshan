@@ -30,6 +30,7 @@ public class ExecuteRequest extends AbstractDownlinkRequest<ExecuteResponse> {
      * Creates a new <em>execute</em> request for a resource that does not require any parameters.
      *
      * @param path the path of the resource to execute
+     * @throw IllegalArgumentException if the path is not valid
      */
     public ExecuteRequest(final String path) {
         this(new LwM2mPath(path), null);
@@ -40,6 +41,7 @@ public class ExecuteRequest extends AbstractDownlinkRequest<ExecuteResponse> {
      *
      * @param path the path of the resource to execute
      * @param parameters the parameters
+     * @throw IllegalArgumentException if the path is not valid
      */
     public ExecuteRequest(final String path, final String parameters) {
         this(new LwM2mPath(path), parameters);
@@ -64,13 +66,14 @@ public class ExecuteRequest extends AbstractDownlinkRequest<ExecuteResponse> {
      * @param resourceId the resource's ID
      * @param parameters the parameters
      */
-    public ExecuteRequest(final int objectId, final int objectInstanceId, final int resourceId, final String parameters) {
+    public ExecuteRequest(final int objectId, final int objectInstanceId, final int resourceId,
+            final String parameters) {
         this(new LwM2mPath(objectId, objectInstanceId, resourceId), parameters);
     }
 
     private ExecuteRequest(final LwM2mPath path, final String parameters) {
         super(path);
-        Validate.isTrue(path.isResource(), "Only resource could be executed.");
+        Validate.isTrue(path.isResource(), "Only resource can be executed.");
         this.parameters = parameters;
     }
 

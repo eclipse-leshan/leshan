@@ -57,10 +57,11 @@ public class DiscoverRequest extends AbstractDownlinkRequest<DiscoverResponse> {
      * Create a request for discovering the attributes of a particular object/instance/resource targeted by a specific
      * path.
      *
-     * @param target the target path
+     * @param path the path of the LWM2M node to discover
+     * @throw IllegalArgumentException if the path is not valid
      */
-    public DiscoverRequest(String target) {
-        super(new LwM2mPath(target));
+    public DiscoverRequest(String path) {
+        super(new LwM2mPath(path));
     }
 
     private DiscoverRequest(LwM2mPath target) {
