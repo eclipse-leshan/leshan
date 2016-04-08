@@ -139,7 +139,7 @@ public class CoapRequestBuilderTest {
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
-        WriteRequest request = new WriteRequest(Mode.UPDATE, 3, 0, 14, "value");
+        WriteRequest request = new WriteRequest(Mode.UPDATE, 3, 0, LwM2mSingleResource.newStringResource(4, "value"));
         builder.visit(request);
 
         // verify
@@ -147,8 +147,13 @@ public class CoapRequestBuilderTest {
         assertEquals(CoAP.Code.POST, coapRequest.getCode());
         assertEquals("127.0.0.1", coapRequest.getDestination().getHostAddress());
         assertEquals(12354, coapRequest.getDestinationPort());
-        assertEquals("value", coapRequest.getPayloadString());
-        assertEquals("coap://localhost/3/0/14", coapRequest.getURI());
+        assertEquals(ContentFormat.TLV.getCode(), coapRequest.getOptions().getContentFormat());
+        assertNotNull(coapRequest.getPayload());
+        // assert it is encoded as array of resources TLV
+        Tlv[] tlvs = TlvDecoder.decode(ByteBuffer.wrap(coapRequest.getPayload()));
+        assertEquals(TlvType.RESOURCE_VALUE, tlvs[0].getType());
+        assertEquals("value", TlvDecoder.decodeString(tlvs[0].getValue()));
+        assertEquals("coap://localhost/3/0", coapRequest.getURI());
     }
 
     @Test
@@ -157,7 +162,7 @@ public class CoapRequestBuilderTest {
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
-        WriteRequest request = new WriteRequest(Mode.REPLACE, 3, 0, 14, "value");
+        WriteRequest request = new WriteRequest(3, 0, 14, "value");
         builder.visit(request);
 
         // verify
@@ -171,8 +176,8 @@ public class CoapRequestBuilderTest {
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
-        WriteAttributesRequest request = new WriteAttributesRequest(3, 0, 14, new ObserveSpec.Builder().minPeriod(10)
-                .maxPeriod(100).build());
+        WriteAttributesRequest request = new WriteAttributesRequest(3, 0, 14,
+                new ObserveSpec.Builder().minPeriod(10).maxPeriod(100).build());
         builder.visit(request);
 
         // verify
@@ -229,8 +234,8 @@ public class CoapRequestBuilderTest {
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
-        CreateRequest request = new CreateRequest(12, new LwM2mObjectInstance(26,
-                LwM2mSingleResource.newStringResource(0, "value")));
+        CreateRequest request = new CreateRequest(12,
+                new LwM2mObjectInstance(26, LwM2mSingleResource.newStringResource(0, "value")));
         builder.visit(request);
 
         // verify

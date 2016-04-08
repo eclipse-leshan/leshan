@@ -58,8 +58,7 @@ public class WriteTest {
     public void can_write_replace_resource() throws InterruptedException {
         // write device timezone
         final String timeZone = "Europe/Paris";
-        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE, 3, 0, 15,
-                timeZone));
+        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(3, 0, 15, timeZone));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
@@ -74,8 +73,7 @@ public class WriteTest {
     public void can_write_replace_resource_in_json() throws InterruptedException {
         // write device timezone
         final String timeZone = "Europe/Paris";
-        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE, 3, 0, 15,
-                timeZone));
+        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(3, 0, 15, timeZone));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
@@ -90,8 +88,7 @@ public class WriteTest {
     public void cannot_write_non_writable_resource() throws InterruptedException {
         // try to write unwritable resource like manufacturer on device
         final String manufacturer = "new manufacturer";
-        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE, 3, 0, 0,
-                manufacturer));
+        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(3, 0, 0, manufacturer));
 
         // verify result
         assertEquals(ResponseCode.METHOD_NOT_ALLOWED, response.getCode());
@@ -101,7 +98,7 @@ public class WriteTest {
     public void cannot_write_security_resource() throws InterruptedException {
         // try to write unwritable resource like manufacturer on device
         final String uri = "new.dest.server";
-        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE, 0, 0, 0, uri));
+        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(0, 0, 0, uri));
 
         // verify result
         assertEquals(ResponseCode.NOT_FOUND, response.getCode());
@@ -112,8 +109,8 @@ public class WriteTest {
         // write device timezone and offset
         LwM2mResource utcOffset = LwM2mSingleResource.newStringResource(14, "+02");
         LwM2mResource timeZone = LwM2mSingleResource.newStringResource(15, "Europe/Paris");
-        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE, 3, 0, utcOffset,
-                timeZone));
+        WriteResponse response = helper.server.send(helper.getClient(),
+                new WriteRequest(Mode.REPLACE, 3, 0, utcOffset, timeZone));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
@@ -128,7 +125,7 @@ public class WriteTest {
     @Test
     public void can_write_replacing_object_instance() throws InterruptedException {
         // setup server object
-        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE, 1, 0, 3, 60));
+        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(1, 0, 3, 60));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
@@ -138,8 +135,8 @@ public class WriteTest {
         LwM2mResource defaultMinPeriod = LwM2mSingleResource.newIntegerResource(2, 10);
         LwM2mResource notificationStoring = LwM2mSingleResource.newBooleanResource(6, false);
         LwM2mResource binding = LwM2mSingleResource.newStringResource(7, "U");
-        response = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE, 1, 0, lifetime,
-                defaultMinPeriod, notificationStoring, binding));
+        response = helper.server.send(helper.getClient(),
+                new WriteRequest(Mode.REPLACE, 1, 0, lifetime, defaultMinPeriod, notificationStoring, binding));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
@@ -159,8 +156,8 @@ public class WriteTest {
         // write server object
         LwM2mResource lifetime = LwM2mSingleResource.newIntegerResource(1, 120);
         LwM2mResource defaultMinPeriod = LwM2mSingleResource.newIntegerResource(2, 10);
-        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE, 1, 0, lifetime,
-                defaultMinPeriod));
+        WriteResponse response = helper.server.send(helper.getClient(),
+                new WriteRequest(Mode.REPLACE, 1, 0, lifetime, defaultMinPeriod));
 
         // verify result
         assertEquals(ResponseCode.BAD_REQUEST, response.getCode());
@@ -169,15 +166,15 @@ public class WriteTest {
     @Test
     public void can_write_updating_object_instance() throws InterruptedException {
         // setup server object
-        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE, 1, 0, 3, 60));
+        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(1, 0, 3, 60));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
         // write server object
         LwM2mResource lifetime = LwM2mSingleResource.newIntegerResource(1, 120);
         LwM2mResource defaultMinPeriod = LwM2mSingleResource.newIntegerResource(2, 10);
-        response = helper.server.send(helper.getClient(), new WriteRequest(Mode.UPDATE, 1, 0, lifetime,
-                defaultMinPeriod));
+        response = helper.server.send(helper.getClient(),
+                new WriteRequest(Mode.UPDATE, 1, 0, lifetime, defaultMinPeriod));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
@@ -198,8 +195,8 @@ public class WriteTest {
         // write device timezone and offset
         LwM2mResource utcOffset = LwM2mSingleResource.newStringResource(14, "+02");
         LwM2mResource timeZone = LwM2mSingleResource.newStringResource(15, "Europe/Paris");
-        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE,
-                ContentFormat.JSON, 3, 0, utcOffset, timeZone));
+        WriteResponse response = helper.server.send(helper.getClient(),
+                new WriteRequest(Mode.REPLACE, ContentFormat.JSON, 3, 0, utcOffset, timeZone));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());

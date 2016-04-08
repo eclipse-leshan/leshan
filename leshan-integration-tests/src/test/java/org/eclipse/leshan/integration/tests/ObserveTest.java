@@ -32,7 +32,6 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
-import org.eclipse.leshan.core.request.WriteRequest.Mode;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
@@ -75,8 +74,8 @@ public class ObserveTest {
         assertEquals(helper.getClient().getRegistrationId(), observation.getRegistrationId());
 
         // write device timezone
-        LwM2mResponse writeResponse = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE, 3, 0, 15,
-                "Europe/Paris"));
+        LwM2mResponse writeResponse = helper.server.send(helper.getClient(),
+                new WriteRequest(3, 0, 15, "Europe/Paris"));
 
         // verify result
         listener.waitForNotification(2000);
@@ -100,8 +99,8 @@ public class ObserveTest {
         assertEquals(helper.getClient().getRegistrationId(), observation.getRegistrationId());
 
         // write device timezone
-        LwM2mResponse writeResponse = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE, 3, 0, 15,
-                "Europe/Paris"));
+        LwM2mResponse writeResponse = helper.server.send(helper.getClient(),
+                new WriteRequest(3, 0, 15, "Europe/Paris"));
 
         // verify result
         listener.waitForNotification(2000);
@@ -130,8 +129,8 @@ public class ObserveTest {
         assertEquals(helper.getClient().getRegistrationId(), observation.getRegistrationId());
 
         // write device timezone
-        LwM2mResponse writeResponse = helper.server.send(helper.getClient(), new WriteRequest(Mode.REPLACE, 3, 0, 15,
-                "Europe/Paris"));
+        LwM2mResponse writeResponse = helper.server.send(helper.getClient(),
+                new WriteRequest(3, 0, 15, "Europe/Paris"));
 
         // verify result
         listener.waitForNotification(2000);
