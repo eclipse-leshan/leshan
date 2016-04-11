@@ -27,7 +27,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
@@ -362,18 +361,17 @@ public class ClientServlet extends HttpServlet {
     // TODO refactor the code to remove this method.
     private WriteResponse writeRequest(Client client, String target, HttpServletRequest req, HttpServletResponse resp)
             throws IOException, InterruptedException {
-        Map<String, String> parameters = new HashMap<String, String>();
-        String contentType = HttpFields.valueParameters(req.getContentType(), parameters);
+        String contentType = StringUtils.substringBefore(req.getContentType(), ";");
 
         if ("text/plain".equals(contentType)) {
-            String content = IOUtils.toString(req.getInputStream(), parameters.get("charset"));
+            String content = IOUtils.toString(req.getInputStream(), req.getCharacterEncoding());
             int rscId = Integer.valueOf(target.substring(target.lastIndexOf("/") + 1));
             WriteRequest writeRequest = new WriteRequest(Mode.REPLACE, ContentFormat.TEXT, target,
                     LwM2mSingleResource.newStringResource(rscId, content));
             return server.send(client, writeRequest, TIMEOUT);
 
         } else if ("application/json".equals(contentType)) {
-            String content = IOUtils.toString(req.getInputStream(), parameters.get("charset"));
+            String content = IOUtils.toString(req.getInputStream(), req.getCharacterEncoding());
             LwM2mNode node = null;
             try {
                 node = gson.fromJson(content, LwM2mNode.class);
@@ -391,10 +389,9 @@ public class ClientServlet extends HttpServlet {
     // TODO refactor the code to remove this method.
     private CreateResponse createRequest(Client client, String target, HttpServletRequest req, HttpServletResponse resp)
             throws IOException, InterruptedException {
-        Map<String, String> parameters = new HashMap<String, String>();
-        String contentType = HttpFields.valueParameters(req.getContentType(), parameters);
+        String contentType = StringUtils.substringBefore(req.getContentType(), ";");
         if ("application/json".equals(contentType)) {
-            String content = IOUtils.toString(req.getInputStream(), parameters.get("charset"));
+            String content = IOUtils.toString(req.getInputStream(), req.getCharacterEncoding());
             LwM2mNode node;
             try {
                 node = gson.fromJson(content, LwM2mNode.class);
