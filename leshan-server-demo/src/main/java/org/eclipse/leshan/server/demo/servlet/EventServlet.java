@@ -17,11 +17,12 @@ package org.eclipse.leshan.server.demo.servlet;
 
 import java.io.IOException;
 import java.util.Set;
+import java.util.Collections;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.eclipse.californium.core.network.Endpoint;
-import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
@@ -66,7 +67,7 @@ public class EventServlet extends EventSourceServlet {
 
     private final LeshanServer server;
 
-    private Set<LeshanEventSource> eventSources = new ConcurrentHashSet<>();
+    private Set<LeshanEventSource> eventSources = Collections.newSetFromMap(new ConcurrentHashMap<LeshanEventSource,Boolean>());
 
     private final ClientRegistryListener clientRegistryListener = new ClientRegistryListener() {
 
