@@ -45,6 +45,11 @@ public abstract class BaseClientSetup {
     private static final Logger LOG = LoggerFactory.getLogger(BaseClientSetup.class);
 
     /**
+     * LWM2M path of security object.
+     */
+    private static final String LWM2M_SECURITY_OBJECT = "/0/";
+
+    /**
      * State to initialize client setup.
      */
     protected final static int STATE_INIT = 0;
@@ -136,7 +141,7 @@ public abstract class BaseClientSetup {
                     if (1 == configuration.observeUris.size()) {
                         for (LinkObject link : client.getObjectLinks()) {
                             String url = link.getUrl();
-                            if (!url.equals(rootPath)) {
+                            if (!url.equals(rootPath) && !url.startsWith(LWM2M_SECURITY_OBJECT)) {
                                 LOG.info("Client {} add * observe {}", endpoint, url);
                                 observes.add(new ObserveRequest(url));
                             }
@@ -230,7 +235,8 @@ public abstract class BaseClientSetup {
     public abstract boolean process(LeshanServer server, Client client, int stateIndex) throws InterruptedException;
 
     /**
-     * Check, if the registration of the client contains the provided LWM2M object instance.
+     * Check, if the registration of the client contains the provided LWM2M object instance. Instances of the
+     * {@link #LWM2M_SECURITY_OBJECT} will always be excluded.
      * 
      * @param client client of the registration.
      * @param path path to be checked. Paths to resources are truncated to their instance (e.g. "/3/0/13" will be
@@ -242,6 +248,8 @@ public abstract class BaseClientSetup {
             LOG.warn("Instance {}?", path);
             return false;
         }
+        if (path.startsWith(LWM2M_SECURITY_OBJECT))
+            return false;
         String[] resPath = path.split("/", 4);
         if (4 == resPath.length) {
             path = "/" + resPath[1] + "/" + resPath[2];
