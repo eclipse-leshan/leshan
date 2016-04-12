@@ -213,7 +213,6 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
         super(target);
         Validate.notNull(mode);
         Validate.notNull(node);
-        Validate.notNull(format);
 
         // Validate Mode
         if (getPath().isResource() && mode == Mode.UPDATE) {
