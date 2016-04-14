@@ -12,11 +12,13 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Bosch Software Innovations - added Redis URL support with authentication
  *******************************************************************************/
 package org.eclipse.leshan.server.demo;
 
 import java.math.BigInteger;
 import java.net.BindException;
+import java.net.URI;
 import java.security.AlgorithmParameters;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -78,7 +80,7 @@ public class LeshanServerDemo {
         options.addOption("slp", "coapsport", true, "Set the secure local CoAP port.\nDefault: 5684.");
         options.addOption("wp", "webport", true, "Set the HTTP port for web server.\nDefault: 8080.");
         options.addOption("r", "redis", true,
-                "Set the redis hostname:port for running in cluster mode.\nDefault: none, no redis connection.");
+                "Set the location of the Redis database for running in cluster mode. The URL is in the format of: 'redis://:password@hostname:port/db_number'\nExample without DB and password: 'redis://localhost:6379'\nDefault: none, no Redis connection.");
         HelpFormatter formatter = new HelpFormatter();
         formatter.setOptionComparator(null);
 
@@ -170,10 +172,8 @@ public class LeshanServerDemo {
         // connect to redis if needed
         Pool<Jedis> jedis = null;
         if (redisUrl != null) {
-            String[] parts = redisUrl.split("\\:");
-
             // TODO: support sentinel pool and make pool configurable
-            jedis = new JedisPool(parts[0], parts.length > 1 ? Integer.valueOf(parts[1]) : 6379);
+            jedis = new JedisPool(new URI(redisUrl));
         }
 
         // Get public and private server key
