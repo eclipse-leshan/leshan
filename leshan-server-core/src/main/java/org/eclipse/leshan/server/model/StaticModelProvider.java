@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Sierra Wireless and others.
+ * Copyright (c) 2016 Sierra Wireless and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,18 +15,29 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.model;
 
-import org.eclipse.leshan.core.model.ObjectLoader;
+import java.util.Collection;
+
+import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.server.client.Client;
 
 /**
- * A static model provider which uses the default model embedded in Leshan. </br>
- * </br>
- * The MODELS_FOLDER environment variable can be used to add more model definitions.</br>
- * The MODELS_FOLDER should be set with the folder path where your custom models are available. Currently the Leshan
- * JSON format and OMA DDF file format are supported.
+ * A LwM2mModelProvider which uses only one model for all registered clients.
  */
-public class StandardModelProvider extends StaticModelProvider {
+public class StaticModelProvider implements LwM2mModelProvider {
+    private final LwM2mModel model;
 
-    public StandardModelProvider() {
-        super(ObjectLoader.loadDefault());
+    public StaticModelProvider(Collection<ObjectModel> objects) {
+        this(new LwM2mModel(objects));
+    }
+
+    public StaticModelProvider(LwM2mModel model) {
+        this.model = model;
+    }
+
+    @Override
+    public LwM2mModel getObjectModel(Client client) {
+        // same model for all clients
+        return model;
     }
 }

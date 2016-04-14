@@ -77,7 +77,7 @@ public class RegistrationTest {
         Client client = helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER);
         assertNotNull(client);
         // TODO </0/0> should not be part of the object links
-        assertArrayEquals(LinkObject.parse("</>;rt=\"oma.lwm2m\",</1/0>,</2>,</3/0>".getBytes()),
+        assertArrayEquals(LinkObject.parse("</>;rt=\"oma.lwm2m\",</1/0>,</2>,</3/0>,</2000/0>".getBytes()),
                 client.getObjectLinks());
 
         // Check for update
@@ -101,7 +101,7 @@ public class RegistrationTest {
         assertEquals(1, helper.server.getClientRegistry().allClients().size());
         Client client = helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER);
         assertNotNull(client);
-        assertArrayEquals(LinkObject.parse("</>;rt=\"oma.lwm2m\",</1/0>,</2>,</3/0>".getBytes()),
+        assertArrayEquals(LinkObject.parse("</>;rt=\"oma.lwm2m\",</1/0>,</2>,</3/0>,</2000/0>".getBytes()),
                 client.getObjectLinks());
 
         // Stop client with out de-registration

@@ -30,6 +30,12 @@ import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.ObjectLoader;
+import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.model.ResourceModel;
+import org.eclipse.leshan.core.model.ResourceModel.Operations;
+import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
@@ -38,6 +44,7 @@ import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistryListener;
 import org.eclipse.leshan.server.client.ClientUpdate;
 import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
+import org.eclipse.leshan.server.model.StaticModelProvider;
 
 /**
  * Helper for running a server and executing a client against it.
@@ -49,6 +56,14 @@ public class IntegrationTestHelper {
     static final String MODEL_NUMBER = "IT-TEST-123";
     public static final long LIFETIME = 2;
 
+    public static final int TEST_OBJECT_ID = 2000;
+    public static final int STRING_RESOURCE_ID = 0;
+    public static final int BOOLEAN_RESOURCE_ID = 1;
+    public static final int INTEGER_RESOURCE_ID = 2;
+    public static final int FLOAT_RESOURCE_ID = 3;
+    public static final int TIME_RESOURCE_ID = 4;
+    public static final int OPAQUE_RESOURCE_ID = 5;
+
     LeshanServer server;
     LwM2mClient client;
     Client last_registration;
@@ -57,13 +72,35 @@ public class IntegrationTestHelper {
     private CountDownLatch deregisterLatch;
     private CountDownLatch updateLatch;
 
+    protected List<ObjectModel> createObjectModels() {
+        // load default object from the spec
+        List<ObjectModel> objectModels = ObjectLoader.loadDefault();
+        // define custom model for testing purpose
+        ResourceModel stringfield = new ResourceModel(STRING_RESOURCE_ID, "stringres", Operations.RW, false, false,
+                Type.STRING, null, null, null);
+        ResourceModel booleanfield = new ResourceModel(BOOLEAN_RESOURCE_ID, "booleanres", Operations.RW, false, false,
+                Type.BOOLEAN, null, null, null);
+        ResourceModel integerfield = new ResourceModel(INTEGER_RESOURCE_ID, "integerres", Operations.RW, false, false,
+                Type.INTEGER, null, null, null);
+        ResourceModel floatfield = new ResourceModel(FLOAT_RESOURCE_ID, "floatres", Operations.RW, false, false,
+                Type.FLOAT, null, null, null);
+        ResourceModel timefield = new ResourceModel(TIME_RESOURCE_ID, "timeres", Operations.RW, false, false, Type.TIME,
+                null, null, null);
+        ResourceModel opaquefield = new ResourceModel(OPAQUE_RESOURCE_ID, "opaque", Operations.RW, false, false,
+                Type.OPAQUE, null, null, null);
+        objectModels.add(new ObjectModel(TEST_OBJECT_ID, "testobject", null, false, false, stringfield, booleanfield,
+                integerfield, floatfield, timefield, opaquefield));
+
+        return objectModels;
+    }
+
     public void createClient() {
+
         // Create objects Enabler
-        ObjectsInitializer initializer = new ObjectsInitializer();
-        initializer.setInstancesForObject(
-                LwM2mId.SECURITY,
-                Security.noSec("coap://" + server.getNonSecureAddress().getHostString() + ":"
-                        + server.getNonSecureAddress().getPort(), 12345));
+        ObjectsInitializer initializer = new ObjectsInitializer(new LwM2mModel(createObjectModels()));
+        initializer.setInstancesForObject(LwM2mId.SECURITY, Security.noSec(
+                "coap://" + server.getNonSecureAddress().getHostString() + ":" + server.getNonSecureAddress().getPort(),
+                12345));
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.U, false));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345", "U") {
             @Override
@@ -76,7 +113,7 @@ public class IntegrationTestHelper {
             }
         });
         List<LwM2mObjectEnabler> objects = initializer.createMandatory();
-        objects.add(initializer.create(2));
+        objects.addAll(initializer.create(2, 2000));
 
         // Build Client
         LeshanClientBuilder builder = new LeshanClientBuilder(ENDPOINT_IDENTIFIER);
@@ -86,6 +123,7 @@ public class IntegrationTestHelper {
 
     public void createServer() {
         LeshanServerBuilder builder = new LeshanServerBuilder();
+        builder.setObjectModelProvider(new StaticModelProvider(createObjectModels()));
         builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         builder.setSecurityRegistry(new SecurityRegistryImpl() {
@@ -103,7 +141,6 @@ public class IntegrationTestHelper {
             }
         });
         server = builder.build();
-
         // monitor client registration
         resetLatch();
         server.getClientRegistry().addListener(new ClientRegistryListener() {

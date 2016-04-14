@@ -18,9 +18,19 @@
 
 package org.eclipse.leshan.integration.tests;
 
+import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.BOOLEAN_RESOURCE_ID;
+import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.FLOAT_RESOURCE_ID;
+import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.INTEGER_RESOURCE_ID;
+import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.OPAQUE_RESOURCE_ID;
+import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.STRING_RESOURCE_ID;
+import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.TEST_OBJECT_ID;
+import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.TIME_RESOURCE_ID;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+
+import java.util.Date;
 
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
@@ -34,6 +44,7 @@ import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class WriteTest {
@@ -55,33 +66,201 @@ public class WriteTest {
     }
 
     @Test
-    public void can_write_replace_resource() throws InterruptedException {
-        // write device timezone
-        final String timeZone = "Europe/Paris";
-        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(3, 0, 15, timeZone));
-
-        // verify result
-        assertEquals(ResponseCode.CHANGED, response.getCode());
-
-        // read the timezone to check the value changed
-        ReadResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(3, 0, 15));
-        LwM2mResource resource = (LwM2mResource) readResponse.getContent();
-        assertEquals(timeZone, resource.getValue());
+    public void can_write_string_resource_in_text() throws InterruptedException {
+        write_string_resource(ContentFormat.TEXT);
     }
 
     @Test
-    public void can_write_replace_resource_in_json() throws InterruptedException {
-        // write device timezone
-        final String timeZone = "Europe/Paris";
-        WriteResponse response = helper.server.send(helper.getClient(), new WriteRequest(3, 0, 15, timeZone));
+    public void can_write_string_resource_in_tlv() throws InterruptedException {
+        write_string_resource(ContentFormat.TLV);
+    }
+
+    @Ignore
+    @Test
+    // TODO fix json format
+    public void can_write_string_resource_in_json() throws InterruptedException {
+        write_string_resource(ContentFormat.JSON);
+    }
+
+    private void write_string_resource(ContentFormat format) throws InterruptedException {
+        // write resource
+        final String expectedvalue = "stringvalue";
+        WriteResponse response = helper.server.send(helper.getClient(),
+                new WriteRequest(format, TEST_OBJECT_ID, 0, STRING_RESOURCE_ID, expectedvalue));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
 
-        // read the timezone to check the value changed
-        ReadResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(3, 0, 15));
+        // read resource to check the value changed
+        ReadResponse readResponse = helper.server.send(helper.getClient(),
+                new ReadRequest(TEST_OBJECT_ID, 0, STRING_RESOURCE_ID));
         LwM2mResource resource = (LwM2mResource) readResponse.getContent();
-        assertEquals(timeZone, resource.getValue());
+        assertEquals(expectedvalue, resource.getValue());
+    }
+
+    @Test
+    public void can_write_boolean_resource_in_text() throws InterruptedException {
+        write_boolean_resource(ContentFormat.TEXT);
+    }
+
+    @Test
+    public void can_write_boolean_resource_in_tlv() throws InterruptedException {
+        write_boolean_resource(ContentFormat.TLV);
+    }
+
+    @Ignore
+    @Test
+    // TODO fix json format
+    public void can_write_boolean_resource_in_json() throws InterruptedException {
+        write_boolean_resource(ContentFormat.JSON);
+    }
+
+    private void write_boolean_resource(ContentFormat format) throws InterruptedException {
+        // write resource
+        final boolean expectedvalue = true;
+        WriteResponse response = helper.server.send(helper.getClient(),
+                new WriteRequest(format, TEST_OBJECT_ID, 0, BOOLEAN_RESOURCE_ID, expectedvalue));
+
+        // verify result
+        assertEquals(ResponseCode.CHANGED, response.getCode());
+
+        // read resource to check the value changed
+        ReadResponse readResponse = helper.server.send(helper.getClient(),
+                new ReadRequest(TEST_OBJECT_ID, 0, BOOLEAN_RESOURCE_ID));
+        LwM2mResource resource = (LwM2mResource) readResponse.getContent();
+        assertEquals(expectedvalue, resource.getValue());
+    }
+
+    @Test
+    public void can_write_integer_resource_in_text() throws InterruptedException {
+        write_integer_resource(ContentFormat.TEXT);
+    }
+
+    @Test
+    public void can_write_integer_resource_in_tlv() throws InterruptedException {
+        write_integer_resource(ContentFormat.TLV);
+    }
+
+    @Ignore
+    @Test
+    // TODO fix json format
+    public void can_write_integer_resource_in_json() throws InterruptedException {
+        write_integer_resource(ContentFormat.JSON);
+    }
+
+    private void write_integer_resource(ContentFormat format) throws InterruptedException {
+        // write resource
+        final long expectedvalue = 999l;
+        WriteResponse response = helper.server.send(helper.getClient(),
+                new WriteRequest(format, TEST_OBJECT_ID, 0, INTEGER_RESOURCE_ID, expectedvalue));
+
+        // verify result
+        assertEquals(ResponseCode.CHANGED, response.getCode());
+
+        // read resource to check the value changed
+        ReadResponse readResponse = helper.server.send(helper.getClient(),
+                new ReadRequest(TEST_OBJECT_ID, 0, INTEGER_RESOURCE_ID));
+        LwM2mResource resource = (LwM2mResource) readResponse.getContent();
+        assertEquals(expectedvalue, resource.getValue());
+    }
+
+    @Test
+    public void can_write_float_resource_in_text() throws InterruptedException {
+        write_float_resource(ContentFormat.TEXT);
+    }
+
+    @Test
+    public void can_write_float_resource_in_tlv() throws InterruptedException {
+        write_float_resource(ContentFormat.TLV);
+    }
+
+    @Ignore
+    @Test
+    // TODO fix json format
+    public void can_write_float_resource_in_json() throws InterruptedException {
+        write_float_resource(ContentFormat.JSON);
+    }
+
+    private void write_float_resource(ContentFormat format) throws InterruptedException {
+        // write resource
+        final double expectedvalue = 999.99;
+        WriteResponse response = helper.server.send(helper.getClient(),
+                new WriteRequest(format, TEST_OBJECT_ID, 0, FLOAT_RESOURCE_ID, expectedvalue));
+
+        // verify result
+        assertEquals(ResponseCode.CHANGED, response.getCode());
+
+        // read resource to check the value changed
+        ReadResponse readResponse = helper.server.send(helper.getClient(),
+                new ReadRequest(TEST_OBJECT_ID, 0, FLOAT_RESOURCE_ID));
+        LwM2mResource resource = (LwM2mResource) readResponse.getContent();
+        assertEquals(expectedvalue, resource.getValue());
+    }
+
+    @Test
+    public void can_write_time_resource_in_text() throws InterruptedException {
+        write_time_resource(ContentFormat.TEXT);
+    }
+
+    @Test
+    public void can_write_time_resource_in_tlv() throws InterruptedException {
+        write_time_resource(ContentFormat.TLV);
+    }
+
+    @Ignore
+    @Test
+    // TODO fix json format
+    public void can_write_time_resource_in_json() throws InterruptedException {
+        write_time_resource(ContentFormat.JSON);
+    }
+
+    private void write_time_resource(ContentFormat format) throws InterruptedException {
+        // write resource
+        final Date expectedvalue = new Date(946681000l); // second accuracy
+        WriteResponse response = helper.server.send(helper.getClient(),
+                new WriteRequest(format, TEST_OBJECT_ID, 0, TIME_RESOURCE_ID, expectedvalue));
+
+        // verify result
+        assertEquals(ResponseCode.CHANGED, response.getCode());
+
+        // read resource to check the value changed
+        ReadResponse readResponse = helper.server.send(helper.getClient(),
+                new ReadRequest(TEST_OBJECT_ID, 0, TIME_RESOURCE_ID));
+        LwM2mResource resource = (LwM2mResource) readResponse.getContent();
+        assertEquals(expectedvalue, resource.getValue());
+    }
+
+    @Test
+    public void can_write_opaque_resource_in_opaque() throws InterruptedException {
+        write_opaque_resource(ContentFormat.OPAQUE);
+    }
+
+    @Test
+    public void can_write_opaque_resource_in_tlv() throws InterruptedException {
+        write_opaque_resource(ContentFormat.TLV);
+    }
+
+    @Ignore
+    @Test
+    // TODO fix json format
+    public void can_write_opaque_resource_in_json() throws InterruptedException {
+        write_opaque_resource(ContentFormat.JSON);
+    }
+
+    private void write_opaque_resource(ContentFormat format) throws InterruptedException {
+        // write resource
+        final byte[] expectedvalue = new byte[] { 1, 2, 3 };
+        WriteResponse response = helper.server.send(helper.getClient(),
+                new WriteRequest(format, TEST_OBJECT_ID, 0, OPAQUE_RESOURCE_ID, expectedvalue));
+
+        // verify result
+        assertEquals(ResponseCode.CHANGED, response.getCode());
+
+        // read resource to check the value changed
+        ReadResponse readResponse = helper.server.send(helper.getClient(),
+                new ReadRequest(TEST_OBJECT_ID, 0, OPAQUE_RESOURCE_ID));
+        LwM2mResource resource = (LwM2mResource) readResponse.getContent();
+        assertArrayEquals(expectedvalue, (byte[]) resource.getValue());
     }
 
     @Test
