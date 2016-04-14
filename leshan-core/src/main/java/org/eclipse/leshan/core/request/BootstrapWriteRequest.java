@@ -56,18 +56,22 @@ public class BootstrapWriteRequest extends AbstractDownlinkRequest<BootstrapWrit
         // Validate content format
         if (ContentFormat.TEXT == format || ContentFormat.OPAQUE == format) {
             if (!getPath().isResource()) {
-                throw new IllegalArgumentException(String.format("%s format must be used only for single resources",
-                        format.toString()));
+                throw new IllegalArgumentException(
+                        String.format("%s format must be used only for single resources", format.toString()));
             } else {
                 if (((LwM2mResource) node).isMultiInstances()) {
-                    throw new IllegalArgumentException(String.format(
-                            "%s format must be used only for single resources", format.toString()));
+                    throw new IllegalArgumentException(
+                            String.format("%s format must be used only for single resources", format.toString()));
                 }
             }
         }
 
         this.node = node;
-        this.contentFormat = format;
+        if (format == null) {
+            this.contentFormat = ContentFormat.TLV; // use TLV as default content type
+        } else {
+            this.contentFormat = format;
+        }
     }
 
     public LwM2mNode getNode() {

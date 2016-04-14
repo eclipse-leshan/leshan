@@ -19,7 +19,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.impl;
 
-import static org.eclipse.leshan.client.californium.impl.ResourceUtil.*;
+import static org.eclipse.leshan.client.californium.impl.ResourceUtil.extractServerIdentity;
+import static org.eclipse.leshan.client.californium.impl.ResourceUtil.fromLwM2mCode;
 
 import java.util.List;
 
@@ -46,7 +47,6 @@ import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.request.ContentFormatHelper;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.DiscoverRequest;
@@ -118,8 +118,9 @@ public class ObjectResource extends CoapResource implements NotifySender {
                 LwM2mPath path = new LwM2mPath(URI);
                 LwM2mNode content = response.getContent();
                 LwM2mModel model = new LwM2mModel(nodeEnabler.getObjectModel());
-                ContentFormat contentFormat = ContentFormatHelper.compute(path, content, model);
-                exchange.respond(ResponseCode.CONTENT, LwM2mNodeEncoder.encode(content, contentFormat, path, model));
+                // TODO use Accept Option to define encoding
+                exchange.respond(ResponseCode.CONTENT, LwM2mNodeEncoder.encode(content, ContentFormat.TLV, path, model),
+                        ContentFormat.TLV.getCode());
                 return;
             } else {
                 exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
@@ -133,8 +134,9 @@ public class ObjectResource extends CoapResource implements NotifySender {
                 LwM2mPath path = new LwM2mPath(URI);
                 LwM2mNode content = response.getContent();
                 LwM2mModel model = new LwM2mModel(nodeEnabler.getObjectModel());
-                ContentFormat contentFormat = ContentFormatHelper.compute(path, content, model);
-                exchange.respond(ResponseCode.CONTENT, LwM2mNodeEncoder.encode(content, contentFormat, path, model));
+                // TODO use Accept Option to define encoding
+                exchange.respond(ResponseCode.CONTENT, LwM2mNodeEncoder.encode(content, ContentFormat.TLV, path, model),
+                        ContentFormat.TLV.getCode());
                 return;
             } else {
                 exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
@@ -157,8 +159,8 @@ public class ObjectResource extends CoapResource implements NotifySender {
 
         // Manage Write Attributes Request
         if (spec != null) {
-            WriteAttributesResponse response = nodeEnabler.writeAttributes(identity, new WriteAttributesRequest(URI,
-                    spec));
+            WriteAttributesResponse response = nodeEnabler.writeAttributes(identity,
+                    new WriteAttributesRequest(URI, spec));
             coapExchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
             return;
         }
@@ -171,12 +173,12 @@ public class ObjectResource extends CoapResource implements NotifySender {
                 LwM2mModel model = new LwM2mModel(nodeEnabler.getObjectModel());
                 lwM2mNode = LwM2mNodeDecoder.decode(coapExchange.getRequestPayload(), contentFormat, path, model);
                 if (identity.isLwm2mBootstrapServer()) {
-                    BootstrapWriteResponse response = nodeEnabler.write(identity, new BootstrapWriteRequest(path,
-                            lwM2mNode, contentFormat));
+                    BootstrapWriteResponse response = nodeEnabler.write(identity,
+                            new BootstrapWriteRequest(path, lwM2mNode, contentFormat));
                     coapExchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
                 } else {
-                    WriteResponse response = nodeEnabler.write(identity, new WriteRequest(Mode.REPLACE, contentFormat,
-                            URI, lwM2mNode));
+                    WriteResponse response = nodeEnabler.write(identity,
+                            new WriteRequest(Mode.REPLACE, contentFormat, URI, lwM2mNode));
                     coapExchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
                 }
 
@@ -212,8 +214,8 @@ public class ObjectResource extends CoapResource implements NotifySender {
         if (path.isObjectInstance()) {
             try {
                 LwM2mNode lwM2mNode = LwM2mNodeDecoder.decode(exchange.getRequestPayload(), contentFormat, path, model);
-                WriteResponse response = nodeEnabler.write(identity, new WriteRequest(Mode.UPDATE, contentFormat, URI,
-                        lwM2mNode));
+                WriteResponse response = nodeEnabler.write(identity,
+                        new WriteRequest(Mode.UPDATE, contentFormat, URI, lwM2mNode));
                 exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
             } catch (InvalidValueException e) {
                 LOG.warn("Unable to decode payload to write", e);
@@ -240,8 +242,8 @@ public class ObjectResource extends CoapResource implements NotifySender {
             } else {
                 // the instance Id was not part of the create request payload.
                 // will be assigned by the client.
-                createRequest = new CreateRequest(contentFormat, path.getObjectId(), newInstance.getResources()
-                        .values());
+                createRequest = new CreateRequest(contentFormat, path.getObjectId(),
+                        newInstance.getResources().values());
             }
 
             CreateResponse response = nodeEnabler.create(identity, createRequest);

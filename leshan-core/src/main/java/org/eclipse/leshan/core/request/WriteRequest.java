@@ -117,50 +117,98 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
 
     // ***************** write single value resource ****************** //
     /**
-     * Request to write a <b>String Single-Instance Resource</b> using the TEXT content format.
+     * Request to write a <b>String Single-Instance Resource</b> using the TLV content format.
      */
     public WriteRequest(final int objectId, final int objectInstanceId, final int resourceId, String value) {
-        this(Mode.REPLACE, ContentFormat.TEXT, new LwM2mPath(objectId, objectInstanceId, resourceId),
+        this(ContentFormat.TLV, objectId, objectInstanceId, resourceId, value);
+    }
+
+    /**
+     * Request to write a <b>String Single-Instance Resource</b> using the given content format (TEXT, TLV, JSON).
+     */
+    public WriteRequest(final ContentFormat contentFormat, final int objectId, final int objectInstanceId,
+            final int resourceId, String value) {
+        this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId),
                 LwM2mSingleResource.newStringResource(resourceId, value));
     }
 
     /**
-     * Request to write a <b>Boolean Single-Instance Resource</b> using the TEXT content format.
+     * Request to write a <b>Boolean Single-Instance Resource</b> using the TLV content format.
      */
     public WriteRequest(final int objectId, final int objectInstanceId, final int resourceId, boolean value) {
-        this(Mode.REPLACE, ContentFormat.TEXT, new LwM2mPath(objectId, objectInstanceId, resourceId),
+        this(ContentFormat.TLV, objectId, objectInstanceId, resourceId, value);
+    }
+
+    /**
+     * Request to write a <b>Boolean Single-Instance Resource</b> using the given content format (TEXT, TLV, JSON).
+     */
+    public WriteRequest(final ContentFormat contentFormat, final int objectId, final int objectInstanceId,
+            final int resourceId, boolean value) {
+        this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId),
                 LwM2mSingleResource.newBooleanResource(resourceId, value));
     }
 
     /**
-     * Request to write a <b>Integer Single-Instance Resource</b> using the TEXT content format.
+     * Request to write a <b>Integer Single-Instance Resource</b> using the TLV content format.
      */
     public WriteRequest(final int objectId, final int objectInstanceId, final int resourceId, long value) {
-        this(Mode.REPLACE, ContentFormat.TEXT, new LwM2mPath(objectId, objectInstanceId, resourceId),
+        this(ContentFormat.TLV, objectId, objectInstanceId, resourceId, value);
+    }
+
+    /**
+     * Request to write a <b>Integer Single-Instance Resource</b> using the given content format (TEXT, TLV, JSON).
+     */
+    public WriteRequest(final ContentFormat contentFormat, final int objectId, final int objectInstanceId,
+            final int resourceId, long value) {
+        this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId),
                 LwM2mSingleResource.newIntegerResource(resourceId, value));
     }
 
     /**
-     * Request to write a <b> Float Single-Instance Resource</b> using the TEXT content format.
+     * Request to write a <b> Float Single-Instance Resource</b> using the TLV content format.
      */
     public WriteRequest(final int objectId, final int objectInstanceId, final int resourceId, double value) {
-        this(Mode.REPLACE, ContentFormat.TEXT, new LwM2mPath(objectId, objectInstanceId, resourceId),
+        this(ContentFormat.TLV, objectId, objectInstanceId, resourceId, value);
+    }
+
+    /**
+     * Request to write a <b> Float Single-Instance Resource</b> using the given content format (TEXT, TLV, JSON).
+     */
+    public WriteRequest(final ContentFormat contentFormat, final int objectId, final int objectInstanceId,
+            final int resourceId, double value) {
+        this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId),
                 LwM2mSingleResource.newFloatResource(resourceId, value));
     }
 
     /**
-     * Request to write a <b> Date Single-Instance Resource</b> using the TEXT content format.
+     * Request to write a <b> Date Single-Instance Resource</b> using the TLV content format.
      */
     public WriteRequest(final int objectId, final int objectInstanceId, final int resourceId, Date value) {
-        this(Mode.REPLACE, ContentFormat.TEXT, new LwM2mPath(objectId, objectInstanceId, resourceId),
+        this(ContentFormat.TLV, objectId, objectInstanceId, resourceId, value);
+    }
+
+    /**
+     * Request to write a <b> Date Single-Instance Resource</b> using the given content format (TEXT, TLV, JSON).
+     */
+    public WriteRequest(final ContentFormat contentFormat, final int objectId, final int objectInstanceId,
+            final int resourceId, Date value) {
+        this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId),
                 LwM2mSingleResource.newDateResource(resourceId, value));
     }
 
     /**
-     * Request to write a <b> Binary Single-Instance Resource</b> using the OPAQUE content format.
+     * Request to write a <b> Binary Single-Instance Resource</b> using the TLV content format.
      */
     public WriteRequest(final int objectId, final int objectInstanceId, final int resourceId, byte[] value) {
-        this(Mode.REPLACE, ContentFormat.OPAQUE, new LwM2mPath(objectId, objectInstanceId, resourceId),
+        this(ContentFormat.TLV, objectId, objectInstanceId, resourceId, value);
+    }
+
+    /**
+     * Request to write a <b> Binary Single-Instance Resource</b> using the given content format (OPAQUE, TLV, JSON).
+     */
+    public WriteRequest(final ContentFormat contentFormat, final int objectId, final int objectInstanceId,
+            final int resourceId, byte[] value) {
+        this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId),
                 LwM2mSingleResource.newBinaryResource(resourceId, value));
     }
 
@@ -249,7 +297,11 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
         }
 
         this.node = node;
-        this.contentFormat = format;
+        if (format == null) {
+            this.contentFormat = ContentFormat.TLV; // use TLV as default content type
+        } else {
+            this.contentFormat = format;
+        }
         this.mode = mode;
     }
 
@@ -282,7 +334,8 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
 
     @Override
     public String toString() {
-        return String.format("WriteRequest [Mode=%s, getPath()=%s]", mode, getPath());
+        return String.format("WriteRequest [mode=%s, path=%s, format=%s, node=%s]", mode, getPath(), contentFormat,
+                node);
     }
 
 }
