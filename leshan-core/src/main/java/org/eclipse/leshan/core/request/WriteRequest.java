@@ -289,9 +289,18 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
                 throw new IllegalArgumentException(
                         String.format("%s format must be used only for single resources", format.toString()));
             } else {
-                if (((LwM2mResource) node).isMultiInstances()) {
+                LwM2mResource resource = (LwM2mResource) node;
+                if (resource.isMultiInstances()) {
                     throw new IllegalArgumentException(
                             String.format("%s format must be used only for single resources", format.toString()));
+                } else {
+                    if (resource.getType() == Type.OPAQUE && format == ContentFormat.TEXT) {
+                        throw new IllegalArgumentException(
+                                "TEXT format must not be used for byte array single resources");
+                    } else if (resource.getType() != Type.OPAQUE && format == ContentFormat.OPAQUE) {
+                        throw new IllegalArgumentException(
+                                "OPAQUE format must be used only for byte array single resources");
+                    }
                 }
             }
         }
