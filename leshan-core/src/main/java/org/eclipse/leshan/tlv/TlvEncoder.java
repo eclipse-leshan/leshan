@@ -27,7 +27,7 @@ public class TlvEncoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(TlvEncoder.class);
 
-    private static final int MAX_LENGTH_8BIT  = 256;
+    private static final int MAX_LENGTH_8BIT = 256;
     private static final int MAX_LENGTH_16BIT = 65_536;
     private static final int MAX_LENGTH_24BIT = 16_777_216;
 
@@ -81,13 +81,12 @@ public class TlvEncoder {
      */
     public static byte[] encodeFloat(Number number) {
         ByteBuffer fBuf = null;
-        double dValue = number.doubleValue();
-        if (dValue >= Float.MIN_VALUE && dValue <= Float.MAX_VALUE) {
+        if (number instanceof Float) {
             fBuf = ByteBuffer.allocate(4);
-            fBuf.putFloat((float) dValue);
+            fBuf.putFloat(number.floatValue());
         } else {
             fBuf = ByteBuffer.allocate(8);
-            fBuf.putDouble(dValue);
+            fBuf.putDouble(number.doubleValue());
         }
         return fBuf.array();
     }
