@@ -45,7 +45,11 @@ public class BootstrapDeleteResponse extends AbstractLwM2mResponse {
         return new BootstrapDeleteResponse(ResponseCode.DELETED, null);
     }
 
-    public static BootstrapDeleteResponse methodNotAllowed(String message) {
-        return new BootstrapDeleteResponse(ResponseCode.METHOD_NOT_ALLOWED, message);
+    public static BootstrapDeleteResponse badRequest(String errorMessage) {
+        return new BootstrapDeleteResponse(ResponseCode.BAD_REQUEST, errorMessage);
+    }
+
+    public static BootstrapDeleteResponse internalServerError(String errorMessage) {
+        return new BootstrapDeleteResponse(ResponseCode.INTERNAL_SERVER_ERROR, errorMessage);
     }
 }

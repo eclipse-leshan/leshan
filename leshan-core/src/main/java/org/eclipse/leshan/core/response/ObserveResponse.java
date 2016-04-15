@@ -67,6 +67,10 @@ public class ObserveResponse extends ReadResponse {
         return new ObserveResponse(ResponseCode.METHOD_NOT_ALLOWED, null, null, null);
     }
 
+    public static ObserveResponse notAcceptable() {
+        return new ObserveResponse(ResponseCode.NOT_ACCEPTABLE, null, null, null);
+    }
+
     public static ObserveResponse internalServerError(String errorMessage) {
         return new ObserveResponse(ResponseCode.INTERNAL_SERVER_ERROR, null, null, errorMessage);
     }

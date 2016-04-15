@@ -49,4 +49,7 @@ public class BootstrapFinishResponse extends AbstractLwM2mResponse {
         return new BootstrapFinishResponse(ResponseCode.BAD_REQUEST, errorMessage);
     }
 
+    public static BootstrapFinishResponse internalServerError(String errorMessage) {
+        return new BootstrapFinishResponse(ResponseCode.INTERNAL_SERVER_ERROR, errorMessage);
+    }
 }

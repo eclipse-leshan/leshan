@@ -106,6 +106,14 @@ public class ReadResponse extends AbstractLwM2mResponse {
         return new ReadResponse(ResponseCode.METHOD_NOT_ALLOWED, null, null);
     }
 
+    public static ReadResponse notAcceptable() {
+        return new ReadResponse(ResponseCode.NOT_ACCEPTABLE, null, null);
+    }
+
+    public static ReadResponse badRequest(String errorMessage) {
+        return new ReadResponse(ResponseCode.BAD_REQUEST, null, errorMessage);
+    }
+
     public static ReadResponse internalServerError(String errorMessage) {
         return new ReadResponse(ResponseCode.INTERNAL_SERVER_ERROR, null, errorMessage);
     }

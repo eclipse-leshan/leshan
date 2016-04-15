@@ -70,7 +70,7 @@ public class BootstrapHandler {
         if (bootstrapping) {
             // Only if the request is from the bootstrap server
             if (!isBootstrapServer(identity)) {
-                return BootstrapDeleteResponse.methodNotAllowed("not from a bootstrap server");
+                return BootstrapDeleteResponse.badRequest("not from a bootstrap server");
             }
 
             // TODO the spec say that delete on "/" should delete all the existing Object Instances - except LWM2M
@@ -92,7 +92,7 @@ public class BootstrapHandler {
 
             return BootstrapDeleteResponse.success();
         } else {
-            return BootstrapDeleteResponse.methodNotAllowed("no pending bootstrap session");
+            return BootstrapDeleteResponse.badRequest("no pending bootstrap session");
         }
     }
 

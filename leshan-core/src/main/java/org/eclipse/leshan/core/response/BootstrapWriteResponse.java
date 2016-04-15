@@ -45,6 +45,10 @@ public class BootstrapWriteResponse extends AbstractLwM2mResponse {
         return new BootstrapWriteResponse(ResponseCode.CHANGED, null);
     }
 
+    public static BootstrapWriteResponse unsupportedContentFormat() {
+        return new BootstrapWriteResponse(ResponseCode.UNSUPPORTED_CONTENT_FORMAT, null);
+    }
+
     public static BootstrapWriteResponse badRequest(String errorMessage) {
         return new BootstrapWriteResponse(ResponseCode.BAD_REQUEST, errorMessage);
     }

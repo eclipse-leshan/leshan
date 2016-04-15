@@ -65,6 +65,10 @@ public class CreateResponse extends AbstractLwM2mResponse {
         return new CreateResponse(ResponseCode.METHOD_NOT_ALLOWED, null, null);
     }
 
+    public static CreateResponse unsupportedContentFormat() {
+        return new CreateResponse(ResponseCode.UNSUPPORTED_CONTENT_FORMAT, null, null);
+    }
+
     public static CreateResponse internalServerError(String errorMessage) {
         return new CreateResponse(ResponseCode.INTERNAL_SERVER_ERROR, null, errorMessage);
     }

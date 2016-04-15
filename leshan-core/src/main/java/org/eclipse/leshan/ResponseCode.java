@@ -37,6 +37,10 @@ public enum ResponseCode {
     FORBIDDEN,
     /** Resource not found */
     NOT_FOUND,
+    /** None of the preferred Content-Formats can be returned */
+    NOT_ACCEPTABLE,
+    /** The specified format is not supported */
+    UNSUPPORTED_CONTENT_FORMAT,
     /** generic response code for unexpected error */
     INTERNAL_SERVER_ERROR;
 
@@ -48,6 +52,8 @@ public enum ResponseCode {
         case FORBIDDEN:
         case NOT_FOUND:
         case INTERNAL_SERVER_ERROR:
+        case UNSUPPORTED_CONTENT_FORMAT:
+        case NOT_ACCEPTABLE:
             return true;
         default:
             return false;

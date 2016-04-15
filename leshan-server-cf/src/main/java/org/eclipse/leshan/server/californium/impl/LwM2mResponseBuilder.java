@@ -92,6 +92,10 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             return ResponseCode.METHOD_NOT_ALLOWED;
         } else if (code == CoAP.ResponseCode.FORBIDDEN.value) {
             return ResponseCode.FORBIDDEN;
+        } else if (code == CoAP.ResponseCode.UNSUPPORTED_CONTENT_FORMAT.value) {
+            return ResponseCode.UNSUPPORTED_CONTENT_FORMAT;
+        } else if (code == CoAP.ResponseCode.NOT_ACCEPTABLE.value) {
+            return ResponseCode.NOT_ACCEPTABLE;
         } else if (code == CoAP.ResponseCode.INTERNAL_SERVER_ERROR.value) {
             return ResponseCode.INTERNAL_SERVER_ERROR;
         } else {
@@ -115,9 +119,11 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse);
             lwM2mresponse = ReadResponse.success(content);
             break;
+        case BAD_REQUEST:
         case UNAUTHORIZED:
         case NOT_FOUND:
         case METHOD_NOT_ALLOWED:
+        case NOT_ACCEPTABLE:
         case INTERNAL_SERVER_ERROR:
             lwM2mresponse = new ReadResponse(fromCoapCode(coapResponse.getCode().value), null,
                     coapResponse.getPayloadString());
@@ -134,14 +140,15 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             LinkObject[] links = null;
             if (MediaTypeRegistry.APPLICATION_LINK_FORMAT != coapResponse.getOptions().getContentFormat()) {
                 LOG.debug("Expected LWM2M Client [{}] to return application/link-format [{}] content but got [{}]",
-                        client.getEndpoint(), MediaTypeRegistry.APPLICATION_LINK_FORMAT, coapResponse.getOptions()
-                                .getContentFormat());
+                        client.getEndpoint(), MediaTypeRegistry.APPLICATION_LINK_FORMAT,
+                        coapResponse.getOptions().getContentFormat());
                 links = new LinkObject[] {}; // empty list
             } else {
                 links = LinkObject.parse(coapResponse.getPayload());
             }
             lwM2mresponse = DiscoverResponse.success(links);
             break;
+        case BAD_REQUEST:
         case NOT_FOUND:
         case UNAUTHORIZED:
         case METHOD_NOT_ALLOWED:
@@ -164,6 +171,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         case NOT_FOUND:
         case UNAUTHORIZED:
         case METHOD_NOT_ALLOWED:
+        case UNSUPPORTED_CONTENT_FORMAT:
         case INTERNAL_SERVER_ERROR:
             lwM2mresponse = new WriteResponse(fromCoapCode(coapResponse.getCode().value),
                     coapResponse.getPayloadString());
@@ -222,6 +230,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         case UNAUTHORIZED:
         case NOT_FOUND:
         case METHOD_NOT_ALLOWED:
+        case UNSUPPORTED_CONTENT_FORMAT:
         case INTERNAL_SERVER_ERROR:
             lwM2mresponse = new CreateResponse(fromCoapCode(coapResponse.getCode().value), null,
                     coapResponse.getPayloadString());
@@ -240,6 +249,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         case UNAUTHORIZED:
         case NOT_FOUND:
         case METHOD_NOT_ALLOWED:
+        case BAD_REQUEST:
         case INTERNAL_SERVER_ERROR:
             lwM2mresponse = new DeleteResponse(fromCoapCode(coapResponse.getCode().value),
                     coapResponse.getPayloadString());
@@ -271,8 +281,11 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                 lwM2mresponse = ObserveResponse.success(content);
             }
             break;
+        case BAD_REQUEST:
+        case UNAUTHORIZED:
         case NOT_FOUND:
         case METHOD_NOT_ALLOWED:
+        case NOT_ACCEPTABLE:
         case INTERNAL_SERVER_ERROR:
             lwM2mresponse = new ObserveResponse(fromCoapCode(coapResponse.getCode().value), null, null,
                     coapResponse.getPayloadString());
@@ -288,8 +301,11 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         case CHANGED:
             lwM2mresponse = BootstrapWriteResponse.success();
             break;
+        case UNSUPPORTED_CONTENT_FORMAT:
         case BAD_REQUEST:
-            lwM2mresponse = BootstrapWriteResponse.badRequest(coapResponse.getPayloadString());
+        case INTERNAL_SERVER_ERROR:
+            lwM2mresponse = new BootstrapWriteResponse(fromCoapCode(coapResponse.getCode().value),
+                    coapResponse.getPayloadString());
             break;
         default:
             handleUnexpectedResponseCode(client.getEndpoint(), coapRequest, coapResponse);
@@ -302,8 +318,10 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         case DELETED:
             lwM2mresponse = BootstrapDeleteResponse.success();
             break;
-        case METHOD_NOT_ALLOWED:
-            lwM2mresponse = BootstrapDeleteResponse.methodNotAllowed(null);
+        case BAD_REQUEST:
+        case INTERNAL_SERVER_ERROR:
+            lwM2mresponse = new BootstrapDeleteResponse(fromCoapCode(coapResponse.getCode().value),
+                    coapResponse.getPayloadString());
             break;
         default:
             handleUnexpectedResponseCode(client.getEndpoint(), coapRequest, coapResponse);
@@ -313,11 +331,13 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     @Override
     public void visit(final BootstrapFinishRequest request) {
         switch (coapResponse.getCode()) {
-        case DELETED:
+        case CHANGED:
             lwM2mresponse = BootstrapFinishResponse.success();
             break;
         case BAD_REQUEST:
-            lwM2mresponse = BootstrapFinishResponse.badRequest(coapResponse.getPayloadString());
+        case INTERNAL_SERVER_ERROR:
+            lwM2mresponse = new BootstrapFinishResponse(fromCoapCode(coapResponse.getCode().value),
+                    coapResponse.getPayloadString());
             break;
         default:
             handleUnexpectedResponseCode(client.getEndpoint(), coapRequest, coapResponse);
@@ -330,8 +350,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             content = LwM2mNodeDecoder.decode(coapResponse.getPayload(),
                     ContentFormat.fromCode(coapResponse.getOptions().getContentFormat()), path, model);
         } catch (final InvalidValueException e) {
-            final String msg = String.format("[%s] (%s:%s)", e.getMessage(), e.getPath().toString(), coapResponse
-                    .getCode().toString());
+            final String msg = String.format("[%s] (%s:%s)", e.getMessage(), e.getPath().toString(),
+                    coapResponse.getCode().toString());
             throw new ResourceAccessException(path.toString(), msg, e);
         }
         return content;
