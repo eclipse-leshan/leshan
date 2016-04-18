@@ -55,7 +55,7 @@ public class LeshanServerExtensionsManager {
      * 
      * @param lwServer LWM2M server
      * @param extensions name of the JSON extensions file
-     * @param extensionTags ";" separated list of active tags. May be null.
+     * @param extensionTags "," separated list of active tags. May be null.
      * @return Set of extension names.
      */
     public Set<String> loadExtensions(LeshanServer lwServer, String extensions, String extensionTags) {
