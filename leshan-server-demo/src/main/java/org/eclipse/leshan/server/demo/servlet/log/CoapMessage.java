@@ -93,7 +93,7 @@ public class CoapMessage {
                         values.add(String.valueOf(opt.getIntegerValue()));
                         break;
                     default:
-                        values.add(opt.getStringValue());
+                        values.add(opt.toValueString());
                     }
                 }
 
