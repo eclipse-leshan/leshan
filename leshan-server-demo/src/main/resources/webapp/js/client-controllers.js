@@ -239,6 +239,7 @@ lwClientControllers.controller('ClientDetailCtrl', [
                     var log = JSON.parse(msg.data);
                     log.date = $filter('date')(new Date(log.timestamp), 'HH:mm:ss.sss');
                     console.log(log);
+                    if (256 < $scope.coaplogs.length) $scope.coaplogs.shift();
                     $scope.coaplogs.push(log);
                 });
             };
