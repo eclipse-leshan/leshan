@@ -51,6 +51,8 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     @Override
     public void visit(ReadRequest request) {
         coapRequest = Request.newGet();
+        if (request.getFormat() != null)
+            coapRequest.getOptions().setAccept(request.getFormat().getCode());
         setTarget(coapRequest, destination, request.getPath());
     }
 
@@ -106,6 +108,8 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     @Override
     public void visit(ObserveRequest request) {
         coapRequest = Request.newGet();
+        if (request.getFormat() != null)
+            coapRequest.getOptions().setAccept(request.getFormat().getCode());
         coapRequest.setObserve();
         setTarget(coapRequest, destination, request.getPath());
     }

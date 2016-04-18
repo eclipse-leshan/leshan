@@ -26,13 +26,25 @@ import org.eclipse.leshan.core.response.ReadResponse;
  */
 public class ReadRequest extends AbstractDownlinkRequest<ReadResponse> {
 
+    private ContentFormat format;
+
     /**
      * Creates a request for reading all instances of a particular object from a client.
      * 
      * @param objectId the object ID of the resource
      */
     public ReadRequest(int objectId) {
-        this(new LwM2mPath(objectId));
+        this(null, new LwM2mPath(objectId));
+    }
+
+    /**
+     * Creates a request for reading all instances of a particular object from a client.
+     * 
+     * @param format the desired format for the response (TLV or JSON)
+     * @param objectId the object ID of the resource
+     */
+    public ReadRequest(ContentFormat format, int objectId) {
+        this(format, new LwM2mPath(objectId));
     }
 
     /**
@@ -42,7 +54,18 @@ public class ReadRequest extends AbstractDownlinkRequest<ReadResponse> {
      * @param objectInstanceId the object instance ID
      */
     public ReadRequest(int objectId, int objectInstanceId) {
-        this(new LwM2mPath(objectId, objectInstanceId));
+        this(null, new LwM2mPath(objectId, objectInstanceId));
+    }
+
+    /**
+     * Creates a request for reading a particular object instance from a client.
+     *
+     * @param format the desired format for the response (TLV or JSON)
+     * @param objectId the object ID of the resource
+     * @param objectInstanceId the object instance ID
+     */
+    public ReadRequest(ContentFormat format, int objectId, int objectInstanceId) {
+        this(format, new LwM2mPath(objectId, objectInstanceId));
     }
 
     /**
@@ -53,7 +76,19 @@ public class ReadRequest extends AbstractDownlinkRequest<ReadResponse> {
      * @param resourceId the (individual) resource's ID
      */
     public ReadRequest(int objectId, int objectInstanceId, int resourceId) {
-        this(new LwM2mPath(objectId, objectInstanceId, resourceId));
+        this(null, new LwM2mPath(objectId, objectInstanceId, resourceId));
+    }
+
+    /**
+     * Creates a request for reading a specific resource from a client.
+     * 
+     * @param format the desired format for the response (TLV, JSON, TEXT or OPAQUE)
+     * @param objectId the object ID of the resource
+     * @param objectInstanceId the object instance ID
+     * @param resourceId the (individual) resource's ID
+     */
+    public ReadRequest(ContentFormat format, int objectId, int objectInstanceId, int resourceId) {
+        this(format, new LwM2mPath(objectId, objectInstanceId, resourceId));
     }
 
     /**
@@ -63,16 +98,35 @@ public class ReadRequest extends AbstractDownlinkRequest<ReadResponse> {
      * @throws IllegalArgumentException if the target path is not valid
      */
     public ReadRequest(String path) {
-        super(new LwM2mPath(path));
+        this(null, new LwM2mPath(path));
     }
 
-    private ReadRequest(LwM2mPath target) {
+    /**
+     * Create a request for reading an object/instance/resource targeted by a specific path.
+     *
+     * @param format the desired format for the response
+     * @param path the path to the LWM2M node to read
+     * @throws IllegalArgumentException if the target path is not valid
+     */
+    public ReadRequest(ContentFormat format, String path) {
+        this(format, new LwM2mPath(path));
+    }
+
+    private ReadRequest(ContentFormat format, LwM2mPath target) {
         super(target);
+        this.format = format;
+    }
+
+    /**
+     * @return the desired format of the resource to read
+     */
+    public ContentFormat getFormat() {
+        return format;
     }
 
     @Override
     public final String toString() {
-        return String.format("ReadRequest [%s]", getPath());
+        return String.format("ReadRequest [path=%s format=%s]", getPath(), format);
     }
 
     @Override

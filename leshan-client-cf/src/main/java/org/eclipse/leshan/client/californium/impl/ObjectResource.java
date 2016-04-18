@@ -110,37 +110,46 @@ public class ObjectResource extends CoapResource implements NotifySender {
                 exchange.respond(fromLwM2mCode(response.getCode()), LinkObject.serialize(response.getObjectLinks()),
                         MediaTypeRegistry.APPLICATION_LINK_FORMAT);
             }
-        }
-        // Manage Observe Request
-        else if (exchange.getRequestOptions().hasObserve()) {
-            ObserveResponse response = nodeEnabler.observe(identity, new ObserveRequest(URI));
-            if (response.getCode() == org.eclipse.leshan.ResponseCode.CONTENT) {
-                LwM2mPath path = new LwM2mPath(URI);
-                LwM2mNode content = response.getContent();
-                LwM2mModel model = new LwM2mModel(nodeEnabler.getObjectModel());
-                // TODO use Accept Option to define encoding
-                exchange.respond(ResponseCode.CONTENT, LwM2mNodeEncoder.encode(content, ContentFormat.TLV, path, model),
-                        ContentFormat.TLV.getCode());
-                return;
-            } else {
-                exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
-                return;
+        } else {
+            // handle content format for Read and Observe Request
+            ContentFormat format = ContentFormat.TLV; // use TLV as default format
+            if (exchange.getRequestOptions().hasAccept()) {
+                format = ContentFormat.fromCode(exchange.getRequestOptions().getAccept());
+                if (format == null) {
+                    exchange.respond(ResponseCode.NOT_ACCEPTABLE);
+                    return;
+                }
             }
-        }
-        // Manage Read Request
-        else {
-            ReadResponse response = nodeEnabler.read(identity, new ReadRequest(URI));
-            if (response.getCode() == org.eclipse.leshan.ResponseCode.CONTENT) {
-                LwM2mPath path = new LwM2mPath(URI);
-                LwM2mNode content = response.getContent();
-                LwM2mModel model = new LwM2mModel(nodeEnabler.getObjectModel());
-                // TODO use Accept Option to define encoding
-                exchange.respond(ResponseCode.CONTENT, LwM2mNodeEncoder.encode(content, ContentFormat.TLV, path, model),
-                        ContentFormat.TLV.getCode());
-                return;
-            } else {
-                exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
-                return;
+
+            // Manage Observe Request
+            if (exchange.getRequestOptions().hasObserve()) {
+                ObserveResponse response = nodeEnabler.observe(identity, new ObserveRequest(URI));
+                if (response.getCode() == org.eclipse.leshan.ResponseCode.CONTENT) {
+                    LwM2mPath path = new LwM2mPath(URI);
+                    LwM2mNode content = response.getContent();
+                    LwM2mModel model = new LwM2mModel(nodeEnabler.getObjectModel());
+                    exchange.respond(ResponseCode.CONTENT, LwM2mNodeEncoder.encode(content, format, path, model),
+                            format.getCode());
+                    return;
+                } else {
+                    exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
+                    return;
+                }
+            }
+            // Manage Read Request
+            else {
+                ReadResponse response = nodeEnabler.read(identity, new ReadRequest(URI));
+                if (response.getCode() == org.eclipse.leshan.ResponseCode.CONTENT) {
+                    LwM2mPath path = new LwM2mPath(URI);
+                    LwM2mNode content = response.getContent();
+                    LwM2mModel model = new LwM2mModel(nodeEnabler.getObjectModel());
+                    exchange.respond(ResponseCode.CONTENT, LwM2mNodeEncoder.encode(content, format, path, model),
+                            format.getCode());
+                    return;
+                } else {
+                    exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
+                    return;
+                }
             }
         }
     }
