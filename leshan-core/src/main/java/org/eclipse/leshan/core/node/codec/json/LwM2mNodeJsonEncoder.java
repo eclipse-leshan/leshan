@@ -49,6 +49,7 @@ public class LwM2mNodeJsonEncoder {
         InternalEncoder internalEncoder = new InternalEncoder();
         internalEncoder.objectId = path.getObjectId();
         internalEncoder.model = model;
+        internalEncoder.path = path;
         node.accept(internalEncoder);
         return internalEncoder.encoded;
     }
@@ -57,6 +58,7 @@ public class LwM2mNodeJsonEncoder {
         // visitor inputs
         private int objectId;
         private LwM2mModel model;
+        private LwM2mPath path;
 
         // visitor output
         private byte[] encoded = null;
@@ -87,6 +89,7 @@ public class LwM2mNodeJsonEncoder {
             LOG.trace("Encoding resource {} into JSON", resource);
             JsonRootObject jsonObject = null;
             jsonObject = new JsonRootObject(lwM2mResourceToJsonArrayEntry(resource));
+            jsonObject.setBaseName(new LwM2mPath(path.getObjectId(), path.getObjectInstanceId()).toString() + "/");
             String json = LwM2mJson.toJsonLwM2m(jsonObject);
             encoded = json.getBytes();
         }
@@ -136,6 +139,7 @@ public class LwM2mNodeJsonEncoder {
                 break;
             case OPAQUE:
                 jsonResource.setStringValue(Base64.encodeBase64String((byte[]) value));
+                break;
             default:
                 throw new IllegalArgumentException("Invalid value type: " + type);
             }

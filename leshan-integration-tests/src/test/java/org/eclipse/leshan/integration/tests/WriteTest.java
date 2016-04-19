@@ -44,7 +44,6 @@ import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class WriteTest {
@@ -75,7 +74,6 @@ public class WriteTest {
         write_string_resource(ContentFormat.TLV);
     }
 
-    @Ignore
     @Test
     // TODO fix json format
     public void can_write_string_resource_in_json() throws InterruptedException {
@@ -108,9 +106,7 @@ public class WriteTest {
         write_boolean_resource(ContentFormat.TLV);
     }
 
-    @Ignore
     @Test
-    // TODO fix json format
     public void can_write_boolean_resource_in_json() throws InterruptedException {
         write_boolean_resource(ContentFormat.JSON);
     }
@@ -141,9 +137,7 @@ public class WriteTest {
         write_integer_resource(ContentFormat.TLV);
     }
 
-    @Ignore
     @Test
-    // TODO fix json format
     public void can_write_integer_resource_in_json() throws InterruptedException {
         write_integer_resource(ContentFormat.JSON);
     }
@@ -174,9 +168,7 @@ public class WriteTest {
         write_float_resource(ContentFormat.TLV);
     }
 
-    @Ignore
     @Test
-    // TODO fix json format
     public void can_write_float_resource_in_json() throws InterruptedException {
         write_float_resource(ContentFormat.JSON);
     }
@@ -207,9 +199,7 @@ public class WriteTest {
         write_time_resource(ContentFormat.TLV);
     }
 
-    @Ignore
     @Test
-    // TODO fix json format
     public void can_write_time_resource_in_json() throws InterruptedException {
         write_time_resource(ContentFormat.JSON);
     }
@@ -240,9 +230,7 @@ public class WriteTest {
         write_opaque_resource(ContentFormat.TLV);
     }
 
-    @Ignore
     @Test
-    // TODO fix json format
     public void can_write_opaque_resource_in_json() throws InterruptedException {
         write_opaque_resource(ContentFormat.JSON);
     }
