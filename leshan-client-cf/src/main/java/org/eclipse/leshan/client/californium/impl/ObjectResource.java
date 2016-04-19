@@ -173,10 +173,14 @@ public class ObjectResource extends CoapResource implements NotifySender {
             coapExchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
             return;
         }
-        // Manage Write and Bootstrap Write Request (replace) and
+        // Manage Write and Bootstrap Write Request (replace)
         else {
             LwM2mPath path = new LwM2mPath(URI);
             ContentFormat contentFormat = ContentFormat.fromCode(coapExchange.getRequestOptions().getContentFormat());
+            if (contentFormat == null) {
+                coapExchange.respond(ResponseCode.UNSUPPORTED_CONTENT_FORMAT);
+                return;
+            }
             LwM2mNode lwM2mNode;
             try {
                 LwM2mModel model = new LwM2mModel(nodeEnabler.getObjectModel());
@@ -216,7 +220,12 @@ public class ObjectResource extends CoapResource implements NotifySender {
             return;
         }
 
+        // handle content format for Write (Update) and Create request
         ContentFormat contentFormat = ContentFormat.fromCode(exchange.getRequestOptions().getContentFormat());
+        if (contentFormat == null) {
+            exchange.respond(ResponseCode.UNSUPPORTED_CONTENT_FORMAT);
+            return;
+        }
         LwM2mModel model = new LwM2mModel(nodeEnabler.getObjectModel());
 
         // Manage Update Instance
