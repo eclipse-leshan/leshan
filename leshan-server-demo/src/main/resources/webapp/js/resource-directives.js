@@ -149,7 +149,7 @@ angular.module('resourceDirectives', [])
                     e.preventDefault();
                     var value = $('#writeInputValue').val();
 
-                    if(value) {
+                    if(value != undefined) {
                         $('#writeModal').modal('hide');
 
                         var rsc = {};
