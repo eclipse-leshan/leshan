@@ -30,6 +30,7 @@ import java.util.Arrays;
 
 import org.eclipse.californium.scandium.dtls.pskstore.PskStore;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
+import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -80,13 +81,12 @@ public class SecurityObjectPskStore implements PskStore {
             {
                 try {
                     URI uri = new URI((String) security.getResource(SEC_SERVER_URI).getValue());
-                    if (inetAddress.equals(new InetSocketAddress(uri.getHost(), uri.getPort()))) {
+                    if (inetAddress.equals(ServerInfo.getAddress(uri))) {
                         byte[] pskIdentity = (byte[]) security.getResource(SEC_PUBKEY_IDENTITY).getValue();
                         return new String(pskIdentity);
                     }
                 } catch (URISyntaxException e) {
-                    LOG.error(
-                            String.format("Invalid URI %s", (String) security.getResource(SEC_SERVER_URI).getValue()),
+                    LOG.error(String.format("Invalid URI %s", (String) security.getResource(SEC_SERVER_URI).getValue()),
                             e);
                 }
             }

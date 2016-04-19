@@ -91,7 +91,7 @@ public class RegistrationEngine {
         }
 
         if (bootstrapHandler.tryToInitSession(serversInfo.bootstrap)) {
-            LOG.info("Trying to start bootstrap session to {} ...", serversInfo.bootstrap.serverUri);
+            LOG.info("Trying to start bootstrap session to {} ...", serversInfo.bootstrap.getFullUri());
             try {
                 // Send bootstrap request
                 ServerInfo boostrapServer = serversInfo.bootstrap;
@@ -135,7 +135,7 @@ public class RegistrationEngine {
         }
 
         // send register request
-        LOG.info("Trying to register to {} ...", dmInfo.serverUri);
+        LOG.info("Trying to register to {} ...", dmInfo.getFullUri());
         RegisterResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(),
                 new RegisterRequest(endpoint, dmInfo.lifetime, null, dmInfo.binding, null,
                         LinkFormatHelper.getClientDescription(objectEnablers.values(), null), null),
@@ -170,7 +170,7 @@ public class RegistrationEngine {
         }
 
         // Send deregister request
-        LOG.info("Trying to deregister to {} ...", dmInfo.serverUri);
+        LOG.info("Trying to deregister to {} ...", dmInfo.getFullUri());
         DeregisterResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(),
                 new DeregisterRequest(registrationID), DEREGISTRATION_TIMEOUT);
         if (response == null) {
@@ -199,7 +199,7 @@ public class RegistrationEngine {
         }
 
         // Send update
-        LOG.info("Trying to update registration to {} ...", dmInfo.serverUri);
+        LOG.info("Trying to update registration to {} ...", dmInfo.getFullUri());
         final UpdateResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(),
                 new UpdateRequest(registrationID, null, null, null, null), null);
         if (response == null) {
