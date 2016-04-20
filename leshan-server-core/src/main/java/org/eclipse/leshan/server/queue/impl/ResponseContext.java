@@ -14,23 +14,24 @@
  *     Alexander Ellwein, Daniel Maier (Bosch Software Innovations GmbH)
  *                                - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.queue;
+package org.eclipse.leshan.server.queue.impl;
 
-import org.eclipse.leshan.server.request.LwM2mRequestSender;
+import org.eclipse.leshan.core.response.ErrorCallback;
+import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.ResponseCallback;
 
 /**
- * QueueRequestSender is an extension to the LwM2mRequestSender, which is aware of LwM2M client's binding mode.
- * According to LWM2M specification, a client which supports Queue Mode, may go offline until its next registration
- * update or notification. Server will queue all the requests being given to QueueRequestSender and will send them upon
- * receiving an update/notify from client.
+ * Response context is a holder for response and error callbacks.
  */
-public interface QueueRequestSender extends LwM2mRequestSender {
+public interface ResponseContext {
 
     /**
-     * Returns QueueManagement for this request sender.
-     *
-     * @return queue management, which can be used for queue control/monitoring.
+     * @return response callback
      */
-    QueueManagement getQueueManagement();
+    ResponseCallback<LwM2mResponse> getResponseCallback();
 
+    /**
+     * @return error callback
+     */
+    ErrorCallback getErrorCallback();
 }

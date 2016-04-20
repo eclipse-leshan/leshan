@@ -11,21 +11,18 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
  *
  * Contributors:
- *     Alexander Ellwein, Daniel Maier (Bosch Software Innovations GmbH)
- *                                - initial API and implementation
+ *     Balasubramanian Azhagappan (Bosch Software Innovations GmbH)
+ *                              - initial API and implementation
  *******************************************************************************/
 package org.eclipse.leshan.server.queue;
 
 /**
- * This special Exception is used to signal a kind of recoverable situation to the request sender. In case an
- * application has been send a request while an other thread deletes it, this exception is passed in the error callback.
+ * Possible states of a LWM2M client connected to a Server.
+ *
  */
-public class QueueRequestDeletedException extends Exception {
-
-    /**
-     * Creates a QueueRequestDeletedException.
-     */
-    public QueueRequestDeletedException() {
-        super("queue request was deleted");
-    }
+public enum ClientState {
+    /** Client can be reached from server. */
+    REACHABLE,
+    /** Client cannot be reached from server */
+    UNREACHABLE
 }
