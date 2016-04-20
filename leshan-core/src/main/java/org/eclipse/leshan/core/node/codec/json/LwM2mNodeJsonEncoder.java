@@ -80,6 +80,9 @@ public class LwM2mNodeJsonEncoder {
                 resourceList.addAll(lwM2mResourceToJsonArrayEntry(res));
             }
             jsonObject = new JsonRootObject(resourceList);
+            if (path.isObject()) {
+                jsonObject.setBaseName(new LwM2mPath(path.getObjectId(), instance.getId()).toString() + "/");
+            }
             String json = LwM2mJson.toJsonLwM2m(jsonObject);
             encoded = json.getBytes();
         }

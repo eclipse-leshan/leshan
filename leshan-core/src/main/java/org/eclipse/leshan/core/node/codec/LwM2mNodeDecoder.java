@@ -66,8 +66,8 @@ public class LwM2mNodeDecoder {
      * @throws InvalidValueException
      */
     @SuppressWarnings("unchecked")
-    public static <T extends LwM2mNode> T decode(byte[] content, ContentFormat format, LwM2mPath path,
-            LwM2mModel model, Class<T> nodeClass) throws InvalidValueException {
+    public static <T extends LwM2mNode> T decode(byte[] content, ContentFormat format, LwM2mPath path, LwM2mModel model,
+            Class<T> nodeClass) throws InvalidValueException {
 
         LOG.debug("Decoding value for path {} and format {}: {}", path, format, content);
         Validate.notNull(path);
@@ -99,7 +99,7 @@ public class LwM2mNodeDecoder {
         case OPAQUE:
             return (T) LwM2mNodeOpaqueDecoder.decode(content, path, model);
         case JSON:
-            return (T) LwM2mNodeJsonDecoder.decode(content, path, model);
+            return LwM2mNodeJsonDecoder.decode(content, path, model, nodeClass);
         case LINK:
             throw new UnsupportedOperationException("Content format " + format + " not yet implemented '" + path + "'");
         }

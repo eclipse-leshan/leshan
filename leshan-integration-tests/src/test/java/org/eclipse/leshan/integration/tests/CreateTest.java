@@ -77,8 +77,8 @@ public class CreateTest {
     @Test
     public void can_create_specific_instance_of_object() throws InterruptedException {
         // create ACL instance
-        LwM2mObjectInstance instance = new LwM2mObjectInstance(12, Arrays.<LwM2mResource> asList(LwM2mSingleResource
-                .newIntegerResource(3, 123)));
+        LwM2mObjectInstance instance = new LwM2mObjectInstance(12,
+                Arrays.<LwM2mResource> asList(LwM2mSingleResource.newIntegerResource(3, 123)));
         CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, instance));
 
         // verify result
@@ -86,15 +86,13 @@ public class CreateTest {
         assertEquals("2/12", response.getLocation());
     }
 
-    // TODO JSON encoding: instance id is missing (support of basename tag probably needed)
-    @Ignore
     @Test
     public void can_create_specific_instance_of_object_with_json() throws InterruptedException {
         // create ACL instance
-        LwM2mObjectInstance instance = new LwM2mObjectInstance(12, Arrays.<LwM2mResource> asList(LwM2mSingleResource
-                .newIntegerResource(3, 123)));
-        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(ContentFormat.JSON, 2,
-                instance));
+        LwM2mObjectInstance instance = new LwM2mObjectInstance(12,
+                Arrays.<LwM2mResource> asList(LwM2mSingleResource.newIntegerResource(3, 123)));
+        CreateResponse response = helper.server.send(helper.getClient(),
+                new CreateRequest(ContentFormat.JSON, 2, instance));
 
         // verify result
         assertEquals(ResponseCode.CREATED, response.getCode());
@@ -157,8 +155,8 @@ public class CreateTest {
     @Test
     public void cannot_create_mandatory_single_object() throws InterruptedException {
         // try to create another instance of device object
-        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(3,
-                new LwM2mResource[] { LwM2mSingleResource.newIntegerResource(3, 123) }));
+        CreateResponse response = helper.server.send(helper.getClient(),
+                new CreateRequest(3, new LwM2mResource[] { LwM2mSingleResource.newIntegerResource(3, 123) }));
 
         // verify result
         assertEquals(ResponseCode.METHOD_NOT_ALLOWED, response.getCode());
@@ -166,8 +164,8 @@ public class CreateTest {
 
     @Test
     public void cannot_create_instance_of_security_object() throws InterruptedException {
-        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(0,
-                new LwM2mResource[] { LwM2mSingleResource.newStringResource(0, "new.dest") }));
+        CreateResponse response = helper.server.send(helper.getClient(),
+                new CreateRequest(0, new LwM2mResource[] { LwM2mSingleResource.newStringResource(0, "new.dest") }));
 
         // verify result
         assertEquals(ResponseCode.NOT_FOUND, response.getCode());
