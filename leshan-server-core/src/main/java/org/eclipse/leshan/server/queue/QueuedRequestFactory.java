@@ -16,35 +16,21 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.queue;
 
-import java.util.List;
+import org.eclipse.leshan.core.request.DownlinkRequest;
+import org.eclipse.leshan.core.response.LwM2mResponse;
 
 /**
- * Queue Management interface allows users of QueueRequestSender to monitor the requests being queued and to influence
- * them in some way, e.g. drop single request or even a whole queue.
- *
- * @see QueueRequestSender
+ * Queue request factory is used for creation of the queue request entities (persistable queue requests).
  */
-public interface QueueManagement {
+public interface QueuedRequestFactory {
 
     /**
-     * Get all requests for a given client endpoint.
-     * 
-     * @param endpoint client endpoint
-     * @return list of queue requests
-     */
-    List<QueueRequest> getRequests(String endpoint);
-
-    /**
-     * Removes the given request from the queue.
+     * Creates new queue request entity.
      *
-     * @param queueRequest request to remove.
-     */
-    void dropRequest(QueueRequest queueRequest);
-
-    /**
-     * Remove all requests from the queue for a given client endpoint.
+     * @param endpoint client's endpoint name
+     * @param request request
      *
-     * @param endpoint client endpoint
+     * @return new QueuedRequest
      */
-    void dropAllRequests(String endpoint);
+    QueuedRequest newQueueRequestEntity(String endpoint, DownlinkRequest<LwM2mResponse> request);
 }
