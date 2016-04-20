@@ -64,7 +64,7 @@ public class CaliforniumObservationTest {
             @Override
             public void newValue(Observation observation, LwM2mNode value) {
                 assertEquals(CaliforniumObservationTest.this.reportedValue, ((LwM2mResource) value).getValue());
-                assertEquals(3, observation.getPath().getObjectId());
+                assertEquals((Integer) 3, observation.getPath().getObjectId());
                 assertEquals((Integer) 0, observation.getPath().getObjectInstanceId());
                 assertEquals((Integer) 15, observation.getPath().getResourceId());
                 assertEquals(CaliforniumObservationTest.this.support.client.getRegistrationId(),
@@ -76,8 +76,8 @@ public class CaliforniumObservationTest {
             }
         };
         givenAnObserveRequest(target);
-        CaliforniumObservation observation = new CaliforniumObservation(coapRequest,
-                support.client.getRegistrationId(), target, model);
+        CaliforniumObservation observation = new CaliforniumObservation(coapRequest, support.client.getRegistrationId(),
+                target, model);
         observation.addListener(listener);
         Response coapResponse = new Response(ResponseCode.CONTENT);
         coapResponse.setPayload(reportedValue);
@@ -89,8 +89,8 @@ public class CaliforniumObservationTest {
 
         givenAnObserveRequest(target);
         assertFalse(coapRequest.isCanceled());
-        CaliforniumObservation observation = new CaliforniumObservation(coapRequest,
-                support.client.getRegistrationId(), target, model);
+        CaliforniumObservation observation = new CaliforniumObservation(coapRequest, support.client.getRegistrationId(),
+                target, model);
         observation.cancel();
         Assert.assertTrue(coapRequest.isCanceled());
     }
@@ -99,8 +99,8 @@ public class CaliforniumObservationTest {
     public void cancelled_Observation_are_removed_from_registry() {
         // create an observation
         givenAnObserveRequest(target);
-        CaliforniumObservation observation = new CaliforniumObservation(coapRequest,
-                support.client.getRegistrationId(), target, model);
+        CaliforniumObservation observation = new CaliforniumObservation(coapRequest, support.client.getRegistrationId(),
+                target, model);
         coapRequest.addMessageObserver(observation);
 
         // add it to registry
@@ -125,8 +125,8 @@ public class CaliforniumObservationTest {
     public void cancelled_from_registry_observation_are_removed_from_registry() {
         // create an observation
         givenAnObserveRequest(target);
-        CaliforniumObservation observation = new CaliforniumObservation(coapRequest,
-                support.client.getRegistrationId(), target, model);
+        CaliforniumObservation observation = new CaliforniumObservation(coapRequest, support.client.getRegistrationId(),
+                target, model);
         coapRequest.addMessageObserver(observation);
 
         // add it to registry
