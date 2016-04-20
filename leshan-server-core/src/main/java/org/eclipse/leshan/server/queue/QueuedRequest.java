@@ -14,16 +14,16 @@
  *     Alexander Ellwein, Daniel Maier (Bosch Software Innovations GmbH)
  *                                - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.queue.persistence;
+package org.eclipse.leshan.server.queue;
 
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.server.queue.QueueRequestState;
 
 /**
- * QueueRequestEntity represents a queue request in a persistable form.
+ * QueuedRequest is wrapper around {@link DownlinkRequest} along with the current
+ * state of the request.
  */
-public interface QueueRequestEntity {
+public interface QueuedRequest {
 
     /**
      * a request ID is used to keep the natural ascending order of queue requests in the queue. In a specific
@@ -42,9 +42,4 @@ public interface QueueRequestEntity {
      * @return the actual downlink request which is to be send
      */
     DownlinkRequest<LwM2mResponse> getDownlinkRequest();
-
-    /**
-     * @return the current state of this request
-     */
-    QueueRequestState getRequestState();
 }
