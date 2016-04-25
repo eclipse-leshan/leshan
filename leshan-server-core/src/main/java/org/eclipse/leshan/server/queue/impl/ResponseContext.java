@@ -21,7 +21,7 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 
 /**
- * Response context is a holder for response and error callbacks.
+ * Response context holds response and error callbacks.
  */
 public interface ResponseContext {
 

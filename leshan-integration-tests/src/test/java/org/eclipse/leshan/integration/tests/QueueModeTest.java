@@ -61,7 +61,7 @@ public class QueueModeTest {
     private final OnGetCallback doNothingOnGet = new OnGetCallback() {
         @Override
         public boolean handleGet(final CoapExchange coapExchange) {
-            LOG.trace("Setup client not to respond");
+            LOG.trace("Setup client NOT to respond");
             return false;
         }
     };
@@ -69,7 +69,7 @@ public class QueueModeTest {
         @Override
         public boolean handleGet(final CoapExchange coapExchange) {
             LOG.trace("Received coapExchange: {}", coapExchange.getRequestOptions().getUriPathString());
-            LOG.trace("Setup client to respond");
+            LOG.trace("Setup client TO respond");
             return true;
         }
     };
@@ -92,7 +92,16 @@ public class QueueModeTest {
     }
 
     @Test
-    public void verifyRequestIsNotRemovedFromQueueIfClientDoesNotRespond() throws Exception {
+    public void first_request_sent_immediately() throws Exception {
+        helper.server.send(helper.getClient(), new ReadRequest(3, 0), newReadResponseCallback(countDownLatch),
+                newErrorCallback());
+        if (!countDownLatch.await(2, TimeUnit.SECONDS)) {
+            fail("response from client was not received within timeout");
+        }
+    }
+
+    @Test
+    public void request_is_not_removed_from_queue_on_client_timeout() throws Exception {
         // client is set up to "sleep", i.e. not to respond
         final QueuedModeLeshanClient client = (QueuedModeLeshanClient) helper.client;
         client.setOnGetCallback(doNothingOnGet);
@@ -104,16 +113,7 @@ public class QueueModeTest {
     }
 
     @Test
-    public void verifyRequestIsSentImmediatelyIfPossible() throws Exception {
-        helper.server.send(helper.getClient(), new ReadRequest(3, 0), newReadResponseCallback(countDownLatch),
-                newErrorCallback());
-        if (!countDownLatch.await(2, TimeUnit.SECONDS)) {
-            fail("response from client was not received within timeout");
-        }
-    }
-
-    @Test
-    public void verifyRequestIsNotRemovedFromQueueAndSubsequentRequestIsNotSentIfClientDoesNotRespond() throws Exception {
+    public void subsequent_request_not_send_on_client_timeout() throws Exception {
         final CountDownLatch acceptCountDownLatch = new CountDownLatch(1);
 
         // client is set up to do not respond, i.e. to cause request timeout
@@ -143,7 +143,7 @@ public class QueueModeTest {
     }
 
     @Test
-    public void verifyPendingRequestIsSentAfterClientUpdate() throws Exception {
+    public void request_sent_after_client_update() throws Exception {
         final QueuedModeLeshanClient client = (QueuedModeLeshanClient) helper.client;
         final CountDownLatch acceptCountDownLatch = new CountDownLatch(1);
 
@@ -191,59 +191,7 @@ public class QueueModeTest {
     }
 
     @Test
-    public void verifyAllMessagesSentOneAfterAnotherIfClientIsReachable() throws Exception {
-        TestObservationListener listener = new TestObservationListener();
-        helper.server.getObservationRegistry().addListener(listener);
-        final QueuedModeLeshanClient client = (QueuedModeLeshanClient) helper.client;
-
-        //set client to respond to GET
-        client.setOnGetCallback(respondOnGet);
-        //Send an Observe request. Will be sent immediately as it is the first message in the queue.
-        ObserveResponse observeResponse = helper.server.send(helper.getClient(), new ObserveRequest(3, 0, 15));
-        Observation observation = observeResponse.getObservation();
-        assertEquals("/3/0/15", observation.getPath().toString());
-        assertEquals(helper.getClient().getRegistrationId(), observation.getRegistrationId());
-
-        // write device timezone
-        LwM2mResponse writeResponse = helper.server.send(helper.getClient(),
-                new WriteRequest(3, 0, 15, "Europe/Berlin"));
-
-        waitForInterval(TIMEOUT);
-        assertQueueIsEmpty(5000L);
-
-        // wait for notify
-        listener.waitForNotification(2000);
-        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
-        assertTrue(listener.receievedNotify().get());
-    }
-
-    @Test
-    public void verifyAllMessagesRemovedOnClientDeregister() throws Exception {
-        // client is set up to do not respond, i.e. to cause request timeout
-        final QueuedModeLeshanClient client = (QueuedModeLeshanClient) helper.client;
-        client.setOnGetCallback(doNothingOnGet);
-
-        //now send some read requests
-        final CountDownLatch acceptCountDownLatch = new CountDownLatch(1);
-        //Send a read request. Will be sent immediately as it is the first message in the queue.
-        helper.server.send(helper.getClient(), new ReadRequest(3, 0, 1),
-                newReadResponseCallback(acceptCountDownLatch),
-                newErrorCallback());
-
-        helper.server.send(helper.getClient(), new ReadRequest(3, 0, 15),
-                newReadResponseCallback(acceptCountDownLatch),
-                newErrorCallback());
-
-        waitForInterval(TIMEOUT);
-        assertQueueHasMessageCount(2, 5000);
-
-        //Send de-register
-        helper.client.stop(DEREGISTER);
-        assertQueueIsEmpty(3000);
-    }
-
-    @Test
-    public void verifyMessageSentAfterClientNotify() throws Exception {
+    public void request_sent_after_client_notify() throws Exception {
         TestObservationListener listener = new TestObservationListener();
         helper.server.getObservationRegistry().addListener(listener);
         final QueuedModeLeshanClient client = (QueuedModeLeshanClient) helper.client;
@@ -280,6 +228,118 @@ public class QueueModeTest {
         // wait for Read request response
         waitForInterval(TIMEOUT);
         assertQueueIsEmpty(3000L);
+    }
+
+    @Test
+    public void all_requests_sent_if_client_reachable() throws Exception {
+        TestObservationListener listener = new TestObservationListener();
+        helper.server.getObservationRegistry().addListener(listener);
+        final QueuedModeLeshanClient client = (QueuedModeLeshanClient) helper.client;
+
+        //set client to respond to GET
+        client.setOnGetCallback(respondOnGet);
+        //Send an Observe request. Will be sent immediately as it is the first message in the queue.
+        ObserveResponse observeResponse = helper.server.send(helper.getClient(), new ObserveRequest(3, 0, 15));
+        Observation observation = observeResponse.getObservation();
+        assertEquals("/3/0/15", observation.getPath().toString());
+        assertEquals(helper.getClient().getRegistrationId(), observation.getRegistrationId());
+
+        // write device timezone
+        LwM2mResponse writeResponse = helper.server.send(helper.getClient(),
+                new WriteRequest(3, 0, 15, "Europe/Berlin"));
+
+        // Read request should be sent immediately.
+        final CountDownLatch acceptCountDownLatch = new CountDownLatch(1);
+        helper.server.send(helper.getClient(), new ReadRequest(3, 0, 1),
+                newReadResponseCallback(acceptCountDownLatch),
+                newErrorCallback());
+
+        waitForInterval(TIMEOUT);
+        assertQueueIsEmpty(5000L);
+
+        // wait for notify
+        listener.waitForNotification(2000);
+        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
+        assertTrue(listener.receievedNotify().get());
+    }
+
+    @Test
+    public void no_duplicate_send_on_consecutive_notifies() throws Exception {
+        TestObservationListener listener = new TestObservationListener();
+        helper.server.getObservationRegistry().addListener(listener);
+        final QueuedModeLeshanClient client = (QueuedModeLeshanClient) helper.client;
+
+        //set client to respond to GET
+        client.setOnGetCallback(respondOnGet);
+        //Send an Observe request. Will be sent immediately as it is the first message in the queue.
+        ObserveResponse observeResponse = helper.server.send(helper.getClient(), new ObserveRequest(3, 0, 15));
+        Observation observation = observeResponse.getObservation();
+        assertEquals("/3/0/15", observation.getPath().toString());
+        assertEquals(helper.getClient().getRegistrationId(), observation.getRegistrationId());
+
+        //Now set the client NOT to respond to GET and send a request
+        client.setOnGetCallback(doNothingOnGet);
+        final CountDownLatch acceptCountDownLatch = new CountDownLatch(2);
+        helper.server.send(helper.getClient(), new ReadRequest(3, 0, 1),
+                newReadResponseCallback(acceptCountDownLatch),
+                newErrorCallback());
+
+        waitForInterval(TIMEOUT);
+        assertQueueHasMessageCount(1, 5000L);
+
+        final CountDownLatch clientCountDownLatch = new CountDownLatch(2);
+        client.setOnGetCallback(new OnGetCallback() {
+            @Override
+            public boolean handleGet(final CoapExchange coapExchange) {
+                LOG.trace("Received again coapExchange: {}", coapExchange.getRequestOptions().getUriPathString());
+                LOG.trace("Setup client again TO respond");
+                if(coapExchange.getRequestOptions().getUriPath().toString().equals("[3, 0, 1]")) {
+                    clientCountDownLatch.countDown();
+                }
+                return true;
+            }
+        });
+
+        // write device timezone synchronously
+        helper.server.send(helper.getClient(),
+                new WriteRequest(3, 0, 15, "Europe/Amsterdam"));
+        // write device timezone
+        helper.server.send(helper.getClient(),
+                new WriteRequest(3, 0, 15, "Europe/Paris"));
+
+        assertQueueIsEmpty(3000);
+        //check server received only one response to the above read request
+        // duplicate send means countDown is zero
+        assertTrue("SERVER: Expected only one response received (count=1) and no duplicates. CountDown reached" +
+                "["+ acceptCountDownLatch.getCount() + "]", acceptCountDownLatch.getCount() == 1);
+        // duplicate send means countDown is zero
+        assertTrue("CLIENT: Expected only one message received (count=1) and no duplicates. CountDown reached" +
+                "["+ clientCountDownLatch.getCount() + "]", clientCountDownLatch.getCount() == 1);
+    }
+
+    @Test
+    public void messages_removed_on_client_deregister() throws Exception {
+        // client is set up to do not respond, i.e. to cause request timeout
+        final QueuedModeLeshanClient client = (QueuedModeLeshanClient) helper.client;
+        client.setOnGetCallback(doNothingOnGet);
+
+        //now send some read requests
+        final CountDownLatch acceptCountDownLatch = new CountDownLatch(1);
+        //Send a read request. Will be sent immediately as it is the first message in the queue.
+        helper.server.send(helper.getClient(), new ReadRequest(3, 0, 1),
+                newReadResponseCallback(acceptCountDownLatch),
+                newErrorCallback());
+
+        helper.server.send(helper.getClient(), new ReadRequest(3, 0, 15),
+                newReadResponseCallback(acceptCountDownLatch),
+                newErrorCallback());
+
+        waitForInterval(TIMEOUT);
+        assertQueueHasMessageCount(2, 5000);
+
+        //Send de-register
+        helper.client.stop(DEREGISTER);
+        assertQueueIsEmpty(3000);
     }
 
     private ResponseCallback<ReadResponse> newReadResponseCallback(final CountDownLatch acceptCountDownLatch) {

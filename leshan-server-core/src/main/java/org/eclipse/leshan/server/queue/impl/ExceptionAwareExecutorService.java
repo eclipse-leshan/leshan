@@ -16,21 +16,26 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.queue.impl;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.*;
-
 /**
- * This kind of ScheduledExecutorService is able to catch an unchecked exception while running a task and log the
+ * This kind of ExecutorService is able to catch an unchecked exception while running a task and log the
  * exception trace.
  */
-class ExceptionAwareExecutorService implements ScheduledExecutorService {
-    private final ScheduledExecutorService service;
+class ExceptionAwareExecutorService implements ExecutorService {
+    private final ExecutorService service;
 
-    ExceptionAwareExecutorService(ScheduledExecutorService service) {
+    ExceptionAwareExecutorService(ExecutorService service) {
         this.service = service;
     }
 
@@ -98,26 +103,6 @@ class ExceptionAwareExecutorService implements ScheduledExecutorService {
     public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)
             throws InterruptedException, ExecutionException, TimeoutException {
         return service.invokeAny(tasks, timeout, unit);
-    }
-
-    @Override
-    public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
-        return service.schedule(new WrappedRunnable(command), delay, unit);
-    }
-
-    @Override
-    public <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit) {
-        return service.schedule(callable, delay, unit);
-    }
-
-    @Override
-    public ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit) {
-        return service.scheduleAtFixedRate(new WrappedRunnable(command), initialDelay, period, unit);
-    }
-
-    @Override
-    public ScheduledFuture<?> scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit) {
-        return service.scheduleWithFixedDelay(new WrappedRunnable(command), initialDelay, delay, unit);
     }
 
     private static class WrappedRunnable implements Runnable {

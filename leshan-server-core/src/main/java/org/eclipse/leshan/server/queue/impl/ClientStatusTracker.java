@@ -11,78 +11,67 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
  *
  * Contributors:
- *     Balasubramanian Azhagappan (Bosch Software Innovations GmbH)
+ *     Balasubramanian Azhagappan, Daniel Maier (Bosch Software Innovations GmbH)
  *                                  - initial API and implementation
  *******************************************************************************/
 package org.eclipse.leshan.server.queue.impl;
 
-import org.eclipse.leshan.server.client.ClientRegistry;
-import org.eclipse.leshan.server.queue.ClientState;
-
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.eclipse.leshan.server.queue.ClientState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
- * Tracks the status of each client endpoint.
+ * Tracks the status of each client endpoint. Also ensures that the state transitions are carried out
+ *
+ * A client starts with a REACHABLE state on a Register event. Before the first message is sent, the status
+ * is set to RECEIVING. For further queued messages the client remains in this state until there are no more messages
+ * to be delivered. When there are no more messages left, the state is set to REACHABLE.
+ * On timeout of a message, the status is set to UNREACHABLE.
+ *
+ * On Client updates or notifies, the UNREACHABLE state is changed to REACHABLE and then set to
+ * RECEIVING before sending any messages. This is done to ensure that messages are sent only once in a multi-threaded
+ * message queue processing.
  *
  * @see ClientState
  */
 public final class ClientStatusTracker {
+    private static final Logger LOG = LoggerFactory.getLogger(ClientStatusTracker.class);
     private final ConcurrentMap<String, ClientState> clientStatus = new ConcurrentHashMap<>();
-    private final ClientRegistry clientRegistry;
 
-    public ClientStatusTracker(ClientRegistry clientRegistry) {
-        this.clientRegistry = clientRegistry;
-    }
-
-    /**
-     * sets the status of the client to {@link ClientState#UNREACHABLE} atomically
-     *
-     * @param endpoint target client endpoint name who's state has changed
-     * @return true if the value is set successfully, false if the value was already changed,
-     *                  indicating the state was already updated, may be by a different thread.
-     */
     public boolean setClientUnreachable(String endpoint) {
-        if(clientStatus.get(endpoint) != null) {
-            return clientStatus.replace(endpoint, ClientState.REACHABLE, ClientState.UNREACHABLE);
-        }
-        else {
-            clientStatus.putIfAbsent(endpoint, ClientState.UNREACHABLE);
-            return true;
-        }
+        return transitState(endpoint, ClientState.RECEIVING, ClientState.UNREACHABLE);
     }
 
-    /**
-     * sets the status of the client to {@link ClientState#REACHABLE} atomically
-     *
-     * @param endpoint target client endpoint name who's state has changed
-     * @return true if the value is set successfully, false if the value was already changed,
-     *                  indicating the state was already updated, may be by a different thread.
-     */
     public boolean setClientReachable(String endpoint) {
-        if(clientStatus.get(endpoint) != null) {
-            return clientStatus.replace(endpoint, ClientState.UNREACHABLE, ClientState.REACHABLE);
-        }
-        else {
-            clientStatus.putIfAbsent(endpoint, ClientState.REACHABLE);
-            return true;
-        }
+        return transitState(endpoint, ClientState.UNREACHABLE, ClientState.REACHABLE)
+                || clientStatus.putIfAbsent(endpoint, ClientState.REACHABLE) == null;
     }
 
-    /**
-     * returns true if client state is ClientState.REACHABLE
-     *
-     * @param endpoint clients endpoint.
-     * @return true if client is not in {@link ClientState#UNREACHABLE}
-     * or if no status is available for the client but known to ClientRegistry, then it is assumed to be reachable <br>
-     * false client has timed out and the status is marked as {@link ClientState#UNREACHABLE}
-     */
-    public boolean isClientReachable(String endpoint) {
-        return (clientStatus.get(endpoint)!= null)? clientStatus.get(endpoint).equals(ClientState.REACHABLE)
-                                            : true;
+    public boolean startClientReceiving(String endpoint) {
+        return transitState(endpoint, ClientState.REACHABLE, ClientState.RECEIVING);
+    }
+
+    public boolean stopClientReceiving(String endpoint) {
+        return transitState(endpoint, ClientState.RECEIVING, ClientState.REACHABLE);
     }
 
     public void clearClientState(String endpoint) {
         clientStatus.remove(endpoint);
+    }
+
+    private boolean transitState(String endpoint, ClientState from, ClientState to) {
+        boolean updated = clientStatus.replace(endpoint, from, to);
+        if(updated) {
+            LOG.debug("Client {} state update {} -> {}", endpoint, from, to);
+        }
+        else {
+            LOG.debug("Cannot update Client {} state {} -> {}. Current state is {}",
+                    endpoint, from, to, clientStatus.get(endpoint));
+        }
+        return updated;
     }
 }

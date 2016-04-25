@@ -16,6 +16,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.queue.impl;
 
+import java.util.Map;
+import java.util.concurrent.Executor;
+
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.response.ErrorCallback;
@@ -29,48 +32,44 @@ import org.eclipse.leshan.server.request.LwM2mRequestSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.Executor;
-
 /**
  * Request sending task is a Runnable, which is responsible for the actual sending of a queue request. The queue request
- * is sent asynchronously; upon receiving a response or an error the message is removed from queue and
- * a new task is scheduled to process the next message from queue.
+ * is sent asynchronously; upon receiving a response or an error the message is removed from queue and a new task is
+ * scheduled to process the next message from queue.
  */
 class RequestSendingTask implements Runnable {
-
     private static final Logger LOG = LoggerFactory.getLogger(RequestSendingTask.class);
     private final ClientRegistry clientRegistry;
     private final LwM2mRequestSender requestSender;
-    private final Executor queueProcessingExecutor;
-    private final Executor responseCallbackExecutor;
-    private final TaskFactory taskFactory;
+    private final Executor processingExecutor;
     private final String endpoint;
     private final MessageStore messageStore;
     private final ClientStatusTracker clientStatusTracker;
+    private Map<Long, ResponseContext> responseContextHolder;
 
     /**
      * Creates a new task which is responsible for sending a queue request.
      *
      * @param clientRegistry client registry
      * @param requestSender sender to perform send on (delegate)
-     * @param taskFactory factory to create new tasks for response handling
      * @param queueProcessingExecutor executor to schedule subsequent task on
+     * @param clientStatusTracker tracks the status of the client
+     * @param messageStore holds queued messages for the client
+     * @param endpoint clients endpoint identifier
+     * @param responseContextHolder holds the callback instances of the users for processing any response or error
+     *                              from client.
      */
-    RequestSendingTask(ClientRegistry clientRegistry,
-                       LwM2mRequestSender requestSender,
-                       TaskFactory taskFactory,
-                       Executor queueProcessingExecutor,
-                       Executor responseCallbackExecutor,
-                       ClientStatusTracker clientStatusTracker,
-                       MessageStore messageStore, final String endpoint) {
+    RequestSendingTask(ClientRegistry clientRegistry, LwM2mRequestSender requestSender,
+            Executor queueProcessingExecutor,
+            ClientStatusTracker clientStatusTracker, MessageStore messageStore, final String endpoint,
+            Map<Long, ResponseContext> responseContextHolder) {
         this.clientRegistry = clientRegistry;
         this.requestSender = requestSender;
-        this.taskFactory = taskFactory;
-        this.queueProcessingExecutor = queueProcessingExecutor;
-        this.responseCallbackExecutor = responseCallbackExecutor;
+        this.processingExecutor = queueProcessingExecutor;
         this.clientStatusTracker = clientStatusTracker;
         this.endpoint = endpoint;
         this.messageStore = messageStore;
+        this.responseContextHolder = responseContextHolder;
     }
 
     @Override
@@ -79,15 +78,14 @@ class RequestSendingTask implements Runnable {
 
         if (firstRequest != null) {
             try {
-                // TODO send with COAP retries ok? See https://github.com/OpenMobileAlliance/OMA-LwM2M-Public-Review/issues/32
+                // TODO send with COAP retries ok? See
+                // https://github.com/OpenMobileAlliance/OMA-LwM2M-Public-Review/issues/32
                 final DownlinkRequest<LwM2mResponse> downlinkRequest = firstRequest.getDownlinkRequest();
                 LOG.debug("Sending request: {}", downlinkRequest);
                 final Client client = clientRegistry.get(firstRequest.getEndpoint());
                 if (client == null) {
                     // client not registered anymore -> ignore this request
-                    LOG.debug("Client {} not registered anymore: {}",
-                            firstRequest.getEndpoint(),
-                            downlinkRequest);
+                    LOG.debug("Client {} not registered anymore: {}", firstRequest.getEndpoint(), downlinkRequest);
                 } else {
                     requestSender.send(client, downlinkRequest, new ResponseCallback<LwM2mResponse>() {
                         @Override
@@ -110,21 +108,26 @@ class RequestSendingTask implements Runnable {
             } catch (RuntimeException e) {
                 processException(firstRequest, e);
             }
+        } else {
+            LOG.debug("No more requests to send to client {}", endpoint);
+            clientStatusTracker.stopClientReceiving(endpoint);
         }
     }
 
     private void processResponse(final QueuedRequest request, final LwM2mResponse response) {
         LOG.debug("Received Response -> {}", request);
-        messageStore.delete(request);
-        responseCallbackExecutor.execute(taskFactory.newSuccessResponseProcessingTask(request, response));
-        queueProcessingExecutor.execute(taskFactory.newRequestSendingTask(request.getEndpoint()));
+        messageStore.deleteFirst(endpoint);
+        processingExecutor.execute(new ResponseProcessingTask(request, responseContextHolder, response));
+        processingExecutor.execute(new RequestSendingTask(clientRegistry, requestSender, processingExecutor,
+                clientStatusTracker, messageStore, endpoint, responseContextHolder));
     }
 
     private void processException(final QueuedRequest request, final Exception exception) {
         LOG.debug("Received error response {}", request);
-        messageStore.delete(request);
-        responseCallbackExecutor.execute(taskFactory.newErrorResponseProcessingTask(request, exception));
-        queueProcessingExecutor.execute(taskFactory.newRequestSendingTask(request.getEndpoint()));
+        messageStore.deleteFirst(endpoint);
+        processingExecutor.execute(new ResponseProcessingTask(request, responseContextHolder, exception));
+        processingExecutor.execute(new RequestSendingTask(clientRegistry, requestSender, processingExecutor,
+                clientStatusTracker, messageStore, endpoint, responseContextHolder));
     }
 
     private void timeout(final Client client) {

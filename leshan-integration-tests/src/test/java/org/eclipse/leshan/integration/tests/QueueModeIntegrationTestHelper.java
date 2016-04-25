@@ -63,7 +63,7 @@ import java.util.concurrent.CountDownLatch;
 public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
 
     public static final long ACK_TIMEOUT = 700L;
-    public static final long CUSTOM_LIFETIME = LIFETIME + 1;
+    public static final long CUSTOM_LIFETIME = LIFETIME + 6;
     private final Endpoint noSecureEndpoint;
     private final Endpoint secureEndpoint;
     LwM2mServer server;

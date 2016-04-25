@@ -23,6 +23,8 @@ package org.eclipse.leshan.server.queue;
 public enum ClientState {
     /** Client can be reached from server. */
     REACHABLE,
+    /** Client is currently receiving queued messages */
+    RECEIVING,
     /** Client cannot be reached from server */
     UNREACHABLE
 }

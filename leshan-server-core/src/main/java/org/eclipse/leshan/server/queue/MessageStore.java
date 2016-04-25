@@ -23,10 +23,12 @@ import java.util.List;
 /**
  * a message store provide basic operations to handle storage of requests destined for a client which
  * has connected in Queue Mode. Messages in the message store will be present until one of the following events
- * occur
- *  - Message was sent to the client and was acknowledged
- *  - Client has de-registered
- *  - Client has not sent registration update within the time out period.
+ * occur <p>
+ *  - Message was sent to the client and was acknowledged either with a response or an error. <br>
+ *  - Client has de-registered <br>
+ *  - Client has not sent registration update within the time out period. <br>
+ * </p>
+ *  When the last two events occur, the queue is emptied for the client.
  * 
  * @see QueuedRequest
  */

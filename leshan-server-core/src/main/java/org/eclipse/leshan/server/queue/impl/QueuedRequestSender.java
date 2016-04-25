@@ -16,6 +16,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.queue.impl;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.BindingMode;
@@ -38,9 +44,6 @@ import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-import java.util.concurrent.*;
-
 /**
  * This sender is a special implementation of a {@link LwM2mRequestSender}, which is aware of a LwM2M client's binding
  * mode. If the client supports "Q" (queue) mode, then the request is processed using the internal queue, i.e. the
@@ -50,14 +53,11 @@ import java.util.concurrent.*;
 public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
     private static final Logger LOG = LoggerFactory.getLogger(QueuedRequestSender.class);
     private final LwM2mRequestSender delegateSender;
-    private final ScheduledExecutorService queueProcessingExecutor = new ExceptionAwareExecutorService(
-            Executors.newSingleThreadScheduledExecutor(new NamingThreadFactory(
-                    "leshan-qmode-queueProcessingExecutor-%d")));
-    private final ExecutorService responseCallbackExecutor;
+    private final ExecutorService processingExecutor = new ExceptionAwareExecutorService(
+            Executors.newCachedThreadPool(new NamedThreadFactory("leshan-qmode-processingExecutor-%d")));
     private final Map<Long, ResponseContext> responseContextHolder = new ConcurrentHashMap<>();
     private final MessageStore messageStore;
     private final QueuedRequestFactory queuedRequestFactory;
-    private final TaskFactory taskFactory;
     private final QueueModeClientRegistryListener queueModeClientRegistryListener;
     private final QueueModeObservationRegistryListener queueModeObservationRegistryListener;
     private final ClientRegistry clientRegistry;
@@ -70,19 +70,13 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
      * @param builder sender builder
      */
     private QueuedRequestSender(Builder builder) {
-
         this.messageStore = builder.messageStore;
         this.queuedRequestFactory = builder.queuedRequestFactory;
         this.clientRegistry = builder.clientRegistry;
         this.observationRegistry = builder.observationRegistry;
         this.delegateSender = builder.delegateSender;
 
-        this.responseCallbackExecutor = new ExceptionAwareExecutorService(Executors.newScheduledThreadPool(
-                builder.responseCallbackWorkers, new NamingThreadFactory("leshan-qmode-responseCallbackExecutor-%d")));
-
-        this.clientStatusTracker = new ClientStatusTracker(clientRegistry);
-        this.taskFactory = new TaskFactory(clientRegistry, delegateSender, queueProcessingExecutor, responseCallbackExecutor,
-                messageStore, responseContextHolder, clientStatusTracker);
+        this.clientStatusTracker = new ClientStatusTracker();
 
         this.queueModeClientRegistryListener = new QueueModeClientRegistryListener();
         clientRegistry.addListener(queueModeClientRegistryListener);
@@ -96,15 +90,15 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
 
     @Override
     public <T extends LwM2mResponse> T send(Client destination, DownlinkRequest<T> request, Long requestTimeout)
-            throws InterruptedException{
-        //Send without callbacks are intended to be synchronous calls and will not be queued.
-        //using the delegate sender to send it immediately.
+            throws InterruptedException {
+        // Send without callbacks are intended to be synchronous calls and will not be queued.
+        // using the delegate sender to send it immediately.
         return delegateSender.send(destination, request, requestTimeout);
     }
 
     @Override
     public <T extends LwM2mResponse> void send(Client destination, DownlinkRequest<T> request,
-                                               final ResponseCallback<T> responseCallback, final ErrorCallback errorCallback) {
+            final ResponseCallback<T> responseCallback, final ErrorCallback errorCallback) {
 
         LOG.trace("send()");
         // safe because DownlinkRequest does not use generics itself
@@ -115,11 +109,11 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
 
             final String endpoint = destination.getEndpoint();
 
-            //Accept messages only when the client is already known to ClientRegistry
+            // Accept messages only when the client is already known to ClientRegistry
             if (clientRegistry.get(endpoint) != null) {
-                final QueuedRequest queuedRequest = queuedRequestFactory.newQueueRequestEntity(
-                        endpoint, castedDownlinkRequest);
-                //prepare error and response context
+                final QueuedRequest queuedRequest = queuedRequestFactory.newQueueRequestEntity(endpoint,
+                        castedDownlinkRequest);
+                // prepare error and response context
                 responseContextHolder.put(queuedRequest.getRequestId(), new ResponseContext() {
                     @Override
                     public ResponseCallback<LwM2mResponse> getResponseCallback() {
@@ -135,13 +129,10 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
                     }
                 });
 
-                //If Client is reachable and this is the first message, we send it immediately.
-                if (clientStatusTracker.isClientReachable(endpoint) && messageStore.isEmpty(endpoint)) {
-                    messageStore.add(queuedRequest);
-                    queueProcessingExecutor.execute(taskFactory.newRequestSendingTask(endpoint));
-                } else {
-                    //just add it to the store
-                    messageStore.add(queuedRequest);
+                messageStore.add(queuedRequest);
+                // If Client is reachable and this is the first message, we send it immediately.
+                if (clientStatusTracker.startClientReceiving(endpoint)) {
+                    processingExecutor.execute(newRequestSendingTask(endpoint));
                 }
             } else {
                 LOG.warn("Ignoring a message received in Queue Mode for the unknown client [{}]", endpoint);
@@ -156,20 +147,23 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
     public void stop() {
         clientRegistry.removeListener(queueModeClientRegistryListener);
         observationRegistry.removeListener(queueModeObservationRegistryListener);
-        queueProcessingExecutor.shutdown();
-        responseCallbackExecutor.shutdown();
+        processingExecutor.shutdown();
         try {
-            boolean queueProcessingExecutorTerminated = queueProcessingExecutor.awaitTermination(5, TimeUnit.SECONDS);
-            boolean responseCallbackExecutorTerminated = responseCallbackExecutor.awaitTermination(5, TimeUnit.SECONDS);
-            if (!(queueProcessingExecutorTerminated && responseCallbackExecutorTerminated)) {
-                LOG.debug("Could not stop all executors within timeout. queueProcessingExecutor stopped: {}, "
-                        + "responseCallbackExecutorTerminated stopped: {}.", queueProcessingExecutorTerminated,
-                        responseCallbackExecutorTerminated);
+            boolean queueProcessingExecutorTerminated = processingExecutor.awaitTermination(5, TimeUnit.SECONDS);
+            if (!(queueProcessingExecutorTerminated)) {
+                LOG.debug(
+                        "Could not stop all executors within timeout. processingExecutor stopped: {}, ",
+                        queueProcessingExecutorTerminated);
             }
         } catch (InterruptedException e) {
             LOG.debug("Interrupted while stopping. Abort stopping.");
             Thread.currentThread().interrupt();
         }
+    }
+
+    private RequestSendingTask newRequestSendingTask(final String endpoint) {
+        return new RequestSendingTask(clientRegistry, delegateSender, processingExecutor,
+                clientStatusTracker, messageStore, endpoint, responseContextHolder);
     }
 
     private boolean isQueueMode(BindingMode bindingMode) {
@@ -181,10 +175,10 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
         public void newValue(Observation observation, LwM2mNode value) {
             Client client = clientRegistry.findByRegistrationId(observation.getRegistrationId());
             if (isQueueMode(client.getBindingMode())
-                    && !clientStatusTracker.isClientReachable(client.getEndpoint())
-                    && clientStatusTracker.setClientReachable(client.getEndpoint())) {
+                    && clientStatusTracker.setClientReachable(client.getEndpoint())
+                    && clientStatusTracker.startClientReceiving(client.getEndpoint())) {
                 LOG.debug("Notify from {}. Sending queued requests.", client.getEndpoint());
-                queueProcessingExecutor.execute(taskFactory.newRequestSendingTask(client.getEndpoint()));
+                processingExecutor.execute(newRequestSendingTask(client.getEndpoint()));
             }
         }
 
@@ -202,32 +196,32 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
     private final class QueueModeClientRegistryListener implements ClientRegistryListener {
         @Override
         public void registered(final Client client) {
-            //When client is in QueueMode
-            if (isQueueMode(client.getBindingMode())
-                    && clientStatusTracker.setClientReachable(client.getEndpoint())) {
-                LOG.debug("Client {} registered. Sending queued request.", client.getEndpoint());
-                queueProcessingExecutor.execute(taskFactory.newRequestSendingTask(client.getEndpoint()));
+            // When client is in QueueMode
+            if (isQueueMode(client.getBindingMode())) {
+                clientStatusTracker.setClientReachable(client.getEndpoint());
+                LOG.debug("Client {} registered.", client.getEndpoint());
             }
         }
 
         @Override
         public void updated(ClientUpdate update, Client clientUpdated) {
-            //When client is in QueueMode and was previously in unreachable state
+            // When client is in QueueMode and was previously in unreachable state and when
+            // RECEIVING state could be set:i.e:- there is no other message currently being sent)
             if (isQueueMode(clientUpdated.getBindingMode())
-                    && !clientStatusTracker.isClientReachable(clientUpdated.getEndpoint())
-                    && clientStatusTracker.setClientReachable(clientUpdated.getEndpoint())) {
+                    && clientStatusTracker.setClientReachable(clientUpdated.getEndpoint())
+                    && clientStatusTracker.startClientReceiving(clientUpdated.getEndpoint())) {
                 LOG.debug("Client {} updated. Sending queued request.", clientUpdated.getEndpoint());
-                queueProcessingExecutor.execute(taskFactory.newRequestSendingTask(clientUpdated.getEndpoint()));
+                processingExecutor.execute(newRequestSendingTask(clientUpdated.getEndpoint()));
             }
         }
 
         @Override
         public void unregistered(final Client client) {
-            if(isQueueMode(client.getBindingMode())) {
+            if (isQueueMode(client.getBindingMode())) {
                 clientStatusTracker.clearClientState(client.getEndpoint());
                 LOG.debug("Client {} de-registered. Removing all queued requests.", client.getEndpoint());
                 messageStore.removeAll(client.getEndpoint());
-                //TODO: Also cancel any CoAP retries?
+                // TODO: Also cancel any CoAP retries?
             }
         }
     }
