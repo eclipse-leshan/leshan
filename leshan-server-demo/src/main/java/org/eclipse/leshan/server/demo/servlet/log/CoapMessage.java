@@ -88,13 +88,7 @@ public class CoapMessage {
                         values = new ArrayList<>();
                         optMap.put(strOption, values);
                     }
-                    switch (opt.getNumber()) {
-                    case OptionNumberRegistry.CONTENT_FORMAT:
-                        values.add(String.valueOf(opt.getIntegerValue()));
-                        break;
-                    default:
-                        values.add(opt.toValueString());
-                    }
+                    values.add(opt.toValueString());
                 }
 
                 StringBuilder builder = new StringBuilder();
