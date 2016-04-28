@@ -15,11 +15,14 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 
@@ -73,7 +76,8 @@ public class CoapRequestBuilderTest {
         Client client = newClient();
 
         // test
-        CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
+        CoapRequestBuilder builder = new CoapRequestBuilder(
+                new InetSocketAddress(client.getAddress(), client.getPort()), client.getRootPath(), model);
         ReadRequest request = new ReadRequest(3, 0);
         builder.visit(request);
 
@@ -91,7 +95,8 @@ public class CoapRequestBuilderTest {
         when(client.getRootPath()).thenReturn("/lwm2m");
 
         // test
-        CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
+        CoapRequestBuilder builder = new CoapRequestBuilder(
+                new InetSocketAddress(client.getAddress(), client.getPort()), client.getRootPath(), model);
         ReadRequest request = new ReadRequest(3, 0, 1);
         builder.visit(request);
 
@@ -106,7 +111,8 @@ public class CoapRequestBuilderTest {
         when(client.getRootPath()).thenReturn("/");
 
         // test
-        CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
+        CoapRequestBuilder builder = new CoapRequestBuilder(
+                new InetSocketAddress(client.getAddress(), client.getPort()), client.getRootPath(), model);
         ReadRequest request = new ReadRequest(3);
         builder.visit(request);
 
@@ -120,7 +126,8 @@ public class CoapRequestBuilderTest {
         Client client = newClient();
 
         // test
-        CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
+        CoapRequestBuilder builder = new CoapRequestBuilder(
+                new InetSocketAddress(client.getAddress(), client.getPort()), client.getRootPath(), model);
         DiscoverRequest request = new DiscoverRequest(3, 0);
         builder.visit(request);
 
@@ -138,7 +145,8 @@ public class CoapRequestBuilderTest {
         Client client = newClient();
 
         // test
-        CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
+        CoapRequestBuilder builder = new CoapRequestBuilder(
+                new InetSocketAddress(client.getAddress(), client.getPort()), client.getRootPath(), model);
         WriteRequest request = new WriteRequest(Mode.UPDATE, 3, 0, LwM2mSingleResource.newStringResource(4, "value"));
         builder.visit(request);
 
@@ -161,7 +169,8 @@ public class CoapRequestBuilderTest {
         Client client = newClient();
 
         // test
-        CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
+        CoapRequestBuilder builder = new CoapRequestBuilder(
+                new InetSocketAddress(client.getAddress(), client.getPort()), client.getRootPath(), model);
         WriteRequest request = new WriteRequest(3, 0, 14, "value");
         builder.visit(request);
 
@@ -175,7 +184,8 @@ public class CoapRequestBuilderTest {
         Client client = newClient();
 
         // test
-        CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
+        CoapRequestBuilder builder = new CoapRequestBuilder(
+                new InetSocketAddress(client.getAddress(), client.getPort()), client.getRootPath(), model);
         WriteAttributesRequest request = new WriteAttributesRequest(3, 0, 14,
                 new ObserveSpec.Builder().minPeriod(10).maxPeriod(100).build());
         builder.visit(request);
@@ -193,7 +203,8 @@ public class CoapRequestBuilderTest {
         Client client = newClient();
 
         // test
-        CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
+        CoapRequestBuilder builder = new CoapRequestBuilder(
+                new InetSocketAddress(client.getAddress(), client.getPort()), client.getRootPath(), model);
         ExecuteRequest request = new ExecuteRequest(3, 0, 12, "params");
         builder.visit(request);
 
@@ -211,7 +222,8 @@ public class CoapRequestBuilderTest {
         Client client = newClient();
 
         // test
-        CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
+        CoapRequestBuilder builder = new CoapRequestBuilder(
+                new InetSocketAddress(client.getAddress(), client.getPort()), client.getRootPath(), model);
         CreateRequest request = new CreateRequest(12, LwM2mSingleResource.newStringResource(0, "value"));
         builder.visit(request);
 
@@ -233,7 +245,8 @@ public class CoapRequestBuilderTest {
         Client client = newClient();
 
         // test
-        CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
+        CoapRequestBuilder builder = new CoapRequestBuilder(
+                new InetSocketAddress(client.getAddress(), client.getPort()), client.getRootPath(), model);
         CreateRequest request = new CreateRequest(12,
                 new LwM2mObjectInstance(26, LwM2mSingleResource.newStringResource(0, "value")));
         builder.visit(request);
@@ -257,7 +270,8 @@ public class CoapRequestBuilderTest {
         Client client = newClient();
 
         // test
-        CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
+        CoapRequestBuilder builder = new CoapRequestBuilder(
+                new InetSocketAddress(client.getAddress(), client.getPort()), client.getRootPath(), model);
         DeleteRequest request = new DeleteRequest(12, 0);
         builder.visit(request);
 
@@ -274,7 +288,8 @@ public class CoapRequestBuilderTest {
         Client client = newClient();
 
         // test
-        CoapRequestBuilder builder = new CoapRequestBuilder(client, model);
+        CoapRequestBuilder builder = new CoapRequestBuilder(
+                new InetSocketAddress(client.getAddress(), client.getPort()), client.getRootPath(), model);
         ObserveRequest request = new ObserveRequest(12, 0);
         builder.visit(request);
 
