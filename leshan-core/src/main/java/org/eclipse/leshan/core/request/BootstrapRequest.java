@@ -16,6 +16,7 @@
 package org.eclipse.leshan.core.request;
 
 import org.eclipse.leshan.core.response.BootstrapResponse;
+import org.eclipse.leshan.util.Validate;
 
 /**
  * The request to send to start a bootstrap session
@@ -25,6 +26,7 @@ public class BootstrapRequest implements UplinkRequest<BootstrapResponse> {
     private final String endpointName;
 
     public BootstrapRequest(String endpointName) {
+        Validate.notEmpty(endpointName);
         this.endpointName = endpointName;
     }
 

@@ -24,7 +24,11 @@ import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
+import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.ObjectLoader;
+import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapStore;
+import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapServer;
 import org.eclipse.leshan.server.security.BootstrapAuthService;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
@@ -78,9 +82,13 @@ public class LwM2mBootstrapServerImpl implements LwM2mBootstrapServer {
         secureEndpoint = new CoapEndpoint(new DTLSConnector(builder.build()), NetworkConfig.getStandard());
         coapServer.addEndpoint(secureEndpoint);
 
-        // define /bs ressource
+        // create request sender
+        LwM2mBootstrapRequestSender requestSender = new CaliforniumLwM2mBootstrapRequestSender(secureEndpoint,
+                nonSecureEndpoint, new LwM2mModel(ObjectLoader.loadDefault()));
 
-        BootstrapResource bsResource = new BootstrapResource(bsStore, bsAuthService);
+        // define /bs ressource
+        BootstrapResource bsResource = new BootstrapResource(
+                new BootstrapHandler(bsStore, bsAuthService, requestSender));
         coapServer.add(bsResource);
     }
 
