@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
+import java.net.InetSocketAddress;
+
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -34,18 +36,25 @@ import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
-import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.util.StringUtils;
 
 public class CoapRequestBuilder implements DownlinkRequestVisitor {
 
     private Request coapRequest;
-    private final Client destination;
+    private final InetSocketAddress destination;
+    private final String rootPath;
     private final LwM2mModel model;
 
-    public CoapRequestBuilder(Client destination, LwM2mModel model) {
+    public CoapRequestBuilder(InetSocketAddress destination, LwM2mModel model) {
         this.destination = destination;
         this.model = model;
+        this.rootPath = null;
+    }
+
+    public CoapRequestBuilder(InetSocketAddress destination, String rootpath, LwM2mModel model) {
+        this.destination = destination;
+        this.model = model;
+        this.rootPath = rootpath;
     }
 
     @Override
@@ -53,13 +62,13 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         coapRequest = Request.newGet();
         if (request.getFormat() != null)
             coapRequest.getOptions().setAccept(request.getFormat().getCode());
-        setTarget(coapRequest, destination, request.getPath());
+        setTarget(coapRequest, request.getPath());
     }
 
     @Override
     public void visit(DiscoverRequest request) {
         coapRequest = Request.newGet();
-        setTarget(coapRequest, destination, request.getPath());
+        setTarget(coapRequest, request.getPath());
         coapRequest.getOptions().setAccept(MediaTypeRegistry.APPLICATION_LINK_FORMAT);
     }
 
@@ -69,13 +78,13 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         ContentFormat format = request.getContentFormat();
         coapRequest.getOptions().setContentFormat(format.getCode());
         coapRequest.setPayload(LwM2mNodeEncoder.encode(request.getNode(), format, request.getPath(), model));
-        setTarget(coapRequest, destination, request.getPath());
+        setTarget(coapRequest, request.getPath());
     }
 
     @Override
     public void visit(WriteAttributesRequest request) {
         coapRequest = Request.newPut();
-        setTarget(coapRequest, destination, request.getPath());
+        setTarget(coapRequest, request.getPath());
         for (String query : request.getObserveSpec().toQueryParams()) {
             coapRequest.getOptions().addUriQuery(query);
         }
@@ -84,7 +93,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     @Override
     public void visit(ExecuteRequest request) {
         coapRequest = Request.newPost();
-        setTarget(coapRequest, destination, request.getPath());
+        setTarget(coapRequest, request.getPath());
         coapRequest.setPayload(request.getParameters());
     }
 
@@ -96,13 +105,13 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         int instanceId = request.getInstanceId() != null ? request.getInstanceId() : LwM2mObjectInstance.UNDEFINED;
         coapRequest.setPayload(LwM2mNodeEncoder.encode(new LwM2mObjectInstance(instanceId, request.getResources()),
                 request.getContentFormat(), request.getPath(), model));
-        setTarget(coapRequest, destination, request.getPath());
+        setTarget(coapRequest, request.getPath());
     }
 
     @Override
     public void visit(DeleteRequest request) {
         coapRequest = Request.newDelete();
-        setTarget(coapRequest, destination, request.getPath());
+        setTarget(coapRequest, request.getPath());
     }
 
     @Override
@@ -111,33 +120,37 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         if (request.getFormat() != null)
             coapRequest.getOptions().setAccept(request.getFormat().getCode());
         coapRequest.setObserve();
-        setTarget(coapRequest, destination, request.getPath());
+        setTarget(coapRequest, request.getPath());
     }
 
     @Override
     public void visit(BootstrapWriteRequest request) {
         coapRequest = Request.newPut();
+        coapRequest.setConfirmable(true);
         ContentFormat format = request.getContentFormat();
         coapRequest.getOptions().setContentFormat(format.getCode());
         coapRequest.setPayload(LwM2mNodeEncoder.encode(request.getNode(), format, request.getPath(), model));
-        setTarget(coapRequest, destination, request.getPath());
+        setTarget(coapRequest, request.getPath());
     }
 
     @Override
     public void visit(BootstrapDeleteRequest request) {
         coapRequest = Request.newDelete();
-        setTarget(coapRequest, destination, request.getPath());
+        coapRequest.setConfirmable(true);
+        coapRequest.setDestination(destination.getAddress());
+        coapRequest.setDestinationPort(destination.getPort());
     }
 
     @Override
     public void visit(BootstrapFinishRequest request) {
         coapRequest = Request.newPost();
+        coapRequest.setConfirmable(true);
         coapRequest.setDestination(destination.getAddress());
         coapRequest.setDestinationPort(destination.getPort());
 
         // root path
-        if (destination.getRootPath() != null) {
-            for (String rootPath : destination.getRootPath().split("/")) {
+        if (rootPath != null) {
+            for (String rootPath : rootPath.split("/")) {
                 if (!StringUtils.isEmpty(rootPath)) {
                     coapRequest.getOptions().addUriPath(rootPath);
                 }
@@ -147,13 +160,13 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         coapRequest.getOptions().addUriPath("bs");
     }
 
-    private final void setTarget(Request coapRequest, Client client, LwM2mPath path) {
-        coapRequest.setDestination(client.getAddress());
-        coapRequest.setDestinationPort(client.getPort());
+    private final void setTarget(Request coapRequest, LwM2mPath path) {
+        coapRequest.setDestination(destination.getAddress());
+        coapRequest.setDestinationPort(destination.getPort());
 
         // root path
-        if (client.getRootPath() != null) {
-            for (String rootPath : client.getRootPath().split("/")) {
+        if (rootPath != null) {
+            for (String rootPath : rootPath.split("/")) {
                 if (!StringUtils.isEmpty(rootPath)) {
                     coapRequest.getOptions().addUriPath(rootPath);
                 }
