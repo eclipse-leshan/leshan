@@ -137,13 +137,11 @@ public class SecurityServlet extends HttpServlet {
      */
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String[] path = StringUtils.split(req.getPathInfo(), '/');
-
-        if (path.length != 2 && !"clients".equals(path[0])) {
+        String endpoint = StringUtils.substringAfter(req.getPathInfo(), "/clients/");
+        if (StringUtils.isEmpty(endpoint)) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
-        String endpoint = path[1];
 
         LOG.debug("Removing security info for end-point {}", endpoint);
         if (this.registry.remove(endpoint) != null) {
