@@ -1,0 +1,18 @@
+[
+  {
+    "name": "ObserveTime",
+    "className": "org.eclipse.leshan.server.demo.extensions.clientsetup.GenericClientSetup",
+    "endpointName": "simpleclient",
+    "observeUris": [
+      "/3/0/13"
+    ]
+  },
+  {
+    "name": "Generic",
+    "className": "org.eclipse.leshan.server.demo.extensions.clientsetup.GenericClientSetup",
+    "instanceUri": "/3/0",
+    "observeUris": [
+      "*"
+    ]
+  }
+]
