@@ -131,6 +131,69 @@ public class LeshanClient implements LwM2mClient {
         // Create CoAP resources needed for the bootstrap sequence
         clientSideServer.add(new BootstrapResource(bootstrapHandler));
     }
+    
+     public LeshanClient(final String endpoint, final InetSocketAddress localAddress,
+            InetSocketAddress localSecureAddress, final List<? extends LwM2mObjectEnabler> objectEnablers, CoapServer server) {
+
+        Validate.notNull(endpoint);
+        Validate.notNull(localAddress);
+        Validate.notNull(localSecureAddress);
+        Validate.notEmpty(objectEnablers);
+
+        // Create Object enablers
+        this.objectEnablers = new ConcurrentHashMap<>();
+        for (LwM2mObjectEnabler enabler : objectEnablers) {
+            if (this.objectEnablers.containsKey(enabler.getId())) {
+                throw new IllegalArgumentException(
+                        String.format("There is several objectEnablers with the same id %d.", enabler.getId()));
+            }
+            this.objectEnablers.put(enabler.getId(), enabler);
+        }
+
+        // Create CoAP non secure endpoint
+        nonSecureEndpoint = new CoapEndpoint(localAddress);
+
+        // Create CoAP secure endpoint
+        LwM2mObjectEnabler securityEnabler = this.objectEnablers.get(LwM2mId.SECURITY);
+        if (securityEnabler == null) {
+            throw new IllegalArgumentException("Security object is mandatory");
+        }
+
+        Builder builder = new DtlsConnectorConfig.Builder(localSecureAddress);
+        builder.setPskStore(new SecurityObjectPskStore(securityEnabler));
+        final InMemoryConnectionStore inMemoryConnectionStore = new InMemoryConnectionStore();
+        secureEndpoint = new CoapEndpoint(new DTLSConnector(builder.build(), inMemoryConnectionStore),
+                NetworkConfig.getStandard());
+
+        // Create sender
+        requestSender = new CaliforniumLwM2mClientRequestSender(secureEndpoint, nonSecureEndpoint);
+
+        // Create registration engine
+        bootstrapHandler = new BootstrapHandler(this.objectEnablers);
+        bootstrapHandler.addBootstrapListener(new BootstrapListener() {
+            @Override
+            public void bootstrapFinished() {
+                // TODO we need a scandium or californium API to close all the current session.
+                inMemoryConnectionStore.clear();
+            }
+        });
+
+        // Create registration engine
+        engine = new RegistrationEngine(endpoint, this.objectEnablers, requestSender, bootstrapHandler);
+
+        clientSideServer = server;
+        clientSideServer.addEndpoint(secureEndpoint);
+        clientSideServer.addEndpoint(nonSecureEndpoint);
+
+        // Create CoAP resources for each lwm2m Objects.
+        for (LwM2mObjectEnabler enabler : objectEnablers) {
+            final ObjectResource clientObject = new ObjectResource(enabler, bootstrapHandler);
+            clientSideServer.add(clientObject);
+        }
+
+        // Create CoAP resources needed for the bootstrap sequence
+        clientSideServer.add(new BootstrapResource(bootstrapHandler));
+    }
 
     @Override
     public void start() {

@@ -17,6 +17,7 @@ package org.eclipse.leshan.client.californium;
 
 import java.net.InetSocketAddress;
 import java.util.List;
+import org.eclipse.californium.core.CoapServer;
 
 import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.object.Device;
@@ -37,6 +38,7 @@ public class LeshanClientBuilder {
     private InetSocketAddress localAddress;
     private InetSocketAddress localSecureAddress;
     private List<? extends LwM2mObjectEnabler> objectEnablers;
+    private CoapServer clientSideServer;
 
     /**
      * Creates a new instance for setting the configuration options for a {@link LeshanClient} instance.
@@ -92,6 +94,14 @@ public class LeshanClientBuilder {
         this.objectEnablers = objectEnablers;
         return this;
     }
+    
+    /**
+     * Sets the client side server to use
+     */
+    public LeshanClientBuilder setClientSideServer(CoapServer server) {
+        this.clientSideServer = server;
+        return this;
+    }
 
     /**
      * Creates an instance of {@link LeshanClient} based on the properties set on this builder.
@@ -111,6 +121,11 @@ public class LeshanClientBuilder {
             initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", "model12345", "12345", "U"));
             objectEnablers = initializer.createMandatory();
         }
-        return new LeshanClient(endpoint, localAddress, localSecureAddress, objectEnablers);
+        
+        if (clientSideServer == null) {
+            return new LeshanClient(endpoint, localAddress, localSecureAddress, objectEnablers);
+        } else {
+            return new LeshanClient(endpoint, localAddress, localSecureAddress, objectEnablers, clientSideServer);
+        }
     }
 }
