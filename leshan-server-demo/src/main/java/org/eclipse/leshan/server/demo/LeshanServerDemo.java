@@ -182,7 +182,6 @@ public class LeshanServerDemo {
 
         // Create and start LWM2M server
         LeshanServer lwServer = builder.build();
-        lwServer.start();
 
         // Now prepare Jetty
         Server server = new Server(webPort);
@@ -207,7 +206,8 @@ public class LeshanServerDemo {
         ServletHolder objectSpecServletHolder = new ServletHolder(new ObjectSpecServlet(lwServer.getModelProvider()));
         root.addServlet(objectSpecServletHolder, "/api/objectspecs/*");
 
-        // Start Jetty
+        // Start Jetty & Leshan
+        lwServer.start();
         server.start();
         LOG.info("Web server started at {}.", server.getURI());
     }
