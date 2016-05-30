@@ -19,8 +19,6 @@ package org.eclipse.leshan.client.servers;
 import static org.eclipse.leshan.LwM2mId.SECURITY;
 import static org.eclipse.leshan.LwM2mId.SERVER;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -44,7 +42,6 @@ public class BootstrapHandler {
 
     private ServerInfo bootstrapServerInfo;
     private final Map<Integer, LwM2mObjectEnabler> objects;
-    private final List<BootstrapListener> listeners = new ArrayList<>();
 
     public BootstrapHandler(Map<Integer, LwM2mObjectEnabler> objectEnablers) {
         objects = objectEnablers;
@@ -114,18 +111,6 @@ public class BootstrapHandler {
         bootstrapServerInfo = null;
         bootstrappingLatch = null;
         bootstrapping = false;
-
-        for (BootstrapListener listener : listeners) {
-            listener.bootstrapFinished();
-        }
-    }
-
-    public void addBootstrapListener(BootstrapListener listener) {
-        listeners.add(listener);
-    }
-
-    public void removeBootstrapListener(BootstrapListener listener) {
-        listeners.remove(listener);
     }
 
     /**

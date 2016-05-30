@@ -23,6 +23,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.leshan.ResponseCode;
+import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.request.LwM2mClientRequestSender;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
@@ -61,6 +62,7 @@ public class RegistrationEngine {
     private final LwM2mClientRequestSender sender;
     private final Map<Integer, LwM2mObjectEnabler> objectEnablers;
     private final BootstrapHandler bootstrapHandler;
+    private final LwM2mClientObserver observer;
 
     // registration update
     private String registrationID;
@@ -69,10 +71,11 @@ public class RegistrationEngine {
     private final ScheduledExecutorService schedExecutor = Executors.newScheduledThreadPool(2);
 
     public RegistrationEngine(String endpoint, Map<Integer, LwM2mObjectEnabler> objectEnablers,
-            LwM2mClientRequestSender requestSender, BootstrapHandler bootstrapState) {
+            LwM2mClientRequestSender requestSender, BootstrapHandler bootstrapState, LwM2mClientObserver observer) {
         this.endpoint = endpoint;
         this.objectEnablers = objectEnablers;
         this.bootstrapHandler = bootstrapState;
+        this.observer = observer;
 
         sender = requestSender;
     }
@@ -99,6 +102,9 @@ public class RegistrationEngine {
                         new BootstrapRequest(endpoint), null);
                 if (response == null) {
                     LOG.error("Unable to start bootstrap session: Timeout.");
+                    if (observer != null) {
+                        observer.onBootstrapTimeout(boostrapServer);
+                    }
                     return false;
                 } else if (response.isSuccess()) {
                     LOG.info("Bootstrap started");
@@ -106,14 +112,23 @@ public class RegistrationEngine {
                     boolean timeout = !bootstrapHandler.waitBoostrapFinished(BS_TIMEOUT);
                     if (timeout) {
                         LOG.error("Bootstrap sequence aborted: Timeout.");
+                        if (observer != null) {
+                            observer.onBootstrapTimeout(boostrapServer);
+                        }
                         return false;
                     } else {
                         serversInfo = ServersInfoExtractor.getInfo(objectEnablers);
                         LOG.info("Bootstrap finished {}.", serversInfo);
+                        if (observer != null) {
+                            observer.onBootstrapSuccess(boostrapServer);
+                        }
                         return true;
                     }
                 } else {
-                    LOG.error("Bootstrap failed: {}.", response.getCode());
+                    LOG.error("Bootstrap failed: {} {}.", response.getCode(), response.getErrorMessage());
+                    if (observer != null) {
+                        observer.onBootstrapFailure(boostrapServer, response.getCode(), response.getErrorMessage());
+                    }
                     return false;
                 }
             } finally {
@@ -143,6 +158,9 @@ public class RegistrationEngine {
         if (response == null) {
             registrationID = null;
             LOG.error("Registration failed: Timeout.");
+            if (observer != null) {
+                observer.onRegistrationTimeout(dmInfo);
+            }
         } else if (response.isSuccess()) {
             registrationID = response.getRegistrationID();
 
@@ -150,9 +168,15 @@ public class RegistrationEngine {
             scheduleUpdate(dmInfo);
 
             LOG.info("Registered with location '{}'.", response.getRegistrationID());
+            if (observer != null) {
+                observer.onRegistrationSuccess(dmInfo, response.getRegistrationID());
+            }
         } else {
             registrationID = null;
-            LOG.error("Registration failed: {}.", response.getCode());
+            LOG.error("Registration failed: {} {}.", response.getCode(), response.getErrorMessage());
+            if (observer != null) {
+                observer.onRegistrationFailure(dmInfo, response.getCode(), response.getErrorMessage());
+            }
         }
 
         return registrationID != null;
@@ -176,14 +200,27 @@ public class RegistrationEngine {
         if (response == null) {
             registrationID = null;
             LOG.error("Deregistration failed: Timeout.");
+            if (observer != null) {
+                observer.onDeregistrationTimeout(dmInfo);
+            }
             return false;
         } else if (response.isSuccess() || response.getCode() == ResponseCode.NOT_FOUND) {
             registrationID = null;
             cancelUpdateTask(true);
             LOG.info("De-register response {} {}.", response.getCode(), response.getErrorMessage());
+            if (observer != null) {
+                if (response.isSuccess()) {
+                    observer.onDeregistrationSuccess(dmInfo, registrationID);
+                } else {
+                    observer.onDeregistrationFailure(dmInfo, response.getCode(), response.getErrorMessage());
+                }
+            }
             return true;
         } else {
             LOG.error("Deregistration failed: {} {}.", response.getCode(), response.getErrorMessage());
+            if (observer != null) {
+                observer.onDeregistrationFailure(dmInfo, response.getCode(), response.getErrorMessage());
+            }
             return false;
         }
     }
@@ -205,14 +242,23 @@ public class RegistrationEngine {
         if (response == null) {
             registrationID = null;
             LOG.error("Registration update failed: Timeout.");
+            if (observer != null) {
+                observer.onUpdateTimeout(dmInfo);
+            }
             return false;
         } else if (response.getCode() == ResponseCode.CHANGED) {
             // Update successful, so we reschedule new update
             scheduleUpdate(dmInfo);
             LOG.info("Registration update succeed.");
+            if (observer != null) {
+                observer.onUpdateSuccess(dmInfo, registrationID);
+            }
             return true;
         } else {
             LOG.error("Registration update failed: {} {}.", response.getCode(), response.getErrorMessage());
+            if (observer != null) {
+                observer.onUpdateFailure(dmInfo, response.getCode(), response.getErrorMessage());
+            }
             return false;
         }
 

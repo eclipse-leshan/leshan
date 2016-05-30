@@ -36,10 +36,13 @@ import org.eclipse.leshan.client.californium.impl.CaliforniumLwM2mClientRequestS
 import org.eclipse.leshan.client.californium.impl.ObjectResource;
 import org.eclipse.leshan.client.californium.impl.RootResource;
 import org.eclipse.leshan.client.californium.impl.SecurityObjectPskStore;
+import org.eclipse.leshan.client.observer.LwM2mClientObserver;
+import org.eclipse.leshan.client.observer.LwM2mClientObserverAdapter;
+import org.eclipse.leshan.client.observer.LwM2mClientObserverDispatcher;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.servers.BootstrapHandler;
-import org.eclipse.leshan.client.servers.BootstrapListener;
 import org.eclipse.leshan.client.servers.RegistrationEngine;
+import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +60,7 @@ public class LeshanClient implements LwM2mClient {
     private final CaliforniumLwM2mClientRequestSender requestSender;
     private final RegistrationEngine engine;
     private final BootstrapHandler bootstrapHandler;
+    private final LwM2mClientObserverDispatcher observers;
 
     private CoapEndpoint secureEndpoint;
 
@@ -98,18 +102,18 @@ public class LeshanClient implements LwM2mClient {
         // Create sender
         requestSender = new CaliforniumLwM2mClientRequestSender(secureEndpoint, nonSecureEndpoint);
 
-        // Create registration engine
-        bootstrapHandler = new BootstrapHandler(this.objectEnablers);
-        bootstrapHandler.addBootstrapListener(new BootstrapListener() {
+        // Create Client Observers
+        observers = new LwM2mClientObserverDispatcher();
+        observers.addObserver(new LwM2mClientObserverAdapter() {
             @Override
-            public void bootstrapFinished() {
-                // TODO we need a scandium or californium API to close all the current session.
+            public void onBootstrapSuccess(ServerInfo bsserver) {
                 inMemoryConnectionStore.clear();
             }
         });
 
         // Create registration engine
-        engine = new RegistrationEngine(endpoint, this.objectEnablers, requestSender, bootstrapHandler);
+        bootstrapHandler = new BootstrapHandler(this.objectEnablers);
+        engine = new RegistrationEngine(endpoint, this.objectEnablers, requestSender, bootstrapHandler, observers);
 
         // Create CoAP Server
         clientSideServer = new CoapServer() {
@@ -171,6 +175,14 @@ public class LeshanClient implements LwM2mClient {
 
     public InetSocketAddress getSecureAddress() {
         return secureEndpoint.getAddress();
+    }
+
+    public void addObserver(LwM2mClientObserver observer) {
+        observers.addObserver(observer);
+    }
+
+    public void removeObserver(LwM2mClientObserver observer) {
+        observers.removeObserver(observer);
     }
 
     /**
