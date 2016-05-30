@@ -41,6 +41,7 @@ import org.eclipse.leshan.client.observer.LwM2mClientObserverAdapter;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverDispatcher;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.servers.BootstrapHandler;
+import org.eclipse.leshan.client.servers.DmServerInfo;
 import org.eclipse.leshan.client.servers.RegistrationEngine;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.util.Validate;
@@ -107,6 +108,21 @@ public class LeshanClient implements LwM2mClient {
         observers.addObserver(new LwM2mClientObserverAdapter() {
             @Override
             public void onBootstrapSuccess(ServerInfo bsserver) {
+                inMemoryConnectionStore.clear();
+            }
+
+            @Override
+            public void onBootstrapTimeout(ServerInfo bsserver) {
+                inMemoryConnectionStore.clear();
+            }
+
+            @Override
+            public void onRegistrationTimeout(DmServerInfo server) {
+                inMemoryConnectionStore.clear();
+            }
+
+            @Override
+            public void onUpdateTimeout(DmServerInfo server) {
                 inMemoryConnectionStore.clear();
             }
         });
