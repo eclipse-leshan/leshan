@@ -47,8 +47,7 @@ class ResponseProcessingTask implements Runnable {
      * @param responseContext response context map for mapping response ID to the callback
      * @param exception exception to propagate
      */
-    ResponseProcessingTask(QueuedRequest request, Map<Long, ResponseContext> responseContext,
-                           Exception exception) {
+    ResponseProcessingTask(QueuedRequest request, Map<Long, ResponseContext> responseContext, Exception exception) {
         this.request = request;
         this.exception = exception;
         this.responseContext = responseContext;
@@ -63,8 +62,7 @@ class ResponseProcessingTask implements Runnable {
      * @param responseContext response context map for mapping response ID to the callback
      * @param response response to propagate
      */
-    ResponseProcessingTask(QueuedRequest request, Map<Long, ResponseContext> responseContext,
-                           LwM2mResponse response) {
+    ResponseProcessingTask(QueuedRequest request, Map<Long, ResponseContext> responseContext, LwM2mResponse response) {
         this.request = request;
         this.exception = null;
         this.hasException = false;
@@ -74,6 +72,15 @@ class ResponseProcessingTask implements Runnable {
 
     @Override
     public void run() {
+        try {
+            executeAction();
+        } catch (Exception e) {
+            LOG.info("error while executing runnable", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void executeAction() {
         long requestId = request.getRequestId();
         LOG.trace("response processing for {}, requestId: {}", request, requestId);
 

@@ -14,7 +14,7 @@
  *     Alexander Ellwein, Daniel Maier (Bosch Software Innovations GmbH)
  *                                - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.queue.impl;
+package org.eclipse.leshan.util;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * Implementation of {@link ThreadFactory} that sets thread names according to given name format. All threads are
  * created by {@link Executors#defaultThreadFactory() #newThread(Runnable)}.
  */
-final class NamedThreadFactory implements ThreadFactory {
+public final class NamedThreadFactory implements ThreadFactory {
     private final String nameFormat;
     private final AtomicLong counter = new AtomicLong();
 
@@ -35,7 +35,7 @@ final class NamedThreadFactory implements ThreadFactory {
      *        used for thread name. Example: format of {@code xyz-%d} will result in thread names {@code xyz-1},
      *        {@code xyz-2} etc.
      */
-    NamedThreadFactory(final String nameFormat) {
+    public NamedThreadFactory(final String nameFormat) {
         this.nameFormat = nameFormat;
     }
 

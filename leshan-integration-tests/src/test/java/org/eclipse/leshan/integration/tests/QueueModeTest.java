@@ -20,6 +20,15 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -27,7 +36,12 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
-import org.eclipse.leshan.core.response.*;
+import org.eclipse.leshan.core.response.ErrorCallback;
+import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.ObserveResponse;
+import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.core.response.ResponseCallback;
+import org.eclipse.leshan.core.response.WriteResponse;
 import org.eclipse.leshan.integration.tests.util.QueueModeLeshanServer;
 import org.eclipse.leshan.integration.tests.util.QueuedModeLeshanClient;
 import org.eclipse.leshan.integration.tests.util.QueuedModeLeshanClient.OnGetCallback;
@@ -41,19 +55,12 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.junit.Assert.*;
-
 /**
  * Integration tests for Queue Mode feature.
  */
 public class QueueModeTest {
     private final static Logger LOG = LoggerFactory.getLogger(QueueModeTest.class);
-    private final static Long TIMEOUT = QueueModeIntegrationTestHelper.ACK_TIMEOUT+1000;
+    private final static Long TIMEOUT = QueueModeIntegrationTestHelper.ACK_TIMEOUT + 1000;
     public static final boolean DEREGISTER = true;
     private CountDownLatch countDownLatch;
     private QueueModeIntegrationTestHelper helper;
@@ -136,9 +143,8 @@ public class QueueModeTest {
         }
 
         // assert that queue has one additional new request
-        final List<QueuedRequest> requests = ((InMemoryMessageStore)
-                ((QueueModeLeshanServer)helper.server).getMessageStore())
-                .retrieveAll(helper.getClient().getEndpoint());
+        final List<QueuedRequest> requests = ((InMemoryMessageStore) ((QueueModeLeshanServer) helper.server)
+                .getMessageStore()).retrieveAll(helper.getClient().getEndpoint());
         assertEquals(2, requests.size());
     }
 
@@ -151,7 +157,7 @@ public class QueueModeTest {
         client.setOnGetCallback(new OnGetCallback() {
             @Override
             public boolean handleGet(final CoapExchange coapExchange) {
-                //second GET request client is set to respond back.
+                // second GET request client is set to respond back.
                 client.setOnGetCallback(new OnGetCallback() {
                     @Override
                     public boolean handleGet(final CoapExchange coapExchange) {
@@ -159,13 +165,12 @@ public class QueueModeTest {
                     }
                 });
                 countDownLatch.countDown();
-                return false; //client doesn't respond.
+                return false; // client doesn't respond.
             }
         });
 
-        //Send a read request. Will be sent immediately as it is the first message in the queue.
-        helper.server.send(helper.getClient(), new ReadRequest(3, 0, 1),
-                newReadResponseCallback(acceptCountDownLatch),
+        // Send a read request. Will be sent immediately as it is the first message in the queue.
+        helper.server.send(helper.getClient(), new ReadRequest(3, 0, 1), newReadResponseCallback(acceptCountDownLatch),
                 newErrorCallback());
 
         // after first (unresponded) request, coundDown should be zero.
@@ -177,16 +182,15 @@ public class QueueModeTest {
         // update would not have the expected effect here.
         assertQueueHasMessageCount(1, 5000);
 
-        //Registration engine sends a registration-update automatically after(CUSTOM_LIFETIME (3) - 10%) = 2.7 seconds
+        // Registration engine sends a registration-update automatically after(CUSTOM_LIFETIME (3) - 10%) = 2.7 seconds
 
-        //when server has received a response for the retry, acceptCoundDown should be zero.
+        // when server has received a response for the retry, acceptCoundDown should be zero.
         if (!acceptCountDownLatch.await(7, TimeUnit.SECONDS)) {
             fail("server never received the response");
         }
 
-        final List<QueuedRequest> queuedRequests = ((InMemoryMessageStore)
-                ((QueueModeLeshanServer)helper.server).getMessageStore())
-                .retrieveAll(helper.getClient().getEndpoint());
+        final List<QueuedRequest> queuedRequests = ((InMemoryMessageStore) ((QueueModeLeshanServer) helper.server)
+                .getMessageStore()).retrieveAll(helper.getClient().getEndpoint());
         assertEquals(0, queuedRequests.size());
     }
 
@@ -196,35 +200,33 @@ public class QueueModeTest {
         helper.server.getObservationRegistry().addListener(listener);
         final QueuedModeLeshanClient client = (QueuedModeLeshanClient) helper.client;
 
-        //set client to respond to GET
+        // set client to respond to GET
         client.setOnGetCallback(respondOnGet);
-        //Send an Observe request. Will be sent immediately as it is the first message in the queue.
+        // Send an Observe request. Will be sent immediately as it is the first message in the queue.
         ObserveResponse observeResponse = helper.server.send(helper.getClient(), new ObserveRequest(3, 0, 15));
         Observation observation = observeResponse.getObservation();
         assertEquals("/3/0/15", observation.getPath().toString());
         assertEquals(helper.getClient().getRegistrationId(), observation.getRegistrationId());
 
         CountDownLatch acceptCountDownLatch = new CountDownLatch(1);
-        //set client NOT to respond to GET
+        // set client NOT to respond to GET
         client.setOnGetCallback(doNothingOnGet);
-        helper.server.send(helper.getClient(), new ReadRequest(3, 0, 15),
-                newReadResponseCallback(acceptCountDownLatch),
+        helper.server.send(helper.getClient(), new ReadRequest(3, 0, 15), newReadResponseCallback(acceptCountDownLatch),
                 newErrorCallback());
-        //read request should be left in Queue still.
+        // read request should be left in Queue still.
         assertQueueHasMessageCount(1, 5000);
-        //Wait for read request timeout
+        // Wait for read request timeout
         waitForInterval(TIMEOUT);
 
-        //set client to respond to GET
+        // set client to respond to GET
         client.setOnGetCallback(respondOnGet);
         // write device timezone which is sent using sync call of LwM2mRequestSender
-        helper.server.send(helper.getClient(),
-                new WriteRequest(3, 0, 15, "Europe/Berlin"));
+        helper.server.send(helper.getClient(), new WriteRequest(3, 0, 15, "Europe/Berlin"));
 
         // wait for notify
         listener.waitForNotification(2000);
 
-        //client could take sometime to send notify()
+        // client could take sometime to send notify()
         // wait for Read request response
         waitForInterval(TIMEOUT);
         assertQueueIsEmpty(3000L);
@@ -236,9 +238,9 @@ public class QueueModeTest {
         helper.server.getObservationRegistry().addListener(listener);
         final QueuedModeLeshanClient client = (QueuedModeLeshanClient) helper.client;
 
-        //set client to respond to GET
+        // set client to respond to GET
         client.setOnGetCallback(respondOnGet);
-        //Send an Observe request. Will be sent immediately as it is the first message in the queue.
+        // Send an Observe request. Will be sent immediately as it is the first message in the queue.
         ObserveResponse observeResponse = helper.server.send(helper.getClient(), new ObserveRequest(3, 0, 15));
         Observation observation = observeResponse.getObservation();
         assertEquals("/3/0/15", observation.getPath().toString());
@@ -250,8 +252,7 @@ public class QueueModeTest {
 
         // Read request should be sent immediately.
         final CountDownLatch acceptCountDownLatch = new CountDownLatch(1);
-        helper.server.send(helper.getClient(), new ReadRequest(3, 0, 1),
-                newReadResponseCallback(acceptCountDownLatch),
+        helper.server.send(helper.getClient(), new ReadRequest(3, 0, 1), newReadResponseCallback(acceptCountDownLatch),
                 newErrorCallback());
 
         waitForInterval(TIMEOUT);
@@ -269,19 +270,18 @@ public class QueueModeTest {
         helper.server.getObservationRegistry().addListener(listener);
         final QueuedModeLeshanClient client = (QueuedModeLeshanClient) helper.client;
 
-        //set client to respond to GET
+        // set client to respond to GET
         client.setOnGetCallback(respondOnGet);
-        //Send an Observe request. Will be sent immediately as it is the first message in the queue.
+        // Send an Observe request. Will be sent immediately as it is the first message in the queue.
         ObserveResponse observeResponse = helper.server.send(helper.getClient(), new ObserveRequest(3, 0, 15));
         Observation observation = observeResponse.getObservation();
         assertEquals("/3/0/15", observation.getPath().toString());
         assertEquals(helper.getClient().getRegistrationId(), observation.getRegistrationId());
 
-        //Now set the client NOT to respond to GET and send a request
+        // Now set the client NOT to respond to GET and send a request
         client.setOnGetCallback(doNothingOnGet);
         final CountDownLatch acceptCountDownLatch = new CountDownLatch(2);
-        helper.server.send(helper.getClient(), new ReadRequest(3, 0, 1),
-                newReadResponseCallback(acceptCountDownLatch),
+        helper.server.send(helper.getClient(), new ReadRequest(3, 0, 1), newReadResponseCallback(acceptCountDownLatch),
                 newErrorCallback());
 
         waitForInterval(TIMEOUT);
@@ -293,7 +293,7 @@ public class QueueModeTest {
             public boolean handleGet(final CoapExchange coapExchange) {
                 LOG.trace("Received again coapExchange: {}", coapExchange.getRequestOptions().getUriPathString());
                 LOG.trace("Setup client again TO respond");
-                if(coapExchange.getRequestOptions().getUriPath().toString().equals("[3, 0, 1]")) {
+                if (coapExchange.getRequestOptions().getUriPath().toString().equals("[3, 0, 1]")) {
                     clientCountDownLatch.countDown();
                 }
                 return true;
@@ -301,20 +301,18 @@ public class QueueModeTest {
         });
 
         // write device timezone synchronously
-        helper.server.send(helper.getClient(),
-                new WriteRequest(3, 0, 15, "Europe/Amsterdam"));
+        helper.server.send(helper.getClient(), new WriteRequest(3, 0, 15, "Europe/Amsterdam"));
         // write device timezone
-        helper.server.send(helper.getClient(),
-                new WriteRequest(3, 0, 15, "Europe/Paris"));
+        helper.server.send(helper.getClient(), new WriteRequest(3, 0, 15, "Europe/Paris"));
 
         assertQueueIsEmpty(3000);
-        //check server received only one response to the above read request
+        // check server received only one response to the above read request
         // duplicate send means countDown is zero
-        assertTrue("SERVER: Expected only one response received (count=1) and no duplicates. CountDown reached" +
-                "["+ acceptCountDownLatch.getCount() + "]", acceptCountDownLatch.getCount() == 1);
+        assertTrue("SERVER: Expected only one response received (count=1) and no duplicates. CountDown reached" + "["
+                + acceptCountDownLatch.getCount() + "]", acceptCountDownLatch.getCount() == 1);
         // duplicate send means countDown is zero
-        assertTrue("CLIENT: Expected only one message received (count=1) and no duplicates. CountDown reached" +
-                "["+ clientCountDownLatch.getCount() + "]", clientCountDownLatch.getCount() == 1);
+        assertTrue("CLIENT: Expected only one message received (count=1) and no duplicates. CountDown reached" + "["
+                + clientCountDownLatch.getCount() + "]", clientCountDownLatch.getCount() == 1);
     }
 
     @Test
@@ -323,21 +321,19 @@ public class QueueModeTest {
         final QueuedModeLeshanClient client = (QueuedModeLeshanClient) helper.client;
         client.setOnGetCallback(doNothingOnGet);
 
-        //now send some read requests
+        // now send some read requests
         final CountDownLatch acceptCountDownLatch = new CountDownLatch(1);
-        //Send a read request. Will be sent immediately as it is the first message in the queue.
-        helper.server.send(helper.getClient(), new ReadRequest(3, 0, 1),
-                newReadResponseCallback(acceptCountDownLatch),
+        // Send a read request. Will be sent immediately as it is the first message in the queue.
+        helper.server.send(helper.getClient(), new ReadRequest(3, 0, 1), newReadResponseCallback(acceptCountDownLatch),
                 newErrorCallback());
 
-        helper.server.send(helper.getClient(), new ReadRequest(3, 0, 15),
-                newReadResponseCallback(acceptCountDownLatch),
+        helper.server.send(helper.getClient(), new ReadRequest(3, 0, 15), newReadResponseCallback(acceptCountDownLatch),
                 newErrorCallback());
 
         waitForInterval(TIMEOUT);
         assertQueueHasMessageCount(2, 5000);
 
-        //Send de-register
+        // Send de-register
         helper.client.stop(DEREGISTER);
         assertQueueIsEmpty(3000);
     }
@@ -369,24 +365,23 @@ public class QueueModeTest {
         };
     }
 
-    private void assertQueueHasMessageCount(int count, long timeout)
-            throws InterruptedException {
+    private void assertQueueHasMessageCount(int count, long timeout) throws InterruptedException {
         long interval = 100;
         long duration = 0;
         int queuedRequestCount = 0;
         do {
             Thread.sleep(interval);
             duration += interval;
-            InMemoryMessageStore messageStore = (InMemoryMessageStore)
-                    ((QueueModeLeshanServer) helper.server).getMessageStore();
+            InMemoryMessageStore messageStore = (InMemoryMessageStore) ((QueueModeLeshanServer) helper.server)
+                    .getMessageStore();
             queuedRequestCount = messageStore.retrieveAll(helper.getClient().getEndpoint()).size();
         } while (queuedRequestCount < count && duration <= timeout);
-        assertTrue("Expected to have at least "+ count +" queued request in queue but have ["+queuedRequestCount +"]",
+        assertTrue(
+                "Expected to have at least " + count + " queued request in queue but have [" + queuedRequestCount + "]",
                 queuedRequestCount == count);
     }
 
-    private void assertQueueIsEmpty(long timeout)
-            throws InterruptedException {
+    private void assertQueueIsEmpty(long timeout) throws InterruptedException {
         long interval = 100;
         long duration = 0;
         boolean empty = false;
@@ -394,10 +389,8 @@ public class QueueModeTest {
         do {
             Thread.sleep(interval);
             duration += interval;
-            empty = helper.getClient() == null ||
-                    (helper.getClient() !=null &&
-                    messageStore
-                    .isEmpty(helper.getClient().getEndpoint()));
+            empty = helper.getClient() == null
+                    || (helper.getClient() != null && messageStore.isEmpty(helper.getClient().getEndpoint()));
         } while (!empty && duration <= timeout);
         assertTrue("Expected an empty queue but has some messages", empty);
     }

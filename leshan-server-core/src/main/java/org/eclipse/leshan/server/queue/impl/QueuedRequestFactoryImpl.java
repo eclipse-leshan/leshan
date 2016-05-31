@@ -41,8 +41,7 @@ public class QueuedRequestFactoryImpl implements QueuedRequestFactory {
         private final String endpoint;
         private final long requestId;
 
-        private QueuedRequestImpl(long requestId, String endpoint,
-                                  DownlinkRequest<LwM2mResponse> downlinkRequest) {
+        private QueuedRequestImpl(long requestId, String endpoint, DownlinkRequest<LwM2mResponse> downlinkRequest) {
             Validate.notNull(endpoint, "endpoint may not be null");
             Validate.notNull(downlinkRequest, "request may not be null");
             this.requestId = requestId;
@@ -67,8 +66,8 @@ public class QueuedRequestFactoryImpl implements QueuedRequestFactory {
 
         @Override
         public String toString() {
-            return "QueuedRequestImpl [downlinkRequest=" + downlinkRequest + ", endpoint="
-                    + endpoint + ", requestId=" + requestId + "]";
+            return "QueuedRequestImpl [downlinkRequest=" + downlinkRequest + ", endpoint=" + endpoint + ", requestId="
+                    + requestId + "]";
         }
 
         @Override

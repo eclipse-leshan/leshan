@@ -18,6 +18,11 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.queue.impl;
 
+import org.eclipse.leshan.server.queue.MessageStore;
+import org.eclipse.leshan.server.queue.QueuedRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,11 +30,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import org.eclipse.leshan.server.queue.MessageStore;
-import org.eclipse.leshan.server.queue.QueuedRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * provides a simple in-memory persistence implementation of the request queue.
@@ -100,4 +100,3 @@ public class InMemoryMessageStore implements MessageStore {
     }
 
 }
-

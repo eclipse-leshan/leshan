@@ -16,6 +16,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests.util;
 
+import java.net.InetSocketAddress;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
@@ -25,7 +31,11 @@ import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.LwM2mClient;
-import org.eclipse.leshan.client.californium.impl.*;
+import org.eclipse.leshan.client.californium.impl.BootstrapResource;
+import org.eclipse.leshan.client.californium.impl.CaliforniumLwM2mClientRequestSender;
+import org.eclipse.leshan.client.californium.impl.ObjectResource;
+import org.eclipse.leshan.client.californium.impl.RootResource;
+import org.eclipse.leshan.client.californium.impl.SecurityObjectPskStore;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.servers.BootstrapHandler;
 import org.eclipse.leshan.client.servers.RegistrationEngine;
@@ -33,15 +43,9 @@ import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetSocketAddress;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
- * This client has a special ability to have its GET handler instrumented by a test by which different client
- * scenarios like sleep, wake up can be simulated.
+ * This client has a special ability to have its GET handler instrumented by a test by which different client scenarios
+ * like sleep, wake up can be simulated.
  */
 public class QueuedModeLeshanClient implements LwM2mClient {
 
@@ -88,8 +92,7 @@ public class QueuedModeLeshanClient implements LwM2mClient {
     }
 
     public QueuedModeLeshanClient(final String endpoint, final InetSocketAddress localAddress,
-                                  InetSocketAddress localSecureAddress,
-                                  final List<? extends LwM2mObjectEnabler> objectEnablers) {
+            InetSocketAddress localSecureAddress, final List<? extends LwM2mObjectEnabler> objectEnablers) {
         Validate.notNull(localAddress);
         Validate.notNull(localSecureAddress);
         Validate.notNull(objectEnablers);
@@ -99,8 +102,8 @@ public class QueuedModeLeshanClient implements LwM2mClient {
         this.objectEnablers = new ConcurrentHashMap<>();
         for (LwM2mObjectEnabler enabler : objectEnablers) {
             if (this.objectEnablers.containsKey(enabler.getId())) {
-                throw new IllegalArgumentException(String.format(
-                        "There is several objectEnablers with the same id %d.", enabler.getId()));
+                throw new IllegalArgumentException(
+                        String.format("There is several objectEnablers with the same id %d.", enabler.getId()));
             }
             this.objectEnablers.put(enabler.getId(), enabler);
         }

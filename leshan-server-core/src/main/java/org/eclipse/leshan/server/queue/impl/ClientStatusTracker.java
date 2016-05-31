@@ -16,25 +16,23 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.queue.impl;
 
-import java.util.ArrayList;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import org.eclipse.leshan.server.queue.ClientState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 /**
  * Tracks the status of each client endpoint. Also ensures that the state transitions are carried out
  *
- * A client starts with a REACHABLE state on a Register event. Before the first message is sent, the status
- * is set to RECEIVING. For further queued messages the client remains in this state until there are no more messages
- * to be delivered. When there are no more messages left, the state is set to REACHABLE.
- * On timeout of a message, the status is set to UNREACHABLE.
+ * A client starts with a REACHABLE state on a Register event. Before the first message is sent, the status is set to
+ * RECEIVING. For further queued messages the client remains in this state until there are no more messages to be
+ * delivered. When there are no more messages left, the state is set to REACHABLE. On timeout of a message, the status
+ * is set to UNREACHABLE.
  *
- * On Client updates or notifies, the UNREACHABLE state is changed to REACHABLE and then set to
- * RECEIVING before sending any messages. This is done to ensure that messages are sent only once in a multi-threaded
- * message queue processing.
+ * On Client updates or notifies, the UNREACHABLE state is changed to REACHABLE and then set to RECEIVING before sending
+ * any messages. This is done to ensure that messages are sent only once in a multi-threaded message queue processing.
  *
  * @see ClientState
  */
@@ -65,12 +63,13 @@ public final class ClientStatusTracker {
 
     private boolean transitState(String endpoint, ClientState from, ClientState to) {
         boolean updated = clientStatus.replace(endpoint, from, to);
-        if(updated) {
-            LOG.debug("Client {} state update {} -> {}", endpoint, from, to);
-        }
-        else {
-            LOG.debug("Cannot update Client {} state {} -> {}. Current state is {}",
-                    endpoint, from, to, clientStatus.get(endpoint));
+        if(LOG.isDebugEnabled()) {
+            if (updated) {
+                LOG.debug("Client {} state update {} -> {}", endpoint, from, to);
+            } else {
+                LOG.debug("Cannot update Client {} state {} -> {}. Current state is {}", endpoint, from, to,
+                        clientStatus.get(endpoint));
+            }
         }
         return updated;
     }

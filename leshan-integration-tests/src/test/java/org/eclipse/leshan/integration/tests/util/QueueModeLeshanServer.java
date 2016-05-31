@@ -52,9 +52,9 @@ public class QueueModeLeshanServer implements LwM2mServer {
     private final long sendTimeout;
 
     public QueueModeLeshanServer(final CoapServer coapServer, final ClientRegistry clientRegistry,
-                                 final ObservationRegistry observationRegistry, final SecurityRegistry securityRegistry,
-                                 final LwM2mModelProvider modelProvider, final LwM2mRequestSender queueRequestSender,
-                                 final MessageStore inMemoryMessageStore, long sendTimeout) {
+            final ObservationRegistry observationRegistry, final SecurityRegistry securityRegistry,
+            final LwM2mModelProvider modelProvider, final LwM2mRequestSender queueRequestSender,
+            final MessageStore inMemoryMessageStore, long sendTimeout) {
 
         this.coapServer = coapServer;
         this.clientRegistry = clientRegistry;
@@ -118,6 +118,9 @@ public class QueueModeLeshanServer implements LwM2mServer {
         if (observationRegistry instanceof Stoppable) {
             ((Stoppable) observationRegistry).stop();
         }
+        if (queueRequestSender instanceof Stoppable) {
+            ((Stoppable) queueRequestSender).stop();
+        }
 
         LOG.info("LW-M2M server stopped");
     }
@@ -149,13 +152,13 @@ public class QueueModeLeshanServer implements LwM2mServer {
 
     @Override
     public <T extends LwM2mResponse> T send(final Client destination, final DownlinkRequest<T> request,
-                                            final long timeout) throws InterruptedException{
+            final long timeout) throws InterruptedException {
         return queueRequestSender.send(destination, request, timeout);
     }
 
     @Override
     public <T extends LwM2mResponse> void send(final Client destination, final DownlinkRequest<T> request,
-                                               final ResponseCallback<T> responseCallback, final ErrorCallback errorCallback) {
+            final ResponseCallback<T> responseCallback, final ErrorCallback errorCallback) {
         queueRequestSender.send(destination, request, responseCallback, errorCallback);
     }
 
@@ -179,5 +182,7 @@ public class QueueModeLeshanServer implements LwM2mServer {
         return modelProvider;
     }
 
-    public MessageStore getMessageStore() { return messageStore; }
+    public MessageStore getMessageStore() {
+        return messageStore;
+    }
 }

@@ -20,8 +20,7 @@ import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 
 /**
- * QueuedRequest is wrapper around {@link DownlinkRequest} along with the current
- * state of the request.
+ * QueuedRequest is wrapper around {@link DownlinkRequest} along with the current state of the request.
  */
 public interface QueuedRequest {
 

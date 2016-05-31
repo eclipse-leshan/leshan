@@ -16,9 +16,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.queue.impl;
 
-import java.util.Map;
-import java.util.concurrent.Executor;
-
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.response.ErrorCallback;
@@ -31,6 +28,9 @@ import org.eclipse.leshan.server.queue.QueuedRequest;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
+import java.util.concurrent.Executor;
 
 /**
  * Request sending task is a Runnable, which is responsible for the actual sending of a queue request. The queue request
@@ -56,13 +56,12 @@ class RequestSendingTask implements Runnable {
      * @param clientStatusTracker tracks the status of the client
      * @param messageStore holds queued messages for the client
      * @param endpoint clients endpoint identifier
-     * @param responseContextHolder holds the callback instances of the users for processing any response or error
-     *                              from client.
+     * @param responseContextHolder holds the callback instances of the users for processing any response or error from
+     *        client.
      */
     RequestSendingTask(ClientRegistry clientRegistry, LwM2mRequestSender requestSender,
-            Executor queueProcessingExecutor,
-            ClientStatusTracker clientStatusTracker, MessageStore messageStore, final String endpoint,
-            Map<Long, ResponseContext> responseContextHolder) {
+            Executor queueProcessingExecutor, ClientStatusTracker clientStatusTracker, MessageStore messageStore,
+            final String endpoint, Map<Long, ResponseContext> responseContextHolder) {
         this.clientRegistry = clientRegistry;
         this.requestSender = requestSender;
         this.processingExecutor = queueProcessingExecutor;
@@ -74,18 +73,26 @@ class RequestSendingTask implements Runnable {
 
     @Override
     public void run() {
+        try {
+
+            executeAction();
+        } catch (Exception e) {
+            LOG.info("error while executing runnable", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void executeAction() {
         final QueuedRequest firstRequest = messageStore.retrieveFirst(endpoint);
 
         if (firstRequest != null) {
             try {
-                // TODO send with COAP retries ok? See
-                // https://github.com/OpenMobileAlliance/OMA-LwM2M-Public-Review/issues/32
                 final DownlinkRequest<LwM2mResponse> downlinkRequest = firstRequest.getDownlinkRequest();
                 LOG.debug("Sending request: {}", downlinkRequest);
                 final Client client = clientRegistry.get(firstRequest.getEndpoint());
                 if (client == null) {
                     // client not registered anymore -> ignore this request
-                    LOG.debug("Client {} not registered anymore: {}", firstRequest.getEndpoint(), downlinkRequest);
+                    LOG.debug("Client {} not registered anymore: {}", endpoint, downlinkRequest);
                 } else {
                     requestSender.send(client, downlinkRequest, new ResponseCallback<LwM2mResponse>() {
                         @Override
@@ -131,7 +138,9 @@ class RequestSendingTask implements Runnable {
     }
 
     private void timeout(final Client client) {
-        LOG.debug("Client {} timed out", client.getEndpoint());
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Client {} timed out", client.getEndpoint());
+        }
         clientStatusTracker.setClientUnreachable(client.getEndpoint());
     }
 }

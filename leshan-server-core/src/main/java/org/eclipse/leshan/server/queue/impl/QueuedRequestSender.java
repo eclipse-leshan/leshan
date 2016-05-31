@@ -16,12 +16,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.queue.impl;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.BindingMode;
@@ -40,9 +34,16 @@ import org.eclipse.leshan.server.queue.MessageStore;
 import org.eclipse.leshan.server.queue.QueuedRequest;
 import org.eclipse.leshan.server.queue.QueuedRequestFactory;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
+import org.eclipse.leshan.util.NamedThreadFactory;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This sender is a special implementation of a {@link LwM2mRequestSender}, which is aware of a LwM2M client's binding
@@ -53,8 +54,8 @@ import org.slf4j.LoggerFactory;
 public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
     private static final Logger LOG = LoggerFactory.getLogger(QueuedRequestSender.class);
     private final LwM2mRequestSender delegateSender;
-    private final ExecutorService processingExecutor = new ExceptionAwareExecutorService(
-            Executors.newCachedThreadPool(new NamedThreadFactory("leshan-qmode-processingExecutor-%d")));
+    private final ExecutorService processingExecutor = Executors.newCachedThreadPool(
+            new NamedThreadFactory("leshan-qmode-processingExecutor-%d"));
     private final Map<Long, ResponseContext> responseContextHolder = new ConcurrentHashMap<>();
     private final MessageStore messageStore;
     private final QueuedRequestFactory queuedRequestFactory;
@@ -151,8 +152,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
         try {
             boolean queueProcessingExecutorTerminated = processingExecutor.awaitTermination(5, TimeUnit.SECONDS);
             if (!(queueProcessingExecutorTerminated)) {
-                LOG.debug(
-                        "Could not stop all executors within timeout. processingExecutor stopped: {}, ",
+                LOG.debug("Could not stop all executors within timeout. processingExecutor stopped: {}, ",
                         queueProcessingExecutorTerminated);
             }
         } catch (InterruptedException e) {
@@ -162,8 +162,8 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
     }
 
     private RequestSendingTask newRequestSendingTask(final String endpoint) {
-        return new RequestSendingTask(clientRegistry, delegateSender, processingExecutor,
-                clientStatusTracker, messageStore, endpoint, responseContextHolder);
+        return new RequestSendingTask(clientRegistry, delegateSender, processingExecutor, clientStatusTracker,
+                messageStore, endpoint, responseContextHolder);
     }
 
     private boolean isQueueMode(BindingMode bindingMode) {
@@ -174,10 +174,11 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
         @Override
         public void newValue(Observation observation, LwM2mNode value) {
             Client client = clientRegistry.findByRegistrationId(observation.getRegistrationId());
-            if (isQueueMode(client.getBindingMode())
-                    && clientStatusTracker.setClientReachable(client.getEndpoint())
+            if (isQueueMode(client.getBindingMode()) && clientStatusTracker.setClientReachable(client.getEndpoint())
                     && clientStatusTracker.startClientReceiving(client.getEndpoint())) {
-                LOG.debug("Notify from {}. Sending queued requests.", client.getEndpoint());
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Notify from {}. Sending queued requests.", client.getEndpoint());
+                }
                 processingExecutor.execute(newRequestSendingTask(client.getEndpoint()));
             }
         }
@@ -199,7 +200,9 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
             // When client is in QueueMode
             if (isQueueMode(client.getBindingMode())) {
                 clientStatusTracker.setClientReachable(client.getEndpoint());
-                LOG.debug("Client {} registered.", client.getEndpoint());
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Client {} registered.", client.getEndpoint());
+                }
             }
         }
 
@@ -210,7 +213,9 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
             if (isQueueMode(clientUpdated.getBindingMode())
                     && clientStatusTracker.setClientReachable(clientUpdated.getEndpoint())
                     && clientStatusTracker.startClientReceiving(clientUpdated.getEndpoint())) {
-                LOG.debug("Client {} updated. Sending queued request.", clientUpdated.getEndpoint());
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Client {} updated. Sending queued request.", clientUpdated.getEndpoint());
+                }
                 processingExecutor.execute(newRequestSendingTask(clientUpdated.getEndpoint()));
             }
         }
@@ -219,7 +224,9 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
         public void unregistered(final Client client) {
             if (isQueueMode(client.getBindingMode())) {
                 clientStatusTracker.clearClientState(client.getEndpoint());
-                LOG.debug("Client {} de-registered. Removing all queued requests.", client.getEndpoint());
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Client {} de-registered. Removing all queued requests.", client.getEndpoint());
+                }
                 messageStore.removeAll(client.getEndpoint());
                 // TODO: Also cancel any CoAP retries?
             }

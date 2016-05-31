@@ -16,6 +16,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.concurrent.CountDownLatch;
+
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
@@ -51,12 +57,6 @@ import org.eclipse.leshan.server.request.LwM2mRequestSender;
 import org.eclipse.leshan.server.security.SecurityRegistry;
 import org.eclipse.leshan.server.security.SecurityStore;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.concurrent.CountDownLatch;
-
 /**
  * IntegrationTestHelper, which is intended to create a client/server environment for testing the Queue Mode feature.
  */
@@ -74,10 +74,10 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         networkConfig = NetworkConfig.createStandardWithoutFile();
         networkConfig.setLong(Keys.ACK_TIMEOUT, ACK_TIMEOUT);
         networkConfig.setInt(Keys.MAX_RETRANSMIT, 0);
-        noSecureEndpoint = new CoapEndpoint(new InetSocketAddress(InetAddress.getLoopbackAddress(),
-                networkConfig.getInt(Keys.COAP_PORT)));
-        secureEndpoint = new CoapEndpoint(new InetSocketAddress(InetAddress.getLoopbackAddress(),
-                networkConfig.getInt(Keys.COAP_SECURE_PORT)));
+        noSecureEndpoint = new CoapEndpoint(
+                new InetSocketAddress(InetAddress.getLoopbackAddress(), networkConfig.getInt(Keys.COAP_PORT)));
+        secureEndpoint = new CoapEndpoint(
+                new InetSocketAddress(InetAddress.getLoopbackAddress(), networkConfig.getInt(Keys.COAP_SECURE_PORT)));
     }
 
     private void createCoapServer(final ClientRegistry clientRegistry, final SecurityStore securityStore) {
@@ -85,7 +85,8 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         coapServer.addEndpoint(noSecureEndpoint);
         coapServer.addEndpoint(secureEndpoint);
 
-        final RegisterResource rdResource = new RegisterResource(new RegistrationHandler(clientRegistry, securityStore));
+        final RegisterResource rdResource = new RegisterResource(
+                new RegistrationHandler(clientRegistry, securityStore));
         coapServer.add(rdResource);
     }
 
@@ -113,12 +114,12 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         final QueuedRequestFactory queuedRequestFactory = new QueuedRequestFactoryImpl();
         final ObservationRegistry observationRegistry = new ObservationRegistryImpl();
         final LwM2mModelProvider modelProvider = new StandardModelProvider();
-        final LwM2mRequestSender delegateSender = new CaliforniumLwM2mRequestSender(new HashSet<>(
-                coapServer.getEndpoints()), observationRegistry, modelProvider);
-        final QueuedRequestSender requestSender = QueuedRequestSender.builder()
-                .setMessageStore(inMemoryMessageStore).setQueuedRequestFactory(queuedRequestFactory)
-                .setRequestSender(delegateSender).setClientRegistry(clientRegistry)
-                .setObservationRegistry(observationRegistry).setResponseCallbackWorkers(4).build();
+        final LwM2mRequestSender delegateSender = new CaliforniumLwM2mRequestSender(
+                new HashSet<>(coapServer.getEndpoints()), observationRegistry, modelProvider);
+        final QueuedRequestSender requestSender = QueuedRequestSender.builder().setMessageStore(inMemoryMessageStore)
+                .setQueuedRequestFactory(queuedRequestFactory).setRequestSender(delegateSender)
+                .setClientRegistry(clientRegistry).setObservationRegistry(observationRegistry)
+                .setResponseCallbackWorkers(4).build();
 
         server = new QueueModeLeshanServer(coapServer, clientRegistry, observationRegistry, securityRegistry,
                 modelProvider, requestSender, inMemoryMessageStore, ACK_TIMEOUT);
@@ -127,8 +128,7 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
     @Override
     public void createClient() {
         final ObjectsInitializer initializer = new ObjectsInitializer();
-        initializer.setInstancesForObject(
-                LwM2mId.SECURITY,
+        initializer.setInstancesForObject(LwM2mId.SECURITY,
                 Security.noSec("coap://" + noSecureEndpoint.getAddress().getHostString() + ":"
                         + noSecureEndpoint.getAddress().getPort(), 12345));
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, CUSTOM_LIFETIME, BindingMode.UQ, false));
@@ -148,9 +148,8 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         enablers.add(initializer.create(2));
         enablers.add(initializer.create(3));
 
-         client = new QueuedModeLeshanClient(ENDPOINT_IDENTIFIER,
-                 new InetSocketAddress(0), //localAddress
-                 new InetSocketAddress(0), //localSecureAddress
+        client = new QueuedModeLeshanClient(ENDPOINT_IDENTIFIER, new InetSocketAddress(0), // localAddress
+                new InetSocketAddress(0), // localSecureAddress
                 enablers);
     }
 
