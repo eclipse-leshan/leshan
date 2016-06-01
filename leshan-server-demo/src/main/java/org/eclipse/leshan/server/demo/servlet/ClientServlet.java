@@ -17,8 +17,6 @@ package org.eclipse.leshan.server.demo.servlet;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -64,6 +62,8 @@ import com.google.gson.JsonSyntaxException;
  * Service HTTP REST API calls.
  */
 public class ClientServlet extends HttpServlet {
+
+    private static final String FORMAT_PARAM = "format";
 
     private static final Logger LOG = LoggerFactory.getLogger(ClientServlet.class);
 
@@ -130,7 +130,13 @@ public class ClientServlet extends HttpServlet {
             String target = StringUtils.removeStart(req.getPathInfo(), "/" + clientEndpoint);
             Client client = server.getClientRegistry().get(clientEndpoint);
             if (client != null) {
-                ReadRequest request = new ReadRequest(target);
+                // get content format
+                String contentFormatParam = req.getParameter(FORMAT_PARAM);
+                ContentFormat contentFormat = contentFormatParam != null
+                        ? ContentFormat.valueOf(contentFormatParam.toUpperCase()) : null;
+
+                // create & process request
+                ReadRequest request = new ReadRequest(contentFormat, target);
                 ReadResponse cResponse = server.send(client, request, TIMEOUT);
                 processDeviceResponse(req, resp, cResponse);
             } else {
@@ -170,7 +176,15 @@ public class ClientServlet extends HttpServlet {
             String target = StringUtils.removeStart(req.getPathInfo(), "/" + clientEndpoint);
             Client client = server.getClientRegistry().get(clientEndpoint);
             if (client != null) {
-                WriteResponse cResponse = this.writeRequest(client, target, req, resp);
+                // get content format
+                String contentFormatParam = req.getParameter(FORMAT_PARAM);
+                ContentFormat contentFormat = contentFormatParam != null
+                        ? ContentFormat.valueOf(contentFormatParam.toUpperCase()) : null;
+
+                // create & process request
+                LwM2mNode node = extractLwM2mNode(target, req);
+                WriteRequest request = new WriteRequest(Mode.REPLACE, contentFormat, target, node);
+                WriteResponse cResponse = server.send(client, request, TIMEOUT);
                 processDeviceResponse(req, resp, cResponse);
             } else {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -205,7 +219,13 @@ public class ClientServlet extends HttpServlet {
                 String target = StringUtils.substringBetween(req.getPathInfo(), clientEndpoint, "/observe");
                 Client client = server.getClientRegistry().get(clientEndpoint);
                 if (client != null) {
-                    ObserveRequest request = new ObserveRequest(target);
+                    // get content format
+                    String contentFormatParam = req.getParameter(FORMAT_PARAM);
+                    ContentFormat contentFormat = contentFormatParam != null
+                            ? ContentFormat.valueOf(contentFormatParam.toUpperCase()) : null;
+
+                    // create & process request
+                    ObserveRequest request = new ObserveRequest(contentFormat, target);
                     ObserveResponse cResponse = server.send(client, request, TIMEOUT);
                     processDeviceResponse(req, resp, cResponse);
                 } else {
@@ -263,8 +283,20 @@ public class ClientServlet extends HttpServlet {
             try {
                 Client client = server.getClientRegistry().get(clientEndpoint);
                 if (client != null) {
-                    CreateResponse cResponse = this.createRequest(client, target, req, resp);
-                    processDeviceResponse(req, resp, cResponse);
+                    // get content format
+                    String contentFormatParam = req.getParameter(FORMAT_PARAM);
+                    ContentFormat contentFormat = contentFormatParam != null
+                            ? ContentFormat.valueOf(contentFormatParam.toUpperCase()) : null;
+
+                    // create & process request
+                    LwM2mNode node = extractLwM2mNode(target, req);
+                    if (node instanceof LwM2mObjectInstance) {
+                        CreateRequest request = new CreateRequest(contentFormat, target, (LwM2mObjectInstance) node);
+                        CreateResponse cResponse = server.send(client, request, TIMEOUT);
+                        processDeviceResponse(req, resp, cResponse);
+                    } else {
+                        throw new IllegalArgumentException("payload must contain an object instance");
+                    }
                 } else {
                     resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
@@ -355,40 +387,9 @@ public class ClientServlet extends HttpServlet {
             resp.getOutputStream().write(response.getBytes());
             resp.setStatus(HttpServletResponse.SC_OK);
         }
-
     }
 
-    // TODO refactor the code to remove this method.
-    private WriteResponse writeRequest(Client client, String target, HttpServletRequest req, HttpServletResponse resp)
-            throws IOException, InterruptedException {
-        String contentType = StringUtils.substringBefore(req.getContentType(), ";");
-
-        if ("text/plain".equals(contentType)) {
-            String content = IOUtils.toString(req.getInputStream(), req.getCharacterEncoding());
-            int rscId = Integer.valueOf(target.substring(target.lastIndexOf("/") + 1));
-            WriteRequest writeRequest = new WriteRequest(Mode.REPLACE, ContentFormat.TEXT, target,
-                    LwM2mSingleResource.newStringResource(rscId, content));
-            return server.send(client, writeRequest, TIMEOUT);
-
-        } else if ("application/json".equals(contentType)) {
-            String content = IOUtils.toString(req.getInputStream(), req.getCharacterEncoding());
-            LwM2mNode node = null;
-            try {
-                node = gson.fromJson(content, LwM2mNode.class);
-            } catch (JsonSyntaxException e) {
-                throw new IllegalArgumentException("unable to parse json to tlv:" + e.getMessage(), e);
-            }
-            return server.send(client, new WriteRequest(Mode.REPLACE, null, target, node), TIMEOUT);
-
-        } else {
-            throw new IllegalArgumentException("content type " + req.getContentType()
-                    + " not supported for write requests");
-        }
-    }
-
-    // TODO refactor the code to remove this method.
-    private CreateResponse createRequest(Client client, String target, HttpServletRequest req, HttpServletResponse resp)
-            throws IOException, InterruptedException {
+    private LwM2mNode extractLwM2mNode(String target, HttpServletRequest req) throws IOException {
         String contentType = StringUtils.substringBefore(req.getContentType(), ";");
         if ("application/json".equals(contentType)) {
             String content = IOUtils.toString(req.getInputStream(), req.getCharacterEncoding());
@@ -398,15 +399,12 @@ public class ClientServlet extends HttpServlet {
             } catch (JsonSyntaxException e) {
                 throw new IllegalArgumentException("unable to parse json to tlv:" + e.getMessage(), e);
             }
-            if (!(node instanceof LwM2mObjectInstance)) {
-                throw new IllegalArgumentException("payload must contain an object instance");
-            }
-            return server.send(client, new CreateRequest(target, ((LwM2mObjectInstance) node).getResources().values()),
-                    TIMEOUT);
-        } else {
-            throw new IllegalArgumentException("content type " + req.getContentType()
-                    + " not supported for write requests");
+            return node;
+        } else if ("text/plain".equals(contentType)) {
+            String content = IOUtils.toString(req.getInputStream(), req.getCharacterEncoding());
+            int rscId = Integer.valueOf(target.substring(target.lastIndexOf("/") + 1));
+            return LwM2mSingleResource.newStringResource(rscId, content);
         }
+        throw new IllegalArgumentException("content type " + req.getContentType() + " not supported");
     }
-
 }

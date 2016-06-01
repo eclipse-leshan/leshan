@@ -1,10 +1,38 @@
 <div ng-if='client'>
 	<ol class="breadcrumb">
-  		<li><a href="#/clients/">Clients</a></li>
-  		<li class="active">{{ clientId }}</li>
+		<li><a href="#/clients/">Clients</a></li>
+		<li class="active">{{ clientId }}</li>
+
+		<span class="pull-right">
+			<form class="form-inline">
+			<abbr title="Content Format used for object, object instance and multi-resource instance">Multi-value</abbr>
+			<div class="btn-group" dropdown is-open="multi.status.isopen">
+				<button type="button" class="btn btn-xs btn-default dropdown-toggle dropdown-menu-contentformat" dropdown-toggle ng-disabled="disabled">
+					{{settings.multi.format}} <span class="caret"></span>
+				</button>
+				<ul class="dropdown-menu dropdown-menu-contentformat" role="menu">
+					<li><a ng-click="settings.multi.format='TLV'">TLV</a></li>
+					<li><a ng-click="settings.multi.format='JSON'">JSON</a></li>
+				</ul>
+			</div>
+			<abbr title="Content Format used for single resource">Single-value</abbr>
+			<div class="btn-group" dropdown is-open="single.status.isopen">
+				<button type="button" class="btn btn-xs btn-default dropdown-toggle dropdown-menu-contentformat" dropdown-toggle ng-disabled="disabled">
+					{{settings.single.format}} <span class="caret"></span>
+				</button>
+				<ul class="dropdown-menu dropdown-menu-contentformat" role="menu">
+					<li><a ng-click="settings.single.format='TLV'">TLV</a></li>
+					<li><a ng-click="settings.single.format='JSON'">JSON</a></li>
+					<li><a ng-click="settings.single.format='Text'">Text</a></li>
+					<li><a ng-click="settings.single.format='Opaque'">Opaque</a></li>
+				</ul>
+			</div>
+			</form>
+		</span>
 	</ol>
+
 	<accordion close-others=false>
-		<object ng-repeat='object in objects' object='object' parent='parent'></object>
+		<object ng-repeat='object in objects' object='object' settings='settings'></object>
 	</accordion>
 
 	<!-- CoAP logs -->
@@ -18,20 +46,20 @@
 		</div> 
 		<div collapse="coapLogsCollapsed" class="coaplogs-panel">
 			<table class="table coaplogs-header">
-		        <thead>
-		            <tr>
+				<thead>
+					<tr>
 						<th class="col-md-1">Time</th>
 						<th class="col-md-1">CoAP Message</th>
 						<th class="col-md-1">MID</th>
 						<th class="col-md-1">Token</th>
 						<th class="col-md-4">Options</th>
 						<th class="col-md-4">Payload</th>
-		            </tr>
-		        </thead>
-		  	</table>
+					</tr>
+				</thead>
+			</table>
 			<div class="coaplogs-table">
 				<table class="table table-striped">
-				    <tbody>
+					<tbody>
 						<tr ng-repeat="log in coaplogs">
 							<td class="col-md-1">{{log.date}}</td>
 							<td class="col-md-1"><span class="glyphicon" ng-class="{'glyphicon-arrow-left' : !log.incoming, 'glyphicon-arrow-right' : log.incoming}" aria-hidden="true"></span>  {{log.type}}-{{log.code}}</td>
@@ -40,7 +68,7 @@
 							<td class="col-md-4">{{log.options}}</td>
 							<td class="col-md-4">{{log.payload}}</td>
 						</tr>
-				    </tbody>
+					</tbody>
 				</table>
 			</div>
 		</div>

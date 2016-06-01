@@ -22,7 +22,8 @@ angular.module('instanceDirectives', [])
         replace: true,
         scope: {
             instance: '=',
-            parent: '='
+            parent: '=',
+            settings: '='
         },
         templateUrl: "partials/instance.html",
         link: function (scope, element, attrs) {
@@ -35,8 +36,9 @@ angular.module('instanceDirectives', [])
             scope.instance.observe = {tooltip : "Observe <br/>" + scope.instance.path};
 
             scope.read = function() {
+                var format = scope.settings.multi.format;
                 var uri = "api/clients/" + $routeParams.clientId + scope.instance.path;
-                $http.get(uri)
+                $http.get(uri, {params:{format:format}})
                 .success(function(data, status, headers, config) {
                     // manage request information
                     var read = scope.instance.read;
@@ -122,7 +124,8 @@ angular.module('instanceDirectives', [])
                         }
                     }
                     // Send request
-                    $http({method: 'PUT', url: "api/clients/" + $routeParams.clientId + scope.instance.path, data: payload, headers:{'Content-Type': 'application/json'}})
+                    var format = scope.settings.multi.format;
+                    $http({method: 'PUT', url: "api/clients/" + $routeParams.clientId + scope.instance.path, data: payload, headers:{'Content-Type': 'application/json'}, params:{format:format}})
                     .success(function(data, status, headers, config) {
                         write = scope.instance.write;
                         write.date = new Date();
@@ -149,8 +152,9 @@ angular.module('instanceDirectives', [])
             };
 
             scope.startObserve = function() {
+                var format = scope.settings.multi.format;
                 var uri = "api/clients/" + $routeParams.clientId + scope.instance.path+"/observe";
-                $http.post(uri)
+                $http.post(uri, null, {params:{format:format}})
                 .success(function(data, status, headers, config) {
                     var observe = scope.instance.observe;
                     observe.date = new Date();

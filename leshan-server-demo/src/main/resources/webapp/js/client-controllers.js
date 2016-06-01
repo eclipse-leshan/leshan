@@ -145,6 +145,11 @@ lwClientControllers.controller('ClientDetailCtrl', [
             }
         });
 
+        // default format
+        $scope.settings={};
+        $scope.settings.multi = {format:"TLV"};
+        $scope.settings.single = {format:"TLV"};
+
         $scope.clientId = $routeParams.clientId;
 
         // get client details

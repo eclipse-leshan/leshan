@@ -22,7 +22,8 @@ angular.module('resourceDirectives', [])
         replace: true,
         scope: {
             resource: '=',
-            parent: '='
+            parent: '=',
+            settings: '='
         },
         templateUrl: "partials/resource.html",
         link: function (scope, element, attrs) {
@@ -59,8 +60,9 @@ angular.module('resourceDirectives', [])
             }
 
             scope.startObserve = function() {
+                var format = scope.settings.single.format;
                 var uri = "api/clients/" + $routeParams.clientId + scope.resource.path+"/observe";
-                $http.post(uri)
+                $http.post(uri, null,{params:{format:format}})
                 .success(function(data, status, headers, config) {
                     var observe = scope.resource.observe;
                     observe.date = new Date();
@@ -107,8 +109,9 @@ angular.module('resourceDirectives', [])
             
             
             scope.read = function() {
+                var format = scope.settings.single.format;
                 var uri = "api/clients/" + $routeParams.clientId + scope.resource.path;
-                $http.get(uri)
+                $http.get(uri, {params:{format:format}})
                 .success(function(data, status, headers, config) {
                     // manage request information
                     var read = scope.resource.read;
@@ -157,7 +160,8 @@ angular.module('resourceDirectives', [])
                         value = lwResources.getTypedValue(value, scope.resource.def.type);
                         rsc["value"] = value;
 
-                        $http({method: 'PUT', url: "api/clients/" + $routeParams.clientId + scope.resource.path, data: rsc, headers:{'Content-Type': 'application/json'}})
+                        var format = scope.settings.single.format;
+                        $http({method: 'PUT', url: "api/clients/" + $routeParams.clientId + scope.resource.path, data: rsc, headers:{'Content-Type': 'application/json'},params:{format:format}})
                         .success(function(data, status, headers, config) {
                             write = scope.resource.write;
                             write.date = new Date();

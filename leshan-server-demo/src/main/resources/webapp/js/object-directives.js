@@ -22,14 +22,11 @@ angular.module('objectDirectives', [])
         replace: true,
         scope: {
             object: '=',
-            parent: '='
+            settings: '='
         },
         templateUrl: "partials/object.html",
         link: function (scope, element, attrs) {
             var parentPath = "";
-            if(scope.parent) {
-                parentPath = scope.parent.path;
-            }
             scope.status = {};
             scope.status.open = true;
             
@@ -62,8 +59,9 @@ angular.module('objectDirectives', [])
                         } 
                     }
                     // Send request
-                    var instancepath  = scope.object.path
-                    $http({method: 'POST', url: "api/clients/" + $routeParams.clientId + instancepath, data: payload, headers:{'Content-Type': 'application/json'}})
+                    var format = scope.settings.multi.format;
+                    var instancepath  = scope.object.path;
+                    $http({method: 'POST', url: "api/clients/" + $routeParams.clientId + instancepath, data: payload, headers:{'Content-Type': 'application/json'}, params:{format:format}})
                     .success(function(data, status, headers, config) {
                         create = scope.object.create;
                         create.date = new Date();

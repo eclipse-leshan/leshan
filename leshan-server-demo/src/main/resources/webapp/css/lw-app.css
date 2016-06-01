@@ -129,6 +129,16 @@ table.table-href > tbody{
 	cursor: pointer;
 }
 
+/* define minimum size for dropdown menu content format*/
+.dropdown-menu-contentformat{
+	min-width: 75px;
+}
+
+/* remove dotted line for abbreviation */
+abbr[title] {
+	border-bottom: none;
+}
+
 .panel-heading {
 	cursor: pointer;
 }
