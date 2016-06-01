@@ -35,7 +35,7 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
     private final List<LwM2mResource> resources;
     private final ContentFormat contentFormat;
 
-    // ***************** constructors without object id ******************* /
+    // ***************** constructors without object instance id ******************* /
 
     /**
      * Creates a request for creating an instance of a particular object without specifying the id of this new instance.
@@ -93,8 +93,8 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
      * @param instance the object instance
      */
     public CreateRequest(ContentFormat contentFormat, int objectId, LwM2mObjectInstance instance) {
-        this(contentFormat, new LwM2mPath(objectId), instance.getId(), instance.getResources().values()
-                .toArray(new LwM2mResource[0]));
+        this(contentFormat, new LwM2mPath(objectId), instance.getId(),
+                instance.getResources().values().toArray(new LwM2mResource[0]));
     }
 
     /**
@@ -109,9 +109,11 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
 
     // ***************** string path constructor ******************* /
     /**
-     * Creates a request for creating an instance of a particular object using the default TLV content format.
+     * Creates a request for creating an instance of a particular object using the default TLV content format. </br>
+     * If the path is an object path, the instance id will be chosen by the client and accessible in the CreateResponse.
+     * To choose instance id at server side, the path must be an object instance path.
      * 
-     * @param path the target path
+     * @param path the target path (object or object instance)
      * @param resources the resource values for the new instance
      */
     public CreateRequest(String path, Collection<LwM2mResource> resources) {
@@ -119,10 +121,12 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
     }
 
     /**
-     * Creates a request for creating an instance of a particular object.
+     * Creates a request for creating an instance of a particular object. </br>
+     * If the path is an object path, the instance id will be chosen by the client and accessible in the CreateResponse.
+     * To choose instance id at server side, the path must be an object instance path.
      * 
-     * @param contentFormat the payload format
-     * @param path the target path
+     * @param contentFormat the payload format (TLV or JSON)
+     * @param path the target path (object or object instance)
      * @param resources the resource values for the new instance
      */
     public CreateRequest(ContentFormat contentFormat, String path, Collection<LwM2mResource> resources) {
@@ -130,9 +134,11 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
     }
 
     /**
-     * Creates a request for creating an instance of a particular object using the default TLV content format.
+     * Creates a request for creating an instance of a particular object using the default TLV content format. </br>
+     * If the path is an object path, the instance id will be chosen by the client and accessible in the CreateResponse.
+     * To choose instance id at server side, the path must be an object instance path.
      * 
-     * @param path the target path
+     * @param path the target path (object or object instance)
      * @param resources the resource values for the new instance
      */
     public CreateRequest(String path, LwM2mResource... resources) {
@@ -140,26 +146,70 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
     }
 
     /**
-     * Creates a request for creating an instance of a particular object.
+     * Creates a request for creating an instance of a particular object.</br>
+     * If the path is an object path, the instance id will be chosen by the client and accessible in the CreateResponse.
+     * To choose instance id at server side, the path must be an object instance path.
      * 
-     * @param contentFormat the payload format
-     * @param path the target path
+     * @param contentFormat the payload format (TLV or JSON)
+     * @param path the target path (object or object instance)
      * @param resources the resource values for the new instance
      */
     public CreateRequest(ContentFormat contentFormat, String path, LwM2mResource... resources) {
         this(contentFormat, new LwM2mPath(path), null, resources);
     }
 
-    // ***************** generic constructor ******************* /
+    /**
+     * Creates a request for creating an instance of a particular object.</br>
+     * If the path is an object path, the instance id will be chosen by the client and accessible in the CreateResponse.
+     * To choose instance id at server side, the path must be an object instance path.
+     * 
+     * @param path the target path (object or object instance)
+     * @param instance the object instance
+     */
+    public CreateRequest(String path, LwM2mObjectInstance instance) {
+        this(null, new LwM2mPath(path), instance.getId(),
+                instance.getResources().values().toArray((new LwM2mResource[instance.getResources().size()])));
+    }
 
+    /**
+     * Creates a request for creating an instance of a particular object.</br>
+     * If the path is an object path, the instance id will be chosen by the client and accessible in the CreateResponse.
+     * To choose instance id at server side, the path must be an object instance path.
+     * 
+     * @param contentFormat the payload format (TLV or JSON)
+     * @param path the target path (object or object instance)
+     * @param instance the object instance
+     */
+    public CreateRequest(ContentFormat contentFormat, String path, LwM2mObjectInstance instance) {
+        this(contentFormat, new LwM2mPath(path), instance.getId(),
+                instance.getResources().values().toArray((new LwM2mResource[instance.getResources().size()])));
+    }
+
+    // ***************** generic constructor ******************* /
     private CreateRequest(ContentFormat format, LwM2mPath target, Integer instanceId, LwM2mResource[] resources) {
         super(target);
 
-        if (!target.isObject()) {
-            throw new IllegalArgumentException("Create request must target an object");
+        // accept only object and object instance path
+        if (!target.isObject() && !target.isObjectInstance()) {
+            throw new IllegalArgumentException("Create request must target an object or object instance");
         }
 
+        // validate instance id
+        if (instanceId != null && instanceId == LwM2mObjectInstance.UNDEFINED) {
+            instanceId = null;
+        }
+        if (target.isObjectInstance()) {
+            if (instanceId == null) {
+                instanceId = target.getObjectInstanceId();
+            } else {
+                if (instanceId != target.getObjectInstanceId()) {
+                    throw new IllegalArgumentException("Conflict between path instance id and node instance id");
+                }
+            }
+        }
         Validate.isTrue(instanceId == null || instanceId >= 0, "Invalid instance id: " + instanceId);
+
+        // store attributes
         this.instanceId = instanceId;
         this.resources = Collections.unmodifiableList(Arrays.asList(resources));
         this.contentFormat = format != null ? format : ContentFormat.TLV; // default to TLV
