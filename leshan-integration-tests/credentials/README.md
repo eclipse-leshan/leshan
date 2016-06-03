@@ -12,7 +12,7 @@ Key Stores passwords
 * Contains: server keys and certificate, signed by server CA
 
 
-The following instructions are from [Scandium documentation](https://github.com/eclipse/californium.scandium/blob/master/README.md) and describe the procedure to create the certificates and key stores in this credentials folder.
+The following instructions are from [Scandium documentation](https://github.com/eclipse/californium/blob/master/scandium-core/README.md) and describe the procedure to create the certificates and key stores in this credentials folder.
 
 In the following "entity" can be replaced by "client" of "server" for the set of instructions.
 
