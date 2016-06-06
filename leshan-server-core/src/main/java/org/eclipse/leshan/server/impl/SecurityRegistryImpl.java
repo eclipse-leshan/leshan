@@ -119,6 +119,8 @@ public class SecurityRegistryImpl implements SecurityRegistry {
         filename = file;
         this.serverPrivateKey = serverPrivateKey;
         this.serverX509CertChain = serverX509CertChain;
+        // extract the raw public key from the first certificate in the chain
+        this.serverPublicKey = serverX509CertChain[0].getPublicKey();
         this.trustedCertificates = trustedCertificates;
         loadFromFile();
     }
