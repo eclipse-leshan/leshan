@@ -151,13 +151,17 @@ public class LeshanServer implements LwM2mServer {
         builder.setPskStore(new LwM2mPskStore(this.securityRegistry, this.clientRegistry));
         PrivateKey privateKey = this.securityRegistry.getServerPrivateKey();
         PublicKey publicKey = this.securityRegistry.getServerPublicKey();
-        if (privateKey != null && publicKey != null) {
+        X509Certificate[] X509CertChain = this.securityRegistry.getServerX509CertChain();
+
+        // if in raw key mode and not in X.509 set the raw keys
+        if (X509CertChain == null && privateKey != null && publicKey != null) {
             builder.setIdentity(privateKey, publicKey);
         }
-        X509Certificate[] X509CertChain = this.securityRegistry.getServerX509CertChain();
+        // if in X.509 mode set the private key, certificate chain, public key is extracted from the certificate
         if (privateKey != null && X509CertChain != null && X509CertChain.length > 0) {
             builder.setIdentity(privateKey, X509CertChain, false);
         }
+
         Certificate[] trustedCertificates = securityRegistry.getTrustedCertificates();
         if (trustedCertificates != null && trustedCertificates.length > 0) {
             builder.setTrustStore(trustedCertificates);
