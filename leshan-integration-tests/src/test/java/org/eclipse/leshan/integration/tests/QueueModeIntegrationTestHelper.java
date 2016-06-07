@@ -71,13 +71,15 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
     private NetworkConfig networkConfig;
 
     public QueueModeIntegrationTestHelper() {
-        networkConfig = NetworkConfig.createStandardWithoutFile();
+        networkConfig = new NetworkConfig();
         networkConfig.setLong(Keys.ACK_TIMEOUT, ACK_TIMEOUT);
         networkConfig.setInt(Keys.MAX_RETRANSMIT, 0);
         noSecureEndpoint = new CoapEndpoint(
-                new InetSocketAddress(InetAddress.getLoopbackAddress(), networkConfig.getInt(Keys.COAP_PORT)));
+                new InetSocketAddress(InetAddress.getLoopbackAddress(), networkConfig.getInt(Keys.COAP_PORT)),
+                networkConfig);
         secureEndpoint = new CoapEndpoint(
-                new InetSocketAddress(InetAddress.getLoopbackAddress(), networkConfig.getInt(Keys.COAP_SECURE_PORT)));
+                new InetSocketAddress(InetAddress.getLoopbackAddress(), networkConfig.getInt(Keys.COAP_SECURE_PORT)),
+                networkConfig);
     }
 
     private void createCoapServer(final ClientRegistry clientRegistry, final SecurityStore securityStore) {
