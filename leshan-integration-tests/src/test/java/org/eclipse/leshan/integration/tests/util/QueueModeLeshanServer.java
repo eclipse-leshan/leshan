@@ -44,29 +44,27 @@ public class QueueModeLeshanServer implements LwM2mServer {
     private final ObservationRegistry observationRegistry;
     private final SecurityRegistry securityRegistry;
     private final LwM2mModelProvider modelProvider;
-    private final LwM2mRequestSender queueRequestSender;
+    private final LwM2mRequestSender lwM2mRequestSender;
     private final MessageStore messageStore;
-    private final long sendTimeout;
 
     public QueueModeLeshanServer(final CoapServer coapServer, final ClientRegistry clientRegistry,
             final ObservationRegistry observationRegistry, final SecurityRegistry securityRegistry,
-            final LwM2mModelProvider modelProvider, final LwM2mRequestSender queueRequestSender,
-            final MessageStore inMemoryMessageStore, long sendTimeout) {
+            final LwM2mModelProvider modelProvider, final LwM2mRequestSender lwM2mRequestSender,
+            final MessageStore inMemoryMessageStore) {
 
         this.coapServer = coapServer;
         this.clientRegistry = clientRegistry;
         this.observationRegistry = observationRegistry;
         this.securityRegistry = securityRegistry;
         this.modelProvider = modelProvider;
-        this.queueRequestSender = queueRequestSender;
+        this.lwM2mRequestSender = lwM2mRequestSender;
         this.messageStore = inMemoryMessageStore;
-        this.sendTimeout = sendTimeout;
 
         // Cancel observations on client unregistering
         clientRegistry.addListener(new ClientRegistryListener() {
 
             @Override
-            public void updated(ClientUpdate update, Client clientUpdated) {
+            public void updated(final ClientUpdate update, final Client clientUpdated) {
             }
 
             @Override
@@ -115,8 +113,8 @@ public class QueueModeLeshanServer implements LwM2mServer {
         if (observationRegistry instanceof Stoppable) {
             ((Stoppable) observationRegistry).stop();
         }
-        if (queueRequestSender instanceof Stoppable) {
-            ((Stoppable) queueRequestSender).stop();
+        if (lwM2mRequestSender instanceof Stoppable) {
+            ((Stoppable) lwM2mRequestSender).stop();
         }
 
         LOG.info("LW-M2M server stopped");
@@ -144,19 +142,21 @@ public class QueueModeLeshanServer implements LwM2mServer {
     @Override
     public <T extends LwM2mResponse> T send(final Client destination, final DownlinkRequest<T> request)
             throws InterruptedException {
-        return queueRequestSender.send(destination, request, sendTimeout);
+        throw new UnsupportedOperationException(
+                "This is a deprecated message and better not use it for testing purposes");
     }
 
     @Override
     public <T extends LwM2mResponse> T send(final Client destination, final DownlinkRequest<T> request,
             final long timeout) throws InterruptedException {
-        return queueRequestSender.send(destination, request, timeout);
+        throw new UnsupportedOperationException(
+                "This is a deprecated message and better not use it for testing purposes");
     }
 
     @Override
     public <T extends LwM2mResponse> void send(final Client destination, final DownlinkRequest<T> request,
             final ResponseCallback<T> responseCallback, final ErrorCallback errorCallback) {
-        queueRequestSender.send(destination, request, responseCallback, errorCallback);
+        // Noop.
     }
 
     @Override
@@ -181,5 +181,9 @@ public class QueueModeLeshanServer implements LwM2mServer {
 
     public MessageStore getMessageStore() {
         return messageStore;
+    }
+
+    public LwM2mRequestSender getLwM2mRequestSender() {
+        return lwM2mRequestSender;
     }
 }
