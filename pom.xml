@@ -43,6 +43,7 @@ Contributors:
         <module>leshan-core</module>
         <module>leshan-server-core</module>
         <module>leshan-server-cf</module>
+        <module>leshan-server-cluster</module>
         <module>leshan-client-core</module>
         <module>leshan-client-cf</module>
 
@@ -327,6 +328,11 @@ Contributors:
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>leshan-server-cf</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>leshan-server-cluster</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
