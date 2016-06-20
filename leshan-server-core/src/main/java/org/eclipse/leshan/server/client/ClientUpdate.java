@@ -41,9 +41,12 @@ public class ClientUpdate {
     public ClientUpdate(String registrationId, InetAddress address, Integer port, Long lifeTimeInSec, String smsNumber,
             BindingMode bindingMode, LinkObject[] objectLinks) {
         Validate.notNull(registrationId);
+        Validate.notNull(address);
+        Validate.notNull(port);
         this.registrationId = registrationId;
         this.address = address;
         this.port = port;
+
         this.lifeTimeInSec = lifeTimeInSec;
         this.smsNumber = smsNumber;
         this.bindingMode = bindingMode;
@@ -109,9 +112,8 @@ public class ClientUpdate {
 
     @Override
     public String toString() {
-        return String
-                .format("ClientUpdate [registrationId=%s, address=%s, port=%s, lifeTimeInSec=%s, smsNumber=%s, bindingMode=%s, objectLinks=%s]",
-                        registrationId, address, port, lifeTimeInSec, smsNumber, bindingMode,
-                        Arrays.toString(objectLinks));
+        return String.format(
+                "ClientUpdate [registrationId=%s, address=%s, port=%s, lifeTimeInSec=%s, smsNumber=%s, bindingMode=%s, objectLinks=%s]",
+                registrationId, address, port, lifeTimeInSec, smsNumber, bindingMode, Arrays.toString(objectLinks));
     }
 }

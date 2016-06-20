@@ -276,7 +276,7 @@ public class RedisClientRegistry implements ClientRegistry {
     }
 
     private byte[] serialize(Client client) {
-        return ClientSerDes.serialize(client);
+        return ClientSerDes.bSerialize(client);
     }
 
     private Client deserialize(byte[] data) {

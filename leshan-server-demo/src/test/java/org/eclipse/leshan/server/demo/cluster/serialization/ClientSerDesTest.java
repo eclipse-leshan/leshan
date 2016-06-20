@@ -45,7 +45,7 @@ public class ClientSerDesTest {
         builder.lastUpdate(new Date(101L));
         Client c = builder.build();
 
-        byte[] ser = ClientSerDes.serialize(c);
+        byte[] ser = ClientSerDes.bSerialize(c);
         Client c2 = ClientSerDes.deserialize(ser);
 
         assertEquals(c, c2);

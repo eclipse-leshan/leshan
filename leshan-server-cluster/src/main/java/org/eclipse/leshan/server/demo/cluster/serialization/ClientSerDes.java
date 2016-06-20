@@ -30,11 +30,11 @@ import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
 /**
- * Functions for serialize and deserialize a Client in JSON for storage.
+ * Functions for serialize and deserialize a Client in JSON.
  */
 public class ClientSerDes {
 
-    public static byte[] serialize(Client c) {
+    public static JsonObject jSerialize(Client c) {
         JsonObject o = Json.object();
         o.add("regDate", c.getRegistrationDate().getTime());
         o.add("address", c.getAddress().getHostAddress());
@@ -73,7 +73,15 @@ public class ClientSerDes {
         o.add("addAttr", addAttr);
         o.add("root", c.getRootPath());
         o.add("lastUp", c.getLastUpdate().getTime());
-        return o.toString().getBytes();
+        return o;
+    }
+
+    public static String sSerialize(Client c) {
+        return jSerialize(c).toString();
+    }
+
+    public static byte[] bSerialize(Client c) {
+        return jSerialize(c).toString().getBytes();
     }
 
     public static Client deserialize(byte[] data) {
