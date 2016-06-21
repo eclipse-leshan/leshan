@@ -91,16 +91,16 @@ public class LwM2mNodeDecoder {
         }
 
         // Decode content.
-        switch (format) {
-        case TEXT:
+        switch (format.getCode()) {
+        case ContentFormat.TEXT_CODE:
             return (T) LwM2mNodeTextDecoder.decode(content, path, model);
-        case TLV:
+        case ContentFormat.TLV_CODE:
             return LwM2mNodeTlvDecoder.decode(content, path, model, nodeClass);
-        case OPAQUE:
+        case ContentFormat.OPAQUE_CODE:
             return (T) LwM2mNodeOpaqueDecoder.decode(content, path, model);
-        case JSON:
+        case ContentFormat.JSON_CODE:
             return LwM2mNodeJsonDecoder.decode(content, path, model, nodeClass);
-        case LINK:
+        case ContentFormat.LINK_CODE:
             throw new UnsupportedOperationException("Content format " + format + " not yet implemented '" + path + "'");
         }
         return null;

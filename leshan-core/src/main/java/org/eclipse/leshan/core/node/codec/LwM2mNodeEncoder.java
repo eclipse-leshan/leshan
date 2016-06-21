@@ -50,17 +50,17 @@ public class LwM2mNodeEncoder {
         LOG.debug("Encoding node {} for path {} and format {}", node, path, format);
 
         byte[] encoded = null;
-        switch (format) {
-        case TLV:
+        switch (format.getCode()) {
+        case ContentFormat.TLV_CODE:
             encoded = LwM2mNodeTlvEncoder.encode(node, path, model);
             break;
-        case TEXT:
+        case ContentFormat.TEXT_CODE:
             encoded = LwM2mNodeTextEncoder.encode(node, path, model);
             break;
-        case OPAQUE:
+        case ContentFormat.OPAQUE_CODE:
             encoded = LwM2mNodeOpaqueEncoder.encode(node, path, model);
             break;
-        case JSON:
+        case ContentFormat.JSON_CODE:
             encoded = LwM2mNodeJsonEncoder.encode(node, path, model);
             break;
         default:
