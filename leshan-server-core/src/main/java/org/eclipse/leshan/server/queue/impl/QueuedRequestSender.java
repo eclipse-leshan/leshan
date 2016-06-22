@@ -22,7 +22,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.observation.Observation;
-import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.response.ErrorCallback;
@@ -89,14 +88,14 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
 
     @SuppressWarnings("deprecation")
     @Override
-    public <T extends LwM2mResponse> T send(final Client registrationInfo, final DownlinkRequest<T> request,
+    public <T extends LwM2mResponse> T send(final Client destination, final DownlinkRequest<T> request,
             final Long requestTimeout) throws InterruptedException {
-        throw new UnsupportedOperationException("QueueMode doesn't support sending sending of messages synchronously");
+        throw new UnsupportedOperationException("QueueMode doesn't support sending of messages synchronously");
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public <T extends LwM2mResponse> void send(final Client registrationInfo, final DownlinkRequest<T> request,
+    public <T extends LwM2mResponse> void send(final Client destination, final DownlinkRequest<T> request,
             final ResponseCallback<T> responseCallback, final ErrorCallback errorCallback) {
         throw new UnsupportedOperationException(
                 "QueueMode doesn't support sending of messages with callbacks. Use a request ticket instead and register your response listeners");
@@ -109,7 +108,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
      * java.lang.String, org.eclipse.leshan.core.request.DownlinkRequest)
      */
     @Override
-    public <T extends LwM2mResponse> void send(final Client registrationInfo, final String requestTicket,
+    public <T extends LwM2mResponse> void send(final Client destination, final String requestTicket,
             final DownlinkRequest<T> request) {
         LOG.trace("send(requestTicket={})", requestTicket);
         // safe because DownlinkRequest does not use generic itself
@@ -117,7 +116,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
         final DownlinkRequest<LwM2mResponse> castedDownlinkRequest = (DownlinkRequest<LwM2mResponse>) request;
         LOG.debug("Sending request {} with queue mode", castedDownlinkRequest);
 
-        final String endpoint = registrationInfo.getEndpoint();
+        final String endpoint = destination.getEndpoint();
 
         // Accept messages only when the client is already known to
         // ClientRegistry
@@ -175,7 +174,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
                     final LwM2mResponse response) {
                 final Client registrationInfo = clientRegistry.get(clientEndpoint);
                 // process only if the client has used Queue mode.
-                if (registrationInfo != null && isQueueMode(registrationInfo.getBindingMode())) {
+                if (registrationInfo != null && registrationInfo.usesQueueMode()) {
                     LOG.debug("response received in Queue mode successfully: {}", requestTicket);
                     processResponse(clientEndpoint, requestTicket, response);
                 }
@@ -185,7 +184,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
             public void onError(final String clientEndpoint, final String requestTicket, final Exception exception) {
                 final Client registrationInfo = clientRegistry.get(clientEndpoint);
                 // process only if the client has used Queue mode.
-                if (registrationInfo != null && isQueueMode(registrationInfo.getBindingMode())) {
+                if (registrationInfo != null && registrationInfo.usesQueueMode()) {
                     LOG.debug("exception on sending the request: {}", requestTicket, exception);
                     if (exception instanceof TimeoutException) {
                         timeout(clientEndpoint);
@@ -221,15 +220,11 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
         return new RequestSendingTask(clientRegistry, delegateSender, clientStatusTracker, messageStore, endpoint);
     }
 
-    private boolean isQueueMode(final BindingMode bindingMode) {
-        return bindingMode.equals(BindingMode.UQ);
-    }
-
     private final class QueueModeObservationRegistryListener implements ObservationRegistryListener {
         @Override
         public void newValue(final Observation observation, final LwM2mNode value) {
             final Client client = clientRegistry.findByRegistrationId(observation.getRegistrationId());
-            if (isQueueMode(client.getBindingMode()) && clientStatusTracker.setClientReachable(client.getEndpoint())
+            if (client.usesQueueMode() && clientStatusTracker.setClientReachable(client.getEndpoint())
                     && clientStatusTracker.startClientReceiving(client.getEndpoint())) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Notify from {}. Sending queued requests.", client.getEndpoint());
@@ -253,7 +248,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
         @Override
         public void registered(final Client client) {
             // When client is in QueueMode
-            if (isQueueMode(client.getBindingMode())) {
+            if (client.usesQueueMode()) {
                 clientStatusTracker.setClientReachable(client.getEndpoint());
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Client {} registered.", client.getEndpoint());
@@ -266,8 +261,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
             // When client is in QueueMode and was previously in unreachable
             // state and when RECEIVING state could be set
             // i.e:- there is no other message currently being sent
-            if (isQueueMode(clientUpdated.getBindingMode())
-                    && clientStatusTracker.setClientReachable(clientUpdated.getEndpoint())
+            if (clientUpdated.usesQueueMode() && clientStatusTracker.setClientReachable(clientUpdated.getEndpoint())
                     && clientStatusTracker.startClientReceiving(clientUpdated.getEndpoint())) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Client {} updated. Sending queued request.", clientUpdated.getEndpoint());
@@ -278,7 +272,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
 
         @Override
         public void unregistered(final Client client) {
-            if (isQueueMode(client.getBindingMode())) {
+            if (client.usesQueueMode()) {
                 clientStatusTracker.clearClientState(client.getEndpoint());
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Client {} de-registered. Removing all queued requests.", client.getEndpoint());

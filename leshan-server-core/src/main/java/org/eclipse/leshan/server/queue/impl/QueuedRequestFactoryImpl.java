@@ -79,8 +79,9 @@ public class QueuedRequestFactoryImpl implements QueuedRequestFactory {
 
         @Override
         public String toString() {
-            return "QueuedRequestImpl [requestTicket=" + requestTicket + ", downlinkRequest=" + downlinkRequest
-                    + ", endpoint=" + endpoint + ", requestId=" + requestId + "]";
+            return new StringBuilder().append("QueuedRequestImpl [requestTicket=").append(requestTicket)
+                    .append(", downlinkRequest=").append(downlinkRequest).append(", endpoint=" + endpoint)
+                    .append(", requestId=").append(requestId).append("]").toString();
         }
 
         @Override

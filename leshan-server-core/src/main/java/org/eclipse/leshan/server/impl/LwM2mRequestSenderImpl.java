@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.impl;
 
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -47,7 +48,7 @@ public class LwM2mRequestSenderImpl implements LwM2mRequestSender, Stoppable {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mRequestSenderImpl.class);
     private final ExecutorService processingExecutor = Executors
             .newCachedThreadPool(new NamedThreadFactory("leshan-response-processingExecutor-%d"));
-    private final ConcurrentLinkedQueue<ResponseListener> responseListeners = new ConcurrentLinkedQueue<ResponseListener>();
+    private final Queue<ResponseListener> responseListeners = new ConcurrentLinkedQueue<>();
 
     private final LwM2mRequestSender defaultRequestSender;
     private final QueuedRequestSender queuedRequestSender;
@@ -73,19 +74,19 @@ public class LwM2mRequestSenderImpl implements LwM2mRequestSender, Stoppable {
 
     @SuppressWarnings("deprecation")
     @Override
-    public <T extends LwM2mResponse> T send(final Client registrationInfo, final DownlinkRequest<T> request,
+    public <T extends LwM2mResponse> T send(final Client destination, final DownlinkRequest<T> request,
             final Long timeout) throws InterruptedException {
-        return defaultRequestSender.send(registrationInfo, request, timeout);
+        return defaultRequestSender.send(destination, request, timeout);
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public <T extends LwM2mResponse> void send(final Client registrationInfo, final DownlinkRequest<T> request,
+    public <T extends LwM2mResponse> void send(final Client destination, final DownlinkRequest<T> request,
             final ResponseCallback<T> responseCallback, final ErrorCallback errorCallback) {
-        if (registrationInfo.getBindingMode().equals(BindingMode.UQ)) {
-            queuedRequestSender.send(registrationInfo, request, responseCallback, errorCallback);
+        if (destination.getBindingMode().equals(BindingMode.UQ)) {
+            queuedRequestSender.send(destination, request, responseCallback, errorCallback);
         } else {
-            defaultRequestSender.send(registrationInfo, request, responseCallback, errorCallback);
+            defaultRequestSender.send(destination, request, responseCallback, errorCallback);
         }
     }
 
@@ -127,7 +128,7 @@ public class LwM2mRequestSenderImpl implements LwM2mRequestSender, Stoppable {
                 if (registrationInfo != null) {
                     // only if the client has used Queue mode notify its
                     // listener
-                    if (isQueueMode(registrationInfo.getBindingMode())) {
+                    if (registrationInfo.usesQueueMode()) {
                         LOG.debug("Notifying QueueModeResponseListener.onResponse for ticket: {}", requestTicket);
                         queueModeResponseListener.onResponse(clientEndpoint, requestTicket, response);
                     }
@@ -144,7 +145,7 @@ public class LwM2mRequestSenderImpl implements LwM2mRequestSender, Stoppable {
                 // process only when client is still known
                 if (registrationInfo != null) {
                     // only if the client uses Queue mode notify its listener
-                    if (isQueueMode(registrationInfo.getBindingMode())) {
+                    if (registrationInfo.usesQueueMode()) {
                         LOG.debug("Notifying QueueModeResponseListener.onError for ticket: {}", requestTicket);
                         queueModeResponseListener.onError(clientEndpoint, requestTicket, exception);
                     }
@@ -153,7 +154,7 @@ public class LwM2mRequestSenderImpl implements LwM2mRequestSender, Stoppable {
                     // notify all listeners.
                     // Otherwise queue mode will do retry sometime later when
                     // client connects again.
-                    if (!(exception instanceof TimeoutException) && !(isQueueMode(registrationInfo.getBindingMode()))) {
+                    if (!(exception instanceof TimeoutException) && !(registrationInfo.usesQueueMode())) {
                         LOG.debug("Notifying All ResponseListeners.onError for ticket: {}", requestTicket);
                         processingExecutor.execute(new ResponseProcessingTask(clientEndpoint, requestTicket,
                                 responseListeners, exception));
@@ -162,9 +163,5 @@ public class LwM2mRequestSenderImpl implements LwM2mRequestSender, Stoppable {
             }
         };
 
-    }
-
-    private boolean isQueueMode(final BindingMode bindingMode) {
-        return bindingMode.equals(BindingMode.UQ);
     }
 }

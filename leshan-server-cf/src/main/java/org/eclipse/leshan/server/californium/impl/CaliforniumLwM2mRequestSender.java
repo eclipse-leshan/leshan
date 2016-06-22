@@ -16,6 +16,7 @@
 package org.eclipse.leshan.server.californium.impl;
 
 import java.net.InetSocketAddress;
+import java.util.Queue;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -46,7 +47,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
     // A map which contains all pending CoAP requests
     // This is mainly used to cancel request and avoid retransmission on de-registration
     private final ConcurrentNavigableMap<String/* registrationId#requestId */, Request /* pending coap Request */> pendingRequests = new ConcurrentSkipListMap<>();
-    private final ConcurrentLinkedQueue<ResponseListener> responseListeners = new ConcurrentLinkedQueue<ResponseListener>();
+    private final Queue<ResponseListener> responseListeners = new ConcurrentLinkedQueue<>();
 
     /**
      * @param endpoints the CoAP endpoints to use for sending requests
@@ -64,16 +65,16 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
     }
 
     @Override
-    public <T extends LwM2mResponse> T send(final Client registrationInfo, final DownlinkRequest<T> request,
+    public <T extends LwM2mResponse> T send(final Client destination, final DownlinkRequest<T> request,
             final Long timeout) throws InterruptedException {
 
         // Retrieve the objects definition
-        final LwM2mModel model = modelProvider.getObjectModel(registrationInfo);
+        final LwM2mModel model = modelProvider.getObjectModel(destination);
 
         // Create the CoAP request from LwM2m request
         final CoapRequestBuilder coapRequestBuilder = new CoapRequestBuilder(
-                new InetSocketAddress(registrationInfo.getAddress(), registrationInfo.getPort()),
-                registrationInfo.getRootPath(), model);
+                new InetSocketAddress(destination.getAddress(), destination.getPort()), destination.getRootPath(),
+                model);
         request.accept(coapRequestBuilder);
         final Request coapRequest = coapRequestBuilder.getRequest();
 
@@ -83,7 +84,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
             public T buildResponse(final Response coapResponse) {
                 // Build LwM2m response
                 final LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<T>(coapRequest,
-                        coapResponse, registrationInfo, model, observationRegistry);
+                        coapResponse, destination, model, observationRegistry);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }
@@ -91,10 +92,10 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         coapRequest.addMessageObserver(syncMessageObserver);
 
         // Store pending request to cancel it on de-registration
-        addPendingRequest(registrationInfo.getRegistrationId(), coapRequest);
+        addPendingRequest(destination.getRegistrationId(), coapRequest);
 
         // Send CoAP request asynchronously
-        final Endpoint endpoint = getEndpointForClient(registrationInfo);
+        final Endpoint endpoint = getEndpointForClient(destination);
         endpoint.sendRequest(coapRequest);
 
         // Wait for response, then return it
@@ -102,38 +103,32 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
     }
 
     @Override
-    public <T extends LwM2mResponse> void send(final Client registrationInfo, final DownlinkRequest<T> request,
+    public <T extends LwM2mResponse> void send(final Client destination, final DownlinkRequest<T> request,
             final ResponseCallback<T> responseCallback, final ErrorCallback errorCallback) {
-        ayncSendUsingCoapEndpoint(registrationInfo, request, responseCallback, errorCallback);
+        ayncSendUsingCoapEndpoint(destination, request, responseCallback, errorCallback);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.eclipse.leshan.server.request.LwM2mRequestSender#send(org.eclipse.leshan.server.client.Client,
-     * java.lang.String, org.eclipse.leshan.core.request.DownlinkRequest)
-     */
     @SuppressWarnings("unchecked") // Java generic usage and strict type has to be removed from Leshan
     @Override
-    public <T extends LwM2mResponse> void send(final Client registrationInfo, final String requestTicket,
+    public <T extends LwM2mResponse> void send(final Client destination, final String requestTicket,
             final DownlinkRequest<T> request) {
         // TODO: requestTicket is not used yet.
-        ayncSendUsingCoapEndpoint(registrationInfo, request,
-                (ResponseCallback<T>) getResponseCallback(registrationInfo.getEndpoint(), requestTicket),
-                getErrorCallback(registrationInfo.getEndpoint(), requestTicket));
+        ayncSendUsingCoapEndpoint(destination, request,
+                (ResponseCallback<T>) getResponseCallback(destination.getEndpoint(), requestTicket),
+                getErrorCallback(destination.getEndpoint(), requestTicket));
 
     }
 
-    private <T extends LwM2mResponse> void ayncSendUsingCoapEndpoint(final Client registrationInfo,
+    private <T extends LwM2mResponse> void ayncSendUsingCoapEndpoint(final Client destination,
             final DownlinkRequest<T> request, final ResponseCallback<T> responseCallback,
             final ErrorCallback errorCallback) {
         // Retrieve the objects definition
-        final LwM2mModel model = modelProvider.getObjectModel(registrationInfo);
+        final LwM2mModel model = modelProvider.getObjectModel(destination);
 
         // Create the CoAP request from LwM2m request
         final CoapRequestBuilder coapRequestBuilder = new CoapRequestBuilder(
-                new InetSocketAddress(registrationInfo.getAddress(), registrationInfo.getPort()),
-                registrationInfo.getRootPath(), model);
+                new InetSocketAddress(destination.getAddress(), destination.getPort()), destination.getRootPath(),
+                model);
         request.accept(coapRequestBuilder);
         final Request coapRequest = coapRequestBuilder.getRequest();
 
@@ -143,17 +138,17 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
             public T buildResponse(final Response coapResponse) {
                 // Build LwM2m response
                 final LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<T>(coapRequest,
-                        coapResponse, registrationInfo, model, observationRegistry);
+                        coapResponse, destination, model, observationRegistry);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }
         });
 
         // Store pending request to cancel it on de-registration
-        addPendingRequest(registrationInfo.getRegistrationId(), coapRequest);
+        addPendingRequest(destination.getRegistrationId(), coapRequest);
 
         // Send CoAP request asynchronously
-        final Endpoint endpoint = getEndpointForClient(registrationInfo);
+        final Endpoint endpoint = getEndpointForClient(destination);
         endpoint.sendRequest(coapRequest);
     }
 

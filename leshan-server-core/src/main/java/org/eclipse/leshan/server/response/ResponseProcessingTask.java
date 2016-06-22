@@ -16,15 +16,14 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.response;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.Queue;
 
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A response processing task is responsible for calling back the registered
- * listeners with response or error result.
+ * A response processing task is responsible for calling back the registered listeners with response or error result.
  *
  */
 public class ResponseProcessingTask implements Runnable {
@@ -34,24 +33,20 @@ public class ResponseProcessingTask implements Runnable {
     private final Exception exception;
     private final boolean hasException;
     private final LwM2mResponse response;
-    private final ConcurrentLinkedQueue<ResponseListener> responseListeners;
+    private final Queue<ResponseListener> responseListeners;
     private final String endpoint;
     private final String requestTicket;
 
     /**
-     * Creates a new task for processing response on an ordinary response
-     * result.
+     * Creates a new task for processing response on an ordinary response result.
      *
      * @param clientEndpoint
-     * @param request
-     *            request being processed
-     * @param responseContext
-     *            response context map for mapping response ID to the callback
-     * @param response
-     *            response to propagate
+     * @param request request being processed
+     * @param responseContext response context map for mapping response ID to the callback
+     * @param response response to propagate
      */
     public ResponseProcessingTask(final String clientEndpoint, final String requestTicket,
-            final ConcurrentLinkedQueue<ResponseListener> responseListeners, final LwM2mResponse response) {
+            final Queue<ResponseListener> responseListeners, final LwM2mResponse response) {
         this.requestTicket = requestTicket;
         this.exception = null;
         this.hasException = false;
@@ -64,15 +59,12 @@ public class ResponseProcessingTask implements Runnable {
      * Creates a new task for processing response on exception.
      *
      * @param clientEndpoint
-     * @param request
-     *            request being processed
-     * @param responseListeners
-     *            response context map for mapping response ID to the callback
-     * @param exception
-     *            exception to propagate
+     * @param request request being processed
+     * @param responseListeners response context map for mapping response ID to the callback
+     * @param exception exception to propagate
      */
     public ResponseProcessingTask(final String clientEndpoint, final String requestTicket,
-            final ConcurrentLinkedQueue<ResponseListener> responseListeners, final Exception exception) {
+            final Queue<ResponseListener> responseListeners, final Exception exception) {
         this.requestTicket = requestTicket;
         this.exception = exception;
         this.responseListeners = responseListeners;

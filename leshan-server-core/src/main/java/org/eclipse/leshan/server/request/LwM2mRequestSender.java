@@ -30,7 +30,7 @@ public interface LwM2mRequestSender {
      *             {@link #send(Client, String, DownlinkRequest)}
      */
     @Deprecated
-    <T extends LwM2mResponse> T send(Client registrationInfo, DownlinkRequest<T> request, Long timeout)
+    <T extends LwM2mResponse> T send(Client destination, DownlinkRequest<T> request, Long timeout)
             throws InterruptedException;
 
     /**
@@ -38,19 +38,19 @@ public interface LwM2mRequestSender {
      *             {@link #send(Client, String, DownlinkRequest)}
      */
     @Deprecated
-    <T extends LwM2mResponse> void send(Client registrationInfo, DownlinkRequest<T> request,
+    <T extends LwM2mResponse> void send(Client destination, DownlinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback);
 
     /**
      * sends a Lightweight M2M request asynchronously and uses the requestTicket to correlate the response from a LWM2M
      * Client.
      *
-     * @param registrationInfo registration meta data of a LWM2M client.
+     * @param destination registration meta data of a LWM2M client.
      * @param requestTicket a globally unique identifier for correlating the response
      * @param request an instance of downlink request.
      * @param <T> instance of LwM2mResponse
      */
-    <T extends LwM2mResponse> void send(Client registrationInfo, String requestTicket, DownlinkRequest<T> request);
+    <T extends LwM2mResponse> void send(Client destination, String requestTicket, DownlinkRequest<T> request);
 
     /**
      * adds the listener for the given LWM2M client. This method shall be used to re-register a listener for already

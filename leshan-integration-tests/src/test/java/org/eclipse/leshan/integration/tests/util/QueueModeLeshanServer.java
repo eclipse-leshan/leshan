@@ -142,15 +142,13 @@ public class QueueModeLeshanServer implements LwM2mServer {
     @Override
     public <T extends LwM2mResponse> T send(final Client destination, final DownlinkRequest<T> request)
             throws InterruptedException {
-        throw new UnsupportedOperationException(
-                "This is a deprecated message and better not use it for testing purposes");
+        throw new UnsupportedOperationException("Server doesn't support synchronous sending of messages");
     }
 
     @Override
     public <T extends LwM2mResponse> T send(final Client destination, final DownlinkRequest<T> request,
             final long timeout) throws InterruptedException {
-        throw new UnsupportedOperationException(
-                "This is a deprecated message and better not use it for testing purposes");
+        throw new UnsupportedOperationException("Server doesn't support synchronous sending of messages");
     }
 
     @Override
