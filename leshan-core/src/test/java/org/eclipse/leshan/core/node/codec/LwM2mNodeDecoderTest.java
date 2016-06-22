@@ -49,7 +49,7 @@ public class LwM2mNodeDecoderTest {
     @BeforeClass
     public static void loadModel() {
         model = new LwM2mModel(ObjectLoader.loadDefault());
-        decoder = new LwM2mNodeDecoder();
+        decoder = new DefaultLwM2mNodeDecoder();
     }
 
     @Test

@@ -1,0 +1,98 @@
+/*******************************************************************************
+ * Copyright (c) 2013-2015 Sierra Wireless and others.
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * and Eclipse Distribution License v1.0 which accompany this distribution.
+ * 
+ * The Eclipse Public License is available at
+ *    http://www.eclipse.org/legal/epl-v10.html
+ * and the Eclipse Distribution License is available at
+ *    http://www.eclipse.org/org/documents/edl-v10.html.
+ * 
+ * Contributors:
+ *     Sierra Wireless - initial API and implementation
+ *     Gemalto M2M GmbH
+ *******************************************************************************/
+package org.eclipse.leshan.core.node.codec;
+
+import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.ResourceModel;
+import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mObject;
+import org.eclipse.leshan.core.node.LwM2mObjectInstance;
+import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.codec.json.LwM2mNodeJsonDecoder;
+import org.eclipse.leshan.core.node.codec.opaque.LwM2mNodeOpaqueDecoder;
+import org.eclipse.leshan.core.node.codec.text.LwM2mNodeTextDecoder;
+import org.eclipse.leshan.core.node.codec.tlv.LwM2mNodeTlvDecoder;
+import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.util.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultLwM2mNodeDecoder.class);
+
+    @Override
+    public LwM2mNode decode(byte[] content, ContentFormat format, LwM2mPath path, LwM2mModel model)
+            throws InvalidValueException {
+        return decode(content, format, path, model, nodeClassFromPath(path));
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T extends LwM2mNode> T decode(byte[] content, ContentFormat format, LwM2mPath path, LwM2mModel model,
+            Class<T> nodeClass) throws InvalidValueException {
+
+        LOG.debug("Decoding value for path {} and format {}: {}", path, format, content);
+        Validate.notNull(path);
+
+        // If no format is given, guess the best one to use.
+        if (format == null) {
+            if (path.isResource()) {
+                ResourceModel rDesc = model.getResourceModel(path.getObjectId(), path.getResourceId());
+                if (rDesc != null && rDesc.multiple) {
+                    format = ContentFormat.TLV;
+                } else {
+                    if (rDesc != null && rDesc.type == Type.OPAQUE) {
+                        format = ContentFormat.OPAQUE;
+                    } else {
+                        format = ContentFormat.TEXT;
+                    }
+                }
+            } else {
+                format = ContentFormat.TLV;
+            }
+        }
+
+        // Decode content.
+        switch (format.getCode()) {
+        case ContentFormat.TEXT_CODE:
+            return (T) LwM2mNodeTextDecoder.decode(content, path, model);
+        case ContentFormat.TLV_CODE:
+            return LwM2mNodeTlvDecoder.decode(content, path, model, nodeClass);
+        case ContentFormat.OPAQUE_CODE:
+            return (T) LwM2mNodeOpaqueDecoder.decode(content, path, model);
+        case ContentFormat.JSON_CODE:
+            return LwM2mNodeJsonDecoder.decode(content, path, model, nodeClass);
+        case ContentFormat.LINK_CODE:
+            throw new UnsupportedOperationException("Content format " + format + " not yet implemented '" + path + "'");
+        }
+        return null;
+    }
+
+    private static Class<? extends LwM2mNode> nodeClassFromPath(LwM2mPath path) {
+        if (path.isObject()) {
+            return LwM2mObject.class;
+        } else if (path.isObjectInstance()) {
+            return LwM2mObjectInstance.class;
+        } else if (path.isResource()) {
+            return LwM2mResource.class;
+        }
+        throw new IllegalArgumentException("invalid path level: " + path);
+    }
+}

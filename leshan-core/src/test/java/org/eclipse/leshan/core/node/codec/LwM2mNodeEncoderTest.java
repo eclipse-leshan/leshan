@@ -47,7 +47,7 @@ public class LwM2mNodeEncoderTest {
     @BeforeClass
     public static void loadModel() {
         model = new LwM2mModel(ObjectLoader.loadDefault());
-        encoder = new LwM2mNodeEncoder();
+        encoder = new DefaultLwM2mNodeEncoder();
     }
 
     @Test

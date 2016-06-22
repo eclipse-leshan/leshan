@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2015 Sierra Wireless and others.
+ * Copyright (c) 2016 Sierra Wireless and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,27 +12,15 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
- *     Gemalto M2M GmbH
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec;
-
-import java.util.Arrays;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.node.codec.json.LwM2mNodeJsonEncoder;
-import org.eclipse.leshan.core.node.codec.opaque.LwM2mNodeOpaqueEncoder;
-import org.eclipse.leshan.core.node.codec.text.LwM2mNodeTextEncoder;
-import org.eclipse.leshan.core.node.codec.tlv.LwM2mNodeTlvEncoder;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.util.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class LwM2mNodeEncoder {
-
-    private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeEncoder.class);
+public interface LwM2mNodeEncoder {
 
     /**
      * Serializes a {@link LwM2mNode} with the given content format.
@@ -43,32 +31,6 @@ public class LwM2mNodeEncoder {
      * @param model the collection of supported object models
      * @return the encoded node as a byte array
      */
-    public byte[] encode(LwM2mNode node, ContentFormat format, LwM2mPath path, LwM2mModel model) {
-        Validate.notNull(node);
-        Validate.notNull(format);
-
-        LOG.debug("Encoding node {} for path {} and format {}", node, path, format);
-
-        byte[] encoded = null;
-        switch (format.getCode()) {
-        case ContentFormat.TLV_CODE:
-            encoded = LwM2mNodeTlvEncoder.encode(node, path, model);
-            break;
-        case ContentFormat.TEXT_CODE:
-            encoded = LwM2mNodeTextEncoder.encode(node, path, model);
-            break;
-        case ContentFormat.OPAQUE_CODE:
-            encoded = LwM2mNodeOpaqueEncoder.encode(node, path, model);
-            break;
-        case ContentFormat.JSON_CODE:
-            encoded = LwM2mNodeJsonEncoder.encode(node, path, model);
-            break;
-        default:
-            throw new IllegalArgumentException("Cannot encode " + node + " with format " + format);
-        }
-
-        LOG.trace("Encoded node {}: {}", node, Arrays.toString(encoded));
-        return encoded;
-    }
+    byte[] encode(LwM2mNode node, ContentFormat format, LwM2mPath path, LwM2mModel model);
 
 }

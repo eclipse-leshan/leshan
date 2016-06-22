@@ -34,6 +34,8 @@ import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.request.BindingMode;
@@ -111,8 +113,8 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         createCoapServer(clientRegistry, securityRegistry);
         InMemoryMessageStore inMemoryMessageStore = new InMemoryMessageStore();
         LwM2mModelProvider modelProvider = new StandardModelProvider();
-        LwM2mNodeEncoder encoder = new LwM2mNodeEncoder();
-        LwM2mNodeDecoder decoder = new LwM2mNodeDecoder();
+        LwM2mNodeEncoder encoder = new DefaultLwM2mNodeEncoder();
+        LwM2mNodeDecoder decoder = new DefaultLwM2mNodeDecoder();
         CaliforniumObservationRegistryImpl observationRegistry = new CaliforniumObservationRegistryImpl(
                 new InMemoryObservationStore(), clientRegistry, modelProvider, decoder);
         observationRegistry.setSecureEndpoint(secureEndpoint);

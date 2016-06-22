@@ -34,6 +34,7 @@ import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
@@ -64,7 +65,7 @@ public class CoapRequestBuilderTest {
     @BeforeClass
     public static void loadModel() {
         model = new LwM2mModel(ObjectLoader.loadDefault());
-        encoder = new LwM2mNodeEncoder();
+        encoder = new DefaultLwM2mNodeEncoder();
     }
 
     private Client newClient() throws UnknownHostException {

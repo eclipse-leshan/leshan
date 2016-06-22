@@ -21,6 +21,8 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.request.DownlinkRequest;
@@ -38,8 +40,8 @@ public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapReq
     private final Endpoint nonSecureEndpoint;
     private final Endpoint secureEndpoint;
     private final LwM2mModel model;
-    private final LwM2mNodeDecoder decoder = new LwM2mNodeDecoder();
-    private final LwM2mNodeEncoder encoder = new LwM2mNodeEncoder();
+    private final LwM2mNodeDecoder decoder = new DefaultLwM2mNodeDecoder();
+    private final LwM2mNodeEncoder encoder = new DefaultLwM2mNodeEncoder();
 
     public CaliforniumLwM2mBootstrapRequestSender(final Endpoint secureEndpoint, final Endpoint nonSecureEndpoint,
             final LwM2mModel model) {

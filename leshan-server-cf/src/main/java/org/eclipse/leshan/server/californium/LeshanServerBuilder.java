@@ -19,6 +19,8 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 import org.eclipse.californium.core.observe.InMemoryObservationStore;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.server.LwM2mServer;
@@ -125,9 +127,9 @@ public class LeshanServerBuilder {
         if (modelProvider == null)
             modelProvider = new StandardModelProvider();
         if (encoder == null)
-            encoder = new LwM2mNodeEncoder();
+            encoder = new DefaultLwM2mNodeEncoder();
         if (decoder == null)
-            decoder = new LwM2mNodeDecoder();
+            decoder = new DefaultLwM2mNodeDecoder();
 
         if (observationRegistry == null)
             observationRegistry = new CaliforniumObservationRegistryImpl(new InMemoryObservationStore(), clientRegistry,
