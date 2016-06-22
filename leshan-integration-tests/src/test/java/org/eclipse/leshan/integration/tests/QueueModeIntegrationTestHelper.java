@@ -34,6 +34,8 @@ import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
+import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.integration.tests.util.QueueModeLeshanServer;
@@ -72,12 +74,10 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         networkConfig = new NetworkConfig();
         networkConfig.setLong(Keys.ACK_TIMEOUT, ACK_TIMEOUT);
         networkConfig.setInt(Keys.MAX_RETRANSMIT, 0);
-        noSecureEndpoint = new CoapEndpoint(
-                new InetSocketAddress(InetAddress.getLoopbackAddress(), networkConfig.getInt(Keys.COAP_PORT)),
-                networkConfig);
-        secureEndpoint = new CoapEndpoint(
-                new InetSocketAddress(InetAddress.getLoopbackAddress(), networkConfig.getInt(Keys.COAP_SECURE_PORT)),
-                networkConfig);
+        noSecureEndpoint = new CoapEndpoint(new InetSocketAddress(InetAddress.getLoopbackAddress(),
+                networkConfig.getInt(Keys.COAP_PORT)), networkConfig);
+        secureEndpoint = new CoapEndpoint(new InetSocketAddress(InetAddress.getLoopbackAddress(),
+                networkConfig.getInt(Keys.COAP_SECURE_PORT)), networkConfig);
     }
 
     private void createCoapServer(ClientRegistry clientRegistry, SecurityStore securityStore) {
@@ -111,16 +111,18 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         createCoapServer(clientRegistry, securityRegistry);
         InMemoryMessageStore inMemoryMessageStore = new InMemoryMessageStore();
         LwM2mModelProvider modelProvider = new StandardModelProvider();
+        LwM2mNodeEncoder encoder = new LwM2mNodeEncoder();
+        LwM2mNodeDecoder decoder = new LwM2mNodeDecoder();
         CaliforniumObservationRegistryImpl observationRegistry = new CaliforniumObservationRegistryImpl(
-                new InMemoryObservationStore(), clientRegistry, modelProvider);
+                new InMemoryObservationStore(), clientRegistry, modelProvider, decoder);
         observationRegistry.setSecureEndpoint(secureEndpoint);
         secureEndpoint.addNotificationListener(observationRegistry);
         observationRegistry.setNonSecureEndpoint(noSecureEndpoint);
         noSecureEndpoint.addNotificationListener(observationRegistry);
         LwM2mRequestSender delegateSender = new CaliforniumLwM2mRequestSender(new HashSet<>(coapServer.getEndpoints()),
-                observationRegistry, modelProvider);
-        LwM2mRequestSender secondDelegateSender = new CaliforniumLwM2mRequestSender(
-                new HashSet<>(coapServer.getEndpoints()), observationRegistry, modelProvider);
+                observationRegistry, modelProvider, encoder, decoder);
+        LwM2mRequestSender secondDelegateSender = new CaliforniumLwM2mRequestSender(new HashSet<>(
+                coapServer.getEndpoints()), observationRegistry, modelProvider, encoder, decoder);
         QueuedRequestSender queueRequestSender = QueuedRequestSender.builder().setMessageStore(inMemoryMessageStore)
                 .setRequestSender(secondDelegateSender).setClientRegistry(clientRegistry)
                 .setObservationRegistry(observationRegistry).build();
@@ -137,12 +139,13 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
 
     public QueuedModeLeshanClient createClient(long lifeTime) {
         ObjectsInitializer initializer = new ObjectsInitializer();
-        initializer.setInstancesForObject(LwM2mId.SECURITY,
+        initializer.setInstancesForObject(
+                LwM2mId.SECURITY,
                 Security.noSec("coap://" + noSecureEndpoint.getAddress().getHostString() + ":"
                         + noSecureEndpoint.getAddress().getPort(), 12345));
         if (lifeTime == 0) {
-            initializer.setInstancesForObject(LwM2mId.SERVER,
-                    new Server(12345, CUSTOM_LIFETIME, BindingMode.UQ, false));
+            initializer
+                    .setInstancesForObject(LwM2mId.SERVER, new Server(12345, CUSTOM_LIFETIME, BindingMode.UQ, false));
         } else {
             initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, lifeTime, BindingMode.UQ, false));
         }

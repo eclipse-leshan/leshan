@@ -69,6 +69,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     private final ObservationRegistry observationRegistry;
     private final Client client;
     private final LwM2mModel model;
+    private final LwM2mNodeDecoder decoder;
 
     // TODO leshan-code-cf: this code should be factorize in a leshan-core-cf project.
     // duplicate from org.eclipse.leshan.client.californium.impl.LwM2mClientResponseBuilder<T>
@@ -105,12 +106,13 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     }
 
     public LwM2mResponseBuilder(final Request coapRequest, final Response coapResponse, final Client client,
-            final LwM2mModel model, final ObservationRegistry observationRegistry) {
+            final LwM2mModel model, final ObservationRegistry observationRegistry, final LwM2mNodeDecoder decoder) {
         this.coapRequest = coapRequest;
         this.coapResponse = coapResponse;
         this.observationRegistry = observationRegistry;
         this.client = client;
         this.model = model;
+        this.decoder = decoder;
     }
 
     @Override
@@ -347,7 +349,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     private LwM2mNode decodeCoapResponse(final LwM2mPath path, final Response coapResponse) {
         LwM2mNode content;
         try {
-            content = LwM2mNodeDecoder.decode(coapResponse.getPayload(),
+            content = decoder.decode(coapResponse.getPayload(),
                     ContentFormat.fromCode(coapResponse.getOptions().getContentFormat()), path, model);
         } catch (final InvalidValueException e) {
             final String msg = String.format("[%s] (%s:%s)", e.getMessage(), e.getPath().toString(),

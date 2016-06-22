@@ -30,6 +30,8 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
+import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -48,6 +50,8 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
     private final Set<Endpoint> endpoints;
     private final ObservationRegistry observationRegistry;
     private final LwM2mModelProvider modelProvider;
+    private final LwM2mNodeDecoder decoder;
+    private final LwM2mNodeEncoder encoder;
     // A map which contains all pending CoAP requests
     // This is mainly used to cancel request and avoid retransmission on de-registration
     private final ConcurrentNavigableMap<String/* registrationId#requestId */, Request /* pending coap Request */> pendingRequests = new ConcurrentSkipListMap<>();
@@ -61,13 +65,15 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
      * @param modelProvider provides the supported objects definitions
      */
     public CaliforniumLwM2mRequestSender(final Set<Endpoint> endpoints, final ObservationRegistry observationRegistry,
-            LwM2mModelProvider modelProvider) {
+            LwM2mModelProvider modelProvider, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
         Validate.notNull(endpoints);
         Validate.notNull(observationRegistry);
         Validate.notNull(modelProvider);
         this.observationRegistry = observationRegistry;
         this.endpoints = endpoints;
         this.modelProvider = modelProvider;
+        this.encoder = encoder;
+        this.decoder = decoder;
     }
 
     @Override
@@ -80,7 +86,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         // Create the CoAP request from LwM2m request
         final CoapRequestBuilder coapRequestBuilder = new CoapRequestBuilder(
                 new InetSocketAddress(destination.getAddress(), destination.getPort()), destination.getRootPath(),
-                model);
+                model, encoder);
         request.accept(coapRequestBuilder);
         final Request coapRequest = coapRequestBuilder.getRequest();
 
@@ -90,7 +96,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
             public T buildResponse(final Response coapResponse) {
                 // Build LwM2m response
                 final LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<T>(coapRequest,
-                        coapResponse, destination, model, observationRegistry);
+                        coapResponse, destination, model, observationRegistry, decoder);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }
@@ -117,7 +123,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         // Create the CoAP request from LwM2m request
         final CoapRequestBuilder coapRequestBuilder = new CoapRequestBuilder(
                 new InetSocketAddress(destination.getAddress(), destination.getPort()), destination.getRootPath(),
-                model);
+                model, encoder);
         request.accept(coapRequestBuilder);
         final Request coapRequest = coapRequestBuilder.getRequest();
 
@@ -127,7 +133,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
             public T buildResponse(final Response coapResponse) {
                 // Build LwM2m response
                 final LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<T>(coapRequest,
-                        coapResponse, destination, model, observationRegistry);
+                        coapResponse, destination, model, observationRegistry, decoder);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }

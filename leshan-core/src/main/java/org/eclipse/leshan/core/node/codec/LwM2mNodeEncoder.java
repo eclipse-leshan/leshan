@@ -43,7 +43,7 @@ public class LwM2mNodeEncoder {
      * @param model the collection of supported object models
      * @return the encoded node as a byte array
      */
-    public static byte[] encode(LwM2mNode node, ContentFormat format, LwM2mPath path, LwM2mModel model) {
+    public byte[] encode(LwM2mNode node, ContentFormat format, LwM2mPath path, LwM2mModel model) {
         Validate.notNull(node);
         Validate.notNull(format);
 

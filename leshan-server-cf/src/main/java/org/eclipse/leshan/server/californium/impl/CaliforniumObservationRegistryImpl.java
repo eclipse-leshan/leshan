@@ -54,6 +54,7 @@ public class CaliforniumObservationRegistryImpl
     private final ObservationStore observationStore;
     private final ClientRegistry clientRegistry;
     private final LwM2mModelProvider modelProvider;
+    private final LwM2mNodeDecoder decoder;
     private Endpoint secureEndpoint;
     private Endpoint nonSecureEndpoint;
 
@@ -61,10 +62,11 @@ public class CaliforniumObservationRegistryImpl
     private final Map<KeyToken, Observation> observations = new ConcurrentHashMap<KeyToken, Observation>();
 
     public CaliforniumObservationRegistryImpl(ObservationStore store, ClientRegistry clientRegistry,
-            LwM2mModelProvider modelProvider) {
+            LwM2mModelProvider modelProvider, LwM2mNodeDecoder decoder) {
         this.observationStore = store;
         this.modelProvider = modelProvider;
         this.clientRegistry = clientRegistry;
+        this.decoder = decoder;
     }
 
     @Override
@@ -202,7 +204,7 @@ public class CaliforniumObservationRegistryImpl
                 LwM2mModel model = modelProvider.getObjectModel(client);
 
                 // decode response
-                LwM2mNode content = LwM2mNodeDecoder.decode(coapResponse.getPayload(),
+                LwM2mNode content = decoder.decode(coapResponse.getPayload(),
                         ContentFormat.fromCode(coapResponse.getOptions().getContentFormat()), observation.getPath(),
                         model);
 

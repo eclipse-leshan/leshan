@@ -77,12 +77,17 @@ public class ObjectResource extends CoapResource implements NotifySender {
 
     private final LwM2mObjectEnabler nodeEnabler;
     private final BootstrapHandler bootstrapHandler;
+    private final LwM2mNodeEncoder encoder;
+    private final LwM2mNodeDecoder decoder;
 
-    public ObjectResource(LwM2mObjectEnabler nodeEnabler, BootstrapHandler bootstrapHandler) {
+    public ObjectResource(LwM2mObjectEnabler nodeEnabler, BootstrapHandler bootstrapHandler, LwM2mNodeEncoder encoder,
+            LwM2mNodeDecoder decoder) {
         super(Integer.toString(nodeEnabler.getId()));
         this.nodeEnabler = nodeEnabler;
         this.nodeEnabler.setNotifySender(this);
         this.bootstrapHandler = bootstrapHandler;
+        this.encoder = encoder;
+        this.decoder = decoder;
         setObservable(true);
     }
 
@@ -128,7 +133,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
                     LwM2mPath path = new LwM2mPath(URI);
                     LwM2mNode content = response.getContent();
                     LwM2mModel model = new LwM2mModel(nodeEnabler.getObjectModel());
-                    exchange.respond(ResponseCode.CONTENT, LwM2mNodeEncoder.encode(content, format, path, model),
+                    exchange.respond(ResponseCode.CONTENT, encoder.encode(content, format, path, model),
                             format.getCode());
                     return;
                 } else {
@@ -143,7 +148,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
                     LwM2mPath path = new LwM2mPath(URI);
                     LwM2mNode content = response.getContent();
                     LwM2mModel model = new LwM2mModel(nodeEnabler.getObjectModel());
-                    exchange.respond(ResponseCode.CONTENT, LwM2mNodeEncoder.encode(content, format, path, model),
+                    exchange.respond(ResponseCode.CONTENT, encoder.encode(content, format, path, model),
                             format.getCode());
                     return;
                 } else {
@@ -184,7 +189,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
             LwM2mNode lwM2mNode;
             try {
                 LwM2mModel model = new LwM2mModel(nodeEnabler.getObjectModel());
-                lwM2mNode = LwM2mNodeDecoder.decode(coapExchange.getRequestPayload(), contentFormat, path, model);
+                lwM2mNode = decoder.decode(coapExchange.getRequestPayload(), contentFormat, path, model);
                 if (identity.isLwm2mBootstrapServer()) {
                     BootstrapWriteResponse response = nodeEnabler.write(identity,
                             new BootstrapWriteRequest(path, lwM2mNode, contentFormat));
@@ -231,7 +236,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
         // Manage Update Instance
         if (path.isObjectInstance()) {
             try {
-                LwM2mNode lwM2mNode = LwM2mNodeDecoder.decode(exchange.getRequestPayload(), contentFormat, path, model);
+                LwM2mNode lwM2mNode = decoder.decode(exchange.getRequestPayload(), contentFormat, path, model);
                 WriteResponse response = nodeEnabler.write(identity,
                         new WriteRequest(Mode.UPDATE, contentFormat, URI, lwM2mNode));
                 exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
@@ -245,7 +250,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
         // Manage Create Request
         try {
             // decode the payload as an instance
-            LwM2mObjectInstance newInstance = LwM2mNodeDecoder.decode(exchange.getRequestPayload(), contentFormat,
+            LwM2mObjectInstance newInstance = decoder.decode(exchange.getRequestPayload(), contentFormat,
                     new LwM2mPath(path.getObjectId()), model, LwM2mObjectInstance.class);
 
             if (newInstance.getResources().isEmpty()) {

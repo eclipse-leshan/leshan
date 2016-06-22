@@ -22,6 +22,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.observe.InMemoryObservationStore;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.californium.CaliforniumObservationRegistry;
 import org.eclipse.leshan.server.impl.ClientRegistryImpl;
@@ -42,7 +43,7 @@ public class CaliforniumObservationTest {
     public void setUp() throws Exception {
         support.givenASimpleClient();
         registry = new CaliforniumObservationRegistryImpl(new InMemoryObservationStore(), new ClientRegistryImpl(),
-                new StandardModelProvider());
+                new StandardModelProvider(), new LwM2mNodeDecoder());
     }
 
     @Test

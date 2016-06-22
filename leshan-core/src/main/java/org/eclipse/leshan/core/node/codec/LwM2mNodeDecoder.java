@@ -49,7 +49,7 @@ public class LwM2mNodeDecoder {
      * @return the resulting node
      * @throws InvalidValueException
      */
-    public static LwM2mNode decode(byte[] content, ContentFormat format, LwM2mPath path, LwM2mModel model)
+    public LwM2mNode decode(byte[] content, ContentFormat format, LwM2mPath path, LwM2mModel model)
             throws InvalidValueException {
         return decode(content, format, path, model, nodeClassFromPath(path));
     }
@@ -66,7 +66,7 @@ public class LwM2mNodeDecoder {
      * @throws InvalidValueException
      */
     @SuppressWarnings("unchecked")
-    public static <T extends LwM2mNode> T decode(byte[] content, ContentFormat format, LwM2mPath path, LwM2mModel model,
+    public <T extends LwM2mNode> T decode(byte[] content, ContentFormat format, LwM2mPath path, LwM2mModel model,
             Class<T> nodeClass) throws InvalidValueException {
 
         LOG.debug("Decoding value for path {} and format {}: {}", path, format, content);
