@@ -15,10 +15,17 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec.json;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ResourceModel;
@@ -30,6 +37,7 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.InvalidValueException;
 import org.eclipse.leshan.json.JsonArrayEntry;
 import org.eclipse.leshan.json.JsonRootObject;
@@ -48,6 +56,23 @@ public class LwM2mNodeJsonDecoder {
         try {
             String jsonStrValue = new String(content);
             JsonRootObject json = LwM2mJson.fromJsonLwM2m(jsonStrValue);
+            List<TimestampedLwM2mNode<T>> timestampedNodes = parseJSON(json, path, model, nodeClass);
+            if (timestampedNodes.size() == 0) {
+                return null;
+            } else {
+                // return the most recent value
+                return timestampedNodes.get(0).getNode();
+            }
+        } catch (LwM2mJsonException e) {
+            throw new InvalidValueException("Unable to deSerialize json", path, e);
+        }
+    }
+
+    public static <T extends LwM2mNode> List<TimestampedLwM2mNode<T>> decodeTimestampedData(byte[] content,
+            LwM2mPath path, LwM2mModel model, Class<T> nodeClass) throws InvalidValueException {
+        try {
+            String jsonStrValue = new String(content);
+            JsonRootObject json = LwM2mJson.fromJsonLwM2m(jsonStrValue);
             return parseJSON(json, path, model, nodeClass);
         } catch (LwM2mJsonException e) {
             throw new InvalidValueException("Unable to deSerialize json", path, e);
@@ -55,35 +80,168 @@ public class LwM2mNodeJsonDecoder {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T extends LwM2mNode> T parseJSON(JsonRootObject jsonObject, LwM2mPath path, LwM2mModel model,
-            Class<T> nodeClass) throws InvalidValueException {
+    private static <T extends LwM2mNode> List<TimestampedLwM2mNode<T>> parseJSON(JsonRootObject jsonObject,
+            LwM2mPath path, LwM2mModel model, Class<T> nodeClass) throws InvalidValueException {
+
         LOG.trace("Parsing JSON content for path {}: {}", path, jsonObject);
 
-        if (nodeClass == LwM2mObject.class) {
-            // TODO
-            // If bn is present will have multiple object instances in JSON payload
-            // If JSON contains ObjLnk -> this method should return List<LwM2mNode> ?
-            throw new UnsupportedOperationException("JSON object level decoding is not implemented");
-        } else if (nodeClass == LwM2mObjectInstance.class) {
-            // object instance level request,
-            LwM2mPath baseName = extractAndValidateBaseName(jsonObject, path);
-            Map<Integer, LwM2mResource> resourceMap = parseJsonPayLoadLwM2mResources(jsonObject, path, baseName, model);
-            // try to find instance Id
-            int objectInstanceID = LwM2mObjectInstance.UNDEFINED;
-            if (path.getObjectInstanceId() != null) {
-                objectInstanceID = path.getObjectInstanceId();
-            } else if (baseName != null && baseName.getObjectInstanceId() != null) {
-                objectInstanceID = baseName.getObjectInstanceId();
+        // Group JSON entry by time-stamp
+        Map<Integer, Collection<JsonArrayEntry>> jsonEntryByTimestamp = groupJsonEntryByTimestamp(jsonObject);
+
+        // Extract baseName
+        LwM2mPath baseName = extractAndValidateBaseName(jsonObject, path);
+        if (baseName == null)
+            baseName = path; // if no base name, use request path as base name
+
+        // fill time-stamped nodes collection
+        List<TimestampedLwM2mNode<T>> timestampedNodes = new ArrayList<>();
+        for (Entry<Integer, Collection<JsonArrayEntry>> entryByTimestamp : jsonEntryByTimestamp.entrySet()) {
+
+            // Group JSON entry by instance
+            Map<Integer, Collection<JsonArrayEntry>> jsonEntryByInstanceId = groupJsonEntryByInstanceId(
+                    entryByTimestamp.getValue(), baseName);
+
+            // Create right right lwm2m node
+            T node = null;
+            if (nodeClass == LwM2mObject.class) {
+                Collection<LwM2mObjectInstance> instances = new ArrayList<>();
+                for (Entry<Integer, Collection<JsonArrayEntry>> entryByInstanceId : jsonEntryByInstanceId.entrySet()) {
+                    Map<Integer, LwM2mResource> resourcesMap = extractLwM2mResources(entryByInstanceId.getValue(),
+                            baseName, model);
+
+                    instances.add(new LwM2mObjectInstance(entryByInstanceId.getKey(), resourcesMap.values()));
+                }
+
+                node = (T) new LwM2mObject(baseName.getObjectId(), instances);
+            } else if (nodeClass == LwM2mObjectInstance.class) {
+                // validate we have resources for only 1 instance
+                if (jsonEntryByInstanceId.size() > 1)
+                    throw new InvalidValueException("Only one instance expected in the payload", path);
+
+                // Extract resources
+                Entry<Integer, Collection<JsonArrayEntry>> instanceEntry = jsonEntryByInstanceId.entrySet().iterator()
+                        .next();
+                Map<Integer, LwM2mResource> resourcesMap = extractLwM2mResources(instanceEntry.getValue(), baseName,
+                        model);
+
+                // Create instance
+                node = (T) new LwM2mObjectInstance(instanceEntry.getKey(), resourcesMap.values());
+            } else if (nodeClass == LwM2mResource.class) {
+                // validate we have resources for only 1 instance
+                if (jsonEntryByInstanceId.size() > 1)
+                    throw new InvalidValueException("Only one instance expected in the payload", path);
+
+                // Extract resources
+                Map<Integer, LwM2mResource> resourcesMap = extractLwM2mResources(
+                        jsonEntryByInstanceId.values().iterator().next(), baseName, model);
+
+                // validate there is only 1 resource
+                if (resourcesMap.size() != 1)
+                    throw new InvalidValueException("Only one resource should be present in the payload", path);
+
+                node = (T) resourcesMap.values().iterator().next();
+            } else {
+                throw new IllegalArgumentException("invalid node class: " + nodeClass);
             }
-            return (T) new LwM2mObjectInstance(objectInstanceID, resourceMap.values());
-        } else if (nodeClass == LwM2mResource.class) {
-            // resource level request
-            LwM2mPath baseName = extractAndValidateBaseName(jsonObject, path);
-            Map<Integer, LwM2mResource> resourceMap = parseJsonPayLoadLwM2mResources(jsonObject, path, baseName, model);
-            return (T) resourceMap.values().iterator().next();
-        } else {
-            throw new IllegalArgumentException("invalid node class: " + nodeClass);
+
+            // compute time-stamp
+            Long timestamp = computeTimestamp(jsonObject.getBaseTime(), entryByTimestamp.getKey());
+
+            // add time-stamped node
+            timestampedNodes.add(new TimestampedLwM2mNode<T>(timestamp, node));
         }
+
+        return timestampedNodes;
+
+    }
+
+    private static Long computeTimestamp(Long baseTime, Integer time) {
+        Long timestamp;
+        if (baseTime != null) {
+            if (time != null) {
+                timestamp = baseTime + time.longValue();
+            } else {
+                timestamp = baseTime;
+            }
+        } else {
+            if (time != null) {
+                timestamp = time.longValue();
+            } else {
+                timestamp = null;
+            }
+        }
+        return timestamp;
+    }
+
+    /**
+     * Group all JsonArrayEntry by time-stamp
+     * 
+     * @return a map (relativeTimestamp => collection of JsonArrayEntry)
+     */
+    private static SortedMap<Integer, Collection<JsonArrayEntry>> groupJsonEntryByTimestamp(JsonRootObject jsonObject) {
+        SortedMap<Integer, Collection<JsonArrayEntry>> result = new TreeMap<>(new Comparator<Integer>() {
+            @Override
+            public int compare(Integer o1, Integer o2) {
+                // comparator which
+                // - supports null (time null means 0 if there is a base time)
+                // - reverses natural order (most recent value in first)
+                return Integer.compare(o2 == null ? 0 : o2, o1 == null ? 0 : o1);
+            }
+        });
+
+        for (JsonArrayEntry e : jsonObject.getResourceList()) {
+            // Get time for this entry
+            Integer time = e.getTime();
+
+            // Get jsonArray for this time-stamp
+            Collection<JsonArrayEntry> jsonArray = result.get(time);
+            if (jsonArray == null) {
+                jsonArray = new ArrayList<JsonArrayEntry>();
+                result.put(time, jsonArray);
+            }
+
+            // Add it to the list
+            jsonArray.add(e);
+        }
+
+        return result;
+    }
+
+    /**
+     * Group all JsonArrayEntry by instanceId
+     * 
+     * @param requestPath
+     * @param baseName
+     * @param jsonEntries
+     * 
+     * @return a map (instanceId => collection of JsonArrayEntry)
+     */
+    private static Map<Integer, Collection<JsonArrayEntry>> groupJsonEntryByInstanceId(
+            Collection<JsonArrayEntry> jsonEntries, LwM2mPath baseName) throws InvalidValueException {
+        Map<Integer, Collection<JsonArrayEntry>> result = new HashMap<>();
+
+        for (JsonArrayEntry e : jsonEntries) {
+            // Build resource path
+            LwM2mPath nodePath = baseName.append(e.getName());
+
+            // Validate path
+            if (!nodePath.isResourceInstance() && !nodePath.isResource()) {
+                throw new InvalidValueException(
+                        "Invalid path for resource, it should be a resource or a resource instance path", nodePath);
+            }
+
+            // Get jsonArray for this instance
+            Collection<JsonArrayEntry> jsonArray = result.get(nodePath.getObjectInstanceId());
+            if (jsonArray == null) {
+                jsonArray = new ArrayList<JsonArrayEntry>();
+                result.put(nodePath.getObjectInstanceId(), jsonArray);
+            }
+
+            // Add it to the list
+            jsonArray.add(e);
+        }
+
+        return result;
     }
 
     private static LwM2mPath extractAndValidateBaseName(JsonRootObject jsonObject, LwM2mPath requestPath)
@@ -114,23 +272,18 @@ public class LwM2mNodeJsonDecoder {
 
     }
 
-    private static Map<Integer, LwM2mResource> parseJsonPayLoadLwM2mResources(JsonRootObject jsonObject,
-            LwM2mPath requestPath, LwM2mPath baseName, LwM2mModel model) throws InvalidValueException {
+    private static Map<Integer, LwM2mResource> extractLwM2mResources(Collection<JsonArrayEntry> jsonArrayEntries,
+            LwM2mPath baseName, LwM2mModel model) throws InvalidValueException {
+        if (jsonArrayEntries == null)
+            return Collections.emptyMap();
 
         // Extract LWM2M resources from JSON resource list
         Map<Integer, LwM2mResource> lwM2mResourceMap = new HashMap<>();
         Map<LwM2mPath, Map<Integer, JsonArrayEntry>> multiResourceMap = new HashMap<>();
-        for (int i = 0; i < jsonObject.getResourceList().size(); i++) {
-            JsonArrayEntry resourceElt = jsonObject.getResourceList().get(i);
+        for (JsonArrayEntry resourceElt : jsonArrayEntries) {
 
             // Build resource path
-            LwM2mPath nodePath;
-            if (baseName != null) {
-                nodePath = baseName.append(resourceElt.getName());
-            } else {
-                // we don't have a baseName so use request path
-                nodePath = requestPath.append(resourceElt.getName());
-            }
+            LwM2mPath nodePath = baseName.append(resourceElt.getName());
 
             // handle LWM2M resources
             if (nodePath.isResourceInstance()) {
