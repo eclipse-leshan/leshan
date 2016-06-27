@@ -40,7 +40,7 @@ public class JsonArrayEntry {
     private String stringValue;
 
     @SerializedName("t")
-    private Integer time;
+    private Long time;
 
     public ResourceModel.Type getType() {
         if (booleanValue != null) {
@@ -67,11 +67,11 @@ public class JsonArrayEntry {
         this.name = name;
     }
 
-    public Integer getTime() {
+    public Long getTime() {
         return time;
     }
 
-    public void setTime(Integer time) {
+    public void setTime(Long time) {
         this.time = time;
     }
 
@@ -117,7 +117,7 @@ public class JsonArrayEntry {
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((objectLinkValue == null) ? 0 : objectLinkValue.hashCode());
         result = prime * result + ((stringValue == null) ? 0 : stringValue.hashCode());
-        result = prime * result + time;
+        result = prime * result + ((time == null) ? 0 : time.hashCode());
         return result;
     }
 
@@ -162,9 +162,9 @@ public class JsonArrayEntry {
 
     @Override
     public String toString() {
-        return String
-                .format("JsonArrayElement [name=%s, floatValue=%s, booleanValue=%s, objectLinkValue=%s, stringValue=%s, time=%s]",
-                        name, floatValue, booleanValue, objectLinkValue, stringValue, time);
+        return String.format(
+                "JsonArrayElement [name=%s, floatValue=%s, booleanValue=%s, objectLinkValue=%s, stringValue=%s, time=%s]",
+                name, floatValue, booleanValue, objectLinkValue, stringValue, time);
     }
 
 }

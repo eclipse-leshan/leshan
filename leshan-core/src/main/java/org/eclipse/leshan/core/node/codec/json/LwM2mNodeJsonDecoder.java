@@ -86,7 +86,7 @@ public class LwM2mNodeJsonDecoder {
         LOG.trace("Parsing JSON content for path {}: {}", path, jsonObject);
 
         // Group JSON entry by time-stamp
-        Map<Integer, Collection<JsonArrayEntry>> jsonEntryByTimestamp = groupJsonEntryByTimestamp(jsonObject);
+        Map<Long, Collection<JsonArrayEntry>> jsonEntryByTimestamp = groupJsonEntryByTimestamp(jsonObject);
 
         // Extract baseName
         LwM2mPath baseName = extractAndValidateBaseName(jsonObject, path);
@@ -95,7 +95,7 @@ public class LwM2mNodeJsonDecoder {
 
         // fill time-stamped nodes collection
         List<TimestampedLwM2mNode<T>> timestampedNodes = new ArrayList<>();
-        for (Entry<Integer, Collection<JsonArrayEntry>> entryByTimestamp : jsonEntryByTimestamp.entrySet()) {
+        for (Entry<Long, Collection<JsonArrayEntry>> entryByTimestamp : jsonEntryByTimestamp.entrySet()) {
 
             // Group JSON entry by instance
             Map<Integer, Collection<JsonArrayEntry>> jsonEntryByInstanceId = groupJsonEntryByInstanceId(
@@ -155,17 +155,17 @@ public class LwM2mNodeJsonDecoder {
 
     }
 
-    private static Long computeTimestamp(Long baseTime, Integer time) {
+    private static Long computeTimestamp(Long baseTime, Long time) {
         Long timestamp;
         if (baseTime != null) {
             if (time != null) {
-                timestamp = baseTime + time.longValue();
+                timestamp = baseTime + time;
             } else {
                 timestamp = baseTime;
             }
         } else {
             if (time != null) {
-                timestamp = time.longValue();
+                timestamp = time;
             } else {
                 timestamp = null;
             }
@@ -178,20 +178,20 @@ public class LwM2mNodeJsonDecoder {
      * 
      * @return a map (relativeTimestamp => collection of JsonArrayEntry)
      */
-    private static SortedMap<Integer, Collection<JsonArrayEntry>> groupJsonEntryByTimestamp(JsonRootObject jsonObject) {
-        SortedMap<Integer, Collection<JsonArrayEntry>> result = new TreeMap<>(new Comparator<Integer>() {
+    private static SortedMap<Long, Collection<JsonArrayEntry>> groupJsonEntryByTimestamp(JsonRootObject jsonObject) {
+        SortedMap<Long, Collection<JsonArrayEntry>> result = new TreeMap<>(new Comparator<Long>() {
             @Override
-            public int compare(Integer o1, Integer o2) {
+            public int compare(Long o1, Long o2) {
                 // comparator which
                 // - supports null (time null means 0 if there is a base time)
                 // - reverses natural order (most recent value in first)
-                return Integer.compare(o2 == null ? 0 : o2, o1 == null ? 0 : o1);
+                return Long.compare(o2 == null ? 0 : o2, o1 == null ? 0 : o1);
             }
         });
 
         for (JsonArrayEntry e : jsonObject.getResourceList()) {
             // Get time for this entry
-            Integer time = e.getTime();
+            Long time = e.getTime();
 
             // Get jsonArray for this time-stamp
             Collection<JsonArrayEntry> jsonArray = result.get(time);
