@@ -15,13 +15,17 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.impl;
 
+import java.util.List;
+
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.bootstrap.BootstrapSession;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
-import org.eclipse.leshan.server.security.BootstrapAuthService;
+import org.eclipse.leshan.server.security.BootstrapSecurityStore;
+import org.eclipse.leshan.server.security.SecurityCheck;
+import org.eclipse.leshan.server.security.SecurityInfo;
 
 /**
- * Sample implementation of a session manager.
+ * Implementation of a session manager.
  * 
  * Starting a session simply delegates authentication to a BoostrapAuthentication service. Nothing specific is done on
  * session's end.
@@ -29,24 +33,29 @@ import org.eclipse.leshan.server.security.BootstrapAuthService;
  */
 public class BootstrapSessionManagerImpl implements BootstrapSessionManager {
 
-    private BootstrapAuthService bsAuthService;
+    private BootstrapSecurityStore bsSecurityStore;
 
-    public BootstrapSessionManagerImpl(BootstrapAuthService bsAuthService) {
-        this.bsAuthService = bsAuthService;
+    public BootstrapSessionManagerImpl(BootstrapSecurityStore bsSecurityStore) {
+        this.bsSecurityStore = bsSecurityStore;
     }
 
     @Override
-    public BootstrapSession start(String endpoint, Identity clientIdentity) {
-        boolean authenticated = bsAuthService.authenticate(endpoint, clientIdentity);
-        if (authenticated) {
-            return BootstrapSession.authenticationSuccess(endpoint, clientIdentity);
+    public BootstrapSession begin(String endpoint, Identity clientIdentity) {
+        List<SecurityInfo> securityInfos = bsSecurityStore.getAllByEndpoint(endpoint);
+        boolean authorized = SecurityCheck.checkSecurityInfos(endpoint, clientIdentity, securityInfos);
+        if (!authorized) {
+            return BootstrapSession.authorized(endpoint, clientIdentity);
         } else {
-            return BootstrapSession.authenticationFailed();
+            return BootstrapSession.unauthorized();
         }
     }
 
     @Override
     public void end(BootstrapSession bsSession) {
+    }
+
+    @Override
+    public void failed(BootstrapSession bsSession) {
     }
 
 }

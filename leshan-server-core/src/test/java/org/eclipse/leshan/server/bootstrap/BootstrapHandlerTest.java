@@ -112,6 +112,7 @@ public class BootstrapHandlerTest {
             return null;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public <T extends LwM2mResponse> void send(String clientEndpoint, InetSocketAddress client, boolean secure,
                 DownlinkRequest<T> request, ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
@@ -128,7 +129,6 @@ public class BootstrapHandlerTest {
                 } else {
                     ((ResponseCallback<BootstrapFinishResponse>) responseCallback).onResponse(BootstrapFinishResponse
                             .internalServerError("failed"));
-
                 }
             }
         }
@@ -144,13 +144,17 @@ public class BootstrapHandlerTest {
         }
 
         @Override
-        public BootstrapSession start(String endpoint, Identity clientIdentity) {
+        public BootstrapSession begin(String endpoint, Identity clientIdentity) {
             return new BootstrapSession(endpoint, clientIdentity, authenticated);
         }
 
         @Override
         public void end(BootstrapSession bsSession) {
             endBsSession = bsSession;
+        }
+
+        @Override
+        public void failed(BootstrapSession bsSession) {
         }
 
         public boolean endWasCalled() {

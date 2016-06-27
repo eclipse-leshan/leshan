@@ -31,13 +31,20 @@ public interface BootstrapSessionManager {
      * 
      * @return a BootstrapSession, possibilty authenticated.
      */
-    public BootstrapSession start(String endpoint, Identity clientIdentity);
+    public BootstrapSession begin(String endpoint, Identity clientIdentity);
 
     /**
-     * Performs any housekeeping related at the end of a session.
+     * Performs any housekeeping related to the successful ending of a Boostraping session.
      * 
      * @param bsSession
      */
     public void end(BootstrapSession bsSession);
+
+    /**
+     * Performs any housekeeping related to the failure of a Boostraping session.
+     * 
+     * @param bsSession
+     */
+    public void failed(BootstrapSession bsSession);
 
 }

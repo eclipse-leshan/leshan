@@ -80,9 +80,9 @@ public class BootstrapHandler {
         final String endpoint = request.getEndpointName();
 
         // Start session, checking the BS credentials
-        final BootstrapSession bsSession = this.bsSessionManager.start(endpoint, sender);
+        final BootstrapSession bsSession = this.bsSessionManager.begin(endpoint, sender);
 
-        if (!bsSession.isAuthenticated()) {
+        if (!bsSession.isAuthorized()) {
             return BootstrapResponse.badRequest("Unauthorized");
         }
 
@@ -146,6 +146,7 @@ public class BootstrapHandler {
                             // TODO Handle error on bootstrap
                             LOG.warn(String.format("Error pending bootstrap write of security instance %s on %s",
                                     securityInstance, bsSession.getEndpoint()), e);
+                            bsSessionManager.failed(bsSession);
                         }
                     });
         } else {
@@ -179,6 +180,7 @@ public class BootstrapHandler {
                             // TODO Handle error on bootstrap
                             LOG.warn(String.format("Error pending bootstrap write of server instance %s on %s",
                                     serverInstance, bsSession.getEndpoint()), e);
+                            bsSessionManager.failed(bsSession);
                         }
                     });
         } else {
@@ -186,7 +188,6 @@ public class BootstrapHandler {
                 @Override
                 public void onResponse(BootstrapFinishResponse response) {
                     LOG.debug("Bootstrap Finished {} return code {}", bsSession.getEndpoint(), response.getCode());
-                    // TODO(pht) check error code ?
                     if (response.isSuccess()) {
                         bsSessionManager.end(bsSession);
                     }
@@ -196,6 +197,7 @@ public class BootstrapHandler {
                 public void onError(Exception e) {
                     // TODO Handle error on bootstrap
                     LOG.warn(String.format("Error pending bootstrap finished on %s", bsSession.getEndpoint()), e);
+                    bsSessionManager.failed(bsSession);
                 }
             });
         }

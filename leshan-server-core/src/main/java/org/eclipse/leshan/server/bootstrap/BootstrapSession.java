@@ -17,16 +17,21 @@ package org.eclipse.leshan.server.bootstrap;
 
 import org.eclipse.leshan.core.request.Identity;
 
+/**
+ * Represent a single Bootstraping session.
+ * 
+ * Should be created by {@link BootstrapSessionManager} implementations in {@link BootstrapSessionManager.begin}.
+ */
 public class BootstrapSession {
 
     private final String endpoint;
     private final Identity clientIdentity;
-    private final boolean authenticated;
+    private final boolean authorized;
 
     protected BootstrapSession(String endpoint, Identity clientIdentity, boolean authenticated) {
         this.endpoint = endpoint;
         this.clientIdentity = clientIdentity;
-        this.authenticated = authenticated;
+        this.authorized = authenticated;
     }
 
     public String getEndpoint() {
@@ -37,21 +42,21 @@ public class BootstrapSession {
         return clientIdentity;
     }
 
-    public boolean isAuthenticated() {
-        return authenticated;
+    public boolean isAuthorized() {
+        return authorized;
     }
 
-    @Override
-    public String toString() {
-        return "BootstrapSession [endpoint=" + endpoint + ", clientIdentity=" + clientIdentity + ", authenticated="
-                + authenticated + "]";
-    }
-
-    public static BootstrapSession authenticationFailed() {
+    /**
+     * A Bootstrapping session where the client was not authorized.
+     */
+    public static BootstrapSession unauthorized() {
         return new BootstrapSession(null, null, false);
     }
 
-    public static BootstrapSession authenticationSuccess(String endpoint, Identity clientIdentity) {
+    /**
+     * A Bootstrapping session where the client was properly authorized.
+     */
+    public static BootstrapSession authorized(String endpoint, Identity clientIdentity) {
         return new BootstrapSession(endpoint, clientIdentity, true);
     }
 
