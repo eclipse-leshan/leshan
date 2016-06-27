@@ -20,16 +20,20 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
+import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
+import org.eclipse.leshan.core.node.codec.json.LwM2mNodeJsonEncoder;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.util.Charsets;
 import org.junit.Assert;
@@ -190,6 +194,84 @@ public class LwM2mNodeEncoderTest {
         b.append("{\"n\":\"13\",\"v\":1367491215},");
         b.append("{\"n\":\"14\",\"sv\":\"+02:00\"},");
         b.append("{\"n\":\"15\",\"sv\":\"U\"}]}");
+
+        String expected = b.toString();
+        Assert.assertEquals(expected, new String(encoded));
+    }
+
+    @Test
+    public void json_encode_timestamped_resources() throws InvalidValueException {
+        List<TimestampedLwM2mNode<? extends LwM2mNode>> data = new ArrayList<>();
+        data.add(new TimestampedLwM2mNode<LwM2mResource>(500L, LwM2mSingleResource.newFloatResource(1, 22.9)));
+        data.add(new TimestampedLwM2mNode<LwM2mResource>(510L, LwM2mSingleResource.newFloatResource(1, 22.4)));
+        data.add(new TimestampedLwM2mNode<LwM2mResource>(520L, LwM2mSingleResource.newFloatResource(1, 24.1)));
+
+        byte[] encoded = LwM2mNodeJsonEncoder.encodeTimestampedData(data, new LwM2mPath(1024, 0, 1), model);
+
+        StringBuilder b = new StringBuilder();
+        b.append("{\"e\":[");
+        b.append("{\"n\":\"\",\"v\":22.9,\"t\":500},");
+        b.append("{\"n\":\"\",\"v\":22.4,\"t\":510},");
+        b.append("{\"n\":\"\",\"v\":24.1,\"t\":520}]}");
+
+        String expected = b.toString();
+        Assert.assertEquals(expected, new String(encoded));
+    }
+
+    @Test
+    public void json_encode_timestamped_instances() throws InvalidValueException {
+        List<TimestampedLwM2mNode<? extends LwM2mNode>> data = new ArrayList<>();
+
+        LwM2mObjectInstance instanceAt110 = new LwM2mObjectInstance(0, LwM2mSingleResource.newFloatResource(1, 22.9));
+        LwM2mObjectInstance instanceAt120 = new LwM2mObjectInstance(0, LwM2mSingleResource.newFloatResource(1, 22.4),
+                LwM2mSingleResource.newStringResource(0, "a string"));
+        LwM2mObjectInstance instanceAt130 = new LwM2mObjectInstance(0, LwM2mSingleResource.newFloatResource(1, 24.1));
+
+        data.add(new TimestampedLwM2mNode<LwM2mObjectInstance>(110L, instanceAt110));
+        data.add(new TimestampedLwM2mNode<LwM2mObjectInstance>(120L, instanceAt120));
+        data.add(new TimestampedLwM2mNode<LwM2mObjectInstance>(130L, instanceAt130));
+
+        byte[] encoded = LwM2mNodeJsonEncoder.encodeTimestampedData(data, new LwM2mPath(1024, 0), model);
+
+        StringBuilder b = new StringBuilder();
+        b.append("{\"e\":[");
+        b.append("{\"n\":\"1\",\"v\":22.9,\"t\":110},");
+        b.append("{\"n\":\"0\",\"sv\":\"a string\",\"t\":120},");
+        b.append("{\"n\":\"1\",\"v\":22.4,\"t\":120},");
+        b.append("{\"n\":\"1\",\"v\":24.1,\"t\":130}]}");
+
+        String expected = b.toString();
+        Assert.assertEquals(expected, new String(encoded));
+    }
+
+    @Test
+    public void json_encode_timestamped_Object() throws InvalidValueException {
+        List<TimestampedLwM2mNode<? extends LwM2mNode>> data = new ArrayList<>();
+
+        LwM2mObject objectAt210 = new LwM2mObject(1204,
+                new LwM2mObjectInstance(0, LwM2mSingleResource.newFloatResource(1, 22.9)));
+
+        LwM2mObject objectAt220 = new LwM2mObject(1204,
+                new LwM2mObjectInstance(0, LwM2mSingleResource.newFloatResource(1, 22.4),
+                        LwM2mSingleResource.newStringResource(0, "a string")),
+                new LwM2mObjectInstance(1, LwM2mSingleResource.newFloatResource(1, 23)));
+
+        LwM2mObject objetAt230 = new LwM2mObject(1204,
+                new LwM2mObjectInstance(0, LwM2mSingleResource.newFloatResource(1, 24.1)));
+
+        data.add(new TimestampedLwM2mNode<LwM2mObject>(210L, objectAt210));
+        data.add(new TimestampedLwM2mNode<LwM2mObject>(220L, objectAt220));
+        data.add(new TimestampedLwM2mNode<LwM2mObject>(230L, objetAt230));
+
+        byte[] encoded = LwM2mNodeJsonEncoder.encodeTimestampedData(data, new LwM2mPath(1024), model);
+
+        StringBuilder b = new StringBuilder();
+        b.append("{\"e\":[");
+        b.append("{\"n\":\"0/1\",\"v\":22.9,\"t\":210},");
+        b.append("{\"n\":\"0/0\",\"sv\":\"a string\",\"t\":220},");
+        b.append("{\"n\":\"0/1\",\"v\":22.4,\"t\":220},");
+        b.append("{\"n\":\"1/1\",\"v\":23.0,\"t\":220},");
+        b.append("{\"n\":\"0/1\",\"v\":24.1,\"t\":230}]}");
 
         String expected = b.toString();
         Assert.assertEquals(expected, new String(encoded));

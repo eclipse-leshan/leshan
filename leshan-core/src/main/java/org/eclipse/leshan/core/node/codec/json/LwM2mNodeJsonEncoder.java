@@ -17,6 +17,7 @@ package org.eclipse.leshan.core.node.codec.json;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map.Entry;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -28,6 +29,7 @@ import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.Lwm2mNodeEncoderUtil;
 import org.eclipse.leshan.json.JsonArrayEntry;
 import org.eclipse.leshan.json.JsonRootObject;
@@ -49,73 +51,130 @@ public class LwM2mNodeJsonEncoder {
         InternalEncoder internalEncoder = new InternalEncoder();
         internalEncoder.objectId = path.getObjectId();
         internalEncoder.model = model;
-        internalEncoder.path = path;
+        internalEncoder.requestPath = path;
         node.accept(internalEncoder);
-        return internalEncoder.encoded;
+        JsonRootObject jsonObject = new JsonRootObject(internalEncoder.resourceList);
+        return LwM2mJson.toJsonLwM2m(jsonObject).getBytes();
+    }
+
+    public static byte[] encodeTimestampedData(List<TimestampedLwM2mNode<? extends LwM2mNode>> timestampedNodes,
+            LwM2mPath path, LwM2mModel model) {
+        Validate.notNull(timestampedNodes);
+        Validate.notNull(path);
+        Validate.notNull(model);
+
+        InternalEncoder internalEncoder = new InternalEncoder();
+        ArrayList<JsonArrayEntry> entries = new ArrayList<>();
+        for (TimestampedLwM2mNode<? extends LwM2mNode> timestampedLwM2mNode : timestampedNodes) {
+            internalEncoder.objectId = path.getObjectId();
+            internalEncoder.model = model;
+            internalEncoder.requestPath = path;
+            internalEncoder.resourceList = null;
+            internalEncoder.timestamp = timestampedLwM2mNode.getTimestamp();
+            timestampedLwM2mNode.getNode().accept(internalEncoder);
+            entries.addAll(internalEncoder.resourceList);
+        }
+        JsonRootObject jsonObject = new JsonRootObject(entries);
+
+        return LwM2mJson.toJsonLwM2m(jsonObject).getBytes();
     }
 
     private static class InternalEncoder implements LwM2mNodeVisitor {
         // visitor inputs
         private int objectId;
         private LwM2mModel model;
-        private LwM2mPath path;
+        private LwM2mPath requestPath;
+        private Long timestamp;
 
         // visitor output
-        private byte[] encoded = null;
+        private ArrayList<JsonArrayEntry> resourceList = null;
 
         @Override
         public void visit(LwM2mObject object) {
-            // TODO needed to encode multiple instances
-            // How to deal with ObjLink
-            throw new UnsupportedOperationException("Object JSON encoding not supported");
+            LOG.trace("Encoding Object {} into JSON", object);
+            // Validate request path
+            if (!requestPath.isObject()) {
+                throw new IllegalArgumentException("Invalid request path for JSON object encoding");
+            }
+
+            // Create resources
+            resourceList = new ArrayList<>();
+            for (LwM2mObjectInstance instance : object.getInstances().values()) {
+                for (LwM2mResource resource : instance.getResources().values()) {
+                    String prefixPath = Integer.toString(instance.getId()) + "/" + Integer.toString(resource.getId());
+                    resourceList.addAll(lwM2mResourceToJsonArrayEntry(prefixPath, timestamp, resource));
+                }
+            }
         }
 
         @Override
         public void visit(LwM2mObjectInstance instance) {
             LOG.trace("Encoding object instance {} into JSON", instance);
-            JsonRootObject jsonObject = null;
-            ArrayList<JsonArrayEntry> resourceList = new ArrayList<>();
-            for (Entry<Integer, LwM2mResource> resource : instance.getResources().entrySet()) {
-                LwM2mResource res = resource.getValue();
-                resourceList.addAll(lwM2mResourceToJsonArrayEntry(res));
+            resourceList = new ArrayList<>();
+            for (LwM2mResource resource : instance.getResources().values()) {
+                // Validate request path & compute resource path
+                String prefixPath = null;
+                if (requestPath.isObject()) {
+                    prefixPath = instance.getId() + "/" + resource.getId();
+                } else if (requestPath.isObjectInstance()) {
+                    prefixPath = Integer.toString(resource.getId());
+                } else {
+                    throw new IllegalArgumentException("Invalid request path for JSON instance encoding");
+                }
+                // Create resources
+                resourceList.addAll(lwM2mResourceToJsonArrayEntry(prefixPath, timestamp, resource));
             }
-            jsonObject = new JsonRootObject(resourceList);
-            if (path.isObject()) {
-                jsonObject.setBaseName(new LwM2mPath(path.getObjectId(), instance.getId()).toString() + "/");
-            }
-            String json = LwM2mJson.toJsonLwM2m(jsonObject);
-            encoded = json.getBytes();
         }
 
         @Override
         public void visit(LwM2mResource resource) {
             LOG.trace("Encoding resource {} into JSON", resource);
-            JsonRootObject jsonObject = null;
-            jsonObject = new JsonRootObject(lwM2mResourceToJsonArrayEntry(resource));
-            jsonObject.setBaseName(new LwM2mPath(path.getObjectId(), path.getObjectInstanceId()).toString() + "/");
-            String json = LwM2mJson.toJsonLwM2m(jsonObject);
-            encoded = json.getBytes();
+            if (!requestPath.isResource()) {
+                throw new IllegalArgumentException("Invalid request path for JSON resource encoding");
+            }
+
+            resourceList = lwM2mResourceToJsonArrayEntry("", timestamp, resource);
         }
 
-        private ArrayList<JsonArrayEntry> lwM2mResourceToJsonArrayEntry(LwM2mResource resource) {
+        private ArrayList<JsonArrayEntry> lwM2mResourceToJsonArrayEntry(String resourcePath, Long timestamp,
+                LwM2mResource resource) {
+            // get type for this resource
             ResourceModel rSpec = model.getResourceModel(objectId, resource.getId());
             Type expectedType = rSpec != null ? rSpec.type : resource.getType();
             ArrayList<JsonArrayEntry> resourcesList = new ArrayList<>();
+
+            // create JSON resource element
             if (resource.isMultiInstances()) {
                 for (Entry<Integer, ?> entry : resource.getValues().entrySet()) {
+                    // Create resource element
                     JsonArrayEntry jsonResourceElt = new JsonArrayEntry();
-                    jsonResourceElt.setName(resource.getId() + "/" + entry.getKey());
+                    if (resourcePath == null || resourcePath.isEmpty()) {
+                        jsonResourceElt.setName(Integer.toString(entry.getKey()));
+                    } else {
+                        jsonResourceElt.setName(resourcePath + "/" + entry.getKey());
+                    }
+                    jsonResourceElt.setTime(timestamp);
+
+                    // Convert value using expected type
                     Object convertedValue = Lwm2mNodeEncoderUtil.convertValue(entry.getValue(), resource.getType(),
                             expectedType);
                     this.setResourceValue(convertedValue, expectedType, jsonResourceElt);
+
+                    // Add it to the List
                     resourcesList.add(jsonResourceElt);
                 }
             } else {
+                // Create resource element
                 JsonArrayEntry jsonResourceElt = new JsonArrayEntry();
-                jsonResourceElt.setName(new StringBuffer().append(resource.getId()).toString());
+                jsonResourceElt.setName(resourcePath);
+                jsonResourceElt.setTime(timestamp);
+
+                // Convert value using expected type
                 this.setResourceValue(
                         Lwm2mNodeEncoderUtil.convertValue(resource.getValue(), resource.getType(), expectedType),
                         expectedType, jsonResourceElt);
+
+                // Add it to the List
                 resourcesList.add(jsonResourceElt);
             }
             return resourcesList;

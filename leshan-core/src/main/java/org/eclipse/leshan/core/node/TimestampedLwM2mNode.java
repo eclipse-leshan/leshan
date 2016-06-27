@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
+import org.eclipse.leshan.util.Validate;
+
 public class TimestampedLwM2mNode<T> {
 
     private final Long timestamp;
@@ -22,6 +24,7 @@ public class TimestampedLwM2mNode<T> {
     private final T node;
 
     public TimestampedLwM2mNode(Long timestamp, T node) {
+        Validate.notNull(node);
         this.timestamp = timestamp;
         this.node = node;
     }
