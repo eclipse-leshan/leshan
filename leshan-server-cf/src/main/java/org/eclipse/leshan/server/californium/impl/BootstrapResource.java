@@ -61,8 +61,8 @@ public class BootstrapResource extends CoapResource {
         }
     }
 
-    // TODO(pht) leshan-core-cf: this code should be factorized in a leshan-core-cf project.
-    // TODO(pht) code is also in RegisterResource from leshan-server-cf
+    // TODO leshan-core-cf: this code should be factorized in a leshan-core-cf project.
+    // TODO code is also in RegisterResource from leshan-server-cf
     private static Identity extractIdentity(CoapExchange exchange) {
         InetSocketAddress peerAddress = new InetSocketAddress(exchange.getSourceAddress(), exchange.getSourcePort());
 

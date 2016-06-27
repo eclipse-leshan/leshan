@@ -30,11 +30,11 @@ import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
+import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.BootstrapStore;
 import org.eclipse.leshan.server.bootstrap.SecurityMode;
 import org.eclipse.leshan.server.californium.impl.LwM2mBootstrapServerImpl;
-import org.eclipse.leshan.server.impl.BootstrapAuthServiceImpl;
-import org.eclipse.leshan.server.security.BootstrapAuthService;
+import org.eclipse.leshan.server.impl.BootstrapSessionManagerImpl;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.util.Charsets;
@@ -90,10 +90,10 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
             securityStore = dummyBsSecurityStore();
         }
 
-        BootstrapAuthService bsAuthService = new BootstrapAuthServiceImpl(securityStore);
+        BootstrapSessionManager bsSessionManager = new BootstrapSessionManagerImpl(securityStore);
 
         bootstrapServer = new LwM2mBootstrapServerImpl(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0),
-                new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), bsStore, securityStore, bsAuthService);
+                new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), bsStore, securityStore, bsSessionManager);
     }
 
     public void createClient() {
@@ -107,8 +107,8 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
 
         initializer.setInstancesForObject(LwM2mId.SECURITY, security);
 
-        initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan",
-                IntegrationTestHelper.MODEL_NUMBER, "12345", "U"));
+        initializer.setInstancesForObject(LwM2mId.DEVICE,
+                new Device("Eclipse Leshan", IntegrationTestHelper.MODEL_NUMBER, "12345", "U"));
         List<LwM2mObjectEnabler> objects = initializer.createMandatory();
         objects.add(initializer.create(2));
 
@@ -129,8 +129,8 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
 
         initializer.setInstancesForObject(LwM2mId.SECURITY, security);
 
-        initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan",
-                IntegrationTestHelper.MODEL_NUMBER, "12345", "U"));
+        initializer.setInstancesForObject(LwM2mId.DEVICE,
+                new Device("Eclipse Leshan", IntegrationTestHelper.MODEL_NUMBER, "12345", "U"));
         List<LwM2mObjectEnabler> objects = initializer.createMandatory();
         objects.add(initializer.create(2));
 

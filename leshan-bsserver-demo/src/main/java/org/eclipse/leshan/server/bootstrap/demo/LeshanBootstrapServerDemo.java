@@ -29,11 +29,11 @@ import org.apache.commons.cli.ParseException;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.BootstrapServlet;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LwM2mBootstrapServerImpl;
-import org.eclipse.leshan.server.impl.BootstrapAuthServiceImpl;
-import org.eclipse.leshan.server.security.BootstrapAuthService;
+import org.eclipse.leshan.server.impl.BootstrapSessionManagerImpl;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,10 +150,10 @@ public class LeshanBootstrapServerDemo {
         // Prepare and start bootstrap server
         BootstrapStoreImpl bsStore = new BootstrapStoreImpl(configFilename);
         BootstrapSecurityStore securityStore = new BootstrapSecurityStoreImpl(bsStore);
-        BootstrapAuthService bsAuthService = new BootstrapAuthServiceImpl(securityStore);
+        BootstrapSessionManager bsSessionManager = new BootstrapSessionManagerImpl(securityStore);
 
         LwM2mBootstrapServerImpl bsServer = new LwM2mBootstrapServerImpl(new InetSocketAddress(localAddress, localPort),
-                new InetSocketAddress(secureLocalAddress, secureLocalPort), bsStore, securityStore, bsAuthService);
+                new InetSocketAddress(secureLocalAddress, secureLocalPort), bsStore, securityStore, bsSessionManager);
         bsServer.start();
 
         // Now prepare and start jetty
