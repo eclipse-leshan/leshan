@@ -47,4 +47,9 @@ public interface LwM2mNodeEncoder {
      */
     byte[] encodeTimestampedData(List<TimestampedLwM2mNode> timestampedNodes, ContentFormat format, LwM2mPath path,
             LwM2mModel model);
+
+    /**
+     * return true is the given ContentFomart is supported
+     */
+    boolean isSupported(ContentFormat format);
 }

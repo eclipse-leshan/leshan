@@ -85,4 +85,17 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
         LOG.trace("Encoded node timestampedNode: {}", timestampedNodes, Arrays.toString(encoded));
         return encoded;
     }
+
+    @Override
+    public boolean isSupported(ContentFormat format) {
+        switch (format.getCode()) {
+        case ContentFormat.TEXT_CODE:
+        case ContentFormat.TLV_CODE:
+        case ContentFormat.OPAQUE_CODE:
+        case ContentFormat.JSON_CODE:
+            return true;
+        default:
+            return false;
+        }
+    }
 }

@@ -68,4 +68,9 @@ public interface LwM2mNodeDecoder {
     List<TimestampedLwM2mNode> decodeTimestampedData(byte[] content, ContentFormat format, LwM2mPath path,
             LwM2mModel model) throws InvalidValueException;
 
+    /**
+     * return true is the given ContentFomart is supported
+     */
+    boolean isSupported(ContentFormat format);
+
 }

@@ -120,7 +120,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
             ContentFormat format = ContentFormat.TLV; // use TLV as default format
             if (exchange.getRequestOptions().hasAccept()) {
                 format = ContentFormat.fromCode(exchange.getRequestOptions().getAccept());
-                if (format == null) {
+                if (!encoder.isSupported(format)) {
                     exchange.respond(ResponseCode.NOT_ACCEPTABLE);
                     return;
                 }
@@ -182,7 +182,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
         else {
             LwM2mPath path = new LwM2mPath(URI);
             ContentFormat contentFormat = ContentFormat.fromCode(coapExchange.getRequestOptions().getContentFormat());
-            if (contentFormat == null) {
+            if (!decoder.isSupported(contentFormat)) {
                 coapExchange.respond(ResponseCode.UNSUPPORTED_CONTENT_FORMAT);
                 return;
             }
@@ -227,7 +227,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
 
         // handle content format for Write (Update) and Create request
         ContentFormat contentFormat = ContentFormat.fromCode(exchange.getRequestOptions().getContentFormat());
-        if (contentFormat == null) {
+        if (!decoder.isSupported(contentFormat)) {
             exchange.respond(ResponseCode.UNSUPPORTED_CONTENT_FORMAT);
             return;
         }

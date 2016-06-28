@@ -84,7 +84,7 @@ public class ContentFormat {
                 return t;
             }
         }
-        return null;
+        return new ContentFormat(code);
     }
 
     /**

@@ -142,4 +142,17 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
         }
         throw new IllegalArgumentException("invalid path level: " + path);
     }
+
+    @Override
+    public boolean isSupported(ContentFormat format) {
+        switch (format.getCode()) {
+        case ContentFormat.TEXT_CODE:
+        case ContentFormat.TLV_CODE:
+        case ContentFormat.OPAQUE_CODE:
+        case ContentFormat.JSON_CODE:
+            return true;
+        default:
+            return false;
+        }
+    }
 }
