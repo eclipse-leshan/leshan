@@ -23,13 +23,13 @@ import org.eclipse.leshan.core.request.Identity;
 public interface BootstrapSessionManager {
 
     /**
-     * Starts a bootstraping session for an endpoint. In particular, this is responsible for authenticating the endpoint
-     * if applicable.
+     * Starts a bootstrapping session for an endpoint. In particular, this is responsible for authenticating the
+     * endpoint if applicable.
      * 
      * @param endpoint
      * @param clientIdentity
      * 
-     * @return a BootstrapSession, possibilty authenticated.
+     * @return a BootstrapSession, possibly authenticated.
      */
     public BootstrapSession begin(String endpoint, Identity clientIdentity);
 

@@ -27,7 +27,7 @@ import org.eclipse.leshan.server.security.SecurityInfo;
 /**
  * Implementation of a session manager.
  * 
- * Starting a session simply delegates authentication to a BoostrapAuthentication service. Nothing specific is done on
+ * Starting a session simply delegates authorization to a BoostrapAuthentication service. Nothing specific is done on
  * session's end.
  *
  */
