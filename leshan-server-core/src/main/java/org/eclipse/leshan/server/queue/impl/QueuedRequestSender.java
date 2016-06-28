@@ -17,12 +17,14 @@
 package org.eclipse.leshan.server.queue.impl;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
@@ -54,8 +56,8 @@ import org.slf4j.LoggerFactory;
 public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
     private static final Logger LOG = LoggerFactory.getLogger(QueuedRequestSender.class);
     private final LwM2mRequestSender delegateSender;
-    private final ExecutorService processingExecutor = Executors
-            .newCachedThreadPool(new NamedThreadFactory("leshan-qmode-processingExecutor-%d"));
+    private final ExecutorService processingExecutor = Executors.newCachedThreadPool(new NamedThreadFactory(
+            "leshan-qmode-processingExecutor-%d"));
     private final MessageStore messageStore;
     private final QueueModeClientRegistryListener queueModeClientRegistryListener;
     private final QueueModeObservationRegistryListener queueModeObservationRegistryListener;
@@ -196,16 +198,16 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
     private void processResponse(String clientEndpoint, String requestTicket, LwM2mResponse response) {
         LOG.debug("Received Response -> {}", requestTicket);
         messageStore.deleteFirst(clientEndpoint);
-        processingExecutor
-                .execute(new ResponseProcessingTask(clientEndpoint, requestTicket, responseListeners, response));
+        processingExecutor.execute(new ResponseProcessingTask(clientEndpoint, requestTicket, responseListeners,
+                response));
         processingExecutor.execute(newRequestSendingTask(clientEndpoint));
     }
 
     private void processException(String clientEndpoint, String requestTicket, Exception exception) {
         LOG.debug("Received error response {}", requestTicket);
         messageStore.deleteFirst(clientEndpoint);
-        processingExecutor
-                .execute(new ResponseProcessingTask(clientEndpoint, requestTicket, responseListeners, exception));
+        processingExecutor.execute(new ResponseProcessingTask(clientEndpoint, requestTicket, responseListeners,
+                exception));
         processingExecutor.execute(newRequestSendingTask(clientEndpoint));
     }
 
@@ -220,7 +222,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
 
     private final class QueueModeObservationRegistryListener implements ObservationRegistryListener {
         @Override
-        public void newValue(Observation observation, LwM2mNode value) {
+        public void newValue(Observation observation, LwM2mNode value, List<TimestampedLwM2mNode> timestampedValues) {
             Client client = clientRegistry.findByRegistrationId(observation.getRegistrationId());
             if (client.usesQueueMode() && clientStatusTracker.setClientReachable(client.getEndpoint())
                     && clientStatusTracker.startClientReceiving(client.getEndpoint())) {
@@ -330,8 +332,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
         private final String endpoint;
         private final String requestTicket;
 
-        private QueuedRequestImpl(String endpoint, DownlinkRequest<LwM2mResponse> downlinkRequest,
-                String requestTicket) {
+        private QueuedRequestImpl(String endpoint, DownlinkRequest<LwM2mResponse> downlinkRequest, String requestTicket) {
             Validate.notNull(endpoint, "endpoint may not be null");
             Validate.notNull(downlinkRequest, "request may not be null");
             this.downlinkRequest = downlinkRequest;

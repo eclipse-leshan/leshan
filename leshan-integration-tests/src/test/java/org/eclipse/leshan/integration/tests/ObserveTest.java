@@ -19,6 +19,7 @@ package org.eclipse.leshan.integration.tests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -28,6 +29,7 @@ import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -151,7 +153,8 @@ public class ObserveTest {
         private LwM2mNode content;
 
         @Override
-        public void newValue(final Observation observation, final LwM2mNode value) {
+        public void newValue(final Observation observation, final LwM2mNode value,
+                List<TimestampedLwM2mNode> timestampedValues) {
             receivedNotify.set(true);
             content = value;
             latch.countDown();

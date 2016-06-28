@@ -16,14 +16,16 @@
 package org.eclipse.leshan.server.demo.servlet;
 
 import java.io.IOException;
-import java.util.Set;
 import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.client.Client;
@@ -67,7 +69,8 @@ public class EventServlet extends EventSourceServlet {
 
     private final LeshanServer server;
 
-    private Set<LeshanEventSource> eventSources = Collections.newSetFromMap(new ConcurrentHashMap<LeshanEventSource,Boolean>());
+    private Set<LeshanEventSource> eventSources = Collections
+            .newSetFromMap(new ConcurrentHashMap<LeshanEventSource, Boolean>());
 
     private final ClientRegistryListener clientRegistryListener = new ClientRegistryListener() {
 
@@ -97,7 +100,7 @@ public class EventServlet extends EventSourceServlet {
         }
 
         @Override
-        public void newValue(Observation observation, LwM2mNode value) {
+        public void newValue(Observation observation, LwM2mNode value, List<TimestampedLwM2mNode> timestampedValues) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Received notification from [{}] containing value [{}]", observation.getPath(),
                         value.toString());

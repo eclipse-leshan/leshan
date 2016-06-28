@@ -20,9 +20,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -32,6 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -101,8 +100,8 @@ public class QueueModeTest {
     @Test
     public void first_request_sent_immediately() throws Exception {
         createAndAddResponseListener(countDownLatch);
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "1",
-                new ReadRequest(3, 0));
+        helper.server.getLwM2mRequestSender()
+                .send(helper.getClient(), TEST_REQUEST_TICKET + "1", new ReadRequest(3, 0));
         if (!countDownLatch.await(2, TimeUnit.SECONDS)) {
             fail("response from client was not received within timeout");
         }
@@ -116,8 +115,8 @@ public class QueueModeTest {
 
         createAndAddResponseListener(countDownLatch);
 
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "1",
-                new ReadRequest(3, 0));
+        helper.server.getLwM2mRequestSender()
+                .send(helper.getClient(), TEST_REQUEST_TICKET + "1", new ReadRequest(3, 0));
         // assert that queue has one request left in processing state still
         assertQueueHasMessageCount(1, 5000);
     }
@@ -149,8 +148,8 @@ public class QueueModeTest {
         }
 
         // assert that queue has one additional new request
-        List<QueuedRequest> requests = ((InMemoryMessageStore) helper.server.getMessageStore())
-                .retrieveAll(helper.getClient().getEndpoint());
+        List<QueuedRequest> requests = ((InMemoryMessageStore) helper.server.getMessageStore()).retrieveAll(helper
+                .getClient().getEndpoint());
         assertEquals(2, requests.size());
     }
 
@@ -468,9 +467,8 @@ public class QueueModeTest {
             InMemoryMessageStore messageStore = (InMemoryMessageStore) helper.server.getMessageStore();
             queuedRequestCount = messageStore.retrieveAll(helper.getClient().getEndpoint()).size();
         } while (queuedRequestCount < count && duration <= timeout);
-        assertTrue(
-                "Expected to have at least " + count + " queued request in queue but have [" + queuedRequestCount + "]",
-                queuedRequestCount == count);
+        assertTrue("Expected to have at least " + count + " queued request in queue but have [" + queuedRequestCount
+                + "]", queuedRequestCount == count);
     }
 
     private void assertQueueIsEmpty(long timeout) throws InterruptedException {
@@ -498,7 +496,8 @@ public class QueueModeTest {
         private final AtomicBoolean receivedNotify = new AtomicBoolean();
 
         @Override
-        public void newValue(Observation observation, LwM2mNode value) {
+        public void newValue(Observation observation, LwM2mNode mostRecentvalue,
+                List<TimestampedLwM2mNode> timestampedValues) {
             receivedNotify.set(true);
             latch.countDown();
         }
