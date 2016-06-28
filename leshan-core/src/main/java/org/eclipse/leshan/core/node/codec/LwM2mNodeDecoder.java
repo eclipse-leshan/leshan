@@ -15,9 +15,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec;
 
+import java.util.List;
+
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.request.ContentFormat;
 
 public interface LwM2mNodeDecoder {
@@ -50,5 +53,19 @@ public interface LwM2mNodeDecoder {
      */
     <T extends LwM2mNode> T decode(byte[] content, ContentFormat format, LwM2mPath path, LwM2mModel model,
             Class<T> nodeClass) throws InvalidValueException;
+
+    /**
+     * Deserializes a binary content into a list of time-stamped {@link LwM2mNode} ordering by time-stamp.
+     *
+     * @param content the content
+     * @param format the content format
+     * @param path the path of the node to build
+     * @param model the collection of supported object models
+     * @param nodeClass the class of the {@link LwM2mNode} to decode
+     * @return the resulting list of time-stamped {@link LwM2mNode} ordering by time-stamp
+     * @throws InvalidValueException
+     */
+    List<TimestampedLwM2mNode> decodeTimestampedData(byte[] content, ContentFormat format, LwM2mPath path,
+            LwM2mModel model) throws InvalidValueException;
 
 }

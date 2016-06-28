@@ -32,7 +32,6 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
-import org.eclipse.leshan.core.node.codec.json.LwM2mNodeJsonEncoder;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.util.Charsets;
 import org.junit.Assert;
@@ -205,7 +204,7 @@ public class LwM2mNodeEncoderTest {
         data.add(new TimestampedLwM2mNode(510L, LwM2mSingleResource.newFloatResource(1, 22.4)));
         data.add(new TimestampedLwM2mNode(520L, LwM2mSingleResource.newFloatResource(1, 24.1)));
 
-        byte[] encoded = LwM2mNodeJsonEncoder.encodeTimestampedData(data, new LwM2mPath(1024, 0, 1), model);
+        byte[] encoded = encoder.encodeTimestampedData(data, ContentFormat.JSON, new LwM2mPath(1024, 0, 1), model);
 
         StringBuilder b = new StringBuilder();
         b.append("{\"e\":[");
@@ -230,7 +229,7 @@ public class LwM2mNodeEncoderTest {
         data.add(new TimestampedLwM2mNode(120L, instanceAt120));
         data.add(new TimestampedLwM2mNode(130L, instanceAt130));
 
-        byte[] encoded = LwM2mNodeJsonEncoder.encodeTimestampedData(data, new LwM2mPath(1024, 0), model);
+        byte[] encoded = encoder.encodeTimestampedData(data, ContentFormat.JSON, new LwM2mPath(1024, 0), model);
 
         StringBuilder b = new StringBuilder();
         b.append("{\"e\":[");
@@ -262,7 +261,7 @@ public class LwM2mNodeEncoderTest {
         data.add(new TimestampedLwM2mNode(220L, objectAt220));
         data.add(new TimestampedLwM2mNode(230L, objetAt230));
 
-        byte[] encoded = LwM2mNodeJsonEncoder.encodeTimestampedData(data, new LwM2mPath(1024), model);
+        byte[] encoded = encoder.encodeTimestampedData(data, ContentFormat.JSON, new LwM2mPath(1024), model);
 
         StringBuilder b = new StringBuilder();
         b.append("{\"e\":[");

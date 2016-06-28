@@ -17,10 +17,12 @@
 package org.eclipse.leshan.core.node.codec;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.json.LwM2mNodeJsonEncoder;
 import org.eclipse.leshan.core.node.codec.opaque.LwM2mNodeOpaqueEncoder;
 import org.eclipse.leshan.core.node.codec.text.LwM2mNodeTextEncoder;
@@ -60,6 +62,27 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
         }
 
         LOG.trace("Encoded node {}: {}", node, Arrays.toString(encoded));
+        return encoded;
+    }
+
+    @Override
+    public byte[] encodeTimestampedData(List<TimestampedLwM2mNode> timestampedNodes, ContentFormat format,
+            LwM2mPath path, LwM2mModel model) {
+        Validate.notEmpty(timestampedNodes);
+        Validate.notNull(format);
+
+        LOG.debug("Encoding time-stamped nodes for path {} and format {}", timestampedNodes, path, format);
+
+        byte[] encoded = null;
+        switch (format.getCode()) {
+        case ContentFormat.JSON_CODE:
+            encoded = LwM2mNodeJsonEncoder.encodeTimestampedData(timestampedNodes, path, model);
+            break;
+        default:
+            throw new IllegalArgumentException("Cannot encode timestampedNode with format " + format);
+        }
+
+        LOG.trace("Encoded node timestampedNode: {}", timestampedNodes, Arrays.toString(encoded));
         return encoded;
     }
 }

@@ -32,7 +32,6 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
-import org.eclipse.leshan.core.node.codec.json.LwM2mNodeJsonDecoder;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.tlv.Tlv;
 import org.eclipse.leshan.tlv.Tlv.TlvType;
@@ -309,8 +308,8 @@ public class LwM2mNodeDecoderTest {
         b.append("{\"n\":\"\",\"v\":24.1,\"t\":-50}],");
         b.append("\"bt\":25462634}");
 
-        List<TimestampedLwM2mNode> timestampedResources = LwM2mNodeJsonDecoder
-                .decodeTimestampedData(b.toString().getBytes(), new LwM2mPath(1024, 0, 1), model, LwM2mResource.class);
+        List<TimestampedLwM2mNode> timestampedResources = decoder.decodeTimestampedData(b.toString().getBytes(),
+                ContentFormat.JSON, new LwM2mPath(1024, 0, 1), model);
 
         assertEquals(3, timestampedResources.size());
         assertEquals(new Long(25462634L - 5), timestampedResources.get(0).getTimestamp());
@@ -332,8 +331,8 @@ public class LwM2mNodeDecoderTest {
         b.append("{\"n\":\"1\",\"v\":24.1,\"t\":-50}],");
         b.append("\"bt\":25462634}");
 
-        List<TimestampedLwM2mNode> timestampedResources = LwM2mNodeJsonDecoder.decodeTimestampedData(
-                b.toString().getBytes(), new LwM2mPath(1024, 0), model, LwM2mObjectInstance.class);
+        List<TimestampedLwM2mNode> timestampedResources = decoder.decodeTimestampedData(b.toString().getBytes(),
+                ContentFormat.JSON, new LwM2mPath(1024, 0), model);
 
         assertEquals(3, timestampedResources.size());
         assertEquals(new Long(25462634L - 5), timestampedResources.get(0).getTimestamp());
@@ -360,8 +359,8 @@ public class LwM2mNodeDecoderTest {
         b.append("{\"n\":\"0/1\",\"v\":24.1,\"t\":-50}],");
         b.append("\"bt\":25462634}");
 
-        List<TimestampedLwM2mNode> timestampedResources = LwM2mNodeJsonDecoder
-                .decodeTimestampedData(b.toString().getBytes(), new LwM2mPath(1024), model, LwM2mObject.class);
+        List<TimestampedLwM2mNode> timestampedResources = decoder.decodeTimestampedData(b.toString().getBytes(),
+                ContentFormat.JSON, new LwM2mPath(1024), model);
 
         assertEquals(3, timestampedResources.size());
         assertEquals(new Long(25462634L - 5), timestampedResources.get(0).getTimestamp());

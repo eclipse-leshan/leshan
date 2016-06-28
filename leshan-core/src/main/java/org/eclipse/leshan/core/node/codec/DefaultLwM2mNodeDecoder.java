@@ -16,6 +16,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
@@ -24,6 +28,7 @@ import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.json.LwM2mNodeJsonDecoder;
 import org.eclipse.leshan.core.node.codec.opaque.LwM2mNodeOpaqueDecoder;
 import org.eclipse.leshan.core.node.codec.text.LwM2mNodeTextDecoder;
@@ -43,6 +48,25 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
         return decode(content, format, path, model, nodeClassFromPath(path));
     }
 
+    private ContentFormat guessContentType(LwM2mPath path, LwM2mModel model) {
+        ContentFormat format;
+        if (path.isResource()) {
+            ResourceModel rDesc = model.getResourceModel(path.getObjectId(), path.getResourceId());
+            if (rDesc != null && rDesc.multiple) {
+                format = ContentFormat.TLV;
+            } else {
+                if (rDesc != null && rDesc.type == Type.OPAQUE) {
+                    format = ContentFormat.OPAQUE;
+                } else {
+                    format = ContentFormat.TEXT;
+                }
+            }
+        } else {
+            format = ContentFormat.TLV;
+        }
+        return format;
+    }
+
     @Override
     @SuppressWarnings("unchecked")
     public <T extends LwM2mNode> T decode(byte[] content, ContentFormat format, LwM2mPath path, LwM2mModel model,
@@ -53,20 +77,7 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
 
         // If no format is given, guess the best one to use.
         if (format == null) {
-            if (path.isResource()) {
-                ResourceModel rDesc = model.getResourceModel(path.getObjectId(), path.getResourceId());
-                if (rDesc != null && rDesc.multiple) {
-                    format = ContentFormat.TLV;
-                } else {
-                    if (rDesc != null && rDesc.type == Type.OPAQUE) {
-                        format = ContentFormat.OPAQUE;
-                    } else {
-                        format = ContentFormat.TEXT;
-                    }
-                }
-            } else {
-                format = ContentFormat.TLV;
-            }
+            format = guessContentType(path, model);
         }
 
         // Decode content.
@@ -83,6 +94,42 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
             throw new UnsupportedOperationException("Content format " + format + " not yet implemented '" + path + "'");
         }
         return null;
+    }
+
+    @Override
+    public List<TimestampedLwM2mNode> decodeTimestampedData(byte[] content, ContentFormat format, LwM2mPath path,
+            LwM2mModel model) throws InvalidValueException {
+        LOG.debug("Decoding value for path {} and format {}: {}", path, format, content);
+        Validate.notNull(path);
+
+        // If no format is given, guess the best one to use.
+        if (format == null) {
+            format = guessContentType(path, model);
+        }
+
+        // Decode content.
+        switch (format.getCode()) {
+        case ContentFormat.TEXT_CODE:
+            return toTimestampedNodes(LwM2mNodeTextDecoder.decode(content, path, model));
+        case ContentFormat.TLV_CODE:
+            return toTimestampedNodes(LwM2mNodeTlvDecoder.decode(content, path, model, nodeClassFromPath(path)));
+        case ContentFormat.OPAQUE_CODE:
+            return toTimestampedNodes(LwM2mNodeOpaqueDecoder.decode(content, path, model));
+        case ContentFormat.JSON_CODE:
+            return LwM2mNodeJsonDecoder.decodeTimestampedData(content, path, model, nodeClassFromPath(path));
+        case ContentFormat.LINK_CODE:
+            throw new UnsupportedOperationException("Content format " + format + " not yet implemented '" + path + "'");
+        }
+        return null;
+    }
+
+    private static List<TimestampedLwM2mNode> toTimestampedNodes(LwM2mNode node) {
+        if (node == null)
+            return Collections.emptyList();
+
+        ArrayList<TimestampedLwM2mNode> timestampedNodes = new ArrayList<>(1);
+        timestampedNodes.add(new TimestampedLwM2mNode(null, node));
+        return Collections.unmodifiableList(timestampedNodes);
     }
 
     private static Class<? extends LwM2mNode> nodeClassFromPath(LwM2mPath path) {
