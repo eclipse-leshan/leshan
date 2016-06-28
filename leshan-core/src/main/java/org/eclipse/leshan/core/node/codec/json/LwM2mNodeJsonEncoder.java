@@ -57,15 +57,15 @@ public class LwM2mNodeJsonEncoder {
         return LwM2mJson.toJsonLwM2m(jsonObject).getBytes();
     }
 
-    public static byte[] encodeTimestampedData(List<TimestampedLwM2mNode<? extends LwM2mNode>> timestampedNodes,
-            LwM2mPath path, LwM2mModel model) {
+    public static byte[] encodeTimestampedData(List<TimestampedLwM2mNode> timestampedNodes, LwM2mPath path,
+            LwM2mModel model) {
         Validate.notNull(timestampedNodes);
         Validate.notNull(path);
         Validate.notNull(model);
 
         InternalEncoder internalEncoder = new InternalEncoder();
         ArrayList<JsonArrayEntry> entries = new ArrayList<>();
-        for (TimestampedLwM2mNode<? extends LwM2mNode> timestampedLwM2mNode : timestampedNodes) {
+        for (TimestampedLwM2mNode timestampedLwM2mNode : timestampedNodes) {
             internalEncoder.objectId = path.getObjectId();
             internalEncoder.model = model;
             internalEncoder.requestPath = path;

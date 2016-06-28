@@ -26,7 +26,6 @@ import java.util.Map;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
-import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -201,10 +200,10 @@ public class LwM2mNodeEncoderTest {
 
     @Test
     public void json_encode_timestamped_resources() throws InvalidValueException {
-        List<TimestampedLwM2mNode<? extends LwM2mNode>> data = new ArrayList<>();
-        data.add(new TimestampedLwM2mNode<LwM2mResource>(500L, LwM2mSingleResource.newFloatResource(1, 22.9)));
-        data.add(new TimestampedLwM2mNode<LwM2mResource>(510L, LwM2mSingleResource.newFloatResource(1, 22.4)));
-        data.add(new TimestampedLwM2mNode<LwM2mResource>(520L, LwM2mSingleResource.newFloatResource(1, 24.1)));
+        List<TimestampedLwM2mNode> data = new ArrayList<>();
+        data.add(new TimestampedLwM2mNode(500L, LwM2mSingleResource.newFloatResource(1, 22.9)));
+        data.add(new TimestampedLwM2mNode(510L, LwM2mSingleResource.newFloatResource(1, 22.4)));
+        data.add(new TimestampedLwM2mNode(520L, LwM2mSingleResource.newFloatResource(1, 24.1)));
 
         byte[] encoded = LwM2mNodeJsonEncoder.encodeTimestampedData(data, new LwM2mPath(1024, 0, 1), model);
 
@@ -220,16 +219,16 @@ public class LwM2mNodeEncoderTest {
 
     @Test
     public void json_encode_timestamped_instances() throws InvalidValueException {
-        List<TimestampedLwM2mNode<? extends LwM2mNode>> data = new ArrayList<>();
+        List<TimestampedLwM2mNode> data = new ArrayList<>();
 
         LwM2mObjectInstance instanceAt110 = new LwM2mObjectInstance(0, LwM2mSingleResource.newFloatResource(1, 22.9));
         LwM2mObjectInstance instanceAt120 = new LwM2mObjectInstance(0, LwM2mSingleResource.newFloatResource(1, 22.4),
                 LwM2mSingleResource.newStringResource(0, "a string"));
         LwM2mObjectInstance instanceAt130 = new LwM2mObjectInstance(0, LwM2mSingleResource.newFloatResource(1, 24.1));
 
-        data.add(new TimestampedLwM2mNode<LwM2mObjectInstance>(110L, instanceAt110));
-        data.add(new TimestampedLwM2mNode<LwM2mObjectInstance>(120L, instanceAt120));
-        data.add(new TimestampedLwM2mNode<LwM2mObjectInstance>(130L, instanceAt130));
+        data.add(new TimestampedLwM2mNode(110L, instanceAt110));
+        data.add(new TimestampedLwM2mNode(120L, instanceAt120));
+        data.add(new TimestampedLwM2mNode(130L, instanceAt130));
 
         byte[] encoded = LwM2mNodeJsonEncoder.encodeTimestampedData(data, new LwM2mPath(1024, 0), model);
 
@@ -246,7 +245,7 @@ public class LwM2mNodeEncoderTest {
 
     @Test
     public void json_encode_timestamped_Object() throws InvalidValueException {
-        List<TimestampedLwM2mNode<? extends LwM2mNode>> data = new ArrayList<>();
+        List<TimestampedLwM2mNode> data = new ArrayList<>();
 
         LwM2mObject objectAt210 = new LwM2mObject(1204,
                 new LwM2mObjectInstance(0, LwM2mSingleResource.newFloatResource(1, 22.9)));
@@ -259,9 +258,9 @@ public class LwM2mNodeEncoderTest {
         LwM2mObject objetAt230 = new LwM2mObject(1204,
                 new LwM2mObjectInstance(0, LwM2mSingleResource.newFloatResource(1, 24.1)));
 
-        data.add(new TimestampedLwM2mNode<LwM2mObject>(210L, objectAt210));
-        data.add(new TimestampedLwM2mNode<LwM2mObject>(220L, objectAt220));
-        data.add(new TimestampedLwM2mNode<LwM2mObject>(230L, objetAt230));
+        data.add(new TimestampedLwM2mNode(210L, objectAt210));
+        data.add(new TimestampedLwM2mNode(220L, objectAt220));
+        data.add(new TimestampedLwM2mNode(230L, objetAt230));
 
         byte[] encoded = LwM2mNodeJsonEncoder.encodeTimestampedData(data, new LwM2mPath(1024), model);
 

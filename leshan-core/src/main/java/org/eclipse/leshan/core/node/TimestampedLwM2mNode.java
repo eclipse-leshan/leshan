@@ -17,13 +17,13 @@ package org.eclipse.leshan.core.node;
 
 import org.eclipse.leshan.util.Validate;
 
-public class TimestampedLwM2mNode<T> {
+public class TimestampedLwM2mNode {
 
     private final Long timestamp;
 
-    private final T node;
+    private final LwM2mNode node;
 
-    public TimestampedLwM2mNode(Long timestamp, T node) {
+    public TimestampedLwM2mNode(Long timestamp, LwM2mNode node) {
         Validate.notNull(node);
         this.timestamp = timestamp;
         this.node = node;
@@ -33,7 +33,7 @@ public class TimestampedLwM2mNode<T> {
         return timestamp;
     }
 
-    public T getNode() {
+    public LwM2mNode getNode() {
         return node;
     }
 

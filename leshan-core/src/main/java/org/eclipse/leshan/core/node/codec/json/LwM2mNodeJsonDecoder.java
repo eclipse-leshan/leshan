@@ -56,20 +56,20 @@ public class LwM2mNodeJsonDecoder {
         try {
             String jsonStrValue = new String(content);
             JsonRootObject json = LwM2mJson.fromJsonLwM2m(jsonStrValue);
-            List<TimestampedLwM2mNode<T>> timestampedNodes = parseJSON(json, path, model, nodeClass);
+            List<TimestampedLwM2mNode> timestampedNodes = parseJSON(json, path, model, nodeClass);
             if (timestampedNodes.size() == 0) {
                 return null;
             } else {
                 // return the most recent value
-                return timestampedNodes.get(0).getNode();
+                return (T) timestampedNodes.get(0).getNode();
             }
         } catch (LwM2mJsonException e) {
             throw new InvalidValueException("Unable to deSerialize json", path, e);
         }
     }
 
-    public static <T extends LwM2mNode> List<TimestampedLwM2mNode<T>> decodeTimestampedData(byte[] content,
-            LwM2mPath path, LwM2mModel model, Class<T> nodeClass) throws InvalidValueException {
+    public static List<TimestampedLwM2mNode> decodeTimestampedData(byte[] content, LwM2mPath path, LwM2mModel model,
+            Class<? extends LwM2mNode> nodeClass) throws InvalidValueException {
         try {
             String jsonStrValue = new String(content);
             JsonRootObject json = LwM2mJson.fromJsonLwM2m(jsonStrValue);
@@ -80,8 +80,8 @@ public class LwM2mNodeJsonDecoder {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T extends LwM2mNode> List<TimestampedLwM2mNode<T>> parseJSON(JsonRootObject jsonObject,
-            LwM2mPath path, LwM2mModel model, Class<T> nodeClass) throws InvalidValueException {
+    private static List<TimestampedLwM2mNode> parseJSON(JsonRootObject jsonObject, LwM2mPath path, LwM2mModel model,
+            Class<? extends LwM2mNode> nodeClass) throws InvalidValueException {
 
         LOG.trace("Parsing JSON content for path {}: {}", path, jsonObject);
 
@@ -94,7 +94,7 @@ public class LwM2mNodeJsonDecoder {
             baseName = path; // if no base name, use request path as base name
 
         // fill time-stamped nodes collection
-        List<TimestampedLwM2mNode<T>> timestampedNodes = new ArrayList<>();
+        List<TimestampedLwM2mNode> timestampedNodes = new ArrayList<>();
         for (Entry<Long, Collection<JsonArrayEntry>> entryByTimestamp : jsonEntryByTimestamp.entrySet()) {
 
             // Group JSON entry by instance
@@ -102,7 +102,7 @@ public class LwM2mNodeJsonDecoder {
                     entryByTimestamp.getValue(), baseName);
 
             // Create right right lwm2m node
-            T node = null;
+            LwM2mNode node = null;
             if (nodeClass == LwM2mObject.class) {
                 Collection<LwM2mObjectInstance> instances = new ArrayList<>();
                 for (Entry<Integer, Collection<JsonArrayEntry>> entryByInstanceId : jsonEntryByInstanceId.entrySet()) {
@@ -112,7 +112,7 @@ public class LwM2mNodeJsonDecoder {
                     instances.add(new LwM2mObjectInstance(entryByInstanceId.getKey(), resourcesMap.values()));
                 }
 
-                node = (T) new LwM2mObject(baseName.getObjectId(), instances);
+                node = new LwM2mObject(baseName.getObjectId(), instances);
             } else if (nodeClass == LwM2mObjectInstance.class) {
                 // validate we have resources for only 1 instance
                 if (jsonEntryByInstanceId.size() > 1)
@@ -125,7 +125,7 @@ public class LwM2mNodeJsonDecoder {
                         model);
 
                 // Create instance
-                node = (T) new LwM2mObjectInstance(instanceEntry.getKey(), resourcesMap.values());
+                node = new LwM2mObjectInstance(instanceEntry.getKey(), resourcesMap.values());
             } else if (nodeClass == LwM2mResource.class) {
                 // validate we have resources for only 1 instance
                 if (jsonEntryByInstanceId.size() > 1)
@@ -139,7 +139,7 @@ public class LwM2mNodeJsonDecoder {
                 if (resourcesMap.size() != 1)
                     throw new InvalidValueException("Only one resource should be present in the payload", path);
 
-                node = (T) resourcesMap.values().iterator().next();
+                node = resourcesMap.values().iterator().next();
             } else {
                 throw new IllegalArgumentException("invalid node class: " + nodeClass);
             }
@@ -148,7 +148,7 @@ public class LwM2mNodeJsonDecoder {
             Long timestamp = computeTimestamp(jsonObject.getBaseTime(), entryByTimestamp.getKey());
 
             // add time-stamped node
-            timestampedNodes.add(new TimestampedLwM2mNode<T>(timestamp, node));
+            timestampedNodes.add(new TimestampedLwM2mNode(timestamp, node));
         }
 
         return timestampedNodes;

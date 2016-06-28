@@ -309,16 +309,16 @@ public class LwM2mNodeDecoderTest {
         b.append("{\"n\":\"\",\"v\":24.1,\"t\":-50}],");
         b.append("\"bt\":25462634}");
 
-        List<TimestampedLwM2mNode<LwM2mResource>> timestampedResources = LwM2mNodeJsonDecoder
+        List<TimestampedLwM2mNode> timestampedResources = LwM2mNodeJsonDecoder
                 .decodeTimestampedData(b.toString().getBytes(), new LwM2mPath(1024, 0, 1), model, LwM2mResource.class);
 
         assertEquals(3, timestampedResources.size());
         assertEquals(new Long(25462634L - 5), timestampedResources.get(0).getTimestamp());
-        assertEquals(22.4d, timestampedResources.get(0).getNode().getValue());
+        assertEquals(22.4d, ((LwM2mResource) timestampedResources.get(0).getNode()).getValue());
         assertEquals(new Long(25462634L - 30), timestampedResources.get(1).getTimestamp());
-        assertEquals(22.9d, timestampedResources.get(1).getNode().getValue());
+        assertEquals(22.9d, ((LwM2mResource) timestampedResources.get(1).getNode()).getValue());
         assertEquals(new Long(25462634 - 50), timestampedResources.get(2).getTimestamp());
-        assertEquals(24.1d, timestampedResources.get(2).getNode().getValue());
+        assertEquals(24.1d, ((LwM2mResource) timestampedResources.get(2).getNode()).getValue());
     }
 
     @Test
@@ -332,18 +332,20 @@ public class LwM2mNodeDecoderTest {
         b.append("{\"n\":\"1\",\"v\":24.1,\"t\":-50}],");
         b.append("\"bt\":25462634}");
 
-        List<TimestampedLwM2mNode<LwM2mObjectInstance>> timestampedResources = LwM2mNodeJsonDecoder
-                .decodeTimestampedData(b.toString().getBytes(), new LwM2mPath(1024, 0), model,
-                        LwM2mObjectInstance.class);
+        List<TimestampedLwM2mNode> timestampedResources = LwM2mNodeJsonDecoder.decodeTimestampedData(
+                b.toString().getBytes(), new LwM2mPath(1024, 0), model, LwM2mObjectInstance.class);
 
         assertEquals(3, timestampedResources.size());
         assertEquals(new Long(25462634L - 5), timestampedResources.get(0).getTimestamp());
-        assertEquals("a string", timestampedResources.get(0).getNode().getResource(0).getValue());
-        assertEquals(22.4d, timestampedResources.get(0).getNode().getResource(1).getValue());
+        assertEquals("a string",
+                ((LwM2mObjectInstance) timestampedResources.get(0).getNode()).getResource(0).getValue());
+        assertEquals(22.4d, ((LwM2mObjectInstance) timestampedResources.get(0).getNode()).getResource(1).getValue());
+
         assertEquals(new Long(25462634L - 30), timestampedResources.get(1).getTimestamp());
-        assertEquals(22.9d, timestampedResources.get(1).getNode().getResource(1).getValue());
+        assertEquals(22.9d, ((LwM2mObjectInstance) timestampedResources.get(1).getNode()).getResource(1).getValue());
+
         assertEquals(new Long(25462634 - 50), timestampedResources.get(2).getTimestamp());
-        assertEquals(24.1d, timestampedResources.get(2).getNode().getResource(1).getValue());
+        assertEquals(24.1d, ((LwM2mObjectInstance) timestampedResources.get(2).getNode()).getResource(1).getValue());
     }
 
     @Test
@@ -358,17 +360,22 @@ public class LwM2mNodeDecoderTest {
         b.append("{\"n\":\"0/1\",\"v\":24.1,\"t\":-50}],");
         b.append("\"bt\":25462634}");
 
-        List<TimestampedLwM2mNode<LwM2mObject>> timestampedResources = LwM2mNodeJsonDecoder
+        List<TimestampedLwM2mNode> timestampedResources = LwM2mNodeJsonDecoder
                 .decodeTimestampedData(b.toString().getBytes(), new LwM2mPath(1024), model, LwM2mObject.class);
 
         assertEquals(3, timestampedResources.size());
         assertEquals(new Long(25462634L - 5), timestampedResources.get(0).getTimestamp());
-        assertEquals(22.4d, timestampedResources.get(0).getNode().getInstance(0).getResource(1).getValue());
-        assertEquals("a string", timestampedResources.get(0).getNode().getInstance(0).getResource(0).getValue());
-        assertEquals(23.0d, timestampedResources.get(0).getNode().getInstance(1).getResource(1).getValue());
+        assertEquals(22.4d,
+                ((LwM2mObject) timestampedResources.get(0).getNode()).getInstance(0).getResource(1).getValue());
+        assertEquals("a string",
+                ((LwM2mObject) timestampedResources.get(0).getNode()).getInstance(0).getResource(0).getValue());
+        assertEquals(23.0d,
+                ((LwM2mObject) timestampedResources.get(0).getNode()).getInstance(1).getResource(1).getValue());
         assertEquals(new Long(25462634L - 30), timestampedResources.get(1).getTimestamp());
-        assertEquals(22.9d, timestampedResources.get(1).getNode().getInstance(0).getResource(1).getValue());
+        assertEquals(22.9d,
+                ((LwM2mObject) timestampedResources.get(1).getNode()).getInstance(0).getResource(1).getValue());
         assertEquals(new Long(25462634 - 50), timestampedResources.get(2).getTimestamp());
-        assertEquals(24.1d, timestampedResources.get(2).getNode().getInstance(0).getResource(1).getValue());
+        assertEquals(24.1d,
+                ((LwM2mObject) timestampedResources.get(2).getNode()).getInstance(0).getResource(1).getValue());
     }
 }
