@@ -46,7 +46,7 @@ public class BootstrapSessionManagerImpl implements BootstrapSessionManager {
     public BootstrapSession begin(String endpoint, Identity clientIdentity) {
         List<SecurityInfo> securityInfos = bsSecurityStore.getAllByEndpoint(endpoint);
         boolean authorized = SecurityCheck.checkSecurityInfos(endpoint, clientIdentity, securityInfos);
-        if (!authorized) {
+        if (authorized) {
             return BootstrapSession.authorized(endpoint, clientIdentity);
         } else {
             return BootstrapSession.unauthorized();
@@ -58,7 +58,7 @@ public class BootstrapSessionManagerImpl implements BootstrapSessionManager {
     }
 
     @Override
-    public void failed(BootstrapSession bsSession, DownlinkRequest<? extends LwM2mResponse> request) {
+    public void failed(BootstrapSession bsSession, DownlinkRequest<? extends LwM2mResponse> request, Exception e) {
     }
 
 }

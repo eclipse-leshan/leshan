@@ -118,12 +118,13 @@ public class BootstrapHandler {
             @Override
             public void onError(Exception e) {
                 LOG.warn(String.format("Error pending bootstrap delete '/' on %s", bsSession.getEndpoint()), e);
-                bsSessionManager.failed(bsSession, writeDeleteRequest);
+                bsSessionManager.failed(bsSession, writeDeleteRequest, e);
             }
         });
     }
 
-    private void sendBootstrap(final BootstrapSession bsSession, final BootstrapConfig cfg, final List<Integer> toSend) {
+    private void sendBootstrap(final BootstrapSession bsSession, final BootstrapConfig cfg,
+            final List<Integer> toSend) {
         if (!toSend.isEmpty()) {
             // 1st encode them into a juicy TLV binary
             Integer key = toSend.remove(0);
@@ -133,7 +134,8 @@ public class BootstrapHandler {
             LwM2mPath path = new LwM2mPath(0, key);
             final LwM2mNode securityInstance = convertToSecurityInstance(key, securityConfig);
 
-            final BootstrapWriteRequest writeBootstrapRequest = new BootstrapWriteRequest(path, securityInstance, ContentFormat.TLV);
+            final BootstrapWriteRequest writeBootstrapRequest = new BootstrapWriteRequest(path, securityInstance,
+                    ContentFormat.TLV);
             send(bsSession, writeBootstrapRequest, new ResponseCallback<BootstrapWriteResponse>() {
                 @Override
                 public void onResponse(BootstrapWriteResponse response) {
@@ -146,7 +148,7 @@ public class BootstrapHandler {
                 public void onError(Exception e) {
                     LOG.warn(String.format("Error pending bootstrap write of security instance %s on %s",
                             securityInstance, bsSession.getEndpoint()), e);
-                    bsSessionManager.failed(bsSession, writeBootstrapRequest);
+                    bsSessionManager.failed(bsSession, writeBootstrapRequest, e);
                 }
             });
         } else {
@@ -180,7 +182,7 @@ public class BootstrapHandler {
                 public void onError(Exception e) {
                     LOG.warn(String.format("Error pending bootstrap write of server instance %s on %s", serverInstance,
                             bsSession.getEndpoint()), e);
-                    bsSessionManager.failed(bsSession, writeServerRequest);
+                    bsSessionManager.failed(bsSession, writeServerRequest, e);
                 }
             });
         } else {
@@ -192,14 +194,15 @@ public class BootstrapHandler {
                     if (response.isSuccess()) {
                         bsSessionManager.end(bsSession);
                     } else {
-                        bsSessionManager.failed(bsSession, finishBootstrapRequest);
+                        bsSessionManager.failed(bsSession, finishBootstrapRequest, new RuntimeException(
+                                String.format("Bootstrap finished with response code : %s", response)));
                     }
                 }
             }, new ErrorCallback() {
                 @Override
                 public void onError(Exception e) {
                     LOG.warn(String.format("Error pending bootstrap finished on %s", bsSession.getEndpoint()), e);
-                    bsSessionManager.failed(bsSession, finishBootstrapRequest);
+                    bsSessionManager.failed(bsSession, finishBootstrapRequest, e);
                 }
             });
         }
@@ -207,8 +210,8 @@ public class BootstrapHandler {
 
     private <T extends LwM2mResponse> void send(final BootstrapSession bsSession, final DownlinkRequest<T> request,
             final ResponseCallback<T> responseCallback, final ErrorCallback errorCallback) {
-        requestSender.send(bsSession.getEndpoint(), bsSession.getClientIdentity().getPeerAddress(), bsSession
-                .getClientIdentity().isSecure(), request, responseCallback, errorCallback);
+        requestSender.send(bsSession.getEndpoint(), bsSession.getClientIdentity().getPeerAddress(),
+                bsSession.getClientIdentity().isSecure(), request, responseCallback, errorCallback);
     }
 
     private LwM2mObjectInstance convertToSecurityInstance(int instanceId, ServerSecurity securityConfig) {

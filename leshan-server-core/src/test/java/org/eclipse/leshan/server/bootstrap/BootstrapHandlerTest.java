@@ -158,7 +158,7 @@ public class BootstrapHandlerTest {
         }
 
         @Override
-        public void failed(BootstrapSession bsSession, DownlinkRequest<? extends LwM2mResponse> request) {
+        public void failed(BootstrapSession bsSession, DownlinkRequest<? extends LwM2mResponse> request, Exception e) {
         }
     }
 }

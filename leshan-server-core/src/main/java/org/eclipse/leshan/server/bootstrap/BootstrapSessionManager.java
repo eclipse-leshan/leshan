@@ -47,7 +47,9 @@ public interface BootstrapSessionManager {
      * 
      * @param bsSession
      * @param request
+     * @param exception
      */
-    public void failed(BootstrapSession bsSession, DownlinkRequest<? extends LwM2mResponse> request);
+    public void failed(BootstrapSession bsSession, DownlinkRequest<? extends LwM2mResponse> request,
+            Exception exception);
 
 }

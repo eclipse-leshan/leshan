@@ -107,8 +107,8 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
 
         initializer.setInstancesForObject(LwM2mId.SECURITY, security);
 
-        initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan",
-                IntegrationTestHelper.MODEL_NUMBER, "12345", "U"));
+        initializer.setInstancesForObject(LwM2mId.DEVICE,
+                new Device("Eclipse Leshan", IntegrationTestHelper.MODEL_NUMBER, "12345", "U"));
         List<LwM2mObjectEnabler> objects = initializer.createMandatory();
         objects.add(initializer.create(2));
 
@@ -129,8 +129,8 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
 
         initializer.setInstancesForObject(LwM2mId.SECURITY, security);
 
-        initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan",
-                IntegrationTestHelper.MODEL_NUMBER, "12345", "U"));
+        initializer.setInstancesForObject(LwM2mId.DEVICE,
+                new Device("Eclipse Leshan", IntegrationTestHelper.MODEL_NUMBER, "12345", "U"));
         List<LwM2mObjectEnabler> objects = initializer.createMandatory();
         objects.add(initializer.create(2));
 

@@ -60,4 +60,10 @@ public class BootstrapSession {
         return new BootstrapSession(endpoint, clientIdentity, true);
     }
 
+    @Override
+    public String toString() {
+        return String.format("BootstrapSession [endpoint=%s, clientIdentity=%s, authorized=%s]", endpoint,
+                clientIdentity, authorized);
+    }
+
 }
