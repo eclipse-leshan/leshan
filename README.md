@@ -106,4 +106,3 @@ Modules
 `Leshan-server-demo` : a lwm2m demo server with a web UI.  
 `Leshan-bsserver-demo` : a bootstarp demo server with a web UI.  
 `Leshan-integration-tests` : integration automatic tests.  
-

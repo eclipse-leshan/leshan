@@ -27,10 +27,10 @@ import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
+import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.BootstrapStore;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapServer;
-import org.eclipse.leshan.server.security.BootstrapAuthService;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
@@ -57,14 +57,14 @@ public class LwM2mBootstrapServerImpl implements LwM2mBootstrapServer {
     private final BootstrapSecurityStore bsSecurityStore;
 
     public LwM2mBootstrapServerImpl(BootstrapStore bsStore, BootstrapSecurityStore securityStore,
-            BootstrapAuthService bsAuthService) {
+            BootstrapSessionManager bsSessionManager) {
         this(new InetSocketAddress((InetAddress) null, PORT), new InetSocketAddress((InetAddress) null, PORT_DTLS),
-                bsStore, securityStore, bsAuthService);
+                bsStore, securityStore, bsSessionManager);
 
     }
 
     public LwM2mBootstrapServerImpl(InetSocketAddress localAddress, InetSocketAddress localAddressSecure,
-            BootstrapStore bsStore, BootstrapSecurityStore bsSecurityStore, BootstrapAuthService bsAuthService) {
+            BootstrapStore bsStore, BootstrapSecurityStore bsSecurityStore, BootstrapSessionManager bsSessionManager) {
         Validate.notNull(bsStore, "bootstrap store must not be null");
 
         this.bsStore = bsStore;
@@ -86,9 +86,8 @@ public class LwM2mBootstrapServerImpl implements LwM2mBootstrapServer {
         LwM2mBootstrapRequestSender requestSender = new CaliforniumLwM2mBootstrapRequestSender(secureEndpoint,
                 nonSecureEndpoint, new LwM2mModel(ObjectLoader.loadDefault()));
 
-        // define /bs ressource
-        BootstrapResource bsResource = new BootstrapResource(
-                new BootstrapHandler(bsStore, bsAuthService, requestSender));
+        BootstrapResource bsResource = new BootstrapResource(new BootstrapHandler(bsStore, requestSender,
+                bsSessionManager));
         coapServer.add(bsResource);
     }
 
