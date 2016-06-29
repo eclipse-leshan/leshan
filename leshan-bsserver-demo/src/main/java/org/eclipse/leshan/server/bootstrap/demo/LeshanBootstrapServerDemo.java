@@ -55,8 +55,8 @@ public class LeshanBootstrapServerDemo {
         options.addOption("slh", "coapshost", true, "Set the secure local CoAP address.\nDefault: any local address.");
         options.addOption("slp", "coapsport", true, "Set the secure local CoAP port.\nDefault: 5684.");
         options.addOption("wp", "webport", true, "Set the HTTP port for web server.\nDefault: 8080.");
-        options.addOption("cfg", "configfile", true, "Set the filename for the configuration.\nDefault: "
-                + BootstrapStoreImpl.DEFAULT_FILE + ".");
+        options.addOption("cfg", "configfile", true,
+                "Set the filename for the configuration.\nDefault: " + BootstrapStoreImpl.DEFAULT_FILE + ".");
         HelpFormatter formatter = new HelpFormatter();
         formatter.setOptionComparator(null);
 
@@ -136,8 +136,8 @@ public class LeshanBootstrapServerDemo {
         try {
             createAndStartServer(webPort, localAddress, localPort, secureLocalAddress, secureLocalPort, configFilename);
         } catch (BindException e) {
-            System.out.println(String.format("Web port %s is alreay used, you could change it using 'webport' option.",
-                    webPort));
+            System.out.println(
+                    String.format("Web port %s is alreay used, you could change it using 'webport' option.", webPort));
             formatter.printHelp(USAGE, null, options, FOOTER);
         } catch (Exception e) {
             LOG.error("Jetty stopped with unexcepted error ...", e);
@@ -152,9 +152,8 @@ public class LeshanBootstrapServerDemo {
         BootstrapSecurityStore securityStore = new BootstrapSecurityStoreImpl(bsStore);
         BootstrapSessionManager bsSessionManager = new BootstrapSessionManagerImpl(securityStore);
 
-        LwM2mBootstrapServerImpl bsServer = new LwM2mBootstrapServerImpl(
-                new InetSocketAddress(localAddress, localPort), new InetSocketAddress(secureLocalAddress,
-                        secureLocalPort), bsStore, securityStore, bsSessionManager);
+        LwM2mBootstrapServerImpl bsServer = new LwM2mBootstrapServerImpl(new InetSocketAddress(localAddress, localPort),
+                new InetSocketAddress(secureLocalAddress, secureLocalPort), bsStore, securityStore, bsSessionManager);
         bsServer.start();
 
         // Now prepare and start jetty

@@ -17,7 +17,9 @@ package org.eclipse.leshan.server.impl;
 
 import java.util.List;
 
+import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.server.bootstrap.BootstrapSession;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
@@ -27,8 +29,9 @@ import org.eclipse.leshan.server.security.SecurityInfo;
 /**
  * Implementation of a session manager.
  * 
- * Starting a session simply delegates authorization to a BoostrapAuthentication service. Nothing specific is done on
- * session's end.
+ * Starting a session only checks credentials from BootstrapSecurityStore.
+ * 
+ * Nothing specific is done on session's end.
  *
  */
 public class BootstrapSessionManagerImpl implements BootstrapSessionManager {
@@ -55,7 +58,7 @@ public class BootstrapSessionManagerImpl implements BootstrapSessionManager {
     }
 
     @Override
-    public void failed(BootstrapSession bsSession) {
+    public void failed(BootstrapSession bsSession, DownlinkRequest<? extends LwM2mResponse> request) {
     }
 
 }

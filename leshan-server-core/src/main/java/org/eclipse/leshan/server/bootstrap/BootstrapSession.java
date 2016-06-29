@@ -28,10 +28,10 @@ public class BootstrapSession {
     private final Identity clientIdentity;
     private final boolean authorized;
 
-    protected BootstrapSession(String endpoint, Identity clientIdentity, boolean authenticated) {
+    protected BootstrapSession(String endpoint, Identity clientIdentity, boolean authorized) {
         this.endpoint = endpoint;
         this.clientIdentity = clientIdentity;
-        this.authorized = authenticated;
+        this.authorized = authorized;
     }
 
     public String getEndpoint() {

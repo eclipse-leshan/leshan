@@ -106,7 +106,8 @@ public class BootstrapHandler {
 
     private void sendDelete(final BootstrapSession bsSession, final BootstrapConfig cfg) {
 
-        send(bsSession, new BootstrapDeleteRequest(), new ResponseCallback<BootstrapDeleteResponse>() {
+        final BootstrapDeleteRequest writeDeleteRequest = new BootstrapDeleteRequest();
+        send(bsSession, writeDeleteRequest, new ResponseCallback<BootstrapDeleteResponse>() {
             @Override
             public void onResponse(BootstrapDeleteResponse response) {
                 LOG.debug("Bootstrap delete {} return code {}", bsSession.getEndpoint(), response.getCode());
@@ -116,8 +117,8 @@ public class BootstrapHandler {
         }, new ErrorCallback() {
             @Override
             public void onError(Exception e) {
-                // TODO Handle error on bootstrap
                 LOG.warn(String.format("Error pending bootstrap delete '/' on %s", bsSession.getEndpoint()), e);
+                bsSessionManager.failed(bsSession, writeDeleteRequest);
             }
         });
     }
@@ -132,23 +133,22 @@ public class BootstrapHandler {
             LwM2mPath path = new LwM2mPath(0, key);
             final LwM2mNode securityInstance = convertToSecurityInstance(key, securityConfig);
 
-            send(bsSession, new BootstrapWriteRequest(path, securityInstance, ContentFormat.TLV),
-                    new ResponseCallback<BootstrapWriteResponse>() {
-                        @Override
-                        public void onResponse(BootstrapWriteResponse response) {
-                            LOG.debug("Bootstrap write {} return code {}", bsSession.getEndpoint(), response.getCode());
-                            // recursive call until toSend is empty
-                            sendBootstrap(bsSession, cfg, toSend);
-                        }
-                    }, new ErrorCallback() {
-                        @Override
-                        public void onError(Exception e) {
-                            // TODO Handle error on bootstrap
-                            LOG.warn(String.format("Error pending bootstrap write of security instance %s on %s",
-                                    securityInstance, bsSession.getEndpoint()), e);
-                            bsSessionManager.failed(bsSession);
-                        }
-                    });
+            final BootstrapWriteRequest writeBootstrapRequest = new BootstrapWriteRequest(path, securityInstance, ContentFormat.TLV);
+            send(bsSession, writeBootstrapRequest, new ResponseCallback<BootstrapWriteResponse>() {
+                @Override
+                public void onResponse(BootstrapWriteResponse response) {
+                    LOG.debug("Bootstrap write {} return code {}", bsSession.getEndpoint(), response.getCode());
+                    // recursive call until toSend is empty
+                    sendBootstrap(bsSession, cfg, toSend);
+                }
+            }, new ErrorCallback() {
+                @Override
+                public void onError(Exception e) {
+                    LOG.warn(String.format("Error pending bootstrap write of security instance %s on %s",
+                            securityInstance, bsSession.getEndpoint()), e);
+                    bsSessionManager.failed(bsSession, writeBootstrapRequest);
+                }
+            });
         } else {
             // we are done, send the servers
             List<Integer> serversToSend = new ArrayList<>(cfg.servers.keySet());
@@ -166,38 +166,40 @@ public class BootstrapHandler {
             LwM2mPath path = new LwM2mPath(1, key);
             final LwM2mNode serverInstance = convertToServerInstance(key, serverConfig);
 
-            send(bsSession, new BootstrapWriteRequest(path, serverInstance, ContentFormat.TLV),
-                    new ResponseCallback<BootstrapWriteResponse>() {
-                        @Override
-                        public void onResponse(BootstrapWriteResponse response) {
-                            LOG.debug("Bootstrap write {} return code {}", bsSession.getEndpoint(), response.getCode());
-                            // recursive call until toSend is empty
-                            sendServers(bsSession, cfg, toSend);
-                        }
-                    }, new ErrorCallback() {
-                        @Override
-                        public void onError(Exception e) {
-                            // TODO Handle error on bootstrap
-                            LOG.warn(String.format("Error pending bootstrap write of server instance %s on %s",
-                                    serverInstance, bsSession.getEndpoint()), e);
-                            bsSessionManager.failed(bsSession);
-                        }
-                    });
+            final BootstrapWriteRequest writeServerRequest = new BootstrapWriteRequest(path, serverInstance,
+                    ContentFormat.TLV);
+            send(bsSession, writeServerRequest, new ResponseCallback<BootstrapWriteResponse>() {
+                @Override
+                public void onResponse(BootstrapWriteResponse response) {
+                    LOG.debug("Bootstrap write {} return code {}", bsSession.getEndpoint(), response.getCode());
+                    // recursive call until toSend is empty
+                    sendServers(bsSession, cfg, toSend);
+                }
+            }, new ErrorCallback() {
+                @Override
+                public void onError(Exception e) {
+                    LOG.warn(String.format("Error pending bootstrap write of server instance %s on %s", serverInstance,
+                            bsSession.getEndpoint()), e);
+                    bsSessionManager.failed(bsSession, writeServerRequest);
+                }
+            });
         } else {
-            send(bsSession, new BootstrapFinishRequest(), new ResponseCallback<BootstrapFinishResponse>() {
+            final BootstrapFinishRequest finishBootstrapRequest = new BootstrapFinishRequest();
+            send(bsSession, finishBootstrapRequest, new ResponseCallback<BootstrapFinishResponse>() {
                 @Override
                 public void onResponse(BootstrapFinishResponse response) {
                     LOG.debug("Bootstrap Finished {} return code {}", bsSession.getEndpoint(), response.getCode());
                     if (response.isSuccess()) {
                         bsSessionManager.end(bsSession);
+                    } else {
+                        bsSessionManager.failed(bsSession, finishBootstrapRequest);
                     }
                 }
             }, new ErrorCallback() {
                 @Override
                 public void onError(Exception e) {
-                    // TODO Handle error on bootstrap
                     LOG.warn(String.format("Error pending bootstrap finished on %s", bsSession.getEndpoint()), e);
-                    bsSessionManager.failed(bsSession);
+                    bsSessionManager.failed(bsSession, finishBootstrapRequest);
                 }
             });
         }

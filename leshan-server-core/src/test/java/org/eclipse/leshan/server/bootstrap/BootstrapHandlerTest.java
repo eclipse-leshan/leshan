@@ -39,12 +39,12 @@ import org.junit.Test;
 public class BootstrapHandlerTest {
 
     @Test
-    public void error_if_not_authenticated() {
+    public void error_if_not_authorized() {
         final BootstrapSessionManager bsSessionManager = new MockBootstrapSessionManager(false);
 
         BootstrapHandler bsHandler = new BootstrapHandler(null, null, bsSessionManager);
-        BootstrapResponse bootstrapResponse = bsHandler.bootstrap(
-                Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("enpoint"));
+        BootstrapResponse bootstrapResponse = bsHandler
+                .bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("enpoint"));
         assertEquals(ResponseCode.BAD_REQUEST, bootstrapResponse.getCode());
     }
 
@@ -117,18 +117,18 @@ public class BootstrapHandlerTest {
         public <T extends LwM2mResponse> void send(String clientEndpoint, InetSocketAddress client, boolean secure,
                 DownlinkRequest<T> request, ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
             if (request instanceof BootstrapDeleteRequest) {
-                ((ResponseCallback<BootstrapDeleteResponse>) responseCallback).onResponse(BootstrapDeleteResponse
-                        .success());
+                ((ResponseCallback<BootstrapDeleteResponse>) responseCallback)
+                        .onResponse(BootstrapDeleteResponse.success());
             } else if (request instanceof BootstrapWriteRequest) {
-                ((ResponseCallback<BootstrapWriteResponse>) responseCallback).onResponse(BootstrapWriteResponse
-                        .success());
+                ((ResponseCallback<BootstrapWriteResponse>) responseCallback)
+                        .onResponse(BootstrapWriteResponse.success());
             } else if (request instanceof BootstrapFinishRequest) {
                 if (this.success) {
-                    ((ResponseCallback<BootstrapFinishResponse>) responseCallback).onResponse(BootstrapFinishResponse
-                            .success());
+                    ((ResponseCallback<BootstrapFinishResponse>) responseCallback)
+                            .onResponse(BootstrapFinishResponse.success());
                 } else {
-                    ((ResponseCallback<BootstrapFinishResponse>) responseCallback).onResponse(BootstrapFinishResponse
-                            .internalServerError("failed"));
+                    ((ResponseCallback<BootstrapFinishResponse>) responseCallback)
+                            .onResponse(BootstrapFinishResponse.internalServerError("failed"));
                 }
             }
         }
@@ -136,16 +136,16 @@ public class BootstrapHandlerTest {
 
     private class MockBootstrapSessionManager implements BootstrapSessionManager {
 
-        private boolean authenticated;
+        private boolean authorized;
         private BootstrapSession endBsSession = null;
 
-        public MockBootstrapSessionManager(boolean authenticated) {
-            this.authenticated = authenticated;
+        public MockBootstrapSessionManager(boolean authorized) {
+            this.authorized = authorized;
         }
 
         @Override
         public BootstrapSession begin(String endpoint, Identity clientIdentity) {
-            return new BootstrapSession(endpoint, clientIdentity, authenticated);
+            return new BootstrapSession(endpoint, clientIdentity, authorized);
         }
 
         @Override
@@ -153,12 +153,12 @@ public class BootstrapHandlerTest {
             endBsSession = bsSession;
         }
 
-        @Override
-        public void failed(BootstrapSession bsSession) {
-        }
-
         public boolean endWasCalled() {
             return this.endBsSession != null;
+        }
+
+        @Override
+        public void failed(BootstrapSession bsSession, DownlinkRequest<? extends LwM2mResponse> request) {
         }
     }
 }

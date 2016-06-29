@@ -15,7 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
+import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.response.LwM2mResponse;
 
 /**
  * Manages boundaries of bootstrap process.
@@ -23,13 +25,13 @@ import org.eclipse.leshan.core.request.Identity;
 public interface BootstrapSessionManager {
 
     /**
-     * Starts a bootstrapping session for an endpoint. In particular, this is responsible for authenticating the
-     * endpoint if applicable.
+     * Starts a bootstrapping session for an endpoint. In particular, this is responsible for authorizing the endpoint
+     * if applicable.
      * 
      * @param endpoint
      * @param clientIdentity
      * 
-     * @return a BootstrapSession, possibly authenticated.
+     * @return a BootstrapSession, possibly authorized.
      */
     public BootstrapSession begin(String endpoint, Identity clientIdentity);
 
@@ -44,7 +46,8 @@ public interface BootstrapSessionManager {
      * Performs any housekeeping related to the failure of a Boostraping session.
      * 
      * @param bsSession
+     * @param request
      */
-    public void failed(BootstrapSession bsSession);
+    public void failed(BootstrapSession bsSession, DownlinkRequest<? extends LwM2mResponse> request);
 
 }
