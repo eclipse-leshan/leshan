@@ -33,6 +33,14 @@ public interface QueuedRequest {
     long getRequestId();
 
     /**
+     * requestTicket represents the correlation identifier used to correlate any response for this request from LWM2M
+     * Client.
+     * 
+     * @return ID.
+     */
+    String getRequestTicket();
+
+    /**
      * @return client's endpoint to send the request to
      */
     String getEndpoint();

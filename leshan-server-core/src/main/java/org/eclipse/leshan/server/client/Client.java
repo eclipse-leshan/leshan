@@ -75,11 +75,12 @@ public class Client implements Serializable {
 
     private final Date lastUpdate;
 
-    protected Client(String registrationId, String endpoint, InetAddress address, int port, String lwM2mVersion,
-            Long lifetimeInSec, String smsNumber, BindingMode bindingMode, LinkObject[] objectLinks,
-            InetSocketAddress registrationEndpointAddress,
+    protected Client(final String registrationId, final String endpoint, final InetAddress address, final int port,
+            final String lwM2mVersion, final Long lifetimeInSec, final String smsNumber, final BindingMode bindingMode,
+            final LinkObject[] objectLinks, final InetSocketAddress registrationEndpointAddress,
 
-            Date registrationDate, Date lastUpdate, Map<String, String> additionalRegistrationAttributes) {
+            final Date registrationDate, final Date lastUpdate,
+            final Map<String, String> additionalRegistrationAttributes) {
 
         Validate.notNull(registrationId);
         Validate.notEmpty(endpoint);
@@ -98,7 +99,7 @@ public class Client implements Serializable {
         // extract the root objects path from the object links
         String rootPath = "/";
         if (objectLinks != null) {
-            for (LinkObject link : objectLinks) {
+            for (final LinkObject link : objectLinks) {
                 if (link != null && "oma.lwm2m".equals(link.getAttributes().get("rt"))) {
                     rootPath = link.getUrl();
                     break;
@@ -171,13 +172,13 @@ public class Client implements Serializable {
             return null;
         }
 
-        LinkObject[] res = Arrays.copyOf(objectLinks, objectLinks.length);
+        final LinkObject[] res = Arrays.copyOf(objectLinks, objectLinks.length);
 
         Arrays.sort(res, new Comparator<LinkObject>() {
 
             /* sort by path */
             @Override
-            public int compare(LinkObject o1, LinkObject o2) {
+            public int compare(final LinkObject o1, final LinkObject o2) {
                 if (o1 == null && o2 == null)
                     return 0;
                 if (o1 == null)
@@ -185,19 +186,19 @@ public class Client implements Serializable {
                 if (o2 == null)
                     return 1;
                 // by URL
-                String[] url1 = o1.getUrl().split("/");
-                String[] url2 = o2.getUrl().split("/");
+                final String[] url1 = o1.getUrl().split("/");
+                final String[] url2 = o2.getUrl().split("/");
 
                 for (int i = 0; i < url1.length && i < url2.length; i++) {
                     // is it two numbers?
                     if (isNumber(url1[i]) && isNumber(url2[i])) {
-                        int cmp = Integer.parseInt(url1[i]) - Integer.parseInt(url2[i]);
+                        final int cmp = Integer.parseInt(url1[i]) - Integer.parseInt(url2[i]);
                         if (cmp != 0) {
                             return cmp;
                         }
                     } else {
 
-                        int v = url1[i].compareTo(url2[i]);
+                        final int v = url1[i].compareTo(url2[i]);
 
                         if (v != 0) {
                             return v;
@@ -212,11 +213,11 @@ public class Client implements Serializable {
         return res;
     }
 
-    private static boolean isNumber(String s) {
+    private static boolean isNumber(final String s) {
         try {
             Integer.parseInt(s);
             return true;
-        } catch (NumberFormatException e) {
+        } catch (final NumberFormatException e) {
             return false;
         }
     }
@@ -265,6 +266,10 @@ public class Client implements Serializable {
         return additionalRegistrationAttributes;
     }
 
+    public boolean usesQueueMode() {
+        return bindingMode.equals(BindingMode.UQ);
+    }
+
     @Override
     public String toString() {
         return String.format(
@@ -290,9 +295,9 @@ public class Client implements Serializable {
      *         same value as this Client
      */
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (obj instanceof Client) {
-            Client other = (Client) obj;
+            final Client other = (Client) obj;
             return this.getEndpoint().equals(other.getEndpoint());
         } else {
             return false;
@@ -315,8 +320,8 @@ public class Client implements Serializable {
         private LinkObject[] objectLinks;
         private Map<String, String> additionalRegistrationAttributes;
 
-        public Builder(String registrationId, String endpoint, InetAddress address, int port,
-                InetSocketAddress registrationEndpointAddress) {
+        public Builder(final String registrationId, final String endpoint, final InetAddress address, final int port,
+                final InetSocketAddress registrationEndpointAddress) {
 
             Validate.notNull(registrationId);
             Validate.notEmpty(endpoint);
@@ -331,42 +336,42 @@ public class Client implements Serializable {
 
         }
 
-        public Builder registrationDate(Date registrationDate) {
+        public Builder registrationDate(final Date registrationDate) {
             this.registrationDate = registrationDate;
             return this;
         }
 
-        public Builder lastUpdate(Date lastUpdate) {
+        public Builder lastUpdate(final Date lastUpdate) {
             this.lastUpdate = lastUpdate;
             return this;
         }
 
-        public Builder lifeTimeInSec(Long lifetimeInSec) {
+        public Builder lifeTimeInSec(final Long lifetimeInSec) {
             this.lifeTimeInSec = lifetimeInSec;
             return this;
         }
 
-        public Builder smsNumber(String smsNumber) {
+        public Builder smsNumber(final String smsNumber) {
             this.smsNumber = smsNumber;
             return this;
         }
 
-        public Builder bindingMode(BindingMode bindingMode) {
+        public Builder bindingMode(final BindingMode bindingMode) {
             this.bindingMode = bindingMode;
             return this;
         }
 
-        public Builder lwM2mVersion(String lwM2mVersion) {
+        public Builder lwM2mVersion(final String lwM2mVersion) {
             this.lwM2mVersion = lwM2mVersion;
             return this;
         }
 
-        public Builder objectLinks(LinkObject[] objectLinks) {
+        public Builder objectLinks(final LinkObject[] objectLinks) {
             this.objectLinks = objectLinks;
             return this;
         }
 
-        public Builder additionalRegistrationAttributes(Map<String, String> additionalRegistrationAttributes) {
+        public Builder additionalRegistrationAttributes(final Map<String, String> additionalRegistrationAttributes) {
             this.additionalRegistrationAttributes = additionalRegistrationAttributes;
             return this;
         }

@@ -29,8 +29,8 @@ public interface QueuedRequestFactory {
      *
      * @param endpoint client's endpoint name
      * @param request request
-     *
+     * @param requestTicket identifier to correlate the response of this request.
      * @return new QueuedRequest
      */
-    QueuedRequest newQueueRequestEntity(String endpoint, DownlinkRequest<LwM2mResponse> request);
+    QueuedRequest newQueueRequestEntity(String endpoint, DownlinkRequest<LwM2mResponse> request, String requestTicket);
 }
