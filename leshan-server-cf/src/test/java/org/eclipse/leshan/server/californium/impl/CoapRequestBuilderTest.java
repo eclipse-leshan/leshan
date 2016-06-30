@@ -17,18 +17,18 @@ package org.eclipse.leshan.server.californium.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.net.Inet4Address;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
+import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.ObserveSpec;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
@@ -45,6 +45,7 @@ import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
 import org.eclipse.leshan.server.client.Client;
+import org.eclipse.leshan.server.client.Client.Builder;
 import org.eclipse.leshan.tlv.Tlv;
 import org.eclipse.leshan.tlv.Tlv.TlvType;
 import org.eclipse.leshan.tlv.TlvDecoder;
@@ -64,11 +65,18 @@ public class CoapRequestBuilderTest {
     }
 
     private Client newClient() throws UnknownHostException {
-        Client client = mock(Client.class);
-        InetAddress address = Inet4Address.getByName("127.0.0.1");
-        when(client.getAddress()).thenReturn(address);
-        when(client.getPort()).thenReturn(12354);
-        return client;
+        return newClient(null);
+    }
+
+    private Client newClient(String rootpath) throws UnknownHostException {
+        Builder b = new Client.Builder("regid", "endpoint", Inet4Address.getByName("127.0.0.1"), 12354,
+                new InetSocketAddress(0));
+        if (rootpath != null) {
+            Map<String, String> attr = new HashMap<>();
+            attr.put("rt", "oma.lwm2m");
+            b.objectLinks(new LinkObject[] { new LinkObject(rootpath, attr) });
+        }
+        return b.build();
     }
 
     @Test
@@ -91,8 +99,7 @@ public class CoapRequestBuilderTest {
 
     @Test
     public void build_read_request_with_non_default_object_path() throws Exception {
-        Client client = newClient();
-        when(client.getRootPath()).thenReturn("/lwm2m");
+        Client client = newClient("/lwm2m");
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(
@@ -107,8 +114,7 @@ public class CoapRequestBuilderTest {
 
     @Test
     public void build_read_request_with_root_path() throws Exception {
-        Client client = newClient();
-        when(client.getRootPath()).thenReturn("/");
+        Client client = newClient("/");
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(
