@@ -40,6 +40,7 @@ import org.eclipse.leshan.server.queue.MessageStore;
 import org.eclipse.leshan.server.queue.QueuedRequest;
 import org.eclipse.leshan.server.queue.QueuedRequestFactory;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
+import org.eclipse.leshan.server.response.ResponseListener;
 import org.eclipse.leshan.util.NamedThreadFactory;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
@@ -142,6 +143,24 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
             // send directly (client is not in queued mode)
             delegateSender.send(destination, request, responseCallback, errorCallback);
         }
+    }
+
+    @Override
+    public <T extends LwM2mResponse> void send(Client destination, String requestTicket, DownlinkRequest<T> request) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void addResponseListener(ResponseListener listener) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void removeResponseListener(ResponseListener listener) {
+        // TODO Auto-generated method stub
+
     }
 
     @Override

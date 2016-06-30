@@ -16,8 +16,10 @@
 package org.eclipse.leshan.server.californium.impl;
 
 import java.net.InetSocketAddress;
+import java.util.Collection;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
@@ -34,6 +36,7 @@ import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
+import org.eclipse.leshan.server.response.ResponseListener;
 import org.eclipse.leshan.util.Validate;
 
 public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
@@ -44,6 +47,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
     // A map which contains all pending CoAP requests
     // This is mainly used to cancel request and avoid retransmission on de-registration
     private final ConcurrentNavigableMap<String/* registrationId#requestId */, Request /* pending coap Request */> pendingRequests = new ConcurrentSkipListMap<>();
+    private final Collection<ResponseListener> responseListeners = new ConcurrentLinkedQueue<>();
 
     /**
      * @param endpoints the CoAP endpoints to use for sending requests
@@ -87,7 +91,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         };
         coapRequest.addMessageObserver(syncMessageObserver);
 
-        // Store pending request to cancel it on deregistration
+        // Store pending request to cancel it on de-registration
         addPendingRequest(destination.getRegistrationId(), coapRequest);
 
         // Send CoAP request asynchronously
@@ -123,12 +127,78 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
             }
         });
 
-        // Store pending request to cancel it on deregistration
+        // Store pending request to cancel it on de-registration
         addPendingRequest(destination.getRegistrationId(), coapRequest);
 
         // Send CoAP request asynchronously
         final Endpoint endpoint = getEndpointForClient(destination);
         endpoint.sendRequest(coapRequest);
+    }
+
+    @SuppressWarnings("unchecked") // Java generic usage and strict type has to be removed from Leshan
+    @Override
+    public <T extends LwM2mResponse> void send(final Client destination, final String requestTicket,
+            final DownlinkRequest<T> request) {
+        send(destination, request, (ResponseCallback<T>) getResponseCallback(destination.getEndpoint(), requestTicket),
+                getErrorCallback(destination.getEndpoint(), requestTicket));
+    }
+
+    /**
+     * callback that correlates the response to the given requestTicket
+     * 
+     * @parm requestTicket to correlate the response to a request.
+     * @return callback which is invoked on getting a response from LWM2M Client.
+     */
+    private <T extends LwM2mResponse> ResponseCallback<T> getResponseCallback(final String clientEndpoint,
+            final String requestTicket) {
+        return new ResponseCallback<T>() {
+            @Override
+            public void onResponse(T response) {
+                for (ResponseListener listener : responseListeners) {
+                    listener.onResponse(clientEndpoint, requestTicket, response);
+                }
+            }
+        };
+    }
+
+    /**
+     * callback that correlates the error from LWM2M client to the given requestTicket
+     * 
+     * @param requestTicket to correlate the error to a request.
+     * @return
+     */
+    private ErrorCallback getErrorCallback(final String clientEndpoint, final String requestTicket) {
+        return new ErrorCallback() {
+            @Override
+            public void onError(Exception e) {
+                for (ResponseListener listener : responseListeners) {
+                    listener.onError(clientEndpoint, requestTicket, e);
+                }
+            }
+        };
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.eclipse.leshan.server.request.LwM2mRequestSender#addResponseListener(java.lang.String,
+     * org.eclipse.leshan.server.response.ResponseListener)
+     */
+    @Override
+    public void addResponseListener(ResponseListener listener) {
+        responseListeners.add(listener);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.eclipse.leshan.server.request.LwM2mRequestSender#removeResponseListener(org.eclipse.leshan.server.response.
+     * ResponseListener)
+     */
+    @Override
+    public void removeResponseListener(ResponseListener listener) {
+        responseListeners.remove(listener);
     }
 
     private String getFloorKey(String registrationId) {
