@@ -38,19 +38,17 @@ import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.integration.tests.util.QueueModeLeshanServer;
 import org.eclipse.leshan.integration.tests.util.QueuedModeLeshanClient;
-import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.californium.impl.CaliforniumLwM2mRequestSender;
 import org.eclipse.leshan.server.californium.impl.CaliforniumObservationRegistryImpl;
 import org.eclipse.leshan.server.californium.impl.RegisterResource;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.impl.ClientRegistryImpl;
+import org.eclipse.leshan.server.impl.LwM2mRequestSenderImpl;
 import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StandardModelProvider;
-import org.eclipse.leshan.server.queue.QueuedRequestFactory;
 import org.eclipse.leshan.server.queue.impl.InMemoryMessageStore;
-import org.eclipse.leshan.server.queue.impl.QueuedRequestFactoryImpl;
 import org.eclipse.leshan.server.queue.impl.QueuedRequestSender;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
@@ -66,9 +64,9 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
     public static final long CUSTOM_LIFETIME = LIFETIME + 6;
     private final Endpoint noSecureEndpoint;
     private final Endpoint secureEndpoint;
-    LwM2mServer server;
+    QueueModeLeshanServer server;
     private CoapServer coapServer;
-    private NetworkConfig networkConfig;
+    private final NetworkConfig networkConfig;
 
     public QueueModeIntegrationTestHelper() {
         networkConfig = new NetworkConfig();
@@ -82,13 +80,12 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
                 networkConfig);
     }
 
-    private void createCoapServer(final ClientRegistry clientRegistry, final SecurityStore securityStore) {
+    private void createCoapServer(ClientRegistry clientRegistry, SecurityStore securityStore) {
         coapServer = new CoapServer(networkConfig);
         coapServer.addEndpoint(noSecureEndpoint);
         coapServer.addEndpoint(secureEndpoint);
 
-        final RegisterResource rdResource = new RegisterResource(
-                new RegistrationHandler(clientRegistry, securityStore));
+        RegisterResource rdResource = new RegisterResource(new RegistrationHandler(clientRegistry, securityStore));
         coapServer.add(rdResource);
     }
 
@@ -99,8 +96,8 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         super.deregisterLatch = new CountDownLatch(1);
         super.updateLatch = new CountDownLatch(1);
 
-        final ClientRegistry clientRegistry = new ClientRegistryImpl();
-        final SecurityRegistry securityRegistry = new SecurityRegistryImpl() {
+        ClientRegistry clientRegistry = new ClientRegistryImpl();
+        SecurityRegistry securityRegistry = new SecurityRegistryImpl() {
             @Override
             protected void loadFromFile() {
                 // do not load From File
@@ -112,33 +109,43 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
             }
         };
         createCoapServer(clientRegistry, securityRegistry);
-        final InMemoryMessageStore inMemoryMessageStore = new InMemoryMessageStore();
-        final QueuedRequestFactory queuedRequestFactory = new QueuedRequestFactoryImpl();
-        final LwM2mModelProvider modelProvider = new StandardModelProvider();
-        final CaliforniumObservationRegistryImpl observationRegistry = new CaliforniumObservationRegistryImpl(
+        InMemoryMessageStore inMemoryMessageStore = new InMemoryMessageStore();
+        LwM2mModelProvider modelProvider = new StandardModelProvider();
+        CaliforniumObservationRegistryImpl observationRegistry = new CaliforniumObservationRegistryImpl(
                 new InMemoryObservationStore(), clientRegistry, modelProvider);
         observationRegistry.setSecureEndpoint(secureEndpoint);
         secureEndpoint.addNotificationListener(observationRegistry);
         observationRegistry.setNonSecureEndpoint(noSecureEndpoint);
         noSecureEndpoint.addNotificationListener(observationRegistry);
-        final LwM2mRequestSender delegateSender = new CaliforniumLwM2mRequestSender(
+        LwM2mRequestSender delegateSender = new CaliforniumLwM2mRequestSender(new HashSet<>(coapServer.getEndpoints()),
+                observationRegistry, modelProvider);
+        LwM2mRequestSender secondDelegateSender = new CaliforniumLwM2mRequestSender(
                 new HashSet<>(coapServer.getEndpoints()), observationRegistry, modelProvider);
-        final QueuedRequestSender requestSender = QueuedRequestSender.builder().setMessageStore(inMemoryMessageStore)
-                .setQueuedRequestFactory(queuedRequestFactory).setRequestSender(delegateSender)
-                .setClientRegistry(clientRegistry).setObservationRegistry(observationRegistry)
-                .setResponseCallbackWorkers(4).build();
+        QueuedRequestSender queueRequestSender = QueuedRequestSender.builder().setMessageStore(inMemoryMessageStore)
+                .setRequestSender(secondDelegateSender).setClientRegistry(clientRegistry)
+                .setObservationRegistry(observationRegistry).build();
+        LwM2mRequestSender lwM2mRequestSender = new LwM2mRequestSenderImpl(delegateSender, queueRequestSender);
 
         server = new QueueModeLeshanServer(coapServer, clientRegistry, observationRegistry, securityRegistry,
-                modelProvider, requestSender, inMemoryMessageStore, ACK_TIMEOUT);
+                modelProvider, lwM2mRequestSender, inMemoryMessageStore);
     }
 
     @Override
     public void createClient() {
-        final ObjectsInitializer initializer = new ObjectsInitializer();
+        client = createClient(CUSTOM_LIFETIME);
+    }
+
+    public QueuedModeLeshanClient createClient(long lifeTime) {
+        ObjectsInitializer initializer = new ObjectsInitializer();
         initializer.setInstancesForObject(LwM2mId.SECURITY,
                 Security.noSec("coap://" + noSecureEndpoint.getAddress().getHostString() + ":"
                         + noSecureEndpoint.getAddress().getPort(), 12345));
-        initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, CUSTOM_LIFETIME, BindingMode.UQ, false));
+        if (lifeTime == 0) {
+            initializer.setInstancesForObject(LwM2mId.SERVER,
+                    new Server(12345, CUSTOM_LIFETIME, BindingMode.UQ, false));
+        } else {
+            initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, lifeTime, BindingMode.UQ, false));
+        }
         initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345", "UQ") {
             @Override
             public ExecuteResponse execute(int resourceid, String params) {
@@ -149,13 +156,13 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
                 }
             }
         });
-        final ArrayList<LwM2mObjectEnabler> enablers = new ArrayList<>();
+        ArrayList<LwM2mObjectEnabler> enablers = new ArrayList<>();
         enablers.add(initializer.create(0));
         enablers.add(initializer.create(1));
         enablers.add(initializer.create(2));
         enablers.add(initializer.create(3));
 
-        client = new QueuedModeLeshanClient(ENDPOINT_IDENTIFIER, new InetSocketAddress(0), // localAddress
+        return new QueuedModeLeshanClient(ENDPOINT_IDENTIFIER, new InetSocketAddress(0), // localAddress
                 new InetSocketAddress(0), // localSecureAddress
                 enablers);
     }
