@@ -64,7 +64,7 @@ public class QueuedModeLeshanClient implements LwM2mClient {
 
         private LwM2mObjectEnabler nodeEnabler;
 
-        public CustomObjectResource(final LwM2mObjectEnabler nodeEnabler) {
+        public CustomObjectResource(LwM2mObjectEnabler nodeEnabler) {
             super(nodeEnabler, bootstrapHandler);
             this.nodeEnabler = nodeEnabler;
             this.nodeEnabler.setNotifySender(this);
@@ -72,7 +72,7 @@ public class QueuedModeLeshanClient implements LwM2mClient {
         }
 
         @Override
-        public void handleGET(final CoapExchange exchange) {
+        public void handleGET(CoapExchange exchange) {
             if (onGetCallback != null) {
                 if (onGetCallback.handleGet(exchange)) {
                     super.handleGET(exchange);
@@ -91,8 +91,8 @@ public class QueuedModeLeshanClient implements LwM2mClient {
         boolean handleGet(CoapExchange coapExchange);
     }
 
-    public QueuedModeLeshanClient(final String endpoint, final InetSocketAddress localAddress,
-            InetSocketAddress localSecureAddress, final List<? extends LwM2mObjectEnabler> objectEnablers) {
+    public QueuedModeLeshanClient(String endpoint, InetSocketAddress localAddress, InetSocketAddress localSecureAddress,
+            List<? extends LwM2mObjectEnabler> objectEnablers) {
         Validate.notNull(localAddress);
         Validate.notNull(localSecureAddress);
         Validate.notNull(objectEnablers);

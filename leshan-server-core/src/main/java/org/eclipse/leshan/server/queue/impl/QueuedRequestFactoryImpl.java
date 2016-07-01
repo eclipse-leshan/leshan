@@ -16,13 +16,13 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.queue.impl;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.server.queue.QueuedRequest;
 import org.eclipse.leshan.server.queue.QueuedRequestFactory;
 import org.eclipse.leshan.util.Validate;
-
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * This class provides a queue request factory for use in simple in-memory persistence.
@@ -40,13 +40,16 @@ public class QueuedRequestFactoryImpl implements QueuedRequestFactory {
         private final DownlinkRequest<LwM2mResponse> downlinkRequest;
         private final String endpoint;
         private final long requestId;
+        private final String requestTicket;
 
-        private QueuedRequestImpl(long requestId, String endpoint, DownlinkRequest<LwM2mResponse> downlinkRequest) {
+        private QueuedRequestImpl(long requestId, String endpoint, DownlinkRequest<LwM2mResponse> downlinkRequest,
+                String requestTicket) {
             Validate.notNull(endpoint, "endpoint may not be null");
             Validate.notNull(downlinkRequest, "request may not be null");
             this.requestId = requestId;
             this.downlinkRequest = downlinkRequest;
             this.endpoint = endpoint;
+            this.requestTicket = requestTicket;
         }
 
         @Override
@@ -64,10 +67,21 @@ public class QueuedRequestFactoryImpl implements QueuedRequestFactory {
             return requestId;
         }
 
+        /*
+         * (non-Javadoc)
+         * 
+         * @see org.eclipse.leshan.server.queue.QueuedRequest#getRequestTicket()
+         */
+        @Override
+        public String getRequestTicket() {
+            return this.requestTicket;
+        }
+
         @Override
         public String toString() {
-            return "QueuedRequestImpl [downlinkRequest=" + downlinkRequest + ", endpoint=" + endpoint + ", requestId="
-                    + requestId + "]";
+            return new StringBuilder().append("QueuedRequestImpl [requestTicket=").append(requestTicket)
+                    .append(", downlinkRequest=").append(downlinkRequest).append(", endpoint=" + endpoint)
+                    .append(", requestId=").append(requestId).append("]").toString();
         }
 
         @Override
@@ -89,13 +103,14 @@ public class QueuedRequestFactoryImpl implements QueuedRequestFactory {
             if (getClass() != obj.getClass()) {
                 return false;
             }
-            QueuedRequestImpl other = (QueuedRequestImpl) obj;
+            final QueuedRequestImpl other = (QueuedRequestImpl) obj;
             return requestId == other.requestId;
         }
     }
 
     @Override
-    public QueuedRequest newQueueRequestEntity(String endpoint, DownlinkRequest<LwM2mResponse> request) {
-        return new QueuedRequestImpl(idCounter.getAndIncrement(), endpoint, request);
+    public QueuedRequest newQueueRequestEntity(String endpoint, DownlinkRequest<LwM2mResponse> request,
+            String requestTicket) {
+        return new QueuedRequestImpl(idCounter.getAndIncrement(), endpoint, request, requestTicket);
     }
 }

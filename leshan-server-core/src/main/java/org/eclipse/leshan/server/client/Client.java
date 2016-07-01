@@ -265,6 +265,10 @@ public class Client implements Serializable {
         return additionalRegistrationAttributes;
     }
 
+    public boolean usesQueueMode() {
+        return bindingMode.equals(BindingMode.UQ);
+    }
+
     @Override
     public String toString() {
         return String.format(

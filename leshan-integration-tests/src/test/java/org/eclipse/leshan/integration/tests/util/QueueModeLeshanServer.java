@@ -44,23 +44,21 @@ public class QueueModeLeshanServer implements LwM2mServer {
     private final ObservationRegistry observationRegistry;
     private final SecurityRegistry securityRegistry;
     private final LwM2mModelProvider modelProvider;
-    private final LwM2mRequestSender queueRequestSender;
+    private final LwM2mRequestSender lwM2mRequestSender;
     private final MessageStore messageStore;
-    private final long sendTimeout;
 
-    public QueueModeLeshanServer(final CoapServer coapServer, final ClientRegistry clientRegistry,
-            final ObservationRegistry observationRegistry, final SecurityRegistry securityRegistry,
-            final LwM2mModelProvider modelProvider, final LwM2mRequestSender queueRequestSender,
-            final MessageStore inMemoryMessageStore, long sendTimeout) {
+    public QueueModeLeshanServer(CoapServer coapServer, ClientRegistry clientRegistry,
+            ObservationRegistry observationRegistry, SecurityRegistry securityRegistry,
+            LwM2mModelProvider modelProvider, LwM2mRequestSender lwM2mRequestSender,
+            MessageStore inMemoryMessageStore) {
 
         this.coapServer = coapServer;
         this.clientRegistry = clientRegistry;
         this.observationRegistry = observationRegistry;
         this.securityRegistry = securityRegistry;
         this.modelProvider = modelProvider;
-        this.queueRequestSender = queueRequestSender;
+        this.lwM2mRequestSender = lwM2mRequestSender;
         this.messageStore = inMemoryMessageStore;
-        this.sendTimeout = sendTimeout;
 
         // Cancel observations on client unregistering
         clientRegistry.addListener(new ClientRegistryListener() {
@@ -70,12 +68,12 @@ public class QueueModeLeshanServer implements LwM2mServer {
             }
 
             @Override
-            public void unregistered(final Client client) {
-                observationRegistry.cancelObservations(client);
+            public void unregistered(Client client) {
+                QueueModeLeshanServer.this.observationRegistry.cancelObservations(client);
             }
 
             @Override
-            public void registered(final Client client) {
+            public void registered(Client client) {
             }
         });
 
@@ -115,8 +113,8 @@ public class QueueModeLeshanServer implements LwM2mServer {
         if (observationRegistry instanceof Stoppable) {
             ((Stoppable) observationRegistry).stop();
         }
-        if (queueRequestSender instanceof Stoppable) {
-            ((Stoppable) queueRequestSender).stop();
+        if (lwM2mRequestSender instanceof Stoppable) {
+            ((Stoppable) lwM2mRequestSender).stop();
         }
 
         LOG.info("LW-M2M server stopped");
@@ -142,21 +140,21 @@ public class QueueModeLeshanServer implements LwM2mServer {
     }
 
     @Override
-    public <T extends LwM2mResponse> T send(final Client destination, final DownlinkRequest<T> request)
+    public <T extends LwM2mResponse> T send(Client destination, DownlinkRequest<T> request)
             throws InterruptedException {
-        return queueRequestSender.send(destination, request, sendTimeout);
+        throw new UnsupportedOperationException("Server doesn't support synchronous sending of messages");
     }
 
     @Override
-    public <T extends LwM2mResponse> T send(final Client destination, final DownlinkRequest<T> request,
-            final long timeout) throws InterruptedException {
-        return queueRequestSender.send(destination, request, timeout);
+    public <T extends LwM2mResponse> T send(Client destination, DownlinkRequest<T> request, long timeout)
+            throws InterruptedException {
+        throw new UnsupportedOperationException("Server doesn't support synchronous sending of messages");
     }
 
     @Override
-    public <T extends LwM2mResponse> void send(final Client destination, final DownlinkRequest<T> request,
-            final ResponseCallback<T> responseCallback, final ErrorCallback errorCallback) {
-        queueRequestSender.send(destination, request, responseCallback, errorCallback);
+    public <T extends LwM2mResponse> void send(Client destination, DownlinkRequest<T> request,
+            final ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
+        // Noop.
     }
 
     @Override
@@ -181,5 +179,9 @@ public class QueueModeLeshanServer implements LwM2mServer {
 
     public MessageStore getMessageStore() {
         return messageStore;
+    }
+
+    public LwM2mRequestSender getLwM2mRequestSender() {
+        return lwM2mRequestSender;
     }
 }
