@@ -48,9 +48,7 @@ import org.eclipse.leshan.server.impl.LwM2mRequestSenderImpl;
 import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StandardModelProvider;
-import org.eclipse.leshan.server.queue.QueuedRequestFactory;
 import org.eclipse.leshan.server.queue.impl.InMemoryMessageStore;
-import org.eclipse.leshan.server.queue.impl.QueuedRequestFactoryImpl;
 import org.eclipse.leshan.server.queue.impl.QueuedRequestSender;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
@@ -112,7 +110,6 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         };
         createCoapServer(clientRegistry, securityRegistry);
         InMemoryMessageStore inMemoryMessageStore = new InMemoryMessageStore();
-        QueuedRequestFactory queuedRequestFactory = new QueuedRequestFactoryImpl();
         LwM2mModelProvider modelProvider = new StandardModelProvider();
         CaliforniumObservationRegistryImpl observationRegistry = new CaliforniumObservationRegistryImpl(
                 new InMemoryObservationStore(), clientRegistry, modelProvider);
@@ -123,8 +120,8 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         LwM2mRequestSender delegateSender = new CaliforniumLwM2mRequestSender(new HashSet<>(coapServer.getEndpoints()),
                 observationRegistry, modelProvider);
         QueuedRequestSender queueRequestSender = QueuedRequestSender.builder().setMessageStore(inMemoryMessageStore)
-                .setQueuedRequestFactory(queuedRequestFactory).setRequestSender(delegateSender)
-                .setClientRegistry(clientRegistry).setObservationRegistry(observationRegistry).build();
+                .setRequestSender(delegateSender).setClientRegistry(clientRegistry)
+                .setObservationRegistry(observationRegistry).build();
         LwM2mRequestSender lwM2mRequestSender = new LwM2mRequestSenderImpl(delegateSender, queueRequestSender,
                 clientRegistry);
 

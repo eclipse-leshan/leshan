@@ -36,7 +36,6 @@ import org.eclipse.leshan.server.observation.ObservationRegistry;
 import org.eclipse.leshan.server.observation.ObservationRegistryListener;
 import org.eclipse.leshan.server.queue.MessageStore;
 import org.eclipse.leshan.server.queue.QueuedRequest;
-import org.eclipse.leshan.server.queue.QueuedRequestFactory;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
 import org.eclipse.leshan.server.response.ResponseListener;
 import org.eclipse.leshan.util.NamedThreadFactory;
@@ -55,7 +54,6 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
     private final ExecutorService processingExecutor = Executors
             .newCachedThreadPool(new NamedThreadFactory("leshan-qmode-processingExecutor-%d"));
     private final MessageStore messageStore;
-    private final QueuedRequestFactory queuedRequestFactory;
     private final QueueModeClientRegistryListener queueModeClientRegistryListener;
     private final QueueModeObservationRegistryListener queueModeObservationRegistryListener;
     private final ClientRegistry clientRegistry;
@@ -69,7 +67,6 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
      */
     private QueuedRequestSender(Builder builder) {
         this.messageStore = builder.messageStore;
-        this.queuedRequestFactory = builder.queuedRequestFactory;
         this.clientRegistry = builder.clientRegistry;
         this.observationRegistry = builder.observationRegistry;
         this.delegateSender = builder.delegateSender;
@@ -118,8 +115,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
         // Accept messages only when the client is already known to
         // ClientRegistry
         if (clientRegistry.get(endpoint) != null) {
-            final QueuedRequest queuedRequest = queuedRequestFactory.newQueueRequestEntity(endpoint,
-                    castedDownlinkRequest, requestTicket);
+            QueuedRequest queuedRequest = newQueueRequestEntity(endpoint, castedDownlinkRequest, requestTicket);
             messageStore.add(queuedRequest);
             // If Client is reachable and this is the first message, we send it
             // immediately.
@@ -152,7 +148,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
                 LOG.debug("Could not stop all executors within timeout. processingExecutor stopped: {}, ",
                         queueProcessingExecutorTerminated);
             }
-        } catch (final InterruptedException e) {
+        } catch (InterruptedException e) {
             LOG.debug("Interrupted while stopping. Abort stopping.");
             Thread.currentThread().interrupt();
         }
@@ -192,7 +188,12 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
         };
     }
 
-    private void processResponse(String clientEndpoint, String requestTicket, final LwM2mResponse response) {
+    private QueuedRequestImpl newQueueRequestEntity(String endpoint, DownlinkRequest<LwM2mResponse> request,
+            String requestTicket) {
+        return new QueuedRequestImpl(endpoint, request, requestTicket);
+    }
+
+    private void processResponse(String clientEndpoint, String requestTicket, LwM2mResponse response) {
         LOG.debug("Received Response -> {}", requestTicket);
         messageStore.deleteFirst(clientEndpoint);
         processingExecutor.execute(newRequestSendingTask(clientEndpoint));
@@ -218,7 +219,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
     private final class QueueModeObservationRegistryListener implements ObservationRegistryListener {
         @Override
         public void newValue(Observation observation, LwM2mNode value) {
-            final Client client = clientRegistry.findByRegistrationId(observation.getRegistrationId());
+            Client client = clientRegistry.findByRegistrationId(observation.getRegistrationId());
             if (client.usesQueueMode() && clientStatusTracker.setClientReachable(client.getEndpoint())
                     && clientStatusTracker.startClientReceiving(client.getEndpoint())) {
                 if (LOG.isDebugEnabled()) {
@@ -284,18 +285,12 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
     public static class Builder {
 
         private MessageStore messageStore;
-        private QueuedRequestFactory queuedRequestFactory;
         private LwM2mRequestSender delegateSender;
         private ClientRegistry clientRegistry;
         private ObservationRegistry observationRegistry;
 
         public Builder setMessageStore(MessageStore messageStore) {
             this.messageStore = messageStore;
-            return this;
-        }
-
-        public Builder setQueuedRequestFactory(QueuedRequestFactory queuedRequestFactory) {
-            this.queuedRequestFactory = queuedRequestFactory;
             return this;
         }
 
@@ -316,12 +311,80 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
 
         public QueuedRequestSender build() {
             Validate.notNull(messageStore, "messageStore cannot be null");
-            Validate.notNull(queuedRequestFactory, "queuedRequestFactory cannot be null");
             Validate.notNull(delegateSender, "delegateSender cannot be null");
             Validate.notNull(clientRegistry, "clientRegistry cannot be null");
             Validate.notNull(observationRegistry, "observationRegistry cannot be null");
 
             return new QueuedRequestSender(this);
+        }
+    }
+
+    /**
+     * An instance of a queued request along with its current state.
+     */
+    static class QueuedRequestImpl implements QueuedRequest {
+
+        private final DownlinkRequest<LwM2mResponse> downlinkRequest;
+        private final String endpoint;
+        private final String requestTicket;
+
+        private QueuedRequestImpl(String endpoint, DownlinkRequest<LwM2mResponse> downlinkRequest,
+                String requestTicket) {
+            Validate.notNull(endpoint, "endpoint may not be null");
+            Validate.notNull(downlinkRequest, "request may not be null");
+            this.downlinkRequest = downlinkRequest;
+            this.endpoint = endpoint;
+            this.requestTicket = requestTicket;
+        }
+
+        @Override
+        public String getEndpoint() {
+            return endpoint;
+        }
+
+        @Override
+        public DownlinkRequest<LwM2mResponse> getDownlinkRequest() {
+            return downlinkRequest;
+        }
+
+        /*
+         * (non-Javadoc)
+         * 
+         * @see org.eclipse.leshan.server.queue.QueuedRequest#getRequestTicket()
+         */
+        @Override
+        public String getRequestTicket() {
+            return this.requestTicket;
+        }
+
+        @Override
+        public String toString() {
+            return new StringBuilder().append("QueuedRequestImpl [requestTicket=").append(requestTicket)
+                    .append(", downlinkRequest=").append(downlinkRequest).append(", endpoint=" + endpoint)
+                    .append(", requestId=").append("]").toString();
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + (requestTicket.hashCode() ^ (requestTicket.hashCode() >>> 32));
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            QueuedRequestImpl other = (QueuedRequestImpl) obj;
+            return requestTicket == other.requestTicket;
         }
     }
 }
