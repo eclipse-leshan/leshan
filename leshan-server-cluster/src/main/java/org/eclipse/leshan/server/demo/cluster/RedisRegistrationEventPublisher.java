@@ -26,6 +26,9 @@ import com.eclipsesource.json.JsonObject;
 import redis.clients.jedis.Jedis;
 import redis.clients.util.Pool;
 
+/**
+ * A Client registry Listener which publish registration event on Redis channel.
+ */
 public class RedisRegistrationEventPublisher implements ClientRegistryListener {
 
     private static String REGISTER_EVENT = "LESHAN_REG_NEW";
