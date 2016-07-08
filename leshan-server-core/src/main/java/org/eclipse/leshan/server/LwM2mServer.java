@@ -23,6 +23,7 @@ import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
+import org.eclipse.leshan.server.response.ResponseListener;
 import org.eclipse.leshan.server.security.SecurityRegistry;
 
 /**
@@ -77,6 +78,32 @@ public interface LwM2mServer {
      */
     <T extends LwM2mResponse> void send(Client destination, DownlinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback);
+
+    /**
+     * sends a Lightweight M2M request asynchronously and uses the requestTicket to correlate the response from a LWM2M
+     * Client.
+     *
+     * @param destination registration meta data of a LWM2M client.
+     * @param requestTicket a globally unique identifier for correlating the response
+     * @param request an instance of downlink request.
+     * @param <T> instance of LwM2mResponse
+     */
+    <T extends LwM2mResponse> void send(Client destination, String requestTicket, DownlinkRequest<T> request);
+
+    /**
+     * adds the listener for the given LWM2M client. This method shall be used to re-register a listener for already
+     * sent messages or pending messages.
+     *
+     * @param listener global listener for handling the responses from a LWM2M client.
+     */
+    void addResponseListener(ResponseListener listener);
+
+    /**
+     * removes the given instance of response listener from LWM2M Sender's list of response listeners.
+     * 
+     * @param listener target listener to be removed.
+     */
+    void removeResponseListener(ResponseListener listener);
 
     /**
      * Get the client registry containing the list of connected clients. You can use this object for listening client

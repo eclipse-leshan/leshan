@@ -33,6 +33,7 @@ import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
 import org.eclipse.leshan.server.queue.MessageStore;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
+import org.eclipse.leshan.server.response.ResponseListener;
 import org.eclipse.leshan.server.security.SecurityRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -156,6 +157,21 @@ public class QueueModeLeshanServer implements LwM2mServer {
     public <T extends LwM2mResponse> void send(Client destination, DownlinkRequest<T> request,
             final ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         // Noop.
+    }
+
+    @Override
+    public <T extends LwM2mResponse> void send(Client destination, String requestTicket, DownlinkRequest<T> request) {
+        lwM2mRequestSender.send(destination, requestTicket, request);
+    }
+
+    @Override
+    public void addResponseListener(ResponseListener listener) {
+        lwM2mRequestSender.addResponseListener(listener);
+    }
+
+    @Override
+    public void removeResponseListener(ResponseListener listener) {
+        lwM2mRequestSender.removeResponseListener(listener);
     }
 
     @Override
