@@ -52,13 +52,16 @@ public class RedisRequestResponseHandler {
     private final Pool<Jedis> pool;
     private final ClientRegistry clientRegistry;
     private final ExecutorService excutorService;
+    private final RedisTokenHandler tokenHandler;
 
-    public RedisRequestResponseHandler(Pool<Jedis> p, LwM2mServer server, ClientRegistry clientRegistry) {
+    public RedisRequestResponseHandler(Pool<Jedis> p, LwM2mServer server, ClientRegistry clientRegistry,
+            RedisTokenHandler tokenHandler) {
         // Listen LWM2M response
         this.server = server;
         this.clientRegistry = clientRegistry;
+        this.tokenHandler = tokenHandler;
         this.excutorService = Executors.newCachedThreadPool(
-                new NamedThreadFactory(String.format("Redis %s channel reader", RESPONSE_CHANNEL)));
+                new NamedThreadFactory(String.format("Redis %s channel writer", RESPONSE_CHANNEL)));
 
         // Listen LWM2M response from client
         this.server.addResponseListener(new ResponseListener() {
@@ -182,9 +185,7 @@ public class RedisRequestResponseHandler {
     }
 
     private boolean isResponsibleFor(String endpoint) {
-        // TODO implement this
-        // return true if this cluster instance handle this endpoint
-        return true;
+        return tokenHandler.isResponsible(endpoint);
     }
 
     private void sendAck(String ticket) {
