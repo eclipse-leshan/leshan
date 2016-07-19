@@ -21,7 +21,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.response.ErrorCallback;
@@ -83,7 +82,7 @@ public class LwM2mRequestSenderImpl implements LwM2mRequestSender, Stoppable {
     @Override
     public <T extends LwM2mResponse> void send(Client destination, DownlinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
-        if (destination.getBindingMode().equals(BindingMode.UQ)) {
+        if (destination.usesQueueMode()) {
             queuedRequestSender.send(destination, request, responseCallback, errorCallback);
         } else {
             defaultRequestSender.send(destination, request, responseCallback, errorCallback);
@@ -91,12 +90,12 @@ public class LwM2mRequestSenderImpl implements LwM2mRequestSender, Stoppable {
     }
 
     @Override
-    public <T extends LwM2mResponse> void send(Client registrationInfo, String requestTicket,
+    public <T extends LwM2mResponse> void send(Client destination, String requestTicket,
             DownlinkRequest<T> request) {
-        if (registrationInfo.getBindingMode().equals(BindingMode.UQ)) {
-            queuedRequestSender.send(registrationInfo, requestTicket, request);
+        if (destination.usesQueueMode()) {
+            queuedRequestSender.send(destination, requestTicket, request);
         } else {
-            defaultRequestSender.send(registrationInfo, requestTicket, request);
+            defaultRequestSender.send(destination, requestTicket, request);
         }
     }
 

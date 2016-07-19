@@ -115,7 +115,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
         // Accept messages only when the client is already known to
         // ClientRegistry
         if (clientRegistry.get(endpoint) != null) {
-            QueuedRequest queuedRequest = newQueueRequestEntity(endpoint, castedDownlinkRequest, requestTicket);
+            QueuedRequest queuedRequest = new QueuedRequestImpl(endpoint, castedDownlinkRequest, requestTicket);
             messageStore.add(queuedRequest);
             // If Client is reachable and this is the first message, we send it
             // immediately.
@@ -186,11 +186,6 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
                 }
             }
         };
-    }
-
-    private QueuedRequestImpl newQueueRequestEntity(String endpoint, DownlinkRequest<LwM2mResponse> request,
-            String requestTicket) {
-        return new QueuedRequestImpl(endpoint, request, requestTicket);
     }
 
     private void processResponse(String clientEndpoint, String requestTicket, LwM2mResponse response) {

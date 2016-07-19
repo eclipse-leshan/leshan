@@ -16,7 +16,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.response;
 
-import java.util.Queue;
+import java.util.Collection;
 
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.slf4j.Logger;
@@ -33,7 +33,7 @@ public class ResponseProcessingTask implements Runnable {
     private final Exception exception;
     private final boolean hasException;
     private final LwM2mResponse response;
-    private final Queue<ResponseListener> responseListeners;
+    private final Collection<ResponseListener> responseListeners;
     private final String endpoint;
     private final String requestTicket;
 
@@ -46,7 +46,7 @@ public class ResponseProcessingTask implements Runnable {
      * @param response response to propagate
      */
     public ResponseProcessingTask(String clientEndpoint, String requestTicket,
-            Queue<ResponseListener> responseListeners, LwM2mResponse response) {
+            Collection<ResponseListener> responseListeners, LwM2mResponse response) {
         this.requestTicket = requestTicket;
         this.exception = null;
         this.hasException = false;
@@ -64,7 +64,7 @@ public class ResponseProcessingTask implements Runnable {
      * @param exception exception to propagate
      */
     public ResponseProcessingTask(String clientEndpoint, String requestTicket,
-            Queue<ResponseListener> responseListeners, Exception exception) {
+            Collection<ResponseListener> responseListeners, Exception exception) {
         this.requestTicket = requestTicket;
         this.exception = exception;
         this.responseListeners = responseListeners;
