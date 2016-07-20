@@ -16,6 +16,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.queue.impl;
 
+import java.util.Collection;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -38,6 +40,7 @@ import org.eclipse.leshan.server.queue.MessageStore;
 import org.eclipse.leshan.server.queue.QueuedRequest;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
 import org.eclipse.leshan.server.response.ResponseListener;
+import org.eclipse.leshan.server.response.ResponseProcessingTask;
 import org.eclipse.leshan.util.NamedThreadFactory;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
@@ -59,6 +62,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
     private final ClientRegistry clientRegistry;
     private final ObservationRegistry observationRegistry;
     private final ClientStatusTracker clientStatusTracker;
+    private final Collection<ResponseListener> responseListeners = new ConcurrentLinkedQueue<>();
 
     /**
      * Creates a new QueueRequestSender using given builder.
@@ -77,6 +81,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
         clientRegistry.addListener(queueModeClientRegistryListener);
         this.queueModeObservationRegistryListener = new QueueModeObservationRegistryListener();
         observationRegistry.addListener(queueModeObservationRegistryListener);
+        delegateSender.addResponseListener(createResponseListener());
     }
 
     public static Builder builder() {
@@ -129,12 +134,12 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
 
     @Override
     public void addResponseListener(ResponseListener listener) {
-        // Noop.
+        responseListeners.add(listener);
     }
 
     @Override
     public void removeResponseListener(ResponseListener listener) {
-        // Noop.
+        responseListeners.remove(listener);
     }
 
     @Override
@@ -191,12 +196,16 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
     private void processResponse(String clientEndpoint, String requestTicket, LwM2mResponse response) {
         LOG.debug("Received Response -> {}", requestTicket);
         messageStore.deleteFirst(clientEndpoint);
+        processingExecutor
+                .execute(new ResponseProcessingTask(clientEndpoint, requestTicket, responseListeners, response));
         processingExecutor.execute(newRequestSendingTask(clientEndpoint));
     }
 
     private void processException(String clientEndpoint, String requestTicket, Exception exception) {
         LOG.debug("Received error response {}", requestTicket);
         messageStore.deleteFirst(clientEndpoint);
+        processingExecutor
+                .execute(new ResponseProcessingTask(clientEndpoint, requestTicket, responseListeners, exception));
         processingExecutor.execute(newRequestSendingTask(clientEndpoint));
     }
 

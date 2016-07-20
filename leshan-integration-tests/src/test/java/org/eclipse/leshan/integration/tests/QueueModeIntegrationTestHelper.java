@@ -119,11 +119,12 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         noSecureEndpoint.addNotificationListener(observationRegistry);
         LwM2mRequestSender delegateSender = new CaliforniumLwM2mRequestSender(new HashSet<>(coapServer.getEndpoints()),
                 observationRegistry, modelProvider);
+        LwM2mRequestSender secondDelegateSender = new CaliforniumLwM2mRequestSender(
+                new HashSet<>(coapServer.getEndpoints()), observationRegistry, modelProvider);
         QueuedRequestSender queueRequestSender = QueuedRequestSender.builder().setMessageStore(inMemoryMessageStore)
-                .setRequestSender(delegateSender).setClientRegistry(clientRegistry)
+                .setRequestSender(secondDelegateSender).setClientRegistry(clientRegistry)
                 .setObservationRegistry(observationRegistry).build();
-        LwM2mRequestSender lwM2mRequestSender = new LwM2mRequestSenderImpl(delegateSender, queueRequestSender,
-                clientRegistry);
+        LwM2mRequestSender lwM2mRequestSender = new LwM2mRequestSenderImpl(delegateSender, queueRequestSender);
 
         server = new QueueModeLeshanServer(coapServer, clientRegistry, observationRegistry, securityRegistry,
                 modelProvider, lwM2mRequestSender, inMemoryMessageStore);
