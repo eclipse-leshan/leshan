@@ -90,5 +90,8 @@ public class LwM2mRequestSenderImpl implements LwM2mRequestSender, Stoppable {
         if (queuedRequestSender instanceof Stoppable) {
             ((Stoppable) queuedRequestSender).stop();
         }
+        if (defaultRequestSender instanceof Stoppable) {
+            ((Stoppable) defaultRequestSender).stop();
+        }
     }
 }
