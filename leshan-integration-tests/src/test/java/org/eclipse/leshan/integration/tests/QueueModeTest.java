@@ -36,11 +36,8 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
-import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
-import org.eclipse.leshan.core.response.ReadResponse;
-import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.response.WriteResponse;
 import org.eclipse.leshan.integration.tests.util.QueuedModeLeshanClient;
 import org.eclipse.leshan.integration.tests.util.QueuedModeLeshanClient.OnGetCallback;
@@ -204,7 +201,7 @@ public class QueueModeTest {
             fail("server never received the response");
         }
 
-        final List<QueuedRequest> queuedRequests = ((InMemoryMessageStore) helper.server.getMessageStore())
+        List<QueuedRequest> queuedRequests = ((InMemoryMessageStore) helper.server.getMessageStore())
                 .retrieveAll(helper.getClient().getEndpoint());
         assertEquals(0, queuedRequests.size());
     }
@@ -223,7 +220,7 @@ public class QueueModeTest {
 
         responseListener = new ResponseListener() {
             @Override
-            public void onResponse(String clientEndpoint, String requestTicket, final LwM2mResponse response) {
+            public void onResponse(String clientEndpoint, String requestTicket, LwM2mResponse response) {
                 if (response instanceof ObserveResponse) {
                     Observation observation = ((ObserveResponse) response).getObservation();
                     assertEquals("/3/0/15", observation.getPath().toString());
@@ -247,7 +244,7 @@ public class QueueModeTest {
         // now remove the observe response listener.
         helper.server.getLwM2mRequestSender().removeResponseListener(responseListener);
 
-        final CountDownLatch acceptCountDownLatch = new CountDownLatch(1);
+        CountDownLatch acceptCountDownLatch = new CountDownLatch(1);
         // set client NOT to respond to GET
         client.setOnGetCallback(doNothingOnGet);
         // add a read response listener.
@@ -342,7 +339,7 @@ public class QueueModeTest {
 
     @Test
     public void no_duplicate_send_on_consecutive_notifies() throws Exception {
-        final TestObservationListener listener = new TestObservationListener();
+        TestObservationListener listener = new TestObservationListener();
         helper.server.getObservationRegistry().addListener(listener);
         // stop default client as we need client with a custom life time.
         helper.client.stop(false);
@@ -361,7 +358,7 @@ public class QueueModeTest {
                 if (response instanceof ObserveResponse) {
                     acceptCountDownLatch.countDown();
                     LOG.trace("Received observe response for ticket {} from LWM2M client {}", requestTicket, response);
-                    final Observation observation = ((ObserveResponse) response).getObservation();
+                    Observation observation = ((ObserveResponse) response).getObservation();
                     assertEquals("/3/0/15", observation.getPath().toString());
                     assertEquals(helper.getClient().getRegistrationId(), observation.getRegistrationId());
                 }
@@ -440,33 +437,6 @@ public class QueueModeTest {
         // Send de-register
         helper.client.stop(DEREGISTER);
         assertQueueIsEmpty(3000);
-    }
-
-    private ResponseCallback<ReadResponse> newReadResponseCallback(final CountDownLatch acceptCountDownLatch) {
-        return new ResponseCallback<ReadResponse>() {
-            @Override
-            public void onResponse(ReadResponse response) {
-                acceptCountDownLatch.countDown();
-            }
-        };
-    }
-
-    private ResponseCallback<WriteResponse> newWriteResponseCallback(final CountDownLatch acceptCountDownLatch) {
-        return new ResponseCallback<WriteResponse>() {
-            @Override
-            public void onResponse(WriteResponse response) {
-                acceptCountDownLatch.countDown();
-            }
-        };
-    }
-
-    private ErrorCallback newErrorCallback() {
-        return new ErrorCallback() {
-            @Override
-            public void onError(Exception e) {
-                throw new IllegalStateException("unexpected exception occurred: ", e);
-            }
-        };
     }
 
     /**
