@@ -22,6 +22,8 @@ import java.util.SortedMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.eclipse.californium.core.coap.MessageObserver;
 import org.eclipse.californium.core.coap.Request;
@@ -37,6 +39,8 @@ import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
 import org.eclipse.leshan.server.response.ResponseListener;
+import org.eclipse.leshan.server.response.ResponseProcessingTask;
+import org.eclipse.leshan.util.NamedThreadFactory;
 import org.eclipse.leshan.util.Validate;
 
 public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
@@ -48,6 +52,8 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
     // This is mainly used to cancel request and avoid retransmission on de-registration
     private final ConcurrentNavigableMap<String/* registrationId#requestId */, Request /* pending coap Request */> pendingRequests = new ConcurrentSkipListMap<>();
     private final Collection<ResponseListener> responseListeners = new ConcurrentLinkedQueue<>();
+    private final ExecutorService processingExecutor = Executors
+            .newCachedThreadPool(new NamedThreadFactory("californium-lwm2m-requestsender-processingExecutor-%d"));
 
     /**
      * @param endpoints the CoAP endpoints to use for sending requests
@@ -154,9 +160,8 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         return new ResponseCallback<T>() {
             @Override
             public void onResponse(T response) {
-                for (ResponseListener listener : responseListeners) {
-                    listener.onResponse(clientEndpoint, requestTicket, response);
-                }
+                processingExecutor.execute(
+                        new ResponseProcessingTask(clientEndpoint, requestTicket, responseListeners, response));
             }
         };
     }
@@ -171,9 +176,8 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         return new ErrorCallback() {
             @Override
             public void onError(Exception e) {
-                for (ResponseListener listener : responseListeners) {
-                    listener.onError(clientEndpoint, requestTicket, e);
-                }
+                processingExecutor
+                        .execute(new ResponseProcessingTask(clientEndpoint, requestTicket, responseListeners, e));
             }
         };
     }

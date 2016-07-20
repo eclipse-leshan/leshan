@@ -113,7 +113,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
         // safe because DownlinkRequest does not use generic itself
         @SuppressWarnings("unchecked")
         DownlinkRequest<LwM2mResponse> castedDownlinkRequest = (DownlinkRequest<LwM2mResponse>) request;
-        LOG.debug("Sending request {} with queue mode", castedDownlinkRequest);
+        LOG.trace("Sending request {} with queue mode", castedDownlinkRequest);
 
         String endpoint = destination.getEndpoint();
 
@@ -164,7 +164,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
      * 
      * @return instance of {@link ResponseListener}
      */
-    public ResponseListener createResponseListener() {
+    private ResponseListener createResponseListener() {
         return new ResponseListener() {
 
             @Override
@@ -172,7 +172,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
                 Client registrationInfo = clientRegistry.get(clientEndpoint);
                 // process only if the client has used Queue mode.
                 if (registrationInfo != null && registrationInfo.usesQueueMode()) {
-                    LOG.debug("response received in Queue mode successfully: {}", requestTicket);
+                    LOG.trace("response received in Queue mode successfully: {}", requestTicket);
                     processResponse(clientEndpoint, requestTicket, response);
                 }
             }
@@ -210,9 +210,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
     }
 
     private void timeout(String clientEndpoint) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Client {} timed out", clientEndpoint);
-        }
+        LOG.debug("Client {} timed out", clientEndpoint);
         clientStatusTracker.setClientUnreachable(clientEndpoint);
     }
 
@@ -324,7 +322,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
     }
 
     /**
-     * An instance of a queued request along with its current state.
+     * An instance of a queued request along with its meta data (endpoint and requestTicket).
      */
     static class QueuedRequestImpl implements QueuedRequest {
 
