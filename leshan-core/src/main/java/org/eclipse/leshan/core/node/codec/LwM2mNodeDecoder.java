@@ -69,7 +69,7 @@ public interface LwM2mNodeDecoder {
             LwM2mModel model) throws InvalidValueException;
 
     /**
-     * return true is the given ContentFomart is supported
+     * return true is the given {@link ContentFormat} is supported
      */
     boolean isSupported(ContentFormat format);
 

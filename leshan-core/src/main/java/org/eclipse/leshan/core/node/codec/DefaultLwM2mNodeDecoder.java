@@ -116,7 +116,7 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
         case ContentFormat.OPAQUE_CODE:
             return toTimestampedNodes(LwM2mNodeOpaqueDecoder.decode(content, path, model));
         case ContentFormat.JSON_CODE:
-            return LwM2mNodeJsonDecoder.decodeTimestampedData(content, path, model, nodeClassFromPath(path));
+            return LwM2mNodeJsonDecoder.decodeTimestamped(content, path, model, nodeClassFromPath(path));
         case ContentFormat.LINK_CODE:
             throw new UnsupportedOperationException("Content format " + format + " not yet implemented '" + path + "'");
         }
@@ -132,7 +132,7 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
         return Collections.unmodifiableList(timestampedNodes);
     }
 
-    private static Class<? extends LwM2mNode> nodeClassFromPath(LwM2mPath path) {
+    public static Class<? extends LwM2mNode> nodeClassFromPath(LwM2mPath path) {
         if (path.isObject()) {
             return LwM2mObject.class;
         } else if (path.isObjectInstance()) {

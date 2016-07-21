@@ -51,6 +51,7 @@ public class LwM2mNodeJsonDecoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeJsonDecoder.class);
 
+    @SuppressWarnings("unchecked")
     public static <T extends LwM2mNode> T decode(byte[] content, LwM2mPath path, LwM2mModel model, Class<T> nodeClass)
             throws InvalidValueException {
         try {
@@ -68,7 +69,7 @@ public class LwM2mNodeJsonDecoder {
         }
     }
 
-    public static List<TimestampedLwM2mNode> decodeTimestampedData(byte[] content, LwM2mPath path, LwM2mModel model,
+    public static List<TimestampedLwM2mNode> decodeTimestamped(byte[] content, LwM2mPath path, LwM2mModel model,
             Class<? extends LwM2mNode> nodeClass) throws InvalidValueException {
         try {
             String jsonStrValue = new String(content);
@@ -79,7 +80,6 @@ public class LwM2mNodeJsonDecoder {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private static List<TimestampedLwM2mNode> parseJSON(JsonRootObject jsonObject, LwM2mPath path, LwM2mModel model,
             Class<? extends LwM2mNode> nodeClass) throws InvalidValueException {
 
@@ -101,7 +101,7 @@ public class LwM2mNodeJsonDecoder {
             Map<Integer, Collection<JsonArrayEntry>> jsonEntryByInstanceId = groupJsonEntryByInstanceId(
                     entryByTimestamp.getValue(), baseName);
 
-            // Create right right lwm2m node
+            // Create lwm2m node
             LwM2mNode node = null;
             if (nodeClass == LwM2mObject.class) {
                 Collection<LwM2mObjectInstance> instances = new ArrayList<>();
@@ -132,8 +132,8 @@ public class LwM2mNodeJsonDecoder {
                     throw new InvalidValueException("Only one instance expected in the payload", path);
 
                 // Extract resources
-                Map<Integer, LwM2mResource> resourcesMap = extractLwM2mResources(
-                        jsonEntryByInstanceId.values().iterator().next(), baseName, model);
+                Map<Integer, LwM2mResource> resourcesMap = extractLwM2mResources(jsonEntryByInstanceId.values()
+                        .iterator().next(), baseName, model);
 
                 // validate there is only 1 resource
                 if (resourcesMap.size() != 1)
@@ -233,7 +233,7 @@ public class LwM2mNodeJsonDecoder {
             // Get jsonArray for this instance
             Collection<JsonArrayEntry> jsonArray = result.get(nodePath.getObjectInstanceId());
             if (jsonArray == null) {
-                jsonArray = new ArrayList<JsonArrayEntry>();
+                jsonArray = new ArrayList<>();
                 result.put(nodePath.getObjectInstanceId(), jsonArray);
             }
 

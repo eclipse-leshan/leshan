@@ -49,7 +49,7 @@ public interface LwM2mNodeEncoder {
             LwM2mModel model);
 
     /**
-     * return true is the given ContentFomart is supported
+     * return true is the given {@link ContentFormat} is supported
      */
     boolean isSupported(ContentFormat format);
 }
