@@ -92,7 +92,7 @@ Contributors:
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.eclipse.leshan.server.demo.cluster.LeshanRedisServer</mainClass>
+                            <mainClass>org.eclipse.leshan.server.cluster.LeshanRedisServer</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

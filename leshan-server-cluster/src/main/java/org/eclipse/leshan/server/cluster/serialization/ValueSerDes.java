@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.demo.cluster.serialization;
+package org.eclipse.leshan.server.cluster.serialization;
 
 import java.util.Date;
 

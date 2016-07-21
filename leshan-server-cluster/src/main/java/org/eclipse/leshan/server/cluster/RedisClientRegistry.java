@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.demo.cluster;
+package org.eclipse.leshan.server.cluster;
 
 import static org.eclipse.leshan.util.Charsets.UTF_8;
 
@@ -32,7 +32,7 @@ import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.client.ClientRegistryListener;
 import org.eclipse.leshan.server.client.ClientUpdate;
-import org.eclipse.leshan.server.demo.cluster.serialization.ClientSerDes;
+import org.eclipse.leshan.server.cluster.serialization.ClientSerDes;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.demo.cluster;
+package org.eclipse.leshan.server.cluster;
 
 import java.util.Arrays;
 

@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.demo.cluster;
+package org.eclipse.leshan.server.cluster;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -22,7 +22,7 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import org.eclipse.leshan.server.demo.cluster.serialization.SecurityInfoSerDes;
+import org.eclipse.leshan.server.cluster.serialization.SecurityInfoSerDes;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.SecurityRegistry;

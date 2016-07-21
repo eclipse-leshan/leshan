@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.demo.cluster.serialization;
+package org.eclipse.leshan.server.cluster.serialization;
 
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.ResponseCode;
@@ -94,7 +94,7 @@ public class ResponseSerDes {
         case "observe": {
             // TODO ser Observation
             LwM2mNode content = LwM2mNodeSerDes.deserialize((JsonObject) o.get("content"));
-            return new ObserveResponse(code, content, null, errorMessage);
+            return new ObserveResponse(code, content, null, null, errorMessage);
         }
         case "delete":
             return new DeleteResponse(code, errorMessage);

@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.demo.cluster.serialization;
+package org.eclipse.leshan.server.cluster.serialization;
 
 import static org.junit.Assert.assertEquals;
 
@@ -26,6 +26,7 @@ import java.security.spec.ECPoint;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.KeySpec;
 
+import org.eclipse.leshan.server.cluster.serialization.SecurityInfoSerDes;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.util.Hex;
 import org.junit.Test;

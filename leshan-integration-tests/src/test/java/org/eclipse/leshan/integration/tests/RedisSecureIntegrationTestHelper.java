@@ -26,9 +26,9 @@ import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.client.ClientRegistryListener;
 import org.eclipse.leshan.server.client.ClientUpdate;
-import org.eclipse.leshan.server.demo.cluster.RedisClientRegistry;
-import org.eclipse.leshan.server.demo.cluster.RedisObservationStore;
-import org.eclipse.leshan.server.demo.cluster.RedisSecurityRegistry;
+import org.eclipse.leshan.server.cluster.RedisClientRegistry;
+import org.eclipse.leshan.server.cluster.RedisObservationStore;
+import org.eclipse.leshan.server.cluster.RedisSecurityRegistry;
 import org.eclipse.leshan.server.model.StaticModelProvider;
 
 import redis.clients.jedis.Jedis;

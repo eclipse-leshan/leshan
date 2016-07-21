@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.demo.cluster;
+package org.eclipse.leshan.server.cluster;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -23,8 +23,8 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
-import org.eclipse.leshan.server.demo.cluster.serialization.DownlinkRequestSerDes;
-import org.eclipse.leshan.server.demo.cluster.serialization.ResponseSerDes;
+import org.eclipse.leshan.server.cluster.serialization.DownlinkRequestSerDes;
+import org.eclipse.leshan.server.cluster.serialization.ResponseSerDes;
 import org.eclipse.leshan.server.response.ResponseListener;
 import org.eclipse.leshan.util.NamedThreadFactory;
 import org.slf4j.Logger;
@@ -65,14 +65,15 @@ public class RedisRequestResponseHandler {
 
         // Listen LWM2M response from client
         this.server.addResponseListener(new ResponseListener() {
+            
             @Override
-            public void onResponse(String clientEndpoint, String requestTicket, LwM2mResponse response) {
-                handleResponse(clientEndpoint, requestTicket, response);
+            public void onResponse(Client client, String requestTicket, LwM2mResponse response) {
+                handleResponse(client.getEndpoint(), requestTicket, response);
             }
 
             @Override
-            public void onError(String clientEndpoint, String requestTicket, Exception exception) {
-                handlerError(clientEndpoint, requestTicket, exception);
+            public void onError(Client client, String requestTicket, Exception exception) {
+                handlerError(client.getEndpoint(), requestTicket, exception);
             }
 
         });

@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.demo.cluster;
+package org.eclipse.leshan.server.cluster;
 
 import static org.eclipse.leshan.util.Charsets.UTF_8;
 

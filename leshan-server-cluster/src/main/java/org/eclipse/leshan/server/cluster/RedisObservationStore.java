@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.demo.cluster;
+package org.eclipse.leshan.server.cluster;
 
 import static org.eclipse.leshan.util.Charsets.UTF_8;
 
@@ -25,7 +25,7 @@ import org.eclipse.californium.core.observe.ObservationStore;
 import org.eclipse.californium.elements.CorrelationContext;
 import org.eclipse.leshan.server.californium.impl.CoapRequestBuilder;
 import org.eclipse.leshan.server.californium.impl.LwM2mObservationStore;
-import org.eclipse.leshan.server.demo.cluster.serialization.ObservationSerDes;
+import org.eclipse.leshan.server.cluster.serialization.ObservationSerDes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

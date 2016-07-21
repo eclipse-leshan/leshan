@@ -13,13 +13,13 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.demo.cluster;
+package org.eclipse.leshan.server.cluster;
 
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistryListener;
 import org.eclipse.leshan.server.client.ClientUpdate;
-import org.eclipse.leshan.server.demo.cluster.serialization.ClientSerDes;
-import org.eclipse.leshan.server.demo.cluster.serialization.ClientUpdateSerDes;
+import org.eclipse.leshan.server.cluster.serialization.ClientSerDes;
+import org.eclipse.leshan.server.cluster.serialization.ClientUpdateSerDes;
 
 import com.eclipsesource.json.JsonObject;
 

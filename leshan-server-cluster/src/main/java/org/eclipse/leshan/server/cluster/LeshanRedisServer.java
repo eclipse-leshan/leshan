@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.demo.cluster;
+package org.eclipse.leshan.server.cluster;
 
 import java.net.BindException;
 import java.net.URI;
@@ -23,7 +23,9 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
+import org.eclipse.leshan.server.californium.impl.CaliforniumObservationRegistryImpl;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
@@ -157,6 +159,8 @@ public class LeshanRedisServer {
         LeshanServerBuilder builder = new LeshanServerBuilder();
         builder.setLocalAddress(localAddress, localPort);
         builder.setLocalSecureAddress(secureLocalAddress, secureLocalPort);
+        DefaultLwM2mNodeDecoder decoder = new DefaultLwM2mNodeDecoder();
+        builder.setDecoder(decoder);
 
         LwM2mModelProvider modelProvider = new StandardModelProvider();
         builder.setObjectModelProvider(modelProvider);
@@ -167,7 +171,8 @@ public class LeshanRedisServer {
         // TODO add support of public and private server key
         builder.setSecurityRegistry(new RedisSecurityRegistry(jedis, null, null));
 
-        builder.setObservationRegistry(new RedisObservationRegistry(jedis, clientRegistry, modelProvider));
+        builder.setObservationRegistry(new CaliforniumObservationRegistryImpl(new RedisObservationStore(jedis),
+                clientRegistry, modelProvider, decoder));
 
         // Create and start LWM2M server
         LeshanServer lwServer = builder.build();
