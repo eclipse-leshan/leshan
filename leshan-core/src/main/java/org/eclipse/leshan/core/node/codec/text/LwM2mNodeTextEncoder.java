@@ -91,6 +91,10 @@ public class LwM2mNodeTextEncoder {
                 // number of seconds since 1970/1/1
                 strValue = String.valueOf(((Date) val).getTime() / 1000L);
                 break;
+            case OBJLNK:
+                int[] dataArr = (int[])val;
+                strValue = String.valueOf(dataArr[0] + ":" + dataArr[1]);
+                break;
             default:
                 throw new IllegalArgumentException("Cannot encode " + val + " in text format");
             }

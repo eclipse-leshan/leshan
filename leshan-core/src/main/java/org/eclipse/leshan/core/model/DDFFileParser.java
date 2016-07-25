@@ -168,6 +168,9 @@ public class DDFFileParser {
                 case "Time":
                     type = Type.TIME;
                     break;
+                case "Objlnk":
+                    type = Type.OBJLNK;
+                    break;
                 }
                 break;
             case "RangeEnumeration":

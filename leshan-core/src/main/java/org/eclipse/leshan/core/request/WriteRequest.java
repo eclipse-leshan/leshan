@@ -212,6 +212,23 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
                 LwM2mSingleResource.newBinaryResource(resourceId, value));
     }
 
+    /**
+     * Request to write a <b> Objlnk Single-Instance Resource</b> using the TLV content format.
+     */
+    public WriteRequest(final int objectId, final int objectInstanceId, final int resourceId, int[] value) {
+        this(ContentFormat.TLV, objectId, objectInstanceId, resourceId, value);
+    }
+
+    /**
+     * Request to write a <b> Objlnk Single-Instance Resource</b> using the given content format (OPAQUE, TLV, JSON,
+     * TEXT).
+     */
+    public WriteRequest(final ContentFormat contentFormat, final int objectId, final int objectInstanceId,
+            final int resourceId, int[] value) {
+        this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId),
+                LwM2mSingleResource.newObjlnkResource(resourceId, value[0], value[1]));
+    }
+
     // ***************** write multi instance resource ****************** //
     /**
      * Request to write a <b>Multi-Instance Resource</b>.

@@ -114,6 +114,16 @@ public class TlvEncoder {
         return tBuf.array();
     }
 
+    /**
+     * Encodes a Objlnk value.
+     */
+    public static byte[] encodeObjlnk(int[] value) {
+        ByteBuffer objlnkBuffer = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN);
+        objlnkBuffer.putShort(0, (short) value[0]);
+        objlnkBuffer.putShort(2, (short) value[1]);
+        return objlnkBuffer.array();
+    }
+
     private static int tlvEncodedSize(Tlv tlv, int length) {
         int size = 1 /* HEADER */;
         size += (tlv.getIdentifier() < MAX_LENGTH_8BIT) ? 1 : 2; /* 8 bits or 16 bits identifiers */
