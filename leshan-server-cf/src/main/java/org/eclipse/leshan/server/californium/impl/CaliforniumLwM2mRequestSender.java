@@ -211,6 +211,18 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         responseListeners.remove(listener);
     }
 
+    @Override
+    public void cancelPendingRequests(Client client) {
+        Validate.notNull(client);
+        String registrationId = client.getRegistrationId();
+        SortedMap<String, Request> requests = pendingRequests.subMap(getFloorKey(registrationId),
+                getCeilingKey(registrationId));
+        for (Request coapRequest : requests.values()) {
+            coapRequest.cancel();
+        }
+        requests.clear();
+    }
+
     private String getFloorKey(String registrationId) {
         // The key format is regid#int, So we need a key which is always before this pattern (in natural order).
         return registrationId + '#';
@@ -223,16 +235,6 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
     private String getKey(String registrationId, int requestId) {
         return registrationId + '#' + requestId;
-    }
-
-    public void cancelPendingRequests(String registrationId) {
-        Validate.notNull(registrationId);
-        SortedMap<String, Request> requests = pendingRequests.subMap(getFloorKey(registrationId),
-                getCeilingKey(registrationId));
-        for (Request coapRequest : requests.values()) {
-            coapRequest.cancel();
-        }
-        requests.clear();
     }
 
     private void addPendingRequest(String registrationId, Request coapRequest) {

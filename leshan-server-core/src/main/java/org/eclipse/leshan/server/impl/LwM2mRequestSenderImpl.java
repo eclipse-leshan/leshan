@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Bosch Software Innovations GmbH and others.
+ * Copyright (c) 2016 Bosch Software Innovations GmbH and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -93,5 +93,13 @@ public class LwM2mRequestSenderImpl implements LwM2mRequestSender, Stoppable {
         if (defaultRequestSender instanceof Stoppable) {
             ((Stoppable) defaultRequestSender).stop();
         }
+    }
+
+    @Override
+    public void cancelPendingRequests(Client client) {
+        // cancel on the both the senders are required for the scenario
+        // where the LWM2M client could change binding modes.
+        defaultRequestSender.cancelPendingRequests(client);
+        queuedRequestSender.cancelPendingRequests(client);
     }
 }

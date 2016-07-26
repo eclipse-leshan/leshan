@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Bosch Software Innovations GmbH and others.
+ * Copyright (c) 2016 Bosch Software Innovations GmbH and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -20,7 +20,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -35,6 +37,7 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
+import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
@@ -42,7 +45,6 @@ import org.eclipse.leshan.integration.tests.util.QueuedModeLeshanClient;
 import org.eclipse.leshan.integration.tests.util.QueuedModeLeshanClient.OnGetCallback;
 import org.eclipse.leshan.server.observation.ObservationRegistryListener;
 import org.eclipse.leshan.server.queue.MessageStore;
-import org.eclipse.leshan.server.queue.QueuedRequest;
 import org.eclipse.leshan.server.queue.impl.InMemoryMessageStore;
 import org.eclipse.leshan.server.response.ResponseListener;
 import org.junit.After;
@@ -78,6 +80,19 @@ public class QueueModeTest {
             return true;
         }
     };
+    private final OnGetCallback delayedResponseOnGet = new OnGetCallback() {
+        @Override
+        public boolean handleGet(CoapExchange coapExchange) {
+            LOG.trace("Received coapExchange: {}", coapExchange.getRequestOptions().getUriPathString());
+            LOG.trace("Setup client TO delay and respond");
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                // noop.
+            }
+            return true;
+        }
+    };
 
     @Before
     public void start() {
@@ -100,8 +115,8 @@ public class QueueModeTest {
     @Test
     public void first_request_sent_immediately() throws Exception {
         createAndAddResponseListener(countDownLatch);
-        helper.server.getLwM2mRequestSender()
-                .send(helper.getClient(), TEST_REQUEST_TICKET + "1", new ReadRequest(3, 0));
+        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "1",
+                new ReadRequest(3, 0));
         if (!countDownLatch.await(2, TimeUnit.SECONDS)) {
             fail("response from client was not received within timeout");
         }
@@ -115,8 +130,8 @@ public class QueueModeTest {
 
         createAndAddResponseListener(countDownLatch);
 
-        helper.server.getLwM2mRequestSender()
-                .send(helper.getClient(), TEST_REQUEST_TICKET + "1", new ReadRequest(3, 0));
+        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "1",
+                new ReadRequest(3, 0));
         // assert that queue has one request left in processing state still
         assertQueueHasMessageCount(1, 5000);
     }
@@ -148,9 +163,8 @@ public class QueueModeTest {
         }
 
         // assert that queue has one additional new request
-        List<QueuedRequest> requests = ((InMemoryMessageStore) helper.server.getMessageStore()).retrieveAll(helper
-                .getClient().getEndpoint());
-        assertEquals(2, requests.size());
+        assertEquals(2, ((InMemoryMessageStore) helper.server.getMessageStore())
+                .getQueueSize(helper.getClient().getEndpoint()));
     }
 
     @Test
@@ -200,9 +214,8 @@ public class QueueModeTest {
             fail("server never received the response");
         }
 
-        List<QueuedRequest> queuedRequests = ((InMemoryMessageStore) helper.server.getMessageStore())
-                .retrieveAll(helper.getClient().getEndpoint());
-        assertEquals(0, queuedRequests.size());
+        assertEquals(0, ((InMemoryMessageStore) helper.server.getMessageStore())
+                .getQueueSize(helper.getClient().getEndpoint()));
     }
 
     @Test
@@ -350,12 +363,12 @@ public class QueueModeTest {
         client.start();
         waitForInterval(1000);
 
-        final CountDownLatch acceptCountDownLatch = new CountDownLatch(2);
+        final CountDownLatch serverResponseReceivedCountDownLatch = new CountDownLatch(2);
         responseListener = new ResponseListener() {
             @Override
             public void onResponse(String clientEndpoint, String requestTicket, LwM2mResponse response) {
                 if (response instanceof ObserveResponse) {
-                    acceptCountDownLatch.countDown();
+                    serverResponseReceivedCountDownLatch.countDown();
                     LOG.trace("Received observe response for ticket {} from LWM2M client {}", requestTicket, response);
                     Observation observation = ((ObserveResponse) response).getObservation();
                     assertEquals("/3/0/15", observation.getPath().toString());
@@ -383,14 +396,14 @@ public class QueueModeTest {
         waitForInterval(TIMEOUT);
         assertQueueHasMessageCount(1, 5000L);
 
-        final CountDownLatch clientCountDownLatch = new CountDownLatch(2);
+        final CountDownLatch clientRequestReceivedCountDownLatch = new CountDownLatch(2);
         client.setOnGetCallback(new OnGetCallback() {
             @Override
             public boolean handleGet(CoapExchange coapExchange) {
                 LOG.trace("Received again coapExchange: {}", coapExchange.getRequestOptions().getUriPathString());
                 LOG.trace("Setup client again TO respond");
                 if (coapExchange.getRequestOptions().getUriPath().toString().equals("[3, 0, 1]")) {
-                    clientCountDownLatch.countDown();
+                    clientRequestReceivedCountDownLatch.countDown();
                 }
                 return true;
             }
@@ -406,22 +419,26 @@ public class QueueModeTest {
         assertQueueIsEmpty(3000);
         // check server received only one response to the above read request
         // duplicate send means countDown is zero
-        assertTrue("SERVER: Expected only one response received (count=1) and no duplicates. CountDown reached" + "["
-                + acceptCountDownLatch.getCount() + "]", acceptCountDownLatch.getCount() == 1);
+        assertTrue(
+                "SERVER: Expected only one response received (count=1) and no duplicates. CountDown reached" + "["
+                        + serverResponseReceivedCountDownLatch.getCount() + "]",
+                serverResponseReceivedCountDownLatch.getCount() == 1);
         // duplicate send means countDown is zero
-        assertTrue("CLIENT: Expected only one message received (count=1) and no duplicates. CountDown reached" + "["
-                + clientCountDownLatch.getCount() + "]", clientCountDownLatch.getCount() == 1);
+        assertTrue(
+                "CLIENT: Expected only one message received (count=1) and no duplicates. CountDown reached" + "["
+                        + clientRequestReceivedCountDownLatch.getCount() + "]",
+                clientRequestReceivedCountDownLatch.getCount() == 1);
         client.stop(true);
     }
 
     @Test
-    public void messages_removed_on_client_deregister() throws Exception {
+    public void messages_removed_on_unreachable_client_deregister() throws Exception {
         // client is set up to do not respond, i.e. to cause request timeout
         QueuedModeLeshanClient client = (QueuedModeLeshanClient) helper.client;
         client.setOnGetCallback(doNothingOnGet);
 
         // now send some read requests
-        CountDownLatch acceptCountDownLatch = new CountDownLatch(1);
+        CountDownLatch acceptCountDownLatch = new CountDownLatch(3);
         createAndAddResponseListener(acceptCountDownLatch);
         // Send a read request. Will be sent immediately as it is the first
         // message in the queue.
@@ -429,13 +446,122 @@ public class QueueModeTest {
                 new ReadRequest(3, 0, 1));
         helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "2",
                 new ReadRequest(3, 0, 15));
+        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "3",
+                new ReadRequest(3, 0, 2));
 
         waitForInterval(TIMEOUT);
-        assertQueueHasMessageCount(2, 5000);
+        assertQueueHasMessageCount(3, 5000);
 
+        assertTrue(acceptCountDownLatch.getCount() == 3);
         // Send de-register
         helper.client.stop(DEREGISTER);
         assertQueueIsEmpty(3000);
+    }
+
+    @Test
+    public void messages_removed_on_reachable_client_deregister() throws Exception {
+        // client is set up to do respond slowly
+        QueuedModeLeshanClient client = (QueuedModeLeshanClient) helper.client;
+        client.setOnGetCallback(delayedResponseOnGet);
+
+        // now send some read requests
+        CountDownLatch acceptCountDownLatch = new CountDownLatch(3);
+        createAndAddResponseListener(acceptCountDownLatch);
+        // Send a read request. Will be sent immediately as it is the first
+        // message in the queue.
+        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "1",
+                new ReadRequest(3, 0, 1));
+        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "2",
+                new ReadRequest(3, 0, 15));
+        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "3",
+                new ReadRequest(3, 0, 2));
+
+        assertQueueHasMessageCount(3, 5000);
+
+        assertTrue(acceptCountDownLatch.getCount() == 3);
+        // Send de-register
+        helper.client.stop(DEREGISTER);
+        assertQueueIsEmpty(3000);
+    }
+
+    @Test
+    public void cancel_pending_throws_exception_for_first_message_and_removes_others_on_client_deregister()
+            throws Exception {
+        // client is set up to response slowly.
+        QueuedModeLeshanClient client = (QueuedModeLeshanClient) helper.client;
+        client.setOnGetCallback(delayedResponseOnGet);
+        ;
+
+        final CountDownLatch exceptionCountDownLatch = new CountDownLatch(1);
+        final CountDownLatch responseCountDownLatch = new CountDownLatch(3);
+
+        // Add a response listener to verify if any exception is thrown.
+        helper.server.getLwM2mRequestSender().addResponseListener(new ResponseListener() {
+
+            @Override
+            public void onResponse(String clientEndpoint, String requestTicket, LwM2mResponse response) {
+                responseCountDownLatch.countDown();
+            }
+
+            @Override
+            public void onError(String clientEndpoint, String requestTicket, Exception exception) {
+                assertTrue("Expected a RequestCanceledException but received " + exception,
+                        exception instanceof RequestCanceledException);
+                exceptionCountDownLatch.countDown();
+            }
+        });
+
+        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "1",
+                new ReadRequest(3, 0, 1));
+        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "2",
+                new ReadRequest(3, 0, 15));
+        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "3",
+                new ReadRequest(3, 0, 2));
+        // Send de-register
+        helper.client.stop(DEREGISTER);
+        assertQueueIsEmpty(3000);
+        assertTrue("Did not expect any responses", responseCountDownLatch.getCount() == 3);
+        assertTrue("Excepted an RequestCanceledException for first message but none was thrown",
+                exceptionCountDownLatch.await(3, TimeUnit.SECONDS));
+    }
+
+    @Test
+    public void cancel_pending_throws_exception_for_first_message_and_doesnot_send_others() throws Exception {
+        final CountDownLatch exceptionCountDownLatch = new CountDownLatch(1);
+        final CountDownLatch responseCountDownLatch = new CountDownLatch(1);
+        final CountDownLatch unexpectedResponseCountDownLatch = new CountDownLatch(2);
+
+        QueuedModeLeshanClient client = (QueuedModeLeshanClient) helper.client;
+        // client is set up to respond only when responseCountDownLatch reaches zero.
+        client.setOnGetCallback(createConditionalResponseOnGet(responseCountDownLatch));
+
+        // Add a response listener to verify if any exception is thrown.
+        helper.server.getLwM2mRequestSender().addResponseListener(new ResponseListener() {
+
+            @Override
+            public void onResponse(String clientEndpoint, String requestTicket, LwM2mResponse response) {
+                unexpectedResponseCountDownLatch.countDown();
+            }
+
+            @Override
+            public void onError(String clientEndpoint, String requestTicket, Exception exception) {
+                assertTrue("Expected a RequestCanceledException but received " + exception,
+                        exception instanceof RequestCanceledException);
+                exceptionCountDownLatch.countDown();
+            }
+        });
+
+        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "1",
+                new ReadRequest(3, 0, 1));
+        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "2",
+                new ReadRequest(3, 0, 15));
+        // Instead of LWM2M client de-register, cancel pending messages on LWM2M server.
+        helper.server.getLwM2mRequestSender().cancelPendingRequests(helper.getClient());
+        responseCountDownLatch.countDown(); // client will start responding from this point.
+        assertQueueIsEmpty(3000);
+        assertTrue("Did not expect any responses", unexpectedResponseCountDownLatch.getCount() == 2);
+        assertTrue("Excepted an RequestCanceledException to be thrown but none was thrown",
+                exceptionCountDownLatch.await(3, TimeUnit.SECONDS));
     }
 
     /**
@@ -465,10 +591,11 @@ public class QueueModeTest {
             Thread.sleep(interval);
             duration += interval;
             InMemoryMessageStore messageStore = (InMemoryMessageStore) helper.server.getMessageStore();
-            queuedRequestCount = messageStore.retrieveAll(helper.getClient().getEndpoint()).size();
+            queuedRequestCount = messageStore.getQueueSize(helper.getClient().getEndpoint());
         } while (queuedRequestCount < count && duration <= timeout);
-        assertTrue("Expected to have at least " + count + " queued request in queue but have [" + queuedRequestCount
-                + "]", queuedRequestCount == count);
+        assertTrue(
+                "Expected to have at least " + count + " queued request in queue but have [" + queuedRequestCount + "]",
+                queuedRequestCount == count);
     }
 
     private void assertQueueIsEmpty(long timeout) throws InterruptedException {
@@ -479,8 +606,7 @@ public class QueueModeTest {
         do {
             Thread.sleep(interval);
             duration += interval;
-            empty = helper.getClient() == null
-                    || (helper.getClient() != null && messageStore.isEmpty(helper.getClient().getEndpoint()));
+            empty = messageStore.isEmpty(QueueModeIntegrationTestHelper.ENDPOINT_IDENTIFIER);
         } while (!empty && duration <= timeout);
         assertTrue("Expected an empty queue but has some messages", empty);
     }
@@ -488,6 +614,26 @@ public class QueueModeTest {
     private boolean waitForInterval(long timeout) throws InterruptedException {
         Thread.sleep(timeout);
         return true;
+    }
+
+    private OnGetCallback createConditionalResponseOnGet(final CountDownLatch responseCountDownLatch) {
+        return new OnGetCallback() {
+            @Override
+            public boolean handleGet(CoapExchange coapExchange) {
+                LOG.trace("Received coapExchange: {}", coapExchange.getRequestOptions().getUriPathString());
+                LOG.trace("Setup client to respond on condition responseCountDownLatch == 0");
+                try {
+                    if (!responseCountDownLatch.await(50, TimeUnit.MILLISECONDS)) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }
+        };
     }
 
     private final class TestObservationListener implements ObservationRegistryListener {

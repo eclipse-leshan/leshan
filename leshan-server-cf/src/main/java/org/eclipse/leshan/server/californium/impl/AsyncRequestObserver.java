@@ -17,6 +17,7 @@ package org.eclipse.leshan.server.californium.impl;
 
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
+import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.request.exception.RequestFailedException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -62,7 +63,7 @@ public abstract class AsyncRequestObserver<T extends LwM2mResponse> extends Abst
 
     @Override
     public void onCancel() {
-        errorCallback.onError(new RequestFailedException("Canceled request"));
+        errorCallback.onError(new RequestCanceledException("Canceled request"));
     }
 
     @Override

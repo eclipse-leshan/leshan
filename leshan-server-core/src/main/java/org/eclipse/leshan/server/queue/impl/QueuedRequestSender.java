@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Bosch Software Innovations GmbH and others.
+ * Copyright (c) 2016 Bosch Software Innovations GmbH and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -27,6 +27,7 @@ import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.DownlinkRequest;
+import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -56,8 +57,8 @@ import org.slf4j.LoggerFactory;
 public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
     private static final Logger LOG = LoggerFactory.getLogger(QueuedRequestSender.class);
     private final LwM2mRequestSender delegateSender;
-    private final ExecutorService processingExecutor = Executors.newCachedThreadPool(new NamedThreadFactory(
-            "leshan-qmode-processingExecutor-%d"));
+    private final ExecutorService processingExecutor = Executors
+            .newCachedThreadPool(new NamedThreadFactory("leshan-qmode-processingExecutor-%d"));
     private final MessageStore messageStore;
     private final QueueModeClientRegistryListener queueModeClientRegistryListener;
     private final QueueModeObservationRegistryListener queueModeObservationRegistryListener;
@@ -103,12 +104,6 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
                 "QueueMode doesn't support sending of messages with callbacks. Use a request ticket instead and register your response listeners");
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.eclipse.leshan.server.request.LwM2mRequestSender#send(org.eclipse. leshan.server.client.Client,
-     * java.lang.String, org.eclipse.leshan.core.request.DownlinkRequest)
-     */
     @Override
     public <T extends LwM2mResponse> void send(Client destination, String requestTicket, DownlinkRequest<T> request) {
         LOG.trace("send(requestTicket={})", requestTicket);
@@ -119,8 +114,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
 
         String endpoint = destination.getEndpoint();
 
-        // Accept messages only when the client is already known to
-        // ClientRegistry
+        // Accept messages only when the client is already known to ClientRegistry
         if (clientRegistry.get(endpoint) != null) {
             QueuedRequest queuedRequest = new QueuedRequestImpl(endpoint, castedDownlinkRequest, requestTicket);
             messageStore.add(queuedRequest);
@@ -161,6 +155,29 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
         }
     }
 
+    @Override
+    public void cancelPendingRequests(Client client) {
+        Validate.notNull(client);
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Cancelling and removing all pending messages for client {}", client.getEndpoint());
+        }
+
+        String clientEndpoint = client.getEndpoint();
+
+        // Potentially the first message in the queue would have been sent.
+        // So try to cancel it now.
+        delegateSender.cancelPendingRequests(client);
+
+        // It is better to notify the listener with a RequestCanceledException
+        // for each queued message to keep the behavior consistent with CaliforniumLwM2mRequestSender.
+        List<QueuedRequest> removedMessages = messageStore.removeAll(clientEndpoint);
+        for (QueuedRequest request : removedMessages) {
+            processingExecutor.execute(new ResponseProcessingTask(clientEndpoint, request.getRequestTicket(),
+                    responseListeners, new RequestCanceledException("Queued message cancelled")));
+        }
+    }
+
     /**
      * creates a response listener for response and error responses from clients using queue mode.
      * 
@@ -198,17 +215,21 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
     private void processResponse(String clientEndpoint, String requestTicket, LwM2mResponse response) {
         LOG.debug("Received Response -> {}", requestTicket);
         messageStore.deleteFirst(clientEndpoint);
-        processingExecutor.execute(new ResponseProcessingTask(clientEndpoint, requestTicket, responseListeners,
-                response));
+        processingExecutor
+                .execute(new ResponseProcessingTask(clientEndpoint, requestTicket, responseListeners, response));
         processingExecutor.execute(newRequestSendingTask(clientEndpoint));
     }
 
     private void processException(String clientEndpoint, String requestTicket, Exception exception) {
         LOG.debug("Received error response {}", requestTicket);
         messageStore.deleteFirst(clientEndpoint);
-        processingExecutor.execute(new ResponseProcessingTask(clientEndpoint, requestTicket, responseListeners,
-                exception));
-        processingExecutor.execute(newRequestSendingTask(clientEndpoint));
+        processingExecutor
+                .execute(new ResponseProcessingTask(clientEndpoint, requestTicket, responseListeners, exception));
+        // If RequestCanceledException is thrown due to cancelPendingMessages call, then there
+        // is no use processing next requests which would be removed in the next few moments.
+        if (!(exception instanceof RequestCanceledException)) {
+            processingExecutor.execute(newRequestSendingTask(clientEndpoint));
+        }
     }
 
     private void timeout(String clientEndpoint) {
@@ -274,11 +295,6 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
         public void unregistered(Client client) {
             if (client.usesQueueMode()) {
                 clientStatusTracker.clearClientState(client.getEndpoint());
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Client {} de-registered. Removing all queued requests.", client.getEndpoint());
-                }
-                messageStore.removeAll(client.getEndpoint());
-                // TODO: Also cancel any CoAP retries?
             }
         }
     }
@@ -332,7 +348,8 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
         private final String endpoint;
         private final String requestTicket;
 
-        private QueuedRequestImpl(String endpoint, DownlinkRequest<LwM2mResponse> downlinkRequest, String requestTicket) {
+        private QueuedRequestImpl(String endpoint, DownlinkRequest<LwM2mResponse> downlinkRequest,
+                String requestTicket) {
             Validate.notNull(endpoint, "endpoint may not be null");
             Validate.notNull(downlinkRequest, "request may not be null");
             this.downlinkRequest = downlinkRequest;

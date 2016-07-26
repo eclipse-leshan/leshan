@@ -61,7 +61,7 @@ public class QueueModeLeshanServer implements LwM2mServer {
         this.messageStore = inMemoryMessageStore;
 
         // Cancel observations on client unregistering
-        clientRegistry.addListener(new ClientRegistryListener() {
+        this.clientRegistry.addListener(new ClientRegistryListener() {
 
             @Override
             public void updated(ClientUpdate update, Client clientUpdated) {
@@ -70,6 +70,7 @@ public class QueueModeLeshanServer implements LwM2mServer {
             @Override
             public void unregistered(Client client) {
                 QueueModeLeshanServer.this.observationRegistry.cancelObservations(client);
+                QueueModeLeshanServer.this.lwM2mRequestSender.cancelPendingRequests(client);
             }
 
             @Override
