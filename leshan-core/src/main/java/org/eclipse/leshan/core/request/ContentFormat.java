@@ -94,7 +94,7 @@ public class ContentFormat {
      */
     public static ContentFormat fromName(String name) {
         for (ContentFormat t : knownContentFormat) {
-            if (t.getName() == name) {
+            if (t.getName().equals(name)) {
                 return t;
             }
         }
