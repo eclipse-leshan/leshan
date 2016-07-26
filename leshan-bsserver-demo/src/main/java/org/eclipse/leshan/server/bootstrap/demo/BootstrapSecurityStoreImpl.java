@@ -42,11 +42,13 @@ public class BootstrapSecurityStoreImpl implements BootstrapSecurityStore {
         byte[] identityBytes = identity.getBytes(Charsets.UTF_8);
         for (Map.Entry<String, BootstrapConfig> e : bsStore.getBootstrapConfigs().entrySet()) {
             BootstrapConfig bsConfig = e.getValue();
-            for (Map.Entry<Integer, BootstrapConfig.ServerSecurity> ec : bsConfig.security.entrySet()) {
-                ServerSecurity serverSecurity = ec.getValue();
-                if (serverSecurity.bootstrapServer && serverSecurity.securityMode == SecurityMode.PSK
-                        && Arrays.equals(serverSecurity.publicKeyOrId, identityBytes)) {
-                    return SecurityInfo.newPreSharedKeyInfo(e.getKey(), identity, serverSecurity.secretKey);
+            if (bsConfig.security != null) {
+                for (Map.Entry<Integer, BootstrapConfig.ServerSecurity> ec : bsConfig.security.entrySet()) {
+                    ServerSecurity serverSecurity = ec.getValue();
+                    if (serverSecurity.bootstrapServer && serverSecurity.securityMode == SecurityMode.PSK
+                            && Arrays.equals(serverSecurity.publicKeyOrId, identityBytes)) {
+                        return SecurityInfo.newPreSharedKeyInfo(e.getKey(), identity, serverSecurity.secretKey);
+                    }
                 }
             }
         }
@@ -58,12 +60,15 @@ public class BootstrapSecurityStoreImpl implements BootstrapSecurityStore {
 
         BootstrapConfig bsConfig = bsStore.getBootstrap(endpoint);
 
+        if (bsConfig.security == null)
+            return null;
+
         for (Map.Entry<Integer, BootstrapConfig.ServerSecurity> e : bsConfig.security.entrySet()) {
             ServerSecurity value = e.getValue();
             if (value.bootstrapServer && value.securityMode == SecurityMode.PSK) {
                 // got it!
-                SecurityInfo securityInfo = SecurityInfo.newPreSharedKeyInfo(endpoint, new String(value.publicKeyOrId,
-                        Charsets.UTF_8), value.secretKey);
+                SecurityInfo securityInfo = SecurityInfo.newPreSharedKeyInfo(endpoint,
+                        new String(value.publicKeyOrId, Charsets.UTF_8), value.secretKey);
                 return Arrays.asList(securityInfo);
             }
         }
