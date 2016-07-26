@@ -21,8 +21,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
-import org.eclipse.leshan.core.model.ResourceModel;
-import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
@@ -48,25 +46,6 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
         return decode(content, format, path, model, nodeClassFromPath(path));
     }
 
-    private ContentFormat guessContentType(LwM2mPath path, LwM2mModel model) {
-        ContentFormat format;
-        if (path.isResource()) {
-            ResourceModel rDesc = model.getResourceModel(path.getObjectId(), path.getResourceId());
-            if (rDesc != null && rDesc.multiple) {
-                format = ContentFormat.TLV;
-            } else {
-                if (rDesc != null && rDesc.type == Type.OPAQUE) {
-                    format = ContentFormat.OPAQUE;
-                } else {
-                    format = ContentFormat.TEXT;
-                }
-            }
-        } else {
-            format = ContentFormat.TLV;
-        }
-        return format;
-    }
-
     @Override
     @SuppressWarnings("unchecked")
     public <T extends LwM2mNode> T decode(byte[] content, ContentFormat format, LwM2mPath path, LwM2mModel model,
@@ -74,11 +53,7 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
 
         LOG.debug("Decoding value for path {} and format {}: {}", path, format, content);
         Validate.notNull(path);
-
-        // If no format is given, guess the best one to use.
-        if (format == null) {
-            format = guessContentType(path, model);
-        }
+        Validate.notNull(format);
 
         // Decode content.
         switch (format.getCode()) {
@@ -101,11 +76,7 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
             LwM2mModel model) throws InvalidValueException {
         LOG.debug("Decoding value for path {} and format {}: {}", path, format, content);
         Validate.notNull(path);
-
-        // If no format is given, guess the best one to use.
-        if (format == null) {
-            format = guessContentType(path, model);
-        }
+        Validate.notNull(format);
 
         // Decode content.
         switch (format.getCode()) {

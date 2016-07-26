@@ -66,16 +66,10 @@ public class LwM2mNodeDecoderTest {
         assertEquals(value, resource.getValue());
     }
 
-    @Test
-    public void no_model_and_no_content_type_then_fallback_to_text() throws InvalidValueException {
+    @Test(expected = IllegalArgumentException.class)
+    public void content_format_is_mandatory() throws InvalidValueException {
         String value = "MyManufacturer";
-        LwM2mSingleResource resource = (LwM2mSingleResource) decoder.decode(value.getBytes(Charsets.UTF_8), null,
-                new LwM2mPath(666, 0, 0), model);
-
-        assertEquals(0, resource.getId());
-        assertFalse(resource.isMultiInstances());
-        assertEquals(Type.STRING, resource.getType());
-        assertEquals(value, resource.getValue());
+        decoder.decode(value.getBytes(Charsets.UTF_8), null, new LwM2mPath(666, 0, 0), model);
     }
 
     @Test
