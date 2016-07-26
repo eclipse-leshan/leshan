@@ -55,6 +55,7 @@ import org.eclipse.leshan.server.client.ClientUpdate;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
+import org.eclipse.leshan.server.request.LwM2mRequestSender;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.SecurityRegistry;
 import org.eclipse.leshan.util.Validate;
@@ -80,7 +81,7 @@ public class LeshanServer implements LwM2mServer {
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanServer.class);
 
-    private final CaliforniumLwM2mRequestSender requestSender;
+    private final LwM2mRequestSender requestSender;
 
     private final ClientRegistry clientRegistry;
 
@@ -141,7 +142,7 @@ public class LeshanServer implements LwM2mServer {
             @Override
             public void unregistered(final Client client) {
                 LeshanServer.this.observationRegistry.cancelObservations(client);
-                requestSender.cancelPendingRequests(client.getRegistrationId());
+                requestSender.cancelPendingRequests(client);
             }
 
             @Override

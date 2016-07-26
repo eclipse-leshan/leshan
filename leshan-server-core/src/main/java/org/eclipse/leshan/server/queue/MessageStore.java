@@ -18,6 +18,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.queue;
 
+import java.util.List;
+
 /**
  * a message store provide basic operations to handle storage of requests destined for a client which has connected in
  * Queue Mode. Messages in the message store will be present until one of the following events occur
@@ -55,16 +57,16 @@ public interface MessageStore {
     boolean isEmpty(String endpoint);
 
     /**
-     * deletes all queued request for a given client endpoint.
-     *
-     * @param endpoint client's endpoint
-     */
-    void removeAll(String endpoint);
-
-    /**
      * Deletes the first request from message queue for the given client.
      *
      * @param endpoint client endpoint name
      */
     void deleteFirst(String endpoint);
+
+    /**
+     * 
+     * @param endpoint
+     * @return
+     */
+    List<QueuedRequest> removeAll(String endpoint);
 }

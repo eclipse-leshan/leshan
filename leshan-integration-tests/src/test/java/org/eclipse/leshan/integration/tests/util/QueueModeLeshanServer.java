@@ -47,21 +47,21 @@ public class QueueModeLeshanServer implements LwM2mServer {
     private final LwM2mRequestSender lwM2mRequestSender;
     private final MessageStore messageStore;
 
-    public QueueModeLeshanServer(CoapServer coapServer, ClientRegistry clientRegistry,
-            ObservationRegistry observationRegistry, SecurityRegistry securityRegistry,
-            LwM2mModelProvider modelProvider, LwM2mRequestSender lwM2mRequestSender,
-            MessageStore inMemoryMessageStore) {
+    public QueueModeLeshanServer(CoapServer tCoapServer, ClientRegistry tClientRegistry,
+            ObservationRegistry tObservationRegistry, SecurityRegistry tSecurityRegistry,
+            LwM2mModelProvider tModelProvider, LwM2mRequestSender tLwM2mRequestSender,
+            MessageStore tInMemoryMessageStore) {
 
-        this.coapServer = coapServer;
-        this.clientRegistry = clientRegistry;
-        this.observationRegistry = observationRegistry;
-        this.securityRegistry = securityRegistry;
-        this.modelProvider = modelProvider;
-        this.lwM2mRequestSender = lwM2mRequestSender;
-        this.messageStore = inMemoryMessageStore;
+        this.coapServer = tCoapServer;
+        this.clientRegistry = tClientRegistry;
+        this.observationRegistry = tObservationRegistry;
+        this.securityRegistry = tSecurityRegistry;
+        this.modelProvider = tModelProvider;
+        this.lwM2mRequestSender = tLwM2mRequestSender;
+        this.messageStore = tInMemoryMessageStore;
 
         // Cancel observations on client unregistering
-        clientRegistry.addListener(new ClientRegistryListener() {
+        tClientRegistry.addListener(new ClientRegistryListener() {
 
             @Override
             public void updated(ClientUpdate update, Client clientUpdated) {
@@ -69,7 +69,8 @@ public class QueueModeLeshanServer implements LwM2mServer {
 
             @Override
             public void unregistered(Client client) {
-                QueueModeLeshanServer.this.observationRegistry.cancelObservations(client);
+                observationRegistry.cancelObservations(client);
+                lwM2mRequestSender.cancelPendingRequests(client);
             }
 
             @Override

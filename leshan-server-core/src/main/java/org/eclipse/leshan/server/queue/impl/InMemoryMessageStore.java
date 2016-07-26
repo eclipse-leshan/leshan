@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Bosch Software Innovations GmbH and others.
+ * Copyright (c) 2016 Bosch Software Innovations GmbH and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -18,31 +18,31 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.queue.impl;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.LinkedBlockingQueue;
+
 import org.eclipse.leshan.server.queue.MessageStore;
 import org.eclipse.leshan.server.queue.QueuedRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * provides a simple in-memory persistence implementation of the request queue.
  */
 public class InMemoryMessageStore implements MessageStore {
     private static Logger LOG = LoggerFactory.getLogger(InMemoryMessageStore.class);
-    private final ConcurrentMap<String, BlockingQueue<QueuedRequest>> requestQueueMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Queue<QueuedRequest>> requestQueueMap = new ConcurrentHashMap<>();
 
     @Override
     public void add(QueuedRequest entity) {
         LOG.debug("Add entity {}", entity);
         String endpoint = entity.getEndpoint();
-        BlockingQueue<QueuedRequest> requestQueue = getMessageQueueForEndpoint(endpoint);
+        Queue<QueuedRequest> requestQueue = getMessageQueueForEndpoint(endpoint);
         requestQueue.add(entity);
         requestQueueMap.putIfAbsent(endpoint, requestQueue);
     }
@@ -55,26 +55,26 @@ public class InMemoryMessageStore implements MessageStore {
     @Override
     public QueuedRequest retrieveFirst(String endpoint) {
         LOG.trace("Retrieve first for endpoint {}", endpoint);
-        BlockingQueue<QueuedRequest> requests = getMessageQueueForEndpoint(endpoint);
+        Queue<QueuedRequest> requests = getMessageQueueForEndpoint(endpoint);
         return requests.peek();
-    }
-
-    @Override
-    public void removeAll(String endpoint) {
-        LOG.debug("Emptying messages for client {}", endpoint);
-        // If client has registers and de-registers without any other messages
-        // then the queue would not have been initialized.
-        if (requestQueueMap.get(endpoint) != null) {
-            requestQueueMap.remove(endpoint);
-        }
     }
 
     @Override
     public void deleteFirst(String endpoint) {
         LOG.debug("Delete first entity of endpoint {}", endpoint);
-        BlockingQueue<QueuedRequest> requests = requestQueueMap.get(endpoint);
+        Queue<QueuedRequest> requests = requestQueueMap.get(endpoint);
         if (requests != null) {
             requests.poll();
+        }
+    }
+
+    @Override
+    public List<QueuedRequest> removeAll(String endpoint) {
+        Queue<QueuedRequest> requests = requestQueueMap.remove(endpoint);
+        if (requests != null) {
+            return new ArrayList<>(requests);
+        } else {
+            return Collections.emptyList();
         }
     }
 
@@ -84,17 +84,19 @@ public class InMemoryMessageStore implements MessageStore {
      * @param endpoint client's endpoint
      * @return list of queue request entities in order of processing.
      */
-    public List<QueuedRequest> retrieveAll(String endpoint) {
-        LOG.debug("Retrieve all for endpoint {}", endpoint);
-        BlockingQueue<QueuedRequest> requests = getMessageQueueForEndpoint(endpoint);
-        if (requests.isEmpty()) {
-            return Collections.emptyList();
-        } else {
-            return new ArrayList<>(requests);
-        }
+    public int getQueueSize(String endpoint) {
+        Queue<QueuedRequest> requests = getMessageQueueForEndpoint(endpoint);
+        return requests.size();
     }
 
-    private BlockingQueue<QueuedRequest> getMessageQueueForEndpoint(String endpoint) {
+    /*
+     * Returns the total number of messages in the Queue for the given endpoint. Used for testing purposes only. +
+     */
+    public int getPendingMessagesCount(String endpoint) {
+        return getMessageQueueForEndpoint(endpoint).size();
+    }
+
+    private Queue<QueuedRequest> getMessageQueueForEndpoint(String endpoint) {
         return requestQueueMap.get(endpoint) != null ? requestQueueMap.get(endpoint)
                 : new LinkedBlockingQueue<QueuedRequest>();
     }

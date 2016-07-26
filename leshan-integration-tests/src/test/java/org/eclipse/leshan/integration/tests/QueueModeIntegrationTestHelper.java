@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Bosch Software Innovations GmbH and others.
+ * Copyright (c) 2016 Bosch Software Innovations GmbH and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -76,10 +76,12 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         networkConfig = new NetworkConfig();
         networkConfig.setLong(Keys.ACK_TIMEOUT, ACK_TIMEOUT);
         networkConfig.setInt(Keys.MAX_RETRANSMIT, 0);
-        noSecureEndpoint = new CoapEndpoint(new InetSocketAddress(InetAddress.getLoopbackAddress(),
-                networkConfig.getInt(Keys.COAP_PORT)), networkConfig);
-        secureEndpoint = new CoapEndpoint(new InetSocketAddress(InetAddress.getLoopbackAddress(),
-                networkConfig.getInt(Keys.COAP_SECURE_PORT)), networkConfig);
+        noSecureEndpoint = new CoapEndpoint(
+                new InetSocketAddress(InetAddress.getLoopbackAddress(), networkConfig.getInt(Keys.COAP_PORT)),
+                networkConfig);
+        secureEndpoint = new CoapEndpoint(
+                new InetSocketAddress(InetAddress.getLoopbackAddress(), networkConfig.getInt(Keys.COAP_SECURE_PORT)),
+                networkConfig);
     }
 
     private void createCoapServer(ClientRegistry clientRegistry, SecurityStore securityStore) {
@@ -123,8 +125,8 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         noSecureEndpoint.addNotificationListener(observationRegistry);
         LwM2mRequestSender delegateSender = new CaliforniumLwM2mRequestSender(new HashSet<>(coapServer.getEndpoints()),
                 observationRegistry, modelProvider, encoder, decoder);
-        LwM2mRequestSender secondDelegateSender = new CaliforniumLwM2mRequestSender(new HashSet<>(
-                coapServer.getEndpoints()), observationRegistry, modelProvider, encoder, decoder);
+        LwM2mRequestSender secondDelegateSender = new CaliforniumLwM2mRequestSender(
+                new HashSet<>(coapServer.getEndpoints()), observationRegistry, modelProvider, encoder, decoder);
         QueuedRequestSender queueRequestSender = QueuedRequestSender.builder().setMessageStore(inMemoryMessageStore)
                 .setRequestSender(secondDelegateSender).setClientRegistry(clientRegistry)
                 .setObservationRegistry(observationRegistry).build();
@@ -141,13 +143,12 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
 
     public QueuedModeLeshanClient createClient(long lifeTime) {
         ObjectsInitializer initializer = new ObjectsInitializer();
-        initializer.setInstancesForObject(
-                LwM2mId.SECURITY,
+        initializer.setInstancesForObject(LwM2mId.SECURITY,
                 Security.noSec("coap://" + noSecureEndpoint.getAddress().getHostString() + ":"
                         + noSecureEndpoint.getAddress().getPort(), 12345));
         if (lifeTime == 0) {
-            initializer
-                    .setInstancesForObject(LwM2mId.SERVER, new Server(12345, CUSTOM_LIFETIME, BindingMode.UQ, false));
+            initializer.setInstancesForObject(LwM2mId.SERVER,
+                    new Server(12345, CUSTOM_LIFETIME, BindingMode.UQ, false));
         } else {
             initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, lifeTime, BindingMode.UQ, false));
         }

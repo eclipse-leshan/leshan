@@ -17,6 +17,7 @@
 package org.eclipse.leshan.server.request;
 
 import org.eclipse.leshan.core.request.DownlinkRequest;
+import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
@@ -66,4 +67,13 @@ public interface LwM2mRequestSender {
      * @param listener target listener to be removed.
      */
     void removeResponseListener(ResponseListener listener);
+
+    /**
+     * cancel all pending messages for a LWM2M client identified by the registration identifier. In case a client
+     * de-registers, the consumer can use this method to cancel all messages pending for the given client.
+     * 
+     * @param client client registration meta data of a LWM2M client.
+     * @throws RequestCanceledException when a request is already being sent in CoAP, then the exception is thrown.
+     */
+    void cancelPendingRequests(Client client);
 }
