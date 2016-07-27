@@ -181,6 +181,12 @@ public class ObjectResource extends CoapResource implements NotifySender {
         // Manage Write and Bootstrap Write Request (replace)
         else {
             LwM2mPath path = new LwM2mPath(URI);
+
+            if (!coapExchange.getRequestOptions().hasContentFormat()) {
+                coapExchange.respond(ResponseCode.BAD_REQUEST, "Content Format is mandatory");
+                return;
+            }
+
             ContentFormat contentFormat = ContentFormat.fromCode(coapExchange.getRequestOptions().getContentFormat());
             if (!decoder.isSupported(contentFormat)) {
                 coapExchange.respond(ResponseCode.UNSUPPORTED_CONTENT_FORMAT);
@@ -226,6 +232,11 @@ public class ObjectResource extends CoapResource implements NotifySender {
         }
 
         // handle content format for Write (Update) and Create request
+        if (!exchange.getRequestOptions().hasContentFormat()) {
+            exchange.respond(ResponseCode.BAD_REQUEST, "Content Format is mandatory");
+            return;
+        }
+
         ContentFormat contentFormat = ContentFormat.fromCode(exchange.getRequestOptions().getContentFormat());
         if (!decoder.isSupported(contentFormat)) {
             exchange.respond(ResponseCode.UNSUPPORTED_CONTENT_FORMAT);

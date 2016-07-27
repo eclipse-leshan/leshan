@@ -204,10 +204,15 @@ public class CaliforniumObservationRegistryImpl
                 // get model for this client
                 LwM2mModel model = modelProvider.getObjectModel(client);
 
+                // get content format
+                ContentFormat contentFormat = null;
+                if (coapResponse.getOptions().hasContentFormat()) {
+                    contentFormat = ContentFormat.fromCode(coapResponse.getOptions().getContentFormat());
+                }
+
                 // decode response
                 List<TimestampedLwM2mNode> content = decoder.decodeTimestampedData(coapResponse.getPayload(),
-                        ContentFormat.fromCode(coapResponse.getOptions().getContentFormat()), observation.getPath(),
-                        model);
+                        contentFormat, observation.getPath(), model);
 
                 // notify all listeners
                 for (ObservationRegistryListener listener : listeners) {

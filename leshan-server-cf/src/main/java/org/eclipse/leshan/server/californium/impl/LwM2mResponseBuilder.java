@@ -349,8 +349,14 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     private LwM2mNode decodeCoapResponse(final LwM2mPath path, final Response coapResponse) {
         LwM2mNode content;
         try {
-            content = decoder.decode(coapResponse.getPayload(),
-                    ContentFormat.fromCode(coapResponse.getOptions().getContentFormat()), path, model);
+            // get content format
+            ContentFormat contentFormat = null;
+            if (coapResponse.getOptions().hasContentFormat()) {
+                contentFormat = ContentFormat.fromCode(coapResponse.getOptions().getContentFormat());
+            }
+
+            // decode payload
+            content = decoder.decode(coapResponse.getPayload(), contentFormat, path, model);
         } catch (final InvalidValueException e) {
             final String msg = String.format("[%s] (%s:%s)", e.getMessage(), e.getPath().toString(),
                     coapResponse.getCode().toString());
