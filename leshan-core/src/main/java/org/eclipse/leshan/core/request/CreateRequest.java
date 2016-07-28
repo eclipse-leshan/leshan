@@ -241,4 +241,38 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
         builder.append("CreateRequest [").append(getPath()).append("]");
         return builder.toString();
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + ((contentFormat == null) ? 0 : contentFormat.hashCode());
+        result = prime * result + ((instanceId == null) ? 0 : instanceId.hashCode());
+        result = prime * result + ((resources == null) ? 0 : resources.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!super.equals(obj))
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        CreateRequest other = (CreateRequest) obj;
+        if (contentFormat != other.contentFormat)
+            return false;
+        if (instanceId == null) {
+            if (other.instanceId != null)
+                return false;
+        } else if (!instanceId.equals(other.instanceId))
+            return false;
+        if (resources == null) {
+            if (other.resources != null)
+                return false;
+        } else if (!resources.equals(other.resources))
+            return false;
+        return true;
+    }
 }

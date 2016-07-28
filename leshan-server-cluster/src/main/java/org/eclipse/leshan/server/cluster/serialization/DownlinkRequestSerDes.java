@@ -69,8 +69,9 @@ public class DownlinkRequestSerDes {
             @Override
             public void visit(CreateRequest request) {
                 o.add("kind", "create");
-                o.add("contentFormat", request.getContentFormat().toString());
-                o.add("instanceId", request.getInstanceId());
+                o.add("contentFormat", request.getContentFormat().getCode());
+                if (request.getInstanceId() != null)
+                    o.add("instanceId", request.getInstanceId());
 
                 JsonArray resources = new JsonArray();
                 for (LwM2mResource resource : request.getResources()) {
@@ -94,7 +95,7 @@ public class DownlinkRequestSerDes {
             @Override
             public void visit(WriteRequest request) {
                 o.add("kind", "write");
-                o.add("contentFormat", request.getContentFormat().toString());
+                o.add("contentFormat", request.getContentFormat().getCode());
                 o.add("mode", request.isPartialUpdateRequest() ? "UPDATE" : "REPLACE");
                 o.add("node", LwM2mNodeSerDes.jSerialize(request.getNode()));
             }
@@ -143,7 +144,8 @@ public class DownlinkRequestSerDes {
                     new LwM2mObjectInstance(instanceId, resources));
         }
         case "execute":
-            return new ExecuteRequest(path);
+            String parameters = o.getString("parameters", null);
+            return new ExecuteRequest(path, parameters);
         case "writeAttributes": {
             String observeSpec = o.getString("observeSpec", null);
             // TODO we need a observeSpec parser;
@@ -151,7 +153,7 @@ public class DownlinkRequestSerDes {
         }
         case "write": {
             int format = o.getInt("contentFormat", ContentFormat.TLV.getCode());
-            Mode mode = o.getString("mode", "replace").equals("replace") ? Mode.REPLACE : Mode.UPDATE;
+            Mode mode = o.getString("mode", "REPLACE").equals("REPLACE") ? Mode.REPLACE : Mode.UPDATE;
             LwM2mNode node = LwM2mNodeSerDes.deserialize((JsonObject) o.get("node"));
             return new WriteRequest(mode, ContentFormat.fromCode(format), path, node);
         }

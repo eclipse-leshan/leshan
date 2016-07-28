@@ -365,4 +365,34 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
                 node);
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + ((contentFormat == null) ? 0 : contentFormat.hashCode());
+        result = prime * result + ((mode == null) ? 0 : mode.hashCode());
+        result = prime * result + ((node == null) ? 0 : node.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!super.equals(obj))
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        WriteRequest other = (WriteRequest) obj;
+        if (contentFormat != other.contentFormat)
+            return false;
+        if (mode != other.mode)
+            return false;
+        if (node == null) {
+            if (other.node != null)
+                return false;
+        } else if (!node.equals(other.node))
+            return false;
+        return true;
+    }
 }

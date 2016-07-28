@@ -99,9 +99,9 @@ public class LwM2mNodeSerDes {
         }
         case "instance": {
             Collection<LwM2mResource> resources = new ArrayList<>();
-            JsonArray jResources = (JsonArray) o.get("resources");
-            for (JsonValue jResource : jResources) {
-                LwM2mResource resource = (LwM2mResource) deserialize((JsonObject) jResource);
+            JsonObject jResources = (JsonObject) o.get("resources");
+            for (Member jResource : jResources) {
+                LwM2mResource resource = (LwM2mResource) deserialize((JsonObject) jResource.getValue());
                 resources.add(resource);
             }
             return new LwM2mObjectInstance(id, resources);

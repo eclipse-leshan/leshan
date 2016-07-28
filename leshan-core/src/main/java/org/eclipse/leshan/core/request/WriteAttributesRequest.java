@@ -60,4 +60,29 @@ public class WriteAttributesRequest extends AbstractDownlinkRequest<WriteAttribu
     public String toString() {
         return String.format("WriteAttributesRequest [%s, attributes=%s]", getPath(), getObserveSpec());
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + ((observeSpec == null) ? 0 : observeSpec.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!super.equals(obj))
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        WriteAttributesRequest other = (WriteAttributesRequest) obj;
+        if (observeSpec == null) {
+            if (other.observeSpec != null)
+                return false;
+        } else if (!observeSpec.equals(other.observeSpec))
+            return false;
+        return true;
+    }
 }
