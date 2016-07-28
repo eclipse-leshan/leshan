@@ -36,7 +36,6 @@ import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.NotifySender;
 import org.eclipse.leshan.client.servers.BootstrapHandler;
-import org.eclipse.leshan.client.util.ObserveSpecParser;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
@@ -167,7 +166,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
         ObserveSpec spec = null;
         if (coapExchange.advanced().getRequest().getOptions().getURIQueryCount() != 0) {
             final List<String> uriQueries = coapExchange.advanced().getRequest().getOptions().getUriQuery();
-            spec = ObserveSpecParser.parse(uriQueries);
+            spec = ObserveSpec.parse(uriQueries);
         }
 
         // Manage Write Attributes Request

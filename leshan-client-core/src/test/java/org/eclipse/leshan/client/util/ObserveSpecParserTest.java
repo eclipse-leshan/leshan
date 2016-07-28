@@ -21,19 +21,18 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.leshan.ObserveSpec;
-import org.eclipse.leshan.client.util.ObserveSpecParser;
 import org.junit.Test;
 
 public class ObserveSpecParserTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidFormat() {
-        ObserveSpecParser.parse(Arrays.asList("a=b=c"));
+        ObserveSpec.parse(Arrays.asList("a=b=c"));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidKey() {
-        ObserveSpecParser.parse(Arrays.asList("a=b"));
+        ObserveSpec.parse(Arrays.asList("a=b"));
     }
 
     @Test
@@ -70,12 +69,12 @@ public class ObserveSpecParserTest {
 
     @Test(expected = IllegalStateException.class)
     public void testOutOfOrderPminPmax() {
-        ObserveSpecParser.parse(Arrays.asList("pmin=50", "pmax=10"));
+        ObserveSpec.parse(Arrays.asList("pmin=50", "pmax=10"));
     }
 
     private void testCorrectSpec(final ObserveSpec expected, final String... inputs) {
         final List<String> queries = Arrays.asList(inputs);
-        final ObserveSpec actual = ObserveSpecParser.parse(queries);
+        final ObserveSpec actual = ObserveSpec.parse(queries);
         assertSameSpecs(expected, actual);
     }
 

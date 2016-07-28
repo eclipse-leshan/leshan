@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -34,12 +35,21 @@ import java.util.List;
  */
 public final class ObserveSpec {
 
-    private static final String PARAM_MIN_PERIOD = "pmin=%s";
-    private static final String PARAM_MAX_PERIOD = "pmax=%s";
-    private static final String PARAM_GREATER_THAN = "gt=%s";
-    private static final String PARAM_LESS_THAN = "lt=%s";
-    private static final String PARAM_STEP = "st=%s";
-    private static final String PARAM_CANCEL = "cancel";
+    private static final String PARAM_SEP = "&";
+
+    private static final String CANCEL = "cancel";
+    private static final String GREATER_THAN = "gt";
+    private static final String LESS_THAN = "lt";
+    private static final String MAX_PERIOD = "pmax";
+    private static final String MIN_PERIOD = "pmin";
+    private static final String STEP = "st";
+
+    private static final String PARAM_MIN_PERIOD = MIN_PERIOD + "=%s";
+    private static final String PARAM_MAX_PERIOD = MAX_PERIOD + "=%s";
+    private static final String PARAM_GREATER_THAN = GREATER_THAN + "=%s";
+    private static final String PARAM_LESS_THAN = LESS_THAN + "=%s";
+    private static final String PARAM_STEP = STEP + "=%s";
+
     private Integer minPeriod;
     private Integer maxPeriod;
     private Float greaterThan;
@@ -77,7 +87,7 @@ public final class ObserveSpec {
     public String[] toQueryParams() {
         List<String> queries = new LinkedList<>();
         if (this.cancel) {
-            queries.add(PARAM_CANCEL);
+            queries.add(CANCEL);
         } else {
             if (this.minPeriod != null) {
                 queries.add(String.format(PARAM_MIN_PERIOD, this.minPeriod));
@@ -102,9 +112,109 @@ public final class ObserveSpec {
     public String toString() {
         StringBuilder b = new StringBuilder();
         for (String query : toQueryParams()) {
-            b.append(query).append("&");
+            b.append(query).append(PARAM_SEP);
         }
         return b.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (cancel ? 1231 : 1237);
+        result = prime * result + ((greaterThan == null) ? 0 : greaterThan.hashCode());
+        result = prime * result + ((lessThan == null) ? 0 : lessThan.hashCode());
+        result = prime * result + ((maxPeriod == null) ? 0 : maxPeriod.hashCode());
+        result = prime * result + ((minPeriod == null) ? 0 : minPeriod.hashCode());
+        result = prime * result + ((step == null) ? 0 : step.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ObserveSpec other = (ObserveSpec) obj;
+        if (cancel != other.cancel)
+            return false;
+        if (greaterThan == null) {
+            if (other.greaterThan != null)
+                return false;
+        } else if (!greaterThan.equals(other.greaterThan))
+            return false;
+        if (lessThan == null) {
+            if (other.lessThan != null)
+                return false;
+        } else if (!lessThan.equals(other.lessThan))
+            return false;
+        if (maxPeriod == null) {
+            if (other.maxPeriod != null)
+                return false;
+        } else if (!maxPeriod.equals(other.maxPeriod))
+            return false;
+        if (minPeriod == null) {
+            if (other.minPeriod != null)
+                return false;
+        } else if (!minPeriod.equals(other.minPeriod))
+            return false;
+        if (step == null) {
+            if (other.step != null)
+                return false;
+        } else if (!step.equals(other.step))
+            return false;
+        return true;
+    }
+
+    public static ObserveSpec parse(String uriQueries) {
+        if (uriQueries == null)
+            return null;
+
+        String[] queriesArray = uriQueries.split(PARAM_SEP);
+        return ObserveSpec.parse(Arrays.asList(queriesArray));
+    }
+
+    public static ObserveSpec parse(List<String> uriQueries) {
+        ObserveSpec.Builder builder = new ObserveSpec.Builder();
+        // parse parameter without value
+        if (uriQueries.equals(Arrays.asList(CANCEL))) {
+            return builder.cancel().build();
+        }
+
+        // parse parameters with value
+        for (final String query : uriQueries) {
+            final String[] split = query.split("=");
+            if (split.length != 2) {
+                throw new IllegalArgumentException();
+            }
+
+            final String key = split[0];
+            final String value = split[1];
+
+            switch (key) {
+            case GREATER_THAN:
+                builder.greaterThan(Float.parseFloat(value));
+                break;
+            case LESS_THAN:
+                builder.lessThan(Float.parseFloat(value));
+                break;
+            case STEP:
+                builder.step(Float.parseFloat(value));
+                break;
+            case MIN_PERIOD:
+                builder.minPeriod(Integer.parseInt(value));
+                break;
+            case MAX_PERIOD:
+                builder.maxPeriod(Integer.parseInt(value));
+                break;
+            default:
+                throw new IllegalArgumentException();
+            }
+        }
+        return builder.build();
     }
 
     /**
@@ -177,6 +287,5 @@ public final class ObserveSpec {
             this.maxPeriod = seconds;
             return this;
         }
-
     }
 }
