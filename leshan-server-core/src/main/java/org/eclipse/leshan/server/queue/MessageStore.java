@@ -42,7 +42,7 @@ public interface MessageStore {
      * Retrieves first (next, topmost) queue request entity from a given client's queue.
      *
      * @param endpoint client's endpoint
-     * @return queue request entity
+     * @return queue request entity for the given endpoint or null, if no QueuedRequest exists.
      */
     QueuedRequest retrieveFirst(String endpoint);
 
