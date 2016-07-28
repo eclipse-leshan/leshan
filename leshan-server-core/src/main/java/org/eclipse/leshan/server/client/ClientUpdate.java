@@ -116,4 +116,59 @@ public class ClientUpdate {
                 "ClientUpdate [registrationId=%s, address=%s, port=%s, lifeTimeInSec=%s, smsNumber=%s, bindingMode=%s, objectLinks=%s]",
                 registrationId, address, port, lifeTimeInSec, smsNumber, bindingMode, Arrays.toString(objectLinks));
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((address == null) ? 0 : address.hashCode());
+        result = prime * result + ((bindingMode == null) ? 0 : bindingMode.hashCode());
+        result = prime * result + ((lifeTimeInSec == null) ? 0 : lifeTimeInSec.hashCode());
+        result = prime * result + Arrays.hashCode(objectLinks);
+        result = prime * result + ((port == null) ? 0 : port.hashCode());
+        result = prime * result + ((registrationId == null) ? 0 : registrationId.hashCode());
+        result = prime * result + ((smsNumber == null) ? 0 : smsNumber.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ClientUpdate other = (ClientUpdate) obj;
+        if (address == null) {
+            if (other.address != null)
+                return false;
+        } else if (!address.equals(other.address))
+            return false;
+        if (bindingMode != other.bindingMode)
+            return false;
+        if (lifeTimeInSec == null) {
+            if (other.lifeTimeInSec != null)
+                return false;
+        } else if (!lifeTimeInSec.equals(other.lifeTimeInSec))
+            return false;
+        if (!Arrays.equals(objectLinks, other.objectLinks))
+            return false;
+        if (port == null) {
+            if (other.port != null)
+                return false;
+        } else if (!port.equals(other.port))
+            return false;
+        if (registrationId == null) {
+            if (other.registrationId != null)
+                return false;
+        } else if (!registrationId.equals(other.registrationId))
+            return false;
+        if (smsNumber == null) {
+            if (other.smsNumber != null)
+                return false;
+        } else if (!smsNumber.equals(other.smsNumber))
+            return false;
+        return true;
+    }
 }
