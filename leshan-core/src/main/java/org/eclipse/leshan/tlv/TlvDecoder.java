@@ -188,7 +188,8 @@ public class TlvDecoder {
      * Decodes a byte array into a objlnk value.
      */
     public static int[] decodeObjlnk(byte[] value) throws TlvException {
-    	ByteBuffer bff = ByteBuffer.allocate(4);
+    	ByteBuffer bff = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN);
+		LOG.error("received byle length ->" + value.length);
         bff.put(value);
         int val1 = bff.getShort(0);
         int val2 = bff.getShort(2);
