@@ -32,7 +32,6 @@ import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.eclipsesource.json.JsonObject;
@@ -76,7 +75,6 @@ public class DownlinkRequestSerDesTest {
                 new LwM2mResource[] { LwM2mSingleResource.newStringResource(1, "value") }));
     }
 
-    @Ignore
     @Test
     public void ser_and_des_write_attributes_request() throws Exception {
         ObserveSpec os = new ObserveSpec.Builder().minPeriod(10).maxPeriod(60).build();
