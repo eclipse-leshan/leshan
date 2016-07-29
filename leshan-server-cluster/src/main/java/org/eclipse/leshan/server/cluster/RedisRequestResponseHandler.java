@@ -15,16 +15,25 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.cluster;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.eclipse.californium.core.Utils;
+import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.cluster.serialization.DownlinkRequestSerDes;
 import org.eclipse.leshan.server.cluster.serialization.ResponseSerDes;
+import org.eclipse.leshan.server.observation.ObservationRegistry;
+import org.eclipse.leshan.server.observation.ObservationRegistryListener;
 import org.eclipse.leshan.server.response.ResponseListener;
 import org.eclipse.leshan.util.NamedThreadFactory;
 import org.slf4j.Logger;
@@ -53,15 +62,36 @@ public class RedisRequestResponseHandler {
     private final ClientRegistry clientRegistry;
     private final ExecutorService excutorService;
     private final RedisTokenHandler tokenHandler;
+    private final ObservationRegistry observationRegistry;
+    private final Map<KeyId, String> observatioIdToTicket = new ConcurrentHashMap<>();
 
     public RedisRequestResponseHandler(Pool<Jedis> p, LwM2mServer server, ClientRegistry clientRegistry,
-            RedisTokenHandler tokenHandler) {
+            RedisTokenHandler tokenHandler, ObservationRegistry observationRegistry) {
         // Listen LWM2M response
         this.server = server;
         this.clientRegistry = clientRegistry;
+        this.observationRegistry = observationRegistry;
         this.tokenHandler = tokenHandler;
         this.excutorService = Executors.newCachedThreadPool(
                 new NamedThreadFactory(String.format("Redis %s channel writer", RESPONSE_CHANNEL)));
+
+        // Listen LWM2M notification from client
+        this.observationRegistry.addListener(new ObservationRegistryListener() {
+
+            @Override
+            public void newValue(Observation observation, ObserveResponse response) {
+                handleNotification(observation, response.getContent());
+            }
+
+            @Override
+            public void newObservation(Observation observation) {
+            }
+
+            @Override
+            public void cancelled(Observation observation) {
+                observatioIdToTicket.remove(new KeyId(observation.getId()));
+            }
+        });
 
         // Listen LWM2M response from client
         this.server.addResponseListener(new ResponseListener() {
@@ -116,6 +146,22 @@ public class RedisRequestResponseHandler {
                     LOG.error("Unable to send response.", t);
                     sendError(ticket,
                             String.format("Expected error while sending LWM2M response.(%s)", t.getMessage()));
+                }
+            }
+        });
+    }
+
+    private void handleNotification(final Observation observation, final LwM2mNode value) {
+        excutorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                String ticket = observatioIdToTicket.get(new KeyId(observation.getId()));
+                try {
+                    sendNotification(ticket, value);
+                } catch (Throwable t) {
+                    LOG.error("Unable to send Notification.", t);
+                    sendError(ticket,
+                            String.format("Expected error while sending LWM2M Notification.(%s)", t.getMessage()));
                 }
             }
         });
@@ -212,13 +258,56 @@ public class RedisRequestResponseHandler {
 
     }
 
+    private void sendNotification(String ticket, LwM2mNode value) {
+        try (Jedis j = pool.getResource()) {
+            JsonObject m = Json.object();
+            m.add("ticket", ticket);
+            m.add("rep", ResponseSerDes.jSerialize(ObserveResponse.success(value)));
+            j.publish(RESPONSE_CHANNEL, m.toString());
+        }
+    }
+
     private void sendResponse(String ticket, LwM2mResponse response) {
+        if (response instanceof ObserveResponse) {
+            Observation observation = ((ObserveResponse) response).getObservation();
+            observatioIdToTicket.put(new KeyId(observation.getId()), ticket);
+        }
         try (Jedis j = pool.getResource()) {
             JsonObject m = Json.object();
             m.add("ticket", ticket);
             m.add("rep", ResponseSerDes.jSerialize(response));
             j.publish(RESPONSE_CHANNEL, m.toString());
         }
+    }
 
+    public static final class KeyId {
+
+        protected final byte[] id;
+        private final int hash;
+
+        public KeyId(byte[] token) {
+            if (token == null)
+                throw new NullPointerException();
+            this.id = token;
+            this.hash = Arrays.hashCode(token);
+        }
+
+        @Override
+        public int hashCode() {
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof KeyId))
+                return false;
+            KeyId key = (KeyId) o;
+            return Arrays.equals(id, key.id);
+        }
+
+        @Override
+        public String toString() {
+            return new StringBuilder("KeyId[").append(Utils.toHexString(id)).append("]").toString();
+        }
     }
 }
