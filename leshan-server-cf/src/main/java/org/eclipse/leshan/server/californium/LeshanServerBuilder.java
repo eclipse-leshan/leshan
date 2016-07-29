@@ -19,6 +19,10 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 import org.eclipse.californium.core.observe.InMemoryObservationStore;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
+import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
+import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.californium.impl.CaliforniumObservationRegistryImpl;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
@@ -48,6 +52,10 @@ public class LeshanServerBuilder {
     private LwM2mModelProvider modelProvider;
     private InetSocketAddress localAddress;
     private InetSocketAddress localSecureAddress;
+
+    private LwM2mNodeEncoder encoder;
+
+    private LwM2mNodeDecoder decoder;
 
     public LeshanServerBuilder setLocalAddress(String hostname, int port) {
         if (hostname == null) {
@@ -97,6 +105,16 @@ public class LeshanServerBuilder {
         return this;
     }
 
+    public LeshanServerBuilder setEncoder(LwM2mNodeEncoder encoder) {
+        this.encoder = encoder;
+        return this;
+    }
+
+    public LeshanServerBuilder setDecoder(LwM2mNodeDecoder decoder) {
+        this.decoder = decoder;
+        return this;
+    }
+
     public LeshanServer build() {
         if (localAddress == null)
             localAddress = new InetSocketAddress((InetAddress) null, PORT);
@@ -108,11 +126,16 @@ public class LeshanServerBuilder {
             securityRegistry = new SecurityRegistryImpl();
         if (modelProvider == null)
             modelProvider = new StandardModelProvider();
+        if (encoder == null)
+            encoder = new DefaultLwM2mNodeEncoder();
+        if (decoder == null)
+            decoder = new DefaultLwM2mNodeDecoder();
+
         if (observationRegistry == null)
             observationRegistry = new CaliforniumObservationRegistryImpl(new InMemoryObservationStore(), clientRegistry,
-                    modelProvider);
+                    modelProvider, decoder);
 
         return new LeshanServer(localAddress, localSecureAddress, clientRegistry, securityRegistry, observationRegistry,
-                modelProvider);
+                modelProvider, encoder, decoder);
     }
 }

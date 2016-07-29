@@ -33,8 +33,8 @@ import org.eclipse.californium.core.observe.NotificationListener;
 import org.eclipse.californium.core.observe.ObservationStore;
 import org.eclipse.californium.elements.CorrelationContext;
 import org.eclipse.leshan.core.model.LwM2mModel;
-import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.InvalidValueException;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.observation.Observation;
@@ -64,6 +64,7 @@ public class RedisObservationRegistry
     private final ObservationStore observationStore;
     private final ClientRegistry clientRegistry;
     private final LwM2mModelProvider modelProvider;
+    private final LwM2mNodeDecoder decoder;
     private Endpoint nonSecureEndpoint;
     private Endpoint secureEndpoint;
 
@@ -80,11 +81,13 @@ public class RedisObservationRegistry
     private static final byte[] PATH = "path".getBytes();
     private static final byte[] REGID = "regid".getBytes();
 
-    public RedisObservationRegistry(Pool<Jedis> pool, ClientRegistry clientRegistry, LwM2mModelProvider modelProvider) {
+    public RedisObservationRegistry(Pool<Jedis> pool, ClientRegistry clientRegistry, LwM2mModelProvider modelProvider,
+            LwM2mNodeDecoder decoder) {
         this.pool = pool;
         this.modelProvider = modelProvider;
         this.clientRegistry = clientRegistry;
         this.observationStore = new RedisObservationStore(pool);
+        this.decoder = decoder;
     }
 
     @Override
@@ -268,6 +271,7 @@ public class RedisObservationRegistry
 
     // ********** NotificationListener interface **********
 
+    // TODO duplicate code from org.eclipse.leshan.server.californium.impl.CaliforniumObservationRegistryImpl
     @Override
     public void onNotification(Request coapRequest, Response coapResponse) {
         if (listeners.isEmpty())
@@ -291,13 +295,19 @@ public class RedisObservationRegistry
                 LwM2mModel model = modelProvider.getObjectModel(client);
 
                 // decode response
-                LwM2mNode content = LwM2mNodeDecoder.decode(coapResponse.getPayload(),
+                List<TimestampedLwM2mNode> content = decoder.decodeTimestampedData(coapResponse.getPayload(),
                         ContentFormat.fromCode(coapResponse.getOptions().getContentFormat()), observation.getPath(),
                         model);
 
                 // notify all listeners
                 for (ObservationRegistryListener listener : listeners) {
-                    listener.newValue(observation, content);
+                    if (content.isEmpty()) {
+                        listener.newValue(observation, null, content);
+                    } else if (content.size() == 1 && content.get(0).isTimespamped()) {
+                        listener.newValue(observation, content.get(0).getNode(), null);
+                    } else {
+                        listener.newValue(observation, content.get(0).getNode(), content);
+                    }
                 }
             } catch (InvalidValueException e) {
                 String msg = String.format("[%s] ([%s])", e.getMessage(), e.getPath().toString());

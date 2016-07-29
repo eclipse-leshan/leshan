@@ -18,19 +18,39 @@ package org.eclipse.leshan.core.request;
 /**
  * Data format defined by the LWM2M specification
  */
-public enum ContentFormat {
+public class ContentFormat {
+    public static final int TLV_CODE = 1542;
+    public static final int JSON_CODE = 1543;
+    public static final int TEXT_CODE = 0;
+    public static final int OPAQUE_CODE = 42;
+    public static final int LINK_CODE = 40;
 
-    // TODO: update TLV and JSON media type codes once they have been assigned by IANA
-    LINK("application/link-format", 40), TEXT("text/plain", 0), TLV(
-            "application/vnd.oma.lwm2m+tlv", 1542), JSON("application/vnd.oma.lwm2m+json", 1543), OPAQUE(
-            "application/octet-stream", 42);
+    public static final ContentFormat TLV = new ContentFormat("TLV", "application/vnd.oma.lwm2m+tlv", TLV_CODE);
+    public static final ContentFormat JSON = new ContentFormat("JSON", "application/vnd.oma.lwm2m+json", JSON_CODE);
+    public static final ContentFormat TEXT = new ContentFormat("TEXT", "text/plain", TEXT_CODE);
+    public static final ContentFormat OPAQUE = new ContentFormat("OPAQUE", "application/octet-stream", OPAQUE_CODE);
+    public static final ContentFormat LINK = new ContentFormat("LINK", "application/link-format", LINK_CODE);
 
+    private static final ContentFormat knownContentFormat[] = new ContentFormat[] { TLV, JSON, TEXT, OPAQUE, LINK };
+
+    private final String name;
     private final String mediaType;
     private final int code;
 
-    private ContentFormat(String mediaType, int code) {
+    public ContentFormat(String name, String mediaType, int code) {
+        this.name = name;
         this.mediaType = mediaType;
         this.code = code;
+    }
+
+    public ContentFormat(int code) {
+        this.name = "UNKNOWN";
+        this.mediaType = "unknown/unknown";
+        this.code = code;
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     public String getMediaType() {
@@ -45,7 +65,7 @@ public enum ContentFormat {
      * Find the {@link ContentFormat} for the given media type (<code>null</code> if not found)
      */
     public static ContentFormat fromMediaType(String mediaType) {
-        for (ContentFormat t : ContentFormat.values()) {
+        for (ContentFormat t : knownContentFormat) {
             if (t.getMediaType().equals(mediaType)) {
                 return t;
             }
@@ -59,8 +79,22 @@ public enum ContentFormat {
      * @return the media type or <code>null</code> if the given code is unknown
      */
     public static ContentFormat fromCode(int code) {
-        for (ContentFormat t : ContentFormat.values()) {
+        for (ContentFormat t : knownContentFormat) {
             if (t.getCode() == code) {
+                return t;
+            }
+        }
+        return new ContentFormat(code);
+    }
+
+    /**
+     * Finds the {@link ContentFormat} by name.
+     *
+     * @return the media type or <code>null</code> if the given code is unknown
+     */
+    public static ContentFormat fromName(String name) {
+        for (ContentFormat t : knownContentFormat) {
+            if (t.getName() == name) {
                 return t;
             }
         }

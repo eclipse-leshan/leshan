@@ -35,6 +35,8 @@ import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
+import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
+import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
@@ -92,6 +94,10 @@ public class LeshanServer implements LwM2mServer {
 
     private final CoapEndpoint secureEndpoint;
 
+    private final LwM2mNodeEncoder encoder;
+
+    private final LwM2mNodeDecoder decoder;
+
     /**
      * Initialize a server which will bind to the specified address and port.
      *
@@ -101,22 +107,29 @@ public class LeshanServer implements LwM2mServer {
      * @param securityRegistry the {@link SecurityInfo} registry.
      * @param observationRegistry the {@link Observation} registry.
      * @param modelProvider provides the objects description for each client.
+     * @param decoder
+     * @param encoder
      */
     public LeshanServer(InetSocketAddress localAddress, InetSocketAddress localSecureAddress,
             final ClientRegistry clientRegistry, final SecurityRegistry securityRegistry,
-            final CaliforniumObservationRegistry observationRegistry, final LwM2mModelProvider modelProvider) {
+            final CaliforniumObservationRegistry observationRegistry, final LwM2mModelProvider modelProvider,
+            LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
         Validate.notNull(localAddress, "IP address cannot be null");
         Validate.notNull(localSecureAddress, "Secure IP address cannot be null");
         Validate.notNull(clientRegistry, "clientRegistry cannot be null");
         Validate.notNull(securityRegistry, "securityRegistry cannot be null");
         Validate.notNull(observationRegistry, "observationRegistry cannot be null");
         Validate.notNull(modelProvider, "modelProvider cannot be null");
+        Validate.notNull(encoder, "encoder cannot be null");
+        Validate.notNull(decoder, "decoder cannot be null");
 
         // Init registries
         this.clientRegistry = clientRegistry;
         this.securityRegistry = securityRegistry;
         this.observationRegistry = observationRegistry;
         this.modelProvider = modelProvider;
+        this.encoder = encoder;
+        this.decoder = decoder;
 
         // Cancel observations on client unregistering
         this.clientRegistry.addListener(new ClientRegistryListener() {
@@ -185,7 +198,8 @@ public class LeshanServer implements LwM2mServer {
         final Set<Endpoint> endpoints = new HashSet<>();
         endpoints.add(nonSecureEndpoint);
         endpoints.add(secureEndpoint);
-        requestSender = new CaliforniumLwM2mRequestSender(endpoints, this.observationRegistry, modelProvider);
+        requestSender = new CaliforniumLwM2mRequestSender(endpoints, this.observationRegistry, modelProvider, encoder,
+                decoder);
     }
 
     @Override

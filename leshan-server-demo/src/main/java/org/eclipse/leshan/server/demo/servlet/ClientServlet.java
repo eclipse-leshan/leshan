@@ -133,7 +133,7 @@ public class ClientServlet extends HttpServlet {
                 // get content format
                 String contentFormatParam = req.getParameter(FORMAT_PARAM);
                 ContentFormat contentFormat = contentFormatParam != null
-                        ? ContentFormat.valueOf(contentFormatParam.toUpperCase()) : null;
+                        ? ContentFormat.fromName(contentFormatParam.toUpperCase()) : null;
 
                 // create & process request
                 ReadRequest request = new ReadRequest(contentFormat, target);
@@ -179,7 +179,7 @@ public class ClientServlet extends HttpServlet {
                 // get content format
                 String contentFormatParam = req.getParameter(FORMAT_PARAM);
                 ContentFormat contentFormat = contentFormatParam != null
-                        ? ContentFormat.valueOf(contentFormatParam.toUpperCase()) : null;
+                        ? ContentFormat.fromName(contentFormatParam.toUpperCase()) : null;
 
                 // create & process request
                 LwM2mNode node = extractLwM2mNode(target, req);
@@ -222,7 +222,7 @@ public class ClientServlet extends HttpServlet {
                     // get content format
                     String contentFormatParam = req.getParameter(FORMAT_PARAM);
                     ContentFormat contentFormat = contentFormatParam != null
-                            ? ContentFormat.valueOf(contentFormatParam.toUpperCase()) : null;
+                            ? ContentFormat.fromName(contentFormatParam.toUpperCase()) : null;
 
                     // create & process request
                     ObserveRequest request = new ObserveRequest(contentFormat, target);
@@ -286,7 +286,7 @@ public class ClientServlet extends HttpServlet {
                     // get content format
                     String contentFormatParam = req.getParameter(FORMAT_PARAM);
                     ContentFormat contentFormat = contentFormatParam != null
-                            ? ContentFormat.valueOf(contentFormatParam.toUpperCase()) : null;
+                            ? ContentFormat.fromName(contentFormatParam.toUpperCase()) : null;
 
                     // create & process request
                     LwM2mNode node = extractLwM2mNode(target, req);

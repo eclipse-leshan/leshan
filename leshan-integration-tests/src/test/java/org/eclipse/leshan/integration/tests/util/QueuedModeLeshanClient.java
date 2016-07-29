@@ -39,6 +39,8 @@ import org.eclipse.leshan.client.californium.impl.SecurityObjectPskStore;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.servers.BootstrapHandler;
 import org.eclipse.leshan.client.servers.RegistrationEngine;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,15 +66,15 @@ public class QueuedModeLeshanClient implements LwM2mClient {
 
         private LwM2mObjectEnabler nodeEnabler;
 
-        public CustomObjectResource(final LwM2mObjectEnabler nodeEnabler) {
-            super(nodeEnabler, bootstrapHandler);
+        public CustomObjectResource(LwM2mObjectEnabler nodeEnabler) {
+            super(nodeEnabler, bootstrapHandler, new DefaultLwM2mNodeEncoder(), new DefaultLwM2mNodeDecoder());
             this.nodeEnabler = nodeEnabler;
             this.nodeEnabler.setNotifySender(this);
             setObservable(true);
         }
 
         @Override
-        public void handleGET(final CoapExchange exchange) {
+        public void handleGET(CoapExchange exchange) {
             if (onGetCallback != null) {
                 if (onGetCallback.handleGet(exchange)) {
                     super.handleGET(exchange);
@@ -91,8 +93,8 @@ public class QueuedModeLeshanClient implements LwM2mClient {
         boolean handleGet(CoapExchange coapExchange);
     }
 
-    public QueuedModeLeshanClient(final String endpoint, final InetSocketAddress localAddress,
-            InetSocketAddress localSecureAddress, final List<? extends LwM2mObjectEnabler> objectEnablers) {
+    public QueuedModeLeshanClient(String endpoint, InetSocketAddress localAddress,
+            InetSocketAddress localSecureAddress, List<? extends LwM2mObjectEnabler> objectEnablers) {
         Validate.notNull(localAddress);
         Validate.notNull(localSecureAddress);
         Validate.notNull(objectEnablers);
@@ -102,8 +104,8 @@ public class QueuedModeLeshanClient implements LwM2mClient {
         this.objectEnablers = new ConcurrentHashMap<>();
         for (LwM2mObjectEnabler enabler : objectEnablers) {
             if (this.objectEnablers.containsKey(enabler.getId())) {
-                throw new IllegalArgumentException(
-                        String.format("There is several objectEnablers with the same id %d.", enabler.getId()));
+                throw new IllegalArgumentException(String.format(
+                        "There is several objectEnablers with the same id %d.", enabler.getId()));
             }
             this.objectEnablers.put(enabler.getId(), enabler);
         }

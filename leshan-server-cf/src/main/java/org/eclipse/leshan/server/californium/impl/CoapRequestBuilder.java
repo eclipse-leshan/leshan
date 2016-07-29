@@ -44,17 +44,18 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     private final InetSocketAddress destination;
     private final String rootPath;
     private final LwM2mModel model;
+    private final LwM2mNodeEncoder encoder;
 
-    public CoapRequestBuilder(InetSocketAddress destination, LwM2mModel model) {
-        this.destination = destination;
-        this.model = model;
-        this.rootPath = null;
+    public CoapRequestBuilder(InetSocketAddress destination, LwM2mModel model, LwM2mNodeEncoder encoder) {
+        this(destination, null, model, encoder);
     }
 
-    public CoapRequestBuilder(InetSocketAddress destination, String rootpath, LwM2mModel model) {
+    public CoapRequestBuilder(InetSocketAddress destination, String rootpath, LwM2mModel model,
+            LwM2mNodeEncoder encoder) {
         this.destination = destination;
         this.model = model;
         this.rootPath = rootpath;
+        this.encoder = encoder;
     }
 
     @Override
@@ -77,7 +78,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         coapRequest = request.isReplaceRequest() ? Request.newPut() : Request.newPost();
         ContentFormat format = request.getContentFormat();
         coapRequest.getOptions().setContentFormat(format.getCode());
-        coapRequest.setPayload(LwM2mNodeEncoder.encode(request.getNode(), format, request.getPath(), model));
+        coapRequest.setPayload(encoder.encode(request.getNode(), format, request.getPath(), model));
         setTarget(coapRequest, request.getPath());
     }
 
@@ -103,7 +104,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         coapRequest.getOptions().setContentFormat(request.getContentFormat().getCode());
         // if no instance id, the client will assign it.
         int instanceId = request.getInstanceId() != null ? request.getInstanceId() : LwM2mObjectInstance.UNDEFINED;
-        coapRequest.setPayload(LwM2mNodeEncoder.encode(new LwM2mObjectInstance(instanceId, request.getResources()),
+        coapRequest.setPayload(encoder.encode(new LwM2mObjectInstance(instanceId, request.getResources()),
                 request.getContentFormat(), request.getPath(), model));
         setTarget(coapRequest, request.getPath());
     }
@@ -129,7 +130,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         coapRequest.setConfirmable(true);
         ContentFormat format = request.getContentFormat();
         coapRequest.getOptions().setContentFormat(format.getCode());
-        coapRequest.setPayload(LwM2mNodeEncoder.encode(request.getNode(), format, request.getPath(), model));
+        coapRequest.setPayload(encoder.encode(request.getNode(), format, request.getPath(), model));
         setTarget(coapRequest, request.getPath());
     }
 

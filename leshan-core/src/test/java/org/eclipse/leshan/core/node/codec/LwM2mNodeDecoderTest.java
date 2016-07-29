@@ -21,6 +21,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 
 import java.util.Date;
+import java.util.List;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
@@ -30,6 +31,7 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.tlv.Tlv;
 import org.eclipse.leshan.tlv.Tlv.TlvType;
@@ -44,16 +46,18 @@ import org.junit.Test;
 public class LwM2mNodeDecoderTest {
 
     private static LwM2mModel model;
+    private static LwM2mNodeDecoder decoder;
 
     @BeforeClass
     public static void loadModel() {
         model = new LwM2mModel(ObjectLoader.loadDefault());
+        decoder = new DefaultLwM2mNodeDecoder();
     }
 
     @Test
     public void text_manufacturer_resource() throws InvalidValueException {
         String value = "MyManufacturer";
-        LwM2mSingleResource resource = (LwM2mSingleResource) LwM2mNodeDecoder.decode(value.getBytes(Charsets.UTF_8),
+        LwM2mSingleResource resource = (LwM2mSingleResource) decoder.decode(value.getBytes(Charsets.UTF_8),
                 ContentFormat.TEXT, new LwM2mPath(3, 0, 0), model);
 
         assertEquals(0, resource.getId());
@@ -65,8 +69,8 @@ public class LwM2mNodeDecoderTest {
     @Test
     public void no_model_and_no_content_type_then_fallback_to_text() throws InvalidValueException {
         String value = "MyManufacturer";
-        LwM2mSingleResource resource = (LwM2mSingleResource) LwM2mNodeDecoder.decode(value.getBytes(Charsets.UTF_8),
-                null, new LwM2mPath(666, 0, 0), model);
+        LwM2mSingleResource resource = (LwM2mSingleResource) decoder.decode(value.getBytes(Charsets.UTF_8), null,
+                new LwM2mPath(666, 0, 0), model);
 
         assertEquals(0, resource.getId());
         assertFalse(resource.isMultiInstances());
@@ -76,7 +80,7 @@ public class LwM2mNodeDecoderTest {
 
     @Test
     public void text_battery_resource() throws InvalidValueException {
-        LwM2mSingleResource resource = (LwM2mSingleResource) LwM2mNodeDecoder.decode("100".getBytes(Charsets.UTF_8),
+        LwM2mSingleResource resource = (LwM2mSingleResource) decoder.decode("100".getBytes(Charsets.UTF_8),
                 ContentFormat.TEXT, new LwM2mPath(3, 0, 9), model);
 
         assertEquals(9, resource.getId());
@@ -90,7 +94,7 @@ public class LwM2mNodeDecoderTest {
         String value = "MyManufacturer";
         byte[] content = TlvEncoder.encode(new Tlv[] { new Tlv(TlvType.RESOURCE_VALUE, null, value.getBytes(), 0) })
                 .array();
-        LwM2mSingleResource resource = (LwM2mSingleResource) LwM2mNodeDecoder.decode(content, ContentFormat.TLV,
+        LwM2mSingleResource resource = (LwM2mSingleResource) decoder.decode(content, ContentFormat.TLV,
                 new LwM2mPath(3, 0, 0), model);
 
         assertEquals(0, resource.getId());
@@ -108,7 +112,7 @@ public class LwM2mNodeDecoderTest {
 
     @Test
     public void tlv_device_object_mono_instance() throws Exception {
-        LwM2mObjectInstance oInstance = ((LwM2mObject) LwM2mNodeDecoder.decode(ENCODED_DEVICE, ContentFormat.TLV,
+        LwM2mObjectInstance oInstance = ((LwM2mObject) decoder.decode(ENCODED_DEVICE, ContentFormat.TLV,
                 new LwM2mPath(3), model)).getInstance(0);
         assertDeviceInstance(oInstance);
     }
@@ -142,16 +146,16 @@ public class LwM2mNodeDecoderTest {
     @Test
     public void tlv_device_object_instance0_from_resources_tlv() throws InvalidValueException {
 
-        LwM2mObjectInstance oInstance = (LwM2mObjectInstance) LwM2mNodeDecoder.decode(ENCODED_DEVICE,
-                ContentFormat.TLV, new LwM2mPath(3, 0), model);
+        LwM2mObjectInstance oInstance = (LwM2mObjectInstance) decoder.decode(ENCODED_DEVICE, ContentFormat.TLV,
+                new LwM2mPath(3, 0), model);
         assertDeviceInstance(oInstance);
     }
 
     @Test
     public void tlv_device_object_instance0_from_resources_tlv__instance_expected() throws InvalidValueException {
 
-        LwM2mObjectInstance oInstance = (LwM2mObjectInstance) LwM2mNodeDecoder.decode(ENCODED_DEVICE,
-                ContentFormat.TLV, new LwM2mPath(3), model, LwM2mObjectInstance.class);
+        LwM2mObjectInstance oInstance = (LwM2mObjectInstance) decoder.decode(ENCODED_DEVICE, ContentFormat.TLV,
+                new LwM2mPath(3), model, LwM2mObjectInstance.class);
         assertDeviceInstance(oInstance);
     }
 
@@ -163,7 +167,7 @@ public class LwM2mNodeDecoderTest {
         System.arraycopy(new byte[] { 8, 0, 119 }, 0, instanceTlv, 0, 3);
         System.arraycopy(ENCODED_DEVICE, 0, instanceTlv, 3, ENCODED_DEVICE.length);
 
-        LwM2mObjectInstance oInstance = (LwM2mObjectInstance) LwM2mNodeDecoder.decode(instanceTlv, ContentFormat.TLV,
+        LwM2mObjectInstance oInstance = (LwM2mObjectInstance) decoder.decode(instanceTlv, ContentFormat.TLV,
                 new LwM2mPath(3, 0), model);
         assertDeviceInstance(oInstance);
     }
@@ -172,8 +176,8 @@ public class LwM2mNodeDecoderTest {
     public void tlv_power_source__array_values() throws InvalidValueException {
         byte[] content = new byte[] { 65, 0, 1, 65, 1, 5 };
 
-        LwM2mResource resource = (LwM2mResource) LwM2mNodeDecoder.decode(content, ContentFormat.TLV, new LwM2mPath(3,
-                0, 6), model);
+        LwM2mResource resource = (LwM2mResource) decoder.decode(content, ContentFormat.TLV, new LwM2mPath(3, 0, 6),
+                model);
 
         assertEquals(6, resource.getId());
         assertEquals(2, resource.getValues().size());
@@ -187,8 +191,8 @@ public class LwM2mNodeDecoderTest {
         // is probably not compliant with the spec but it should be supported by the server
         byte[] content = new byte[] { -122, 6, 65, 0, 1, 65, 1, 5 };
 
-        LwM2mResource resource = (LwM2mResource) LwM2mNodeDecoder.decode(content, ContentFormat.TLV, new LwM2mPath(3,
-                0, 6), model);
+        LwM2mResource resource = (LwM2mResource) decoder.decode(content, ContentFormat.TLV, new LwM2mPath(3, 0, 6),
+                model);
 
         assertEquals(6, resource.getId());
         assertEquals(2, resource.getValues().size());
@@ -199,22 +203,21 @@ public class LwM2mNodeDecoderTest {
     @Test(expected = InvalidValueException.class)
     public void tlv_multi_instance_object__missing_instance_tlv() throws InvalidValueException {
 
-        byte[] content = TlvEncoder.encode(
-                new Tlv[] { new Tlv(TlvType.RESOURCE_VALUE, null, "value1".getBytes(), 1),
-                                        new Tlv(TlvType.RESOURCE_VALUE, null, "value1".getBytes(), 2) }).array();
+        byte[] content = TlvEncoder.encode(new Tlv[] { new Tlv(TlvType.RESOURCE_VALUE, null, "value1".getBytes(), 1),
+                                new Tlv(TlvType.RESOURCE_VALUE, null, "value1".getBytes(), 2) })
+                .array();
 
-        LwM2mNodeDecoder.decode(content, ContentFormat.TLV, new LwM2mPath(9), model);
+        decoder.decode(content, ContentFormat.TLV, new LwM2mPath(9), model);
     }
 
     @Test
     public void tlv_unknown_object__missing_instance_tlv() throws InvalidValueException {
 
-        byte[] content = TlvEncoder.encode(
-                new Tlv[] { new Tlv(TlvType.RESOURCE_VALUE, null, "value1".getBytes(), 1),
-                                        new Tlv(TlvType.RESOURCE_VALUE, null, "value1".getBytes(), 2) }).array();
+        byte[] content = TlvEncoder.encode(new Tlv[] { new Tlv(TlvType.RESOURCE_VALUE, null, "value1".getBytes(), 1),
+                                new Tlv(TlvType.RESOURCE_VALUE, null, "value1".getBytes(), 2) })
+                .array();
 
-        LwM2mObject obj = (LwM2mObject) LwM2mNodeDecoder
-                .decode(content, ContentFormat.TLV, new LwM2mPath(10234), model);
+        LwM2mObject obj = (LwM2mObject) decoder.decode(content, ContentFormat.TLV, new LwM2mPath(10234), model);
 
         assertEquals(1, obj.getInstances().size());
         assertEquals(2, obj.getInstance(0).getResources().size());
@@ -242,7 +245,7 @@ public class LwM2mNodeDecoderTest {
         b.append("{\"n\":\"14\",\"sv\":\"+02:00\"},");
         b.append("{\"n\":\"15\",\"sv\":\"U\"}]}");
 
-        LwM2mObjectInstance oInstance = (LwM2mObjectInstance) LwM2mNodeDecoder.decode(b.toString().getBytes(),
+        LwM2mObjectInstance oInstance = (LwM2mObjectInstance) decoder.decode(b.toString().getBytes(),
                 ContentFormat.JSON, new LwM2mPath(3, 0), model);
 
         assertDeviceInstance(oInstance);
@@ -271,7 +274,7 @@ public class LwM2mNodeDecoderTest {
         b.append("{\"n\":\"3/0/14\",\"sv\":\"+02:00\"},");
         b.append("{\"n\":\"3/0/15\",\"sv\":\"U\"}]}");
 
-        LwM2mObjectInstance oInstance = (LwM2mObjectInstance) LwM2mNodeDecoder.decode(b.toString().getBytes(),
+        LwM2mObjectInstance oInstance = (LwM2mObjectInstance) decoder.decode(b.toString().getBytes(),
                 ContentFormat.JSON, new LwM2mPath(3, 0), model);
 
         assertDeviceInstance(oInstance);
@@ -285,7 +288,7 @@ public class LwM2mNodeDecoderTest {
         b.append("{\"n\":\"0\",\"sv\":\"a string\"},");
         b.append("{\"n\":\"1\",\"v\":10.5},");
         b.append("{\"n\":\"2\",\"bv\":true}]}");
-        LwM2mObjectInstance oInstance = (LwM2mObjectInstance) LwM2mNodeDecoder.decode(b.toString().getBytes(),
+        LwM2mObjectInstance oInstance = (LwM2mObjectInstance) decoder.decode(b.toString().getBytes(),
                 ContentFormat.JSON, new LwM2mPath(1024, 0), model);
 
         assertEquals(0, oInstance.getId());
@@ -293,5 +296,85 @@ public class LwM2mNodeDecoderTest {
         assertEquals("a string", oInstance.getResource(0).getValue());
         assertEquals(10.5, oInstance.getResource(1).getValue());
         assertEquals(true, oInstance.getResource(2).getValue());
+    }
+
+    @Test
+    public void json_timestamped_resources() throws InvalidValueException {
+        // json content for instance 0 of device object
+        StringBuilder b = new StringBuilder();
+        b.append("{\"e\":[");
+        b.append("{\"n\":\"\",\"v\":22.9,\"t\":-30},");
+        b.append("{\"n\":\"\",\"v\":22.4,\"t\":-5},");
+        b.append("{\"n\":\"\",\"v\":24.1,\"t\":-50}],");
+        b.append("\"bt\":25462634}");
+
+        List<TimestampedLwM2mNode> timestampedResources = decoder.decodeTimestampedData(b.toString().getBytes(),
+                ContentFormat.JSON, new LwM2mPath(1024, 0, 1), model);
+
+        assertEquals(3, timestampedResources.size());
+        assertEquals(new Long(25462634L - 5), timestampedResources.get(0).getTimestamp());
+        assertEquals(22.4d, ((LwM2mResource) timestampedResources.get(0).getNode()).getValue());
+        assertEquals(new Long(25462634L - 30), timestampedResources.get(1).getTimestamp());
+        assertEquals(22.9d, ((LwM2mResource) timestampedResources.get(1).getNode()).getValue());
+        assertEquals(new Long(25462634 - 50), timestampedResources.get(2).getTimestamp());
+        assertEquals(24.1d, ((LwM2mResource) timestampedResources.get(2).getNode()).getValue());
+    }
+
+    @Test
+    public void json_timestamped_instances() throws InvalidValueException {
+        // json content for instance 0 of device object
+        StringBuilder b = new StringBuilder();
+        b.append("{\"e\":[");
+        b.append("{\"n\":\"1\",\"v\":22.9,\"t\":-30},");
+        b.append("{\"n\":\"1\",\"v\":22.4,\"t\":-5},");
+        b.append("{\"n\":\"0\",\"sv\":\"a string\",\"t\":-5},");
+        b.append("{\"n\":\"1\",\"v\":24.1,\"t\":-50}],");
+        b.append("\"bt\":25462634}");
+
+        List<TimestampedLwM2mNode> timestampedResources = decoder.decodeTimestampedData(b.toString().getBytes(),
+                ContentFormat.JSON, new LwM2mPath(1024, 0), model);
+
+        assertEquals(3, timestampedResources.size());
+        assertEquals(new Long(25462634L - 5), timestampedResources.get(0).getTimestamp());
+        assertEquals("a string",
+                ((LwM2mObjectInstance) timestampedResources.get(0).getNode()).getResource(0).getValue());
+        assertEquals(22.4d, ((LwM2mObjectInstance) timestampedResources.get(0).getNode()).getResource(1).getValue());
+
+        assertEquals(new Long(25462634L - 30), timestampedResources.get(1).getTimestamp());
+        assertEquals(22.9d, ((LwM2mObjectInstance) timestampedResources.get(1).getNode()).getResource(1).getValue());
+
+        assertEquals(new Long(25462634 - 50), timestampedResources.get(2).getTimestamp());
+        assertEquals(24.1d, ((LwM2mObjectInstance) timestampedResources.get(2).getNode()).getResource(1).getValue());
+    }
+
+    @Test
+    public void json_timestamped_Object() throws InvalidValueException {
+        // json content for instance 0 of device object
+        StringBuilder b = new StringBuilder();
+        b.append("{\"e\":[");
+        b.append("{\"n\":\"0/1\",\"v\":22.9,\"t\":-30},");
+        b.append("{\"n\":\"0/1\",\"v\":22.4,\"t\":-5},");
+        b.append("{\"n\":\"0/0\",\"sv\":\"a string\",\"t\":-5},");
+        b.append("{\"n\":\"1/1\",\"v\":23,\"t\":-5},");
+        b.append("{\"n\":\"0/1\",\"v\":24.1,\"t\":-50}],");
+        b.append("\"bt\":25462634}");
+
+        List<TimestampedLwM2mNode> timestampedResources = decoder.decodeTimestampedData(b.toString().getBytes(),
+                ContentFormat.JSON, new LwM2mPath(1024), model);
+
+        assertEquals(3, timestampedResources.size());
+        assertEquals(new Long(25462634L - 5), timestampedResources.get(0).getTimestamp());
+        assertEquals(22.4d,
+                ((LwM2mObject) timestampedResources.get(0).getNode()).getInstance(0).getResource(1).getValue());
+        assertEquals("a string",
+                ((LwM2mObject) timestampedResources.get(0).getNode()).getInstance(0).getResource(0).getValue());
+        assertEquals(23.0d,
+                ((LwM2mObject) timestampedResources.get(0).getNode()).getInstance(1).getResource(1).getValue());
+        assertEquals(new Long(25462634L - 30), timestampedResources.get(1).getTimestamp());
+        assertEquals(22.9d,
+                ((LwM2mObject) timestampedResources.get(1).getNode()).getInstance(0).getResource(1).getValue());
+        assertEquals(new Long(25462634 - 50), timestampedResources.get(2).getTimestamp());
+        assertEquals(24.1d,
+                ((LwM2mObject) timestampedResources.get(2).getNode()).getInstance(0).getResource(1).getValue());
     }
 }

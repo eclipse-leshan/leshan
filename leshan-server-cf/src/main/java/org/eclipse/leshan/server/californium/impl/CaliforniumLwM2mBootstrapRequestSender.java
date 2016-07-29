@@ -21,6 +21,10 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
+import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
+import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -36,6 +40,8 @@ public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapReq
     private final Endpoint nonSecureEndpoint;
     private final Endpoint secureEndpoint;
     private final LwM2mModel model;
+    private final LwM2mNodeDecoder decoder = new DefaultLwM2mNodeDecoder();
+    private final LwM2mNodeEncoder encoder = new DefaultLwM2mNodeEncoder();
 
     public CaliforniumLwM2mBootstrapRequestSender(final Endpoint secureEndpoint, final Endpoint nonSecureEndpoint,
             final LwM2mModel model) {
@@ -48,7 +54,7 @@ public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapReq
     public <T extends LwM2mResponse> T send(final String endpointName, final InetSocketAddress clientAddress,
             final boolean secure, final DownlinkRequest<T> request, Long timeout) throws InterruptedException {
         // Create the CoAP request from LwM2m request
-        final CoapRequestBuilder coapClientRequestBuilder = new CoapRequestBuilder(clientAddress, model);
+        final CoapRequestBuilder coapClientRequestBuilder = new CoapRequestBuilder(clientAddress, model, encoder);
         request.accept(coapClientRequestBuilder);
 
         final Request coapRequest = coapClientRequestBuilder.getRequest();
@@ -64,7 +70,7 @@ public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapReq
                                 .build();
                 // Build LwM2m response
                 final LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<T>(coapRequest,
-                        coapResponse, client, model, null);
+                        coapResponse, client, model, null, decoder);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }
@@ -86,7 +92,7 @@ public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapReq
             final boolean secure, final DownlinkRequest<T> request, final ResponseCallback<T> responseCallback,
             final ErrorCallback errorCallback) {
         // Create the CoAP request from LwM2m request
-        final CoapRequestBuilder coapClientRequestBuilder = new CoapRequestBuilder(clientAddress, model);
+        final CoapRequestBuilder coapClientRequestBuilder = new CoapRequestBuilder(clientAddress, model, encoder);
         request.accept(coapClientRequestBuilder);
         final Request coapRequest = coapClientRequestBuilder.getRequest();
 
@@ -103,7 +109,7 @@ public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapReq
 
                 // Build LwM2m response
                 final LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<T>(coapRequest,
-                        coapResponse, client, model, null);
+                        coapResponse, client, model, null, decoder);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }

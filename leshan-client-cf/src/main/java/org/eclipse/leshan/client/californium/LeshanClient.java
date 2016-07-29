@@ -44,6 +44,8 @@ import org.eclipse.leshan.client.servers.BootstrapHandler;
 import org.eclipse.leshan.client.servers.DmServerInfo;
 import org.eclipse.leshan.client.servers.RegistrationEngine;
 import org.eclipse.leshan.client.servers.ServerInfo;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -144,7 +146,8 @@ public class LeshanClient implements LwM2mClient {
 
         // Create CoAP resources for each lwm2m Objects.
         for (LwM2mObjectEnabler enabler : objectEnablers) {
-            final ObjectResource clientObject = new ObjectResource(enabler, bootstrapHandler);
+            final ObjectResource clientObject = new ObjectResource(enabler, bootstrapHandler,
+                    new DefaultLwM2mNodeEncoder(), new DefaultLwM2mNodeDecoder());
             clientSideServer.add(clientObject);
         }
 

@@ -25,12 +25,12 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 public interface QueuedRequest {
 
     /**
-     * a request ID is used to keep the natural ascending order of queue requests in the queue. In a specific
-     * persistence implementation, it can be, for instance, a record ID field of the particular queue request.
+     * requestTicket represents the correlation identifier used to correlate any response for this request from LWM2M
+     * Client.
      * 
-     * @return ID
+     * @return ID.
      */
-    long getRequestId();
+    String getRequestTicket();
 
     /**
      * @return client's endpoint to send the request to

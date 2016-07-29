@@ -96,7 +96,7 @@ public class LwM2mPath {
      * @param path the path (e.g. "/3/0/1" or "/3")
      */
     public LwM2mPath(String path) {
-        Validate.notEmpty(path);
+        Validate.notNull(path);
         if (path.startsWith("/")) {
             path = path.substring(1);
         }

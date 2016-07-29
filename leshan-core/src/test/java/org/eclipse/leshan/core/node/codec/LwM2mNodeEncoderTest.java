@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -30,6 +31,7 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.util.Charsets;
 import org.junit.Assert;
@@ -42,16 +44,18 @@ import org.junit.Test;
 public class LwM2mNodeEncoderTest {
 
     private static LwM2mModel model;
+    private static LwM2mNodeEncoder encoder;
 
     @BeforeClass
     public static void loadModel() {
         model = new LwM2mModel(ObjectLoader.loadDefault());
+        encoder = new DefaultLwM2mNodeEncoder();
     }
 
     @Test
     public void text_encode_single_resource() {
 
-        byte[] encoded = LwM2mNodeEncoder.encode(LwM2mSingleResource.newFloatResource(15, 56.4D), ContentFormat.TEXT,
+        byte[] encoded = encoder.encode(LwM2mSingleResource.newFloatResource(15, 56.4D), ContentFormat.TEXT,
                 new LwM2mPath("/323/0/15"), model);
 
         Assert.assertEquals("56.4", new String(encoded, Charsets.UTF_8));
@@ -60,9 +64,8 @@ public class LwM2mNodeEncoderTest {
     @Test
     public void text_encode_date_as_long() {
 
-        byte[] encoded = LwM2mNodeEncoder.encode(
-                LwM2mSingleResource.newStringResource(13, "2010-01-01T12:00:00+01:00"), ContentFormat.TEXT,
-                new LwM2mPath("/3/0/13"), model);
+        byte[] encoded = encoder.encode(LwM2mSingleResource.newStringResource(13, "2010-01-01T12:00:00+01:00"),
+                ContentFormat.TEXT, new LwM2mPath("/3/0/13"), model);
 
         Assert.assertEquals("1262343600", new String(encoded, Charsets.UTF_8));
     }
@@ -70,8 +73,8 @@ public class LwM2mNodeEncoderTest {
     @Test
     public void text_encode_date_as_iso_string() {
 
-        byte[] encoded = LwM2mNodeEncoder.encode(LwM2mSingleResource.newIntegerResource(13, 1367491215000L),
-                ContentFormat.TEXT, new LwM2mPath("/3/0/13"), model);
+        byte[] encoded = encoder.encode(LwM2mSingleResource.newIntegerResource(13, 1367491215000L), ContentFormat.TEXT,
+                new LwM2mPath("/3/0/13"), model);
 
         Assert.assertEquals("1367491215", new String(encoded, Charsets.UTF_8));
     }
@@ -81,8 +84,8 @@ public class LwM2mNodeEncoderTest {
         Map<Integer, Long> values = new HashMap<>();
         values.put(0, 1L);
         values.put(1, 5L);
-        LwM2mNodeEncoder.encode(LwM2mMultipleResource.newIntegerResource(6, values), ContentFormat.TEXT, new LwM2mPath(
-                "/3/0/6"), model);
+        encoder.encode(LwM2mMultipleResource.newIntegerResource(6, values), ContentFormat.TEXT, new LwM2mPath("/3/0/6"),
+                model);
     }
 
     // device instance encoded as an array of resources
@@ -129,7 +132,7 @@ public class LwM2mNodeEncoderTest {
     @Test
     public void tlv_encode_device_object_instance_as_resources_array() {
         LwM2mObjectInstance oInstance = new LwM2mObjectInstance(0, getDeviceResources());
-        byte[] encoded = LwM2mNodeEncoder.encode(oInstance, ContentFormat.TLV, new LwM2mPath("/3/0"), model);
+        byte[] encoded = encoder.encode(oInstance, ContentFormat.TLV, new LwM2mPath("/3/0"), model);
 
         Assert.assertArrayEquals(ENCODED_DEVICE, encoded);
     }
@@ -137,7 +140,7 @@ public class LwM2mNodeEncoderTest {
     @Test
     public void tlv_encode_device_object_instance_as_resources_array__undefined_instance_id() {
         LwM2mObjectInstance oInstance = new LwM2mObjectInstance(LwM2mObjectInstance.UNDEFINED, getDeviceResources());
-        byte[] encoded = LwM2mNodeEncoder.encode(oInstance, ContentFormat.TLV, new LwM2mPath("/3"), model);
+        byte[] encoded = encoder.encode(oInstance, ContentFormat.TLV, new LwM2mPath("/3"), model);
 
         Assert.assertArrayEquals(ENCODED_DEVICE, encoded);
     }
@@ -145,7 +148,7 @@ public class LwM2mNodeEncoderTest {
     @Test
     public void tlv_encode_device_object_instance_as_instance() {
         LwM2mObjectInstance oInstance = new LwM2mObjectInstance(0, getDeviceResources());
-        byte[] encoded = LwM2mNodeEncoder.encode(oInstance, ContentFormat.TLV, new LwM2mPath("/3"), model);
+        byte[] encoded = encoder.encode(oInstance, ContentFormat.TLV, new LwM2mPath("/3"), model);
 
         // TLV instance = { type=INSTANCE, instanceId=0, length=DEVICE_ENCODED.lentgh, value=DEVICE_ENCODED }
         byte[] instanceTlv = new byte[ENCODED_DEVICE.length + 3];
@@ -159,7 +162,7 @@ public class LwM2mNodeEncoderTest {
     public void tlv_encode_device_object() {
 
         LwM2mObject object = new LwM2mObject(3, new LwM2mObjectInstance(0, getDeviceResources()));
-        byte[] encoded = LwM2mNodeEncoder.encode(object, ContentFormat.TLV, new LwM2mPath("/3"), model);
+        byte[] encoded = encoder.encode(object, ContentFormat.TLV, new LwM2mPath("/3"), model);
 
         // encoded as an array of resource TLVs
         Assert.assertArrayEquals(ENCODED_DEVICE, encoded);
@@ -169,7 +172,7 @@ public class LwM2mNodeEncoderTest {
     public void json_encode_device_object_instance() {
 
         LwM2mObjectInstance oInstance = new LwM2mObjectInstance(0, getDeviceResources());
-        byte[] encoded = LwM2mNodeEncoder.encode(oInstance, ContentFormat.JSON, new LwM2mPath("/3/0"), model);
+        byte[] encoded = encoder.encode(oInstance, ContentFormat.JSON, new LwM2mPath("/3/0"), model);
 
         StringBuilder b = new StringBuilder();
         b.append("{\"e\":[");
@@ -189,6 +192,84 @@ public class LwM2mNodeEncoderTest {
         b.append("{\"n\":\"13\",\"v\":1367491215},");
         b.append("{\"n\":\"14\",\"sv\":\"+02:00\"},");
         b.append("{\"n\":\"15\",\"sv\":\"U\"}]}");
+
+        String expected = b.toString();
+        Assert.assertEquals(expected, new String(encoded));
+    }
+
+    @Test
+    public void json_encode_timestamped_resources() throws InvalidValueException {
+        List<TimestampedLwM2mNode> data = new ArrayList<>();
+        data.add(new TimestampedLwM2mNode(500L, LwM2mSingleResource.newFloatResource(1, 22.9)));
+        data.add(new TimestampedLwM2mNode(510L, LwM2mSingleResource.newFloatResource(1, 22.4)));
+        data.add(new TimestampedLwM2mNode(520L, LwM2mSingleResource.newFloatResource(1, 24.1)));
+
+        byte[] encoded = encoder.encodeTimestampedData(data, ContentFormat.JSON, new LwM2mPath(1024, 0, 1), model);
+
+        StringBuilder b = new StringBuilder();
+        b.append("{\"e\":[");
+        b.append("{\"n\":\"\",\"v\":22.9,\"t\":500},");
+        b.append("{\"n\":\"\",\"v\":22.4,\"t\":510},");
+        b.append("{\"n\":\"\",\"v\":24.1,\"t\":520}]}");
+
+        String expected = b.toString();
+        Assert.assertEquals(expected, new String(encoded));
+    }
+
+    @Test
+    public void json_encode_timestamped_instances() throws InvalidValueException {
+        List<TimestampedLwM2mNode> data = new ArrayList<>();
+
+        LwM2mObjectInstance instanceAt110 = new LwM2mObjectInstance(0, LwM2mSingleResource.newFloatResource(1, 22.9));
+        LwM2mObjectInstance instanceAt120 = new LwM2mObjectInstance(0, LwM2mSingleResource.newFloatResource(1, 22.4),
+                LwM2mSingleResource.newStringResource(0, "a string"));
+        LwM2mObjectInstance instanceAt130 = new LwM2mObjectInstance(0, LwM2mSingleResource.newFloatResource(1, 24.1));
+
+        data.add(new TimestampedLwM2mNode(110L, instanceAt110));
+        data.add(new TimestampedLwM2mNode(120L, instanceAt120));
+        data.add(new TimestampedLwM2mNode(130L, instanceAt130));
+
+        byte[] encoded = encoder.encodeTimestampedData(data, ContentFormat.JSON, new LwM2mPath(1024, 0), model);
+
+        StringBuilder b = new StringBuilder();
+        b.append("{\"e\":[");
+        b.append("{\"n\":\"1\",\"v\":22.9,\"t\":110},");
+        b.append("{\"n\":\"0\",\"sv\":\"a string\",\"t\":120},");
+        b.append("{\"n\":\"1\",\"v\":22.4,\"t\":120},");
+        b.append("{\"n\":\"1\",\"v\":24.1,\"t\":130}]}");
+
+        String expected = b.toString();
+        Assert.assertEquals(expected, new String(encoded));
+    }
+
+    @Test
+    public void json_encode_timestamped_Object() throws InvalidValueException {
+        List<TimestampedLwM2mNode> data = new ArrayList<>();
+
+        LwM2mObject objectAt210 = new LwM2mObject(1204,
+                new LwM2mObjectInstance(0, LwM2mSingleResource.newFloatResource(1, 22.9)));
+
+        LwM2mObject objectAt220 = new LwM2mObject(1204,
+                new LwM2mObjectInstance(0, LwM2mSingleResource.newFloatResource(1, 22.4),
+                        LwM2mSingleResource.newStringResource(0, "a string")),
+                new LwM2mObjectInstance(1, LwM2mSingleResource.newFloatResource(1, 23)));
+
+        LwM2mObject objetAt230 = new LwM2mObject(1204,
+                new LwM2mObjectInstance(0, LwM2mSingleResource.newFloatResource(1, 24.1)));
+
+        data.add(new TimestampedLwM2mNode(210L, objectAt210));
+        data.add(new TimestampedLwM2mNode(220L, objectAt220));
+        data.add(new TimestampedLwM2mNode(230L, objetAt230));
+
+        byte[] encoded = encoder.encodeTimestampedData(data, ContentFormat.JSON, new LwM2mPath(1024), model);
+
+        StringBuilder b = new StringBuilder();
+        b.append("{\"e\":[");
+        b.append("{\"n\":\"0/1\",\"v\":22.9,\"t\":210},");
+        b.append("{\"n\":\"0/0\",\"sv\":\"a string\",\"t\":220},");
+        b.append("{\"n\":\"0/1\",\"v\":22.4,\"t\":220},");
+        b.append("{\"n\":\"1/1\",\"v\":23.0,\"t\":220},");
+        b.append("{\"n\":\"0/1\",\"v\":24.1,\"t\":230}]}");
 
         String expected = b.toString();
         Assert.assertEquals(expected, new String(encoded));
