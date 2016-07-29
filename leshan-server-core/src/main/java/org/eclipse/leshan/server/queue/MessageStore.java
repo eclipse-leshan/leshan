@@ -64,9 +64,10 @@ public interface MessageStore {
     void deleteFirst(String endpoint);
 
     /**
+     * removes all the requests from queue and returns the list of all the requests that got removed.
      * 
-     * @param endpoint
-     * @return
+     * @param endpoint client's endpoint.
+     * @return the list of all the requests that got removed.
      */
     List<QueuedRequest> removeAll(String endpoint);
 }

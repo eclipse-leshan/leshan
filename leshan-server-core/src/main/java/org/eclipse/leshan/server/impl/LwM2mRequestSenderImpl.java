@@ -97,10 +97,9 @@ public class LwM2mRequestSenderImpl implements LwM2mRequestSender, Stoppable {
 
     @Override
     public void cancelPendingRequests(Client client) {
-        if (client.usesQueueMode()) {
-            queuedRequestSender.cancelPendingRequests(client);
-        } else {
-            defaultRequestSender.cancelPendingRequests(client);
-        }
+        // cancel on the both the senders are required for the scenario
+        // where the LWM2M client could change binding modes.
+        defaultRequestSender.cancelPendingRequests(client);
+        queuedRequestSender.cancelPendingRequests(client);
     }
 }
