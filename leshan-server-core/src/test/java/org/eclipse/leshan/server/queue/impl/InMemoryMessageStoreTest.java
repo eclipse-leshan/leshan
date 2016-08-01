@@ -42,7 +42,7 @@ public class InMemoryMessageStoreTest {
         QueuedRequest addNewQuedeRequest = getQueuedRequest(1);
         store.add(addNewQuedeRequest);
 
-        Assert.assertEquals(store.getRequestQueueMap().size(), 1);
+        Assert.assertEquals(store.getQueueSize(ENDPOINT), 1);
     }
 
     @Test
@@ -51,7 +51,7 @@ public class InMemoryMessageStoreTest {
         QueuedRequest addNewQuedeRequest = getQueuedRequest(6);
         store.add(addNewQuedeRequest);
 
-        Assert.assertEquals(store.getRequestQueueMap().get(ENDPOINT).size(), 6);
+        Assert.assertEquals(store.getQueueSize(ENDPOINT), 6);
     }
 
     @Test
@@ -95,7 +95,7 @@ public class InMemoryMessageStoreTest {
         fillQueue(10);
         store.removeAll(ENDPOINT);
 
-        Assert.assertEquals(store.getRequestQueueMap().size(), 0);
+        Assert.assertEquals(store.getQueueSize(ENDPOINT), 0);
     }
 
     @Test
@@ -121,13 +121,11 @@ public class InMemoryMessageStoreTest {
 
             @Override
             public String getRequestTicket() {
-
                 return requestTicket;
             }
 
             @Override
             public String getEndpoint() {
-
                 return ENDPOINT;
             }
 

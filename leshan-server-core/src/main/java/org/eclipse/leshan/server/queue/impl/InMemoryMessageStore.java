@@ -39,17 +39,17 @@ public class InMemoryMessageStore implements MessageStore {
     private final ConcurrentMap<String, BlockingQueue<QueuedRequest>> requestQueueMap = new ConcurrentHashMap<>();
 
     @Override
-    public void add(final QueuedRequest entity) {
+    public void add(QueuedRequest entity) {
         LOG.debug("Add entity {}", entity);
-        final String endpoint = entity.getEndpoint();
-        final BlockingQueue<QueuedRequest> requestQueue = new LinkedBlockingQueue<>();
+        String endpoint = entity.getEndpoint();
+        BlockingQueue<QueuedRequest> requestQueue = new LinkedBlockingQueue<>();
 
         // If two Threads want to add a entity at the exact instant, each will
         // retrieve its own instance of
         // Queue and add the entity to the respective instances. But only one of
         // them wins the putIfAbsent method.
         // To not lose messages, this check will prevent.
-        final BlockingQueue<QueuedRequest> allreadyExisting = requestQueueMap.putIfAbsent(endpoint, requestQueue);
+        BlockingQueue<QueuedRequest> allreadyExisting = requestQueueMap.putIfAbsent(endpoint, requestQueue);
         if (allreadyExisting != null) {
             allreadyExisting.add(entity);
         } else {
@@ -58,25 +58,27 @@ public class InMemoryMessageStore implements MessageStore {
     }
 
     @Override
-    public boolean isEmpty(final String endpoint) {
-        if (queueExist(endpoint)) {
-            return requestQueueMap.get(endpoint).isEmpty();
+    public boolean isEmpty(String endpoint) {
+        LOG.trace("Checking for empty Queue {}", endpoint);
+        BlockingQueue<QueuedRequest> requests = requestQueueMap.get(endpoint);
+        if (requests != null) {
+            return requests.isEmpty();
         }
         return true;
-
     }
 
     @Override
-    public QueuedRequest retrieveFirst(final String endpoint) {
+    public QueuedRequest retrieveFirst(String endpoint) {
         LOG.trace("Retrieve first for endpoint {}", endpoint);
-        if (queueExist(endpoint)) {
-            return requestQueueMap.get(endpoint).peek();
+        BlockingQueue<QueuedRequest> requests = requestQueueMap.get(endpoint);
+        if (requests != null) {
+            return requests.peek();
         }
         return null;
     }
 
     @Override
-    public void removeAll(final String endpoint) {
+    public void removeAll(String endpoint) {
         LOG.debug("Emptying messages for client {}", endpoint);
         // If client has registers and de-registers without any other messages
         // then the queue would not have been initialized.
@@ -84,40 +86,43 @@ public class InMemoryMessageStore implements MessageStore {
     }
 
     @Override
-    public void deleteFirst(final String endpoint) {
+    public void deleteFirst(String endpoint) {
         LOG.debug("Delete first entity of endpoint {}", endpoint);
-        final BlockingQueue<QueuedRequest> requests = requestQueueMap.get(endpoint);
+        BlockingQueue<QueuedRequest> requests = requestQueueMap.get(endpoint);
         if (requests != null) {
             requests.poll();
         }
     }
 
     /**
-     * Retrieves a whole queue for a given client's endpoint, in order of processing. Used only for testing purposes.
+     * Retrieves a whole queue for a given client's endpoint, in order of
+     * processing. Used only for testing purposes.
      *
      * @param endpoint client's endpoint
      * @return list of queue request entities in order of processing.
      */
-    public List<QueuedRequest> retrieveAll(final String endpoint) {
+    public List<QueuedRequest> retrieveAll(String endpoint) {
         LOG.debug("Retrieve all for endpoint {}", endpoint);
-        if (queueExist(endpoint)) {
-            return new ArrayList<>(requestQueueMap.get(endpoint));
+        BlockingQueue<QueuedRequest> requests = requestQueueMap.get(endpoint);
+        if (requests != null) {
+            return new ArrayList<>(requests);
         } else {
             return Collections.emptyList();
         }
     }
 
-    private boolean queueExist(final String endpoint) {
-        return requestQueueMap.get(endpoint) != null ? true : false;
-    }
-
     /**
-     * For test onyl.
+     * Returns the size of the Queue for given endpoint.
      * 
-     * @return ConcurrentMap<String, BlockingQueue<QueuedRequest>>
+     * @param endpoint client's endpoint
+     * @return list of queue request entities in order of processing.
      */
-    protected ConcurrentMap<String, BlockingQueue<QueuedRequest>> getRequestQueueMap() {
-        return this.requestQueueMap;
+    public int getQueueSize(String endpoint) {
+        BlockingQueue<QueuedRequest> requests = requestQueueMap.get(endpoint);
+        if (requests != null) {
+            return requests.size();
+        }
+        return 0;
     }
 
 }
