@@ -43,7 +43,7 @@ class RequestSendingTask implements Runnable {
      * Creates a new task which is responsible for sending a queue request.
      *
      * @param clientRegistry client registry
-     * @param requestSender sender to perform send on (delegate)
+     * @param delegateSender sender to perform send on (delegate)
      * @param clientStatusTracker tracks the status of the client
      * @param messageStore holds queued messages for the client
      * @param endpoint clients endpoint identifier
@@ -75,8 +75,7 @@ class RequestSendingTask implements Runnable {
             LOG.debug("Sending request: {}", downlinkRequest);
             Client client = clientRegistry.get(firstRequest.getEndpoint());
             if (client == null) {
-                // client not registered anymore -> ignore this request
-                // Actually this should never happen.
+                // client not registered anymore -> don't send this request
                 LOG.debug("Client {} not registered anymore: {}", endpoint, downlinkRequest);
             } else {
                 requestSender.send(client, firstRequest.getRequestTicket(), downlinkRequest);
