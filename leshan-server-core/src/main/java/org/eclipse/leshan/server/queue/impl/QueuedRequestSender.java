@@ -22,6 +22,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
@@ -66,6 +68,8 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
     private final ObservationRegistry observationRegistry;
     private final ClientStatusTracker clientStatusTracker;
     private final Collection<ResponseListener> responseListeners = new ConcurrentLinkedQueue<>();
+
+    private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock(false);
 
     /**
      * Creates a new QueueRequestSender using given builder.
@@ -114,17 +118,25 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
 
         String endpoint = destination.getEndpoint();
 
-        // Accept messages only when the client is already known to ClientRegistry
-        if (clientRegistry.get(endpoint) != null) {
-            QueuedRequest queuedRequest = new QueuedRequestImpl(endpoint, castedDownlinkRequest, requestTicket);
-            messageStore.add(queuedRequest);
-            // If Client is reachable and this is the first message, we send it
-            // immediately.
-            if (clientStatusTracker.startClientReceiving(endpoint)) {
-                processingExecutor.execute(newRequestSendingTask(endpoint));
+        readWriteLock.readLock().lock();
+        try {
+            // Accept messages only when the client is already known to ClientRegistry
+            if (clientRegistry.get(endpoint) != null) {
+                QueuedRequest queuedRequest = new QueuedRequestImpl(endpoint, castedDownlinkRequest, requestTicket);
+                messageStore.add(queuedRequest);
+                // If Client is reachable and this is the first message, we send it
+                // immediately.
+                if (clientStatusTracker.startClientReceiving(endpoint)) {
+                    processingExecutor.execute(newRequestSendingTask(endpoint));
+                }
+            } else {
+                String message = String.format("message received in Queue Mode for the unknown client [%s]", endpoint);
+                LOG.warn(message);
+                // notify application layer that the message will not be sent with an exception.
+                throw new RequestCanceledException(message);
             }
-        } else {
-            LOG.warn("Ignoring a message received in Queue Mode for the unknown client [{}]", endpoint);
+        } finally {
+            readWriteLock.readLock().unlock();
         }
     }
 
@@ -163,16 +175,21 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
             LOG.debug("Cancelling and removing all pending messages for client {}", client.getEndpoint());
         }
 
-        // Potentially the first message in the queue would have been sent.
-        // So try to cancel it now.
-        delegateSender.cancelPendingRequests(client);
+        readWriteLock.writeLock().lock();
+        try {
+            // Potentially the first message in the queue would have been sent.
+            // So try to cancel it now.
+            delegateSender.cancelPendingRequests(client);
 
-        // It is better to notify the listener with a RequestCanceledException
-        // for each queued message to keep the behavior consistent with CaliforniumLwM2mRequestSender.
-        List<QueuedRequest> removedMessages = messageStore.removeAll(client.getEndpoint());
-        for (QueuedRequest request : removedMessages) {
-            processingExecutor.execute(new ResponseProcessingTask(client, request.getRequestTicket(), responseListeners,
-                    new RequestCanceledException("Queued message cancelled")));
+            // It is better to notify the listener with a RequestCanceledException
+            // for each queued message to keep the behavior consistent with CaliforniumLwM2mRequestSender.
+            List<QueuedRequest> removedMessages = messageStore.removeAll(client.getEndpoint());
+            for (QueuedRequest request : removedMessages) {
+                processingExecutor.execute(new ResponseProcessingTask(client, request.getRequestTicket(),
+                        responseListeners, new RequestCanceledException("Queued message cancelled")));
+            }
+        } finally {
+            readWriteLock.writeLock().unlock();
         }
     }
 

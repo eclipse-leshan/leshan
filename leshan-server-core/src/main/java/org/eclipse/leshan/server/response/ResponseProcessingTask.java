@@ -90,7 +90,7 @@ public class ResponseProcessingTask implements Runnable {
         for (ResponseListener listener : responseListeners) {
             if (listener != null) {
                 if (hasException) {
-                    LOG.debug("invoke response listener for requestTicket {} with exception {}", requestTicket,
+                    LOG.debug("invoke response listener for requestTicket {} with exception", requestTicket,
                             exception);
                     listener.onError(client, requestTicket, exception);
                 } else {
