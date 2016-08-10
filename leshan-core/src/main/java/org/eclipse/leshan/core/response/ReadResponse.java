@@ -77,6 +77,10 @@ public class ReadResponse extends AbstractLwM2mResponse {
     public static ReadResponse success(int resourceId, long value) {
         return new ReadResponse(ResponseCode.CONTENT, LwM2mSingleResource.newIntegerResource(resourceId, value), null);
     }
+    
+    public static ReadResponse success(int resourceId, int value1, int value2) {
+        return new ReadResponse(ResponseCode.CONTENT, LwM2mSingleResource.newObjlnkResource(resourceId, value1, value2), null);
+    }
 
     public static ReadResponse success(int resourceId, double value) {
         return new ReadResponse(ResponseCode.CONTENT, LwM2mSingleResource.newFloatResource(resourceId, value), null);

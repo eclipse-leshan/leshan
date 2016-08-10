@@ -181,6 +181,8 @@ public class LwM2mNodeTlvEncoder {
                 return TlvEncoder.encodeDate((Date) value);
             case OPAQUE:
                 return (byte[]) value;
+            case OBJLNK:
+            	return TlvEncoder.encodeObjlnk((int[]) value);
             default:
                 throw new IllegalArgumentException("Invalid value type: " + type);
             }

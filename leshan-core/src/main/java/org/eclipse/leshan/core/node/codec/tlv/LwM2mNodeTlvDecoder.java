@@ -196,6 +196,8 @@ public class LwM2mNodeTlvDecoder {
                 return TlvDecoder.decodeDate(value);
             case OPAQUE:
                 return value;
+            case OBJLNK:
+            	return TlvDecoder.decodeObjlnk(value);
             default:
                 throw new InvalidValueException("Unsupported type " + expectedType, path);
             }
