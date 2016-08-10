@@ -63,6 +63,8 @@ public class IntegrationTestHelper {
     public static final int FLOAT_RESOURCE_ID = 3;
     public static final int TIME_RESOURCE_ID = 4;
     public static final int OPAQUE_RESOURCE_ID = 5;
+    public static final int OBJLNK_MULTI_INSTANCE_RESOURCE_ID = 6;
+    public static final int OBJLNK_SINGLE_INSTANCE_RESOURCE_ID = 7;
 
     LeshanServer server;
     LwM2mClient client;
@@ -88,8 +90,12 @@ public class IntegrationTestHelper {
                 null, null, null);
         ResourceModel opaquefield = new ResourceModel(OPAQUE_RESOURCE_ID, "opaque", Operations.RW, false, false,
                 Type.OPAQUE, null, null, null);
+        ResourceModel objlnkfield = new ResourceModel(OBJLNK_MULTI_INSTANCE_RESOURCE_ID, "objlnk", Operations.RW, true, false, Type.OBJLNK,
+        		null, null, null);
+        ResourceModel objlnkSinglefield = new ResourceModel(OBJLNK_SINGLE_INSTANCE_RESOURCE_ID, "objlnk", Operations.RW, false, false, Type.OBJLNK,
+        		null, null, null);
         objectModels.add(new ObjectModel(TEST_OBJECT_ID, "testobject", null, false, false, stringfield, booleanfield,
-                integerfield, floatfield, timefield, opaquefield));
+                integerfield, floatfield, timefield, opaquefield, objlnkfield, objlnkSinglefield));
 
         return objectModels;
     }

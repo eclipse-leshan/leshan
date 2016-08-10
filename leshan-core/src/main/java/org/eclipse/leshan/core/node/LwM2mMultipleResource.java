@@ -68,6 +68,9 @@ public class LwM2mMultipleResource implements LwM2mResource {
         case TIME:
             Validate.allElementsOfType(values.values(), Date.class);
             break;
+        case OBJLNK:
+        	Validate.allElementsOfType(values.values(), int[].class);
+        	break;
         default:
             throw new IllegalArgumentException(String.format("Type %s is not supported", type.name()));
         }
