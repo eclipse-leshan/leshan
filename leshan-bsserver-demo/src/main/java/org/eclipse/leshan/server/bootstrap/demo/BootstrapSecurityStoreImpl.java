@@ -60,7 +60,7 @@ public class BootstrapSecurityStoreImpl implements BootstrapSecurityStore {
 
         BootstrapConfig bsConfig = bsStore.getBootstrap(endpoint);
 
-        if (bsConfig.security == null)
+        if (bsConfig == null || bsConfig.security == null)
             return null;
 
         for (Map.Entry<Integer, BootstrapConfig.ServerSecurity> e : bsConfig.security.entrySet()) {
