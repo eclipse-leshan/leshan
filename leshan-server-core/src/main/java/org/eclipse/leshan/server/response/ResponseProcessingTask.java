@@ -41,9 +41,10 @@ public class ResponseProcessingTask implements Runnable {
     /**
      * Creates a new task for processing response on an ordinary response result.
      *
-     * @param client
+     * @param client instance of {@link Client}
+     * @param requestTicket unique ticket correlating the response to its request.
      * @param request request being processed
-     * @param responseContext response context map for mapping response ID to the callback
+     * @param responseListeners listeners which are notified for response.
      * @param response response to propagate
      */
     public ResponseProcessingTask(Client client, String requestTicket, Collection<ResponseListener> responseListeners,
@@ -59,9 +60,9 @@ public class ResponseProcessingTask implements Runnable {
     /**
      * Creates a new task for processing response on exception.
      *
-     * @param client
-     * @param request request being processed
-     * @param responseListeners response context map for mapping response ID to the callback
+     * @param client instance of {@link Client}
+     * @param requestTicket unique ticket correlating the response to its request.
+     * @param responseListeners listeners which are notified about the exception.
      * @param exception exception to propagate
      */
     public ResponseProcessingTask(Client client, String requestTicket, Collection<ResponseListener> responseListeners,
@@ -90,8 +91,7 @@ public class ResponseProcessingTask implements Runnable {
         for (ResponseListener listener : responseListeners) {
             if (listener != null) {
                 if (hasException) {
-                    LOG.debug("invoke response listener for requestTicket {} with exception", requestTicket,
-                            exception);
+                    LOG.debug("invoke response listener for requestTicket {} with exception", requestTicket, exception);
                     listener.onError(client, requestTicket, exception);
                 } else {
                     LOG.trace("invoke response listener for requestTicket {} with response {}", requestTicket,
