@@ -232,13 +232,22 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
     }
 
     private RequestSendingTask newRequestSendingTask(String clientEndpoint) {
-        return new RequestSendingTask(clientRegistry, delegateSender, clientStatusTracker, messageStore, clientEndpoint);
+        return new RequestSendingTask(clientRegistry, delegateSender, clientStatusTracker, messageStore,
+                clientEndpoint);
     }
 
     private final class QueueModeObservationRegistryListener implements ObservationRegistryListener {
         @Override
         public void newValue(Observation observation, LwM2mNode value, List<TimestampedLwM2mNode> timestampedValues) {
             Client client = clientRegistry.findByRegistrationId(observation.getRegistrationId());
+            // if client de-registered already, do nothing.
+            if (client == null) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("No registered client found for registrationId: {}. Request is not sent.",
+                            observation.getRegistrationId());
+                }
+                return;
+            }
             if (client.usesQueueMode() && clientStatusTracker.setClientReachable(client.getEndpoint())
                     && clientStatusTracker.startClientReceiving(client.getEndpoint())) {
                 if (LOG.isDebugEnabled()) {
