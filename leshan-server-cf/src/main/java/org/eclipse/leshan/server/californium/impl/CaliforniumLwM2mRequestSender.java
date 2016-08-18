@@ -151,8 +151,8 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
     @Override
     public <T extends LwM2mResponse> void send(final Client destination, final String requestTicket,
             final DownlinkRequest<T> request) {
-        send(destination, request, (ResponseCallback<T>) getResponseCallback(destination.getEndpoint(), requestTicket),
-                getErrorCallback(destination.getEndpoint(), requestTicket));
+        send(destination, request, (ResponseCallback<T>) getResponseCallback(destination, requestTicket),
+                getErrorCallback(destination, requestTicket));
     }
 
     /**
@@ -161,13 +161,13 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
      * @parm requestTicket to correlate the response to a request.
      * @return callback which is invoked on getting a response from LWM2M Client.
      */
-    private <T extends LwM2mResponse> ResponseCallback<T> getResponseCallback(final String clientEndpoint,
+    private <T extends LwM2mResponse> ResponseCallback<T> getResponseCallback(final Client client,
             final String requestTicket) {
         return new ResponseCallback<T>() {
             @Override
             public void onResponse(T response) {
-                processingExecutor.execute(
-                        new ResponseProcessingTask(clientEndpoint, requestTicket, responseListeners, response));
+                processingExecutor
+                        .execute(new ResponseProcessingTask(client, requestTicket, responseListeners, response));
             }
         };
     }
@@ -178,12 +178,11 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
      * @param requestTicket to correlate the error to a request.
      * @return
      */
-    private ErrorCallback getErrorCallback(final String clientEndpoint, final String requestTicket) {
+    private ErrorCallback getErrorCallback(final Client client, final String requestTicket) {
         return new ErrorCallback() {
             @Override
             public void onError(Exception e) {
-                processingExecutor
-                        .execute(new ResponseProcessingTask(clientEndpoint, requestTicket, responseListeners, e));
+                processingExecutor.execute(new ResponseProcessingTask(client, requestTicket, responseListeners, e));
             }
         };
     }

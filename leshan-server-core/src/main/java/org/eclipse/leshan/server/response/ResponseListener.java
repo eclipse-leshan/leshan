@@ -16,6 +16,7 @@
 package org.eclipse.leshan.server.response;
 
 import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.server.client.Client;
 
 /**
  * The listener is responsible for handling all the success and error responses for a given requestTicket.
@@ -25,18 +26,18 @@ public interface ResponseListener {
     /**
      * this method is invoked when a response is received from LWM2M Client correlated by the request ticket.
      *
-     * @param clientEndpoint unique identifier of the LWM2M client
+     * @param client the LWM2M client
      * @param requestTicket globally unique identifier used to correlate the response to the orginial request
      * @param response from LWM2M client
      */
-    void onResponse(String clientEndpoint, String requestTicket, LwM2mResponse response);
+    void onResponse(Client client, String requestTicket, LwM2mResponse response);
 
     /**
      * this method is invoked when a an error response is received from LWM2M Client correlated by the request ticket.
      *
-     * @param clientEndpoint unique identifier of the LWM2M client
+     * @param client the LWM2M client
      * @param requestTicket globally unique identifier used to correlate the response to the orginial request
      * @param exception error from LWM2M client
      */
-    void onError(String clientEndpoint, String requestTicket, Exception exception);
+    void onError(Client clien, String requestTicket, Exception exception);
 }

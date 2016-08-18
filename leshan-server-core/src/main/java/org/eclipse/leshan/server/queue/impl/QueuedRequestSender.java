@@ -163,18 +163,16 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
             LOG.debug("Cancelling and removing all pending messages for client {}", client.getEndpoint());
         }
 
-        String clientEndpoint = client.getEndpoint();
-
         // Potentially the first message in the queue would have been sent.
         // So try to cancel it now.
         delegateSender.cancelPendingRequests(client);
 
         // It is better to notify the listener with a RequestCanceledException
         // for each queued message to keep the behavior consistent with CaliforniumLwM2mRequestSender.
-        List<QueuedRequest> removedMessages = messageStore.removeAll(clientEndpoint);
+        List<QueuedRequest> removedMessages = messageStore.removeAll(client.getEndpoint());
         for (QueuedRequest request : removedMessages) {
-            processingExecutor.execute(new ResponseProcessingTask(clientEndpoint, request.getRequestTicket(),
-                    responseListeners, new RequestCanceledException("Queued message cancelled")));
+            processingExecutor.execute(new ResponseProcessingTask(client, request.getRequestTicket(), responseListeners,
+                    new RequestCanceledException("Queued message cancelled")));
         }
     }
 
@@ -187,48 +185,44 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
         return new ResponseListener() {
 
             @Override
-            public void onResponse(String clientEndpoint, String requestTicket, LwM2mResponse response) {
-                Client registrationInfo = clientRegistry.get(clientEndpoint);
+            public void onResponse(Client client, String requestTicket, LwM2mResponse response) {
                 // process only if the client has used Queue mode.
-                if (registrationInfo != null && registrationInfo.usesQueueMode()) {
+                if (client != null && client.usesQueueMode()) {
                     LOG.trace("response received in Queue mode successfully: {}", requestTicket);
-                    processResponse(clientEndpoint, requestTicket, response);
+                    processResponse(client, requestTicket, response);
                 }
             }
 
             @Override
-            public void onError(String clientEndpoint, String requestTicket, Exception exception) {
-                Client registrationInfo = clientRegistry.get(clientEndpoint);
+            public void onError(Client client, String requestTicket, Exception exception) {
                 // process only if the client has used Queue mode.
-                if (registrationInfo != null && registrationInfo.usesQueueMode()) {
+                if (client != null && client.usesQueueMode()) {
                     LOG.debug("exception on sending the request: {}", requestTicket, exception);
                     if (exception instanceof TimeoutException) {
-                        timeout(clientEndpoint);
+                        timeout(client.getEndpoint());
                     } else {
-                        processException(clientEndpoint, requestTicket, exception);
+                        processException(client, requestTicket, exception);
                     }
                 }
             }
         };
     }
 
-    private void processResponse(String clientEndpoint, String requestTicket, LwM2mResponse response) {
+    private void processResponse(Client client, String requestTicket, LwM2mResponse response) {
         LOG.debug("Received Response -> {}", requestTicket);
-        messageStore.deleteFirst(clientEndpoint);
-        processingExecutor
-                .execute(new ResponseProcessingTask(clientEndpoint, requestTicket, responseListeners, response));
-        processingExecutor.execute(newRequestSendingTask(clientEndpoint));
+        messageStore.deleteFirst(client.getEndpoint());
+        processingExecutor.execute(new ResponseProcessingTask(client, requestTicket, responseListeners, response));
+        processingExecutor.execute(newRequestSendingTask(client.getEndpoint()));
     }
 
-    private void processException(String clientEndpoint, String requestTicket, Exception exception) {
+    private void processException(Client client, String requestTicket, Exception exception) {
         LOG.debug("Received error response {}", requestTicket);
-        messageStore.deleteFirst(clientEndpoint);
-        processingExecutor
-                .execute(new ResponseProcessingTask(clientEndpoint, requestTicket, responseListeners, exception));
+        messageStore.deleteFirst(client.getEndpoint());
+        processingExecutor.execute(new ResponseProcessingTask(client, requestTicket, responseListeners, exception));
         // If RequestCanceledException is thrown due to cancelPendingMessages call, then there
         // is no use processing next requests which would be removed in the next few moments.
         if (!(exception instanceof RequestCanceledException)) {
-            processingExecutor.execute(newRequestSendingTask(clientEndpoint));
+            processingExecutor.execute(newRequestSendingTask(client.getEndpoint()));
         }
     }
 
@@ -237,8 +231,8 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
         clientStatusTracker.setClientUnreachable(clientEndpoint);
     }
 
-    private RequestSendingTask newRequestSendingTask(String endpoint) {
-        return new RequestSendingTask(clientRegistry, delegateSender, clientStatusTracker, messageStore, endpoint);
+    private RequestSendingTask newRequestSendingTask(String clientEndpoint) {
+        return new RequestSendingTask(clientRegistry, delegateSender, clientStatusTracker, messageStore, clientEndpoint);
     }
 
     private final class QueueModeObservationRegistryListener implements ObservationRegistryListener {

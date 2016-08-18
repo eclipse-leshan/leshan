@@ -19,6 +19,7 @@ package org.eclipse.leshan.server.response;
 import java.util.Collection;
 
 import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.server.client.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,43 +35,43 @@ public class ResponseProcessingTask implements Runnable {
     private final boolean hasException;
     private final LwM2mResponse response;
     private final Collection<ResponseListener> responseListeners;
-    private final String endpoint;
+    private final Client client;
     private final String requestTicket;
 
     /**
      * Creates a new task for processing response on an ordinary response result.
      *
-     * @param clientEndpoint
+     * @param client
      * @param request request being processed
      * @param responseContext response context map for mapping response ID to the callback
      * @param response response to propagate
      */
-    public ResponseProcessingTask(String clientEndpoint, String requestTicket,
-            Collection<ResponseListener> responseListeners, LwM2mResponse response) {
+    public ResponseProcessingTask(Client client, String requestTicket, Collection<ResponseListener> responseListeners,
+            LwM2mResponse response) {
         this.requestTicket = requestTicket;
         this.exception = null;
         this.hasException = false;
         this.responseListeners = responseListeners;
         this.response = response;
-        this.endpoint = clientEndpoint;
+        this.client = client;
     }
 
     /**
      * Creates a new task for processing response on exception.
      *
-     * @param clientEndpoint
+     * @param client
      * @param request request being processed
      * @param responseListeners response context map for mapping response ID to the callback
      * @param exception exception to propagate
      */
-    public ResponseProcessingTask(String clientEndpoint, String requestTicket,
-            Collection<ResponseListener> responseListeners, Exception exception) {
+    public ResponseProcessingTask(Client client, String requestTicket, Collection<ResponseListener> responseListeners,
+            Exception exception) {
         this.requestTicket = requestTicket;
         this.exception = exception;
         this.responseListeners = responseListeners;
         this.hasException = true;
         this.response = null;
-        this.endpoint = clientEndpoint;
+        this.client = client;
     }
 
     @Override
@@ -91,11 +92,11 @@ public class ResponseProcessingTask implements Runnable {
                 if (hasException) {
                     LOG.debug("invoke response listener for requestTicket {} with exception {}", requestTicket,
                             exception);
-                    listener.onError(endpoint, requestTicket, exception);
+                    listener.onError(client, requestTicket, exception);
                 } else {
                     LOG.trace("invoke response listener for requestTicket {} with response {}", requestTicket,
                             response);
-                    listener.onResponse(endpoint, requestTicket, response);
+                    listener.onResponse(client, requestTicket, response);
                 }
             }
         }
