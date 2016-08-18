@@ -491,7 +491,6 @@ public class QueueModeTest {
         // client is set up to response slowly.
         QueuedModeLeshanClient client = (QueuedModeLeshanClient) helper.client;
         client.setOnGetCallback(delayedResponseOnGet);
-        ;
 
         final CountDownLatch exceptionCountDownLatch = new CountDownLatch(1);
         final CountDownLatch responseCountDownLatch = new CountDownLatch(3);
@@ -562,6 +561,38 @@ public class QueueModeTest {
         assertQueueIsEmpty(3000);
         assertTrue("Did not expect any responses", unexpectedResponseCountDownLatch.getCount() == 2);
         assertTrue("Excepted an RequestCanceledException to be thrown but none was thrown",
+                exceptionCountDownLatch.await(3, TimeUnit.SECONDS));
+    }
+
+    @Test
+    public void sending_message_for_unknown_client_gives_error_response() throws InterruptedException {
+        Client destination = helper.getClient();
+        // stop the lwm2m client created by default
+        helper.client.stop(DEREGISTER);
+    
+        final CountDownLatch exceptionCountDownLatch = new CountDownLatch(1);
+        final CountDownLatch responseCountDownLatch = new CountDownLatch(1);
+    
+        // Add a response listener to verify if any exception is thrown.
+        helper.server.getLwM2mRequestSender().addResponseListener(new ResponseListener() {
+    
+            @Override
+            public void onResponse(String clientEndpoint, String requestTicket, LwM2mResponse response) {
+                responseCountDownLatch.countDown();
+            }
+    
+            @Override
+            public void onError(String clientEndpoint, String requestTicket, Exception exception) {
+                assertTrue("Expected a RequestCanceledException but received " + exception,
+                        exception instanceof RequestCanceledException);
+                exceptionCountDownLatch.countDown();
+            }
+        });
+    
+        helper.server.getLwM2mRequestSender().send(destination, TEST_REQUEST_TICKET + "1", new ReadRequest(3, 0, 1));
+        assertTrue("Did not expect any responses", responseCountDownLatch.getCount() == 1);
+        assertTrue(
+                "Excepted an RequestCanceledException for the message sent for an unknown client but none was received",
                 exceptionCountDownLatch.await(3, TimeUnit.SECONDS));
     }
 
