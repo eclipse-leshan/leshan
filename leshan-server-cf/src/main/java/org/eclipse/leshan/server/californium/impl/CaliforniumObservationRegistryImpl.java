@@ -46,6 +46,10 @@ import org.eclipse.leshan.server.observation.ObservationRegistryListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * InMemory implementation of the {@link CaliforniumObservationRegistry} and {@link ObservationRegistry}. When a new
+ * observation is added or changed or canceled, the listeners registered are notified.
+ */
 public class CaliforniumObservationRegistryImpl
         implements CaliforniumObservationRegistry, ObservationRegistry, NotificationListener {
 
@@ -59,8 +63,16 @@ public class CaliforniumObservationRegistryImpl
     private Endpoint nonSecureEndpoint;
 
     private final List<ObservationRegistryListener> listeners = new CopyOnWriteArrayList<>();
-    private final Map<KeyToken, Observation> observations = new ConcurrentHashMap<KeyToken, Observation>();
+    private final Map<KeyToken, Observation> observationsByToken = new ConcurrentHashMap<>();
 
+    /**
+     * creates an instance of {@link CaliforniumObservationRegistryImpl}
+     * 
+     * @param store instance of californium's {@link ObservationStore}
+     * @param clientRegistry instance of {@link ObservationRegistry}
+     * @param modelProvider instance of {@link LwM2mModelProvider}
+     * @param decoder instance of {@link LwM2mNodeDecoder}
+     */
     public CaliforniumObservationRegistryImpl(ObservationStore store, ClientRegistry clientRegistry,
             LwM2mModelProvider modelProvider, LwM2mNodeDecoder decoder) {
         this.observationStore = store;
@@ -71,7 +83,15 @@ public class CaliforniumObservationRegistryImpl
 
     @Override
     public void addObservation(Observation observation) {
-        observations.put(new KeyToken(observation.getId()), observation);
+        // cancel any existing observations for the same path and registration id.
+        Set<Observation> existingObservations = getObservations(observation.getRegistrationId(),
+                observation.getPath().toString());
+        for (Observation oldObservation : existingObservations) {
+            cancelObservation(oldObservation);
+        }
+
+        // add the new observation
+        observationsByToken.put(new KeyToken(observation.getId()), observation);
 
         for (ObservationRegistryListener listener : listeners) {
             listener.newObservation(observation);
@@ -125,7 +145,7 @@ public class CaliforniumObservationRegistryImpl
             secureEndpoint.cancelObservation(observation.getId());
         if (nonSecureEndpoint != null)
             nonSecureEndpoint.cancelObservation(observation.getId());
-        observations.remove(new KeyToken(observation.getId()));
+        observationsByToken.remove(new KeyToken(observation.getId()));
 
         for (ObservationRegistryListener listener : listeners) {
             listener.cancelled(observation);
@@ -141,8 +161,8 @@ public class CaliforniumObservationRegistryImpl
         if (registrationId == null)
             return Collections.emptySet();
 
-        Set<Observation> result = new HashSet<Observation>();
-        for (Map.Entry<KeyToken, Observation> entry : observations.entrySet()) {
+        Set<Observation> result = new HashSet<>();
+        for (Map.Entry<KeyToken, Observation> entry : observationsByToken.entrySet()) {
             Observation observation = entry.getValue();
             if (registrationId.equals(observation.getRegistrationId())) {
                 result.add(observation);
@@ -155,8 +175,8 @@ public class CaliforniumObservationRegistryImpl
         if (registrationId == null || resourcePath == null)
             return Collections.emptySet();
 
-        Set<Observation> result = new HashSet<Observation>();
-        for (Observation observation : observations.values()) {
+        Set<Observation> result = new HashSet<>();
+        for (Observation observation : observationsByToken.values()) {
             if (registrationId.equals(observation.getRegistrationId())
                     && new LwM2mPath(resourcePath).equals(observation.getPath())) {
                 result.add(observation);
@@ -165,6 +185,7 @@ public class CaliforniumObservationRegistryImpl
         return result;
     }
 
+    @Override
     public ObservationStore getObservationStore() {
         return observationStore;
     }
@@ -191,7 +212,7 @@ public class CaliforniumObservationRegistryImpl
                 || coapResponse.getCode() == CoAP.ResponseCode.CONTENT) {
             try {
                 // get observation for this request
-                Observation observation = observations.get(new KeyToken(coapResponse.getToken()));
+                Observation observation = observationsByToken.get(new KeyToken(coapResponse.getToken()));
                 if (observation == null)
                     return;
 
