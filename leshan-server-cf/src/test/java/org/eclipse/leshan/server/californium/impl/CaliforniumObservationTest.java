@@ -47,6 +47,16 @@ public class CaliforniumObservationTest {
     }
 
     @Test
+    public void observe_twice_cancels_first() {
+        givenAnObservation(support.client.getRegistrationId(), new LwM2mPath(3, 0, 12));
+        givenAnObservation(support.client.getRegistrationId(), new LwM2mPath(3, 0, 12));
+
+        // check the presence of only one observation.
+        Set<Observation> observations = registry.getObservations(support.client);
+        Assert.assertEquals(1, observations.size());
+    }
+
+    @Test
     public void cancel_by_client() {
         // create some observations and add it to registry
         givenAnObservation(support.client.getRegistrationId(), new LwM2mPath(3, 0, 13));
@@ -78,11 +88,11 @@ public class CaliforniumObservationTest {
 
         // check its presence
         Set<Observation> observations = registry.getObservations(support.client);
-        Assert.assertEquals(3, observations.size());
+        Assert.assertEquals(2, observations.size());
 
         // cancel it
         int nbCancelled = registry.cancelObservations(support.client, "/3/0/12");
-        Assert.assertEquals(2, nbCancelled);
+        Assert.assertEquals(1, nbCancelled);
 
         // check its absence
         observations = registry.getObservations(support.client);
@@ -101,14 +111,14 @@ public class CaliforniumObservationTest {
 
         // check its presence
         Set<Observation> observations = registry.getObservations(support.client);
-        Assert.assertEquals(3, observations.size());
+        Assert.assertEquals(2, observations.size());
 
         // cancel it
         registry.cancelObservation(observationToCancel);
 
         // check its absence
         observations = registry.getObservations(support.client);
-        Assert.assertEquals(2, observations.size());
+        Assert.assertEquals(1, observations.size());
     }
 
     private Observation givenAnObservation(String registrationId, LwM2mPath target) {

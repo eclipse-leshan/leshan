@@ -27,6 +27,13 @@ public class Observation {
     private LwM2mPath path;
     private String registrationId;
 
+    /**
+     * instantiates an {@link Observation} for the given node path.
+     * 
+     * @param id token identifier of the observation
+     * @param registrationId client's unique registration identifier.
+     * @param path resource path for which the observation is set.
+     */
     public Observation(byte[] id, String registrationId, LwM2mPath path) {
         super();
         this.id = id;
