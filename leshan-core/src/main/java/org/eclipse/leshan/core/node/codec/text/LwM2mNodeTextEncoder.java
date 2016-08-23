@@ -92,9 +92,9 @@ public class LwM2mNodeTextEncoder {
                 strValue = String.valueOf(((Date) val).getTime() / 1000L);
                 break;
             case OBJLNK:
-            	int[] dataArr = (int[])val;
-            	strValue = String.valueOf(dataArr[0] + ":" + dataArr[1]);
-            	break;
+                int[] dataArr = (int[])val;
+                strValue = String.valueOf(dataArr[0] + ":" + dataArr[1]);
+                break;
             default:
                 throw new IllegalArgumentException("Cannot encode " + val + " in text format");
             }

@@ -381,31 +381,31 @@ public class WriteTest {
     
     @Test
     public void can_write_multi_instance_objlnk_resource_in_tlv() throws InterruptedException {
-    	Map<Integer, int[]> neighbourCellReport = new HashMap<Integer, int[]>();
+        Map<Integer, int[]> neighbourCellReport = new HashMap<Integer, int[]>();
         neighbourCellReport.put(0, new int[] {10245, 1});
         neighbourCellReport.put(1, new int[] {10242, 2});
         neighbourCellReport.put(2, new int[] {10244, 3});
         
         //Write objlnk resource in TLV format
-    	WriteResponse response = helper.server.send(helper.getClient(),
+        WriteResponse response = helper.server.send(helper.getClient(),
                 new WriteRequest(ContentFormat.TLV ,IntegrationTestHelper.TEST_OBJECT_ID, 
-                		0, IntegrationTestHelper.OBJLNK_MULTI_INSTANCE_RESOURCE_ID, neighbourCellReport, Type.OBJLNK));
-    	
-    	//Verify Write result
-    	assertEquals(ResponseCode.CHANGED, response.getCode());
-    	
-    	//Reading back the written OBJLNK value
-    	ReadResponse readResponse = helper.server.send(helper.getClient(), 
-    			new ReadRequest(IntegrationTestHelper.TEST_OBJECT_ID, 0, IntegrationTestHelper.OBJLNK_MULTI_INSTANCE_RESOURCE_ID));
-    	LwM2mMultipleResource resource = (LwM2mMultipleResource) readResponse.getContent();
+                        0, IntegrationTestHelper.OBJLNK_MULTI_INSTANCE_RESOURCE_ID, neighbourCellReport, Type.OBJLNK));
+        
+        //Verify Write result
+        assertEquals(ResponseCode.CHANGED, response.getCode());
+        
+        //Reading back the written OBJLNK value
+        ReadResponse readResponse = helper.server.send(helper.getClient(), 
+                new ReadRequest(IntegrationTestHelper.TEST_OBJECT_ID, 0, IntegrationTestHelper.OBJLNK_MULTI_INSTANCE_RESOURCE_ID));
+        LwM2mMultipleResource resource = (LwM2mMultipleResource) readResponse.getContent();
 
-    	//verify read value
-    	assertEquals(((int[]) resource.getValue(0))[0], 10245);
-    	assertEquals(((int[]) resource.getValue(0))[1], 1);
-    	assertEquals(((int[]) resource.getValue(1))[0], 10242);
-    	assertEquals(((int[]) resource.getValue(1))[1], 2);
-    	assertEquals(((int[]) resource.getValue(2))[0], 10244);
-    	assertEquals(((int[]) resource.getValue(2))[1], 3);
+        //verify read value
+        assertEquals(((int[]) resource.getValue(0))[0], 10245);
+        assertEquals(((int[]) resource.getValue(0))[1], 1);
+        assertEquals(((int[]) resource.getValue(1))[0], 10242);
+        assertEquals(((int[]) resource.getValue(1))[1], 2);
+        assertEquals(((int[]) resource.getValue(2))[0], 10244);
+        assertEquals(((int[]) resource.getValue(2))[1], 3);
     }
     
     @Test
@@ -413,41 +413,41 @@ public class WriteTest {
         int[] data = new int[] {10245, 1};
         
         //Write objlnk resource in TLV format
-    	WriteResponse response = helper.server.send(helper.getClient(),
+        WriteResponse response = helper.server.send(helper.getClient(),
                 new WriteRequest(ContentFormat.TLV ,IntegrationTestHelper.TEST_OBJECT_ID, 
-                		0, IntegrationTestHelper.OBJLNK_SINGLE_INSTANCE_RESOURCE_ID, data));
-    	
-    	//Verify Write result
-    	assertEquals(ResponseCode.CHANGED, response.getCode());
-    	
-    	//Reading back the written OBJLNK value
-    	ReadResponse readResponse = helper.server.send(helper.getClient(), 
-    			new ReadRequest(IntegrationTestHelper.TEST_OBJECT_ID, 0, IntegrationTestHelper.OBJLNK_SINGLE_INSTANCE_RESOURCE_ID));
-    	LwM2mSingleResource resource = (LwM2mSingleResource) readResponse.getContent();
+                        0, IntegrationTestHelper.OBJLNK_SINGLE_INSTANCE_RESOURCE_ID, data));
+        
+        //Verify Write result
+        assertEquals(ResponseCode.CHANGED, response.getCode());
+        
+        //Reading back the written OBJLNK value
+        ReadResponse readResponse = helper.server.send(helper.getClient(), 
+                new ReadRequest(IntegrationTestHelper.TEST_OBJECT_ID, 0, IntegrationTestHelper.OBJLNK_SINGLE_INSTANCE_RESOURCE_ID));
+        LwM2mSingleResource resource = (LwM2mSingleResource) readResponse.getContent();
 
-    	//verify read value
-    	assertEquals(((int[]) resource.getValue())[0], 10245);
-    	assertEquals(((int[]) resource.getValue())[1], 1);
+        //verify read value
+        assertEquals(((int[]) resource.getValue())[0], 10245);
+        assertEquals(((int[]) resource.getValue())[1], 1);
     }
     
     @Test
     public void can_write_single_instance_objlnk_resource_in_text() throws InterruptedException {
         //Write objlnk resource in TEXT format
-    	WriteResponse response = helper.server.send(helper.getClient(),
+        WriteResponse response = helper.server.send(helper.getClient(),
                 new WriteRequest(ContentFormat.TEXT ,IntegrationTestHelper.TEST_OBJECT_ID, 
-                		0, IntegrationTestHelper.OBJLNK_SINGLE_INSTANCE_RESOURCE_ID, new int[] {10245, 0}));
-    	
-    	//Verify Write result
-    	assertEquals(ResponseCode.CHANGED, response.getCode());
-    	
-    	//Reading back the written OBJLNK value
-    	ReadResponse readResponse = helper.server.send(helper.getClient(), 
-    			new ReadRequest(ContentFormat.TEXT, IntegrationTestHelper.TEST_OBJECT_ID, 0, IntegrationTestHelper.OBJLNK_SINGLE_INSTANCE_RESOURCE_ID));
-    	LwM2mSingleResource resource = (LwM2mSingleResource) readResponse.getContent();
+                        0, IntegrationTestHelper.OBJLNK_SINGLE_INSTANCE_RESOURCE_ID, new int[] {10245, 0}));
+        
+        //Verify Write result
+        assertEquals(ResponseCode.CHANGED, response.getCode());
+        
+        //Reading back the written OBJLNK value
+        ReadResponse readResponse = helper.server.send(helper.getClient(), 
+                new ReadRequest(ContentFormat.TEXT, IntegrationTestHelper.TEST_OBJECT_ID, 0, IntegrationTestHelper.OBJLNK_SINGLE_INSTANCE_RESOURCE_ID));
+        LwM2mSingleResource resource = (LwM2mSingleResource) readResponse.getContent();
 
-    	//verify read value
-    	assertEquals(((int[]) resource.getValue())[0], 10245);
-    	assertEquals(((int[]) resource.getValue())[1], 0);
-    	
+        //verify read value
+        assertEquals(((int[]) resource.getValue())[0], 10245);
+        assertEquals(((int[]) resource.getValue())[1], 0);
+        
     }
 }

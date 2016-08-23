@@ -118,7 +118,7 @@ public class TlvEncoder {
      * Encodes a Objlnk value.
      */
     public static byte[] encodeObjlnk(int[] value) {
-    	ByteBuffer objlnkBuffer = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN);
+        ByteBuffer objlnkBuffer = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN);
         objlnkBuffer.putShort(0, (short)value[0]);
         objlnkBuffer.putShort(2, (short)value[1]);
         return objlnkBuffer.array();

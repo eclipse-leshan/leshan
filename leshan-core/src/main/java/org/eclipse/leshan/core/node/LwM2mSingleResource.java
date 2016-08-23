@@ -62,8 +62,8 @@ public class LwM2mSingleResource implements LwM2mResource {
             if (value instanceof Date)
                 break;
         case OBJLNK:
-        	if (value instanceof int[])
-        		break;
+            if (value instanceof int[])
+                break;
             throw new IllegalArgumentException("Value does not match the given datatype");
         default:
             throw new IllegalArgumentException(String.format("Type %s is not supported", type.name()));
@@ -80,7 +80,7 @@ public class LwM2mSingleResource implements LwM2mResource {
     }
     
     public static LwM2mSingleResource newObjlnkResource(int id, int value1, int value2) {
-    	return new LwM2mSingleResource(id, new int[]{value1,value2}, Type.OBJLNK);
+        return new LwM2mSingleResource(id, new int[]{value1,value2}, Type.OBJLNK);
     }
 
     public static LwM2mSingleResource newBooleanResource(int id, boolean value) {

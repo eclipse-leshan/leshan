@@ -80,7 +80,7 @@ public class LwM2mNodeTextDecoder {
                 // number of seconds since 1970/1/1
                 return new Date(Long.valueOf(value) * 1000L);
             case OBJLNK:
-            	String[] intArr = value.split(":");
+                String[] intArr = value.split(":");
                 return new int[] {Integer.parseInt(intArr[0]), Integer.parseInt(intArr[1])};
             case OPAQUE:
                 // not specified

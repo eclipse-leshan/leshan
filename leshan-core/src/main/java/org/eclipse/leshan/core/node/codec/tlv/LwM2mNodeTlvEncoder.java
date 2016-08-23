@@ -182,7 +182,7 @@ public class LwM2mNodeTlvEncoder {
             case OPAQUE:
                 return (byte[]) value;
             case OBJLNK:
-            	return TlvEncoder.encodeObjlnk((int[]) value);
+                return TlvEncoder.encodeObjlnk((int[]) value);
             default:
                 throw new IllegalArgumentException("Invalid value type: " + type);
             }
