@@ -64,6 +64,7 @@ public class CaliforniumObservationRegistryImpl
 
     private final List<ObservationRegistryListener> listeners = new CopyOnWriteArrayList<>();
     private final Map<KeyToken, Observation> observationsByToken = new ConcurrentHashMap<>();
+    private final Object monitor = new Object();
 
     /**
      * Creates an instance of {@link CaliforniumObservationRegistryImpl}
@@ -83,12 +84,27 @@ public class CaliforniumObservationRegistryImpl
 
     @Override
     public void addObservation(Observation observation) {
-        // cancel any existing observations for the same path and registration id.
-        cancelObservations(observation.getRegistrationId(), observation.getPath().toString());
+        Observation existingObservation;
+        synchronized (monitor) {
+            // cancel any existing observations for the same path and registration id.
+            existingObservation = getObservation(observation.getRegistrationId(), observation.getPath().toString());
+            if (existingObservation != null) {
+                cancelObservationsOnEndpoints(existingObservation.getId());
+                observationsByToken.remove(new KeyToken(existingObservation.getId()));
+            }
 
-        // add the new observation
-        observationsByToken.put(new KeyToken(observation.getId()), observation);
+            // add the new observation
+            observationsByToken.put(new KeyToken(observation.getId()), observation);
+        }
 
+        // notify listeners if existing observation was cancelled.
+        if (existingObservation != null) {
+            for (ObservationRegistryListener listener : listeners) {
+                listener.cancelled(observation);
+            }
+        }
+
+        // notify about the newly added observation.
         for (ObservationRegistryListener listener : listeners) {
             listener.newObservation(observation);
         }
@@ -112,52 +128,64 @@ public class CaliforniumObservationRegistryImpl
             return 0;
 
         Set<Observation> observations = getObservations(registrationId);
+        int removed = 0;
         for (Observation observation : observations) {
-            cancelObservation(observation);
+            if (doCancelObservation(observation)) {
+                removed++;
+            }
         }
-        return observations.size();
+        return removed;
     }
 
     @Override
-    public int cancelObservations(Client client, String resourcepath) {
+    public void cancelObservation(Client client, String resourcepath) {
         // check registration id
         if (client == null)
-            return 0;
+            return;
 
-        return cancelObservations(client.getRegistrationId(), resourcepath);
-    }
-
-    public int cancelObservations(String registrationId, String resourcepath) {
         // check registration id
-        if (registrationId == null || resourcepath == null || resourcepath.isEmpty())
-            return 0;
+        if (client.getRegistrationId() == null || resourcepath == null || resourcepath.isEmpty())
+            return;
 
-        Set<Observation> observations = getObservations(registrationId, resourcepath);
-        for (Observation observation : observations) {
-            cancelObservation(observation);
-        }
-        return observations.size();
+        doCancelObservation(getObservation(client.getRegistrationId(), resourcepath));
     }
 
     @Override
     public void cancelObservation(Observation observation) {
-        if (observation == null)
-            return;
-
-        if (secureEndpoint != null)
-            secureEndpoint.cancelObservation(observation.getId());
-        if (nonSecureEndpoint != null)
-            nonSecureEndpoint.cancelObservation(observation.getId());
-        observationsByToken.remove(new KeyToken(observation.getId()));
-
-        for (ObservationRegistryListener listener : listeners) {
-            listener.cancelled(observation);
-        }
+        doCancelObservation(observation);
     }
 
     @Override
     public Set<Observation> getObservations(Client client) {
         return getObservations(client.getRegistrationId());
+    }
+
+    private boolean doCancelObservation(Observation observation) {
+        if (observation == null)
+            return false;
+
+        cancelObservationsOnEndpoints(observation.getId());
+
+        Observation removed;
+        synchronized (monitor) {
+            removed = observationsByToken.remove(new KeyToken(observation.getId()));
+        }
+
+        // notify only when an observation was really removed.
+        if (removed != null) {
+            for (ObservationRegistryListener listener : listeners) {
+                listener.cancelled(observation);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private void cancelObservationsOnEndpoints(byte[] token) {
+        if (secureEndpoint != null)
+            secureEndpoint.cancelObservation(token);
+        if (nonSecureEndpoint != null)
+            nonSecureEndpoint.cancelObservation(token);
     }
 
     private Set<Observation> getObservations(String registrationId) {
@@ -174,18 +202,17 @@ public class CaliforniumObservationRegistryImpl
         return result;
     }
 
-    private Set<Observation> getObservations(String registrationId, String resourcePath) {
+    private Observation getObservation(String registrationId, String resourcePath) {
         if (registrationId == null || resourcePath == null)
-            return Collections.emptySet();
+            return null;
 
-        Set<Observation> result = new HashSet<>();
         for (Observation observation : observationsByToken.values()) {
             if (registrationId.equals(observation.getRegistrationId())
                     && new LwM2mPath(resourcePath).equals(observation.getPath())) {
-                result.add(observation);
+                return observation;
             }
         }
-        return result;
+        return null;
     }
 
     @Override
