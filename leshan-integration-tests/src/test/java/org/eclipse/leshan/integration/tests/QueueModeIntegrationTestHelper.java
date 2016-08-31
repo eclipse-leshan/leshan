@@ -27,7 +27,6 @@ import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
-import org.eclipse.californium.core.observe.InMemoryObservationStore;
 import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Security;
@@ -44,6 +43,8 @@ import org.eclipse.leshan.integration.tests.util.QueueModeLeshanServer;
 import org.eclipse.leshan.integration.tests.util.QueuedModeLeshanClient;
 import org.eclipse.leshan.server.californium.impl.CaliforniumLwM2mRequestSender;
 import org.eclipse.leshan.server.californium.impl.CaliforniumObservationRegistryImpl;
+import org.eclipse.leshan.server.californium.impl.InMemoryLwM2mObservationStore;
+import org.eclipse.leshan.server.californium.impl.LwM2mObservationStore;
 import org.eclipse.leshan.server.californium.impl.RegisterResource;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
@@ -57,7 +58,6 @@ import org.eclipse.leshan.server.queue.impl.QueuedRequestSender;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
 import org.eclipse.leshan.server.security.SecurityRegistry;
-import org.eclipse.leshan.server.security.SecurityStore;
 
 /**
  * IntegrationTestHelper, which is intended to create a client/server environment for testing the Queue Mode feature.
@@ -66,8 +66,8 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
 
     public static final long ACK_TIMEOUT = 700L;
     public static final long CUSTOM_LIFETIME = LIFETIME + 6;
-    private final Endpoint noSecureEndpoint;
-    private final Endpoint secureEndpoint;
+    private Endpoint noSecureEndpoint;
+    private Endpoint secureEndpoint;
     QueueModeLeshanServer server;
     private CoapServer coapServer;
     private final NetworkConfig networkConfig;
@@ -76,21 +76,6 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         networkConfig = new NetworkConfig();
         networkConfig.setLong(Keys.ACK_TIMEOUT, ACK_TIMEOUT);
         networkConfig.setInt(Keys.MAX_RETRANSMIT, 0);
-        noSecureEndpoint = new CoapEndpoint(
-                new InetSocketAddress(InetAddress.getLoopbackAddress(), networkConfig.getInt(Keys.COAP_PORT)),
-                networkConfig);
-        secureEndpoint = new CoapEndpoint(
-                new InetSocketAddress(InetAddress.getLoopbackAddress(), networkConfig.getInt(Keys.COAP_SECURE_PORT)),
-                networkConfig);
-    }
-
-    private void createCoapServer(ClientRegistry clientRegistry, SecurityStore securityStore) {
-        coapServer = new CoapServer(networkConfig);
-        coapServer.addEndpoint(noSecureEndpoint);
-        coapServer.addEndpoint(secureEndpoint);
-
-        RegisterResource rdResource = new RegisterResource(new RegistrationHandler(clientRegistry, securityStore));
-        coapServer.add(rdResource);
     }
 
     @Override
@@ -112,13 +97,28 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
                 // do not save to file
             }
         };
-        createCoapServer(clientRegistry, securityRegistry);
+        LwM2mObservationStore observationStore = new InMemoryLwM2mObservationStore();
+
+        // coap server
+        noSecureEndpoint = new CoapEndpoint(
+                new InetSocketAddress(InetAddress.getLoopbackAddress(), networkConfig.getInt(Keys.COAP_PORT)),
+                networkConfig, observationStore);
+        secureEndpoint = new CoapEndpoint(
+                new InetSocketAddress(InetAddress.getLoopbackAddress(), networkConfig.getInt(Keys.COAP_SECURE_PORT)),
+                networkConfig, observationStore);
+        coapServer = new CoapServer(networkConfig);
+        coapServer.addEndpoint(noSecureEndpoint);
+        coapServer.addEndpoint(secureEndpoint);
+
+        RegisterResource rdResource = new RegisterResource(new RegistrationHandler(clientRegistry, securityRegistry));
+        coapServer.add(rdResource);
+
         InMemoryMessageStore inMemoryMessageStore = new InMemoryMessageStore();
         LwM2mModelProvider modelProvider = new StandardModelProvider();
         LwM2mNodeEncoder encoder = new DefaultLwM2mNodeEncoder();
         LwM2mNodeDecoder decoder = new DefaultLwM2mNodeDecoder();
         CaliforniumObservationRegistryImpl observationRegistry = new CaliforniumObservationRegistryImpl(
-                new InMemoryObservationStore(), clientRegistry, modelProvider, decoder);
+                observationStore, clientRegistry, modelProvider, decoder);
         observationRegistry.setSecureEndpoint(secureEndpoint);
         secureEndpoint.addNotificationListener(observationRegistry);
         observationRegistry.setNonSecureEndpoint(noSecureEndpoint);

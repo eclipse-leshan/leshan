@@ -15,7 +15,11 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
+import java.util.Collections;
+import java.util.Map;
+
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.response.ObserveResponse;
 
 /**
@@ -26,13 +30,16 @@ public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
 
     private ContentFormat format;
 
+    /* Additional information relative to this observe request */
+    private Map<String, String> context;
+
     /**
      * Creates a request for observing future changes of all instances of a particular object of a client.
      * 
      * @param objectId the object ID of the resource
      */
     public ObserveRequest(int objectId) {
-        this(null, new LwM2mPath(objectId));
+        this(null, new LwM2mPath(objectId), null);
     }
 
     /**
@@ -42,7 +49,7 @@ public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
      * @param objectId the object ID of the resource
      */
     public ObserveRequest(ContentFormat format, int objectId) {
-        this(format, new LwM2mPath(objectId));
+        this(format, new LwM2mPath(objectId), null);
     }
 
     /**
@@ -52,7 +59,7 @@ public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
      * @param objectInstanceId the object instance ID
      */
     public ObserveRequest(int objectId, int objectInstanceId) {
-        this(null, new LwM2mPath(objectId, objectInstanceId));
+        this(null, new LwM2mPath(objectId, objectInstanceId), null);
     }
 
     /**
@@ -63,7 +70,7 @@ public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
      * @param objectInstanceId the object instance ID
      */
     public ObserveRequest(ContentFormat format, int objectId, int objectInstanceId) {
-        this(format, new LwM2mPath(objectId, objectInstanceId));
+        this(format, new LwM2mPath(objectId, objectInstanceId), null);
     }
 
     /**
@@ -74,7 +81,7 @@ public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
      * @param resourceId the (individual) resource's ID
      */
     public ObserveRequest(int objectId, int objectInstanceId, int resourceId) {
-        this(null, new LwM2mPath(objectId, objectInstanceId, resourceId));
+        this(null, new LwM2mPath(objectId, objectInstanceId, resourceId), null);
     }
 
     /**
@@ -86,7 +93,7 @@ public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
      * @param resourceId the (individual) resource's ID
      */
     public ObserveRequest(ContentFormat format, int objectId, int objectInstanceId, int resourceId) {
-        this(format, new LwM2mPath(objectId, objectInstanceId, resourceId));
+        this(format, new LwM2mPath(objectId, objectInstanceId, resourceId), null);
     }
 
     /**
@@ -96,7 +103,7 @@ public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
      * @throw IllegalArgumentException if the path is not valid
      */
     public ObserveRequest(String path) {
-        this(null, new LwM2mPath(path));
+        this(null, new LwM2mPath(path), null);
     }
 
     /**
@@ -107,12 +114,26 @@ public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
      * @throw IllegalArgumentException if the path is not valid
      */
     public ObserveRequest(ContentFormat format, String path) {
-        this(format, new LwM2mPath(path));
+        this(format, new LwM2mPath(path), null);
     }
 
-    private ObserveRequest(ContentFormat format, LwM2mPath target) {
+    /**
+     * Creates a request for observing future changes of a particular LWM2M node (object, object instance or resource).
+     * 
+     * @param format the desired format for the response
+     * @param path the path to the LWM2M node to observe
+     * @param context additional information about the request. This context will be available via the
+     *        {@link Observation} once established.
+     * @throw IllegalArgumentException if the path is not valid
+     */
+    public ObserveRequest(ContentFormat format, String path, Map<String, String> context) {
+        this(format, new LwM2mPath(path), context);
+    }
+
+    private ObserveRequest(ContentFormat format, LwM2mPath target, Map<String, String> context) {
         super(target);
         this.format = format;
+        this.context = context;
     }
 
     /**
@@ -120,6 +141,20 @@ public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
      */
     public ContentFormat getFormat() {
         return format;
+    }
+
+    /**
+     * @return an unmodifiable map containing the additional information relative to this observe request.
+     */
+    public Map<String, String> getContext() {
+        if (context == null) {
+            return Collections.emptyMap();
+        }
+        return Collections.unmodifiableMap(context);
+    }
+
+    public void setContext(Map<String, String> context) {
+        this.context = context;
     }
 
     @Override

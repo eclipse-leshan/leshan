@@ -18,6 +18,8 @@ package org.eclipse.leshan.server.californium.impl;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.eclipse.leshan.server.client.Client;
 
@@ -35,6 +37,14 @@ public class CaliforniumTestSupport {
                 registrationAddress);
 
         client = builder.build();
+    }
 
+    public static byte[] createToken() {
+        Random random = ThreadLocalRandom.current();
+        byte[] token;
+        token = new byte[random.nextInt(8) + 1];
+        // random value
+        random.nextBytes(token);
+        return token;
     }
 }
