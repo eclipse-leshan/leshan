@@ -2,7 +2,7 @@
 
 ![Leshan](https://eclipse.org/leshan/img/multicolor-leshan.png)
 
-[Leshan](https://eclipse.org/leshan) is a OMA Lightweight M2M server and client java implementation.
+[Eclipse Leshan™](https://eclipse.org/leshan) is an OMA Lightweight M2M server and client Java implementation.
 
 [What is OMA LWM2M ?](http://technical.openmobilealliance.org/Technical/release_program/lightweightM2M_v1_0.aspx)  
 [The specification](http://member.openmobilealliance.org/ftp/Public_documents/DM/LightweightM2M/).  
