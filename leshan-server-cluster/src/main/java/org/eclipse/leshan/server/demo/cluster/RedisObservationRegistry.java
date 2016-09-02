@@ -128,17 +128,16 @@ public class RedisObservationRegistry
     }
 
     @Override
-    public int cancelObservations(Client client, String resourcepath) {
+    public void cancelObservation(Client client, String resourcepath) {
         // check registration id
         String registrationId = client.getRegistrationId();
         if (registrationId == null || resourcepath == null || resourcepath.isEmpty())
-            return 0;
+            return;
 
         Set<Observation> observations = getObservations(registrationId, resourcepath);
         for (Observation observation : observations) {
             cancelObservation(observation);
         }
-        return observations.size();
     }
 
     @Override
@@ -215,6 +214,7 @@ public class RedisObservationRegistry
         }
     }
 
+    @Override
     public ObservationStore getObservationStore() {
         return observationStore;
     }
@@ -311,7 +311,7 @@ public class RedisObservationRegistry
                 }
             } catch (InvalidValueException e) {
                 String msg = String.format("[%s] ([%s])", e.getMessage(), e.getPath().toString());
-                LOG.debug(msg);
+                LOG.debug(msg, e);
             }
         }
     }

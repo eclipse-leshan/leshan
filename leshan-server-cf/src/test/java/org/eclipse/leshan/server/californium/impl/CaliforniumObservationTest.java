@@ -91,8 +91,7 @@ public class CaliforniumObservationTest {
         Assert.assertEquals(2, observations.size());
 
         // cancel it
-        int nbCancelled = registry.cancelObservations(support.client, "/3/0/12");
-        Assert.assertEquals(1, nbCancelled);
+        registry.cancelObservation(support.client, "/3/0/12");
 
         // check its absence
         observations = registry.getObservations(support.client);

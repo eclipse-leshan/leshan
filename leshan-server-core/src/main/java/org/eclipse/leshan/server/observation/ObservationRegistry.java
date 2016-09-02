@@ -45,16 +45,15 @@ public interface ObservationRegistry {
     int cancelObservations(Client client);
 
     /**
-     * Cancels all active observations for the given resource of a given client.
+     * Cancels the active observations for the given resource of a given client.
      * 
      * As a consequence the LWM2M Client will stop sending notifications about updated values of resources in scope of
      * the canceled observation.
      * 
      * @param client the LWM2M Client to cancel observation for
      * @param resourcepath resource to cancel observation for
-     * @return the number of canceled observations
      */
-    int cancelObservations(Client client, String resourcepath);
+    void cancelObservation(Client client, String resourcepath);
 
     /**
      * Cancels an observation.
