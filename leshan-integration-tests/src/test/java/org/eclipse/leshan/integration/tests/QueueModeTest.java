@@ -20,9 +20,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -347,7 +345,7 @@ public class QueueModeTest {
 
         // wait for notify
         listener.waitForNotification(2000);
-        assertTrue(listener.receievedNotify().get());
+        assertTrue(listener.receivedNotify().get());
     }
 
     @Test
@@ -689,12 +687,8 @@ public class QueueModeTest {
         public void newObservation(Observation observation) {
         }
 
-        public AtomicBoolean receievedNotify() {
+        public AtomicBoolean receivedNotify() {
             return receivedNotify;
-        }
-
-        public LwM2mNode getContent() {
-            return null;
         }
 
         public void waitForNotification(long timeout) throws InterruptedException {

@@ -37,7 +37,7 @@ public class LwM2mNodeTextDecoder {
         Validate.notNull(path.getResourceId());
         ResourceModel rDesc = model.getResourceModel(path.getObjectId(), path.getResourceId());
 
-        String strValue = new String(content, Charsets.UTF_8);
+        String strValue = content != null ? new String(content, Charsets.UTF_8) : "";
         if (rDesc != null && rDesc.type != null) {
             return LwM2mSingleResource.newResource(path.getResourceId(), parseTextValue(strValue, rDesc.type, path),
                     rDesc.type);

@@ -28,7 +28,7 @@ Contributors:
   </Appenders>
  
   <Loggers>
-    <Root level="off">
+    <Root level="error">
       <AppenderRef ref="STDOUT"/>
     </Root>
   </Loggers>

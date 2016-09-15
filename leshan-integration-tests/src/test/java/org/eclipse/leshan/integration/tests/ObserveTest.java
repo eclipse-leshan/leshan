@@ -16,8 +16,7 @@
 
 package org.eclipse.leshan.integration.tests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;

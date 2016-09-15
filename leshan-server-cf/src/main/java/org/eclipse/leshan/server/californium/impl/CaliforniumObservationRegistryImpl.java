@@ -15,20 +15,23 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
+import static org.eclipse.leshan.server.californium.impl.CoapRequestBuilder.*;
+
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
-import org.eclipse.californium.core.network.Exchange.KeyToken;
-import org.eclipse.californium.core.observe.NotificationListener;
 import org.eclipse.californium.core.observe.ObservationStore;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -47,15 +50,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * InMemory implementation of the {@link CaliforniumObservationRegistry} and {@link ObservationRegistry}. When a new
- * observation is added or changed or canceled, the listeners registered are notified.
+ * Implementation of the {@link CaliforniumObservationRegistry} accessing the persisted observation via the provided
+ * {@link LwM2mObservationStore}.
+ * 
+ * When a new observation is added or changed or canceled, the registered listeners are notified.
  */
-public class CaliforniumObservationRegistryImpl
-        implements CaliforniumObservationRegistry, ObservationRegistry, NotificationListener {
+public class CaliforniumObservationRegistryImpl implements CaliforniumObservationRegistry {
 
     private final Logger LOG = LoggerFactory.getLogger(CaliforniumObservationRegistry.class);
 
-    private final ObservationStore observationStore;
+    private final LwM2mObservationStore observationStore;
     private final ClientRegistry clientRegistry;
     private final LwM2mModelProvider modelProvider;
     private final LwM2mNodeDecoder decoder;
@@ -63,7 +67,6 @@ public class CaliforniumObservationRegistryImpl
     private Endpoint nonSecureEndpoint;
 
     private final List<ObservationRegistryListener> listeners = new CopyOnWriteArrayList<>();
-    private final Map<KeyToken, Observation> observationsByToken = new ConcurrentHashMap<>();
 
     /**
      * Creates an instance of {@link CaliforniumObservationRegistryImpl}
@@ -73,7 +76,7 @@ public class CaliforniumObservationRegistryImpl
      * @param modelProvider instance of {@link LwM2mModelProvider}
      * @param decoder instance of {@link LwM2mNodeDecoder}
      */
-    public CaliforniumObservationRegistryImpl(ObservationStore store, ClientRegistry clientRegistry,
+    public CaliforniumObservationRegistryImpl(LwM2mObservationStore store, ClientRegistry clientRegistry,
             LwM2mModelProvider modelProvider, LwM2mNodeDecoder decoder) {
         this.observationStore = store;
         this.modelProvider = modelProvider;
@@ -83,11 +86,15 @@ public class CaliforniumObservationRegistryImpl
 
     @Override
     public void addObservation(Observation observation) {
-        // cancel any existing observations for the same path and registration id.
-        cancelObservations(observation.getRegistrationId(), observation.getPath().toString());
+        // cancel any other observation for the same path and registration id.
+        // delegate this to the observation store to avoid race conditions on add/cancel?
+        for (Observation obs : getObservations(observation.getRegistrationId())) {
+            if (observation.getPath().equals(obs.getPath()) && !Arrays.equals(observation.getId(), obs.getId())) {
+                cancelObservation(obs);
+            }
+        }
 
-        // add the new observation
-        observationsByToken.put(new KeyToken(observation.getId()), observation);
+        // the observation is already persisted by the CoAP layer
 
         for (ObservationRegistryListener listener : listeners) {
             listener.newObservation(observation);
@@ -111,28 +118,32 @@ public class CaliforniumObservationRegistryImpl
         if (registrationId == null)
             return 0;
 
-        Set<Observation> observations = getObservations(registrationId);
-        for (Observation observation : observations) {
-            cancelObservation(observation);
+        Collection<org.eclipse.californium.core.observe.Observation> observations = observationStore
+                .removeAll(registrationId);
+        if (observations == null)
+            return 0;
+
+        for (org.eclipse.californium.core.observe.Observation cfObs : observations) {
+            Observation observation = build(cfObs);
+            if (secureEndpoint != null)
+                secureEndpoint.cancelObservation(observation.getId());
+            if (nonSecureEndpoint != null)
+                nonSecureEndpoint.cancelObservation(observation.getId());
+
+            for (ObservationRegistryListener listener : listeners) {
+                listener.cancelled(observation);
+            }
         }
+
         return observations.size();
     }
 
     @Override
     public int cancelObservations(Client client, String resourcepath) {
-        // check registration id
-        if (client == null)
+        if (client == null || client.getRegistrationId() == null || resourcepath == null || resourcepath.isEmpty())
             return 0;
 
-        return cancelObservations(client.getRegistrationId(), resourcepath);
-    }
-
-    public int cancelObservations(String registrationId, String resourcepath) {
-        // check registration id
-        if (registrationId == null || resourcepath == null || resourcepath.isEmpty())
-            return 0;
-
-        Set<Observation> observations = getObservations(registrationId, resourcepath);
+        Set<Observation> observations = getObservations(client.getRegistrationId(), resourcepath);
         for (Observation observation : observations) {
             cancelObservation(observation);
         }
@@ -148,7 +159,7 @@ public class CaliforniumObservationRegistryImpl
             secureEndpoint.cancelObservation(observation.getId());
         if (nonSecureEndpoint != null)
             nonSecureEndpoint.cancelObservation(observation.getId());
-        observationsByToken.remove(new KeyToken(observation.getId()));
+        observationStore.remove(observation.getId());
 
         for (ObservationRegistryListener listener : listeners) {
             listener.cancelled(observation);
@@ -165,11 +176,9 @@ public class CaliforniumObservationRegistryImpl
             return Collections.emptySet();
 
         Set<Observation> result = new HashSet<>();
-        for (Map.Entry<KeyToken, Observation> entry : observationsByToken.entrySet()) {
-            Observation observation = entry.getValue();
-            if (registrationId.equals(observation.getRegistrationId())) {
-                result.add(observation);
-            }
+        for (org.eclipse.californium.core.observe.Observation obs : observationStore
+                .getByRegistrationId(registrationId)) {
+            result.add(build(obs));
         }
         return result;
     }
@@ -178,11 +187,11 @@ public class CaliforniumObservationRegistryImpl
         if (registrationId == null || resourcePath == null)
             return Collections.emptySet();
 
-        Set<Observation> result = new HashSet<>();
-        for (Observation observation : observationsByToken.values()) {
-            if (registrationId.equals(observation.getRegistrationId())
-                    && new LwM2mPath(resourcePath).equals(observation.getPath())) {
-                result.add(observation);
+        Set<Observation> result = new HashSet<Observation>();
+        LwM2mPath lwPath = new LwM2mPath(resourcePath);
+        for (Observation obs : getObservations(registrationId)) {
+            if (lwPath.equals(obs.getPath())) {
+                result.add(obs);
             }
         }
         return result;
@@ -203,11 +212,39 @@ public class CaliforniumObservationRegistryImpl
         listeners.remove(listener);
     }
 
+    /* from a Californium observation */
+    private Observation build(org.eclipse.californium.core.observe.Observation cfObs) {
+        if (cfObs == null)
+            return null;
+
+        String regId = null;
+        String lwm2mPath = null;
+        Map<String, String> context = null;
+
+        for (Entry<String, String> ctx : cfObs.getRequest().getUserContext().entrySet()) {
+            switch (ctx.getKey()) {
+            case CTX_REGID:
+                regId = ctx.getValue();
+                break;
+            case CTX_LWM2M_PATH:
+                lwm2mPath = ctx.getValue();
+                break;
+            default:
+                if (context == null) {
+                    context = new HashMap<>();
+                }
+                context.put(ctx.getKey(), ctx.getValue());
+            }
+        }
+        return new Observation(cfObs.getRequest().getToken(), regId, new LwM2mPath(lwm2mPath), context);
+    }
+
     // ********** NotificationListener interface **********//
 
-    // TODO duplicate code from org.eclipse.leshan.server.demo.cluster.RedisObservationRegistry
     @Override
     public void onNotification(Request coapRequest, Response coapResponse) {
+        LOG.trace("notification received for request {}: {}", coapRequest, coapResponse);
+
         if (listeners.isEmpty())
             return;
 
@@ -215,7 +252,7 @@ public class CaliforniumObservationRegistryImpl
                 || coapResponse.getCode() == CoAP.ResponseCode.CONTENT) {
             try {
                 // get observation for this request
-                Observation observation = observationsByToken.get(new KeyToken(coapResponse.getToken()));
+                Observation observation = build(observationStore.get(coapResponse.getToken()));
                 if (observation == null)
                     return;
 
@@ -249,8 +286,7 @@ public class CaliforniumObservationRegistryImpl
                     }
                 }
             } catch (InvalidValueException e) {
-                String msg = String.format("[%s] ([%s])", e.getMessage(), e.getPath().toString());
-                LOG.debug(msg);
+                LOG.debug(String.format("[%s] ([%s])", e.getMessage(), e.getPath().toString()));
             }
         }
     }

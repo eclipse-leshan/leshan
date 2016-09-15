@@ -19,8 +19,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.impl;
 
-import static org.eclipse.leshan.client.californium.impl.ResourceUtil.extractServerIdentity;
-import static org.eclipse.leshan.client.californium.impl.ResourceUtil.fromLwM2mCode;
+import static org.eclipse.leshan.client.californium.impl.ResourceUtil.*;
 
 import java.util.List;
 
@@ -225,8 +224,9 @@ public class ObjectResource extends CoapResource implements NotifySender {
 
         // Manage Execute Request
         if (path.isResource()) {
+            byte[] payload = exchange.getRequestPayload();
             ExecuteResponse response = nodeEnabler.execute(identity,
-                    new ExecuteRequest(URI, new String(exchange.getRequestPayload())));
+                    new ExecuteRequest(URI, payload != null ? new String(payload) : null));
             exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
             return;
         }
