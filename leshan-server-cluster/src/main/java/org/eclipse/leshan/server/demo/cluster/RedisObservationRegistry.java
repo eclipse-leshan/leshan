@@ -29,9 +29,12 @@ import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.serialization.DataParser;
 import org.eclipse.californium.core.network.serialization.DataSerializer;
+import org.eclipse.californium.core.network.serialization.UdpDataParser;
+import org.eclipse.californium.core.network.serialization.UdpDataSerializer;
 import org.eclipse.californium.core.observe.NotificationListener;
 import org.eclipse.californium.core.observe.ObservationStore;
 import org.eclipse.californium.elements.CorrelationContext;
+import org.eclipse.californium.elements.RawData;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
@@ -325,6 +328,8 @@ public class RedisObservationRegistry
     private static class RedisObservationStore implements ObservationStore {
 
         private final Pool<Jedis> pool;
+        private static final DataParser parser = new UdpDataParser();
+        private static final DataSerializer serializer = new UdpDataSerializer();
 
         public RedisObservationStore(Pool<Jedis> pool) {
             this.pool = pool;
@@ -333,7 +338,7 @@ public class RedisObservationRegistry
         @Override
         public void add(org.eclipse.californium.core.observe.Observation obs) {
             try (Jedis j = pool.getResource()) {
-                j.set(obs.getRequest().getToken(), DataSerializer.serializeRequest(obs.getRequest()));
+                j.set(obs.getRequest().getToken(), serializer.serializeRequest(obs.getRequest()).bytes);
             }
         }
 
@@ -352,8 +357,8 @@ public class RedisObservationRegistry
                     return null;
                 } else {
                     // TODO handle security context
-                    return new org.eclipse.californium.core.observe.Observation(new DataParser(req).parseRequest(),
-                            null);
+                    return new org.eclipse.californium.core.observe.Observation(
+                            (Request) parser.parseMessage(new RawData(req, null, 0)), null);
                 }
             }
         }

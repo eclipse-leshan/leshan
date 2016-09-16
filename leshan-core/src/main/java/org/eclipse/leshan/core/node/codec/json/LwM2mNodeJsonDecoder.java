@@ -55,7 +55,7 @@ public class LwM2mNodeJsonDecoder {
     public static <T extends LwM2mNode> T decode(byte[] content, LwM2mPath path, LwM2mModel model, Class<T> nodeClass)
             throws InvalidValueException {
         try {
-            String jsonStrValue = new String(content);
+            String jsonStrValue = content != null ? new String(content) : "";
             JsonRootObject json = LwM2mJson.fromJsonLwM2m(jsonStrValue);
             List<TimestampedLwM2mNode> timestampedNodes = parseJSON(json, path, model, nodeClass);
             if (timestampedNodes.size() == 0) {
@@ -132,8 +132,8 @@ public class LwM2mNodeJsonDecoder {
                     throw new InvalidValueException("Only one instance expected in the payload", path);
 
                 // Extract resources
-                Map<Integer, LwM2mResource> resourcesMap = extractLwM2mResources(jsonEntryByInstanceId.values()
-                        .iterator().next(), baseName, model);
+                Map<Integer, LwM2mResource> resourcesMap = extractLwM2mResources(
+                        jsonEntryByInstanceId.values().iterator().next(), baseName, model);
 
                 // validate there is only 1 resource
                 if (resourcesMap.size() != 1)

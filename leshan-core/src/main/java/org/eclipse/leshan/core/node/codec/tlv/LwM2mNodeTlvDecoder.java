@@ -47,7 +47,7 @@ public class LwM2mNodeTlvDecoder {
     public static <T extends LwM2mNode> T decode(byte[] content, LwM2mPath path, LwM2mModel model, Class<T> nodeClass)
             throws InvalidValueException {
         try {
-            Tlv[] tlvs = TlvDecoder.decode(ByteBuffer.wrap(content));
+            Tlv[] tlvs = TlvDecoder.decode(ByteBuffer.wrap(content != null ? content : new byte[0]));
             return parseTlv(tlvs, path, model, nodeClass);
         } catch (TlvException e) {
             throw new InvalidValueException("Unable to decode tlv.", path, e);
@@ -82,8 +82,8 @@ public class LwM2mNodeTlvDecoder {
             } else {
                 for (int i = 0; i < tlvs.length; i++) {
                     if (tlvs[i].getType() != TlvType.OBJECT_INSTANCE)
-                        throw new InvalidValueException(String.format(
-                                "Expected TLV of type OBJECT_INSTANCE but was %s", tlvs[i].getType().name()), path);
+                        throw new InvalidValueException(String.format("Expected TLV of type OBJECT_INSTANCE but was %s",
+                                tlvs[i].getType().name()), path);
 
                     instances.add(parseObjectInstanceTlv(tlvs[i].getChildren(), path.getObjectId(),
                             tlvs[i].getIdentifier(), model));
@@ -172,8 +172,9 @@ public class LwM2mNodeTlvDecoder {
             Tlv tlvChild = tlvs[j];
 
             if (tlvChild.getType() != TlvType.RESOURCE_INSTANCE)
-                throw new InvalidValueException(String.format("Expected TLV of type RESOURCE_INSTANCE but was %s",
-                        tlvChild.getType().name()), path);
+                throw new InvalidValueException(
+                        String.format("Expected TLV of type RESOURCE_INSTANCE but was %s", tlvChild.getType().name()),
+                        path);
 
             values.put(tlvChild.getIdentifier(), parseTlvValue(tlvChild.getValue(), expectedType, path));
         }
