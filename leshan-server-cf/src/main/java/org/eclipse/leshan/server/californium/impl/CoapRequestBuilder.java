@@ -16,6 +16,9 @@
 package org.eclipse.leshan.server.californium.impl;
 
 import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
@@ -41,20 +44,33 @@ import org.eclipse.leshan.util.StringUtils;
 public class CoapRequestBuilder implements DownlinkRequestVisitor {
 
     private Request coapRequest;
+
+    // client information
     private final InetSocketAddress destination;
     private final String rootPath;
+    private final String registrationId;
+
     private final LwM2mModel model;
     private final LwM2mNodeEncoder encoder;
 
+    /* keys used to populate the request context */
+    public static final String CTX_REGID = "leshan-regId";
+    public static final String CTX_LWM2M_PATH = "leshan-path";
+
     public CoapRequestBuilder(InetSocketAddress destination, LwM2mModel model, LwM2mNodeEncoder encoder) {
-        this(destination, null, model, encoder);
+        this.destination = destination;
+        this.rootPath = null;
+        this.registrationId = null;
+        this.model = model;
+        this.encoder = encoder;
     }
 
-    public CoapRequestBuilder(InetSocketAddress destination, String rootpath, LwM2mModel model,
+    public CoapRequestBuilder(InetSocketAddress destination, String rootPath, String registrationId, LwM2mModel model,
             LwM2mNodeEncoder encoder) {
         this.destination = destination;
+        this.rootPath = rootPath;
+        this.registrationId = registrationId;
         this.model = model;
-        this.rootPath = rootpath;
         this.encoder = encoder;
     }
 
@@ -122,6 +138,15 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
             coapRequest.getOptions().setAccept(request.getFormat().getCode());
         coapRequest.setObserve();
         setTarget(coapRequest, request.getPath());
+
+        // add context info to the observe request
+        Map<String, String> context = new HashMap<>();
+        context.put(CTX_REGID, registrationId);
+        context.put(CTX_LWM2M_PATH, request.getPath().toString());
+        for (Entry<String, String> ctx : request.getContext().entrySet()) {
+            context.put(ctx.getKey(), ctx.getValue());
+        }
+        coapRequest.setUserContext(context);
     }
 
     @Override

@@ -15,12 +15,11 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
-import java.util.Random;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ThreadLocalRandom;
 
 import org.eclipse.californium.core.coap.Request;
-import org.eclipse.californium.core.observe.InMemoryObservationStore;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.observation.Observation;
@@ -36,14 +35,16 @@ public class CaliforniumObservationTest {
     Request coapRequest;
     LwM2mPath target;
     CaliforniumObservationRegistry registry;
+    InMemoryLwM2mObservationStore store;
 
     private CaliforniumTestSupport support = new CaliforniumTestSupport();
 
     @Before
     public void setUp() throws Exception {
         support.givenASimpleClient();
-        registry = new CaliforniumObservationRegistryImpl(new InMemoryObservationStore(), new ClientRegistryImpl(),
-                new StandardModelProvider(), new DefaultLwM2mNodeDecoder());
+        store = new InMemoryLwM2mObservationStore();
+        registry = new CaliforniumObservationRegistryImpl(store, new ClientRegistryImpl(), new StandardModelProvider(),
+                new DefaultLwM2mNodeDecoder());
     }
 
     @Test
@@ -122,25 +123,24 @@ public class CaliforniumObservationTest {
     }
 
     private Observation givenAnObservation(String registrationId, LwM2mPath target) {
-
         coapRequest = Request.newGet();
-        coapRequest.setToken(createToken());
+        coapRequest.setToken(CaliforniumTestSupport.createToken());
         coapRequest.getOptions().addUriPath(String.valueOf(target.getObjectId()));
         coapRequest.getOptions().addUriPath(String.valueOf(target.getObjectInstanceId()));
         coapRequest.getOptions().addUriPath(String.valueOf(target.getResourceId()));
         coapRequest.setDestination(support.client.getAddress());
         coapRequest.setDestinationPort(support.client.getPort());
-        Observation observation = new Observation(coapRequest.getToken(), registrationId, target);
+        Map<String, String> context = new HashMap<>();
+        context.put(CoapRequestBuilder.CTX_REGID, registrationId);
+        context.put(CoapRequestBuilder.CTX_LWM2M_PATH, target.toString());
+        coapRequest.setUserContext(context);
+
+        store.add(new org.eclipse.californium.core.observe.Observation(coapRequest, null));
+
+        Observation observation = new Observation(coapRequest.getToken(), registrationId, target, null);
         registry.addObservation(observation);
+
         return observation;
     }
 
-    private byte[] createToken() {
-        Random random = ThreadLocalRandom.current();
-        byte[] token;
-        token = new byte[random.nextInt(8) + 1];
-        // random value
-        random.nextBytes(token);
-        return token;
-    }
 }

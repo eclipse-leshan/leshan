@@ -18,13 +18,13 @@ package org.eclipse.leshan.server.californium;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
-import org.eclipse.californium.core.observe.InMemoryObservationStore;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.californium.impl.CaliforniumObservationRegistryImpl;
+import org.eclipse.leshan.server.californium.impl.InMemoryLwM2mObservationStore;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.impl.ClientRegistryImpl;
@@ -132,8 +132,8 @@ public class LeshanServerBuilder {
             decoder = new DefaultLwM2mNodeDecoder();
 
         if (observationRegistry == null)
-            observationRegistry = new CaliforniumObservationRegistryImpl(new InMemoryObservationStore(), clientRegistry,
-                    modelProvider, decoder);
+            observationRegistry = new CaliforniumObservationRegistryImpl(new InMemoryLwM2mObservationStore(),
+                    clientRegistry, modelProvider, decoder);
 
         return new LeshanServer(localAddress, localSecureAddress, clientRegistry, securityRegistry, observationRegistry,
                 modelProvider, encoder, decoder);

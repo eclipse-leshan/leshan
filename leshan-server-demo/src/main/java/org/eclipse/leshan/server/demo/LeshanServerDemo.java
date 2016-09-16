@@ -45,10 +45,11 @@ import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
+import org.eclipse.leshan.server.californium.impl.CaliforniumObservationRegistryImpl;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.client.ClientRegistry;
+import org.eclipse.leshan.server.demo.cluster.RedisObservationStore;
 import org.eclipse.leshan.server.demo.cluster.RedisClientRegistry;
-import org.eclipse.leshan.server.demo.cluster.RedisObservationRegistry;
 import org.eclipse.leshan.server.demo.cluster.RedisSecurityRegistry;
 import org.eclipse.leshan.server.demo.servlet.ClientServlet;
 import org.eclipse.leshan.server.demo.servlet.EventServlet;
@@ -219,8 +220,8 @@ public class LeshanServerDemo {
                 ClientRegistry clientRegistry = new RedisClientRegistry(jedis);
                 builder.setSecurityRegistry(new RedisSecurityRegistry(jedis, privateKey, publicKey));
                 builder.setClientRegistry(clientRegistry);
-                builder.setObservationRegistry(
-                        new RedisObservationRegistry(jedis, clientRegistry, modelProvider, decoder));
+                builder.setObservationRegistry(new CaliforniumObservationRegistryImpl(
+                        new RedisObservationStore(jedis), clientRegistry, modelProvider, decoder));
             }
         } catch (InvalidKeySpecException | NoSuchAlgorithmException | InvalidParameterSpecException e) {
             LOG.error("Unable to initialize RPK.", e);

@@ -275,7 +275,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             if (coapResponse.getOptions().hasObserve()) {
                 // observe request succeed so we can add and observation to registry
                 Observation observation = new Observation(coapRequest.getToken(), client.getRegistrationId(),
-                        request.getPath());
+                        request.getPath(), request.getContext());
                 observationRegistry.addObservation(observation);
                 // add the observation to an ObserveResponse instance
                 lwM2mresponse = new ObserveResponse(ResponseCode.CONTENT, content, observation, null);
