@@ -23,6 +23,7 @@ import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.codec.InvalidValueException;
 import org.eclipse.leshan.util.Charsets;
 import org.eclipse.leshan.util.Validate;
@@ -81,7 +82,13 @@ public class LwM2mNodeTextDecoder {
                 return new Date(Long.valueOf(value) * 1000L);
             case OBJLNK:
                 String[] intArr = value.split(":");
-                return new int[] { Integer.parseInt(intArr[0]), Integer.parseInt(intArr[1]) };
+                if (intArr.length != 2)
+                    throw new InvalidValueException("Invalid value for objectLink resource: " + value, path);
+                try {
+                    return new ObjectLink(Integer.parseInt(intArr[0]), Integer.parseInt(intArr[1]));
+                } catch (NumberFormatException e) {
+                    throw new InvalidValueException("Invalid value for objectLinkresource: " + value, path);
+                }
             case OPAQUE:
                 // not specified
             default:

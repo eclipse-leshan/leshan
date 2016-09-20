@@ -26,6 +26,7 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.response.WriteResponse;
 import org.eclipse.leshan.util.Validate;
 
@@ -215,7 +216,7 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
     /**
      * Request to write a <b> Objlnk Single-Instance Resource</b> using the TLV content format.
      */
-    public WriteRequest(final int objectId, final int objectInstanceId, final int resourceId, int[] value) {
+    public WriteRequest(final int objectId, final int objectInstanceId, final int resourceId, ObjectLink value) {
         this(ContentFormat.TLV, objectId, objectInstanceId, resourceId, value);
     }
 
@@ -224,9 +225,9 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
      * TEXT).
      */
     public WriteRequest(final ContentFormat contentFormat, final int objectId, final int objectInstanceId,
-            final int resourceId, int[] value) {
+            final int resourceId, ObjectLink value) {
         this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId),
-                LwM2mSingleResource.newObjlnkResource(resourceId, value[0], value[1]));
+                LwM2mSingleResource.newObjectLinkResource(resourceId, value));
     }
 
     // ***************** write multi instance resource ****************** //

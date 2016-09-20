@@ -31,6 +31,7 @@ import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.codec.Lwm2mNodeEncoderUtil;
 import org.eclipse.leshan.tlv.Tlv;
 import org.eclipse.leshan.tlv.Tlv.TlvType;
@@ -182,7 +183,7 @@ public class LwM2mNodeTlvEncoder {
             case OPAQUE:
                 return (byte[]) value;
             case OBJLNK:
-                return TlvEncoder.encodeObjlnk((int[]) value);
+                return TlvEncoder.encodeObjlnk((ObjectLink) value);
             default:
                 throw new IllegalArgumentException("Invalid value type: " + type);
             }

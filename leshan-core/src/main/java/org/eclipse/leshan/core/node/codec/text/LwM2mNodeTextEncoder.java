@@ -26,6 +26,7 @@ import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.codec.Lwm2mNodeEncoderUtil;
 import org.eclipse.leshan.util.Charsets;
 import org.eclipse.leshan.util.Validate;
@@ -92,8 +93,8 @@ public class LwM2mNodeTextEncoder {
                 strValue = String.valueOf(((Date) val).getTime() / 1000L);
                 break;
             case OBJLNK:
-                int[] dataArr = (int[])val;
-                strValue = String.valueOf(dataArr[0] + ":" + dataArr[1]);
+                ObjectLink objlnk = (ObjectLink) val;
+                strValue = String.valueOf(objlnk.getObjectId() + ":" + objlnk.getObjectInstanceId());
                 break;
             default:
                 throw new IllegalArgumentException("Cannot encode " + val + " in text format");

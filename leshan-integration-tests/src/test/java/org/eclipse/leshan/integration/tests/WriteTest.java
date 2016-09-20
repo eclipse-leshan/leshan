@@ -40,6 +40,7 @@ import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
@@ -381,10 +382,10 @@ public class WriteTest {
 
     @Test
     public void can_write_multi_instance_objlnk_resource_in_tlv() throws InterruptedException {
-        Map<Integer, int[]> neighbourCellReport = new HashMap<Integer, int[]>();
-        neighbourCellReport.put(0, new int[] { 10245, 1 });
-        neighbourCellReport.put(1, new int[] { 10242, 2 });
-        neighbourCellReport.put(2, new int[] { 10244, 3 });
+        Map<Integer, ObjectLink> neighbourCellReport = new HashMap<>();
+        neighbourCellReport.put(0, new ObjectLink(10245, 1));
+        neighbourCellReport.put(1, new ObjectLink(10242, 2));
+        neighbourCellReport.put(2, new ObjectLink(10244, 3));
 
         // Write objlnk resource in TLV format
         WriteResponse response = helper.server.send(helper.getClient(),
@@ -400,17 +401,17 @@ public class WriteTest {
         LwM2mMultipleResource resource = (LwM2mMultipleResource) readResponse.getContent();
 
         // verify read value
-        assertEquals(((int[]) resource.getValue(0))[0], 10245);
-        assertEquals(((int[]) resource.getValue(0))[1], 1);
-        assertEquals(((int[]) resource.getValue(1))[0], 10242);
-        assertEquals(((int[]) resource.getValue(1))[1], 2);
-        assertEquals(((int[]) resource.getValue(2))[0], 10244);
-        assertEquals(((int[]) resource.getValue(2))[1], 3);
+        assertEquals(((ObjectLink) resource.getValue(0)).getObjectId(), 10245);
+        assertEquals(((ObjectLink) resource.getValue(0)).getObjectInstanceId(), 1);
+        assertEquals(((ObjectLink) resource.getValue(1)).getObjectId(), 10242);
+        assertEquals(((ObjectLink) resource.getValue(1)).getObjectInstanceId(), 2);
+        assertEquals(((ObjectLink) resource.getValue(2)).getObjectId(), 10244);
+        assertEquals(((ObjectLink) resource.getValue(2)).getObjectInstanceId(), 3);
     }
 
     @Test
     public void can_write_single_instance_objlnk_resource_in_tlv() throws InterruptedException {
-        int[] data = new int[] { 10245, 1 };
+        ObjectLink data = new ObjectLink(10245, 1);
 
         // Write objlnk resource in TLV format
         WriteResponse response = helper.server.send(helper.getClient(),
@@ -426,8 +427,8 @@ public class WriteTest {
         LwM2mSingleResource resource = (LwM2mSingleResource) readResponse.getContent();
 
         // verify read value
-        assertEquals(((int[]) resource.getValue())[0], 10245);
-        assertEquals(((int[]) resource.getValue())[1], 1);
+        assertEquals(((ObjectLink) resource.getValue()).getObjectId(), 10245);
+        assertEquals(((ObjectLink) resource.getValue()).getObjectInstanceId(), 1);
     }
 
     @Test
@@ -435,7 +436,7 @@ public class WriteTest {
         // Write objlnk resource in TEXT format
         WriteResponse response = helper.server.send(helper.getClient(),
                 new WriteRequest(ContentFormat.TEXT, IntegrationTestHelper.TEST_OBJECT_ID, 0,
-                        IntegrationTestHelper.OBJLNK_SINGLE_INSTANCE_RESOURCE_ID, new int[] { 10245, 0 }));
+                        IntegrationTestHelper.OBJLNK_SINGLE_INSTANCE_RESOURCE_ID, new ObjectLink(10245, 0)));
 
         // Verify Write result
         assertEquals(ResponseCode.CHANGED, response.getCode());
@@ -445,8 +446,9 @@ public class WriteTest {
                 IntegrationTestHelper.TEST_OBJECT_ID, 0, IntegrationTestHelper.OBJLNK_SINGLE_INSTANCE_RESOURCE_ID));
         LwM2mSingleResource resource = (LwM2mSingleResource) readResponse.getContent();
 
+        System.out.println(resource.getValue().toString());
         // verify read value
-        assertEquals(((int[]) resource.getValue())[0], 10245);
-        assertEquals(((int[]) resource.getValue())[1], 0);
+        assertEquals(((ObjectLink) resource.getValue()).getObjectId(), 10245);
+        assertEquals(((ObjectLink) resource.getValue()).getObjectInstanceId(), 0);
     }
 }

@@ -19,6 +19,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Date;
 
+import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.util.Charsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,10 +118,10 @@ public class TlvEncoder {
     /**
      * Encodes a Objlnk value.
      */
-    public static byte[] encodeObjlnk(int[] value) {
+    public static byte[] encodeObjlnk(ObjectLink value) {
         ByteBuffer objlnkBuffer = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN);
-        objlnkBuffer.putShort(0, (short) value[0]);
-        objlnkBuffer.putShort(2, (short) value[1]);
+        objlnkBuffer.putShort(0, (short) value.getObjectId());
+        objlnkBuffer.putShort(2, (short) value.getObjectInstanceId());
         return objlnkBuffer.array();
     }
 

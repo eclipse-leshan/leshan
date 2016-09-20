@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.tlv.Tlv.TlvType;
 import org.eclipse.leshan.util.Charsets;
 import org.eclipse.leshan.util.Hex;
@@ -187,12 +188,12 @@ public class TlvDecoder {
     /**
      * Decodes a byte array into a objlnk value.
      */
-    public static int[] decodeObjlnk(byte[] value) throws TlvException {
+    public static ObjectLink decodeObjlnk(byte[] value) throws TlvException {
         ByteBuffer bff = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN);
         bff.put(value);
         int val1 = bff.getShort(0);
         int val2 = bff.getShort(2);
-        return new int[] { val1, val2 };
+        return new ObjectLink(val1, val2);
     }
 
     /**
