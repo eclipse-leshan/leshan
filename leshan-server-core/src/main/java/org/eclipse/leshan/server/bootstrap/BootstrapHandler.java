@@ -83,6 +83,7 @@ public class BootstrapHandler {
         final BootstrapSession bsSession = this.bsSessionManager.begin(endpoint, sender);
 
         if (!bsSession.isAuthorized()) {
+            this.bsSessionManager.failed(bsSession, null, null);
             return BootstrapResponse.badRequest("Unauthorized");
         }
 
@@ -90,6 +91,7 @@ public class BootstrapHandler {
         final BootstrapConfig cfg = bsStore.getBootstrap(endpoint);
         if (cfg == null) {
             LOG.error("No bootstrap config for {}", endpoint);
+            this.bsSessionManager.failed(bsSession, null, null);
             return BootstrapResponse.badRequest("no bootstrap config");
         }
 
