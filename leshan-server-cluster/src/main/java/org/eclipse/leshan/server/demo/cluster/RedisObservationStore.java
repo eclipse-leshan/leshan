@@ -18,9 +18,7 @@ package org.eclipse.leshan.server.demo.cluster;
 import static org.eclipse.leshan.util.Charsets.UTF_8;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Random;
 
 import org.eclipse.californium.core.observe.Observation;
 import org.eclipse.californium.core.observe.ObservationStore;
@@ -36,9 +34,6 @@ import redis.clients.util.Pool;
  * An implementation of the Californium {@link ObservationStore} storing {@link Observation} in a Redis store.
  * 
  * Observations are stored using the token as primary key and a secondary index based on the registration Id.
- * 
- * Write accesses are protected with a lock which is implemented in single-instance use case (see
- * http://redis.io/topics/distlock#correct-implementation-with-a-single-instance for more information).
  */
 public class RedisObservationStore implements LwM2mObservationStore {
 
@@ -47,13 +42,7 @@ public class RedisObservationStore implements LwM2mObservationStore {
     // Redis key prefixes
     private static final byte[] OBS_TKN = "OBS#TKN#".getBytes(UTF_8);
     private static final String OBS_REG = "OBS#REG#";
-
     private static final String LOCK_REG = "LOCK#REG#";
-
-    private static final byte[] NX_OPTION = "NX".getBytes(UTF_8); // set the key if it does not already exist
-    private static final byte[] PX_OPTION = "PX".getBytes(UTF_8); // expire time in millisecond
-
-    private static final Random RND = new Random();
 
     public RedisObservationStore(Pool<Jedis> pool) {
         this.pool = pool;
@@ -66,8 +55,9 @@ public class RedisObservationStore implements LwM2mObservationStore {
 
         try (Jedis j = pool.getResource()) {
             byte[] lockValue = null;
+            byte[] lockKey = toKey(LOCK_REG, registrationId);
             try {
-                lockValue = acquireLock(j, registrationId);
+                lockValue = RedisLock.acquire(j, lockKey);
 
                 j.set(toKey(OBS_TKN, obs.getRequest().getToken()), serialize(obs));
 
@@ -75,7 +65,7 @@ public class RedisObservationStore implements LwM2mObservationStore {
                 j.lpush(toKey(OBS_REG, registrationId), obs.getRequest().getToken());
 
             } finally {
-                releaseLock(j, registrationId, lockValue);
+                RedisLock.release(j, lockKey, lockValue);
             }
         }
     }
@@ -94,15 +84,16 @@ public class RedisObservationStore implements LwM2mObservationStore {
             String registrationId = getRegistrationId(obs);
 
             byte[] lockValue = null;
+            byte[] lockKey = toKey(LOCK_REG, registrationId);
             try {
-                lockValue = acquireLock(j, registrationId);
+                lockValue = RedisLock.acquire(j, lockKey);
 
                 if (j.del(tokenKey) > 0L) {
                     j.lrem(toKey(OBS_REG, registrationId), 0, token);
                 }
 
             } finally {
-                releaseLock(j, registrationId, lockValue);
+                RedisLock.release(j, lockKey, lockValue);
             }
         }
     }
@@ -112,8 +103,9 @@ public class RedisObservationStore implements LwM2mObservationStore {
         try (Jedis j = pool.getResource()) {
 
             byte[] lockValue = null;
+            byte[] lockKey = toKey(LOCK_REG, registrationId);
             try {
-                lockValue = acquireLock(j, registrationId);
+                lockValue = RedisLock.acquire(j, lockKey);
 
                 Collection<Observation> removed = new ArrayList<>();
                 byte[] regIdKey = toKey(OBS_REG, registrationId);
@@ -131,7 +123,7 @@ public class RedisObservationStore implements LwM2mObservationStore {
                 return removed;
 
             } finally {
-                releaseLock(j, registrationId, lockValue);
+                RedisLock.release(j, lockKey, lockValue);
             }
         }
     }
@@ -198,31 +190,4 @@ public class RedisObservationStore implements LwM2mObservationStore {
             throw new IllegalStateException("missing lwm2m path info in the request context");
     }
 
-    private byte[] acquireLock(Jedis j, String registrationId) {
-        byte[] lockKey = toKey(LOCK_REG, registrationId);
-        long start = System.currentTimeMillis();
-
-        byte[] randomLockValue = new byte[10];
-        RND.nextBytes(randomLockValue);
-
-        // setnx with a 500ms expiration
-        while (!"OK".equals(j.set(lockKey, randomLockValue, NX_OPTION, PX_OPTION, 500))) {
-            if (System.currentTimeMillis() - start > 5_000L)
-                throw new IllegalStateException("Could not acquire the lock to access observations from redis");
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-            }
-        }
-        return randomLockValue;
-    }
-
-    private void releaseLock(Jedis j, String registrationId, byte[] lockValue) {
-        if (lockValue != null) {
-            byte[] lockKey = toKey(LOCK_REG, registrationId);
-            if (Arrays.equals(j.get(lockKey), lockValue)) {
-                j.del(lockKey);
-            }
-        }
-    }
 }
