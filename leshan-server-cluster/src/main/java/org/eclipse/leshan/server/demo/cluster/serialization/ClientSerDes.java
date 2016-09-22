@@ -84,22 +84,21 @@ public class ClientSerDes {
         return jSerialize(c).toString().getBytes();
     }
 
-    public static Client deserialize(byte[] data) {
-        JsonObject v = (JsonObject) Json.parse(new String(data));
-
-        Client.Builder b = new Client.Builder(v.getString("regId", null), v.getString("ep", null),
-                new InetSocketAddress(v.getString("address", null), v.getInt("port", 0)).getAddress(),
-                v.getInt("port", 0), new InetSocketAddress(v.getString("regAddr", null), v.getInt("regPort", 0)));
-        b.bindingMode(BindingMode.valueOf(v.getString("bnd", null)));
-        b.lastUpdate(new Date(v.getLong("lastUp", 0)));
-        b.lifeTimeInSec(v.getLong("lt", 0));
-        b.lwM2mVersion(v.getString("ver", "1.0"));
-        b.registrationDate(new Date(v.getLong("regDate", 0)));
-        if (v.get("sms") != null) {
-            b.smsNumber(v.getString("sms", ""));
+    public static Client deserialize(JsonObject jObj) {
+        Client.Builder b = new Client.Builder(jObj.getString("regId", null), jObj.getString("ep", null),
+                new InetSocketAddress(jObj.getString("address", null), jObj.getInt("port", 0)).getAddress(),
+                jObj.getInt("port", 0),
+                new InetSocketAddress(jObj.getString("regAddr", null), jObj.getInt("regPort", 0)));
+        b.bindingMode(BindingMode.valueOf(jObj.getString("bnd", null)));
+        b.lastUpdate(new Date(jObj.getLong("lastUp", 0)));
+        b.lifeTimeInSec(jObj.getLong("lt", 0));
+        b.lwM2mVersion(jObj.getString("ver", "1.0"));
+        b.registrationDate(new Date(jObj.getLong("regDate", 0)));
+        if (jObj.get("sms") != null) {
+            b.smsNumber(jObj.getString("sms", ""));
         }
 
-        JsonArray links = (JsonArray) v.get("objLink");
+        JsonArray links = (JsonArray) jObj.get("objLink");
         LinkObject[] linkObjs = new LinkObject[links.size()];
         for (int i = 0; i < links.size(); i++) {
             JsonObject ol = (JsonObject) links.get(i);
@@ -119,12 +118,16 @@ public class ClientSerDes {
         }
         b.objectLinks(linkObjs);
         Map<String, String> addAttr = new HashMap<>();
-        JsonObject o = (JsonObject) v.get("addAttr");
+        JsonObject o = (JsonObject) jObj.get("addAttr");
         for (String k : o.names()) {
             addAttr.put(k, o.getString(k, ""));
         }
         b.additionalRegistrationAttributes(addAttr);
 
         return b.build();
+    }
+
+    public static Client deserialize(byte[] data) {
+        return deserialize((JsonObject) Json.parse(new String(data)));
     }
 }
