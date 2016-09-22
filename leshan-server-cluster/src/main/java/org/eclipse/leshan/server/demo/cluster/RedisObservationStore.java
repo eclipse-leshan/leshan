@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.demo.cluster;
 
+import static org.eclipse.leshan.util.Charsets.UTF_8;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -26,10 +28,8 @@ import org.eclipse.californium.elements.CorrelationContext;
 import org.eclipse.leshan.server.californium.impl.CoapRequestBuilder;
 import org.eclipse.leshan.server.californium.impl.LwM2mObservationStore;
 import org.eclipse.leshan.server.demo.cluster.serialization.ObservationSerDes;
-import org.eclipse.leshan.util.Charsets;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.util.Pool;
 
 /**
@@ -45,15 +45,13 @@ public class RedisObservationStore implements LwM2mObservationStore {
     private final Pool<Jedis> pool;
 
     // Redis key prefixes
-    private static final byte[] OBS_TKN = "OBS#TKN#".getBytes();
-    private static final byte[] DELETE_OBS_TKN = "TODELETE#OBS#TKN#".getBytes();
+    private static final byte[] OBS_TKN = "OBS#TKN#".getBytes(UTF_8);
     private static final String OBS_REG = "OBS#REG#";
-    private static final String DELETE_OBS_REG = "TODELETE#OBS#REG#";
 
     private static final String LOCK_REG = "LOCK#REG#";
 
-    private static final byte[] NX_OPTION = "NX".getBytes(Charsets.UTF_8); // set the key if it does not already exist
-    private static final byte[] PX_OPTION = "PX".getBytes(Charsets.UTF_8); // expire time in millisecond
+    private static final byte[] NX_OPTION = "NX".getBytes(UTF_8); // set the key if it does not already exist
+    private static final byte[] PX_OPTION = "PX".getBytes(UTF_8); // expire time in millisecond
 
     private static final Random RND = new Random();
 
@@ -86,7 +84,6 @@ public class RedisObservationStore implements LwM2mObservationStore {
     public void remove(byte[] token) {
         try (Jedis j = pool.getResource()) {
             byte[] tokenKey = toKey(OBS_TKN, token);
-            byte[] delTokenKey = toKey(DELETE_OBS_TKN, token);
 
             // fetch the observation by token
             byte[] serializedObs = j.get(tokenKey);
@@ -100,19 +97,9 @@ public class RedisObservationStore implements LwM2mObservationStore {
             try {
                 lockValue = acquireLock(j, registrationId);
 
-                try {
-                    // rename for atomicity
-                    if (!"OK".equals(j.rename(tokenKey, delTokenKey))) {
-                        return;
-                    }
-                } catch (JedisDataException e) {
-                    // the Jedis library raises an exception (ERR no such key)
-                    // instead of returning a status code
-                    return;
+                if (j.del(tokenKey) > 0L) {
+                    j.lrem(toKey(OBS_REG, registrationId), 0, token);
                 }
-
-                j.del(delTokenKey);
-                j.lrem(toKey(OBS_REG, registrationId), 0, token);
 
             } finally {
                 releaseLock(j, registrationId, lockValue);
@@ -128,31 +115,18 @@ public class RedisObservationStore implements LwM2mObservationStore {
             try {
                 lockValue = acquireLock(j, registrationId);
 
-                byte[] regIdKey = toKey(OBS_REG, registrationId);
-                byte[] delRegIdKey = toKey(DELETE_OBS_REG, registrationId);
-
-                // first rename for atomicity
-                try {
-                    if (!"OK".equals(j.rename(regIdKey, delRegIdKey))) {
-                        return null;
-                    }
-                } catch (JedisDataException e) {
-                    // the Jedis library raises an exception (ERR no such key)
-                    // instead of returning a status code
-                    return null;
-                }
-
                 Collection<Observation> removed = new ArrayList<>();
+                byte[] regIdKey = toKey(OBS_REG, registrationId);
 
                 // fetch all observations by token
-                for (byte[] token : j.lrange(delRegIdKey, 0, -1)) {
+                for (byte[] token : j.lrange(regIdKey, 0, -1)) {
                     byte[] obs = j.get(toKey(OBS_TKN, token));
                     if (obs != null) {
                         removed.add(deserialize(obs));
                     }
                     j.del(toKey(OBS_TKN, token));
                 }
-                j.del(delRegIdKey);
+                j.del(regIdKey);
 
                 return removed;
 
