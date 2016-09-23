@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
+import static org.eclipse.leshan.server.bootstrap.BootstrapFailureCause.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -83,7 +85,7 @@ public class BootstrapHandler {
         final BootstrapSession bsSession = this.bsSessionManager.begin(endpoint, sender);
 
         if (!bsSession.isAuthorized()) {
-            this.bsSessionManager.failed(bsSession, null, null);
+            this.bsSessionManager.failed(bsSession, UNAUTHORIZED, null);
             return BootstrapResponse.badRequest("Unauthorized");
         }
 
@@ -91,7 +93,7 @@ public class BootstrapHandler {
         final BootstrapConfig cfg = bsStore.getBootstrap(endpoint);
         if (cfg == null) {
             LOG.error("No bootstrap config for {}", endpoint);
-            this.bsSessionManager.failed(bsSession, null, null);
+            this.bsSessionManager.failed(bsSession, NO_BOOTSTRAP_CONFIG, null);
             return BootstrapResponse.badRequest("no bootstrap config");
         }
 
@@ -120,7 +122,7 @@ public class BootstrapHandler {
             @Override
             public void onError(Exception e) {
                 LOG.warn(String.format("Error pending bootstrap delete '/' on %s", bsSession.getEndpoint()), e);
-                bsSessionManager.failed(bsSession, writeDeleteRequest, e);
+                bsSessionManager.failed(bsSession, DELETE_FAILED, writeDeleteRequest);
             }
         });
     }
@@ -150,7 +152,8 @@ public class BootstrapHandler {
                 public void onError(Exception e) {
                     LOG.warn(String.format("Error pending bootstrap write of security instance %s on %s",
                             securityInstance, bsSession.getEndpoint()), e);
-                    bsSessionManager.failed(bsSession, writeBootstrapRequest, e);
+                    bsSessionManager.failed(bsSession, WRITE_SECURITY_FAILED,
+                            writeBootstrapRequest);
                 }
             });
         } else {
@@ -184,7 +187,7 @@ public class BootstrapHandler {
                 public void onError(Exception e) {
                     LOG.warn(String.format("Error pending bootstrap write of server instance %s on %s", serverInstance,
                             bsSession.getEndpoint()), e);
-                    bsSessionManager.failed(bsSession, writeServerRequest, e);
+                    bsSessionManager.failed(bsSession, WRITE_SERVER_FAILED, writeServerRequest);
                 }
             });
         } else {
@@ -196,15 +199,16 @@ public class BootstrapHandler {
                     if (response.isSuccess()) {
                         bsSessionManager.end(bsSession);
                     } else {
-                        bsSessionManager.failed(bsSession, finishBootstrapRequest, new RuntimeException(
-                                String.format("Bootstrap finished with response code : %s", response)));
+                        bsSessionManager.failed(bsSession, FINISHED_WITH_ERROR,
+                                finishBootstrapRequest);
                     }
                 }
             }, new ErrorCallback() {
                 @Override
                 public void onError(Exception e) {
                     LOG.warn(String.format("Error pending bootstrap finished on %s", bsSession.getEndpoint()), e);
-                    bsSessionManager.failed(bsSession, finishBootstrapRequest, e);
+                    bsSessionManager.failed(bsSession, SEND_FINISH_FAILED,
+                            finishBootstrapRequest);
                 }
             });
         }

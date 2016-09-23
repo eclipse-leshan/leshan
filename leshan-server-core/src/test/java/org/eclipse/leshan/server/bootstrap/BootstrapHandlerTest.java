@@ -15,9 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executor;
@@ -160,7 +158,8 @@ public class BootstrapHandlerTest {
         }
 
         @Override
-        public void failed(BootstrapSession bsSession, DownlinkRequest<? extends LwM2mResponse> request, Exception e) {
+        public void failed(BootstrapSession bsSession, BootstrapFailureCause cause,
+                DownlinkRequest<? extends LwM2mResponse> request) {
         }
     }
 }
