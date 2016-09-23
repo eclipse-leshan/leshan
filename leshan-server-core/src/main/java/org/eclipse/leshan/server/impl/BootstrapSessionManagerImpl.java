@@ -20,6 +20,7 @@ import java.util.List;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.server.bootstrap.BootstrapFailureCause;
 import org.eclipse.leshan.server.bootstrap.BootstrapSession;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
@@ -58,7 +59,8 @@ public class BootstrapSessionManagerImpl implements BootstrapSessionManager {
     }
 
     @Override
-    public void failed(BootstrapSession bsSession, DownlinkRequest<? extends LwM2mResponse> request, Exception e) {
+    public void failed(BootstrapSession bsSession, BootstrapFailureCause cause,
+            DownlinkRequest<? extends LwM2mResponse> request) {
     }
 
 }
