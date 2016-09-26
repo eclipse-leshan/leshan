@@ -146,4 +146,12 @@ public class SecurityInfo implements Serializable {
         return true;
     }
 
+    @Override
+    public String toString() {
+        // Note : preSharedKey is explicitly excluded from display for security purposes
+        return String.format(
+                "SecurityInfo [endpoint=%s, identity=%s, rawPublicKey=%s, useX509Cert=%s]", endpoint, identity,
+                rawPublicKey, useX509Cert);
+    }
+
 }

@@ -68,11 +68,12 @@ public class BootstrapConfig implements Serializable {
 
         @Override
         public String toString() {
+            // Note : secretKey and smsBindingKeySecret are explicitly excluded from the display for security purposes
             return String
-                    .format("ServerSecurity [uri=%s, bootstrapServer=%s, securityMode=%s, publicKeyOrId=%s, serverPublicKeyOrId=%s, secretKey=%s, smsSecurityMode=%s, smsBindingKeyParam=%s, smsBindingKeySecret=%s, serverSmsNumber=%s, serverId=%s, clientOldOffTime=%s]",
+                    .format("ServerSecurity [uri=%s, bootstrapServer=%s, securityMode=%s, publicKeyOrId=%s, serverPublicKeyOrId=%s, smsSecurityMode=%s, smsBindingKeySecret=%s, serverSmsNumber=%s, serverId=%s, clientOldOffTime=%s]",
                             uri, bootstrapServer, securityMode, Arrays.toString(publicKeyOrId),
-                            Arrays.toString(serverPublicKeyOrId), Arrays.toString(secretKey), smsSecurityMode,
-                            Arrays.toString(smsBindingKeyParam), Arrays.toString(smsBindingKeySecret), serverSmsNumber,
+                            Arrays.toString(serverPublicKeyOrId), smsSecurityMode,
+                            Arrays.toString(smsBindingKeyParam), serverSmsNumber,
                             serverId, clientOldOffTime);
         }
     }
