@@ -46,10 +46,10 @@ public interface BootstrapSessionManager {
      * Performs any housekeeping related to the failure of a Boostraping session.
      * 
      * @param bsSession
-     * @param request
-     * @param exception
+     * @param cause why the bootstrap failed
+     * @param request last request sent to the device. Can be null.
      */
-    public void failed(BootstrapSession bsSession, DownlinkRequest<? extends LwM2mResponse> request,
-            Exception exception);
+    public void failed(BootstrapSession bsSession, BootstrapFailureCause cause,
+            DownlinkRequest<? extends LwM2mResponse> request);
 
 }
