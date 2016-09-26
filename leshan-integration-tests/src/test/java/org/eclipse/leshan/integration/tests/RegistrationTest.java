@@ -16,14 +16,8 @@
 
 package org.eclipse.leshan.integration.tests;
 
-import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.ENDPOINT_IDENTIFIER;
 import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.LIFETIME;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -39,10 +33,11 @@ import org.eclipse.leshan.client.californium.impl.CaliforniumLwM2mClientRequestS
 import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectEnabler;
+import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.response.ReadResponse;
-import org.eclipse.leshan.server.client.Client;
+import org.eclipse.leshan.core.response.RegisterResponse;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.junit.After;
 import org.junit.Before;
@@ -50,59 +45,60 @@ import org.junit.Test;
 
 public class RegistrationTest {
 
-    private final IntegrationTestHelper helper = new IntegrationTestHelper();
+    protected IntegrationTestHelper helper = new IntegrationTestHelper();
 
     @Before
     public void start() {
+        helper.initialize();
         helper.createServer();
         helper.server.start();
         helper.createClient();
-
     }
 
     @After
-    public void stop() {
+    public void stop() throws InterruptedException {
+        helper.client.stop(true);
         helper.server.stop();
+        helper.dispose();
     }
 
     @Test
     public void register_update_deregister() {
-        // Check registration
-        assertTrue(helper.server.getClientRegistry().allClients().isEmpty());
+        // Check client is not registered
+        helper.assertClientNotRegisterered();
 
+        // Start it and wait for registration
         helper.client.start();
         helper.waitForRegistration(1);
 
-        assertEquals(1, helper.server.getClientRegistry().allClients().size());
-        Client client = helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER);
-        assertNotNull(client);
-        // TODO </0/0> should not be part of the object links
+        // Check client is well registered
+        helper.assertClientRegisterered();
         assertArrayEquals(LinkObject.parse("</>;rt=\"oma.lwm2m\",</1/0>,</2>,</3/0>,</2000/0>".getBytes()),
-                client.getObjectLinks());
+                helper.getCurrentRegistration().getObjectLinks());
 
         // Check for update
         helper.waitForUpdate(LIFETIME);
-        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+        helper.assertClientRegisterered();
 
         // Check deregistration
         helper.client.stop(true);
         helper.waitForDeregistration(1);
-        assertTrue(helper.server.getClientRegistry().allClients().isEmpty());
+        helper.assertClientNotRegisterered();
     }
 
     @Test
     public void deregister_cancel_multiple_pending_request() throws InterruptedException {
-        // Check registration
-        assertTrue(helper.server.getClientRegistry().allClients().isEmpty());
+        // Check client is not registered
+        helper.assertClientNotRegisterered();
 
+        // Start it and wait for registration
         helper.client.start();
         helper.waitForRegistration(1);
 
-        assertEquals(1, helper.server.getClientRegistry().allClients().size());
-        Client client = helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER);
-        assertNotNull(client);
+        // Check client is well registered
+        helper.assertClientRegisterered();
         assertArrayEquals(LinkObject.parse("</>;rt=\"oma.lwm2m\",</1/0>,</2>,</3/0>,</2000/0>".getBytes()),
-                client.getObjectLinks());
+                helper.getCurrentRegistration().getObjectLinks());
 
         // Stop client with out de-registration
         helper.client.stop(false);
@@ -112,7 +108,7 @@ public class RegistrationTest {
 
         for (int index = 0; index < 4; ++index) {
             Callback<ReadResponse> callback = new Callback<ReadResponse>();
-            helper.server.send(client, new ReadRequest(3, 0, 1), callback, callback);
+            helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), callback, callback);
             callbacks.add(callback);
         }
 
@@ -133,58 +129,58 @@ public class RegistrationTest {
 
     @Test
     public void register_update_deregister_reregister() throws NonUniqueSecurityInfoException, InterruptedException {
-        // Check registration
-        assertTrue(helper.server.getClientRegistry().allClients().isEmpty());
+        // Check client is not registered
+        helper.assertClientNotRegisterered();
 
+        // Start it and wait for registration
         helper.client.start();
         helper.waitForRegistration(1);
 
-        assertEquals(1, helper.server.getClientRegistry().allClients().size());
-        assertNotNull(helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER));
+        // Check client is well registered
+        helper.assertClientRegisterered();
 
         // Check for update
         helper.waitForUpdate(LIFETIME);
-        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+        helper.assertClientRegisterered();
 
         // Check de-registration
         helper.client.stop(true);
         helper.waitForDeregistration(1);
-        assertTrue(helper.server.getClientRegistry().allClients().isEmpty());
+        helper.assertClientNotRegisterered();
 
         // Check new registration
         helper.resetLatch();
         helper.client.start();
         helper.waitForRegistration(1);
-        assertEquals(1, helper.server.getClientRegistry().allClients().size());
-        assertNotNull(helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER));
+        helper.assertClientRegisterered();
     }
 
     @Test
     public void register_update_reregister() throws NonUniqueSecurityInfoException, InterruptedException {
-        // Check registration
-        assertTrue(helper.server.getClientRegistry().allClients().isEmpty());
+        // Check client is not registered
+        helper.assertClientNotRegisterered();
 
+        // Start it and wait for registration
         helper.client.start();
         helper.waitForRegistration(1);
 
-        assertEquals(1, helper.server.getClientRegistry().allClients().size());
-        assertNotNull(helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER));
+        // Check client is well registered
+        helper.assertClientRegisterered();
 
         // Check for update
         helper.waitForUpdate(LIFETIME);
-        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+        helper.assertClientRegisterered();
 
         // check stop do not de-register
         helper.client.stop(false);
         helper.waitForDeregistration(1);
-        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+        helper.assertClientRegisterered();
 
         // check new registration
         helper.resetLatch();
         helper.client.start();
         helper.waitForRegistration(1);
-        assertEquals(1, helper.server.getClientRegistry().allClients().size());
-        assertNotNull(helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER));
+        helper.assertClientRegisterered();
     }
 
     // TODO not really a registration test
@@ -202,7 +198,7 @@ public class RegistrationTest {
     @Test
     public void register_with_additional_attributes() throws InterruptedException {
         // Check registration
-        assertTrue(helper.server.getClientRegistry().allClients().isEmpty());
+        helper.assertClientNotRegisterered();
 
         // HACK to be able to send a Registration request with additional attributes
         LeshanClient lclient = (LeshanClient) helper.client;
@@ -217,23 +213,24 @@ public class RegistrationTest {
         additionalAttributes.put("key1", "value1");
         additionalAttributes.put("imei", "2136872368");
         LinkObject[] linkObjects = LinkObject.parse("</>;rt=\"oma.lwm2m\",</0/0>,</1/0>,</2>,</3/0>".getBytes());
-        RegisterRequest registerRequest = new RegisterRequest(ENDPOINT_IDENTIFIER, null, null, null, null, linkObjects,
+        RegisterRequest registerRequest = new RegisterRequest(helper.getCurrentEndpoint(), null, null,
+                null,
+                null, linkObjects,
                 additionalAttributes);
 
         // Send request
-        sender.send(helper.server.getNonSecureAddress(), false, registerRequest, 5000l);
+        RegisterResponse resp = sender.send(helper.server.getNonSecureAddress(), false, registerRequest, 5000l);
         helper.waitForRegistration(1);
 
         // Check we are registered with the expected attributes
-        assertEquals(1, helper.server.getClientRegistry().allClients().size());
-        Client client = helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER);
-        assertNotNull(client);
+        helper.assertClientRegisterered();
         assertNotNull(helper.last_registration);
         assertEquals(additionalAttributes, helper.last_registration.getAdditionalRegistrationAttributes());
         // TODO </0/0> should not be part of the object links
         assertArrayEquals(LinkObject.parse("</>;rt=\"oma.lwm2m\",</0/0>,</1/0>,</2>,</3/0>".getBytes()),
-                client.getObjectLinks());
+                helper.getCurrentRegistration().getObjectLinks());
 
+        sender.send(helper.server.getNonSecureAddress(), false, new DeregisterRequest(resp.getRegistrationID()), 5000l);
         lclient.getCoapServer().stop();
     }
 }

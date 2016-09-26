@@ -168,13 +168,13 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         enablers.add(initializer.create(2));
         enablers.add(initializer.create(3));
 
-        return new QueuedModeLeshanClient(ENDPOINT_IDENTIFIER, new InetSocketAddress(0), // localAddress
+        return new QueuedModeLeshanClient(getCurrentEndpoint(), new InetSocketAddress(0), // localAddress
                 new InetSocketAddress(0), // localSecureAddress
                 enablers);
     }
 
     @Override
-    public Client getClient() {
-        return server.getClientRegistry().get(ENDPOINT_IDENTIFIER);
+    public Client getCurrentRegistration() {
+        return server.getClientRegistry().get(getCurrentEndpoint());
     }
 }

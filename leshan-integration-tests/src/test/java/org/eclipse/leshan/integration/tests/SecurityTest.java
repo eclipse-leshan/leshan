@@ -15,12 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests;
 
-import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.ENDPOINT_IDENTIFIER;
+
 import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.LIFETIME;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.eclipse.leshan.integration.tests.SecureIntegrationTestHelper.*;
+import static org.junit.Assert.*;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -30,117 +28,145 @@ import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
 public class SecurityTest {
 
-    private final SecureIntegrationTestHelper helper = new SecureIntegrationTestHelper();
+    protected SecureIntegrationTestHelper helper = new SecureIntegrationTestHelper();
+
+    @Before
+    public void start() {
+        helper.initialize();
+    }
 
     @After
     public void stop() {
         helper.client.stop(true);
         helper.server.destroy();
+        helper.deregisterClient();
+        helper.dispose();
     }
 
     @Test
     public void registered_device_with_psk_to_server_with_psk() throws NonUniqueSecurityInfoException {
+        // Create PSK server & start it
         helper.createServer(); // default server support PSK
         helper.server.start();
 
+        // Create PSK Client
         helper.createPSKClient();
 
+        // Add client credentials to the server
         helper.server.getSecurityRegistry()
-                .add(SecurityInfo.newPreSharedKeyInfo(ENDPOINT_IDENTIFIER, helper.pskIdentity, helper.pskKey));
+                .add(SecurityInfo.newPreSharedKeyInfo(helper.getCurrentEndpoint(), GOOD_PSK_ID, GOOD_PSK_KEY));
 
+        // Check client is not registered
+        helper.assertClientNotRegisterered();
+
+        // Start it and wait for registration
         helper.client.start();
         helper.waitForRegistration(1);
 
-        assertEquals(1, helper.server.getClientRegistry().allClients().size());
-        assertNotNull(helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER));
+        // Check client is well registered
+        helper.assertClientRegisterered();
     }
 
     @Test
     public void register_update_deregister_reregister_device_with_psk_to_server_with_psk()
             throws NonUniqueSecurityInfoException {
+        // Create PSK server & start it
         helper.createServer(); // default server support PSK
         helper.server.start();
 
+        // Create PSK Client
         helper.createPSKClient();
 
+        // Add client credentials to the server
         helper.server.getSecurityRegistry()
-                .add(SecurityInfo.newPreSharedKeyInfo(ENDPOINT_IDENTIFIER, helper.pskIdentity, helper.pskKey));
+                .add(SecurityInfo.newPreSharedKeyInfo(helper.getCurrentEndpoint(), GOOD_PSK_ID, GOOD_PSK_KEY));
 
-        // Check for registration
+        // Check client is not registered
+        helper.assertClientNotRegisterered();
+
+        // Start it and wait for registration
         helper.client.start();
         helper.waitForRegistration(1);
-        assertEquals(1, helper.server.getClientRegistry().allClients().size());
-        assertNotNull(helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER));
+
+        // Check client is well registered
+        helper.assertClientRegisterered();
 
         // Check for update
         helper.waitForUpdate(LIFETIME);
-        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+        helper.assertClientRegisterered();
 
         // Check de-registration
         helper.client.stop(true);
         helper.waitForDeregistration(1);
-        assertTrue(helper.server.getClientRegistry().allClients().isEmpty());
+        helper.assertClientNotRegisterered();
 
         // check new registration
         helper.resetLatch();
         helper.client.start();
         helper.waitForRegistration(1);
-        assertEquals(1, helper.server.getClientRegistry().allClients().size());
-        assertNotNull(helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER));
+        helper.assertClientRegisterered();
     }
 
     @Test
     public void register_update_reregister_device_with_psk_to_server_with_psk() throws NonUniqueSecurityInfoException {
+        // Create PSK server & start it
         helper.createServer(); // default server support PSK
         helper.server.start();
 
+        // Create PSK Client
         helper.createPSKClient();
 
+        // Add client credentials to the server
         helper.server.getSecurityRegistry()
-                .add(SecurityInfo.newPreSharedKeyInfo(ENDPOINT_IDENTIFIER, helper.pskIdentity, helper.pskKey));
+                .add(SecurityInfo.newPreSharedKeyInfo(helper.getCurrentEndpoint(), GOOD_PSK_ID, GOOD_PSK_KEY));
 
         // Check for registration
+        helper.assertClientNotRegisterered();
         helper.client.start();
         helper.waitForRegistration(1);
-        assertEquals(1, helper.server.getClientRegistry().allClients().size());
-        Client registration = helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER);
-        assertNotNull(registration);
+        Client registration = helper.getCurrentRegistration();
+        helper.assertClientRegisterered();
 
         // Check for update
         helper.waitForUpdate(LIFETIME);
-        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+        helper.assertClientRegisterered();
 
-        // check stop do not de-register
+        // Check stop do not de-register
         helper.client.stop(false);
         helper.waitForDeregistration(1);
-        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+        helper.assertClientRegisterered();
 
-        // check new registration
+        // Check new registration
         helper.resetLatch();
         helper.client.start();
         helper.waitForRegistration(1);
-        Client newRegistration = helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER);
-        assertEquals(1, helper.server.getClientRegistry().allClients().size());
-        assertNotNull(newRegistration);
+        helper.assertClientRegisterered();
+        Client newRegistration = helper.getCurrentRegistration();
         assertNotEquals(registration.getRegistrationId(), newRegistration.getRegistrationId());
 
     }
 
     @Test
     public void registered_device_with_bad_psk_identity_to_server_with_psk() throws NonUniqueSecurityInfoException {
+        // Create PSK server & start it
         helper.createServer(); // default server support PSK
         helper.server.start();
 
+        // Create PSK Client
         helper.createPSKClient();
 
+        // Add client credentials with BAD PSK ID to the server
         helper.server.getSecurityRegistry()
-                .add(SecurityInfo.newPreSharedKeyInfo(ENDPOINT_IDENTIFIER, "bad_psk_identity", helper.pskKey));
+                .add(SecurityInfo.newPreSharedKeyInfo(helper.getCurrentEndpoint(), BAD_PSK_ID, GOOD_PSK_KEY));
 
+        // Check client can not register
+        helper.assertClientNotRegisterered();
         helper.client.start();
         boolean timedout = !helper.waitForRegistration(1);
 
@@ -149,14 +175,19 @@ public class SecurityTest {
 
     @Test
     public void registered_device_with_bad_psk_key_to_server_with_psk() throws NonUniqueSecurityInfoException {
+        // Create PSK server & start it
         helper.createServer(); // default server support PSK
         helper.server.start();
 
+        // Create PSK Client
         helper.createPSKClient();
 
+        // Add client credentials with BAD PSK KEY to the server
         helper.server.getSecurityRegistry()
-                .add(SecurityInfo.newPreSharedKeyInfo(ENDPOINT_IDENTIFIER, helper.pskIdentity, "bad_key".getBytes()));
+                .add(SecurityInfo.newPreSharedKeyInfo(helper.getCurrentEndpoint(), GOOD_PSK_ID, BAD_PSK_KEY));
 
+        // Check client can not register
+        helper.assertClientNotRegisterered();
         helper.client.start();
         boolean timedout = !helper.waitForRegistration(1);
 
@@ -165,14 +196,19 @@ public class SecurityTest {
 
     @Test
     public void registered_device_with_psk_and_bad_endpoint_to_server_with_psk() throws NonUniqueSecurityInfoException {
+        // Create PSK server & start it
         helper.createServer(); // default server support PSK
         helper.server.start();
 
+        // Create PSK Client
         helper.createPSKClient();
 
+        // Add client credentials for another endpoint to the server
         helper.server.getSecurityRegistry()
-                .add(SecurityInfo.newPreSharedKeyInfo("bad_endpoint", helper.pskIdentity, helper.pskKey));
+                .add(SecurityInfo.newPreSharedKeyInfo(BAD_ENDPOINT, GOOD_PSK_ID, GOOD_PSK_KEY));
 
+        // Check client can not register
+        helper.assertClientNotRegisterered();
         helper.client.start();
         boolean timedout = !helper.waitForRegistration(1);
 
@@ -189,13 +225,13 @@ public class SecurityTest {
         helper.createRPKClient();
 
         helper.server.getSecurityRegistry()
-                .add(SecurityInfo.newRawPublicKeyInfo(ENDPOINT_IDENTIFIER, helper.clientPublicKey));
+                .add(SecurityInfo.newRawPublicKeyInfo(helper.getCurrentEndpoint(), helper.clientPublicKey));
 
         helper.client.start();
         helper.waitForRegistration(1);
 
         assertEquals(1, helper.server.getClientRegistry().allClients().size());
-        assertNotNull(helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER));
+        assertNotNull(helper.getCurrentRegistration());
     }
 
     @Ignore
@@ -210,7 +246,7 @@ public class SecurityTest {
         // as it is complex to create a public key, I use the server one :p as bad client public key
         PublicKey bad_client_public_key = helper.server.getSecurityRegistry().getServerPublicKey();
         helper.server.getSecurityRegistry()
-                .add(SecurityInfo.newRawPublicKeyInfo(ENDPOINT_IDENTIFIER, bad_client_public_key));
+                .add(SecurityInfo.newRawPublicKeyInfo(helper.getCurrentEndpoint(), bad_client_public_key));
 
         helper.client.start();
         boolean timedout = !helper.waitForRegistration(1);
@@ -245,13 +281,13 @@ public class SecurityTest {
 
         helper.createX509CertClient(helper.clientPrivateKeyFromCert, helper.trustedCertificates);
 
-        helper.server.getSecurityRegistry().add(SecurityInfo.newX509CertInfo(ENDPOINT_IDENTIFIER));
+        helper.server.getSecurityRegistry().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
 
         helper.client.start();
         helper.waitForRegistration(1);
 
         assertEquals(1, helper.server.getClientRegistry().allClients().size());
-        assertNotNull(helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER));
+        assertNotNull(helper.getCurrentRegistration());
     }
 
     @Ignore
@@ -302,7 +338,7 @@ public class SecurityTest {
         PrivateKey badPrivateKey = helper.serverPrivateKey;
 
         helper.createX509CertClient(badPrivateKey, helper.trustedCertificates);
-        helper.server.getSecurityRegistry().add(SecurityInfo.newX509CertInfo(ENDPOINT_IDENTIFIER));
+        helper.server.getSecurityRegistry().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
 
         helper.client.start();
         boolean timedout = !helper.waitForRegistration(1);
@@ -321,7 +357,7 @@ public class SecurityTest {
 
         helper.createX509CertClient(helper.clientPrivateKeyFromCert, helper.trustedCertificates);
 
-        helper.server.getSecurityRegistry().add(SecurityInfo.newX509CertInfo(ENDPOINT_IDENTIFIER));
+        helper.server.getSecurityRegistry().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
 
         helper.client.start();
         boolean timedout = !helper.waitForRegistration(1);
@@ -339,13 +375,14 @@ public class SecurityTest {
         helper.createX509CertClient(helper.clientPrivateKeyFromCert, helper.trustedCertificates);
 
         helper.server.getSecurityRegistry().add(
-                SecurityInfo.newRawPublicKeyInfo(ENDPOINT_IDENTIFIER, helper.clientX509CertChain[0].getPublicKey()));
+                SecurityInfo.newRawPublicKeyInfo(helper.getCurrentEndpoint(),
+                        helper.clientX509CertChain[0].getPublicKey()));
 
         helper.client.start();
         helper.waitForRegistration(1);
 
         assertEquals(1, helper.server.getClientRegistry().allClients().size());
-        assertNotNull(helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER));
+        assertNotNull(helper.getCurrentRegistration());
     }
 
     @Ignore
@@ -359,12 +396,12 @@ public class SecurityTest {
         helper.client.start();
 
         helper.server.getSecurityRegistry()
-                .add(SecurityInfo.newRawPublicKeyInfo(ENDPOINT_IDENTIFIER, helper.clientPublicKey));
+                .add(SecurityInfo.newRawPublicKeyInfo(helper.getCurrentEndpoint(), helper.clientPublicKey));
 
         helper.client.start();
         helper.waitForRegistration(1);
 
         assertEquals(1, helper.server.getClientRegistry().allClients().size());
-        assertNotNull(helper.server.getClientRegistry().get(ENDPOINT_IDENTIFIER));
+        assertNotNull(helper.getCurrentRegistration());
     }
 }

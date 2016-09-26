@@ -41,6 +41,7 @@ public class CreateTest {
 
     @Before
     public void start() {
+        helper.initialize();
         helper.createServer();
         helper.server.start();
         helper.createClient();
@@ -52,12 +53,13 @@ public class CreateTest {
     public void stop() {
         helper.client.stop(false);
         helper.server.stop();
+        helper.dispose();
     }
 
     @Test
     public void can_create_instance_of_object_without_instance_id() throws InterruptedException {
         // create ACL instance
-        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2,
+        CreateResponse response = helper.server.send(helper.getCurrentRegistration(), new CreateRequest(2,
                 new LwM2mResource[] { LwM2mSingleResource.newIntegerResource(0, 123) }));
 
         // verify result
@@ -65,7 +67,7 @@ public class CreateTest {
         assertEquals("2/0", response.getLocation());
 
         // create a second ACL instance
-        response = helper.server.send(helper.getClient(), new CreateRequest(2,
+        response = helper.server.send(helper.getCurrentRegistration(), new CreateRequest(2,
                 new LwM2mResource[] { LwM2mSingleResource.newIntegerResource(0, 123) }));
 
         // verify result
@@ -79,7 +81,7 @@ public class CreateTest {
         // create ACL instance
         LwM2mObjectInstance instance = new LwM2mObjectInstance(12,
                 Arrays.<LwM2mResource> asList(LwM2mSingleResource.newIntegerResource(3, 123)));
-        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, instance));
+        CreateResponse response = helper.server.send(helper.getCurrentRegistration(), new CreateRequest(2, instance));
 
         // verify result
         assertEquals(ResponseCode.CREATED, response.getCode());
@@ -91,7 +93,7 @@ public class CreateTest {
         // create ACL instance
         LwM2mObjectInstance instance = new LwM2mObjectInstance(12,
                 Arrays.<LwM2mResource> asList(LwM2mSingleResource.newIntegerResource(3, 123)));
-        CreateResponse response = helper.server.send(helper.getClient(),
+        CreateResponse response = helper.server.send(helper.getCurrentRegistration(),
                 new CreateRequest(ContentFormat.JSON, 2, instance));
 
         // verify result
@@ -102,7 +104,8 @@ public class CreateTest {
     @Test
     public void cannot_create_instance_of_object() throws InterruptedException {
         // try to create an instance of object 50
-        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(50, new LwM2mResource[0]));
+        CreateResponse response = helper.server.send(helper.getCurrentRegistration(),
+                new CreateRequest(50, new LwM2mResource[0]));
 
         // verify result
         assertEquals(ResponseCode.NOT_FOUND, response.getCode());
@@ -115,14 +118,15 @@ public class CreateTest {
     @Test
     public void cannot_create_instance_without_all_required_resources() throws InterruptedException {
         // create ACL instance
-        CreateResponse response = helper.server.send(helper.getClient(), new CreateRequest(2, new LwM2mResource[0]));
+        CreateResponse response = helper.server.send(helper.getCurrentRegistration(),
+                new CreateRequest(2, new LwM2mResource[0]));
 
         // verify result
         assertEquals(ResponseCode.BAD_REQUEST, response.getCode());
 
         // try to read to check if the instance is not created
         // client registration
-        ReadResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(2, 0));
+        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(2, 0));
         assertEquals(ResponseCode.NOT_FOUND, readResponse.getCode());
     }
 
@@ -134,14 +138,14 @@ public class CreateTest {
         LwM2mObjectInstance instance = new LwM2mObjectInstance(0, Arrays.<LwM2mResource> asList(
                 LwM2mSingleResource.newIntegerResource(3, 123), LwM2mSingleResource.newIntegerResource(50, 123)));
         CreateRequest request = new CreateRequest(2, instance);
-        CreateResponse response = helper.server.send(helper.getClient(), request);
+        CreateResponse response = helper.server.send(helper.getCurrentRegistration(), request);
 
         // verify result
         assertEquals(ResponseCode.BAD_REQUEST, response.getCode());
 
         // try to read to check if the instance is not created
         // client registration
-        ReadResponse readResponse = helper.server.send(helper.getClient(), new ReadRequest(2, 0));
+        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(2, 0));
         assertEquals(ResponseCode.NOT_FOUND, readResponse.getCode());
     }
 
@@ -155,7 +159,7 @@ public class CreateTest {
     @Test
     public void cannot_create_mandatory_single_object() throws InterruptedException {
         // try to create another instance of device object
-        CreateResponse response = helper.server.send(helper.getClient(),
+        CreateResponse response = helper.server.send(helper.getCurrentRegistration(),
                 new CreateRequest(3, new LwM2mResource[] { LwM2mSingleResource.newIntegerResource(3, 123) }));
 
         // verify result
@@ -164,7 +168,7 @@ public class CreateTest {
 
     @Test
     public void cannot_create_instance_of_security_object() throws InterruptedException {
-        CreateResponse response = helper.server.send(helper.getClient(),
+        CreateResponse response = helper.server.send(helper.getCurrentRegistration(),
                 new CreateRequest(0, new LwM2mResource[] { LwM2mSingleResource.newStringResource(0, "new.dest") }));
 
         // verify result

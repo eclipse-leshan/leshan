@@ -16,8 +16,7 @@
 
 package org.eclipse.leshan.integration.tests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -44,10 +43,11 @@ import org.junit.Test;
 
 public class ObserveTest {
 
-    private IntegrationTestHelper helper = new IntegrationTestHelper();
+    protected IntegrationTestHelper helper = new IntegrationTestHelper();
 
     @Before
     public void start() {
+        helper.initialize();
         helper.createServer();
         helper.server.start();
         helper.createClient();
@@ -59,6 +59,7 @@ public class ObserveTest {
     public void stop() {
         helper.client.stop(false);
         helper.server.stop();
+        helper.dispose();
     }
 
     @Test
@@ -67,22 +68,22 @@ public class ObserveTest {
         helper.server.getObservationRegistry().addListener(listener);
 
         // observe device timezone
-        ObserveResponse observeResponse = helper.server.send(helper.getClient(), new ObserveRequest(3, 0, 15));
+        ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(), new ObserveRequest(3, 0, 15));
         assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
 
         // an observation response should have been sent
         Observation observation = observeResponse.getObservation();
         assertEquals("/3/0/15", observation.getPath().toString());
-        assertEquals(helper.getClient().getRegistrationId(), observation.getRegistrationId());
+        assertEquals(helper.getCurrentRegistration().getRegistrationId(), observation.getRegistrationId());
 
         // write device timezone
-        LwM2mResponse writeResponse = helper.server.send(helper.getClient(),
+        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
                 new WriteRequest(3, 0, 15, "Europe/Paris"));
 
         // verify result
         listener.waitForNotification(2000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
-        assertTrue(listener.receievedNotify().get());
+        assertTrue(listener.receivedNotify().get());
         assertEquals(LwM2mSingleResource.newStringResource(15, "Europe/Paris"), listener.getContent());
     }
 
@@ -92,26 +93,26 @@ public class ObserveTest {
         helper.server.getObservationRegistry().addListener(listener);
 
         // observe device timezone
-        ObserveResponse observeResponse = helper.server.send(helper.getClient(), new ObserveRequest(3, 0));
+        ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(), new ObserveRequest(3, 0));
         assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
 
         // an observation response should have been sent
         Observation observation = observeResponse.getObservation();
         assertEquals("/3/0", observation.getPath().toString());
-        assertEquals(helper.getClient().getRegistrationId(), observation.getRegistrationId());
+        assertEquals(helper.getCurrentRegistration().getRegistrationId(), observation.getRegistrationId());
 
         // write device timezone
-        LwM2mResponse writeResponse = helper.server.send(helper.getClient(),
+        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
                 new WriteRequest(3, 0, 15, "Europe/Paris"));
 
         // verify result
         listener.waitForNotification(2000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
-        assertTrue(listener.receievedNotify().get());
+        assertTrue(listener.receivedNotify().get());
         assertTrue(listener.getContent() instanceof LwM2mObjectInstance);
 
         // try to read the object instance for comparing
-        ReadResponse readResp = helper.server.send(helper.getClient(), new ReadRequest(3, 0));
+        ReadResponse readResp = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0));
 
         assertEquals(readResp.getContent(), listener.getContent());
     }
@@ -122,26 +123,26 @@ public class ObserveTest {
         helper.server.getObservationRegistry().addListener(listener);
 
         // observe device timezone
-        ObserveResponse observeResponse = helper.server.send(helper.getClient(), new ObserveRequest(3));
+        ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(), new ObserveRequest(3));
         assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
 
         // an observation response should have been sent
         Observation observation = observeResponse.getObservation();
         assertEquals("/3", observation.getPath().toString());
-        assertEquals(helper.getClient().getRegistrationId(), observation.getRegistrationId());
+        assertEquals(helper.getCurrentRegistration().getRegistrationId(), observation.getRegistrationId());
 
         // write device timezone
-        LwM2mResponse writeResponse = helper.server.send(helper.getClient(),
+        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
                 new WriteRequest(3, 0, 15, "Europe/Paris"));
 
         // verify result
         listener.waitForNotification(2000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
-        assertTrue(listener.receievedNotify().get());
+        assertTrue(listener.receivedNotify().get());
         assertTrue(listener.getContent() instanceof LwM2mObject);
 
         // try to read the object for comparing
-        ReadResponse readResp = helper.server.send(helper.getClient(), new ReadRequest(3));
+        ReadResponse readResp = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3));
 
         assertEquals(readResp.getContent(), listener.getContent());
     }
@@ -169,7 +170,7 @@ public class ObserveTest {
         public void newObservation(final Observation observation) {
         }
 
-        public AtomicBoolean receievedNotify() {
+        public AtomicBoolean receivedNotify() {
             return receivedNotify;
         }
 

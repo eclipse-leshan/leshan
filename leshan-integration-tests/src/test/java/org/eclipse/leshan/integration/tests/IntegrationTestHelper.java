@@ -16,9 +16,12 @@
 
 package org.eclipse.leshan.integration.tests;
 
+import static org.junit.Assert.*;
+
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -51,8 +54,8 @@ import org.eclipse.leshan.server.model.StaticModelProvider;
  * 
  */
 public class IntegrationTestHelper {
-
-    static final String ENDPOINT_IDENTIFIER = "kdfflwmtm";
+    public static final Random r = new Random();
+    
     static final String MODEL_NUMBER = "IT-TEST-123";
     public static final long LIFETIME = 2;
 
@@ -67,10 +70,12 @@ public class IntegrationTestHelper {
     public static final int OBJLNK_SINGLE_INSTANCE_RESOURCE_ID = 7;
 
     LeshanServer server;
+
     LwM2mClient client;
-    Client last_registration;
+    String currentEndpointIdentifier;
 
     CountDownLatch registerLatch;
+    Client last_registration;
     CountDownLatch deregisterLatch;
     CountDownLatch updateLatch;
 
@@ -100,8 +105,15 @@ public class IntegrationTestHelper {
         return objectModels;
     }
 
-    public void createClient() {
+    public void initialize() {
+        currentEndpointIdentifier = "leshan_integration_test_" + r.nextInt();
+    }
 
+    public String getCurrentEndpoint() {
+        return currentEndpointIdentifier;
+    }
+
+    public void createClient() {
         // Create objects Enabler
         ObjectsInitializer initializer = new ObjectsInitializer(new LwM2mModel(createObjectModels()));
         initializer.setInstancesForObject(LwM2mId.SECURITY, Security.noSec(
@@ -122,7 +134,7 @@ public class IntegrationTestHelper {
         objects.addAll(initializer.create(2, 2000));
 
         // Build Client
-        LeshanClientBuilder builder = new LeshanClientBuilder(ENDPOINT_IDENTIFIER);
+        LeshanClientBuilder builder = new LeshanClientBuilder(currentEndpointIdentifier);
         builder.setObjects(objects);
         client = builder.build();
     }
@@ -152,21 +164,21 @@ public class IntegrationTestHelper {
         server.getClientRegistry().addListener(new ClientRegistryListener() {
             @Override
             public void updated(ClientUpdate update, Client clientUpdated) {
-                if (clientUpdated.getEndpoint().equals(ENDPOINT_IDENTIFIER)) {
+                if (clientUpdated.getEndpoint().equals(currentEndpointIdentifier)) {
                     updateLatch.countDown();
                 }
             }
 
             @Override
             public void unregistered(Client client) {
-                if (client.getEndpoint().equals(ENDPOINT_IDENTIFIER)) {
+                if (client.getEndpoint().equals(currentEndpointIdentifier)) {
                     deregisterLatch.countDown();
                 }
             }
 
             @Override
             public void registered(Client client) {
-                if (client.getEndpoint().equals(ENDPOINT_IDENTIFIER)) {
+                if (client.getEndpoint().equals(currentEndpointIdentifier)) {
                     last_registration = client;
                     registerLatch.countDown();
                 }
@@ -204,7 +216,26 @@ public class IntegrationTestHelper {
         }
     }
 
-    public Client getClient() {
-        return server.getClientRegistry().get(ENDPOINT_IDENTIFIER);
+    public Client getCurrentRegistration() {
+        return server.getClientRegistry().get(currentEndpointIdentifier);
+    }
+
+    public void deregisterClient() {
+        Client c = getCurrentRegistration();
+        if (c != null)
+            server.getClientRegistry().deregisterClient(c.getRegistrationId());
+    }
+
+    public void dispose() {
+        deregisterClient();
+        currentEndpointIdentifier = null;
+    }
+
+    public void assertClientRegisterered() {
+        assertNotNull(getCurrentRegistration());
+    }
+
+    public void assertClientNotRegisterered() {
+        assertNull(getCurrentRegistration());
     }
 }

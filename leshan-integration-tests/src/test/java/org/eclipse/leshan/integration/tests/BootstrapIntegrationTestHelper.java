@@ -46,9 +46,9 @@ import org.eclipse.leshan.util.Hex;
  */
 public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
 
-    // public static final String SECURE_ENDPOINT_IDENTIFIER = "secureclient";
-    public static final String SECURE_PSK_ID = "Client_identity";
-    public static final byte[] SECURE_PSK_KEY = Hex.decodeHex("73656372657450534b".toCharArray());
+    public static final String GOOD_PSK_ID = "Good_Client_identity";
+    public static final byte[] GOOD_PSK_KEY = Hex.decodeHex("73656372657450534b".toCharArray());
+    public static final byte[] BAD_PSK_KEY = Hex.decodeHex("010101010101010101".toCharArray());
 
     LwM2mBootstrapServerImpl bootstrapServer;
 
@@ -97,54 +97,47 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
     }
 
     public void createClient() {
-        ObjectsInitializer initializer = new ObjectsInitializer();
-
-        // set only the bootstrap server instance (security)
+        // Create Security Object (with bootstrap server only)
         String bsUrl = "coap://" + bootstrapServer.getNonSecureAddress().getHostString() + ":"
                 + bootstrapServer.getNonSecureAddress().getPort();
-
         Security security = new Security(bsUrl, true, 3, new byte[0], new byte[0], new byte[0], 12345);
 
-        initializer.setInstancesForObject(LwM2mId.SECURITY, security);
-
-        initializer.setInstancesForObject(LwM2mId.DEVICE,
-                new Device("Eclipse Leshan", IntegrationTestHelper.MODEL_NUMBER, "12345", "U"));
-        List<LwM2mObjectEnabler> objects = initializer.createMandatory();
-        objects.add(initializer.create(2));
-
-        LeshanClientBuilder builder = new LeshanClientBuilder(IntegrationTestHelper.ENDPOINT_IDENTIFIER);
-        builder.setObjects(objects);
-        client = builder.build();
+        createClient(security);
     }
 
     public void createPSKClient(String pskIdentity, byte[] pskKey) {
-        ObjectsInitializer initializer = new ObjectsInitializer();
 
+        // Create Security Object (with bootstrap server only)
         String bsUrl = "coaps://" + bootstrapServer.getSecureAddress().getHostString() + ":"
                 + bootstrapServer.getSecureAddress().getPort();
-
         byte[] pskId = pskIdentity.getBytes(Charsets.UTF_8);
-
         Security security = Security.pskBootstrap(bsUrl, pskId, pskKey);
 
-        initializer.setInstancesForObject(LwM2mId.SECURITY, security);
+        createClient(security);
+    }
 
+    private void createClient(Security security) {
+        ObjectsInitializer initializer = new ObjectsInitializer();
+
+        // Initialize LWM2M Object Tree
+        initializer.setInstancesForObject(LwM2mId.SECURITY, security);
         initializer.setInstancesForObject(LwM2mId.DEVICE,
                 new Device("Eclipse Leshan", IntegrationTestHelper.MODEL_NUMBER, "12345", "U"));
         List<LwM2mObjectEnabler> objects = initializer.createMandatory();
         objects.add(initializer.create(2));
 
-        LeshanClientBuilder builder = new LeshanClientBuilder(ENDPOINT_IDENTIFIER);
+        // Create Leshan Client
+        LeshanClientBuilder builder = new LeshanClientBuilder(getCurrentEndpoint());
         builder.setObjects(objects);
         client = builder.build();
     }
 
-    public static BootstrapSecurityStore bsSecurityStore() {
+    public BootstrapSecurityStore bsSecurityStore() {
 
         return new BootstrapSecurityStore() {
             @Override
             public SecurityInfo getByIdentity(String identity) {
-                if (BootstrapIntegrationTestHelper.SECURE_PSK_ID.equals(identity)) {
+                if (BootstrapIntegrationTestHelper.GOOD_PSK_ID.equals(identity)) {
                     return pskSecurityInfo();
                 } else {
                     return null;
@@ -153,21 +146,19 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
 
             @Override
             public List<SecurityInfo> getAllByEndpoint(String endpoint) {
-                if (IntegrationTestHelper.ENDPOINT_IDENTIFIER.equals(endpoint)) {
+                if (getCurrentEndpoint().equals(endpoint)) {
                     SecurityInfo info = pskSecurityInfo();
                     return Arrays.asList(info);
                 } else {
                     return Arrays.asList();
                 }
-
             }
-
         };
     }
 
-    public static SecurityInfo pskSecurityInfo() {
-        SecurityInfo info = SecurityInfo.newPreSharedKeyInfo(BootstrapIntegrationTestHelper.ENDPOINT_IDENTIFIER,
-                BootstrapIntegrationTestHelper.SECURE_PSK_ID, BootstrapIntegrationTestHelper.SECURE_PSK_KEY);
+    public SecurityInfo pskSecurityInfo() {
+        SecurityInfo info = SecurityInfo.newPreSharedKeyInfo(getCurrentEndpoint(),
+                BootstrapIntegrationTestHelper.GOOD_PSK_ID, BootstrapIntegrationTestHelper.GOOD_PSK_KEY);
         return info;
     }
 
@@ -186,4 +177,9 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
         };
     }
 
+    @Override
+    public void dispose() {
+        super.dispose();
+        server.getSecurityRegistry().remove(getCurrentEndpoint());
+    }
 }

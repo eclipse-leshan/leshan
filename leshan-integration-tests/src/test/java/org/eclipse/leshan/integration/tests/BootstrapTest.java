@@ -15,11 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.eclipse.leshan.integration.tests.BootstrapIntegrationTestHelper.*;
 
-import org.eclipse.leshan.util.Hex;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,66 +27,71 @@ public class BootstrapTest {
 
     @Before
     public void start() {
-        // DM server
-        helper.createServer();
+        helper.initialize();
+        helper.createServer(); // DM server
         helper.server.start();
-
     }
 
     @After
     public void stop() {
-
         helper.client.stop(true);
         helper.bootstrapServer.stop();
         helper.server.stop();
+        helper.dispose();
     }
 
     @Test
     public void bootstrap() {
-        // Bootstrap server
+        // Create and start bootstrap server
         helper.createBootstrapServer(null);
         helper.bootstrapServer.start();
 
+        // Create Client and check it is not already registered
         helper.createClient();
-        helper.client.start();
+        helper.assertClientNotRegisterered();
 
+        // Start it and wait for registration
+        helper.client.start();
         helper.waitForRegistration(1);
 
         // check the client is registered
-        assertEquals(1, helper.server.getClientRegistry().allClients().size());
-        assertNotNull(helper.server.getClientRegistry().get(BootstrapIntegrationTestHelper.ENDPOINT_IDENTIFIER));
+        helper.assertClientRegisterered();
     }
 
     @Test
     public void bootstrapSecure() {
-
-        // Bootstrap server
-        helper.createBootstrapServer(BootstrapIntegrationTestHelper.bsSecurityStore());
+        // Create and start bootstrap server
+        helper.createBootstrapServer(helper.bsSecurityStore());
         helper.bootstrapServer.start();
 
-        helper.createPSKClient("Client_identity", Hex.decodeHex("73656372657450534b".toCharArray()));
-        helper.client.start();
+        // Create PSK Client and check it is not already registered
+        helper.createPSKClient(GOOD_PSK_ID, GOOD_PSK_KEY);
+        helper.assertClientNotRegisterered();
 
+        // Start it and wait for registration
+        helper.client.start();
         helper.waitForRegistration(1);
 
-        assertEquals(1, helper.server.getClientRegistry().allClients().size());
-        assertNotNull(helper.server.getClientRegistry().get(IntegrationTestHelper.ENDPOINT_IDENTIFIER));
+        // check the client is registered
+        helper.assertClientRegisterered();
     }
 
     @Test
     public void bootstrapSecureWithBadCredentials() {
-
-        // Bootstrap server
-        helper.createBootstrapServer(BootstrapIntegrationTestHelper.bsSecurityStore());
+        // Create and start bootstrap server
+        helper.createBootstrapServer(helper.bsSecurityStore());
         helper.bootstrapServer.start();
 
-        helper.createPSKClient("Client_identity", Hex.decodeHex("010101010101010101".toCharArray()));
-        helper.client.start();
+        // Create PSK Client with bad credentials and check it is not already registered
+        helper.createPSKClient(GOOD_PSK_ID, BAD_PSK_KEY);
+        helper.assertClientNotRegisterered();
 
+        // Start it and wait for registration
+        helper.client.start();
         helper.waitForRegistration(1);
 
-        assertEquals(0, helper.server.getClientRegistry().allClients().size());
-        assertNull(helper.server.getClientRegistry().get(IntegrationTestHelper.ENDPOINT_IDENTIFIER));
+        // check the client is registered
+        helper.assertClientNotRegisterered();
     }
 
 }

@@ -39,6 +39,7 @@ public class DeleteTest {
 
     @Before
     public void start() {
+        helper.initialize();
         helper.createServer();
         helper.server.start();
         helper.createClient();
@@ -50,18 +51,19 @@ public class DeleteTest {
     public void stop() {
         helper.client.stop(false);
         helper.server.stop();
+        helper.dispose();
     }
 
     @Test
     public void delete_created_object_instance() throws InterruptedException {
         // create ACL instance
         helper.server.send(
-                helper.getClient(),
+                helper.getCurrentRegistration(),
                 new CreateRequest(2, new LwM2mObjectInstance(0, Arrays.asList(new LwM2mResource[] { LwM2mSingleResource
                         .newIntegerResource(0, 123) }))));
 
         // try to delete this instance
-        DeleteResponse deleteResponse = helper.server.send(helper.getClient(), new DeleteRequest(2, 0));
+        DeleteResponse deleteResponse = helper.server.send(helper.getCurrentRegistration(), new DeleteRequest(2, 0));
 
         // verify result
         assertEquals(ResponseCode.DELETED, deleteResponse.getCode());
@@ -71,12 +73,12 @@ public class DeleteTest {
     public void cannot_delete_resource_of_created_object_instance() throws InterruptedException {
         // create ACL instance
         helper.server.send(
-                helper.getClient(),
+                helper.getCurrentRegistration(),
                 new CreateRequest(2, new LwM2mObjectInstance(0, Arrays.asList(new LwM2mResource[] { LwM2mSingleResource
                         .newIntegerResource(0, 123) }))));
 
         // try to delete this instance
-        DeleteResponse deleteResponse = helper.server.send(helper.getClient(), new DeleteRequest("/2/0/0"));
+        DeleteResponse deleteResponse = helper.server.send(helper.getCurrentRegistration(), new DeleteRequest("/2/0/0"));
 
         // verify result
         assertEquals(ResponseCode.METHOD_NOT_ALLOWED, deleteResponse.getCode());
@@ -85,7 +87,7 @@ public class DeleteTest {
     @Test
     public void cannot_delete_unknown_object_instance() throws InterruptedException {
         // try to create an instance of object 50
-        DeleteResponse response = helper.server.send(helper.getClient(), new DeleteRequest(2, 0));
+        DeleteResponse response = helper.server.send(helper.getCurrentRegistration(), new DeleteRequest(2, 0));
 
         // verify result
         assertEquals(ResponseCode.NOT_FOUND, response.getCode());
@@ -94,7 +96,7 @@ public class DeleteTest {
     @Test
     public void cannot_delete_single_manadatory_object_instance() throws InterruptedException {
         // try to create an instance of object 50
-        DeleteResponse response = helper.server.send(helper.getClient(), new DeleteRequest(3, 0));
+        DeleteResponse response = helper.server.send(helper.getCurrentRegistration(), new DeleteRequest(3, 0));
 
         // verify result
         assertEquals(ResponseCode.METHOD_NOT_ALLOWED, response.getCode());
@@ -102,7 +104,7 @@ public class DeleteTest {
 
     @Test
     public void cannot_delete_security_object_instance() throws InterruptedException {
-        DeleteResponse response = helper.server.send(helper.getClient(), new DeleteRequest(0, 0));
+        DeleteResponse response = helper.server.send(helper.getCurrentRegistration(), new DeleteRequest(0, 0));
 
         // verify result
         assertEquals(ResponseCode.NOT_FOUND, response.getCode());

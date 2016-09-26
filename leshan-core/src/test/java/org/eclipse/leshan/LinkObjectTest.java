@@ -124,7 +124,6 @@ public class LinkObjectTest {
 
         LinkObject[] input = new LinkObject[] { obj1, obj2 };
         String strObjs = LinkObject.serialize(input);
-        System.out.println(strObjs);
         LinkObject[] output = LinkObject.parse(strObjs.getBytes());
 
         Assert.assertArrayEquals(input, output);

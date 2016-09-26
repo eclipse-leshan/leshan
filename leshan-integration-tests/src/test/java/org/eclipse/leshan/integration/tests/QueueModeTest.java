@@ -96,6 +96,7 @@ public class QueueModeTest {
     @Before
     public void start() {
         helper = new QueueModeIntegrationTestHelper();
+        helper.initialize();
         helper.createServer();
         helper.server.start();
         helper.createClient();
@@ -109,12 +110,13 @@ public class QueueModeTest {
         helper.client.stop(DEREGISTER);
         helper.server.getLwM2mRequestSender().removeResponseListener(responseListener);
         helper.server.stop();
+        helper.dispose();
     }
 
     @Test
     public void first_request_sent_immediately() throws Exception {
         createAndAddResponseListener(countDownLatch);
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "1",
+        helper.server.getLwM2mRequestSender().send(helper.getCurrentRegistration(), TEST_REQUEST_TICKET + "1",
                 new ReadRequest(3, 0));
         if (!countDownLatch.await(2, TimeUnit.SECONDS)) {
             fail("response from client was not received within timeout");
@@ -129,7 +131,7 @@ public class QueueModeTest {
 
         createAndAddResponseListener(countDownLatch);
 
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "1",
+        helper.server.getLwM2mRequestSender().send(helper.getCurrentRegistration(), TEST_REQUEST_TICKET + "1",
                 new ReadRequest(3, 0));
         // assert that queue has one request left in processing state still
         assertQueueHasMessageCount(1, 5000);
@@ -146,7 +148,7 @@ public class QueueModeTest {
         createAndAddResponseListener(acceptCountDownLatch);
 
         // send request but no response should be received
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "1",
+        helper.server.getLwM2mRequestSender().send(helper.getCurrentRegistration(), TEST_REQUEST_TICKET + "1",
                 new ReadRequest(3, 0, 1));
 
         // assert that queue has one request left in processing state still
@@ -155,7 +157,7 @@ public class QueueModeTest {
         // as client has not yet sent any register-update or notify, sending
         // next request
         // request should only be queued and not sent
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "2",
+        helper.server.getLwM2mRequestSender().send(helper.getCurrentRegistration(), TEST_REQUEST_TICKET + "2",
                 new ReadRequest(3, 0, 2));
         if (acceptCountDownLatch.await(3, TimeUnit.SECONDS)) {
             fail("response from client after first request timed out is unexpected");
@@ -163,7 +165,7 @@ public class QueueModeTest {
 
         // assert that queue has one additional new request
         assertEquals(2, ((InMemoryMessageStore) helper.server.getMessageStore())
-                .getQueueSize(helper.getClient().getEndpoint()));
+                .getQueueSize(helper.getCurrentRegistration().getEndpoint()));
     }
 
     @Test
@@ -192,7 +194,7 @@ public class QueueModeTest {
 
         // Send a read request. Will be sent immediately as it is the first
         // message in the queue.
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "1",
+        helper.server.getLwM2mRequestSender().send(helper.getCurrentRegistration(), TEST_REQUEST_TICKET + "1",
                 new ReadRequest(3, 0, 1));
 
         // after first (not responded) request, coundDown should be zero.
@@ -214,7 +216,7 @@ public class QueueModeTest {
         }
 
         assertEquals(0, ((InMemoryMessageStore) helper.server.getMessageStore())
-                .getQueueSize(helper.getClient().getEndpoint()));
+                .getQueueSize(helper.getCurrentRegistration().getEndpoint()));
     }
 
     @Test
@@ -235,7 +237,7 @@ public class QueueModeTest {
                 if (response instanceof ObserveResponse) {
                     Observation observation = ((ObserveResponse) response).getObservation();
                     assertEquals("/3/0/15", observation.getPath().toString());
-                    assertEquals(helper.getClient().getRegistrationId(), observation.getRegistrationId());
+                    assertEquals(helper.getCurrentRegistration().getRegistrationId(), observation.getRegistrationId());
                 }
             }
 
@@ -248,7 +250,7 @@ public class QueueModeTest {
         // Send an Observe request. Will be sent immediately as it is the first
         // message in the queue. Response will bre processed by the
         // ResponseListener defined above.
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "1",
+        helper.server.getLwM2mRequestSender().send(helper.getCurrentRegistration(), TEST_REQUEST_TICKET + "1",
                 new ObserveRequest(3, 0, 15));
         // Wait for read request timeout
         waitForInterval(TIMEOUT);
@@ -260,7 +262,7 @@ public class QueueModeTest {
         client.setOnGetCallback(doNothingOnGet);
         // add a read response listener.
         createAndAddResponseListener(acceptCountDownLatch);
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "2",
+        helper.server.getLwM2mRequestSender().send(helper.getCurrentRegistration(), TEST_REQUEST_TICKET + "2",
                 new ReadRequest(3, 0, 15));
         // read request should be left in Queue still.
         assertQueueHasMessageCount(1, 5000);
@@ -268,7 +270,7 @@ public class QueueModeTest {
         // set client to respond to GET
         client.setOnGetCallback(respondOnGet);
         // write device timezone
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "3",
+        helper.server.getLwM2mRequestSender().send(helper.getCurrentRegistration(), TEST_REQUEST_TICKET + "3",
                 new WriteRequest(3, 0, 15, "Europe/Berlin"));
 
         // wait for client update.
@@ -293,7 +295,7 @@ public class QueueModeTest {
                     LOG.trace("Received observe response for ticket {} from LWM2M client {}", requestTicket, response);
                     Observation observation = ((ObserveResponse) response).getObservation();
                     assertEquals("/3/0/15", observation.getPath().toString());
-                    assertEquals(helper.getClient().getRegistrationId(), observation.getRegistrationId());
+                    assertEquals(helper.getCurrentRegistration().getRegistrationId(), observation.getRegistrationId());
                 }
             }
 
@@ -307,14 +309,14 @@ public class QueueModeTest {
         client.setOnGetCallback(respondOnGet);
         // Send an Observe request. Will be sent immediately as it is the first
         // message in the queue.
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "1",
+        helper.server.getLwM2mRequestSender().send(helper.getCurrentRegistration(), TEST_REQUEST_TICKET + "1",
                 new ObserveRequest(3, 0, 15));
         waitForInterval(TIMEOUT);
         // remove observe response listener
         helper.server.getLwM2mRequestSender().removeResponseListener(responseListener);
 
         // write device timezone.
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "2",
+        helper.server.getLwM2mRequestSender().send(helper.getCurrentRegistration(), TEST_REQUEST_TICKET + "2",
                 new WriteRequest(3, 0, 15, "Europe/Berlin"));
 
         // Read request should be sent immediately.
@@ -337,7 +339,7 @@ public class QueueModeTest {
             }
         };
         helper.server.getLwM2mRequestSender().addResponseListener(responseListener);
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "3",
+        helper.server.getLwM2mRequestSender().send(helper.getCurrentRegistration(), TEST_REQUEST_TICKET + "3",
                 new ReadRequest(3, 0, 1));
 
         waitForInterval(TIMEOUT);
@@ -371,7 +373,7 @@ public class QueueModeTest {
                     LOG.trace("Received observe response for ticket {} from LWM2M client {}", requestTicket, response);
                     Observation observation = ((ObserveResponse) response).getObservation();
                     assertEquals("/3/0/15", observation.getPath().toString());
-                    assertEquals(helper.getClient().getRegistrationId(), observation.getRegistrationId());
+                    assertEquals(helper.getCurrentRegistration().getRegistrationId(), observation.getRegistrationId());
                 }
             }
 
@@ -383,13 +385,13 @@ public class QueueModeTest {
         helper.server.getLwM2mRequestSender().addResponseListener(responseListener);
         // Send an Observe request. Will be sent immediately as it is the first
         // message in the queue.
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "1",
+        helper.server.getLwM2mRequestSender().send(helper.getCurrentRegistration(), TEST_REQUEST_TICKET + "1",
                 new ObserveRequest(3, 0, 15));
         waitForInterval(TIMEOUT);
 
         // Now set the client NOT to respond to GET and send a request
         client.setOnGetCallback(doNothingOnGet);
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "2",
+        helper.server.getLwM2mRequestSender().send(helper.getCurrentRegistration(), TEST_REQUEST_TICKET + "2",
                 new ReadRequest(3, 0, 1));
 
         waitForInterval(TIMEOUT);
@@ -409,10 +411,10 @@ public class QueueModeTest {
         });
 
         // write device timezone
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "3",
+        helper.server.getLwM2mRequestSender().send(helper.getCurrentRegistration(), TEST_REQUEST_TICKET + "3",
                 new WriteRequest(3, 0, 15, "Europe/Amsterdam"));
         // write device timezone
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "4",
+        helper.server.getLwM2mRequestSender().send(helper.getCurrentRegistration(), TEST_REQUEST_TICKET + "4",
                 new WriteRequest(3, 0, 15, "Europe/Paris"));
 
         assertQueueIsEmpty(3000);
@@ -441,11 +443,11 @@ public class QueueModeTest {
         createAndAddResponseListener(acceptCountDownLatch);
         // Send a read request. Will be sent immediately as it is the first
         // message in the queue.
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "1",
+        helper.server.getLwM2mRequestSender().send(helper.getCurrentRegistration(), TEST_REQUEST_TICKET + "1",
                 new ReadRequest(3, 0, 1));
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "2",
+        helper.server.getLwM2mRequestSender().send(helper.getCurrentRegistration(), TEST_REQUEST_TICKET + "2",
                 new ReadRequest(3, 0, 15));
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "3",
+        helper.server.getLwM2mRequestSender().send(helper.getCurrentRegistration(), TEST_REQUEST_TICKET + "3",
                 new ReadRequest(3, 0, 2));
 
         waitForInterval(TIMEOUT);
@@ -468,11 +470,11 @@ public class QueueModeTest {
         createAndAddResponseListener(acceptCountDownLatch);
         // Send a read request. Will be sent immediately as it is the first
         // message in the queue.
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "1",
+        helper.server.getLwM2mRequestSender().send(helper.getCurrentRegistration(), TEST_REQUEST_TICKET + "1",
                 new ReadRequest(3, 0, 1));
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "2",
+        helper.server.getLwM2mRequestSender().send(helper.getCurrentRegistration(), TEST_REQUEST_TICKET + "2",
                 new ReadRequest(3, 0, 15));
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "3",
+        helper.server.getLwM2mRequestSender().send(helper.getCurrentRegistration(), TEST_REQUEST_TICKET + "3",
                 new ReadRequest(3, 0, 2));
 
         assertQueueHasMessageCount(3, 5000);
@@ -509,11 +511,11 @@ public class QueueModeTest {
             }
         });
 
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "1",
+        helper.server.getLwM2mRequestSender().send(helper.getCurrentRegistration(), TEST_REQUEST_TICKET + "1",
                 new ReadRequest(3, 0, 1));
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "2",
+        helper.server.getLwM2mRequestSender().send(helper.getCurrentRegistration(), TEST_REQUEST_TICKET + "2",
                 new ReadRequest(3, 0, 15));
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "3",
+        helper.server.getLwM2mRequestSender().send(helper.getCurrentRegistration(), TEST_REQUEST_TICKET + "3",
                 new ReadRequest(3, 0, 2));
         // Send de-register
         helper.client.stop(DEREGISTER);
@@ -526,7 +528,7 @@ public class QueueModeTest {
     @Test
     public void cancel_pending_throws_exception_for_first_message_and_doesnot_send_others() throws Exception {
         final CountDownLatch exceptionCountDownLatch = new CountDownLatch(1);
-        final CountDownLatch responseCountDownLatch = new CountDownLatch(1);
+        final CountDownLatch responseCountDownLatch = new CountDownLatch(2);
         final CountDownLatch unexpectedResponseCountDownLatch = new CountDownLatch(2);
 
         QueuedModeLeshanClient client = (QueuedModeLeshanClient) helper.client;
@@ -549,12 +551,12 @@ public class QueueModeTest {
             }
         });
 
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "1",
+        helper.server.getLwM2mRequestSender().send(helper.getCurrentRegistration(), TEST_REQUEST_TICKET + "1",
                 new ReadRequest(3, 0, 1));
-        helper.server.getLwM2mRequestSender().send(helper.getClient(), TEST_REQUEST_TICKET + "2",
+        helper.server.getLwM2mRequestSender().send(helper.getCurrentRegistration(), TEST_REQUEST_TICKET + "2",
                 new ReadRequest(3, 0, 15));
         // Instead of LWM2M client de-register, cancel pending messages on LWM2M server.
-        helper.server.getLwM2mRequestSender().cancelPendingRequests(helper.getClient());
+        helper.server.getLwM2mRequestSender().cancelPendingRequests(helper.getCurrentRegistration());
         responseCountDownLatch.countDown(); // client will start responding from this point.
         assertQueueIsEmpty(3000);
         assertTrue("Did not expect any responses", unexpectedResponseCountDownLatch.getCount() == 2);
@@ -564,7 +566,7 @@ public class QueueModeTest {
 
     @Test
     public void sending_message_for_unknown_client_gives_error_response() throws InterruptedException {
-        Client destination = helper.getClient();
+        Client destination = helper.getCurrentRegistration();
         // stop the lwm2m client created by default
         helper.client.stop(DEREGISTER);
 
@@ -621,7 +623,7 @@ public class QueueModeTest {
             Thread.sleep(interval);
             duration += interval;
             InMemoryMessageStore messageStore = (InMemoryMessageStore) helper.server.getMessageStore();
-            queuedRequestCount = messageStore.getQueueSize(helper.getClient().getEndpoint());
+            queuedRequestCount = messageStore.getQueueSize(helper.getCurrentRegistration().getEndpoint());
         } while (queuedRequestCount < count && duration <= timeout);
         assertTrue(
                 "Expected to have at least " + count + " queued request in queue but have [" + queuedRequestCount + "]",
@@ -636,7 +638,7 @@ public class QueueModeTest {
         do {
             Thread.sleep(interval);
             duration += interval;
-            empty = messageStore.isEmpty(QueueModeIntegrationTestHelper.ENDPOINT_IDENTIFIER);
+            empty = messageStore.isEmpty(helper.getCurrentEndpoint());
         } while (!empty && duration <= timeout);
         assertTrue("Expected an empty queue but has some messages", empty);
     }
