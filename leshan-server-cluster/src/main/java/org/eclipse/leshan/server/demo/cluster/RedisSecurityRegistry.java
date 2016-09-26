@@ -135,13 +135,16 @@ public class RedisSecurityRegistry implements SecurityRegistry {
         try (Jedis j = pool.getResource()) {
             byte[] data = j.get((SEC_EP + endpoint).getBytes());
 
-            SecurityInfo info = deserialize(data);
-            if (info.getIdentity() != null) {
-                j.hdel(PSKID_SEC.getBytes(), info.getIdentity().getBytes());
+            if (data != null) {
+                SecurityInfo info = deserialize(data);
+                if (info.getIdentity() != null) {
+                    j.hdel(PSKID_SEC.getBytes(), info.getIdentity().getBytes());
+                }
+                j.del((SEC_EP + endpoint).getBytes());
+                return info;
             }
-            j.del((SEC_EP + endpoint).getBytes());
-            return info;
         }
+        return null;
     }
 
     @Override

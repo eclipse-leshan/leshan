@@ -108,6 +108,7 @@ Contributors:
         <log4j.version>2.1</log4j.version>
         <slf4j.api.version>1.7.10</slf4j.api.version>
         <jetty.version>9.1.4.v20140401</jetty.version>
+        <test.exclusion.pattern>**/Redis*.java</test.exclusion.pattern>
     </properties>
 
     <distributionManagement>
@@ -127,6 +128,12 @@ Contributors:
             <modules>
                 <module>leshan-all</module>
             </modules>
+        </profile>
+        <profile>
+          <id>redis</id>
+          <properties>
+                <test.exclusion.pattern>nothing</test.exclusion.pattern>
+          </properties>
         </profile>
         <profile>
             <!-- this profile generate all the needed artifact and signatures needed, then release it on maven central -->

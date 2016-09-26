@@ -34,6 +34,10 @@ Contributors:
         </dependency>
         <dependency>
             <groupId>org.eclipse.leshan</groupId>
+            <artifactId>leshan-server-cluster</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.leshan</groupId>
             <artifactId>leshan-client-cf</artifactId>
         </dependency>
 
@@ -61,8 +65,13 @@ Contributors:
                             src/test/resources/logging.properties
                         </java.util.logging.config.file>
                     </systemPropertyVariables>
+                    <excludes>
+                        <exclude>${test.exclusion.pattern}</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
         </plugins>
     </build>
+    
+    
 </project>
