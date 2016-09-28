@@ -42,29 +42,36 @@ public class LwM2mSingleResource implements LwM2mResource {
     }
 
     public static LwM2mSingleResource newResource(int id, Object value, Type type) {
+        String doesNotMatchMessage = "Value does not match the given datatype";
         switch (type) {
         case INTEGER:
-            if (value instanceof Long)
-                break;
+            if (!(value instanceof Long))
+                throw new IllegalArgumentException(doesNotMatchMessage);
+            break;
         case FLOAT:
-            if (value instanceof Double)
-                break;
+            if (!(value instanceof Double))
+                throw new IllegalArgumentException(doesNotMatchMessage);
+            break;
         case BOOLEAN:
-            if (value instanceof Boolean)
-                break;
+            if (!(value instanceof Boolean))
+                throw new IllegalArgumentException(doesNotMatchMessage);
+            break;
         case OPAQUE:
-            if (value instanceof byte[])
-                break;
+            if (!(value instanceof byte[]))
+                throw new IllegalArgumentException(doesNotMatchMessage);
+            break;
         case STRING:
-            if (value instanceof String)
-                break;
+            if (!(value instanceof String))
+                throw new IllegalArgumentException(doesNotMatchMessage);
+            break;
         case TIME:
-            if (value instanceof Date)
-                break;
+            if (!(value instanceof Date))
+                throw new IllegalArgumentException(doesNotMatchMessage);
+            break;
         case OBJLNK:
-            if (value instanceof ObjectLink)
-                break;
-            throw new IllegalArgumentException("Value does not match the given datatype");
+            if (!(value instanceof ObjectLink))
+                throw new IllegalArgumentException(doesNotMatchMessage);
+            break;
         default:
             throw new IllegalArgumentException(String.format("Type %s is not supported", type.name()));
         }

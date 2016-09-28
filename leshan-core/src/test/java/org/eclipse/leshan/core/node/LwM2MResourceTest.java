@@ -129,6 +129,11 @@ public class LwM2MResourceTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
+    public void generic_instance_with_incompatible_value_and_type() {
+        LwM2mSingleResource.newResource(0, "a string", Type.BOOLEAN);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
     public void integer_multi_instances_resource_with_null_value() {
         Map<Integer, Long> values = new HashMap<>();
         values.put(2, 2L);
@@ -144,4 +149,11 @@ public class LwM2MResourceTest {
         LwM2mMultipleResource.newResource(0, values, Type.STRING);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void generic_multi_instance_with_incompatible_value_and_type() {
+        Map<Integer, String> values = new HashMap<>();
+        values.put(2, "value");
+        values.put(3, null);
+        LwM2mMultipleResource.newResource(0, values, Type.BOOLEAN);
+    }
 }
