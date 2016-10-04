@@ -60,7 +60,7 @@ public class RedisIntegrationTestHelper extends IntegrationTestHelper {
         });
 
         // Create redis store
-        Pool<Jedis> jedis = new JedisPool();
+        Pool<Jedis> jedis = new JedisPool(System.getenv("REDIS_URI"));
         ClientRegistry clientRegistry = new RedisClientRegistry(jedis);
         builder.setClientRegistry(clientRegistry);
         builder.setObservationRegistry(

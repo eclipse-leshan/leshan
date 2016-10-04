@@ -68,6 +68,9 @@ Contributors:
                     <excludes>
                         <exclude>${test.exclusion.pattern}</exclude>
                     </excludes>
+                    <environmentVariables>
+                        <REDIS_URI>${redis.uri}</REDIS_URI>
+                    </environmentVariables>
                 </configuration>
             </plugin>
         </plugins>
