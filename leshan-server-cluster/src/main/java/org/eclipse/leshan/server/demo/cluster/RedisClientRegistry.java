@@ -15,12 +15,19 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.demo.cluster;
 
+import static org.eclipse.leshan.util.Charsets.UTF_8;
+
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.californium.scandium.util.ByteArrayUtils;
+import org.eclipse.leshan.server.Startable;
+import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.client.ClientRegistryListener;
@@ -31,25 +38,31 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.util.Pool;
 
 /**
  * A client registry storing registration in Redis.
- * 
- * the main key is the client end-point and the registration key is used as a secondary index
+ * <p>
+ * The main key is the client end-point and the registration key is used as a secondary index.
+ * </p>
+ * <p>
+ * Be aware of the limitations of this Redis implementation:
+ * <ul>
+ * <li>it is based on a simple lock mechanism which is not valid in case of distributed Redis (more information here:
+ * http://redis.io/topics/distlock)</li>
+ * <li>the registration expiration is very basic and not meant to be used in a production environment</li>
+ * </ul>
+ * <p>
  */
-public class RedisClientRegistry implements ClientRegistry {
+public class RedisClientRegistry implements ClientRegistry, Startable, Stoppable {
 
     private static final Logger LOG = LoggerFactory.getLogger(RedisClientRegistry.class);
 
     private static final String EP_CLIENT = "EP#CLIENT#";
-
-    private static final String EXPIRE = "EXPIRE#";
-
     private static final String REG_EP = "REG#EP#";
+    private static final String LOCK_EP = "LOCK#EP#";
 
     private final Pool<Jedis> pool;
 
@@ -57,47 +70,18 @@ public class RedisClientRegistry implements ClientRegistry {
 
     public RedisClientRegistry(Pool<Jedis> p) {
         this.pool = p;
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                final String pattern = "__keyspace@0__:" + EXPIRE + EP_CLIENT;
-                do {
-                    try (Jedis j = pool.getResource()) {
-                        // TODO not sure this is a good idea to set config here
-                        j.configSet("notify-keyspace-events", "Kx");
-                        j.psubscribe(new JedisPubSub() {
-                            @Override
-                            public void onPMessage(String pattern, String channel, String message) {
-                                String endpoint = channel.substring(pattern.length() - 1);
-                                handleRegistrationExpiration(endpoint);
-                            }
-                        }, pattern + "*");
-                    } catch (Throwable e) {
-                        LOG.warn("Redis PSUBSCRIBE interrupted.", e);
-                    }
-
-                    // wait & re-launch
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException e) {
-                    }
-                    LOG.warn("Relaunch Redis PSUBSCRIBE.");
-                } while (true);
-            }
-        }).start();
     }
 
     @Override
     public Client get(String endpoint) {
         Validate.notNull(endpoint);
         try (Jedis j = pool.getResource()) {
-            byte[] data = j.get((EP_CLIENT + endpoint).getBytes());
+            byte[] data = j.get(toEndpointKey(endpoint));
             if (data == null) {
                 return null;
-            } else {
-                Client c = deserialize(data);
-                return c.isAlive() ? c : null;
             }
+            Client c = deserialize(data);
+            return c.isAlive() ? c : null;
         }
     }
 
@@ -111,9 +95,11 @@ public class RedisClientRegistry implements ClientRegistry {
                 ScanResult<byte[]> res = j.scan(cursor.getBytes(), params);
                 for (byte[] key : res.getResult()) {
                     byte[] element = j.get(key);
-                    Client c = deserialize(element);
-                    if (c.isAlive()) {
-                        list.add(c);
+                    if (element != null) {
+                        Client c = deserialize(element);
+                        if (c.isAlive()) {
+                            list.add(c);
+                        }
                     }
                 }
                 cursor = res.getStringCursor();
@@ -124,145 +110,197 @@ public class RedisClientRegistry implements ClientRegistry {
 
     @Override
     public boolean registerClient(Client client) {
-        byte[] data = serialize(client);
         try (Jedis j = pool.getResource()) {
-            byte[] k = (EP_CLIENT + client.getEndpoint()).getBytes();
-            byte[] old = j.getSet(k, data);
+            byte[] lockValue = null;
+            byte[] lockKey = toLockKey(client.getEndpoint());
 
-            // create expire key
-            j.setex(ByteArrayUtils.concatenate(EXPIRE.getBytes(), k), client.getLifeTimeInSec().intValue(),
-                    new byte[0]);
-            j.expire(k, client.getLifeTimeInSec().intValue() + 60);
+            try {
+                lockValue = RedisLock.acquire(j, lockKey);
 
-            // secondary index
-            byte[] idx = (REG_EP + client.getRegistrationId()).getBytes();
-            j.set(idx, client.getEndpoint().getBytes());
+                byte[] k = toEndpointKey(client.getEndpoint());
+                byte[] old = j.getSet(k, serialize(client));
 
-            j.expire(idx, client.getLifeTimeInSec().intValue());
+                // secondary index
+                byte[] idx = toRegKey(client.getRegistrationId());
+                j.set(idx, client.getEndpoint().getBytes(UTF_8));
 
-            if (old != null) {
-                Client oldClient = deserialize(old);
-                for (ClientRegistryListener l : listeners) {
-                    l.unregistered(oldClient);
+                if (old != null) {
+                    Client oldClient = deserialize(old);
+                    for (ClientRegistryListener l : listeners) {
+                        l.unregistered(oldClient);
+                    }
                 }
+                for (ClientRegistryListener l : listeners) {
+                    l.registered(client);
+                }
+
+                return true;
+
+            } finally {
+                RedisLock.release(j, lockKey, lockValue);
             }
-            for (ClientRegistryListener l : listeners) {
-                l.registered(client);
-            }
-            return true;
         }
     }
 
     @Override
     public Client updateClient(ClientUpdate update) {
         try (Jedis j = pool.getResource()) {
+
             // fetch the client ep by registration ID index
-            byte[] key = j.get((REG_EP + update.getRegistrationId()).getBytes());
-            if (key == null) {
+            byte[] ep = j.get(toRegKey(update.getRegistrationId()));
+            if (ep == null) {
                 return null;
             }
 
             // fetch the client
-            byte[] data = j.get(ByteArrayUtils.concatenate(EP_CLIENT.getBytes(), key));
+            byte[] data = j.get(toEndpointKey(ep));
             if (data == null) {
                 return null;
             }
 
             Client c = deserialize(data);
-            Client clientUpdated = update.updateClient(c);
-            // store the new client
-            byte[] k = (EP_CLIENT + clientUpdated.getEndpoint()).getBytes();
 
-            // update expiratation
-            j.setex(ByteArrayUtils.concatenate(EXPIRE.getBytes(), k), c.getLifeTimeInSec().intValue(), new byte[0]);
-            j.setex(k, clientUpdated.getLifeTimeInSec().intValue() + 60, serialize(clientUpdated));
+            byte[] lockValue = null;
+            byte[] lockKey = toLockKey(c.getEndpoint());
+            try {
+                lockValue = RedisLock.acquire(j, lockKey);
 
-            byte[] idx = (REG_EP + clientUpdated.getRegistrationId()).getBytes();
+                Client clientUpdated = update.updateClient(c);
 
-            j.expire(idx, clientUpdated.getLifeTimeInSec().intValue());
+                // store the new client
+                j.set(toEndpointKey(clientUpdated.getEndpoint()), serialize(clientUpdated));
 
-            // notify listener
-            for (ClientRegistryListener l : listeners) {
-                l.updated(update, clientUpdated);
+                // notify listener
+                for (ClientRegistryListener l : listeners) {
+                    l.updated(update, clientUpdated);
+                }
+                return clientUpdated;
+
+            } finally {
+                RedisLock.release(j, lockKey, lockValue);
             }
-            return clientUpdated;
         }
     }
 
     @Override
     public Client deregisterClient(String registrationId) {
         try (Jedis j = pool.getResource()) {
-            byte[] regKey = (REG_EP + registrationId).getBytes();
-            byte[] delRegKey = ("TODELETE#" + REG_EP + registrationId).getBytes();
 
-            // first rename for atomicity
-            if (!"OK".equals(j.rename(regKey, delRegKey))) {
-                return null;
-            }
+            byte[] regKey = toRegKey(registrationId);
 
             // fetch the client ep by registration ID index
-            byte[] key = j.get(delRegKey);
-            if (key == null) {
+            byte[] ep = j.get(regKey);
+            if (ep == null) {
                 return null;
             }
 
-            byte[] epKey = ByteArrayUtils.concatenate(EP_CLIENT.getBytes(), key);
-            byte[] data = j.get(epKey);
+            byte[] data = j.get(toEndpointKey(ep));
+            if (data == null) {
+                return null;
+            }
 
             Client c = deserialize(data);
+            deleteClient(j, c);
 
-            // delete everything
-            j.del(delRegKey);
-            j.del(epKey);
-            j.del((EXPIRE + key).getBytes());
+            return c;
+        }
+    }
+
+    private void deleteClient(Jedis j, Client c) {
+        byte[] lockValue = null;
+        byte[] lockKey = toLockKey(c.getEndpoint());
+        try {
+            lockValue = RedisLock.acquire(j, lockKey);
+
+            // delete all entries
+            j.del(toRegKey(c.getRegistrationId()));
+            j.del(toEndpointKey(c.getEndpoint()));
 
             for (ClientRegistryListener l : listeners) {
                 l.unregistered(c);
             }
-            return c;
+
+        } finally {
+            RedisLock.release(j, lockKey, lockValue);
         }
     }
 
     @Override
     public Client findByRegistrationId(String registrationId) {
         try (Jedis j = pool.getResource()) {
-            byte[] key = j.get((REG_EP + registrationId).getBytes());
-            if (key == null) {
+            byte[] ep = j.get(toRegKey(registrationId));
+            if (ep == null) {
                 return null;
             }
-            byte[] data = j.get(ByteArrayUtils.concatenate(EP_CLIENT.getBytes(), key));
+            byte[] data = j.get(toEndpointKey(ep));
+            if (data == null) {
+                return null;
+            }
 
             return deserialize(data);
         }
     }
 
-    private void handleRegistrationExpiration(final String endpoint) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try (Jedis j = pool.getResource()) {
-                    // rename to be able to do GET/DEL in an atomic way
-                    String key = EP_CLIENT + endpoint;
-                    byte[] atomicKey = ("TODELETE#" + key).getBytes();
-                    if (!"OK".equals(j.rename(key.getBytes(), atomicKey)))
-                        return;
+    private byte[] toRegKey(String registrationId) {
+        return (REG_EP + registrationId).getBytes(UTF_8);
+    }
 
-                    // get the client
-                    byte[] val = j.get(atomicKey);
-                    Client c = deserialize(val);
+    private byte[] toEndpointKey(String endpoint) {
+        return (EP_CLIENT + endpoint).getBytes(UTF_8);
+    }
 
-                    // remove client
-                    j.del(atomicKey);
+    private byte[] toEndpointKey(byte[] endpoint) {
+        return ByteArrayUtils.concatenate(EP_CLIENT.getBytes(UTF_8), endpoint);
+    }
 
-                    // raise event
-                    for (ClientRegistryListener listener : listeners) {
-                        listener.unregistered(c);
+    private byte[] toLockKey(String endpoint) {
+        return (LOCK_EP + endpoint).getBytes(UTF_8);
+    }
+
+    /**
+     * Start regular cleanup of dead registrations.
+     */
+    @Override
+    public void start() {
+        // clean the registration list every minute
+        schedExecutor.scheduleAtFixedRate(new Cleaner(), 1, 1, TimeUnit.MINUTES);
+    }
+
+    /**
+     * Stop the underlying cleanup of the registrations.
+     */
+    @Override
+    public void stop() {
+        schedExecutor.shutdownNow();
+        try {
+            schedExecutor.awaitTermination(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            LOG.warn("Clean up registration thread was interrupted.", e);
+        }
+    }
+
+    private final ScheduledExecutorService schedExecutor = Executors.newScheduledThreadPool(1);
+
+    private class Cleaner implements Runnable {
+
+        @Override
+        public void run() {
+
+            try (Jedis j = pool.getResource()) {
+                ScanParams params = new ScanParams().match(EP_CLIENT + "*").count(100);
+                String cursor = "0";
+                do {
+                    ScanResult<byte[]> res = j.scan(cursor.getBytes(), params);
+                    for (byte[] key : res.getResult()) {
+                        Client c = deserialize(j.get(key));
+                        if (!c.isAlive()) {
+                            deleteClient(j, c);
+                        }
                     }
-                } catch (Throwable e) {
-                    LOG.error("Unexpected exception pending registration expiration.", e);
-                }
+                    cursor = res.getStringCursor();
+                } while (!"0".equals(cursor));
             }
-        }).start();
+        }
     }
 
     @Override
