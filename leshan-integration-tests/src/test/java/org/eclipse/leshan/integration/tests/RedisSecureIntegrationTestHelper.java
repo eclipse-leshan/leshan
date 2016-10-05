@@ -47,7 +47,10 @@ public class RedisSecureIntegrationTestHelper extends SecureIntegrationTestHelpe
         builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
 
         // Create redis store
-        Pool<Jedis> jedis = new JedisPool(System.getenv("REDIS_URI"));
+        String redisURI = System.getenv("REDIS_URI");
+        if (redisURI == null)
+            redisURI = "";
+        Pool<Jedis> jedis = new JedisPool(redisURI);
         ClientRegistry clientRegistry = new RedisClientRegistry(jedis);
         builder.setClientRegistry(clientRegistry);
         builder.setObservationRegistry(new CaliforniumObservationRegistryImpl(new RedisObservationStore(jedis),
