@@ -31,7 +31,11 @@ public class ReadResponse extends AbstractLwM2mResponse {
     protected final LwM2mNode content;
 
     public ReadResponse(ResponseCode code, LwM2mNode content, String errorMessage) {
-        super(code, errorMessage);
+        this(code, content, errorMessage, null);
+    }
+
+    public ReadResponse(ResponseCode code, LwM2mNode content, String errorMessage, Object coapResponse) {
+        super(code, errorMessage, coapResponse);
 
         if (ResponseCode.CONTENT.equals(code)) {
             Validate.notNull(content);
@@ -64,7 +68,7 @@ public class ReadResponse extends AbstractLwM2mResponse {
     // Syntactic sugar static constructors :
 
     public static ReadResponse success(LwM2mNode content) {
-        return new ReadResponse(ResponseCode.CONTENT, content, null);
+        return new ReadResponse(ResponseCode.CONTENT, content, null, null);
     }
 
     public static ReadResponse success(int resourceId, String value) {

@@ -19,8 +19,12 @@ import org.eclipse.leshan.ResponseCode;
 
 public class DeleteResponse extends AbstractLwM2mResponse {
 
-    public DeleteResponse(final ResponseCode code, final String errorMessage) {
-        super(code, errorMessage);
+    public DeleteResponse(ResponseCode code, String errorMessage){
+        this(code, errorMessage, null);
+    }
+
+    public DeleteResponse(ResponseCode code, String errorMessage, Object coapResponse) {
+        super(code, errorMessage, coapResponse);
     }
 
     @Override

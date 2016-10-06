@@ -22,7 +22,11 @@ public class CreateResponse extends AbstractLwM2mResponse {
     private String location;
 
     public CreateResponse(ResponseCode code, String location, String errorMessage) {
-        super(code, errorMessage);
+        this(code, location, errorMessage, null);
+    }
+
+    public CreateResponse(ResponseCode code, String location, String errorMessage, Object coapResponse) {
+        super(code, errorMessage, coapResponse);
         this.location = location;
     }
 

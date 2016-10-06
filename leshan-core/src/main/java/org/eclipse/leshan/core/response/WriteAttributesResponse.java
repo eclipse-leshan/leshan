@@ -19,8 +19,12 @@ import org.eclipse.leshan.ResponseCode;
 
 public class WriteAttributesResponse extends AbstractLwM2mResponse {
 
-    public WriteAttributesResponse(final ResponseCode code, final String errorMessage) {
-        super(code, errorMessage);
+    public WriteAttributesResponse(ResponseCode code, String errorMessage) {
+        super(code, errorMessage, null);
+    }
+
+    public WriteAttributesResponse(ResponseCode code, String errorMessage, Object coapResponse) {
+        super(code, errorMessage, coapResponse);
     }
 
     @Override

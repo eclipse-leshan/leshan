@@ -25,7 +25,11 @@ public class RegisterResponse extends AbstractLwM2mResponse {
     private final String registrationID;
 
     public RegisterResponse(ResponseCode code, String registrationID, String errorMessage) {
-        super(code, errorMessage);
+        this(code, registrationID, errorMessage, null);
+    }
+
+    public RegisterResponse(ResponseCode code, String registrationID, String errorMessage, Object coapResponse) {
+        super(code, errorMessage, coapResponse);
         this.registrationID = registrationID;
     }
 

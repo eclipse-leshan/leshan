@@ -18,8 +18,11 @@
 
 package org.eclipse.leshan.integration.tests;
 
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.junit.Assert.*;
 
+import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.response.ExecuteResponse;
@@ -55,6 +58,8 @@ public class ExecuteTest {
 
         // verify result
         assertEquals(ResponseCode.METHOD_NOT_ALLOWED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
     }
 
     @Test
@@ -64,6 +69,8 @@ public class ExecuteTest {
 
         // verify result
         assertEquals(ResponseCode.METHOD_NOT_ALLOWED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
     }
 
     @Test
@@ -75,6 +82,8 @@ public class ExecuteTest {
 
         // verify result
         assertEquals(ResponseCode.NOT_FOUND, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
     }
 
     @Test
@@ -85,6 +94,8 @@ public class ExecuteTest {
 
         // verify result
         assertEquals(ResponseCode.NOT_FOUND, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
     }
 
     @Test
@@ -93,6 +104,8 @@ public class ExecuteTest {
 
         // verify result
         assertEquals(ResponseCode.NOT_FOUND, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
     }
 
     @Test
@@ -102,6 +115,8 @@ public class ExecuteTest {
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
     }
 
     @Test
@@ -111,6 +126,7 @@ public class ExecuteTest {
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
     }
-
 }

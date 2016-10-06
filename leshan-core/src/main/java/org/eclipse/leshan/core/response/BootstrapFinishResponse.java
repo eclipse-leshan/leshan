@@ -23,7 +23,11 @@ import org.eclipse.leshan.ResponseCode;
 public class BootstrapFinishResponse extends AbstractLwM2mResponse {
 
     public BootstrapFinishResponse(ResponseCode code, String errorMessage) {
-        super(code, errorMessage);
+        this(code, errorMessage, null);
+    }
+
+    public BootstrapFinishResponse(ResponseCode code, String errorMessage, Object coapResponse) {
+        super(code, errorMessage, coapResponse);
     }
 
     @Override

@@ -29,7 +29,12 @@ public class ObserveResponse extends ReadResponse {
     private Observation observation;
 
     public ObserveResponse(ResponseCode code, LwM2mNode content, Observation observation, String errorMessage) {
-        super(code, content, errorMessage);
+        this(code, content, observation, errorMessage, null);
+    }
+
+    public ObserveResponse(ResponseCode code, LwM2mNode content, Observation observation, String errorMessage,
+            Object coapResponse) {
+        super(code, content, errorMessage, coapResponse);
         this.observation = observation;
     }
 

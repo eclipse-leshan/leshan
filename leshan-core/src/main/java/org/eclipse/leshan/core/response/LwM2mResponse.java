@@ -38,6 +38,15 @@ public interface LwM2mResponse {
     String getErrorMessage();
 
     /**
+     * Get the underlying CoAP response. The object type depends of the chosen CoAP implementation. (e.g with
+     * Californium implementation <code>getCoapResponse()</code> will returns
+     * <code>a org.eclipse.californium.core.coap.Response)</code>).
+     * 
+     * @return the CoAP response
+     */
+    Object getCoapResponse();
+
+    /**
      * @return true if the request was successfully done.
      */
     boolean isSuccess();

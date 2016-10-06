@@ -25,18 +25,25 @@ public abstract class AbstractLwM2mResponse implements LwM2mResponse {
 
     protected final ResponseCode code;
     protected final String errorMessage;
+    private final Object coapResponse;
 
-    public AbstractLwM2mResponse(final ResponseCode code, final String errorMessage) {
+    public AbstractLwM2mResponse(ResponseCode code, String errorMessage, Object coapResponse) {
         Validate.notNull(code);
         if (errorMessage != null)
             Validate.isTrue(code.isError(), "Only error response could have an error message.");
         this.code = code;
         this.errorMessage = errorMessage;
+        this.coapResponse = coapResponse;
     }
 
     @Override
     public final ResponseCode getCode() {
         return this.code;
+    }
+
+    @Override
+    public Object getCoapResponse() {
+        return coapResponse;
     }
 
     @Override

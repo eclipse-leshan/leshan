@@ -18,10 +18,13 @@
 
 package org.eclipse.leshan.integration.tests;
 
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 
+import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
@@ -63,10 +66,12 @@ public class DeleteTest {
                         .newIntegerResource(0, 123) }))));
 
         // try to delete this instance
-        DeleteResponse deleteResponse = helper.server.send(helper.getCurrentRegistration(), new DeleteRequest(2, 0));
+        DeleteResponse response = helper.server.send(helper.getCurrentRegistration(), new DeleteRequest(2, 0));
 
         // verify result
-        assertEquals(ResponseCode.DELETED, deleteResponse.getCode());
+        assertEquals(ResponseCode.DELETED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
     }
 
     @Test
@@ -78,10 +83,12 @@ public class DeleteTest {
                         .newIntegerResource(0, 123) }))));
 
         // try to delete this instance
-        DeleteResponse deleteResponse = helper.server.send(helper.getCurrentRegistration(), new DeleteRequest("/2/0/0"));
+        DeleteResponse response = helper.server.send(helper.getCurrentRegistration(), new DeleteRequest("/2/0/0"));
 
         // verify result
-        assertEquals(ResponseCode.METHOD_NOT_ALLOWED, deleteResponse.getCode());
+        assertEquals(ResponseCode.METHOD_NOT_ALLOWED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
     }
 
     @Test
@@ -91,6 +98,8 @@ public class DeleteTest {
 
         // verify result
         assertEquals(ResponseCode.NOT_FOUND, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
     }
 
     @Test
@@ -100,6 +109,8 @@ public class DeleteTest {
 
         // verify result
         assertEquals(ResponseCode.METHOD_NOT_ALLOWED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
     }
 
     @Test
@@ -108,6 +119,8 @@ public class DeleteTest {
 
         // verify result
         assertEquals(ResponseCode.NOT_FOUND, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
     }
 
 }

@@ -19,12 +19,15 @@
 package org.eclipse.leshan.integration.tests;
 
 import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.*;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.*;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
@@ -86,6 +89,8 @@ public class WriteTest {
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         // read resource to check the value changed
         ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
@@ -117,6 +122,8 @@ public class WriteTest {
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         // read resource to check the value changed
         ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
@@ -148,6 +155,8 @@ public class WriteTest {
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         // read resource to check the value changed
         ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
@@ -179,6 +188,8 @@ public class WriteTest {
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         // read resource to check the value changed
         ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
@@ -210,6 +221,8 @@ public class WriteTest {
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         // read resource to check the value changed
         ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
@@ -241,6 +254,8 @@ public class WriteTest {
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         // read resource to check the value changed
         ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
@@ -257,6 +272,8 @@ public class WriteTest {
 
         // verify result
         assertEquals(ResponseCode.METHOD_NOT_ALLOWED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
     }
 
     @Test
@@ -267,6 +284,8 @@ public class WriteTest {
 
         // verify result
         assertEquals(ResponseCode.NOT_FOUND, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
     }
 
     @Test
@@ -279,6 +298,8 @@ public class WriteTest {
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         // read the timezone to check the value changed
         ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0));
@@ -294,6 +315,8 @@ public class WriteTest {
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         // write server object
         LwM2mResource lifetime = LwM2mSingleResource.newIntegerResource(1, 120);
@@ -305,6 +328,8 @@ public class WriteTest {
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         // read the values to check the value changed
         ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(1, 0));
@@ -326,6 +351,8 @@ public class WriteTest {
 
         // verify result
         assertEquals(ResponseCode.BAD_REQUEST, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
     }
 
     @Test
@@ -335,6 +362,8 @@ public class WriteTest {
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
         // write server object
         LwM2mResource lifetime = LwM2mSingleResource.newIntegerResource(1, 120);
         LwM2mResource defaultMinPeriod = LwM2mSingleResource.newIntegerResource(2, 10);
@@ -343,6 +372,8 @@ public class WriteTest {
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         // read the values to check the value changed
         ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(1, 0));
@@ -365,6 +396,8 @@ public class WriteTest {
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         // read the timezone to check the value changed
         ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0));
@@ -387,6 +420,8 @@ public class WriteTest {
 
         // Verify Write result
         assertEquals(ResponseCode.CHANGED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         // Reading back the written OBJLNK value
         ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(
@@ -413,6 +448,8 @@ public class WriteTest {
 
         // Verify Write result
         assertEquals(ResponseCode.CHANGED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         // Reading back the written OBJLNK value
         ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(
@@ -433,6 +470,8 @@ public class WriteTest {
 
         // Verify Write result
         assertEquals(ResponseCode.CHANGED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         // Reading back the written OBJLNK value
         ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(ContentFormat.TEXT,

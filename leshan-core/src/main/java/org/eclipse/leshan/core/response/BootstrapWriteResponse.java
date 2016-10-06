@@ -23,7 +23,11 @@ import org.eclipse.leshan.ResponseCode;
 public class BootstrapWriteResponse extends AbstractLwM2mResponse {
 
     public BootstrapWriteResponse(ResponseCode code, String errorMessage) {
-        super(code, errorMessage);
+        this(code, errorMessage, null);
+    }
+
+    public BootstrapWriteResponse(ResponseCode code, String errorMessage, Object coapResponse) {
+        super(code, errorMessage, coapResponse);
     }
 
     @Override

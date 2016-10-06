@@ -18,8 +18,11 @@
 package org.eclipse.leshan.integration.tests;
 
 import static org.eclipse.leshan.ResponseCode.*;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.*;
 
+import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
@@ -57,6 +60,8 @@ public class ReadTest {
 
         // verify result
         assertEquals(CONTENT, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         LwM2mObject object = (LwM2mObject) response.getContent();
         assertEquals(2, object.getId());
@@ -70,6 +75,8 @@ public class ReadTest {
 
         // verify result
         assertEquals(CONTENT, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         LwM2mObject object = (LwM2mObject) response.getContent();
         assertEquals(3, object.getId());
@@ -85,6 +92,8 @@ public class ReadTest {
 
         // verify result
         assertEquals(CONTENT, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         LwM2mObjectInstance instance = (LwM2mObjectInstance) response.getContent();
         assertEquals(0, instance.getId());
@@ -97,6 +106,8 @@ public class ReadTest {
 
         // verify result
         assertEquals(CONTENT, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         LwM2mResource resource = (LwM2mResource) response.getContent();
         assertEquals(1, resource.getId());
@@ -110,6 +121,8 @@ public class ReadTest {
 
         // verify result
         assertEquals(METHOD_NOT_ALLOWED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
     }
 
     @Test
@@ -119,6 +132,8 @@ public class ReadTest {
 
         // verify result
         assertEquals(NOT_FOUND, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
     }
 
     @Test
@@ -128,6 +143,8 @@ public class ReadTest {
 
         // verify result
         assertEquals(NOT_FOUND, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
     }
 
     @Test
@@ -137,6 +154,8 @@ public class ReadTest {
 
         // verify result
         assertEquals(NOT_FOUND, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
     }
 
     @Test
@@ -146,5 +165,7 @@ public class ReadTest {
 
         // verify result
         assertEquals(NOT_FOUND, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
     }
 }
