@@ -20,18 +20,15 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.*;
 
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.ResponseCode;
-import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
-import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -89,7 +86,9 @@ public class ObserveTest {
         listener.waitForNotification(2000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
         assertTrue(listener.receivedNotify().get());
-        assertEquals(LwM2mSingleResource.newStringResource(15, "Europe/Paris"), listener.getContent());
+        assertEquals(LwM2mSingleResource.newStringResource(15, "Europe/Paris"), listener.getResponse().getContent());
+        assertNotNull(listener.getResponse().getCoapResponse());
+        assertThat(listener.getResponse().getCoapResponse(), is(instanceOf(Response.class)));
     }
 
     @Test
@@ -116,12 +115,14 @@ public class ObserveTest {
         listener.waitForNotification(2000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
         assertTrue(listener.receivedNotify().get());
-        assertTrue(listener.getContent() instanceof LwM2mObjectInstance);
+        assertTrue(listener.getResponse().getContent() instanceof LwM2mObjectInstance);
+        assertNotNull(listener.getResponse().getCoapResponse());
+        assertThat(listener.getResponse().getCoapResponse(), is(instanceOf(Response.class)));
 
         // try to read the object instance for comparing
         ReadResponse readResp = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0));
 
-        assertEquals(readResp.getContent(), listener.getContent());
+        assertEquals(readResp.getContent(), listener.getResponse().getContent());
     }
 
     @Test
@@ -148,30 +149,31 @@ public class ObserveTest {
         listener.waitForNotification(2000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
         assertTrue(listener.receivedNotify().get());
-        assertTrue(listener.getContent() instanceof LwM2mObject);
+        assertTrue(listener.getResponse().getContent() instanceof LwM2mObject);
+        assertNotNull(listener.getResponse().getCoapResponse());
+        assertThat(listener.getResponse().getCoapResponse(), is(instanceOf(Response.class)));
 
         // try to read the object for comparing
         ReadResponse readResp = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3));
 
-        assertEquals(readResp.getContent(), listener.getContent());
+        assertEquals(readResp.getContent(), listener.getResponse().getContent());
     }
 
     private final class TestObservationListener implements ObservationRegistryListener {
 
         private final CountDownLatch latch = new CountDownLatch(1);
         private final AtomicBoolean receivedNotify = new AtomicBoolean();
-        private LwM2mNode content;
+        private ObserveResponse response;
 
         @Override
-        public void newValue(final Observation observation, final LwM2mNode value,
-                List<TimestampedLwM2mNode> timestampedValues) {
+        public void newValue(Observation observation, ObserveResponse response) {
             receivedNotify.set(true);
-            content = value;
+            this.response = response;
             latch.countDown();
         }
 
         @Override
-        public void cancelled(final Observation observation) {
+        public void cancelled(Observation observation) {
             latch.countDown();
         }
 
@@ -183,8 +185,8 @@ public class ObserveTest {
             return receivedNotify;
         }
 
-        public LwM2mNode getContent() {
-            return content;
+        public ObserveResponse getResponse() {
+            return response;
         }
 
         public void waitForNotification(long timeout) throws InterruptedException {

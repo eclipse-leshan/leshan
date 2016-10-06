@@ -22,15 +22,12 @@ package org.eclipse.leshan.integration.tests;
 
 import static org.junit.Assert.*;
 
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.leshan.ResponseCode;
-import org.eclipse.leshan.core.node.LwM2mNode;
-import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -674,8 +671,7 @@ public class QueueModeTest {
         private final AtomicBoolean receivedNotify = new AtomicBoolean();
 
         @Override
-        public void newValue(Observation observation, LwM2mNode mostRecentvalue,
-                List<TimestampedLwM2mNode> timestampedValues) {
+        public void newValue(Observation observation, ObserveResponse response) {
             receivedNotify.set(true);
             latch.countDown();
         }

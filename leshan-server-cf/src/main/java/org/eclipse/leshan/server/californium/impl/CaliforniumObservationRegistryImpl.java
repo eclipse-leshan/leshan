@@ -33,6 +33,7 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.observe.ObservationStore;
+import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
@@ -40,6 +41,7 @@ import org.eclipse.leshan.core.node.codec.InvalidValueException;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.californium.CaliforniumObservationRegistry;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
@@ -272,18 +274,22 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
                 }
 
                 // decode response
-                List<TimestampedLwM2mNode> content = decoder.decodeTimestampedData(coapResponse.getPayload(),
+                List<TimestampedLwM2mNode> timestampedNodes = decoder.decodeTimestampedData(coapResponse.getPayload(),
                         contentFormat, observation.getPath(), model);
+
+                // create lwm2m response
+                ObserveResponse response;
+                if (timestampedNodes.size() == 1 && !timestampedNodes.get(0).isTimespamped()) {
+                    response = new ObserveResponse(ResponseCode.CONTENT, timestampedNodes.get(0).getNode(), null,
+                            observation, null, coapResponse);
+                } else {
+                    response = new ObserveResponse(ResponseCode.CONTENT, null, timestampedNodes, observation, null,
+                            coapResponse);
+                }
 
                 // notify all listeners
                 for (ObservationRegistryListener listener : listeners) {
-                    if (content.isEmpty()) {
-                        listener.newValue(observation, null, content);
-                    } else if (content.size() == 1 && content.get(0).isTimespamped()) {
-                        listener.newValue(observation, content.get(0).getNode(), null);
-                    } else {
-                        listener.newValue(observation, content.get(0).getNode(), content);
-                    }
+                    listener.newValue(observation, response);
                 }
             } catch (InvalidValueException e) {
                 LOG.debug(String.format("[%s] ([%s])", e.getMessage(), e.getPath().toString()));

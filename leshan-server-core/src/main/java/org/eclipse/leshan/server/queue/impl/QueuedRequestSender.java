@@ -25,14 +25,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.eclipse.leshan.core.node.LwM2mNode;
-import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.client.Client;
@@ -261,7 +260,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
 
     private final class QueueModeObservationRegistryListener implements ObservationRegistryListener {
         @Override
-        public void newValue(Observation observation, LwM2mNode value, List<TimestampedLwM2mNode> timestampedValues) {
+        public void newValue(Observation observation, ObserveResponse response) {
             Client client = clientRegistry.findByRegistrationId(observation.getRegistrationId());
             // if client de-registered already, do nothing.
             if (client == null) {

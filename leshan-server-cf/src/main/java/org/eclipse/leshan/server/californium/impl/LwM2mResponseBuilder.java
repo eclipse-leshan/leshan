@@ -279,9 +279,10 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                         request.getPath(), request.getContext());
                 observationRegistry.addObservation(observation);
                 // add the observation to an ObserveResponse instance
-                lwM2mresponse = new ObserveResponse(ResponseCode.CONTENT, content, observation, null, coapResponse);
+                lwM2mresponse = new ObserveResponse(ResponseCode.CONTENT, content, null, observation, null,
+                        coapResponse);
             } else {
-                lwM2mresponse = new ObserveResponse(ResponseCode.CONTENT, content, null, null, coapResponse);
+                lwM2mresponse = new ObserveResponse(ResponseCode.CONTENT, content, null, null, null, coapResponse);
             }
             break;
         case BAD_REQUEST:
@@ -290,7 +291,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         case METHOD_NOT_ALLOWED:
         case NOT_ACCEPTABLE:
         case INTERNAL_SERVER_ERROR:
-            lwM2mresponse = new ObserveResponse(fromCoapCode(coapResponse.getCode().value), null, null,
+            lwM2mresponse = new ObserveResponse(fromCoapCode(coapResponse.getCode().value), null, null, null,
                     coapResponse.getPayloadString(), coapResponse);
             break;
         default:

@@ -15,8 +15,11 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.response;
 
+import java.util.List;
+
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.observation.Observation;
 
 /**
@@ -24,24 +27,57 @@ import org.eclipse.leshan.core.observation.Observation;
  *
  * This can be useful to listen to updates on the specific Observation.
  */
-public class ObserveResponse extends ReadResponse {
+public class ObserveResponse extends AbstractLwM2mResponse {
 
-    private Observation observation;
+    private final LwM2mNode content;
+    private final Observation observation;
+    private final List<TimestampedLwM2mNode> timestampedValues;
 
-    public ObserveResponse(ResponseCode code, LwM2mNode content, Observation observation, String errorMessage) {
-        this(code, content, observation, errorMessage, null);
+    public ObserveResponse(ResponseCode code, LwM2mNode content, List<TimestampedLwM2mNode> timestampedValues,
+            Observation observation, String errorMessage) {
+        this(code, content, timestampedValues, observation, errorMessage, null);
     }
 
-    public ObserveResponse(ResponseCode code, LwM2mNode content, Observation observation, String errorMessage,
-            Object coapResponse) {
-        super(code, content, errorMessage, coapResponse);
+    public ObserveResponse(ResponseCode code, LwM2mNode content, List<TimestampedLwM2mNode> timestampedValues,
+            Observation observation, String errorMessage, Object coapResponse) {
+        super(code, errorMessage, coapResponse);
+
+        if (ResponseCode.CONTENT.equals(code) && content == null && timestampedValues == null) {
+            throw new IllegalArgumentException("Content response must have a not null content or timestampedValues.");
+        }
+        this.content = content;
         this.observation = observation;
+        this.timestampedValues = timestampedValues;
+    }
+
+    /**
+     * @return the value of the LWM2M node observed. In case of timestamped value returns the most recent one.
+     */
+    public LwM2mNode getContent() {
+        if (content != null)
+            return content;
+        else if (timestampedValues != null && !timestampedValues.isEmpty()) {
+            return timestampedValues.get(0).getNode();
+        }
+        return null;
+    }
+
+    public List<TimestampedLwM2mNode> getTimestampedLwM2mNode() {
+        return timestampedValues;
+    }
+
+    @Override
+    public boolean isSuccess() {
+        return getCode() == ResponseCode.CONTENT;
     }
 
     @Override
     public String toString() {
         if (errorMessage != null)
             return String.format("ObserveResponse [code=%s, errormessage=%s]", code, errorMessage);
+        else if (timestampedValues != null)
+            return String.format("ObserveResponse [code=%s, content=%s, observation=%s, timestampedValues= %d nodes]",
+                    code, content, observation, timestampedValues.size());
         else
             return String.format("ObserveResponse [code=%s, content=%s, observation=%s]", code, content, observation);
     }
@@ -53,30 +89,34 @@ public class ObserveResponse extends ReadResponse {
     // Syntactic sugar static constructors :
 
     public static ObserveResponse success(LwM2mNode content) {
-        return new ObserveResponse(ResponseCode.CONTENT, content, null, null);
+        return new ObserveResponse(ResponseCode.CONTENT, content, null, null, null);
+    }
+
+    public static ObserveResponse success(List<TimestampedLwM2mNode> timestampedValues) {
+        return new ObserveResponse(ResponseCode.CONTENT, null, timestampedValues, null, null);
     }
 
     public static ObserveResponse badRequest(String errorMessage) {
-        return new ObserveResponse(ResponseCode.BAD_REQUEST, null, null, errorMessage);
+        return new ObserveResponse(ResponseCode.BAD_REQUEST, null, null, null, errorMessage);
     }
 
     public static ObserveResponse notFound() {
-        return new ObserveResponse(ResponseCode.NOT_FOUND, null, null, null);
+        return new ObserveResponse(ResponseCode.NOT_FOUND, null, null, null, null);
     }
 
     public static ObserveResponse unauthorized() {
-        return new ObserveResponse(ResponseCode.UNAUTHORIZED, null, null, null);
+        return new ObserveResponse(ResponseCode.UNAUTHORIZED, null, null, null, null);
     }
 
     public static ObserveResponse methodNotAllowed() {
-        return new ObserveResponse(ResponseCode.METHOD_NOT_ALLOWED, null, null, null);
+        return new ObserveResponse(ResponseCode.METHOD_NOT_ALLOWED, null, null, null, null);
     }
 
     public static ObserveResponse notAcceptable() {
-        return new ObserveResponse(ResponseCode.NOT_ACCEPTABLE, null, null, null);
+        return new ObserveResponse(ResponseCode.NOT_ACCEPTABLE, null, null, null, null);
     }
 
     public static ObserveResponse internalServerError(String errorMessage) {
-        return new ObserveResponse(ResponseCode.INTERNAL_SERVER_ERROR, null, null, errorMessage);
+        return new ObserveResponse(ResponseCode.INTERNAL_SERVER_ERROR, null, null, null, errorMessage);
     }
 }

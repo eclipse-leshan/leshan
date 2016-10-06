@@ -15,11 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.observation;
 
-import java.util.List;
-
-import org.eclipse.leshan.core.node.LwM2mNode;
-import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.response.ObserveResponse;
 
 public interface ObservationRegistryListener {
     void newObservation(Observation observation);
@@ -30,8 +27,7 @@ public interface ObservationRegistryListener {
      * Called on new notification.
      * 
      * @param observation the observation for which new data are received
-     * @param mostRecentValue the most recent value
-     * @param timestampedValues the list of time-stamped value (could be null)
+     * @param reponse the lwm2m response received
      */
-    void newValue(Observation observation, LwM2mNode mostRecentValue, List<TimestampedLwM2mNode> timestampedValues);
+    void newValue(Observation observation, ObserveResponse response);
 }

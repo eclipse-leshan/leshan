@@ -17,7 +17,6 @@ package org.eclipse.leshan.server.demo.servlet;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -25,8 +24,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.core.node.LwM2mNode;
-import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistryListener;
@@ -100,16 +99,17 @@ public class EventServlet extends EventSourceServlet {
         }
 
         @Override
-        public void newValue(Observation observation, LwM2mNode value, List<TimestampedLwM2mNode> timestampedValues) {
+        public void newValue(Observation observation, ObserveResponse response) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Received notification from [{}] containing value [{}]", observation.getPath(),
-                        value.toString());
+                        response.getContent().toString());
             }
             Client client = server.getClientRegistry().findByRegistrationId(observation.getRegistrationId());
 
             if (client != null) {
                 String data = new StringBuffer("{\"ep\":\"").append(client.getEndpoint()).append("\",\"res\":\"")
-                        .append(observation.getPath().toString()).append("\",\"val\":").append(gson.toJson(value))
+                        .append(observation.getPath().toString()).append("\",\"val\":")
+                        .append(gson.toJson(response.getContent()))
                         .append("}").toString();
 
                 sendEvent(EVENT_NOTIFICATION, data, client.getEndpoint());
