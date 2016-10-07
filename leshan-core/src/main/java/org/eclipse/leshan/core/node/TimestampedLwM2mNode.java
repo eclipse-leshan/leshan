@@ -37,7 +37,7 @@ public class TimestampedLwM2mNode {
         return node;
     }
 
-    public boolean isTimespamped() {
+    public boolean isTimestamped() {
         return timestamp != null && timestamp >= 0;
     }
 

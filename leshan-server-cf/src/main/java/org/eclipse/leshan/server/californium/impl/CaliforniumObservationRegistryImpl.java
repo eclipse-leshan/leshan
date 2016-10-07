@@ -279,7 +279,7 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
 
                 // create lwm2m response
                 ObserveResponse response;
-                if (timestampedNodes.size() == 1 && !timestampedNodes.get(0).isTimespamped()) {
+                if (timestampedNodes.size() == 1 && !timestampedNodes.get(0).isTimestamped()) {
                     response = new ObserveResponse(ResponseCode.CONTENT, timestampedNodes.get(0).getNode(), null,
                             observation, null, coapResponse);
                 } else {
