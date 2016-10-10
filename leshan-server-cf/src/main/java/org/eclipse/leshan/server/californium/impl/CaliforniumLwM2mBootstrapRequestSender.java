@@ -66,7 +66,7 @@ public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapReq
                 // TODO we need to fix that by removing the Client dependency from LwM2MResponseBuilder or by creating a
                 // LwM2mBootstrapResponseBuilder
                 Registration registration = new Registration.Builder("fakeregistrationid", endpointName, clientAddress.getAddress(),
-                        clientAddress.getPort(), secure ? secureEndpoint.getAddress() : nonSecureEndpoint.getAddress())
+                        clientAddress.getPort(), secure ? secureEndpoint.getUri() : nonSecureEndpoint.getUri())
                                 .build();
                 // Build LwM2m response
                 final LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<T>(coapRequest,
@@ -104,7 +104,7 @@ public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapReq
                 // TODO we need to fix that by removing the Client dependency from LwM2MResponseBuilder or by creating a
                 // LwM2mBootstrapResponseBuilder
                 Registration registration = new Registration.Builder("fakeregistrationid", endpointName, clientAddress.getAddress(),
-                        clientAddress.getPort(), secure ? secureEndpoint.getAddress() : nonSecureEndpoint.getAddress())
+                        clientAddress.getPort(), secure ? secureEndpoint.getUri() : nonSecureEndpoint.getUri())
                                 .build();
 
                 // Build LwM2m response

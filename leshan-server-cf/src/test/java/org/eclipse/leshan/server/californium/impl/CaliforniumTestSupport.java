@@ -16,8 +16,7 @@
 package org.eclipse.leshan.server.californium.impl;
 
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
+import java.net.URI;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -28,12 +27,12 @@ public class CaliforniumTestSupport {
     public Registration registration;
     public InetAddress destination;
     public int destinationPort = 5000;
-    public InetSocketAddress registrationAddress;
+    public URI registrationAddress;
 
-    public void givenASimpleClient() throws UnknownHostException {
-        registrationAddress = InetSocketAddress.createUnresolved("localhost", 5683);
+    public void givenASimpleClient() {
+        registrationAddress = URI.create("coap://localhost:5683");
 
-        Registration.Builder builder = new Registration.Builder("ID", "urn:client", InetAddress.getLocalHost(), 10000,
+        Registration.Builder builder = new Registration.Builder("ID", "urn:client", InetAddress.getLoopbackAddress(), 10000,
                 registrationAddress);
 
         registration = builder.build();
@@ -41,8 +40,7 @@ public class CaliforniumTestSupport {
 
     public static byte[] createToken() {
         Random random = ThreadLocalRandom.current();
-        byte[] token;
-        token = new byte[random.nextInt(8) + 1];
+        byte[] token = new byte[8];
         // random value
         random.nextBytes(token);
         return token;
