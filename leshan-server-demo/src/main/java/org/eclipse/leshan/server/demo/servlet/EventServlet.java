@@ -121,7 +121,7 @@ public class EventServlet extends EventSourceServlet {
         }
     };
 
-    public EventServlet(LeshanServer server, int securePort) {
+    public EventServlet(LeshanServer server) {
         this.server = server;
         server.getClientRegistry().addListener(this.clientRegistryListener);
         server.getObservationRegistry().addListener(this.observationRegistryListener);
