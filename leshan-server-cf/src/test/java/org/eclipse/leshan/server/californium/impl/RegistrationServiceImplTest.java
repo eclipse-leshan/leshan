@@ -17,6 +17,7 @@ package org.eclipse.leshan.server.californium.impl;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.URI;
 
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.core.request.BindingMode;
@@ -87,7 +88,7 @@ public class RegistrationServiceImplTest {
     private void givenASimpleRegistration(Long lifetime) {
 
         Registration.Builder builder = new Registration.Builder(registrationId, ep, address, port,
-                InetSocketAddress.createUnresolved("localhost", 5683));
+                URI.create("coap://127.0.0.1:5683"));
 
         registration = builder.lifeTimeInSec(lifetime).smsNumber(sms).bindingMode(binding).objectLinks(objectLinks).build();
     }

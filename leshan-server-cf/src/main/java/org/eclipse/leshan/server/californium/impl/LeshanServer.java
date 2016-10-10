@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2015 Sierra Wireless and others.
+ * Copyright (c) 2013-2016 Sierra Wireless and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Bosch Software Innovations - add support for providing Endpoints
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
@@ -20,12 +21,14 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
+import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
@@ -58,7 +61,6 @@ import org.eclipse.leshan.server.registration.RegistrationHandler;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
 import org.eclipse.leshan.server.response.ResponseListener;
 import org.eclipse.leshan.server.security.Authorizer;
-import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.SecurityStore;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
@@ -79,50 +81,30 @@ import org.slf4j.LoggerFactory;
  */
 public class LeshanServer implements LwM2mServer {
 
-    private final CoapServer coapServer;
-
     private static final Logger LOG = LoggerFactory.getLogger(LeshanServer.class);
 
-    private final LwM2mRequestSender requestSender;
-
-    private final RegistrationServiceImpl registrationService;
-
-    private final ObservationServiceImpl observationService;
-
-    private final SecurityStore securityStore;
-
-    private final LwM2mModelProvider modelProvider;
-
-    private final CoapEndpoint nonSecureEndpoint;
-
-    private final CoapEndpoint secureEndpoint;
-
     private final CaliforniumRegistrationStore registrationStore;
+    private final RegistrationServiceImpl registrationService;
+    private final ObservationServiceImpl observationService;
+    private final SecurityStore securityStore;
+    private final Authorizer authorizer;
+    private final LwM2mModelProvider modelProvider;
+    private final LwM2mNodeEncoder encoder;
+    private final LwM2mNodeDecoder decoder;
 
-    /**
-     * Initialize a server which will bind to the specified address and port.
-     *
-     * @param localAddress the address to bind the CoAP server.
-     * @param localSecureAddress the address to bind the CoAP server for DTLS connection.
-     * @param registrationStore the {@link Registration} store.
-     * @param securityStore the {@link SecurityInfo} store.
-     * @param authorizer define which devices is allow to register on this server.
-     * @param modelProvider provides the objects description for each client.
-     * @param decoder decoder used to decode response payload.
-     * @param encoder encode used to encode request payload.
-     * @param publicKey the server public key used for RPK DTLS authentication.
-     * @param privateKey the server private key used to RPK or X509 DTLS authentication.
-     * @param certificateChain the server X509 certificate (will be used for RPK too, in this case no need to set public
-     *        key).
-     * @param trustedCertificates the trusted certificates used to authenticate client certificates.
-     */
-    public LeshanServer(InetSocketAddress localAddress, InetSocketAddress localSecureAddress,
-            CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
-            LwM2mModelProvider modelProvider,
-            LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder, PublicKey publicKey, PrivateKey privateKey,
-            X509Certificate[] x509CertChain, Certificate[] trustedCertificates) {
-        Validate.notNull(localAddress, "IP address cannot be null");
-        Validate.notNull(localSecureAddress, "Secure IP address cannot be null");
+    private Endpoint nonSecureEndpoint;
+    private Endpoint secureEndpoint;
+    private LwM2mRequestSender requestSender;
+    private CoapServer coapServer;
+    private PrivateKey privateKey;
+    private PublicKey publicKey;
+    private X509Certificate[] x509CertChain;
+    private Certificate[] trustedCertificates;
+
+    private LeshanServer(final CaliforniumRegistrationStore registrationStore, final SecurityStore securityStore,
+            final Authorizer authorizer, final LwM2mModelProvider modelProvider, final LwM2mNodeEncoder encoder,
+            final LwM2mNodeDecoder decoder, final PublicKey publicKey, final PrivateKey privateKey,
+            final X509Certificate[] x509CertChain, final Certificate[] trustedCertificates) {
         Validate.notNull(registrationStore, "registration store cannot be null");
         Validate.notNull(securityStore, "securityStore cannot be null");
         Validate.notNull(authorizer, "authorizer cannot be null");
@@ -134,8 +116,104 @@ public class LeshanServer implements LwM2mServer {
         this.registrationStore = registrationStore;
         this.registrationService = new RegistrationServiceImpl(registrationStore);
         this.securityStore = securityStore;
+        this.authorizer = authorizer;
         this.observationService = new ObservationServiceImpl(registrationStore, modelProvider, decoder);
         this.modelProvider = modelProvider;
+        this.encoder = encoder;
+        this.decoder = decoder;
+        this.privateKey = privateKey;
+        this.publicKey = publicKey;
+        this.x509CertChain = x509CertChain;
+        this.trustedCertificates = trustedCertificates;
+    }
+
+    /**
+     * Creates a server for CoAP endpoints.
+     * 
+     * @param endpoints The endpoints to use for communicating with clients.
+     * @param registrationStore The registry for keeping track of observed client resources.
+     * @param securityStore The registry to use for looking up security parameters of clients.
+     * @param authorizer define which devices is allow to register on this server.
+     * @param modelProvider The registry to use for looking up LWM2M object definitions.
+     * @param encoder The object to use for encoding message payload.
+     * @param decoder The object to use for decoding message payload.
+     * @throws IllegalArgumentException if any of the parameters is {@code null}.
+     */
+    public LeshanServer(final Set<Endpoint> endpoints, final CaliforniumRegistrationStore registrationStore
+            , final SecurityStore securityStore, final Authorizer authorizer, final LwM2mModelProvider modelProvider,
+            final LwM2mNodeEncoder encoder, final LwM2mNodeDecoder decoder, final PublicKey publicKey,
+            final PrivateKey privateKey, final X509Certificate[] x509CertChain, final Certificate[] trustedCertificates) {
+
+        this(registrationStore, securityStore, authorizer, modelProvider, encoder, decoder, publicKey,
+                privateKey, x509CertChain, trustedCertificates);
+        createServer(endpoints);
+    }
+
+    /**
+     * Creates a server which will bind to the specified endpoint addresses.
+     *
+     * @param localAddress the address to bind the CoAP server.
+     * @param localSecureAddress the address to bind the CoAP server for DTLS connection.
+     * @param registrationStore The registry for keeping track of observed client resources.
+     * @param securityStore The registry to use for looking up security parameters of clients.
+     * @param authorizer define which devices is allow to register on this server.
+     * @param modelProvider The registry to use for looking up LWM2M object definitions.
+     * @param encoder The object to use for encoding message payload.
+     * @param decoder The object to use for decoding message payload.
+     * @throws IllegalArgumentException if any of the parameters is {@code null}.
+     */
+    public LeshanServer(InetSocketAddress localAddress, InetSocketAddress localSecureAddress,
+            final CaliforniumRegistrationStore registrationStore, final SecurityStore securityStore,
+            final Authorizer authorizer, final LwM2mModelProvider modelProvider, final LwM2mNodeEncoder encoder,
+            final LwM2mNodeDecoder decoder, final PublicKey publicKey, final PrivateKey privateKey,
+            final X509Certificate[] x509CertChain, final Certificate[] trustedCertificates) {
+
+        this(registrationStore, securityStore, authorizer, modelProvider, encoder, decoder, publicKey,
+                privateKey, x509CertChain, trustedCertificates);
+        Validate.notNull(localAddress, "IP address cannot be null");
+        Validate.notNull(localSecureAddress, "Secure IP address cannot be null");
+
+        Set<Endpoint> endpointsToUse = new HashSet<>();
+
+        nonSecureEndpoint = new CoapEndpoint(localAddress, NetworkConfig.getStandard(),
+                this.observationService.getObservationStore());
+        nonSecureEndpoint.addNotificationListener(observationService);
+        observationService.setNonSecureEndpoint(nonSecureEndpoint);
+        endpointsToUse.add(nonSecureEndpoint);
+
+        secureEndpoint = createSecureEndpoint(localSecureAddress, securityStore, observationService);
+        secureEndpoint.addNotificationListener(observationService);
+        observationService.setSecureEndpoint(secureEndpoint);
+        endpointsToUse.add(secureEndpoint);
+
+        createServer(endpointsToUse);
+    }
+
+    private Endpoint createSecureEndpoint(final InetSocketAddress localSecureAddress, final SecurityStore securityStore,
+            final ObservationServiceImpl observationService) {
+
+        // secure endpoint
+        Builder builder = new DtlsConnectorConfig.Builder(localSecureAddress);
+        builder.setPskStore(new LwM2mPskStore(securityStore));
+
+        // if in raw key mode and not in X.509 set the raw keys
+        if (x509CertChain == null && privateKey != null && publicKey != null) {
+            builder.setIdentity(privateKey, publicKey);
+        }
+        // if in X.509 mode set the private key, certificate chain, public key is extracted from the certificate
+        if (privateKey != null && x509CertChain != null && x509CertChain.length > 0) {
+            builder.setIdentity(privateKey, x509CertChain, false);
+        }
+
+        if (trustedCertificates != null && trustedCertificates.length > 0) {
+            builder.setTrustStore(trustedCertificates);
+        }
+
+        return new CoapEndpoint(new DTLSConnector(builder.build()), NetworkConfig.getStandard(),
+                observationService.getObservationStore(), null);
+    }
+
+    private void createServer(final Set<Endpoint> endpoints) {
 
         // Cancel observations on client unregistering
         this.registrationService.addListener(new RegistrationListener() {
@@ -162,46 +240,25 @@ public class LeshanServer implements LwM2mServer {
                 return new RootResource();
             }
         };
-        nonSecureEndpoint = new CoapEndpoint(localAddress, NetworkConfig.getStandard(),
-                this.observationService.getObservationStore());
-        nonSecureEndpoint.addNotificationListener(observationService);
-        observationService.setNonSecureEndpoint(nonSecureEndpoint);
-        coapServer.addEndpoint(nonSecureEndpoint);
-
-        // secure endpoint
-        Builder builder = new DtlsConnectorConfig.Builder(localSecureAddress);
-        builder.setPskStore(new LwM2mPskStore(this.securityStore, this.registrationService.getStore()));
-
-        // if in raw key mode and not in X.509 set the raw keys
-        if (x509CertChain == null && privateKey != null && publicKey != null) {
-            builder.setIdentity(privateKey, publicKey);
-        }
-        // if in X.509 mode set the private key, certificate chain, public key is extracted from the certificate
-        if (privateKey != null && x509CertChain != null && x509CertChain.length > 0) {
-            builder.setIdentity(privateKey, x509CertChain, false);
-        }
-
-        if (trustedCertificates != null && trustedCertificates.length > 0) {
-            builder.setTrustStore(trustedCertificates);
-        }
-
-        secureEndpoint = new CoapEndpoint(new DTLSConnector(builder.build()), NetworkConfig.getStandard(),
-                this.observationService.getObservationStore());
-        secureEndpoint.addNotificationListener(observationService);
-        observationService.setSecureEndpoint(secureEndpoint);
-        coapServer.addEndpoint(secureEndpoint);
 
         // define /rd resource
         final RegisterResource rdResource = new RegisterResource(
                 new RegistrationHandler(this.registrationService, authorizer));
         coapServer.add(rdResource);
 
-        // create sender
-        final Set<Endpoint> endpoints = new HashSet<>();
-        endpoints.add(nonSecureEndpoint);
-        endpoints.add(secureEndpoint);
-        requestSender = new CaliforniumLwM2mRequestSender(endpoints, this.observationService, modelProvider, encoder,
-                decoder);
+        for (Endpoint ep : endpoints) {
+            if (secureEndpoint == null && ep.getUri().getScheme().startsWith(CoAP.COAP_SECURE_URI_SCHEME)) {
+                // capture first "secure" endpoint
+                secureEndpoint = ep;
+            } else if (nonSecureEndpoint == null && ep.getUri().getScheme().startsWith(CoAP.COAP_URI_SCHEME)) {
+                // capture first "non secure" endpoint
+                nonSecureEndpoint = ep;
+            }
+            coapServer.addEndpoint(ep);
+        }
+
+        requestSender = new CaliforniumLwM2mRequestSender(Collections.unmodifiableSet(endpoints),
+                this.observationService, modelProvider, encoder, decoder);
     }
 
     @Override
@@ -218,7 +275,13 @@ public class LeshanServer implements LwM2mServer {
         // Start server
         coapServer.start();
 
-        LOG.info("LWM2M server started at coap://{}, coaps://{}.", getNonSecureAddress(), getSecureAddress());
+        if (LOG.isInfoEnabled()) {
+            StringBuilder b = new StringBuilder("LWM2M server started at endpoints");
+            for (Endpoint ep : coapServer.getEndpoints()) {
+                b.append(" ").append(ep.getUri().toString());
+            }
+            LOG.info(b.toString());
+        }
     }
 
     @Override
@@ -334,6 +397,7 @@ public class LeshanServer implements LwM2mServer {
             exchange.respond(ResponseCode.NOT_FOUND);
         }
 
+        @Override
         public List<Endpoint> getEndpoints() {
             return coapServer.getEndpoints();
         }

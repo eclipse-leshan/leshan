@@ -40,7 +40,7 @@ public class InMemoryLwM2mObservationStoreTest {
 
     @Test(expected = IllegalStateException.class)
     public void missing_registration_id() {
-        store.add(new Observation(Request.newGet(), null));
+        store.add(new Observation(Request.newGet().setObserve(), null));
     }
 
     @Test
@@ -91,6 +91,7 @@ public class InMemoryLwM2mObservationStoreTest {
     private Observation newObservation(byte[] token, String registrationId) {
         Request coapRequest = Request.newGet();
         coapRequest.setToken(token);
+        coapRequest.setObserve();
         Map<String, String> context = new HashMap<>();
         context.put(CoapRequestBuilder.CTX_REGID, registrationId);
         context.put(CoapRequestBuilder.CTX_LWM2M_PATH, "/3/0");

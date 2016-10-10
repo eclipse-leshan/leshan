@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2015 Sierra Wireless and others.
+ * Copyright (c) 2013-2016 Sierra Wireless and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Bosch Software Innovations - add support for setting Endpoints
  *******************************************************************************/
 package org.eclipse.leshan.server.californium;
 
@@ -21,7 +22,11 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.eclipse.californium.core.coap.CoAP;
+import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
@@ -35,6 +40,7 @@ import org.eclipse.leshan.server.model.StandardModelProvider;
 import org.eclipse.leshan.server.security.Authorizer;
 import org.eclipse.leshan.server.security.DefaultAuthorizer;
 import org.eclipse.leshan.server.security.SecurityStore;
+import org.eclipse.leshan.util.Validate;
 
 /**
  * Class helping you to build and configure a Californium based Leshan Lightweight M2M server. Usage: create it, call
@@ -43,12 +49,6 @@ import org.eclipse.leshan.server.security.SecurityStore;
  */
 public class LeshanServerBuilder {
 
-    /** IANA assigned UDP port for CoAP (so for LWM2M) */
-    public static final int PORT = 5683;
-
-    /** IANA assigned UDP port for CoAP with DTLS (so for LWM2M) */
-    public static final int PORT_DTLS = 5684;
-
     private CaliforniumRegistrationStore registrationStore;
     private SecurityStore securityStore;
     private LwM2mModelProvider modelProvider;
@@ -56,6 +56,7 @@ public class LeshanServerBuilder {
 
     private InetSocketAddress localAddress;
     private InetSocketAddress localSecureAddress;
+    private Set<Endpoint> endpoints;
 
     private LwM2mNodeEncoder encoder;
     private LwM2mNodeDecoder decoder;
@@ -90,6 +91,22 @@ public class LeshanServerBuilder {
 
     public LeshanServerBuilder setLocalSecureAddress(InetSocketAddress localSecureAddress) {
         this.localSecureAddress = localSecureAddress;
+        return this;
+    }
+
+    /**
+     * Sets the CoAP {@code Endpoint}s that the LWM2M server should use for communication with peers.
+     * <p>
+     * If this property is set, the <em>localAddress</em> and <em>localSecureAddress</em> properties are ignored when
+     * building the server.
+     * 
+     * @param endpoints The endpoints to use.
+     * @return This builder for fluent access.
+     * @throws IllegalArgumentException if the set is empty or {@code null}
+     */
+    public LeshanServerBuilder setEndpoints(Set<Endpoint> endpoints) {
+        Validate.notEmpty(endpoints);
+        this.endpoints = new HashSet<>(endpoints);
         return this;
     }
 
@@ -145,9 +162,9 @@ public class LeshanServerBuilder {
 
     public LeshanServer build() {
         if (localAddress == null)
-            localAddress = new InetSocketAddress((InetAddress) null, PORT);
+            localAddress = new InetSocketAddress((InetAddress) null, CoAP.DEFAULT_COAP_PORT);
         if (localSecureAddress == null)
-            localSecureAddress = new InetSocketAddress((InetAddress) null, PORT_DTLS);
+            localSecureAddress = new InetSocketAddress((InetAddress) null, CoAP.DEFAULT_COAP_SECURE_PORT);
         if (registrationStore == null)
             registrationStore = new InMemoryRegistrationStore();
         if (securityStore == null)
@@ -161,7 +178,16 @@ public class LeshanServerBuilder {
         if (decoder == null)
             decoder = new DefaultLwM2mNodeDecoder();
 
-        return new LeshanServer(localAddress, localSecureAddress, registrationStore, securityStore, authorizer,
-                modelProvider, encoder, decoder, publicKey, privateKey, certificateChain, trustedCertificates);
+        if (endpoints == null) {
+            if (localAddress == null)
+                localAddress = new InetSocketAddress(CoAP.DEFAULT_COAP_PORT);
+            if (localSecureAddress == null)
+                localSecureAddress = new InetSocketAddress(CoAP.DEFAULT_COAP_SECURE_PORT);
+            return new LeshanServer(localAddress, localSecureAddress, registrationStore, securityStore, authorizer,
+                    modelProvider, encoder, decoder, publicKey, privateKey, certificateChain, trustedCertificates);
+        } else {
+            return new LeshanServer(endpoints, registrationStore, securityStore,authorizer, modelProvider, encoder,
+                    decoder, publicKey, privateKey, certificateChain, trustedCertificates);
+        }
     }
 }

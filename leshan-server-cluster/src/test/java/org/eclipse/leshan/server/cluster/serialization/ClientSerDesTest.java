@@ -17,15 +17,14 @@ package org.eclipse.leshan.server.cluster.serialization;
 
 import static org.junit.Assert.assertEquals;
 
-import java.net.Inet4Address;
-import java.net.InetSocketAddress;
+import java.net.InetAddress;
+import java.net.URI;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.server.client.Registration;
-import org.eclipse.leshan.server.cluster.serialization.RegistrationSerDes;
 import org.junit.Test;
 
 public class ClientSerDesTest {
@@ -39,8 +38,8 @@ public class ClientSerDesTest {
         objs[0] = new LinkObject("/0/1024/2", att);
         objs[1] = new LinkObject("/0/2");
 
-        Registration.Builder builder = new Registration.Builder("registrationId", "endpoint", Inet4Address.getByName("127.0.0.1"),
-                1, new InetSocketAddress(212)).objectLinks(objs);
+        Registration.Builder builder = new Registration.Builder("registrationId", "endpoint", InetAddress.getLoopbackAddress(),
+                1, URI.create("coap://localhost:212")).objectLinks(objs);
 
         builder.registrationDate(new Date(100L));
         builder.lastUpdate(new Date(101L));

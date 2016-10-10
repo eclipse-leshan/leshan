@@ -29,6 +29,7 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 
 import org.eclipse.californium.scandium.dtls.pskstore.PskStore;
+import org.eclipse.californium.scandium.util.ServerNames;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.node.LwM2mObject;
@@ -66,6 +67,11 @@ public class SecurityObjectPskStore implements PskStore {
             }
         }
         return null;
+    }
+
+    @Override
+    public byte[] getKey(ServerNames serverNames, String identity) {
+        return getKey(identity);
     }
 
     @Override

@@ -75,7 +75,7 @@ public class ClientServlet extends HttpServlet {
 
     private final Gson gson;
 
-    public ClientServlet(LwM2mServer server, int securePort) {
+    public ClientServlet(LwM2mServer server) {
         this.server = server;
 
         GsonBuilder gsonBuilder = new GsonBuilder();

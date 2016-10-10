@@ -16,7 +16,7 @@
 package org.eclipse.leshan.server.californium.impl;
 
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
+import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
@@ -132,6 +132,7 @@ public class CaliforniumObservationTest {
         
         coapRequest = Request.newGet();
         coapRequest.setToken(CaliforniumTestSupport.createToken());
+        coapRequest.setObserve();
         coapRequest.getOptions().addUriPath(String.valueOf(target.getObjectId()));
         coapRequest.getOptions().addUriPath(String.valueOf(target.getObjectInstanceId()));
         coapRequest.getOptions().addUriPath(String.valueOf(target.getResourceId()));
@@ -151,7 +152,7 @@ public class CaliforniumObservationTest {
     }
 
     public Registration givenASimpleClient(String registrationId) {
-        InetSocketAddress registrationAddress = InetSocketAddress.createUnresolved("localhost", 5683);
+        URI registrationAddress = URI.create("coap://127.0.0.1:5683");
         Registration.Builder builder;
         try {
             builder = new Registration.Builder(registrationId, registrationId + "_ep", InetAddress.getLocalHost(), 10000,

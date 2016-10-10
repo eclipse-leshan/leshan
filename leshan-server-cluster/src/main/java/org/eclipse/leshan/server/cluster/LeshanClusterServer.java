@@ -22,6 +22,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
@@ -104,7 +105,7 @@ public class LeshanClusterServer {
         if (cl.hasOption("lp")) {
             localPortOption = cl.getOptionValue("lp");
         }
-        int localPort = LeshanServerBuilder.PORT;
+        int localPort = CoAP.DEFAULT_COAP_PORT;
         if (localPortOption != null) {
             localPort = Integer.parseInt(localPortOption);
         }
@@ -118,7 +119,7 @@ public class LeshanClusterServer {
         if (cl.hasOption("slp")) {
             secureLocalPortOption = cl.getOptionValue("slp");
         }
-        int secureLocalPort = LeshanServerBuilder.PORT_DTLS;
+        int secureLocalPort = CoAP.DEFAULT_COAP_SECURE_PORT;
         if (secureLocalPortOption != null) {
             secureLocalPort = Integer.parseInt(secureLocalPortOption);
         }
