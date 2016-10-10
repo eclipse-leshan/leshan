@@ -16,8 +16,7 @@
 package org.eclipse.leshan.server.impl;
 
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
+import java.net.URI;
 
 import org.eclipse.leshan.server.client.Client;
 
@@ -26,12 +25,13 @@ public class BasicTestSupport {
     public Client client;
     public InetAddress destination;
     public int destinationPort = 5000;
-    public InetSocketAddress registrationAddress;
+    public URI registrationAddress;
 
-    public void givenASimpleClient() throws UnknownHostException {
-        registrationAddress = InetSocketAddress.createUnresolved("localhost", 5683);
+    public void givenASimpleClient() {
 
-        Client.Builder builder = new Client.Builder("ID", "urn:client", InetAddress.getLocalHost(), 10000,
+        registrationAddress = URI.create("coap://localhost:5683");
+
+        Client.Builder builder = new Client.Builder("ID", "urn:client", InetAddress.getLoopbackAddress(), 10000,
                 registrationAddress);
 
         client = builder.build();

@@ -18,7 +18,7 @@ package org.eclipse.leshan.server.demo.cluster.serialization;
 import static org.junit.Assert.assertEquals;
 
 import java.net.Inet4Address;
-import java.net.InetSocketAddress;
+import java.net.URI;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +39,7 @@ public class ClientSerDesTest {
         objs[1] = new LinkObject("/0/2");
 
         Client.Builder builder = new Client.Builder("registrationId", "endpoint", Inet4Address.getByName("127.0.0.1"),
-                1, new InetSocketAddress(212)).objectLinks(objs);
+                1, URI.create("coap://localhost:212")).objectLinks(objs);
 
         builder.registrationDate(new Date(100L));
         builder.lastUpdate(new Date(101L));

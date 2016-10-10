@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.registration;
 
-import java.net.InetSocketAddress;
+import java.net.URI;
 import java.util.Date;
 
 import org.eclipse.leshan.core.request.DeregisterRequest;
@@ -51,7 +51,7 @@ public class RegistrationHandler {
         this.securityStore = securityStore;
     }
 
-    public RegisterResponse register(Identity sender, RegisterRequest registerRequest, InetSocketAddress serverEndpoint) {
+    public RegisterResponse register(Identity sender, RegisterRequest registerRequest, URI serverEndpoint) {
 
         if (registerRequest.getEndpointName() == null || registerRequest.getEndpointName().isEmpty() || sender == null) {
             return RegisterResponse.badRequest(null);

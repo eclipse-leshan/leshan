@@ -16,6 +16,7 @@
 package org.eclipse.leshan.server.demo.cluster.serialization;
 
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,8 +40,7 @@ public class ClientSerDes {
         o.add("regDate", c.getRegistrationDate().getTime());
         o.add("address", c.getAddress().getHostAddress());
         o.add("port", c.getPort());
-        o.add("regAddr", c.getRegistrationEndpointAddress().getHostString());
-        o.add("regPort", c.getRegistrationEndpointAddress().getPort());
+        o.add("regUri", c.getRegistrationEndpointUri().toString());
         o.add("lt", c.getLifeTimeInSec());
         if (c.getSmsNumber() != null) {
             o.add("sms", c.getSmsNumber());
@@ -88,7 +88,7 @@ public class ClientSerDes {
         Client.Builder b = new Client.Builder(jObj.getString("regId", null), jObj.getString("ep", null),
                 new InetSocketAddress(jObj.getString("address", null), jObj.getInt("port", 0)).getAddress(),
                 jObj.getInt("port", 0),
-                new InetSocketAddress(jObj.getString("regAddr", null), jObj.getInt("regPort", 0)));
+                URI.create(jObj.getString("regUri", null)));
         b.bindingMode(BindingMode.valueOf(jObj.getString("bnd", null)));
         b.lastUpdate(new Date(jObj.getLong("lastUp", 0)));
         b.lifeTimeInSec(jObj.getLong("lt", 0));

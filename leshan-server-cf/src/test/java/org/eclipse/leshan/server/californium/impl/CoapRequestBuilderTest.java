@@ -15,11 +15,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
-import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -67,13 +68,13 @@ public class CoapRequestBuilderTest {
         encoder = new DefaultLwM2mNodeEncoder();
     }
 
-    private Client newClient() throws UnknownHostException {
+    private Client newClient() {
         return newClient(null);
     }
 
-    private Client newClient(String rootpath) throws UnknownHostException {
-        Builder b = new Client.Builder("regid", "endpoint", Inet4Address.getByName("127.0.0.1"), 12354,
-                new InetSocketAddress(0));
+    private Client newClient(String rootpath) {
+        Builder b = new Client.Builder("regid", "endpoint", InetAddress.getLoopbackAddress(), 12354,
+                URI.create("coap://localhost:12000"));
         if (rootpath != null) {
             Map<String, String> attr = new HashMap<>();
             attr.put("rt", "oma.lwm2m");

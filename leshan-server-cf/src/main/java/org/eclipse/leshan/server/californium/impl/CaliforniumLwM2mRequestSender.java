@@ -16,6 +16,7 @@
 package org.eclipse.leshan.server.californium.impl;
 
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.util.Collection;
 import java.util.Set;
 import java.util.SortedMap;
@@ -298,18 +299,17 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
      * Gets the CoAP endpoint that should be used to communicate with a given client.
      *
      * @param client the client
-     * @return the CoAP endpoint bound to the same network address and port that the client connected to during
-     *         registration. If no such CoAP endpoint is available, the first CoAP endpoint from the list of registered
-     *         endpoints is returned
+     * @return The CoAP endpoint that the client has registered with.
+     * @throws IllegalStateException If the endpoint the client registered with cannot be determined.
      */
     private Endpoint getEndpointForClient(final Client client) {
         for (final Endpoint ep : endpoints) {
-            final InetSocketAddress endpointAddress = ep.getAddress();
-            if (endpointAddress.equals(client.getRegistrationEndpointAddress())) {
+            final URI endpointUri = ep.getUri();
+            if (endpointUri.equals(client.getRegistrationEndpointUri())) {
                 return ep;
             }
         }
         throw new IllegalStateException(
-                "can't find the client endpoint for address : " + client.getRegistrationEndpointAddress());
+                "can't find the client endpoint for address : " + client.getRegistrationEndpointUri());
     }
 }

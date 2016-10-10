@@ -18,6 +18,7 @@ package org.eclipse.leshan.server.client;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -51,6 +52,8 @@ public class Client implements Serializable {
      */
     private final InetSocketAddress registrationEndpointAddress;
 
+    private final URI registrationEndpointUri;
+
     private final long lifeTimeInSec;
 
     private final String smsNumber;
@@ -77,22 +80,21 @@ public class Client implements Serializable {
 
     protected Client(String registrationId, String endpoint, InetAddress address, int port, String lwM2mVersion,
             Long lifetimeInSec, String smsNumber, BindingMode bindingMode, LinkObject[] objectLinks,
-            InetSocketAddress registrationEndpointAddress,
-
-            Date registrationDate, Date lastUpdate, Map<String, String> additionalRegistrationAttributes) {
+            URI registrationEndpointUri, Date registrationDate, Date lastUpdate, Map<String, String> additionalRegistrationAttributes) {
 
         Validate.notNull(registrationId);
         Validate.notEmpty(endpoint);
         Validate.notNull(address);
         Validate.notNull(port);
-        Validate.notNull(registrationEndpointAddress);
+        Validate.notNull(registrationEndpointUri);
 
         this.registrationId = registrationId;
         this.endpoint = endpoint;
         this.address = address;
         this.port = port;
         this.smsNumber = smsNumber;
-        this.registrationEndpointAddress = registrationEndpointAddress;
+        this.registrationEndpointUri = registrationEndpointUri;
+        this.registrationEndpointAddress = new InetSocketAddress(registrationEndpointUri.getHost(), registrationEndpointUri.getPort());
 
         this.objectLinks = objectLinks;
         // extract the root objects path from the object links
@@ -159,6 +161,32 @@ public class Client implements Serializable {
      */
     public InetSocketAddress getRegistrationEndpointAddress() {
         return registrationEndpointAddress;
+    }
+
+    /**
+     * Gets the URI of the LWM2M Server's CoAP endpoint the client originally registered at.
+     * 
+     * A LWM2M Server may listen on multiple CoAP end points, e.g. a non-secure and a secure one. Clients are often
+     * behind a firewall which will only let incoming UDP packets pass if they originate from the same address:port that
+     * the client has initiated communication with, e.g. by means of registering with the LWM2M Server. It is therefore
+     * important to know, which of the server's CoAP end points the client contacted for registration.
+     * 
+     * This information can be used to uniquely identify the CoAP endpoint that should be used to access resources on
+     * the client.
+     * 
+     * @return The URI of the endpoint.
+     */
+    public URI getRegistrationEndpointUri() {
+        return registrationEndpointUri;
+    }
+
+    /**
+     * Checks whether the client has registered using a <em>coaps</em> based protocol.
+     * 
+     * @return {@code true} if the registration was done using a protocol whose scheme starts with {@code coaps}.
+     */
+    public boolean isSecureRegistration() {
+        return registrationEndpointUri.getScheme().startsWith("coaps");
     }
 
     public LinkObject[] getObjectLinks() {
@@ -273,7 +301,7 @@ public class Client implements Serializable {
     public String toString() {
         return String.format(
                 "Client [registrationDate=%s, address=%s, port=%s, registrationEndpoint=%s, lifeTimeInSec=%s, smsNumber=%s, lwM2mVersion=%s, bindingMode=%s, endpoint=%s, registrationId=%s, objectLinks=%s, lastUpdate=%s]",
-                registrationDate, address, port, registrationEndpointAddress, lifeTimeInSec, smsNumber, lwM2mVersion,
+                registrationDate, address, port, registrationEndpointUri, lifeTimeInSec, smsNumber, lwM2mVersion,
                 bindingMode, endpoint, registrationId, Arrays.toString(objectLinks), lastUpdate);
     }
 
@@ -308,7 +336,7 @@ public class Client implements Serializable {
         private final String endpoint;
         private final InetAddress address;
         private final int port;
-        private final InetSocketAddress registrationEndpointAddress;
+        private final URI registrationEndpointUri;
 
         private Date registrationDate;
         private Date lastUpdate;
@@ -320,18 +348,18 @@ public class Client implements Serializable {
         private Map<String, String> additionalRegistrationAttributes;
 
         public Builder(String registrationId, String endpoint, InetAddress address, int port,
-                InetSocketAddress registrationEndpointAddress) {
+                URI registrationEndpointUri) {
 
             Validate.notNull(registrationId);
             Validate.notEmpty(endpoint);
             Validate.notNull(address);
             Validate.notNull(port);
-            Validate.notNull(registrationEndpointAddress);
+            Validate.notNull(registrationEndpointUri);
             this.registrationId = registrationId;
             this.endpoint = endpoint;
             this.address = address;
             this.port = port;
-            this.registrationEndpointAddress = registrationEndpointAddress;
+            this.registrationEndpointUri = registrationEndpointUri;
 
         }
 
@@ -378,7 +406,7 @@ public class Client implements Serializable {
         public Client build() {
             return new Client(Builder.this.registrationId, Builder.this.endpoint, Builder.this.address,
                     Builder.this.port, Builder.this.lwM2mVersion, Builder.this.lifeTimeInSec, Builder.this.smsNumber,
-                    this.bindingMode, this.objectLinks, this.registrationEndpointAddress, this.registrationDate,
+                    this.bindingMode, this.objectLinks, this.registrationEndpointUri, this.registrationDate,
                     this.lastUpdate, this.additionalRegistrationAttributes);
         }
 
