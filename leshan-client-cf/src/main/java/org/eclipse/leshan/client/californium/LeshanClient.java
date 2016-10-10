@@ -28,7 +28,6 @@ import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
-import org.eclipse.californium.scandium.dtls.InMemoryConnectionStore;
 import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.californium.impl.BootstrapResource;
@@ -98,9 +97,8 @@ public class LeshanClient implements LwM2mClient {
 
         Builder builder = new DtlsConnectorConfig.Builder(localSecureAddress);
         builder.setPskStore(new SecurityObjectPskStore(securityEnabler));
-        final InMemoryConnectionStore inMemoryConnectionStore = new InMemoryConnectionStore();
-        secureEndpoint = new CoapEndpoint(new DTLSConnector(builder.build(), inMemoryConnectionStore),
-                NetworkConfig.getStandard());
+        final DTLSConnector dtlsConnector = new DTLSConnector(builder.build());
+        secureEndpoint = new CoapEndpoint(dtlsConnector, NetworkConfig.getStandard());
 
         // Create sender
         requestSender = new CaliforniumLwM2mClientRequestSender(secureEndpoint, nonSecureEndpoint);
@@ -110,22 +108,22 @@ public class LeshanClient implements LwM2mClient {
         observers.addObserver(new LwM2mClientObserverAdapter() {
             @Override
             public void onBootstrapSuccess(ServerInfo bsserver) {
-                inMemoryConnectionStore.clear();
+                dtlsConnector.clearConnectionState();
             }
 
             @Override
             public void onBootstrapTimeout(ServerInfo bsserver) {
-                inMemoryConnectionStore.clear();
+                dtlsConnector.clearConnectionState();
             }
 
             @Override
             public void onRegistrationTimeout(DmServerInfo server) {
-                inMemoryConnectionStore.clear();
+                dtlsConnector.clearConnectionState();
             }
 
             @Override
             public void onUpdateTimeout(DmServerInfo server) {
-                inMemoryConnectionStore.clear();
+                dtlsConnector.clearConnectionState();
             }
         });
 
