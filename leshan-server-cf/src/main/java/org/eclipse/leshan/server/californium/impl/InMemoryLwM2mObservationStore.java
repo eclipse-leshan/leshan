@@ -16,6 +16,7 @@
 package org.eclipse.leshan.server.californium.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -23,8 +24,8 @@ import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.eclipse.californium.core.Utils;
 import org.eclipse.californium.core.coap.Request;
-import org.eclipse.californium.core.network.Exchange.KeyToken;
 import org.eclipse.californium.core.network.serialization.DataParser;
 import org.eclipse.californium.core.network.serialization.DataSerializer;
 import org.eclipse.californium.core.network.serialization.UdpDataParser;
@@ -43,8 +44,8 @@ public class InMemoryLwM2mObservationStore implements LwM2mObservationStore {
 
     private static final DataSerializer serializer = new UdpDataSerializer();
 
-    private Map<KeyToken, Observation> byToken = new HashMap<>();
-    private Map<String, List<KeyToken>> byRegId = new HashMap<>();
+    private Map<Key, Observation> byToken = new HashMap<>();
+    private Map<String, List<Key>> byRegId = new HashMap<>();
 
     /* lock for udpate */
     private ReadWriteLock lock = new ReentrantReadWriteLock();
@@ -58,10 +59,10 @@ public class InMemoryLwM2mObservationStore implements LwM2mObservationStore {
                 validateObservation(obs);
 
                 String registrationId = getRegistrationId(obs);
-                KeyToken token = new KeyToken(obs.getRequest().getToken());
+                Key token = Key.fromToken(obs.getRequest().getToken());
                 byToken.put(token, obs);
                 if (!byRegId.containsKey(registrationId)) {
-                    byRegId.put(registrationId, new ArrayList<KeyToken>());
+                    byRegId.put(registrationId, new ArrayList<Key>());
                 }
                 byRegId.get(registrationId).add(token);
             } finally {
@@ -72,10 +73,10 @@ public class InMemoryLwM2mObservationStore implements LwM2mObservationStore {
 
     @Override
     public Observation get(byte[] token) {
-        return get(new KeyToken(token));
+        return get(Key.fromToken(token));
     }
 
-    private Observation get(KeyToken token) {
+    private Observation get(Key token) {
         try {
             lock.readLock().lock();
 
@@ -99,9 +100,9 @@ public class InMemoryLwM2mObservationStore implements LwM2mObservationStore {
             lock.readLock().lock();
 
             Collection<Observation> result = new ArrayList<>();
-            List<KeyToken> tokens = byRegId.get(registrationId);
+            List<Key> tokens = byRegId.get(registrationId);
             if (tokens != null) {
-                for (KeyToken token : tokens) {
+                for (Key token : tokens) {
                     Observation obs = get(token);
                     if (obs != null) {
                         result.add(obs);
@@ -119,12 +120,12 @@ public class InMemoryLwM2mObservationStore implements LwM2mObservationStore {
         try {
             lock.writeLock().lock();
 
-            KeyToken kToken = new KeyToken(token);
+            Key kToken = Key.fromToken(token);
             Observation removed = byToken.remove(kToken);
 
             if (removed != null) {
                 String registrationId = getRegistrationId(removed);
-                List<KeyToken> tokens = byRegId.get(registrationId);
+                List<Key> tokens = byRegId.get(registrationId);
                 tokens.remove(kToken);
                 if (tokens.isEmpty()) {
                     byRegId.remove(registrationId);
@@ -141,9 +142,9 @@ public class InMemoryLwM2mObservationStore implements LwM2mObservationStore {
             lock.writeLock().lock();
 
             Collection<Observation> removed = new ArrayList<>();
-            List<KeyToken> tokens = byRegId.get(registrationId);
+            List<Key> tokens = byRegId.get(registrationId);
             if (tokens != null) {
-                for (KeyToken token : tokens) {
+                for (Key token : tokens) {
                     removed.add(byToken.remove(token));
                 }
             }
@@ -159,9 +160,9 @@ public class InMemoryLwM2mObservationStore implements LwM2mObservationStore {
         try {
             lock.writeLock().lock();
 
-            Observation obs = byToken.get(new KeyToken(token));
+            Observation obs = byToken.get(Key.fromToken(token));
             if (obs != null) {
-                byToken.put(new KeyToken(token), new Observation(obs.getRequest(), ctx));
+                byToken.put(Key.fromToken(token), new Observation(obs.getRequest(), ctx));
             }
         } finally {
             lock.writeLock().unlock();
@@ -178,6 +179,45 @@ public class InMemoryLwM2mObservationStore implements LwM2mObservationStore {
             throw new IllegalStateException("missing registrationId info in the request context");
         if (!observation.getRequest().getUserContext().containsKey(CoapRequestBuilder.CTX_LWM2M_PATH))
             throw new IllegalStateException("missing lwm2m path info in the request context");
+    }
+
+    private static class Key {
+        private final byte[] token;
+
+        private Key(final byte[] token) {
+            this.token = token;
+        }
+
+        private static Key fromToken(byte[] token) {
+            return new Key(token);
+        }
+
+        @Override
+        public String toString() {
+            return Utils.toHexString(token);
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + Arrays.hashCode(token);
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            Key other = (Key) obj;
+            if (!Arrays.equals(token, other.token))
+                return false;
+            return true;
+        }
     }
 
 }
