@@ -38,6 +38,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -120,7 +121,7 @@ public class LeshanServerDemo {
         if (cl.hasOption("lp")) {
             localPortOption = cl.getOptionValue("lp");
         }
-        int localPort = LeshanServerBuilder.PORT;
+        int localPort = CoAP.DEFAULT_COAP_PORT;
         if (localPortOption != null) {
             localPort = Integer.parseInt(localPortOption);
         }
@@ -134,7 +135,7 @@ public class LeshanServerDemo {
         if (cl.hasOption("slp")) {
             secureLocalPortOption = cl.getOptionValue("slp");
         }
-        int secureLocalPort = LeshanServerBuilder.PORT_DTLS;
+        int secureLocalPort = CoAP.DEFAULT_COAP_SECURE_PORT;
         if (secureLocalPortOption != null) {
             secureLocalPort = Integer.parseInt(secureLocalPortOption);
         }
@@ -240,12 +241,11 @@ public class LeshanServerDemo {
         server.setHandler(root);
 
         // Create Servlet
-        EventServlet eventServlet = new EventServlet(lwServer, lwServer.getSecureAddress().getPort());
+        EventServlet eventServlet = new EventServlet(lwServer);
         ServletHolder eventServletHolder = new ServletHolder(eventServlet);
         root.addServlet(eventServletHolder, "/event/*");
 
-        ServletHolder clientServletHolder = new ServletHolder(
-                new ClientServlet(lwServer, lwServer.getSecureAddress().getPort()));
+        ServletHolder clientServletHolder = new ServletHolder(new ClientServlet(lwServer));
         root.addServlet(clientServletHolder, "/api/clients/*");
 
         ServletHolder securityServletHolder = new ServletHolder(new SecurityServlet(lwServer.getSecurityRegistry()));
