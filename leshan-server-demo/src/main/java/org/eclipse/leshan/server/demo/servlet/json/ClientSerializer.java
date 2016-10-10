@@ -26,12 +26,6 @@ import com.google.gson.JsonSerializer;
 
 public class ClientSerializer implements JsonSerializer<Client> {
 
-    private final int securePort;
-
-    public ClientSerializer(int securePort) {
-        this.securePort = securePort;
-    }
-
     @Override
     public JsonElement serialize(Client src, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject element = new JsonObject();
@@ -47,7 +41,7 @@ public class ClientSerializer implements JsonSerializer<Client> {
         element.addProperty("bindingMode", src.getBindingMode().toString());
         element.add("rootPath", context.serialize(src.getRootPath()));
         element.add("objectLinks", context.serialize(src.getSortedObjectLinks()));
-        element.add("secure", context.serialize(src.getRegistrationEndpointAddress().getPort() == securePort));
+        element.add("secure", context.serialize(src.isSecureRegistration()));
         element.add("additionalRegistrationAttributes", context.serialize(src.getAdditionalRegistrationAttributes()));
 
         return element;

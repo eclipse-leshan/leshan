@@ -16,9 +16,8 @@
 
 package org.eclipse.leshan.server.client;
 
-import java.net.Inet4Address;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
+import java.net.InetAddress;
+import java.net.URI;
 
 import org.eclipse.leshan.LinkObject;
 import org.junit.Assert;
@@ -27,14 +26,14 @@ import org.junit.Test;
 public class ClientSortObjectTest {
 
     @Test
-    public void sort_link_object_on_get() throws UnknownHostException {
+    public void sort_link_object_on_get() {
         LinkObject[] objs = new LinkObject[3];
         objs[0] = new LinkObject("/0/1024/2");
         objs[1] = new LinkObject("/0/2");
         objs[2] = null;
 
-        Client.Builder builder = new Client.Builder("registrationId", "endpoint", Inet4Address.getByName("127.0.0.1"),
-                1, new InetSocketAddress(212)).objectLinks(objs);
+        Client.Builder builder = new Client.Builder("registrationId", "endpoint", InetAddress.getLoopbackAddress(),
+                1, URI.create("coap://localhost:212")).objectLinks(objs);
 
         Client c = builder.build();
 

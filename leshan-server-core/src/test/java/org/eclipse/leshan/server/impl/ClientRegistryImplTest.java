@@ -16,7 +16,7 @@
 package org.eclipse.leshan.server.impl;
 
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
+import java.net.URI;
 
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.core.request.BindingMode;
@@ -86,7 +86,7 @@ public class ClientRegistryImplTest {
     private void givenASimpleClient(Long lifetime) {
 
         Client.Builder builder = new Client.Builder(registrationId, ep, address, port,
-                InetSocketAddress.createUnresolved("localhost", 5683));
+                URI.create("coap://localhost:5683"));
 
         client = builder.lifeTimeInSec(lifetime).smsNumber(sms).bindingMode(binding).objectLinks(objectLinks).build();
     }
