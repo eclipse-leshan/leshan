@@ -27,9 +27,8 @@ import org.eclipse.leshan.core.observation.Observation;
  *
  * This can be useful to listen to updates on the specific Observation.
  */
-public class ObserveResponse extends AbstractLwM2mResponse {
+public class ObserveResponse extends ReadResponse {
 
-    private final LwM2mNode content;
     private final Observation observation;
     private final List<TimestampedLwM2mNode> timestampedValues;
 
@@ -40,26 +39,11 @@ public class ObserveResponse extends AbstractLwM2mResponse {
 
     public ObserveResponse(ResponseCode code, LwM2mNode content, List<TimestampedLwM2mNode> timestampedValues,
             Observation observation, String errorMessage, Object coapResponse) {
-        super(code, errorMessage, coapResponse);
+        super(code, timestampedValues != null && !timestampedValues.isEmpty() ? timestampedValues.get(0).getNode()
+                : content, errorMessage, coapResponse);
 
-        if (ResponseCode.CONTENT.equals(code) && content == null && timestampedValues == null) {
-            throw new IllegalArgumentException("Content response must have a not null content or timestampedValues.");
-        }
-        this.content = content;
         this.observation = observation;
         this.timestampedValues = timestampedValues;
-    }
-
-    /**
-     * @return the value of the LWM2M node observed. In case of timestamped value returns the most recent one.
-     */
-    public LwM2mNode getContent() {
-        if (content != null)
-            return content;
-        else if (timestampedValues != null && !timestampedValues.isEmpty()) {
-            return timestampedValues.get(0).getNode();
-        }
-        return null;
     }
 
     public List<TimestampedLwM2mNode> getTimestampedLwM2mNode() {
