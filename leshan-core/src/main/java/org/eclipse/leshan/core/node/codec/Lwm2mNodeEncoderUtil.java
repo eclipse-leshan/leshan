@@ -92,6 +92,7 @@ public class Lwm2mNodeEncoderUtil {
                 } else if (StringUtils.equalsIgnoreCase((String) value, "false")) {
                     return false;
                 }
+                break;
             case INTEGER:
                 LOG.debug("Trying to convert int value {} to boolean", value);
                 Long val = (Long) value;
@@ -100,6 +101,7 @@ public class Lwm2mNodeEncoderUtil {
                 } else if (val == 0) {
                     return false;
                 }
+                break;
             default:
                 break;
             }
