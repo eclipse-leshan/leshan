@@ -144,7 +144,7 @@ public class ClientServlet extends HttpServlet {
                 resp.getWriter().format("No registered client with id '%s'", clientEndpoint).flush();
             }
         } catch (IllegalArgumentException e) {
-            LOG.warn("Invalid request", e);
+            LOG.warn("Invalid request or response", e);
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             resp.getWriter().append(e.getMessage()).flush();
         } catch (ResourceAccessException | RequestFailedException e) {
@@ -191,7 +191,7 @@ public class ClientServlet extends HttpServlet {
                 resp.getWriter().format("No registered client with id '%s'", clientEndpoint).flush();
             }
         } catch (IllegalArgumentException e) {
-            LOG.warn("Invalid request", e);
+            LOG.warn("Invalid request or response", e);
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             resp.getWriter().append(e.getMessage()).flush();
         } catch (ResourceAccessException | RequestFailedException e) {
@@ -233,7 +233,7 @@ public class ClientServlet extends HttpServlet {
                     resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
                 }
             } catch (IllegalArgumentException e) {
-                LOG.warn("Invalid request", e);
+                LOG.warn("Invalid request or response", e);
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().append(e.getMessage()).flush();
             } catch (ResourceAccessException | RequestFailedException e) {
@@ -263,7 +263,7 @@ public class ClientServlet extends HttpServlet {
                     resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
                 }
             } catch (IllegalArgumentException e) {
-                LOG.warn("Invalid request", e);
+                LOG.warn("Invalid request or response", e);
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().append(e.getMessage()).flush();
             } catch (ResourceAccessException | RequestFailedException e) {
@@ -302,7 +302,7 @@ public class ClientServlet extends HttpServlet {
                     resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
                 }
             } catch (IllegalArgumentException e) {
-                LOG.warn("Invalid request", e);
+                LOG.warn("Invalid request or response", e);
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().append(e.getMessage()).flush();
             } catch (ResourceAccessException | RequestFailedException e) {
@@ -336,7 +336,7 @@ public class ClientServlet extends HttpServlet {
                     resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
                 }
             } catch (IllegalArgumentException e) {
-                LOG.warn("Invalid request", e);
+                LOG.warn("Invalid request or response", e);
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().append(e.getMessage()).flush();
             } catch (ResourceAccessException | RequestFailedException e) {
@@ -360,7 +360,7 @@ public class ClientServlet extends HttpServlet {
                 resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
             }
         } catch (IllegalArgumentException e) {
-            LOG.warn("Invalid request", e);
+            LOG.warn("Invalid request or response", e);
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             resp.getWriter().append(e.getMessage()).flush();
         } catch (ResourceAccessException | RequestFailedException e) {
