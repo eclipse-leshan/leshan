@@ -26,6 +26,8 @@ import org.eclipse.californium.elements.CorrelationContext;
 import org.eclipse.leshan.server.californium.impl.CoapRequestBuilder;
 import org.eclipse.leshan.server.californium.impl.LwM2mObservationStore;
 import org.eclipse.leshan.server.demo.cluster.serialization.ObservationSerDes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.util.Pool;
@@ -36,6 +38,8 @@ import redis.clients.util.Pool;
  * Observations are stored using the token as primary key and a secondary index based on the registration Id.
  */
 public class RedisObservationStore implements LwM2mObservationStore {
+
+    private final Logger LOG = LoggerFactory.getLogger(RedisObservationStore.class);
 
     private final Pool<Jedis> pool;
 
@@ -59,11 +63,18 @@ public class RedisObservationStore implements LwM2mObservationStore {
             try {
                 lockValue = RedisLock.acquire(j, lockKey);
 
-                j.set(toKey(OBS_TKN, obs.getRequest().getToken()), serialize(obs));
+                byte[] previousValue = j.getSet(toKey(OBS_TKN, obs.getRequest().getToken()), serialize(obs));
 
                 // secondary index to get the list by registrationId
                 j.lpush(toKey(OBS_REG, registrationId), obs.getRequest().getToken());
 
+                // log any collisions
+                if (previousValue != null && previousValue.length != 0) {
+                    Observation previousObservation = deserialize(previousValue);
+                    LOG.warn(
+                            "Token collision ? observation from request [{}] will be replaced by observation from request [{}] ",
+                            previousObservation.getRequest(), obs.getRequest());
+                }
             } finally {
                 RedisLock.release(j, lockKey, lockValue);
             }

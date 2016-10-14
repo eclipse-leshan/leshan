@@ -33,6 +33,8 @@ import org.eclipse.californium.core.observe.InMemoryObservationStore;
 import org.eclipse.californium.core.observe.Observation;
 import org.eclipse.californium.elements.CorrelationContext;
 import org.eclipse.californium.elements.RawData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An in-memory {@link LwM2mObservationStore} implementation.
@@ -40,6 +42,8 @@ import org.eclipse.californium.elements.RawData;
  * Mainly inspired by the Californium {@link InMemoryObservationStore}.
  */
 public class InMemoryLwM2mObservationStore implements LwM2mObservationStore {
+
+    private final Logger LOG = LoggerFactory.getLogger(InMemoryLwM2mObservationStore.class);
 
     private static final DataSerializer serializer = new UdpDataSerializer();
 
@@ -59,11 +63,19 @@ public class InMemoryLwM2mObservationStore implements LwM2mObservationStore {
 
                 String registrationId = getRegistrationId(obs);
                 KeyToken token = new KeyToken(obs.getRequest().getToken());
-                byToken.put(token, obs);
+                Observation previousObservation = byToken.put(token, obs);
                 if (!byRegId.containsKey(registrationId)) {
                     byRegId.put(registrationId, new ArrayList<KeyToken>());
                 }
                 byRegId.get(registrationId).add(token);
+
+                // log any collisions
+                if (previousObservation != null) {
+                    LOG.warn(
+                            "Token collision ? observation from request [{}] will be replaced by observation from request [{}] ",
+                            previousObservation.getRequest(),
+                            obs.getRequest());
+                }
             } finally {
                 lock.writeLock().unlock();
             }
@@ -144,7 +156,10 @@ public class InMemoryLwM2mObservationStore implements LwM2mObservationStore {
             List<KeyToken> tokens = byRegId.get(registrationId);
             if (tokens != null) {
                 for (KeyToken token : tokens) {
-                    removed.add(byToken.remove(token));
+                    Observation observationRemoved = byToken.remove(token);
+                    if (observationRemoved != null) {
+                        removed.add(observationRemoved);
+                    }
                 }
             }
             byRegId.remove(registrationId);
