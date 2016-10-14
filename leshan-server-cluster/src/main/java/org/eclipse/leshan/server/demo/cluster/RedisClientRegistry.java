@@ -299,6 +299,8 @@ public class RedisClientRegistry implements ClientRegistry, Startable, Stoppable
                     }
                     cursor = res.getStringCursor();
                 } while (!"0".equals(cursor));
+            } catch (Exception e) {
+                LOG.warn("Unexcepted Exception while registration cleaning", e);
             }
         }
     }

@@ -167,13 +167,17 @@ public class ClientRegistryImpl implements ClientRegistry, Startable, Stoppable 
 
         @Override
         public void run() {
-            for (Client client : clientsByEp.values()) {
-                synchronized (client) {
-                    if (!client.isAlive()) {
-                        // force de-registration
-                        deregisterClient(client.getRegistrationId());
+            try {
+                for (Client client : clientsByEp.values()) {
+                    synchronized (client) {
+                        if (!client.isAlive()) {
+                            // force de-registration
+                            deregisterClient(client.getRegistrationId());
+                        }
                     }
                 }
+            } catch (Exception e) {
+                LOG.warn("Unexcepted Exception while registration cleaning", e);
             }
         }
     }
