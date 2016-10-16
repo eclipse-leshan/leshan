@@ -12,17 +12,30 @@ public class MyLocation extends BaseInstanceEnabler {
 
     private static final Logger LOG = LoggerFactory.getLogger(MyLocation.class);
 
-    private Random random;
+    private Random random = new Random();
     private float latitude;
     private float longitude;
+    private float scaleFactor;
     private Date timestamp;
 
     public MyLocation() {
-        random = new Random();
-        latitude = Float.valueOf(random.nextInt(180));
-        longitude = Float.valueOf(random.nextInt(360));
-        timestamp = new Date();
+        this(null, null, 1.0f);
     }
+
+    public MyLocation(Float latitude, Float longitude, float scaleFactor) {
+        if (latitude != null) {
+            this.latitude = latitude + 90;
+        } else {
+            latitude = Float.valueOf(random.nextInt(180));
+        }
+        if (longitude != null) {
+            this.longitude = longitude + 180;
+        } else {
+            longitude = Float.valueOf(random.nextInt(360));
+        }
+        this.scaleFactor = scaleFactor;
+        timestamp = new Date();
+   }
 
     @Override
     public ReadResponse read(int resourceid) {
@@ -57,13 +70,13 @@ public class MyLocation extends BaseInstanceEnabler {
     }
 
     private void moveLatitude(float delta) {
-        latitude = latitude + delta;
+        latitude = latitude + delta * scaleFactor;
         timestamp = new Date();
         fireResourcesChange(0, 5);
     }
 
     private void moveLongitude(float delta) {
-        longitude = longitude + delta;
+        longitude = longitude + delta * scaleFactor;
         timestamp = new Date();
         fireResourcesChange(1, 5);
     }

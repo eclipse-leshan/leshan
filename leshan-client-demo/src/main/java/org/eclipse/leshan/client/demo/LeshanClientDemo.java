@@ -52,8 +52,9 @@ public class LeshanClientDemo {
     private static final Logger LOG = LoggerFactory.getLogger(LeshanClientDemo.class);
 
     private final static String DEFAULT_ENDPOINT = "LeshanClientDemo";
-    private final static MyLocation locationInstance = new MyLocation();
     private final static String USAGE = "java -jar leshan-client-demo.jar [OPTION]";
+
+    private static MyLocation locationInstance;
 
     public static void main(final String[] args) {
 
@@ -75,6 +76,9 @@ public class LeshanClientDemo {
                 "Set the LWM2M or Bootstrap server PSK identity in ascii.\nUse none secure mode if not set.");
         options.addOption("p", true,
                 "Set the LWM2M or Bootstrap server Pre-Shared-Key in hexa.\nUse none secure mode if not set.");
+        options.addOption("pos", true,
+                "Set the initial location (latitude, longitude) of the device to be reported by the Location object. Format: lat_float:long_float");
+        options.addOption("sf", true, "Scale factor to apply when shifting position. Default is 1.0.");
         HelpFormatter formatter = new HelpFormatter();
         formatter.setOptionComparator(null);
 
@@ -162,13 +166,46 @@ public class LeshanClientDemo {
             secureLocalPort = Integer.parseInt(cl.getOptionValue("slp"));
         }
 
+        Float latitude = null;
+        Float longitude = null;
+        Float scaleFactor = 1.0f;
+        // get initial Location
+        if (cl.hasOption("pos")) {
+            try {
+                String pos = cl.getOptionValue("pos");
+                int colon = pos.indexOf(':');
+                if (colon == -1 || colon == 0 || colon == pos.length() - 1) {
+                    System.out.println("Position must be a set of two floats separated by a colon, e.g. 48.131:11.459");
+                    formatter.printHelp(USAGE, options);
+                    return;
+                }
+                latitude = Float.valueOf(pos.substring(0, colon));
+                longitude = Float.valueOf(pos.substring(colon + 1));
+            } catch (NumberFormatException e) {
+                System.out.println("Position must be a set of two floats separated by a colon, e.g. 48.131:11.459");
+                formatter.printHelp(USAGE, options);
+                return;
+            }
+        }
+        if (cl.hasOption("sf")) {
+            try {
+                scaleFactor = Float.valueOf(cl.getOptionValue("sf"));
+            } catch (NumberFormatException e) {
+                System.out.println("Scale factor must be a float, e.g. 1.0 or 0.01");
+                formatter.printHelp(USAGE, options);
+                return;
+            }
+        }
+
         createAndStartClient(endpoint, localAddress, localPort, secureLocalAddress, secureLocalPort, cl.hasOption("b"),
-                serverURI, pskIdentity, pskKey);
+                serverURI, pskIdentity, pskKey, latitude, longitude, scaleFactor);
     }
 
     public static void createAndStartClient(String endpoint, String localAddress, int localPort,
             String secureLocalAddress, int secureLocalPort, boolean needBootstrap, String serverURI, byte[] pskIdentity,
-            byte[] pskKey) {
+            byte[] pskKey, Float latitude, Float longitude, float scaleFactor) {
+
+        locationInstance = new MyLocation(latitude, longitude, scaleFactor);
 
         // Initialize object list
         ObjectsInitializer initializer = new ObjectsInitializer();
@@ -197,7 +234,7 @@ public class LeshanClientDemo {
         builder.setObjects(enablers);
         final LeshanClient client = builder.build();
 
-        LOG.info("Press 'w','a','s','d' to change reported Location.");
+        LOG.info("Press 'w','a','s','d' to change reported Location ({},{}).", locationInstance.getLatitude(), locationInstance.getLongitude());
 
         // Start the client
         client.start();
