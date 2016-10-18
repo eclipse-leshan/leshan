@@ -100,6 +100,9 @@ public class LinkObject implements Serializable {
     }
 
     public static LinkObject[] parse(byte[] content) {
+        if (content == null) {
+            return new LinkObject[] {};
+        }
         String s = new String(content, Charsets.UTF_8);
         String[] links = s.split(",");
         LinkObject[] linksResult = new LinkObject[links.length];
