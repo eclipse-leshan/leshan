@@ -150,7 +150,9 @@ public class RegisterResource extends CoapResource {
         String smsNumber = null;
         String lwVersion = null;
         BindingMode binding = null;
-        LinkObject[] objectLinks = null;
+
+        // Get object Links
+        LinkObject[] objectLinks = LinkObject.parse(request.getPayload());
 
         Map<String, String> additionalParams = new HashMap<String, String>();
 
@@ -172,10 +174,6 @@ public class RegisterResource extends CoapResource {
                     additionalParams.put(tokens[0], tokens[1]);
                 }
             }
-        }
-        // Get object Links
-        if (request.getPayload() != null) {
-            objectLinks = LinkObject.parse(request.getPayload());
         }
 
         // Create request
