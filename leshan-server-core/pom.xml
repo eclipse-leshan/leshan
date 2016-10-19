@@ -21,7 +21,7 @@ Contributors:
     <parent>
         <groupId>org.eclipse.leshan</groupId>
         <artifactId>leshan</artifactId>
-        <version>0.1.11-M14</version>
+        <version>0.1.11-M15-SNAPSHOT</version>
     </parent>
     <artifactId>leshan-server-core</artifactId>
     <packaging>bundle</packaging>
