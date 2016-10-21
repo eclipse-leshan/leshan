@@ -24,14 +24,14 @@ public class MyLocation extends BaseInstanceEnabler {
 
     public MyLocation(Float latitude, Float longitude, float scaleFactor) {
         if (latitude != null) {
-            this.latitude = latitude + 90;
+            this.latitude = latitude + 90f;
         } else {
-            latitude = Float.valueOf(random.nextInt(180));
+            this.latitude = Float.valueOf(random.nextInt(180));
         }
         if (longitude != null) {
-            this.longitude = longitude + 180;
+            this.longitude = longitude + 180f;
         } else {
-            longitude = Float.valueOf(random.nextInt(360));
+            this.longitude = Float.valueOf(random.nextInt(360));
         }
         this.scaleFactor = scaleFactor;
         timestamp = new Date();
