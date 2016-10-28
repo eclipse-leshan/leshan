@@ -171,6 +171,7 @@ public class LeshanServer implements LwM2mServer {
         endpointsToUse.add(nonSecureEndpoint);
 
         secureEndpoint = createSecureEndpoint(localSecureAddress, securityRegistry, clientRegistry, observationRegistry);
+        secureEndpoint.addNotificationListener(observationRegistry);
         observationRegistry.setSecureEndpoint(secureEndpoint);
         endpointsToUse.add(secureEndpoint);
 
