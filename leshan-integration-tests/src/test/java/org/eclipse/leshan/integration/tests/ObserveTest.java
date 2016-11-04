@@ -198,31 +198,10 @@ public class ObserveTest {
         timestampedNodes.add(mostRecentNode);
         timestampedNodes.add(new TimestampedLwM2mNode(mostRecentNode.getTimestamp() - 2,
                 LwM2mSingleResource.newStringResource(15, "Londres")));
-
-        // encode and send it
-        try (DatagramSocket clientSocket = new DatagramSocket()) {
-            byte[] payload = LwM2mNodeJsonEncoder.encodeTimestampedData(timestampedNodes, new LwM2mPath("/3/0/15"),
-                    new LwM2mModel(helper.createObjectModels()));
-
-            // create observe response
-            Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
-            Response response = new Response(org.eclipse.californium.core.coap.CoAP.ResponseCode.CONTENT);
-            response.setType(Type.NON);
-            response.setPayload(payload);
-            response.setMID(firstCoapResponse.getMID() + 1);
-            response.setToken(firstCoapResponse.getToken());
-            response.setOptions(new OptionSet().setContentFormat(ContentFormat.JSON_CODE));
-
-            // serialize response
-            UdpDataSerializer serializer = new UdpDataSerializer();
-            RawData data = serializer.serializeResponse(response);
-
-            // send it
-            clientSocket.send(new DatagramPacket(data.bytes, data.bytes.length,
-                    helper.server.getNonSecureAddress().getAddress(), helper.server.getNonSecureAddress().getPort()));
-        } catch (IOException e) {
-            throw new AssertionError("Error while timestamped notification", e);
-        }
+        byte[] payload = LwM2mNodeJsonEncoder.encodeTimestampedData(timestampedNodes, new LwM2mPath("/3/0/15"),
+                new LwM2mModel(helper.createObjectModels()));
+        Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
+        sendNotification(payload, firstCoapResponse);
         // *** Hack End *** //
 
         // verify result
@@ -259,31 +238,10 @@ public class ObserveTest {
         timestampedNodes.add(mostRecentNode);
         timestampedNodes.add(new TimestampedLwM2mNode(mostRecentNode.getTimestamp() - 2,
                 new LwM2mObjectInstance(0, LwM2mSingleResource.newStringResource(15, "Londres"))));
-
-        // encode and send it
-        try (DatagramSocket clientSocket = new DatagramSocket()) {
-            byte[] payload = LwM2mNodeJsonEncoder.encodeTimestampedData(timestampedNodes, new LwM2mPath("/3/0"),
-                    new LwM2mModel(helper.createObjectModels()));
-
-            // create observe response
-            Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
-            Response response = new Response(org.eclipse.californium.core.coap.CoAP.ResponseCode.CONTENT);
-            response.setType(Type.NON);
-            response.setPayload(payload);
-            response.setMID(firstCoapResponse.getMID() + 1);
-            response.setToken(firstCoapResponse.getToken());
-            response.setOptions(new OptionSet().setContentFormat(ContentFormat.JSON_CODE));
-
-            // serialize response
-            UdpDataSerializer serializer = new UdpDataSerializer();
-            RawData data = serializer.serializeResponse(response);
-
-            // send it
-            clientSocket.send(new DatagramPacket(data.bytes, data.bytes.length,
-                    helper.server.getNonSecureAddress().getAddress(), helper.server.getNonSecureAddress().getPort()));
-        } catch (IOException e) {
-            throw new AssertionError("Error while timestamped notification", e);
-        }
+        byte[] payload = LwM2mNodeJsonEncoder.encodeTimestampedData(timestampedNodes, new LwM2mPath("/3/0"),
+                new LwM2mModel(helper.createObjectModels()));
+        Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
+        sendNotification(payload, firstCoapResponse);
         // *** Hack End *** //
 
         // verify result
@@ -320,20 +278,37 @@ public class ObserveTest {
         timestampedNodes.add(mostRecentNode);
         timestampedNodes.add(new TimestampedLwM2mNode(mostRecentNode.getTimestamp() - 2,
                 new LwM2mObject(3, new LwM2mObjectInstance(0, LwM2mSingleResource.newStringResource(15, "Londres")))));
+        byte[] payload = LwM2mNodeJsonEncoder.encodeTimestampedData(timestampedNodes, new LwM2mPath("/3"),
+                new LwM2mModel(helper.createObjectModels()));
+
+        Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
+        sendNotification(payload, firstCoapResponse);
+        // *** Hack End *** //
+
+        // verify result
+        listener.waitForNotification(2000);
+        assertTrue(listener.receivedNotify().get());
+        assertEquals(mostRecentNode.getNode(), listener.getResponse().getContent());
+        assertEquals(timestampedNodes, listener.getResponse().getTimestampedLwM2mNode());
+        assertNotNull(listener.getResponse().getCoapResponse());
+        assertThat(listener.getResponse().getCoapResponse(), is(instanceOf(Response.class)));
+    }
+
+    private void sendNotification(final byte[] payload, final Response firstCoapResponse) {
 
         // encode and send it
         try (DatagramSocket clientSocket = new DatagramSocket()) {
-            byte[] payload = LwM2mNodeJsonEncoder.encodeTimestampedData(timestampedNodes, new LwM2mPath("/3"),
-                    new LwM2mModel(helper.createObjectModels()));
 
             // create observe response
-            Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
             Response response = new Response(org.eclipse.californium.core.coap.CoAP.ResponseCode.CONTENT);
             response.setType(Type.NON);
             response.setPayload(payload);
             response.setMID(firstCoapResponse.getMID() + 1);
             response.setToken(firstCoapResponse.getToken());
-            response.setOptions(new OptionSet().setContentFormat(ContentFormat.JSON_CODE));
+            OptionSet options = new OptionSet()
+                    .setContentFormat(ContentFormat.JSON_CODE)
+                    .setObserve(firstCoapResponse.getOptions().getObserve() + 1);
+            response.setOptions(options);
 
             // serialize response
             UdpDataSerializer serializer = new UdpDataSerializer();
@@ -345,15 +320,6 @@ public class ObserveTest {
         } catch (IOException e) {
             throw new AssertionError("Error while timestamped notification", e);
         }
-        // *** Hack End *** //
-
-        // verify result
-        listener.waitForNotification(2000);
-        assertTrue(listener.receivedNotify().get());
-        assertEquals(mostRecentNode.getNode(), listener.getResponse().getContent());
-        assertEquals(timestampedNodes, listener.getResponse().getTimestampedLwM2mNode());
-        assertNotNull(listener.getResponse().getCoapResponse());
-        assertThat(listener.getResponse().getCoapResponse(), is(instanceOf(Response.class)));
     }
 
     private final class TestObservationListener implements ObservationRegistryListener {
