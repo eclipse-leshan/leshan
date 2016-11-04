@@ -21,6 +21,7 @@ import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.object.Device;
@@ -71,8 +72,8 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
 
                 // security for DM server
                 ServerSecurity dmSecurity = new ServerSecurity();
-                dmSecurity.uri = "coap://" + server.getNonSecureAddress().getHostString() + ":"
-                        + server.getNonSecureAddress().getPort();
+                Endpoint communicationEndpoint = server.getEndpoint("coap");
+                dmSecurity.uri = communicationEndpoint.getUri().toString();
                 dmSecurity.serverId = 2222;
                 dmSecurity.securityMode = SecurityMode.NO_SEC;
                 bsConfig.security.put(1, dmSecurity);
@@ -121,8 +122,8 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
 
         // Initialize LWM2M Object Tree
         initializer.setInstancesForObject(LwM2mId.SECURITY, security);
-        initializer.setInstancesForObject(LwM2mId.DEVICE,
-                new Device("Eclipse Leshan", IntegrationTestHelper.MODEL_NUMBER, "12345", "U"));
+        initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan",
+                IntegrationTestHelper.MODEL_NUMBER, "12345", "U"));
         List<LwM2mObjectEnabler> objects = initializer.createMandatory();
         objects.add(initializer.create(2));
 

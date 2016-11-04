@@ -25,6 +25,7 @@ import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
@@ -116,9 +117,10 @@ public class IntegrationTestHelper {
     public void createClient() {
         // Create objects Enabler
         ObjectsInitializer initializer = new ObjectsInitializer(new LwM2mModel(createObjectModels()));
-        initializer.setInstancesForObject(LwM2mId.SECURITY, Security.noSec(
-                "coap://" + server.getNonSecureAddress().getHostString() + ":" + server.getNonSecureAddress().getPort(),
-                12345));
+        Endpoint communicationEndpoint = server.getEndpoint("coap");
+
+        initializer.setInstancesForObject(LwM2mId.SECURITY,
+                Security.noSec(communicationEndpoint.getUri().toString(), 12345));
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.U, false));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345", "U") {
             @Override

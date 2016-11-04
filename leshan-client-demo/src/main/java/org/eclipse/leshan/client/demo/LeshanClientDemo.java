@@ -79,6 +79,7 @@ public class LeshanClientDemo {
         options.addOption("pos", true,
                 "Set the initial location (latitude, longitude) of the device to be reported by the Location object. Format: lat_float:long_float");
         options.addOption("sf", true, "Scale factor to apply when shifting position. Default is 1.0.");
+        options.addOption("t", "tcp", false, "If present use TCP based protocols.");
         HelpFormatter formatter = new HelpFormatter();
         formatter.setOptionComparator(null);
 
@@ -124,18 +125,34 @@ public class LeshanClientDemo {
             }
         }
 
+        boolean tcp = cl.hasOption("t");
+
         // Get server URI
         String serverURI;
-        if (cl.hasOption("u")) {
-            if (cl.hasOption("i"))
-                serverURI = "coaps://" + cl.getOptionValue("u");
-            else
-                serverURI = "coap://" + cl.getOptionValue("u");
+        if (tcp) {
+            if (cl.hasOption("u")) {
+                if (cl.hasOption("i"))
+                    serverURI = "coaps+tcp://" + cl.getOptionValue("u");
+                else
+                    serverURI = "coap+tcp://" + cl.getOptionValue("u");
+            } else {
+                if (cl.hasOption("i"))
+                    serverURI = "coaps+tcp://localhost:5684";
+                else
+                    serverURI = "coap+tcp://localhost:5683";
+            }
         } else {
-            if (cl.hasOption("i"))
-                serverURI = "coaps://localhost:5684";
-            else
-                serverURI = "coap://localhost:5683";
+            if (cl.hasOption("u")) {
+                if (cl.hasOption("i"))
+                    serverURI = "coaps://" + cl.getOptionValue("u");
+                else
+                    serverURI = "coap://" + cl.getOptionValue("u");
+            } else {
+                if (cl.hasOption("i"))
+                    serverURI = "coaps://localhost:5684";
+                else
+                    serverURI = "coap://localhost:5683";
+            }
         }
 
         // get security info
@@ -197,12 +214,12 @@ public class LeshanClientDemo {
             }
         }
 
-        createAndStartClient(endpoint, localAddress, localPort, secureLocalAddress, secureLocalPort, cl.hasOption("b"),
+        createAndStartClient(endpoint, localAddress, localPort, secureLocalAddress, secureLocalPort, tcp, cl.hasOption("b"),
                 serverURI, pskIdentity, pskKey, latitude, longitude, scaleFactor);
     }
 
     public static void createAndStartClient(String endpoint, String localAddress, int localPort,
-            String secureLocalAddress, int secureLocalPort, boolean needBootstrap, String serverURI, byte[] pskIdentity,
+            String secureLocalAddress, int secureLocalPort, boolean tcp, boolean needBootstrap, String serverURI, byte[] pskIdentity,
             byte[] pskKey, Float latitude, Float longitude, float scaleFactor) {
 
         locationInstance = new MyLocation(latitude, longitude, scaleFactor);
@@ -233,6 +250,9 @@ public class LeshanClientDemo {
         builder.setLocalAddress(localAddress, localPort);
         builder.setLocalSecureAddress(secureLocalAddress, secureLocalPort);
         builder.setObjects(enablers);
+        if (tcp) {
+            builder.useTcp();
+        }
         final LeshanClient client = builder.build();
 
         LOG.info("Press 'w','a','s','d' to change reported Location ({},{}).", locationInstance.getLatitude(), locationInstance.getLongitude());
