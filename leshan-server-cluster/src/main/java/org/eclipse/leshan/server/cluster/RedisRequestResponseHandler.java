@@ -15,13 +15,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.cluster;
 
-import java.util.Arrays;
+import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.eclipse.californium.core.Utils;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.DownlinkRequest;
@@ -64,7 +63,7 @@ public class RedisRequestResponseHandler {
     private final ExecutorService executorService;
     private final RedisTokenHandler tokenHandler;
     private final ObservationRegistry observationRegistry;
-    private final Map<KeyId, String> observatioIdToTicket = new ConcurrentHashMap<>();
+    private final Map<ByteBuffer, String> observatioIdToTicket = new ConcurrentHashMap<>();
 
     public RedisRequestResponseHandler(Pool<Jedis> p, LwM2mServer server, ClientRegistry clientRegistry,
             RedisTokenHandler tokenHandler, ObservationRegistry observationRegistry) {
@@ -90,7 +89,7 @@ public class RedisRequestResponseHandler {
 
             @Override
             public void cancelled(Observation observation) {
-                observatioIdToTicket.remove(new KeyId(observation.getId()));
+                observatioIdToTicket.remove(ByteBuffer.wrap(observation.getId()));
             }
         });
 
@@ -143,7 +142,7 @@ public class RedisRequestResponseHandler {
             public void run() {
                 try {
                     sendResponse(ticket, response);
-                } catch (Throwable t) {
+                } catch (RuntimeException t) {
                     LOG.error("Unable to send response.", t);
                     sendError(ticket,
                             String.format("Expected error while sending LWM2M response.(%s)", t.getMessage()));
@@ -156,7 +155,7 @@ public class RedisRequestResponseHandler {
         executorService.submit(new Runnable() {
             @Override
             public void run() {
-                String ticket = observatioIdToTicket.get(new KeyId(observation.getId()));
+                String ticket = observatioIdToTicket.get(ByteBuffer.wrap(observation.getId()));
                 try {
                     sendNotification(ticket, value);
                 } catch (RuntimeException t) {
@@ -271,44 +270,13 @@ public class RedisRequestResponseHandler {
     private void sendResponse(String ticket, LwM2mResponse response) {
         if (response instanceof ObserveResponse) {
             Observation observation = ((ObserveResponse) response).getObservation();
-            observatioIdToTicket.put(new KeyId(observation.getId()), ticket);
+            observatioIdToTicket.put(ByteBuffer.wrap(observation.getId()), ticket);
         }
         try (Jedis j = pool.getResource()) {
             JsonObject m = Json.object();
             m.add("ticket", ticket);
             m.add("rep", ResponseSerDes.jSerialize(response));
             j.publish(RESPONSE_CHANNEL, m.toString());
-        }
-    }
-
-    public static final class KeyId {
-
-        protected final byte[] id;
-        private final int hash;
-
-        public KeyId(byte[] token) {
-            if (token == null)
-                throw new NullPointerException();
-            this.id = token;
-            this.hash = Arrays.hashCode(token);
-        }
-
-        @Override
-        public int hashCode() {
-            return hash;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (!(o instanceof KeyId))
-                return false;
-            KeyId key = (KeyId) o;
-            return Arrays.equals(id, key.id);
-        }
-
-        @Override
-        public String toString() {
-            return new StringBuilder("KeyId[").append(Utils.toHexString(id)).append("]").toString();
         }
     }
 }
