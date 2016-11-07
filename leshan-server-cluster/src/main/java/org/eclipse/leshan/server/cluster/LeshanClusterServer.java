@@ -37,8 +37,8 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.util.Pool;
 
-public class LeshanRedisServer {
-    private static final Logger LOG = LoggerFactory.getLogger(LeshanRedisServer.class);
+public class LeshanClusterServer {
+    private static final Logger LOG = LoggerFactory.getLogger(LeshanClusterServer.class);
 
     private final static String USAGE = "java -jar leshan-server-cluster.jar [OPTION]";
     private final static String FOOTER = "All options could be passed using environment variables.(using long option name in uppercase)";
