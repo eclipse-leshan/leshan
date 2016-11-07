@@ -48,7 +48,8 @@ import redis.clients.util.Pool;
 
 /**
  * Handle Request/Response Redis API.</br>
- * Send LWM2M Request to a LWM2M client when JSON Request Message is received on redis {@code LESHAN_REQ} channel.</br>
+ * Send LWM2M Request to a registered LWM2M client when JSON Request Message is received on redis {@code LESHAN_REQ}
+ * channel.</br>
  * Send JSON Response Message on redis {@code LESHAN_RESP} channel when LWM2M Response is received from LWM2M Client.
  */
 public class RedisRequestResponseHandler {
@@ -60,7 +61,7 @@ public class RedisRequestResponseHandler {
     private final LwM2mServer server;
     private final Pool<Jedis> pool;
     private final ClientRegistry clientRegistry;
-    private final ExecutorService excutorService;
+    private final ExecutorService executorService;
     private final RedisTokenHandler tokenHandler;
     private final ObservationRegistry observationRegistry;
     private final Map<KeyId, String> observatioIdToTicket = new ConcurrentHashMap<>();
@@ -72,7 +73,7 @@ public class RedisRequestResponseHandler {
         this.clientRegistry = clientRegistry;
         this.observationRegistry = observationRegistry;
         this.tokenHandler = tokenHandler;
-        this.excutorService = Executors.newCachedThreadPool(
+        this.executorService = Executors.newCachedThreadPool(
                 new NamedThreadFactory(String.format("Redis %s channel writer", RESPONSE_CHANNEL)));
 
         // Listen LWM2M notification from client
@@ -120,7 +121,7 @@ public class RedisRequestResponseHandler {
                                 handleSendRequestMessage(message);
                             };
                         }, REQUEST_CHANNEL);
-                    } catch (Throwable e) {
+                    } catch (RuntimeException e) {
                         LOG.warn("Redis SUBSCRIBE interrupted.", e);
                     }
 
@@ -137,7 +138,7 @@ public class RedisRequestResponseHandler {
     }
 
     private void handleResponse(String clientEndpoint, final String ticket, final LwM2mResponse response) {
-        excutorService.submit(new Runnable() {
+        executorService.submit(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -152,13 +153,13 @@ public class RedisRequestResponseHandler {
     }
 
     private void handleNotification(final Observation observation, final LwM2mNode value) {
-        excutorService.submit(new Runnable() {
+        executorService.submit(new Runnable() {
             @Override
             public void run() {
                 String ticket = observatioIdToTicket.get(new KeyId(observation.getId()));
                 try {
                     sendNotification(ticket, value);
-                } catch (Throwable t) {
+                } catch (RuntimeException t) {
                     LOG.error("Unable to send Notification.", t);
                     sendError(ticket,
                             String.format("Expected error while sending LWM2M Notification.(%s)", t.getMessage()));
@@ -168,12 +169,12 @@ public class RedisRequestResponseHandler {
     }
 
     private void handlerError(String clientEndpoint, final String ticket, final Exception exception) {
-        excutorService.submit(new Runnable() {
+        executorService.submit(new Runnable() {
             @Override
             public void run() {
                 try {
                     sendError(ticket, exception.getMessage());
-                } catch (Throwable t) {
+                } catch (RuntimeException t) {
                     LOG.error("Unable to send error message.", t);
                 }
             }
@@ -181,7 +182,7 @@ public class RedisRequestResponseHandler {
     }
 
     private void handleSendRequestMessage(final String message) {
-        excutorService.submit(new Runnable() {
+        executorService.submit(new Runnable() {
             @Override
             public void run() {
                 sendRequest(message);
@@ -196,7 +197,7 @@ public class RedisRequestResponseHandler {
         try {
             jMessage = (JsonObject) Json.parse(message);
             ticket = jMessage.getString("ticket", null);
-        } catch (Throwable t) {
+        } catch (RuntimeException t) {
             LOG.error(String.format("Unexpected exception pending request message handling.\n", message), t);
             return;
         }
@@ -222,7 +223,7 @@ public class RedisRequestResponseHandler {
 
             // Send it
             server.send(destination, ticket, request);
-        } catch (Throwable t) {
+        } catch (RuntimeException t) {
             String errorMessage = String.format("Unexpected exception pending request message handling.(%s:%s)",
                     t.toString(), t.getMessage());
             LOG.error(errorMessage, t);

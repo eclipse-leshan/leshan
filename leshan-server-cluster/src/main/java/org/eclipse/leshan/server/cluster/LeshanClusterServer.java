@@ -48,11 +48,11 @@ public class LeshanClusterServer {
         Options options = new Options();
 
         options.addOption("h", "help", false, "Display help information.");
-        options.addOption("n", "instanceID", true, "Set the ID of this instance in the cluster.");
+        options.addOption("n", "instanceID", true, "Set the unique identifier of this instance in the cluster.");
         options.addOption("lh", "coaphost", true, "Set the local CoAP address.\n  Default: any local address.");
         options.addOption("lp", "coapport", true, "Set the local CoAP port.\n  Default: 5683.");
-        options.addOption("slh", "coapshost", true, "Set the secure local CoAP address.\nDefault: any local address.");
-        options.addOption("slp", "coapsport", true, "Set the secure local CoAP port.\nDefault: 5684.");
+        options.addOption("slh", "coapshost", true, "Set the local secure CoAP address.\nDefault: any local address.");
+        options.addOption("slp", "coapsport", true, "Set the local secure CoAP port.\nDefault: 5684.");
         options.addOption("wp", "webport", true, "Set the HTTP port for web server.\nDefault: 8080.");
         options.addOption("r", "redis", true,
                 "Set the location of the Redis database. The URL is in the format of: 'redis://:password@hostname:port/db_number'\n\nDefault: 'redis://localhost:6379'.");

@@ -26,8 +26,8 @@ import redis.clients.jedis.Jedis;
 import redis.clients.util.Pool;
 
 /**
- * Only one cluster instance can be responsible of a given LWM2M client. (This restriction is mainly due to the DTLS
- * session)</br>
+ * Only one cluster instance can be responsible of a given LWM2M client at a given moment. (This restriction is mainly
+ * due to the DTLS session)</br>
  * This class store the couple Cluster instance / LwM2M client in a Redis Store.</br>
  * Each Cluster instance is identify by a unique UI and each device by its endpoint.
  */
