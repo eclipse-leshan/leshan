@@ -32,13 +32,14 @@ import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
+import java.util.Arrays;
+import java.util.HashSet;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -49,8 +50,8 @@ import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.impl.CaliforniumObservationRegistryImpl;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.client.ClientRegistry;
-import org.eclipse.leshan.server.demo.cluster.RedisObservationStore;
 import org.eclipse.leshan.server.demo.cluster.RedisClientRegistry;
+import org.eclipse.leshan.server.demo.cluster.RedisObservationStore;
 import org.eclipse.leshan.server.demo.cluster.RedisSecurityRegistry;
 import org.eclipse.leshan.server.demo.servlet.ClientServlet;
 import org.eclipse.leshan.server.demo.servlet.EventServlet;
@@ -77,14 +78,13 @@ public class LeshanServerDemo {
     public static void main(String[] args) {
         // Define options for command line tools
         Options options = new Options();
-
         options.addOption("h", "help", false, "Display help information.");
-        options.addOption("lh", "coaphost", true, "Set the local CoAP address.\n  Default: any local address.");
-        options.addOption("lp", "coapport", true, "Set the local CoAP port.\n  Default: 5683.");
-        options.addOption("slh", "coapshost", true, "Set the secure local CoAP address.\nDefault: any local address.");
-        options.addOption("slp", "coapsport", true, "Set the secure local CoAP port.\nDefault: 5684.");
+        options.addOption("hi", "hostinterfaces", true, "List of local host interfaces.\nDefault: coap://* coap://*.");
         options.addOption("wp", "webport", true, "Set the HTTP port for web server.\nDefault: 8080.");
-        options.addOption("r", "redis", true,
+        options.addOption(
+                "r",
+                "redis",
+                true,
                 "Set the location of the Redis database for running in cluster mode. The URL is in the format of: 'redis://:password@hostname:port/db_number'\nExample without DB and password: 'redis://localhost:6379'\nDefault: none, no Redis connection.");
         HelpFormatter formatter = new HelpFormatter();
         formatter.setOptionComparator(null);
@@ -112,32 +112,17 @@ public class LeshanServerDemo {
             return;
         }
 
-        // get local address
-        String localAddress = System.getenv("COAPHOST");
-        if (cl.hasOption("lh")) {
-            localAddress = cl.getOptionValue("lh");
+        String[] hostInterfaces = { "coap://*", "coaps://*" };
+        if (cl.hasOption("hi")) {
+            hostInterfaces = cl.getOptionValues("hi");
+        } else {
+            String envHostInterfaces = System.getenv("HOSTINTERFACES");
+            if (null != envHostInterfaces && 0 < envHostInterfaces.length()) {
+                hostInterfaces = envHostInterfaces.split(",");
+            }
         }
-        String localPortOption = System.getenv("COAPPORT");
-        if (cl.hasOption("lp")) {
-            localPortOption = cl.getOptionValue("lp");
-        }
-        int localPort = CoAP.DEFAULT_COAP_PORT;
-        if (localPortOption != null) {
-            localPort = Integer.parseInt(localPortOption);
-        }
-
-        // get secure local address
-        String secureLocalAddress = System.getenv("COAPSHOST");
-        if (cl.hasOption("slh")) {
-            secureLocalAddress = cl.getOptionValue("slh");
-        }
-        String secureLocalPortOption = System.getenv("COAPSPORT");
-        if (cl.hasOption("slp")) {
-            secureLocalPortOption = cl.getOptionValue("slp");
-        }
-        int secureLocalPort = CoAP.DEFAULT_COAP_SECURE_PORT;
-        if (secureLocalPortOption != null) {
-            secureLocalPort = Integer.parseInt(secureLocalPortOption);
+        for (String hostInterface : hostInterfaces) {
+            LOG.info("Host interface {}", hostInterface);
         }
 
         // get http port
@@ -157,22 +142,20 @@ public class LeshanServerDemo {
         }
 
         try {
-            createAndStartServer(webPort, localAddress, localPort, secureLocalAddress, secureLocalPort, redisUrl);
+            createAndStartServer(webPort, hostInterfaces, redisUrl);
         } catch (BindException e) {
-            System.out.println(
-                    String.format("Web port %s is alreay used, you could change it using 'webport' option.", webPort));
+            System.out.println(String.format("Web port %s is alreay used, you could change it using 'webport' option.",
+                    webPort));
             formatter.printHelp(USAGE, null, options, FOOTER);
         } catch (Exception e) {
             LOG.error("Jetty stopped with unexcepted error ...", e);
         }
     }
 
-    public static void createAndStartServer(int webPort, String localAddress, int localPort, String secureLocalAddress,
-            int secureLocalPort, String redisUrl) throws Exception {
+    public static void createAndStartServer(int webPort, String[] hostInterfaces, String redisUrl) throws Exception {
         // Prepare LWM2M server
         LeshanServerBuilder builder = new LeshanServerBuilder();
-        builder.setLocalAddress(localAddress, localPort);
-        builder.setLocalSecureAddress(secureLocalAddress, secureLocalPort);
+        builder.setEndpointUris(new HashSet<String>(Arrays.asList(hostInterfaces)));
         builder.setEncoder(new DefaultLwM2mNodeEncoder());
         LwM2mNodeDecoder decoder = new DefaultLwM2mNodeDecoder();
         builder.setDecoder(decoder);
@@ -189,12 +172,12 @@ public class LeshanServerDemo {
         PublicKey publicKey = null;
         try {
             // Get point values
-            byte[] publicX = Hex
-                    .decodeHex("fcc28728c123b155be410fc1c0651da374fc6ebe7f96606e90d927d188894a73".toCharArray());
-            byte[] publicY = Hex
-                    .decodeHex("d2ffaa73957d76984633fc1cc54d0b763ca0559a9dff9706e9f4557dacc3f52a".toCharArray());
-            byte[] privateS = Hex
-                    .decodeHex("1dae121ba406802ef07c193c1ee4df91115aabd79c1ed7f4c0ef7ef6a5449400".toCharArray());
+            byte[] publicX = Hex.decodeHex("fcc28728c123b155be410fc1c0651da374fc6ebe7f96606e90d927d188894a73"
+                    .toCharArray());
+            byte[] publicY = Hex.decodeHex("d2ffaa73957d76984633fc1cc54d0b763ca0559a9dff9706e9f4557dacc3f52a"
+                    .toCharArray());
+            byte[] privateS = Hex.decodeHex("1dae121ba406802ef07c193c1ee4df91115aabd79c1ed7f4c0ef7ef6a5449400"
+                    .toCharArray());
 
             // Get Elliptic Curve Parameter spec for secp256r1
             AlgorithmParameters algoParameters = AlgorithmParameters.getInstance("EC");
@@ -221,8 +204,8 @@ public class LeshanServerDemo {
                 ClientRegistry clientRegistry = new RedisClientRegistry(jedis);
                 builder.setSecurityRegistry(new RedisSecurityRegistry(jedis, privateKey, publicKey));
                 builder.setClientRegistry(clientRegistry);
-                builder.setObservationRegistry(new CaliforniumObservationRegistryImpl(
-                        new RedisObservationStore(jedis), clientRegistry, modelProvider, decoder));
+                builder.setObservationRegistry(new CaliforniumObservationRegistryImpl(new RedisObservationStore(jedis),
+                        clientRegistry, modelProvider, decoder));
             }
         } catch (InvalidKeySpecException | NoSuchAlgorithmException | InvalidParameterSpecException e) {
             LOG.error("Unable to initialize RPK.", e);
@@ -259,4 +242,5 @@ public class LeshanServerDemo {
         server.start();
         LOG.info("Web server started at {}.", server.getURI());
     }
+
 }

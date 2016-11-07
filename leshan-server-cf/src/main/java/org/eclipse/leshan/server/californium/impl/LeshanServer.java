@@ -13,18 +13,31 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Bosch Software Innovations - add support for providing Endpoints
+ *     Bosch Software Innovations - add TCP Endpoints
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.Security;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
 
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
@@ -35,6 +48,9 @@ import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
+import org.eclipse.californium.elements.Connector;
+import org.eclipse.californium.elements.tcp.TcpServerConnector;
+import org.eclipse.californium.elements.tcp.TlsServerConnector;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
@@ -92,9 +108,7 @@ public class LeshanServer implements LwM2mServer {
 
     private final LwM2mNodeDecoder decoder;
 
-    private Endpoint nonSecureEndpoint;
-
-    private Endpoint secureEndpoint;
+    private Set<Endpoint> serverEndpoints;
 
     private LwM2mRequestSender requestSender;
 
@@ -140,6 +154,46 @@ public class LeshanServer implements LwM2mServer {
         createServer(endpoints);
     }
 
+    public LeshanServer(final ClientRegistry clientRegistry, final SecurityRegistry securityRegistry,
+            final CaliforniumObservationRegistry observationRegistry, final LwM2mModelProvider modelProvider,
+            final LwM2mNodeEncoder encoder, final LwM2mNodeDecoder decoder, final Set<String> endpointUris) {
+
+        this(clientRegistry, securityRegistry, observationRegistry, modelProvider, encoder, decoder);
+        Validate.notNull(endpointUris, "Endpoint URIs cannot be null");
+
+        NetworkConfig config = NetworkConfig.getStandard();
+        Set<Endpoint> endpointsToUse = new HashSet<>();
+        for (String localHostInterface : endpointUris) {
+            try {
+                URI uri = new URI(localHostInterface);
+                InetSocketAddress localAddress = createLocalHostAddress(uri, config);
+                String scheme = uri.getScheme();
+                if (CoAP.COAP_URI_SCHEME.equals(scheme)) {
+                    endpointsToUse.add(new CoapEndpoint(localAddress, config, this.observationRegistry
+                            .getObservationStore()));
+                } else if (CoAP.COAP_SECURE_URI_SCHEME.equals(scheme)) {
+                    endpointsToUse.add(createSecureEndpoint(localAddress, securityRegistry, clientRegistry,
+                            observationRegistry));
+                } else if (CoAP.COAP_TCP_URI_SCHEME.equals(scheme)) {
+                    endpointsToUse.add(new CoapEndpoint(new TcpServerConnector(localAddress, config
+                            .getInt(NetworkConfig.Keys.TCP_WORKER_THREADS), config
+                            .getInt(NetworkConfig.Keys.TCP_CONNECTION_IDLE_TIMEOUT)), config, this.observationRegistry
+                            .getObservationStore(), null));
+                } else if (CoAP.COAP_SECURE_TCP_URI_SCHEME.equals(scheme)) {
+                    endpointsToUse.add(createSecureStreamEndpoint(localAddress, securityRegistry, clientRegistry,
+                            observationRegistry));
+                } else {
+                    LOG.error("Scheme '{}' not supported", scheme);
+                }
+            } catch (IllegalArgumentException e) {
+                LOG.error("Host interface '{}' {}", localHostInterface, e.getMessage());
+            } catch (URISyntaxException e) {
+                LOG.error("Host interface URI '{}' invalid", localHostInterface);
+            }
+        }
+        createServer(endpointsToUse);
+    }
+
     /**
      * Creates a server which will bind to the specified endpoint addresses.
      *
@@ -162,24 +216,89 @@ public class LeshanServer implements LwM2mServer {
         Validate.notNull(localAddress, "IP address cannot be null");
         Validate.notNull(localSecureAddress, "Secure IP address cannot be null");
 
+        NetworkConfig config = NetworkConfig.getStandard();
         Set<Endpoint> endpointsToUse = new HashSet<>();
 
-        nonSecureEndpoint = new CoapEndpoint(localAddress, NetworkConfig.getStandard(),
-                this.observationRegistry.getObservationStore());
-        nonSecureEndpoint.addNotificationListener(observationRegistry);
-        observationRegistry.setNonSecureEndpoint(nonSecureEndpoint);
-        endpointsToUse.add(nonSecureEndpoint);
+        Endpoint endpoint = new CoapEndpoint(localAddress, config, this.observationRegistry.getObservationStore());
+        endpointsToUse.add(endpoint);
 
-        secureEndpoint = createSecureEndpoint(localSecureAddress, securityRegistry, clientRegistry, observationRegistry);
-        secureEndpoint.addNotificationListener(observationRegistry);
-        observationRegistry.setSecureEndpoint(secureEndpoint);
-        endpointsToUse.add(secureEndpoint);
+        endpoint = createSecureEndpoint(localSecureAddress, securityRegistry, clientRegistry, observationRegistry);
+        endpointsToUse.add(endpoint);
 
         createServer(endpointsToUse);
     }
 
-    private static Endpoint createSecureEndpoint(final InetSocketAddress localSecureAddress, final SecurityRegistry securityRegistry,
-            final ClientRegistry clientRegistry, final CaliforniumObservationRegistry observationRegistry) {
+    private static InetSocketAddress createLocalHostAddress(URI uri, NetworkConfig config) {
+        int port = getPort(uri, config);
+        String host = uri.getHost();
+        InetSocketAddress localHostAddress;
+        if (null == host) {
+            localHostAddress = new InetSocketAddress(port);
+        } else {
+            localHostAddress = new InetSocketAddress(host, port);
+        }
+        InetAddress address = localHostAddress.getAddress();
+        if (null == address || !address.isAnyLocalAddress()) {
+            throw new IllegalArgumentException("address '" + uri.getHost() + "' is no local interface!");
+        }
+        return localHostAddress;
+    }
+
+    private static int getPort(URI uri, NetworkConfig config) {
+        int port = uri.getPort();
+        if (0 > port) {
+            String scheme = uri.getScheme();
+            String key;
+            if (CoAP.COAP_URI_SCHEME.equals(scheme)) {
+                key = NetworkConfig.Keys.COAP_PORT;
+            } else if (CoAP.COAP_SECURE_URI_SCHEME.equals(scheme)) {
+                key = NetworkConfig.Keys.COAP_SECURE_PORT;
+            } else if (CoAP.COAP_TCP_URI_SCHEME.equals(scheme)) {
+                key = NetworkConfig.Keys.COAP_PORT;
+            } else if (CoAP.COAP_SECURE_TCP_URI_SCHEME.equals(scheme)) {
+                key = NetworkConfig.Keys.COAP_SECURE_PORT;
+            } else {
+                throw new IllegalArgumentException("scheme '" + scheme + "' not supported!");
+            }
+            port = config.getInt(key);
+        }
+        return port;
+    }
+
+    private static Endpoint createSecureStreamEndpoint(final InetSocketAddress localSecureAddress,
+            final SecurityRegistry securityRegistry, final ClientRegistry clientRegistry,
+            final CaliforniumObservationRegistry observationRegistry) {
+
+        // secure endpoint
+        Connector connector = null;
+        NetworkConfig config = NetworkConfig.getStandard();
+        String algorithm = Security.getProperty("ssl.KeyManagerFactory.algorithm");
+
+        try {
+            KeyStore ks = KeyStore.getInstance("JKS");
+            ks.load(new FileInputStream("C:/tools/leshanserverdemo/cert.jks"), "secret".toCharArray());
+
+            // Set up key manager factory to use our key store
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance(algorithm);
+            kmf.init(ks, "secret".toCharArray());
+
+            // Initialize the SSLContext to work with our key managers.
+            SSLContext serverContext = SSLContext.getInstance("TLS");
+            serverContext.init(kmf.getKeyManagers(), null, null);
+            connector = new TlsServerConnector(serverContext, localSecureAddress,
+                    config.getInt(NetworkConfig.Keys.TCP_WORKER_THREADS),
+                    config.getInt(NetworkConfig.Keys.TCP_CONNECTION_IDLE_TIMEOUT));
+        } catch (GeneralSecurityException e) {
+            LOG.error("TLS error", e);
+        } catch (IOException e) {
+            LOG.error("IO error", e);
+        }
+        return new CoapEndpoint(connector, config, observationRegistry.getObservationStore(), null);
+    }
+
+    private static Endpoint createSecureEndpoint(final InetSocketAddress localSecureAddress,
+            final SecurityRegistry securityRegistry, final ClientRegistry clientRegistry,
+            final CaliforniumObservationRegistry observationRegistry) {
 
         // secure endpoint
         Builder builder = new DtlsConnectorConfig.Builder(localSecureAddress);
@@ -235,24 +354,29 @@ public class LeshanServer implements LwM2mServer {
         };
 
         // define /rd resource
-        final RegisterResource rdResource = new RegisterResource(
-                new RegistrationHandler(this.clientRegistry, this.securityRegistry));
+        final RegisterResource rdResource = new RegisterResource(new RegistrationHandler(this.clientRegistry,
+                this.securityRegistry));
         coapServer.add(rdResource);
 
-        for (Endpoint ep : endpoints) {
-            if (secureEndpoint == null && ep.getUri().getScheme().startsWith(CoAP.COAP_SECURE_URI_SCHEME)) {
-                // capture first "secure" endpoint
-                secureEndpoint = ep;
-            } else if (nonSecureEndpoint == null && ep.getUri().getScheme().startsWith(CoAP.COAP_URI_SCHEME)) {
-                // capture first "non secure" endpoint
-                nonSecureEndpoint = ep;
-            }
-            coapServer.addEndpoint(ep);
+        if (endpoints.isEmpty()) {
+            NetworkConfig config = NetworkConfig.getStandard();
+            int port = config.getInt(NetworkConfig.Keys.COAP_PORT);
+            LOG.info("No endpoints have been defined for server, setting up server endpoint on default port {}", port);
+            endpoints.add(new CoapEndpoint(new InetSocketAddress(port), config, this.observationRegistry
+                    .getObservationStore()));
         }
 
+        for (Endpoint endpoint : endpoints) {
+            coapServer.addEndpoint(endpoint);
+            endpoint.addNotificationListener(observationRegistry);
+        }
+
+        serverEndpoints = Collections.unmodifiableSet(endpoints);
+        observationRegistry.setEndpoints(serverEndpoints);
+
         // create sender
-        requestSender = new CaliforniumLwM2mRequestSender(Collections.unmodifiableSet(endpoints),
-                this.observationRegistry, modelProvider, encoder, decoder);
+        requestSender = new CaliforniumLwM2mRequestSender(serverEndpoints, this.observationRegistry, modelProvider,
+                encoder, decoder);
     }
 
     @Override
@@ -363,12 +487,13 @@ public class LeshanServer implements LwM2mServer {
         return coapServer;
     }
 
-    public InetSocketAddress getNonSecureAddress() {
-        return nonSecureEndpoint.getAddress();
-    }
-
-    public InetSocketAddress getSecureAddress() {
-        return secureEndpoint.getAddress();
+    public Endpoint getEndpoint(final String schema) throws NoSuchElementException {
+        for (Endpoint endpoint : serverEndpoints) {
+            if (schema.equals(endpoint.getUri().getScheme())) {
+                return endpoint;
+            }
+        }
+        throw new NoSuchElementException("no endpoint for '" + schema + "'");
     }
 
     /**

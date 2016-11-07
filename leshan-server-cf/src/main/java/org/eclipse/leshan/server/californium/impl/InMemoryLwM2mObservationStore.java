@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Bosch Software Innovations - add TCP support, retry on MessageFormatException
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
@@ -25,6 +26,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.eclipse.californium.core.Utils;
+import org.eclipse.californium.core.coap.MessageFormatException;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.network.serialization.DataParser;
 import org.eclipse.californium.core.network.serialization.DataSerializer;
@@ -74,8 +76,7 @@ public class InMemoryLwM2mObservationStore implements LwM2mObservationStore {
                 if (previousObservation != null) {
                     LOG.warn(
                             "Token collision ? observation from request [{}] will be replaced by observation from request [{}] ",
-                            previousObservation.getRequest(),
-                            obs.getRequest());
+                            previousObservation.getRequest(), obs.getRequest());
                 }
             } finally {
                 lock.writeLock().unlock();
@@ -94,9 +95,18 @@ public class InMemoryLwM2mObservationStore implements LwM2mObservationStore {
 
             Observation obs = byToken.get(token);
             if (obs != null) {
-                RawData serialize = serializer.serializeRequest(obs.getRequest(), null);
+                Request request = obs.getRequest();
+                RawData serialize = serializer.serializeRequest(request, null);
                 DataParser parser = new UdpDataParser();
-                Request newRequest = (Request) parser.parseMessage(serialize);
+                Request newRequest;
+                try {
+                    newRequest = (Request) parser.parseMessage(serialize);
+                } catch (MessageFormatException ex) {
+                    /** second chance, may be TCP serializer was used for this message */
+                    request.setBytes(null);
+                    serialize = serializer.serializeRequest(request, null);
+                    newRequest = (Request) parser.parseMessage(serialize);
+                }
                 newRequest.setUserContext(obs.getRequest().getUserContext());
                 return new Observation(newRequest, obs.getContext());
             }

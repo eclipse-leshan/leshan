@@ -160,11 +160,10 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
 
     public void createPSKClient() {
         ObjectsInitializer initializer = new ObjectsInitializer();
-        initializer.setInstancesForObject(LwM2mId.SECURITY,
-                Security.psk(
-                        "coaps://" + server.getSecureAddress().getHostString() + ":"
-                                + server.getSecureAddress().getPort(),
-                        12345, GOOD_PSK_ID.getBytes(Charsets.UTF_8), GOOD_PSK_KEY));
+        initializer.setInstancesForObject(
+                LwM2mId.SECURITY,
+                Security.psk(server.getEndpoint("coaps").getUri().toString(), 12345,
+                        GOOD_PSK_ID.getBytes(Charsets.UTF_8), GOOD_PSK_KEY));
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.U, false));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345", "U"));
         List<LwM2mObjectEnabler> objects = initializer.createMandatory();
@@ -180,12 +179,9 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
     // TODO implement RPK support for client
     public void createRPKClient() {
         ObjectsInitializer initializer = new ObjectsInitializer();
-        initializer.setInstancesForObject(LwM2mId.SECURITY,
-                Security.rpk(
-                        "coaps://" + server.getSecureAddress().getHostString() + ":"
-                                + server.getSecureAddress().getPort(),
-                        12345, clientPublicKey.getEncoded(), clientPrivateKey.getEncoded(),
-                        serverPublicKey.getEncoded()));
+        initializer.setInstancesForObject(LwM2mId.SECURITY, Security.rpk(server.getEndpoint("coaps").getUri()
+                .toString(), 12345, clientPublicKey.getEncoded(), clientPrivateKey.getEncoded(),
+                serverPublicKey.getEncoded()));
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.U, false));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345", "U"));
         List<LwM2mObjectEnabler> objects = initializer.createMandatory();
@@ -210,9 +206,8 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
     public void createX509CertClient(PrivateKey privatekey, Certificate[] trustedCertificates) {
         ObjectsInitializer initializer = new ObjectsInitializer();
         // TODO security instance with certificate info
-        initializer.setInstancesForObject(LwM2mId.SECURITY, Security.noSec(
-                "coaps://" + server.getSecureAddress().getHostString() + ":" + server.getSecureAddress().getPort(),
-                12345));
+        initializer.setInstancesForObject(LwM2mId.SECURITY,
+                Security.noSec(server.getEndpoint("coaps").getUri().toString(), 12345));
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.U, false));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345", "U"));
         List<LwM2mObjectEnabler> objects = initializer.createMandatory();

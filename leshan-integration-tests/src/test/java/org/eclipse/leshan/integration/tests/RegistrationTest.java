@@ -219,7 +219,8 @@ public class RegistrationTest {
                 additionalAttributes);
 
         // Send request
-        RegisterResponse resp = sender.send(helper.server.getNonSecureAddress(), false, registerRequest, 5000l);
+        RegisterResponse resp = sender.send(helper.server.getEndpoint("coap").getAddress(), false, registerRequest,
+                5000l);
         helper.waitForRegistration(1);
 
         // Check we are registered with the expected attributes
@@ -230,7 +231,8 @@ public class RegistrationTest {
         assertArrayEquals(LinkObject.parse("</>;rt=\"oma.lwm2m\",</0/0>,</1/0>,</2>,</3/0>".getBytes()),
                 helper.getCurrentRegistration().getObjectLinks());
 
-        sender.send(helper.server.getNonSecureAddress(), false, new DeregisterRequest(resp.getRegistrationID()), 5000l);
+        sender.send(helper.server.getEndpoint("coap").getAddress(), false,
+                new DeregisterRequest(resp.getRegistrationID()), 5000l);
         lclient.getCoapServer().stop();
     }
 }

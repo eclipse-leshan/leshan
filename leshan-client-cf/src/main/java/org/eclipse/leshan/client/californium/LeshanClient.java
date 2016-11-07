@@ -12,19 +12,30 @@
  * 
  * Contributors:
  *     Zebra Technologies - initial API and implementation
+ *     Bosch Software Innovations - add TCP endpoints
  *******************************************************************************/
 package org.eclipse.leshan.client.californium;
 
 import java.net.InetSocketAddress;
+import java.security.GeneralSecurityException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.server.resources.Resource;
+import org.eclipse.californium.elements.Connector;
+import org.eclipse.californium.elements.tcp.TcpClientConnector;
+import org.eclipse.californium.elements.tcp.TlsClientConnector;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
@@ -80,8 +91,8 @@ public class LeshanClient implements LwM2mClient {
         this.objectEnablers = new ConcurrentHashMap<>();
         for (LwM2mObjectEnabler enabler : objectEnablers) {
             if (this.objectEnablers.containsKey(enabler.getId())) {
-                throw new IllegalArgumentException(
-                        String.format("There is several objectEnablers with the same id %d.", enabler.getId()));
+                throw new IllegalArgumentException(String.format(
+                        "There is several objectEnablers with the same id %d.", enabler.getId()));
             }
             this.objectEnablers.put(enabler.getId(), enabler);
         }
@@ -126,6 +137,83 @@ public class LeshanClient implements LwM2mClient {
                 dtlsConnector.clearConnectionState();
             }
         });
+
+        // Create registration engine
+        bootstrapHandler = new BootstrapHandler(this.objectEnablers);
+        engine = new RegistrationEngine(endpoint, this.objectEnablers, requestSender, bootstrapHandler, observers);
+
+        // Create CoAP Server
+        clientSideServer = new CoapServer() {
+            @Override
+            protected Resource createRoot() {
+                // Use to handle Delete on "/"
+                return new RootResource(bootstrapHandler);
+            }
+        };
+        clientSideServer.addEndpoint(secureEndpoint);
+        clientSideServer.addEndpoint(nonSecureEndpoint);
+
+        // Create CoAP resources for each lwm2m Objects.
+        for (LwM2mObjectEnabler enabler : objectEnablers) {
+            final ObjectResource clientObject = new ObjectResource(enabler, bootstrapHandler,
+                    new DefaultLwM2mNodeEncoder(), new DefaultLwM2mNodeDecoder());
+            clientSideServer.add(clientObject);
+        }
+
+        // Create CoAP resources needed for the bootstrap sequence
+        clientSideServer.add(new BootstrapResource(bootstrapHandler));
+    }
+
+    public LeshanClient(final boolean tcp, final String endpoint, final InetSocketAddress localAddress,
+            InetSocketAddress localSecureAddress, final List<? extends LwM2mObjectEnabler> objectEnablers) {
+
+        Validate.notNull(endpoint);
+        Validate.notNull(localAddress);
+        Validate.notNull(localSecureAddress);
+        Validate.notEmpty(objectEnablers);
+
+        NetworkConfig config = NetworkConfig.getStandard();
+
+        // Create Object enablers
+        this.objectEnablers = new ConcurrentHashMap<>();
+        for (LwM2mObjectEnabler enabler : objectEnablers) {
+            if (this.objectEnablers.containsKey(enabler.getId())) {
+                throw new IllegalArgumentException(String.format(
+                        "There is several objectEnablers with the same id %d.", enabler.getId()));
+            }
+            this.objectEnablers.put(enabler.getId(), enabler);
+        }
+
+        // Create CoAP non secure endpoint
+        nonSecureEndpoint = new CoapEndpoint(new TcpClientConnector(
+                config.getInt(NetworkConfig.Keys.TCP_WORKER_THREADS),
+                config.getInt(NetworkConfig.Keys.TCP_CONNECT_TIMEOUT),
+                config.getInt(NetworkConfig.Keys.TCP_CONNECTION_IDLE_TIMEOUT)), config);
+
+        // Create CoAP secure endpoint
+        LwM2mObjectEnabler securityEnabler = this.objectEnablers.get(LwM2mId.SECURITY);
+        if (securityEnabler == null) {
+            throw new IllegalArgumentException("Security object is mandatory");
+        }
+
+        observers = new LwM2mClientObserverDispatcher();
+
+        Builder builder = new DtlsConnectorConfig.Builder(localSecureAddress);
+        builder.setPskStore(new SecurityObjectPskStore(securityEnabler));
+
+        try {
+            SSLContext clientContext = SSLContext.getInstance("TLS");
+            clientContext.init(null, new TrustManager[] { new TrustEveryoneTrustManager() }, null);
+            Connector con = new TlsClientConnector(clientContext, config.getInt(NetworkConfig.Keys.TCP_WORKER_THREADS),
+                    config.getInt(NetworkConfig.Keys.TCP_CONNECT_TIMEOUT),
+                    config.getInt(NetworkConfig.Keys.TCP_CONNECTION_IDLE_TIMEOUT));
+            secureEndpoint = new CoapEndpoint(con, config);
+        } catch (GeneralSecurityException e) {
+            LOG.error("TLS error", e);
+        }
+
+        // Create sender
+        requestSender = new CaliforniumLwM2mClientRequestSender(secureEndpoint, nonSecureEndpoint);
 
         // Create registration engine
         bootstrapHandler = new BootstrapHandler(this.objectEnablers);
@@ -211,4 +299,26 @@ public class LeshanClient implements LwM2mClient {
     public String getRegistrationId() {
         return engine.getRegistrationId();
     }
+
+    private static class TrustEveryoneTrustManager implements X509TrustManager {
+        @Override
+        public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+            for (X509Certificate cert : x509Certificates) {
+                cert.checkValidity();
+                if (!cert.getSubjectDN().getName().equals("CN=californium")) {
+                    throw new CertificateException("Unexpected domain name: " + cert.getSubjectDN());
+                }
+            }
+        }
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return new X509Certificate[0];
+        }
+    }
+
 }

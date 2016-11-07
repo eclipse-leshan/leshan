@@ -20,6 +20,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 import org.eclipse.californium.core.CoapServer;
@@ -110,6 +111,10 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         coapServer.addEndpoint(noSecureEndpoint);
         coapServer.addEndpoint(secureEndpoint);
 
+        Set<Endpoint> endpointsToUse = new HashSet<>();
+        endpointsToUse.add(noSecureEndpoint);
+        endpointsToUse.add(secureEndpoint);
+
         RegisterResource rdResource = new RegisterResource(new RegistrationHandler(clientRegistry, securityRegistry));
         coapServer.add(rdResource);
 
@@ -119,10 +124,9 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         LwM2mNodeDecoder decoder = new DefaultLwM2mNodeDecoder();
         CaliforniumObservationRegistryImpl observationRegistry = new CaliforniumObservationRegistryImpl(
                 observationStore, clientRegistry, modelProvider, decoder);
-        observationRegistry.setSecureEndpoint(secureEndpoint);
         secureEndpoint.addNotificationListener(observationRegistry);
-        observationRegistry.setNonSecureEndpoint(noSecureEndpoint);
         noSecureEndpoint.addNotificationListener(observationRegistry);
+        observationRegistry.setEndpoints(endpointsToUse);
         LwM2mRequestSender delegateSender = new CaliforniumLwM2mRequestSender(new HashSet<>(coapServer.getEndpoints()),
                 observationRegistry, modelProvider, encoder, decoder);
         LwM2mRequestSender secondDelegateSender = new CaliforniumLwM2mRequestSender(
