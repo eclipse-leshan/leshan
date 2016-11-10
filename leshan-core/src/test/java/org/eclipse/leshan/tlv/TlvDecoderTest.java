@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
+import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.util.Hex;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -60,5 +61,20 @@ public class TlvDecoderTest {
             // TODO: replace with more robust assertion or simply check for TlvException being thrown
             assertEquals("Impossible to parse TLV: \n0011223344556677889900", ex.getMessage());
         }
+    }
+
+    @Test
+    public void decode_object_link() throws TlvException {
+        String dataStr = "12345678";
+        byte[] bytes = Hex.decodeHex(dataStr.toCharArray());
+        ObjectLink objlnk = TlvDecoder.decodeObjlnk(bytes);
+        assertEquals(0x1234, objlnk.getObjectId());
+        assertEquals(0x5678, objlnk.getObjectInstanceId());
+
+        dataStr = "ffffffff";
+        bytes = Hex.decodeHex(dataStr.toCharArray());
+        objlnk = TlvDecoder.decodeObjlnk(bytes);
+        assertEquals(0xffff, objlnk.getObjectId());
+        assertEquals(0xffff, objlnk.getObjectInstanceId());
     }
 }
