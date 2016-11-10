@@ -15,16 +15,13 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
-import static org.eclipse.leshan.server.californium.impl.CoapRequestBuilder.*;
+import static org.eclipse.leshan.server.californium.impl.CoapRequestBuilder.CTX_REGID;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -43,6 +40,7 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.californium.CaliforniumObservationRegistry;
+import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
@@ -61,7 +59,7 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
 
     private final Logger LOG = LoggerFactory.getLogger(CaliforniumObservationRegistry.class);
 
-    private final LwM2mObservationStore observationStore;
+    private final CaliforniumRegistrationStore registrationStore;
     private final ClientRegistry clientRegistry;
     private final LwM2mModelProvider modelProvider;
     private final LwM2mNodeDecoder decoder;
@@ -78,9 +76,9 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
      * @param modelProvider instance of {@link LwM2mModelProvider}
      * @param decoder instance of {@link LwM2mNodeDecoder}
      */
-    public CaliforniumObservationRegistryImpl(LwM2mObservationStore store, ClientRegistry clientRegistry,
+    public CaliforniumObservationRegistryImpl(CaliforniumRegistrationStore store, ClientRegistry clientRegistry,
             LwM2mModelProvider modelProvider, LwM2mNodeDecoder decoder) {
-        this.observationStore = store;
+        this.registrationStore = store;
         this.modelProvider = modelProvider;
         this.clientRegistry = clientRegistry;
         this.decoder = decoder;
@@ -120,13 +118,12 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
         if (registrationId == null)
             return 0;
 
-        Collection<org.eclipse.californium.core.observe.Observation> observations = observationStore
-                .removeAll(registrationId);
+        Collection<Observation> observations = registrationStore
+                .removeObservations(registrationId);
         if (observations == null)
             return 0;
 
-        for (org.eclipse.californium.core.observe.Observation cfObs : observations) {
-            Observation observation = build(cfObs);
+        for (Observation observation : observations) {
             if (secureEndpoint != null)
                 secureEndpoint.cancelObservation(observation.getId());
             if (nonSecureEndpoint != null)
@@ -161,7 +158,7 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
             secureEndpoint.cancelObservation(observation.getId());
         if (nonSecureEndpoint != null)
             nonSecureEndpoint.cancelObservation(observation.getId());
-        observationStore.remove(observation.getId());
+        registrationStore.removeObservation(observation.getRegistrationId(), observation.getId());
 
         for (ObservationRegistryListener listener : listeners) {
             listener.cancelled(observation);
@@ -177,12 +174,7 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
         if (registrationId == null)
             return Collections.emptySet();
 
-        Set<Observation> result = new HashSet<>();
-        for (org.eclipse.californium.core.observe.Observation obs : observationStore
-                .getByRegistrationId(registrationId)) {
-            result.add(build(obs));
-        }
-        return result;
+        return new HashSet<Observation>(registrationStore.getObservations(registrationId));
     }
 
     private Set<Observation> getObservations(String registrationId, String resourcePath) {
@@ -201,7 +193,7 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
 
     @Override
     public ObservationStore getObservationStore() {
-        return observationStore;
+        return registrationStore;
     }
 
     @Override
@@ -212,33 +204,6 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
     @Override
     public void removeListener(ObservationRegistryListener listener) {
         listeners.remove(listener);
-    }
-
-    /* from a Californium observation */
-    private Observation build(org.eclipse.californium.core.observe.Observation cfObs) {
-        if (cfObs == null)
-            return null;
-
-        String regId = null;
-        String lwm2mPath = null;
-        Map<String, String> context = null;
-
-        for (Entry<String, String> ctx : cfObs.getRequest().getUserContext().entrySet()) {
-            switch (ctx.getKey()) {
-            case CTX_REGID:
-                regId = ctx.getValue();
-                break;
-            case CTX_LWM2M_PATH:
-                lwm2mPath = ctx.getValue();
-                break;
-            default:
-                if (context == null) {
-                    context = new HashMap<>();
-                }
-                context.put(ctx.getKey(), ctx.getValue());
-            }
-        }
-        return new Observation(cfObs.getRequest().getToken(), regId, new LwM2mPath(lwm2mPath), context);
     }
 
     // ********** NotificationListener interface **********//
@@ -253,8 +218,11 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
         if (coapResponse.getCode() == CoAP.ResponseCode.CHANGED
                 || coapResponse.getCode() == CoAP.ResponseCode.CONTENT) {
             try {
+                // get registration Id
+                String regid = coapRequest.getUserContext().get(CTX_REGID);
+                
                 // get observation for this request
-                Observation observation = build(observationStore.get(coapResponse.getToken()));
+                Observation observation = registrationStore.getObservation(regid, coapResponse.getToken());
                 if (observation == null)
                     return;
 

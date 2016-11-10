@@ -24,9 +24,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
-import org.eclipse.leshan.server.californium.impl.CaliforniumObservationRegistryImpl;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
-import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StandardModelProvider;
 import org.slf4j.Logger;
@@ -155,14 +153,11 @@ public class LeshanClusterServer {
         LwM2mModelProvider modelProvider = new StandardModelProvider();
         builder.setObjectModelProvider(modelProvider);
 
-        ClientRegistry clientRegistry = new RedisClientRegistry(jedis);
-        builder.setClientRegistry(clientRegistry);
+        RedisRegistrationStore registrationStore = new RedisRegistrationStore(jedis);
+        builder.setRegistrationStore(registrationStore);
 
         // TODO add support of public and private server key
         builder.setSecurityRegistry(new RedisSecurityRegistry(jedis, null, null));
-
-        builder.setObservationRegistry(new CaliforniumObservationRegistryImpl(new RedisObservationStore(jedis),
-                clientRegistry, modelProvider, decoder));
 
         // Create and start LWM2M server
         LeshanServer lwServer = builder.build();
@@ -171,8 +166,8 @@ public class LeshanClusterServer {
         RedisTokenHandler tokenHandler = new RedisTokenHandler(jedis, clusterInstanceId);
         new RedisRequestResponseHandler(jedis, lwServer, lwServer.getClientRegistry(), tokenHandler,
                 lwServer.getObservationRegistry());
-        clientRegistry.addListener(tokenHandler);
-        clientRegistry.addListener(new RedisRegistrationEventPublisher(jedis));
+        lwServer.getClientRegistry().addListener(tokenHandler);
+        lwServer.getClientRegistry().addListener(new RedisRegistrationEventPublisher(jedis));
 
         // Start Jetty & Leshan
         lwServer.start();

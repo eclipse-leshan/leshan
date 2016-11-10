@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.impl;
+package org.eclipse.leshan.server.californium.impl;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -22,6 +22,7 @@ import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.impl.ClientRegistryImpl;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,7 +43,7 @@ public class ClientRegistryImplTest {
     @Before
     public void setUp() throws Exception {
         address = InetAddress.getLocalHost();
-        registry = new ClientRegistryImpl();
+        registry = new ClientRegistryImpl(new InMemoryRegistrationStore());
     }
 
     @Test

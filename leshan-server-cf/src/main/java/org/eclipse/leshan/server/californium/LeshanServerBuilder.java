@@ -24,9 +24,8 @@ import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.californium.impl.CaliforniumObservationRegistryImpl;
-import org.eclipse.leshan.server.californium.impl.InMemoryLwM2mObservationStore;
+import org.eclipse.leshan.server.californium.impl.InMemoryRegistrationStore;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
-import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.impl.ClientRegistryImpl;
 import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
@@ -46,9 +45,8 @@ public class LeshanServerBuilder {
     /** IANA assigned UDP port for CoAP with DTLS (so for LWM2M) */
     public static final int PORT_DTLS = 5684;
 
+    private CaliforniumRegistrationStore registrationStore;
     private SecurityRegistry securityRegistry;
-    private CaliforniumObservationRegistry observationRegistry;
-    private ClientRegistry clientRegistry;
     private LwM2mModelProvider modelProvider;
     private InetSocketAddress localAddress;
     private InetSocketAddress localSecureAddress;
@@ -85,13 +83,8 @@ public class LeshanServerBuilder {
         return this;
     }
 
-    public LeshanServerBuilder setClientRegistry(ClientRegistry clientRegistry) {
-        this.clientRegistry = clientRegistry;
-        return this;
-    }
-
-    public LeshanServerBuilder setObservationRegistry(CaliforniumObservationRegistry observationRegistry) {
-        this.observationRegistry = observationRegistry;
+    public LeshanServerBuilder setRegistrationStore(CaliforniumRegistrationStore registrationStore) {
+        this.registrationStore = registrationStore;
         return this;
     }
 
@@ -120,8 +113,8 @@ public class LeshanServerBuilder {
             localAddress = new InetSocketAddress((InetAddress) null, PORT);
         if (localSecureAddress == null)
             localSecureAddress = new InetSocketAddress((InetAddress) null, PORT_DTLS);
-        if (clientRegistry == null)
-            clientRegistry = new ClientRegistryImpl();
+        if (registrationStore == null)
+            registrationStore = new InMemoryRegistrationStore();
         if (securityRegistry == null)
             securityRegistry = new SecurityRegistryImpl();
         if (modelProvider == null)
@@ -131,9 +124,10 @@ public class LeshanServerBuilder {
         if (decoder == null)
             decoder = new DefaultLwM2mNodeDecoder();
 
-        if (observationRegistry == null)
-            observationRegistry = new CaliforniumObservationRegistryImpl(new InMemoryLwM2mObservationStore(),
-                    clientRegistry, modelProvider, decoder);
+        ClientRegistryImpl clientRegistry = new ClientRegistryImpl(registrationStore);
+        
+        CaliforniumObservationRegistryImpl observationRegistry = new CaliforniumObservationRegistryImpl(
+                registrationStore, clientRegistry, modelProvider, decoder);
 
         return new LeshanServer(localAddress, localSecureAddress, clientRegistry, securityRegistry, observationRegistry,
                 modelProvider, encoder, decoder);

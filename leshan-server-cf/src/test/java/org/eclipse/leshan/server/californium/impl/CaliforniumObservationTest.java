@@ -15,6 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -24,6 +27,8 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.californium.CaliforniumObservationRegistry;
+import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
+import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.impl.ClientRegistryImpl;
 import org.eclipse.leshan.server.model.StandardModelProvider;
 import org.junit.Assert;
@@ -35,15 +40,16 @@ public class CaliforniumObservationTest {
     Request coapRequest;
     LwM2mPath target;
     CaliforniumObservationRegistry registry;
-    InMemoryLwM2mObservationStore store;
+    CaliforniumRegistrationStore store;
 
     private CaliforniumTestSupport support = new CaliforniumTestSupport();
 
     @Before
     public void setUp() throws Exception {
         support.givenASimpleClient();
-        store = new InMemoryLwM2mObservationStore();
-        registry = new CaliforniumObservationRegistryImpl(store, new ClientRegistryImpl(), new StandardModelProvider(),
+        store = new InMemoryRegistrationStore();
+        registry = new CaliforniumObservationRegistryImpl(store, new ClientRegistryImpl(store),
+                new StandardModelProvider(),
                 new DefaultLwM2mNodeDecoder());
     }
 
@@ -101,7 +107,7 @@ public class CaliforniumObservationTest {
     }
 
     @Test
-    public void cancel_by_observation() {
+    public void cancel_by_observation() throws UnknownHostException {
         // create some observations and add it to registry
         givenAnObservation(support.client.getRegistrationId(), new LwM2mPath(3, 0, 13));
         givenAnObservation(support.client.getRegistrationId(), new LwM2mPath(3, 0, 12));
@@ -123,6 +129,9 @@ public class CaliforniumObservationTest {
     }
 
     private Observation givenAnObservation(String registrationId, LwM2mPath target) {
+        if (store.getRegistration(registrationId) == null)
+            store.addRegistration(givenASimpleClient(registrationId));
+        
         coapRequest = Request.newGet();
         coapRequest.setToken(CaliforniumTestSupport.createToken());
         coapRequest.getOptions().addUriPath(String.valueOf(target.getObjectId()));
@@ -143,4 +152,15 @@ public class CaliforniumObservationTest {
         return observation;
     }
 
+    public Client givenASimpleClient(String registrationId) {
+        InetSocketAddress registrationAddress = InetSocketAddress.createUnresolved("localhost", 5683);
+        Client.Builder builder;
+        try {
+            builder = new Client.Builder(registrationId, registrationId + "_ep", InetAddress.getLocalHost(), 10000,
+                    registrationAddress);
+            return builder.build();
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
