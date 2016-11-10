@@ -487,13 +487,13 @@ public class LeshanServer implements LwM2mServer {
         return coapServer;
     }
 
-    public Endpoint getEndpoint(final String schema) throws NoSuchElementException {
+    public Endpoint getEndpoint(final String scheme) throws NoSuchElementException {
         for (Endpoint endpoint : serverEndpoints) {
-            if (schema.equals(endpoint.getUri().getScheme())) {
+            if (scheme.equals(endpoint.getUri().getScheme())) {
                 return endpoint;
             }
         }
-        throw new NoSuchElementException("no endpoint for '" + schema + "'");
+        throw new NoSuchElementException("no endpoint for '" + scheme + "'");
     }
 
     /**

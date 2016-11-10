@@ -62,7 +62,7 @@
 					<tbody>
 						<tr ng-repeat="log in coaplogs">
 							<td class="col-md-1">{{log.date}}</td>
-							<td class="col-md-1"><span class="glyphicon" ng-class="{'glyphicon-arrow-left' : !log.incoming, 'glyphicon-arrow-right' : log.incoming}" aria-hidden="true"></span>  {{log.type}}-{{log.code}}</td>
+							<td class="col-md-1"><span class="glyphicon" ng-class="{'glyphicon-arrow-left' : !log.incoming, 'glyphicon-arrow-right' : log.incoming}" aria-hidden="true"></span>  {{log.type}}{{log.code}}</td>
 							<td class="col-md-1">{{log.mId}}</td>
 							<td class="col-md-1">{{log.token}}</td>
 							<td class="col-md-4">{{log.options}}</td>
