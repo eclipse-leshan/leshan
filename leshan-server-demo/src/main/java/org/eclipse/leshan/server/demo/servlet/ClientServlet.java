@@ -17,6 +17,7 @@ package org.eclipse.leshan.server.demo.servlet;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -25,9 +26,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.californium.core.coap.CoAP;
+import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.request.CancelObserveRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
@@ -132,8 +138,8 @@ public class ClientServlet extends HttpServlet {
             if (client != null) {
                 // get content format
                 String contentFormatParam = req.getParameter(FORMAT_PARAM);
-                ContentFormat contentFormat = contentFormatParam != null
-                        ? ContentFormat.fromName(contentFormatParam.toUpperCase()) : null;
+                ContentFormat contentFormat = contentFormatParam != null ? ContentFormat.fromName(contentFormatParam
+                        .toUpperCase()) : null;
 
                 // create & process request
                 ReadRequest request = new ReadRequest(contentFormat, target);
@@ -178,8 +184,8 @@ public class ClientServlet extends HttpServlet {
             if (client != null) {
                 // get content format
                 String contentFormatParam = req.getParameter(FORMAT_PARAM);
-                ContentFormat contentFormat = contentFormatParam != null
-                        ? ContentFormat.fromName(contentFormatParam.toUpperCase()) : null;
+                ContentFormat contentFormat = contentFormatParam != null ? ContentFormat.fromName(contentFormatParam
+                        .toUpperCase()) : null;
 
                 // create & process request
                 LwM2mNode node = extractLwM2mNode(target, req);
@@ -221,8 +227,8 @@ public class ClientServlet extends HttpServlet {
                 if (client != null) {
                     // get content format
                     String contentFormatParam = req.getParameter(FORMAT_PARAM);
-                    ContentFormat contentFormat = contentFormatParam != null
-                            ? ContentFormat.fromName(contentFormatParam.toUpperCase()) : null;
+                    ContentFormat contentFormat = contentFormatParam != null ? ContentFormat
+                            .fromName(contentFormatParam.toUpperCase()) : null;
 
                     // create & process request
                     ObserveRequest request = new ObserveRequest(contentFormat, target);
@@ -285,8 +291,8 @@ public class ClientServlet extends HttpServlet {
                 if (client != null) {
                     // get content format
                     String contentFormatParam = req.getParameter(FORMAT_PARAM);
-                    ContentFormat contentFormat = contentFormatParam != null
-                            ? ContentFormat.fromName(contentFormatParam.toUpperCase()) : null;
+                    ContentFormat contentFormat = contentFormatParam != null ? ContentFormat
+                            .fromName(contentFormatParam.toUpperCase()) : null;
 
                     // create & process request
                     LwM2mNode node = extractLwM2mNode(target, req);
@@ -329,8 +335,37 @@ public class ClientServlet extends HttpServlet {
                 String target = StringUtils.substringsBetween(req.getPathInfo(), clientEndpoint, "/observe")[0];
                 Client client = server.getClientRegistry().get(clientEndpoint);
                 if (client != null) {
-                    server.getObservationRegistry().cancelObservations(client, target);
-                    resp.setStatus(HttpServletResponse.SC_OK);
+                    ReadResponse cResponse = null;
+                    if (CoAP.isTcpScheme(client.getRegistrationEndpointUri().getScheme())) {
+                        String contentFormatParam = req.getParameter(FORMAT_PARAM);
+                        ContentFormat contentFormat = contentFormatParam != null ? ContentFormat
+                                .fromName(contentFormatParam.toUpperCase()) : null;
+
+                        LwM2mPath lwPath = new LwM2mPath(target);
+                        Set<Observation> observations = server.getObservationRegistry().getObservations(client);
+                        for (Observation observation : observations) {
+                            if (lwPath.equals(observation.getPath())) {
+                                try {
+                                    CancelObserveRequest request = new CancelObserveRequest(contentFormat, observation);
+                                    ReadResponse currentResponse = server.send(client, request, TIMEOUT);
+                                    if (null == cResponse || ResponseCode.CONTENT != cResponse.getCode()) {
+                                        cResponse = currentResponse;
+                                    }
+                                } catch (RequestFailedException e) {
+                                    LOG.warn("Observe {} proactive canceled at {}: {}", target, client.getEndpoint(), e);
+                                }
+                            }
+                        }
+                    }
+                    if (null == cResponse) {
+                        LOG.info("Observe {} reactive canceled at {}", target, client.getEndpoint());
+                        server.getObservationRegistry().cancelObservations(client, target);
+                        resp.setStatus(HttpServletResponse.SC_OK);
+                    } else {
+                        LOG.info("Observe {} proactive canceled at {}: {}", target, client.getEndpoint(),
+                                cResponse.getCode());
+                        processDeviceResponse(req, resp, cResponse);
+                    }
                 } else {
                     resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
@@ -341,6 +376,10 @@ public class ClientServlet extends HttpServlet {
                 resp.getWriter().append(e.getMessage()).flush();
             } catch (ResourceAccessException | RequestFailedException e) {
                 LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
+                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                resp.getWriter().append(e.getMessage()).flush();
+            } catch (InterruptedException e) {
+                LOG.warn("Thread Interrupted", e);
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 resp.getWriter().append(e.getMessage()).flush();
             }

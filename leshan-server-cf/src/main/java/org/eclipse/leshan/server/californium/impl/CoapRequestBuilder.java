@@ -29,6 +29,7 @@ import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
+import org.eclipse.leshan.core.request.CancelObserveRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
@@ -137,6 +138,25 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         if (request.getFormat() != null)
             coapRequest.getOptions().setAccept(request.getFormat().getCode());
         coapRequest.setObserve();
+        setTarget(coapRequest, request.getPath());
+
+        // add context info to the observe request
+        Map<String, String> context = new HashMap<>();
+        context.put(CTX_REGID, registrationId);
+        context.put(CTX_LWM2M_PATH, request.getPath().toString());
+        for (Entry<String, String> ctx : request.getContext().entrySet()) {
+            context.put(ctx.getKey(), ctx.getValue());
+        }
+        coapRequest.setUserContext(context);
+    }
+
+    @Override
+    public void visit(CancelObserveRequest request) {
+        coapRequest = Request.newGet();
+        if (request.getFormat() != null)
+            coapRequest.getOptions().setAccept(request.getFormat().getCode());
+        coapRequest.setObserveCancel();
+        coapRequest.setToken(request.getId());
         setTarget(coapRequest, request.getPath());
 
         // add context info to the observe request

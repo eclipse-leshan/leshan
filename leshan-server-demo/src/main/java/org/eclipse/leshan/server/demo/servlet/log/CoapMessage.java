@@ -25,6 +25,7 @@ import org.apache.commons.io.Charsets;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.EmptyMessage;
+import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.core.coap.Option;
 import org.eclipse.californium.core.coap.OptionNumberRegistry;
 import org.eclipse.californium.core.coap.OptionSet;
@@ -45,7 +46,7 @@ public class CoapMessage {
     // Request method or Response code
     public String code;
 
-    public int mId;
+    public String mId;
 
     public String token;
 
@@ -56,13 +57,13 @@ public class CoapMessage {
     public CoapMessage(Request request, boolean incoming) {
         this(incoming, request.getType(), request.getMID(), request.getTokenString(), request.getOptions(), request
                 .getPayload());
-        this.code = request.getCode().toString();
+        this.code = "-" + request.getCode().toString();
     }
 
-    public CoapMessage(Response request, boolean incoming) {
-        this(incoming, request.getType(), request.getMID(), request.getTokenString(), request.getOptions(), request
-                .getPayload());
-        this.code = request.getCode().toString();
+    public CoapMessage(Response response, boolean incoming) {
+        this(incoming, response.getType(), response.getMID(), response.getTokenString(), response.getOptions(),
+                response.getPayload());
+        this.code = "-" + response.getCode().toString();
     }
 
     public CoapMessage(EmptyMessage request, boolean incoming) {
@@ -74,7 +75,7 @@ public class CoapMessage {
         this.incoming = incoming;
         this.timestamp = System.currentTimeMillis();
         this.type = type.toString();
-        this.mId = mId;
+        this.mId = mId == Message.NONE ? "" : Integer.toString(mId);
         this.token = token;
 
         if (options != null) {

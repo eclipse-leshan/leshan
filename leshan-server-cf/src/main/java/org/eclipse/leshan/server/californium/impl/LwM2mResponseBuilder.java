@@ -30,6 +30,7 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
+import org.eclipse.leshan.core.request.CancelObserveRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
@@ -143,8 +144,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             LinkObject[] links = null;
             if (MediaTypeRegistry.APPLICATION_LINK_FORMAT != coapResponse.getOptions().getContentFormat()) {
                 LOG.debug("Expected LWM2M Client [{}] to return application/link-format [{}] content but got [{}]",
-                        client.getEndpoint(), MediaTypeRegistry.APPLICATION_LINK_FORMAT,
-                        coapResponse.getOptions().getContentFormat());
+                        client.getEndpoint(), MediaTypeRegistry.APPLICATION_LINK_FORMAT, coapResponse.getOptions()
+                                .getContentFormat());
                 links = new LinkObject[] {}; // empty list
             } else {
                 links = LinkObject.parse(coapResponse.getPayload());
@@ -300,6 +301,29 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     }
 
     @Override
+    public void visit(final CancelObserveRequest request) {
+        switch (coapResponse.getCode()) {
+        // TODO now the spec say that NOTIFY should use 2.05 content so we should remove this.
+        case CONTENT:
+            LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse);
+            lwM2mresponse = new ReadResponse(ResponseCode.CONTENT, content, null, coapResponse);
+            break;
+        case CHANGED:
+        case BAD_REQUEST:
+        case UNAUTHORIZED:
+        case NOT_FOUND:
+        case METHOD_NOT_ALLOWED:
+        case NOT_ACCEPTABLE:
+        case INTERNAL_SERVER_ERROR:
+            lwM2mresponse = new ReadResponse(fromCoapCode(coapResponse.getCode().value), null,
+                    coapResponse.getPayloadString(), coapResponse);
+            break;
+        default:
+            handleUnexpectedResponseCode(client.getEndpoint(), coapRequest, coapResponse);
+        }
+    }
+
+    @Override
     public void visit(final BootstrapWriteRequest request) {
         switch (coapResponse.getCode()) {
         case CHANGED:
@@ -360,8 +384,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             // decode payload
             content = decoder.decode(coapResponse.getPayload(), contentFormat, path, model);
         } catch (final InvalidValueException e) {
-            final String msg = String.format("[%s] (%s:%s)", e.getMessage(), e.getPath().toString(),
-                    coapResponse.getCode().toString());
+            final String msg = String.format("[%s] (%s:%s)", e.getMessage(), e.getPath().toString(), coapResponse
+                    .getCode().toString());
             throw new ResourceAccessException(path.toString(), msg, e);
         }
         return content;

@@ -34,6 +34,7 @@ public class LeshanClientBuilder {
 
     private final String endpoint;
 
+    private boolean tcp;
     private InetSocketAddress localAddress;
     private InetSocketAddress localSecureAddress;
     private List<? extends LwM2mObjectEnabler> objectEnablers;
@@ -59,6 +60,11 @@ public class LeshanClientBuilder {
     public LeshanClientBuilder(String endpoint) {
         Validate.notEmpty(endpoint);
         this.endpoint = endpoint;
+    }
+
+    public LeshanClientBuilder useTcp() {
+        this.tcp = true;
+        return this;
     }
 
     /**
@@ -111,6 +117,10 @@ public class LeshanClientBuilder {
             initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", "model12345", "12345", "U"));
             objectEnablers = initializer.createMandatory();
         }
-        return new LeshanClient(endpoint, localAddress, localSecureAddress, objectEnablers);
+        if (tcp) {
+            return new LeshanClient(tcp, endpoint, localAddress, localSecureAddress, objectEnablers);
+        } else {
+            return new LeshanClient(endpoint, localAddress, localSecureAddress, objectEnablers);
+        }
     }
 }

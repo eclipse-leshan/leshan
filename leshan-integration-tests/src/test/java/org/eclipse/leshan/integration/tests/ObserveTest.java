@@ -18,7 +18,10 @@ package org.eclipse.leshan.integration.tests;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -82,7 +85,8 @@ public class ObserveTest {
         helper.server.getObservationRegistry().addListener(listener);
 
         // observe device timezone
-        ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(), new ObserveRequest(3, 0, 15));
+        ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(), new ObserveRequest(3, 0,
+                15));
         assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
         assertNotNull(observeResponse.getCoapResponse());
         assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
@@ -93,8 +97,8 @@ public class ObserveTest {
         assertEquals(helper.getCurrentRegistration().getRegistrationId(), observation.getRegistrationId());
 
         // write device timezone
-        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(3, 0, 15, "Europe/Paris"));
+        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(), new WriteRequest(3, 0, 15,
+                "Europe/Paris"));
 
         // verify result
         listener.waitForNotification(2000);
@@ -122,8 +126,8 @@ public class ObserveTest {
         assertEquals(helper.getCurrentRegistration().getRegistrationId(), observation.getRegistrationId());
 
         // write device timezone
-        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(3, 0, 15, "Europe/Paris"));
+        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(), new WriteRequest(3, 0, 15,
+                "Europe/Paris"));
 
         // verify result
         listener.waitForNotification(2000);
@@ -156,8 +160,8 @@ public class ObserveTest {
         assertEquals(helper.getCurrentRegistration().getRegistrationId(), observation.getRegistrationId());
 
         // write device timezone
-        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(3, 0, 15, "Europe/Paris"));
+        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(), new WriteRequest(3, 0, 15,
+                "Europe/Paris"));
 
         // verify result
         listener.waitForNotification(2000);
@@ -179,8 +183,8 @@ public class ObserveTest {
         helper.server.getObservationRegistry().addListener(listener);
 
         // observe device timezone
-        ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(),
-                new ObserveRequest(3, 0, 15));
+        ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(), new ObserveRequest(3, 0,
+                15));
         assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
         assertNotNull(observeResponse.getCoapResponse());
         assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
@@ -196,8 +200,8 @@ public class ObserveTest {
                 LwM2mSingleResource.newStringResource(15, "Paris"));
         List<TimestampedLwM2mNode> timestampedNodes = new ArrayList<>();
         timestampedNodes.add(mostRecentNode);
-        timestampedNodes.add(new TimestampedLwM2mNode(mostRecentNode.getTimestamp() - 2,
-                LwM2mSingleResource.newStringResource(15, "Londres")));
+        timestampedNodes.add(new TimestampedLwM2mNode(mostRecentNode.getTimestamp() - 2, LwM2mSingleResource
+                .newStringResource(15, "Londres")));
         byte[] payload = LwM2mNodeJsonEncoder.encodeTimestampedData(timestampedNodes, new LwM2mPath("/3/0/15"),
                 new LwM2mModel(helper.createObjectModels()));
         Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
@@ -219,8 +223,7 @@ public class ObserveTest {
         helper.server.getObservationRegistry().addListener(listener);
 
         // observe device timezone
-        ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(),
-                new ObserveRequest(3, 0));
+        ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(), new ObserveRequest(3, 0));
         assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
         assertNotNull(observeResponse.getCoapResponse());
         assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
@@ -236,8 +239,8 @@ public class ObserveTest {
                 new LwM2mObjectInstance(0, LwM2mSingleResource.newStringResource(15, "Paris")));
         List<TimestampedLwM2mNode> timestampedNodes = new ArrayList<>();
         timestampedNodes.add(mostRecentNode);
-        timestampedNodes.add(new TimestampedLwM2mNode(mostRecentNode.getTimestamp() - 2,
-                new LwM2mObjectInstance(0, LwM2mSingleResource.newStringResource(15, "Londres"))));
+        timestampedNodes.add(new TimestampedLwM2mNode(mostRecentNode.getTimestamp() - 2, new LwM2mObjectInstance(0,
+                LwM2mSingleResource.newStringResource(15, "Londres"))));
         byte[] payload = LwM2mNodeJsonEncoder.encodeTimestampedData(timestampedNodes, new LwM2mPath("/3/0"),
                 new LwM2mModel(helper.createObjectModels()));
         Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
@@ -259,8 +262,7 @@ public class ObserveTest {
         helper.server.getObservationRegistry().addListener(listener);
 
         // observe device timezone
-        ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(),
-                new ObserveRequest(3));
+        ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(), new ObserveRequest(3));
         assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
         assertNotNull(observeResponse.getCoapResponse());
         assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
@@ -272,12 +274,12 @@ public class ObserveTest {
 
         // *** HACK send time-stamped notification as Leshan client does not support it *** //
         // create time-stamped nodes
-        TimestampedLwM2mNode mostRecentNode = new TimestampedLwM2mNode(System.currentTimeMillis(),
-                new LwM2mObject(3, new LwM2mObjectInstance(0, LwM2mSingleResource.newStringResource(15, "Paris"))));
+        TimestampedLwM2mNode mostRecentNode = new TimestampedLwM2mNode(System.currentTimeMillis(), new LwM2mObject(3,
+                new LwM2mObjectInstance(0, LwM2mSingleResource.newStringResource(15, "Paris"))));
         List<TimestampedLwM2mNode> timestampedNodes = new ArrayList<>();
         timestampedNodes.add(mostRecentNode);
-        timestampedNodes.add(new TimestampedLwM2mNode(mostRecentNode.getTimestamp() - 2,
-                new LwM2mObject(3, new LwM2mObjectInstance(0, LwM2mSingleResource.newStringResource(15, "Londres")))));
+        timestampedNodes.add(new TimestampedLwM2mNode(mostRecentNode.getTimestamp() - 2, new LwM2mObject(3,
+                new LwM2mObjectInstance(0, LwM2mSingleResource.newStringResource(15, "Londres")))));
         byte[] payload = LwM2mNodeJsonEncoder.encodeTimestampedData(timestampedNodes, new LwM2mPath("/3"),
                 new LwM2mModel(helper.createObjectModels()));
 
@@ -305,9 +307,8 @@ public class ObserveTest {
             response.setPayload(payload);
             response.setMID(firstCoapResponse.getMID() + 1);
             response.setToken(firstCoapResponse.getToken());
-            OptionSet options = new OptionSet()
-                    .setContentFormat(ContentFormat.JSON_CODE)
-                    .setObserve(firstCoapResponse.getOptions().getObserve() + 1);
+            OptionSet options = new OptionSet().setContentFormat(ContentFormat.JSON_CODE).setObserve(
+                    firstCoapResponse.getOptions().getObserve() + 1);
             response.setOptions(options);
 
             // serialize response
@@ -315,8 +316,8 @@ public class ObserveTest {
             RawData data = serializer.serializeResponse(response);
 
             // send it
-            clientSocket.send(new DatagramPacket(data.bytes, data.bytes.length,
-                    helper.server.getNonSecureAddress().getAddress(), helper.server.getNonSecureAddress().getPort()));
+            clientSocket.send(new DatagramPacket(data.bytes, data.bytes.length, helper.server.getEndpoint("coap")
+                    .getAddress()));
         } catch (IOException e) {
             throw new AssertionError("Error while timestamped notification", e);
         }

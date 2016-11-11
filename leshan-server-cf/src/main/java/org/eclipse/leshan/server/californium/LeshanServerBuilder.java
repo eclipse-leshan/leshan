@@ -52,6 +52,7 @@ public class LeshanServerBuilder {
     private InetSocketAddress localAddress;
     private InetSocketAddress localSecureAddress;
     private Set<Endpoint> endpoints;
+    private Set<String> endpointUris;
 
     private LwM2mNodeEncoder encoder;
 
@@ -101,6 +102,12 @@ public class LeshanServerBuilder {
         return this;
     }
 
+    public LeshanServerBuilder setEndpointUris(Set<String> endpointUris) {
+        Validate.notEmpty(endpointUris);
+        this.endpointUris = new HashSet<>(endpointUris);
+        return this;
+    }
+
     public LeshanServerBuilder setClientRegistry(ClientRegistry clientRegistry) {
         this.clientRegistry = clientRegistry;
         return this;
@@ -147,15 +154,19 @@ public class LeshanServerBuilder {
             observationRegistry = new CaliforniumObservationRegistryImpl(new InMemoryLwM2mObservationStore(),
                     clientRegistry, modelProvider, decoder);
 
-        if (endpoints == null) {
+        if (endpoints != null) {
+            return new LeshanServer(endpoints, clientRegistry, securityRegistry, observationRegistry, modelProvider,
+                    encoder, decoder);
+        } else if (endpointUris != null) {
+            return new LeshanServer(clientRegistry, securityRegistry, observationRegistry, modelProvider, encoder,
+                    decoder, endpointUris);
+        } else {
             if (localAddress == null)
                 localAddress = new InetSocketAddress(CoAP.DEFAULT_COAP_PORT);
             if (localSecureAddress == null)
                 localSecureAddress = new InetSocketAddress(CoAP.DEFAULT_COAP_SECURE_PORT);
-            return new LeshanServer(localAddress, localSecureAddress, clientRegistry, securityRegistry, observationRegistry,
-                    modelProvider, encoder, decoder);
-        } else {
-            return new LeshanServer(endpoints, clientRegistry, securityRegistry, observationRegistry, modelProvider, encoder, decoder);
+            return new LeshanServer(localAddress, localSecureAddress, clientRegistry, securityRegistry,
+                    observationRegistry, modelProvider, encoder, decoder);
         }
     }
 }

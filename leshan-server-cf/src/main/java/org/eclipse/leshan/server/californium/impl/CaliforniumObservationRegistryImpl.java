@@ -65,8 +65,7 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
     private final ClientRegistry clientRegistry;
     private final LwM2mModelProvider modelProvider;
     private final LwM2mNodeDecoder decoder;
-    private Endpoint secureEndpoint;
-    private Endpoint nonSecureEndpoint;
+    private Set<Endpoint> endpoints;
 
     private final List<ObservationRegistryListener> listeners = new CopyOnWriteArrayList<>();
 
@@ -104,13 +103,8 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
     }
 
     @Override
-    public void setNonSecureEndpoint(Endpoint endpoint) {
-        nonSecureEndpoint = endpoint;
-    }
-
-    @Override
-    public void setSecureEndpoint(Endpoint endpoint) {
-        secureEndpoint = endpoint;
+    public void setEndpoints(Set<Endpoint> endpoints) {
+        this.endpoints = endpoints;
     }
 
     @Override
@@ -127,11 +121,7 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
 
         for (org.eclipse.californium.core.observe.Observation cfObs : observations) {
             Observation observation = build(cfObs);
-            if (secureEndpoint != null)
-                secureEndpoint.cancelObservation(observation.getId());
-            if (nonSecureEndpoint != null)
-                nonSecureEndpoint.cancelObservation(observation.getId());
-
+            cancelEndpointsObservation(observation);
             for (ObservationRegistryListener listener : listeners) {
                 listener.cancelled(observation);
             }
@@ -156,11 +146,7 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
     public void cancelObservation(Observation observation) {
         if (observation == null)
             return;
-
-        if (secureEndpoint != null)
-            secureEndpoint.cancelObservation(observation.getId());
-        if (nonSecureEndpoint != null)
-            nonSecureEndpoint.cancelObservation(observation.getId());
+        cancelEndpointsObservation(observation);
         observationStore.remove(observation.getId());
 
         for (ObservationRegistryListener listener : listeners) {
@@ -171,6 +157,15 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
     @Override
     public Set<Observation> getObservations(Client client) {
         return getObservations(client.getRegistrationId());
+    }
+
+    private void cancelEndpointsObservation(Observation observation) {
+        if (null == endpoints || null == observation)
+            return;
+        byte[] id = observation.getId();
+        for (Endpoint endpoint : endpoints) {
+            endpoint.cancelObservation(id);
+        }
     }
 
     private Set<Observation> getObservations(String registrationId) {
