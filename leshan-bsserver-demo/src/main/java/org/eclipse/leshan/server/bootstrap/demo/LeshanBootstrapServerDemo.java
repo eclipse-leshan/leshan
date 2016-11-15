@@ -78,7 +78,7 @@ public class LeshanBootstrapServerDemo {
 
         // Abort if unexpected options
         if (cl.getArgs().length > 0) {
-            System.out.println("Unexpected option or arguments : " + cl.getArgList());
+            System.err.println("Unexpected option or arguments : " + cl.getArgList());
             formatter.printHelp(USAGE, null, options, FOOTER);
             return;
         }
@@ -136,7 +136,7 @@ public class LeshanBootstrapServerDemo {
         try {
             createAndStartServer(webPort, localAddress, localPort, secureLocalAddress, secureLocalPort, configFilename);
         } catch (BindException e) {
-            System.out.println(
+            System.err.println(
                     String.format("Web port %s is alreay used, you could change it using 'webport' option.", webPort));
             formatter.printHelp(USAGE, null, options, FOOTER);
         } catch (Exception e) {

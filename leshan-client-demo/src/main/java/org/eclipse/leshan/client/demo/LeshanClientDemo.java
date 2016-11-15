@@ -18,14 +18,8 @@
 
 package org.eclipse.leshan.client.demo;
 
-import static org.eclipse.leshan.LwM2mId.DEVICE;
-import static org.eclipse.leshan.LwM2mId.LOCATION;
-import static org.eclipse.leshan.LwM2mId.SECURITY;
-import static org.eclipse.leshan.LwM2mId.SERVER;
-import static org.eclipse.leshan.client.object.Security.noSec;
-import static org.eclipse.leshan.client.object.Security.noSecBootstap;
-import static org.eclipse.leshan.client.object.Security.psk;
-import static org.eclipse.leshan.client.object.Security.pskBootstrap;
+import static org.eclipse.leshan.LwM2mId.*;
+import static org.eclipse.leshan.client.object.Security.*;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -100,14 +94,14 @@ public class LeshanClientDemo {
 
         // Abort if unexpected options
         if (cl.getArgs().length > 0) {
-            System.out.println("Unexpected option or arguments : " + cl.getArgList());
+            System.err.println("Unexpected option or arguments : " + cl.getArgList());
             formatter.printHelp(USAGE, options);
             return;
         }
 
         // Abort if we have not identity and key for psk.
         if ((cl.hasOption("i") && !cl.hasOption("p")) || !cl.hasOption("i") && cl.hasOption("p")) {
-            System.out.println("You should precise identity and Pre-Shared-Key if you want to connect in PSK");
+            System.err.println("You should precise identity and Pre-Shared-Key if you want to connect in PSK");
             formatter.printHelp(USAGE, options);
             return;
         }
@@ -175,14 +169,14 @@ public class LeshanClientDemo {
                 String pos = cl.getOptionValue("pos");
                 int colon = pos.indexOf(':');
                 if (colon == -1 || colon == 0 || colon == pos.length() - 1) {
-                    System.out.println("Position must be a set of two floats separated by a colon, e.g. 48.131:11.459");
+                    System.err.println("Position must be a set of two floats separated by a colon, e.g. 48.131:11.459");
                     formatter.printHelp(USAGE, options);
                     return;
                 }
                 latitude = Float.valueOf(pos.substring(0, colon));
                 longitude = Float.valueOf(pos.substring(colon + 1));
             } catch (NumberFormatException e) {
-                System.out.println("Position must be a set of two floats separated by a colon, e.g. 48.131:11.459");
+                System.err.println("Position must be a set of two floats separated by a colon, e.g. 48.131:11.459");
                 formatter.printHelp(USAGE, options);
                 return;
             }
@@ -191,7 +185,7 @@ public class LeshanClientDemo {
             try {
                 scaleFactor = Float.valueOf(cl.getOptionValue("sf"));
             } catch (NumberFormatException e) {
-                System.out.println("Scale factor must be a float, e.g. 1.0 or 0.01");
+                System.err.println("Scale factor must be a float, e.g. 1.0 or 0.01");
                 formatter.printHelp(USAGE, options);
                 return;
             }
