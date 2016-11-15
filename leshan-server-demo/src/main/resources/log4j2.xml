@@ -21,7 +21,7 @@ Contributors:
 
   <Appenders>
     <Appender type="Console" name="STDOUT">
-      <Layout type="PatternLayout" pattern="[%d %p %C{0}] %m%n"/>
+      <Layout type="PatternLayout" pattern="%d %p %C{0} - %m%n"/>
     </Appender>
   </Appenders>
  
