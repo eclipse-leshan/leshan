@@ -15,8 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.cluster;
 
-import java.net.BindException;
 import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
@@ -30,30 +30,32 @@ import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StandardModelProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.util.Pool;
 
+/**
+ * The main entry point for the Leshan LWM2M cluster server node.
+ * 
+ * Will start a LWM2M server which would be part of a large cluster group. This group of cluster node will share state
+ * and communicate using Redis. So they all need too be connected to the same redis server.
+ */
 public class LeshanClusterServer {
-    private static final Logger LOG = LoggerFactory.getLogger(LeshanClusterServer.class);
 
     private final static String USAGE = "java -jar leshan-server-cluster.jar [OPTION]";
-    private final static String FOOTER = "All options could be passed using environment variables.(using long option name in uppercase)";
+    private final static String FOOTER = "Question? Bug report? Eclipse Leshan : https://eclipse.org/leshan";
 
     public static void main(String[] args) {
         // Define options for command line tools
         Options options = new Options();
 
-        options.addOption("h", "help", false, "Display help information.");
-        options.addOption("n", "instanceID", true, "Set the unique identifier of this instance in the cluster.");
-        options.addOption("lh", "coaphost", true, "Set the local CoAP address.\n  Default: any local address.");
-        options.addOption("lp", "coapport", true, "Set the local CoAP port.\n  Default: 5683.");
-        options.addOption("slh", "coapshost", true, "Set the local secure CoAP address.\nDefault: any local address.");
-        options.addOption("slp", "coapsport", true, "Set the local secure CoAP port.\nDefault: 5684.");
-        options.addOption("wp", "webport", true, "Set the HTTP port for web server.\nDefault: 8080.");
+        options.addOption("h", "help", false, "Display this help message.");
+        options.addOption("n", "instanceID", true, "Sets the unique identifier of this instance in the cluster.");
+        options.addOption("l", "coapaddressport", true,
+                "Sets the local CoAP bind address and port in form [IP]:[PORT].\n  Default: 0.0.0.0:5683.");
+        options.addOption("sl", "coapsaddressport", true,
+                "Sets the local secure CoAP bind address and port, same format.\n  Default: 0.0.0.0:5684.");
         options.addOption("r", "redis", true,
                 "Set the location of the Redis database. The URL is in the format of: 'redis://:password@hostname:port/db_number'\n\nDefault: 'redis://localhost:6379'.");
         HelpFormatter formatter = new HelpFormatter();
@@ -77,59 +79,70 @@ public class LeshanClusterServer {
 
         // Abort if unexpected options
         if (cl.getArgs().length > 0) {
-            System.out.println("Unexpected option or arguments : " + cl.getArgList());
+            System.err.println("Unexpected option or arguments : " + cl.getArgList());
             formatter.printHelp(USAGE, null, options, FOOTER);
             return;
         }
 
         // get cluster instance Id
-        String clusterInstanceId = System.getenv("INSTANCEID");
+        String clusterInstanceId;
         if (cl.hasOption("n")) {
             clusterInstanceId = cl.getOptionValue("n");
-        }
-        if (clusterInstanceId == null) {
-            System.out.println("InstanceId is mandatory !");
+        } else {
+            System.err.println("InstanceId is mandatory !");
             formatter.printHelp(USAGE, null, options, FOOTER);
             return;
         }
 
-        // get local address
-        String localAddress = System.getenv("COAPHOST");
-        if (cl.hasOption("lh")) {
-            localAddress = cl.getOptionValue("lh");
+        // get local address/port
+        String localAddressPort = "0.0.0.0:" + LeshanServerBuilder.PORT;
+        if (cl.hasOption("l")) {
+            localAddressPort = cl.getOptionValue("l");
         }
-        String localPortOption = System.getenv("COAPPORT");
-        if (cl.hasOption("lp")) {
-            localPortOption = cl.getOptionValue("lp");
+
+        // parse
+        int idx = localAddressPort.lastIndexOf(":");
+        if (idx < 0) {
+            System.err.println("Malformed address:port configuration: '" + localAddressPort + "'");
+            formatter.printHelp(USAGE, null, options, FOOTER);
+            return;
         }
-        int localPort = LeshanServerBuilder.PORT;
-        if (localPortOption != null) {
-            localPort = Integer.parseInt(localPortOption);
+
+        int localPort;
+        try {
+            localPort = Integer.valueOf(localAddressPort.substring(idx + 1));
+        } catch (NumberFormatException ex) {
+            System.err
+                    .println("Malformed address:port configuration: '" + localAddressPort + "', port is not a number");
+            formatter.printHelp(USAGE, null, options, FOOTER);
+            return;
         }
+
+        String localAddress = localAddressPort.substring(0, idx);
 
         // get secure local address
-        String secureLocalAddress = System.getenv("COAPSHOST");
-        if (cl.hasOption("slh")) {
-            secureLocalAddress = cl.getOptionValue("slh");
+        String secureLocalAddressPort = "0.0.0.0:" + LeshanServerBuilder.PORT_DTLS;
+        if (cl.hasOption("sl")) {
+            localAddressPort = cl.getOptionValue("sl");
         }
-        String secureLocalPortOption = System.getenv("COAPSPORT");
-        if (cl.hasOption("slp")) {
-            secureLocalPortOption = cl.getOptionValue("slp");
-        }
-        int secureLocalPort = LeshanServerBuilder.PORT_DTLS;
-        if (secureLocalPortOption != null) {
-            secureLocalPort = Integer.parseInt(secureLocalPortOption);
+        // parse
+        idx = secureLocalAddressPort.lastIndexOf(":");
+        if (idx < 0) {
+            System.err.println("Malformed address:port configuration: '" + secureLocalAddressPort + "'");
+            formatter.printHelp(USAGE, null, options, FOOTER);
+            return;
         }
 
-        // get http port
-        String webPortOption = System.getenv("WEBPORT");
-        if (cl.hasOption("wp")) {
-            webPortOption = cl.getOptionValue("wp");
+        int secureLocalPort;
+        try {
+            secureLocalPort = Integer.valueOf(secureLocalAddressPort.substring(idx + 1));
+        } catch (NumberFormatException ex) {
+            System.err.println(
+                    "Malformed address:port configuration: '" + secureLocalAddressPort + "', port is not a number");
+            formatter.printHelp(USAGE, null, options, FOOTER);
+            return;
         }
-        int webPort = 8080;
-        if (webPortOption != null) {
-            webPort = Integer.parseInt(webPortOption);
-        }
+        String secureLocalAddress = secureLocalAddressPort.substring(0, idx);
 
         // get the Redis hostname:port
         String redisUrl = "redis://localhost:6379";
@@ -137,23 +150,22 @@ public class LeshanClusterServer {
             redisUrl = cl.getOptionValue("r");
         }
 
+        URI redisUri;
         try {
-            createAndStartServer(clusterInstanceId, webPort, localAddress, localPort, secureLocalAddress,
-                    secureLocalPort, redisUrl);
-        } catch (BindException e) {
-            System.out.println(
-                    String.format("Web port %s is alreay used, you could change it using 'webport' option.", webPort));
+            redisUri = new URI(redisUrl);
+        } catch (URISyntaxException e) {
+            System.err.println("Malformed redis URL: '" + redisUrl + "'");
             formatter.printHelp(USAGE, null, options, FOOTER);
-        } catch (Exception e) {
-            LOG.error("Jetty stopped with unexcepted error ...", e);
+            return;
         }
+        createAndStartServer(clusterInstanceId, localAddress, localPort, secureLocalAddress, secureLocalPort, redisUri);
     }
 
-    public static void createAndStartServer(String clusterInstanceId, int webPort, String localAddress, int localPort,
-            String secureLocalAddress, int secureLocalPort, String redisUrl) throws Exception {
+    public static void createAndStartServer(String clusterInstanceId, String localAddress, int localPort,
+            String secureLocalAddress, int secureLocalPort, URI redisUri) {
         // Create Redis connector.
         // TODO: support sentinel pool and make pool configurable
-        Pool<Jedis> jedis = new JedisPool(new URI(redisUrl));
+        Pool<Jedis> jedis = new JedisPool(redisUri);
 
         // Prepare LWM2M server.
         LeshanServerBuilder builder = new LeshanServerBuilder();
@@ -184,7 +196,7 @@ public class LeshanClusterServer {
         clientRegistry.addListener(tokenHandler);
         clientRegistry.addListener(new RedisRegistrationEventPublisher(jedis));
 
-        // Start Jetty & Leshan
+        // Start Leshan
         lwServer.start();
     }
 }
