@@ -143,7 +143,7 @@ public class RedisRequestResponseHandler {
             public void run() {
                 try {
                     sendResponse(ticket, response);
-                } catch (Throwable t) {
+                } catch (RuntimeException t) {
                     LOG.error("Unable to send response.", t);
                     sendError(ticket,
                             String.format("Expected error while sending LWM2M response.(%s)", t.getMessage()));
