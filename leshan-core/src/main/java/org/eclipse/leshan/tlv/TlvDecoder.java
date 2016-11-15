@@ -191,10 +191,8 @@ public class TlvDecoder {
     public static ObjectLink decodeObjlnk(byte[] value) throws TlvException {
         ByteBuffer bff = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN);
         bff.put(value);
-        int val1 = bff.getShort(0);
-        if (val1 < 0) val1 = 65536 + val1;
-        int val2 = bff.getShort(2);
-        if (val2 < 0) val2 = 65536 + val2;
+        int val1 = bff.getShort(0) & 0xFFFF;
+        int val2 = bff.getShort(2) & 0xFFFF;
         return new ObjectLink(val1, val2);
     }
 
