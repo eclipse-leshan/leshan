@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -38,13 +41,16 @@ import org.eclipse.californium.elements.CorrelationContext;
 import org.eclipse.californium.elements.RawData;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.server.Startable;
+import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.registration.ExpirationListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class InMemoryRegistrationStore implements CaliforniumRegistrationStore {
+public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, Startable, Stoppable {
     private final Logger LOG = LoggerFactory.getLogger(InMemoryRegistrationStore.class);
 
     private final Map<String /* end-point */, Client> clientsByEp = new ConcurrentHashMap<>();
@@ -54,6 +60,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore {
     private Map<String, List<KeyToken>> byRegId = new HashMap<>();
     /* lock for udpate */
     private ReadWriteLock lock = new ReentrantReadWriteLock();
+    private ExpirationListener expirationListener;
 
     @Override
     public Client addRegistration(Client registration) {
@@ -321,6 +328,56 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore {
             throw new IllegalStateException("missing lwm2m path info in the request context");
         if (getRegistration(observation.getRequest().getUserContext().get(CoapRequestBuilder.CTX_REGID)) == null) {
             throw new IllegalStateException("no registration for this Id");
+        }
+    }
+
+    @Override
+    public void setExpirationListener(ExpirationListener listener) {
+        this.expirationListener = listener;
+    }
+
+    /**
+     * start the registration store, will start regular cleanup of dead registrations.
+     */
+    @Override
+    public void start() {
+        // every 2 seconds clean the registration list
+        // TODO re-consider clean-up interval: wouldn't 5 minutes do as well?
+        schedExecutor.scheduleAtFixedRate(new Cleaner(), 2, 2, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Stop the underlying cleanup of the registrations.
+     */
+    @Override
+    public void stop() {
+        schedExecutor.shutdownNow();
+        try {
+            schedExecutor.awaitTermination(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            LOG.warn("Clean up registration thread was interrupted.", e);
+        }
+    }
+
+    private final ScheduledExecutorService schedExecutor = Executors.newScheduledThreadPool(1);
+
+    private class Cleaner implements Runnable {
+
+        @Override
+        public void run() {
+            try {
+                for (Client client : getAllRegistration()) {
+                    synchronized (client) {
+                        if (!client.isAlive()) {
+                            // force de-registration
+                            Client removedRegistration = removeRegistration(client.getRegistrationId());
+                            expirationListener.registrationExpired(removedRegistration, new ArrayList<Observation>());
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                LOG.warn("Unexcepted Exception while registration cleaning", e);
+            }
         }
     }
 }

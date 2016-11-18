@@ -48,4 +48,6 @@ public interface RegistrationStore {
     Collection<Observation> getObservations(String registrationId);
 
     Collection<Observation> removeObservations(String registrationId);
+
+    void setExpirationListener(ExpirationListener listener);
 }

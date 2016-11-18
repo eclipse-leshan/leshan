@@ -19,16 +19,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
+import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.Startable;
 import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.client.ClientRegistryListener;
 import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.registration.ExpirationListener;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
@@ -37,7 +36,7 @@ import org.slf4j.LoggerFactory;
 /**
  * In memory client registry
  */
-public class ClientRegistryImpl implements ClientRegistry, Startable, Stoppable {
+public class ClientRegistryImpl implements ClientRegistry, Startable, Stoppable, ExpirationListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(ClientRegistryImpl.class);
 
@@ -47,6 +46,7 @@ public class ClientRegistryImpl implements ClientRegistry, Startable, Stoppable 
 
     public ClientRegistryImpl(RegistrationStore store) {
         this.store = store;
+        store.setExpirationListener(this);
     }
 
     @Override
@@ -128,9 +128,8 @@ public class ClientRegistryImpl implements ClientRegistry, Startable, Stoppable 
      */
     @Override
     public void start() {
-        // every 2 seconds clean the registration list
-        // TODO re-consider clean-up interval: wouldn't 5 minutes do as well?
-        schedExecutor.scheduleAtFixedRate(new Cleaner(), 2, 2, TimeUnit.SECONDS);
+        if (store instanceof Startable)
+            ((Startable) store).start();
     }
 
     /**
@@ -138,32 +137,14 @@ public class ClientRegistryImpl implements ClientRegistry, Startable, Stoppable 
      */
     @Override
     public void stop() {
-        schedExecutor.shutdownNow();
-        try {
-            schedExecutor.awaitTermination(5, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            LOG.warn("Clean up registration thread was interrupted.", e);
-        }
+        if (store instanceof Stoppable)
+            ((Stoppable) store).stop();
     }
 
-    private final ScheduledExecutorService schedExecutor = Executors.newScheduledThreadPool(1);
-
-    private class Cleaner implements Runnable {
-
-        @Override
-        public void run() {
-            try {
-                for (Client client : store.getAllRegistration()) {
-                    synchronized (client) {
-                        if (!client.isAlive()) {
-                            // force de-registration
-                            deregisterClient(client.getRegistrationId());
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                LOG.warn("Unexcepted Exception while registration cleaning", e);
-            }
+    @Override
+    public void registrationExpired(Client registration, Collection<Observation> observation) {
+        for (ClientRegistryListener l : listeners) {
+            l.unregistered(registration);
         }
     }
 }

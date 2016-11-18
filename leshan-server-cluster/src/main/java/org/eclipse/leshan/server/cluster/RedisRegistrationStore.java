@@ -27,17 +27,23 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.californium.elements.CorrelationContext;
 import org.eclipse.californium.scandium.util.ByteArrayUtils;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.server.Startable;
+import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
 import org.eclipse.leshan.server.californium.impl.CoapRequestBuilder;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientUpdate;
 import org.eclipse.leshan.server.cluster.serialization.ClientSerDes;
 import org.eclipse.leshan.server.cluster.serialization.ObservationSerDes;
+import org.eclipse.leshan.server.registration.ExpirationListener;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +53,7 @@ import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.util.Pool;
 
-public class RedisRegistrationStore implements CaliforniumRegistrationStore {
+public class RedisRegistrationStore implements CaliforniumRegistrationStore, Startable, Stoppable {
 
     private static final Logger LOG = LoggerFactory.getLogger(RedisClientRegistry.class);
 
@@ -60,6 +66,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore {
     private static final String OBS_REG = "OBS#REG#";
 
     private final Pool<Jedis> pool;
+    private ExpirationListener expirationListener;
 
     public RedisRegistrationStore(Pool<Jedis> p) {
         this.pool = p;
@@ -478,4 +485,58 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore {
         return registration;
     }
 
+    /**
+     * Start regular cleanup of dead registrations.
+     */
+    @Override
+    public void start() {
+        // clean the registration list every minute
+        schedExecutor.scheduleAtFixedRate(new Cleaner(), 1, 1, TimeUnit.MINUTES);
+    }
+
+    /**
+     * Stop the underlying cleanup of the registrations.
+     */
+    @Override
+    public void stop() {
+        schedExecutor.shutdownNow();
+        try {
+            schedExecutor.awaitTermination(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            LOG.warn("Clean up registration thread was interrupted.", e);
+        }
+    }
+
+    private final ScheduledExecutorService schedExecutor = Executors.newScheduledThreadPool(1);
+
+    private class Cleaner implements Runnable {
+
+        @Override
+        public void run() {
+
+            try (Jedis j = pool.getResource()) {
+                ScanParams params = new ScanParams().match(EP_CLIENT + "*").count(100);
+                String cursor = "0";
+                do {
+                    // TODO we probably need a lock here
+                    ScanResult<byte[]> res = j.scan(cursor.getBytes(), params);
+                    for (byte[] key : res.getResult()) {
+                        Client c = deserializeReg(j.get(key));
+                        if (!c.isAlive()) {
+                            deleteClient(j, c);
+                            expirationListener.registrationExpired(c, new ArrayList<Observation>());
+                        }
+                    }
+                    cursor = res.getStringCursor();
+                } while (!"0".equals(cursor));
+            } catch (Exception e) {
+                LOG.warn("Unexcepted Exception while registration cleaning", e);
+            }
+        }
+    }
+
+    @Override
+    public void setExpirationListener(ExpirationListener listener) {
+        expirationListener = listener;
+    }
 }
