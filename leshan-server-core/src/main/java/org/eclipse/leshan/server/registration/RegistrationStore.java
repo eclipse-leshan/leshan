@@ -24,7 +24,7 @@ import org.eclipse.leshan.server.client.ClientUpdate;
 
 public interface RegistrationStore {
 
-    Client addRegistration(Client registration);
+    Deregistration addRegistration(Client registration);
 
     Client updateRegistration(ClientUpdate update);
 
@@ -37,7 +37,7 @@ public interface RegistrationStore {
     // TODO should be removed
     Collection<Client> getAllRegistration();
 
-    Client removeRegistration(String registrationId);
+    Deregistration removeRegistration(String registrationId);
 
     Observation addObservation(String registrationId, Observation observation);
 

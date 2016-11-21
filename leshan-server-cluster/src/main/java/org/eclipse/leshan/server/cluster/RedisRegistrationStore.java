@@ -43,6 +43,7 @@ import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientUpdate;
 import org.eclipse.leshan.server.cluster.serialization.ClientSerDes;
 import org.eclipse.leshan.server.cluster.serialization.ObservationSerDes;
+import org.eclipse.leshan.server.registration.Deregistration;
 import org.eclipse.leshan.server.registration.ExpirationListener;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
@@ -73,7 +74,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     }
 
     @Override
-    public Client addRegistration(Client registration) {
+    public Deregistration addRegistration(Client registration) {
         try (Jedis j = pool.getResource()) {
             byte[] lockValue = null;
             byte[] lockKey = toLockKey(registration.getEndpoint());
@@ -90,7 +91,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
 
                 if (old != null) {
                     Client oldRegistration = deserializeReg(old);
-                    return oldRegistration;
+                    return new Deregistration(oldRegistration, null);
                 }
 
                 return null;
@@ -195,7 +196,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     }
 
     @Override
-    public Client removeRegistration(String registrationId) {
+    public Deregistration removeRegistration(String registrationId) {
         try (Jedis j = pool.getResource()) {
 
             byte[] regKey = toRegKey(registrationId);
@@ -214,7 +215,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
             Client r = deserializeReg(data);
             deleteClient(j, r);
 
-            return r;
+            return new Deregistration(r, null);
         }
     }
 

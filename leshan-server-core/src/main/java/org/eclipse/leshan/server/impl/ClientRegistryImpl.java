@@ -27,6 +27,7 @@ import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.client.ClientRegistryListener;
 import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.registration.Deregistration;
 import org.eclipse.leshan.server.registration.ExpirationListener;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.util.Validate;
@@ -75,10 +76,10 @@ public class ClientRegistryImpl implements ClientRegistry, Startable, Stoppable,
 
         LOG.debug("Registering new client: {}", client);
 
-        Client previous = store.addRegistration(client);
+        Deregistration previous = store.addRegistration(client);
         if (previous != null) {
             for (ClientRegistryListener l : listeners) {
-                l.unregistered(previous);
+                l.unregistered(previous.getRegistration());
             }
         }
         for (ClientRegistryListener l : listeners) {
@@ -110,12 +111,12 @@ public class ClientRegistryImpl implements ClientRegistry, Startable, Stoppable,
 
         LOG.debug("Deregistering client with registrationId: {}", registrationId);
 
-        Client unregistered = store.removeRegistration(registrationId);
+        Deregistration unregistered = store.removeRegistration(registrationId);
         for (ClientRegistryListener l : listeners) {
-            l.unregistered(unregistered);
+            l.unregistered(unregistered.getRegistration());
         }
         LOG.debug("Deregistered client: {}", unregistered);
-        return unregistered;
+        return unregistered.getRegistration();
     }
 
     @Override

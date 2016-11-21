@@ -46,6 +46,7 @@ import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.registration.Deregistration;
 import org.eclipse.leshan.server.registration.ExpirationListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,11 +64,13 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     private ExpirationListener expirationListener;
 
     @Override
-    public Client addRegistration(Client registration) {
+    public Deregistration addRegistration(Client registration) {
         Client registrationRemoved = clientsByEp.put(registration.getEndpoint(), registration);
-        if (registrationRemoved != null)
+        if (registrationRemoved != null) {
             removeAll(registrationRemoved.getRegistrationId());
-        return registrationRemoved;
+            return new Deregistration(registrationRemoved, null);
+        }
+        return null;
     }
 
     @Override
@@ -113,11 +116,12 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     }
 
     @Override
-    public Client removeRegistration(String registrationId) {
+    public Deregistration removeRegistration(String registrationId) {
         Client registration = getRegistration(registrationId);
         if (registration != null) {
             removeAll(registration.getRegistrationId());
-            return clientsByEp.remove(registration.getEndpoint());
+            clientsByEp.remove(registration.getEndpoint());
+            return new Deregistration(registration, null);
         }
         return null;
     }
@@ -370,8 +374,9 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
                     synchronized (client) {
                         if (!client.isAlive()) {
                             // force de-registration
-                            Client removedRegistration = removeRegistration(client.getRegistrationId());
-                            expirationListener.registrationExpired(removedRegistration, new ArrayList<Observation>());
+                            Deregistration removedRegistration = removeRegistration(client.getRegistrationId());
+                            expirationListener.registrationExpired(removedRegistration.getRegistration(),
+                                    removedRegistration.getObservations());
                         }
                     }
                 }
