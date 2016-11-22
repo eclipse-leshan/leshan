@@ -326,18 +326,22 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
 
     @Override
     public void add(org.eclipse.californium.core.observe.Observation obs) {
-        Client registration = this.validateObservation(obs);
+        String endpoint = this.validateObservation(obs);
 
         try (Jedis j = pool.getResource()) {
             byte[] lockValue = null;
-            byte[] lockKey = toKey(LOCK_EP, registration.getEndpoint());
+            byte[] lockKey = toKey(LOCK_EP, endpoint);
             try {
                 lockValue = RedisLock.acquire(j, lockKey);
+
+                String registrationId = obs.getRequest().getUserContext().get(CTX_REGID);
+                if (!j.exists(toRegKey(registrationId)))
+                    throw new IllegalStateException("no registration for this Id");
 
                 byte[] previousValue = j.getSet(toKey(OBS_TKN, obs.getRequest().getToken()), serializeObs(obs));
 
                 // secondary index to get the list by registrationId
-                j.lpush(toKey(OBS_REG, registration.getRegistrationId()), obs.getRequest().getToken());
+                j.lpush(toKey(OBS_REG, registrationId), obs.getRequest().getToken());
 
                 // log any collisions
                 if (previousValue != null && previousValue.length != 0) {
@@ -473,17 +477,17 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
         return observation.getRequest().getUserContext().get(CoapRequestBuilder.CTX_REGID);
     }
 
-    private Client validateObservation(org.eclipse.californium.core.observe.Observation observation) {
-        String registrationId = observation.getRequest().getUserContext().get(CoapRequestBuilder.CTX_REGID);
-        if (registrationId == null)
+    private String validateObservation(org.eclipse.californium.core.observe.Observation observation) {
+        if (!observation.getRequest().getUserContext().containsKey(CoapRequestBuilder.CTX_REGID))
             throw new IllegalStateException("missing registrationId info in the request context");
         if (!observation.getRequest().getUserContext().containsKey(CoapRequestBuilder.CTX_LWM2M_PATH))
             throw new IllegalStateException("missing lwm2m path info in the request context");
-        Client registration = getRegistration(registrationId);
-        if (registration == null)
-            throw new IllegalStateException("no registration for this Id");
 
-        return registration;
+        String endpoint = observation.getRequest().getUserContext().get(CoapRequestBuilder.CTX_ENDPOINT);
+        if (endpoint == null)
+            throw new IllegalStateException("missing endpoint info in the request context");
+
+        return endpoint;
     }
 
     /**

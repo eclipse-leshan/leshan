@@ -86,7 +86,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         // Create the CoAP request from LwM2m request
         final CoapRequestBuilder coapRequestBuilder = new CoapRequestBuilder(
                 new InetSocketAddress(destination.getAddress(), destination.getPort()), destination.getRootPath(),
-                destination.getRegistrationId(), model, encoder);
+                destination.getRegistrationId(), destination.getEndpoint(), model, encoder);
         request.accept(coapRequestBuilder);
         final Request coapRequest = coapRequestBuilder.getRequest();
 
@@ -123,7 +123,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         // Create the CoAP request from LwM2m request
         final CoapRequestBuilder coapRequestBuilder = new CoapRequestBuilder(
                 new InetSocketAddress(destination.getAddress(), destination.getPort()), destination.getRootPath(),
-                destination.getRegistrationId(), model, encoder);
+                destination.getRegistrationId(), destination.getEndpoint(), model, encoder);
         request.accept(coapRequestBuilder);
         final Request coapRequest = coapRequestBuilder.getRequest();
 

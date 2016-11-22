@@ -49,11 +49,13 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     private final InetSocketAddress destination;
     private final String rootPath;
     private final String registrationId;
+    private final String endpoint;
 
     private final LwM2mModel model;
     private final LwM2mNodeEncoder encoder;
 
     /* keys used to populate the request context */
+    public static final String CTX_ENDPOINT = "leshan-endpoint";
     public static final String CTX_REGID = "leshan-regId";
     public static final String CTX_LWM2M_PATH = "leshan-path";
 
@@ -61,14 +63,17 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         this.destination = destination;
         this.rootPath = null;
         this.registrationId = null;
+        this.endpoint = null;
         this.model = model;
         this.encoder = encoder;
     }
 
-    public CoapRequestBuilder(InetSocketAddress destination, String rootPath, String registrationId, LwM2mModel model,
+    public CoapRequestBuilder(InetSocketAddress destination, String rootPath, String registrationId, String endpoint,
+            LwM2mModel model,
             LwM2mNodeEncoder encoder) {
         this.destination = destination;
         this.rootPath = rootPath;
+        this.endpoint = endpoint;
         this.registrationId = registrationId;
         this.model = model;
         this.encoder = encoder;
@@ -141,6 +146,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
 
         // add context info to the observe request
         Map<String, String> context = new HashMap<>();
+        context.put(CTX_ENDPOINT, endpoint);
         context.put(CTX_REGID, registrationId);
         context.put(CTX_LWM2M_PATH, request.getPath().toString());
         for (Entry<String, String> ctx : request.getContext().entrySet()) {
