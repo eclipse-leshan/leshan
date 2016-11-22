@@ -69,6 +69,16 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     
     // Listener use to notify when a registration expires
     private ExpirationListener expirationListener;
+    
+    private final ScheduledExecutorService schedExecutor;
+    
+    public InMemoryRegistrationStore() {
+        schedExecutor = Executors.newScheduledThreadPool(1);
+    }
+    
+    public InMemoryRegistrationStore(ScheduledExecutorService schedExecutor) {
+        this.schedExecutor = schedExecutor;
+    }
 
     /* *************** Leshan Registration API **************** */
 
@@ -416,8 +426,6 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
             LOG.warn("Clean up registration thread was interrupted.", e);
         }
     }
-
-    private final ScheduledExecutorService schedExecutor = Executors.newScheduledThreadPool(1);
 
     private class Cleaner implements Runnable {
 

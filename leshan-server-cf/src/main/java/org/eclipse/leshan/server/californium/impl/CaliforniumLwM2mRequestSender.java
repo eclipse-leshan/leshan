@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Bosch Software Innovations GmbH - added constructor to make executor configurable
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
@@ -57,25 +58,44 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
     // This is mainly used to cancel request and avoid retransmission on de-registration
     private final ConcurrentNavigableMap<String/* registrationId#requestId */, Request /* pending coap Request */> pendingRequests = new ConcurrentSkipListMap<>();
     private final Collection<ResponseListener> responseListeners = new ConcurrentLinkedQueue<>();
-    private final ExecutorService processingExecutor = Executors
-            .newCachedThreadPool(new NamedThreadFactory("californium-lwm2m-requestsender-processingExecutor-%d"));
+    private final ExecutorService processingExecutor;
 
     /**
+     * Started with newCachedThreadPool for ResponseProcessingTask Runnable.
+     * 
      * @param endpoints the CoAP endpoints to use for sending requests
      * @param observationService the service for keeping track of observed resources
      * @param modelProvider provides the supported objects definitions
+     * @param encoder 
+     * @param decoder 
      */
     public CaliforniumLwM2mRequestSender(final Set<Endpoint> endpoints,
             final ObservationServiceImpl observationService, LwM2mModelProvider modelProvider,
             LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
+        this(endpoints, observationService, modelProvider, encoder, decoder, Executors
+                .newCachedThreadPool(new NamedThreadFactory("californium-lwm2m-requestsender-processingExecutor-%d")));
+    }
+    
+    /**
+     * @param endpoints the CoAP endpoints to use for sending requests
+     * @param observationService the service for keeping track of observed resources
+     * @param modelProvider provides the supported objects definitions
+     * @param encoder 
+     * @param decoder 
+     * @param processingExecutor the {@link ExecutorService} for ResponseProcessingTask Runnable
+     */
+    public CaliforniumLwM2mRequestSender(final Set<Endpoint> endpoints, final ObservationServiceImpl observationService,
+            LwM2mModelProvider modelProvider, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder, ExecutorService processingExecutor) {
         Validate.notNull(endpoints);
         Validate.notNull(observationService);
         Validate.notNull(modelProvider);
+        Validate.notNull(processingExecutor);
         this.observationService = observationService;
         this.endpoints = endpoints;
         this.modelProvider = modelProvider;
         this.encoder = encoder;
         this.decoder = decoder;
+        this.processingExecutor = processingExecutor;
     }
 
     @Override
