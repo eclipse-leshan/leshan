@@ -20,11 +20,11 @@ import static org.eclipse.leshan.server.californium.impl.CoapRequestBuilder.*;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -54,54 +54,81 @@ import org.slf4j.LoggerFactory;
 public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, Startable, Stoppable {
     private final Logger LOG = LoggerFactory.getLogger(InMemoryRegistrationStore.class);
 
-    private final Map<String /* end-point */, Client> clientsByEp = new ConcurrentHashMap<>();
+    // Data structure
+    private final Map<String /* end-point */, Client> regsByEp = new HashMap<>();
+    private Map<KeyToken, org.eclipse.californium.core.observe.Observation> obsByToken = new HashMap<>();
+    private Map<String, List<KeyToken>> tokensByRegId = new HashMap<>();
 
+    // Request serializer to persist observation
     private static final DataSerializer serializer = new UdpDataSerializer();
-    private Map<KeyToken, org.eclipse.californium.core.observe.Observation> byToken = new HashMap<>();
-    private Map<String, List<KeyToken>> byRegId = new HashMap<>();
-    /* lock for udpate */
-    private ReadWriteLock lock = new ReentrantReadWriteLock();
+
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
+    
+    // Listener use to notify when a registration expires
     private ExpirationListener expirationListener;
+
+    /* *************** Leshan Registration API **************** */
 
     @Override
     public Deregistration addRegistration(Client registration) {
-        Client registrationRemoved = clientsByEp.put(registration.getEndpoint(), registration);
-        if (registrationRemoved != null) {
-            removeAll(registrationRemoved.getRegistrationId());
-            return new Deregistration(registrationRemoved, null);
+        try {
+            lock.writeLock().lock();
+
+            Client registrationRemoved = regsByEp.put(registration.getEndpoint(), registration);
+            if (registrationRemoved != null) {
+                Collection<Observation> observationsRemoved = unsafeRemoveAllObservations(registrationRemoved.getRegistrationId());
+                return new Deregistration(registrationRemoved, observationsRemoved);
+            }
+        } finally {
+            lock.writeLock().unlock();
         }
         return null;
     }
 
     @Override
     public Client updateRegistration(ClientUpdate update) {
-        Client client = getRegistration(update.getRegistrationId());
-        if (client == null) {
-            return null;
-        } else {
-            Client registrationUpdated = update.updateClient(client);
-            clientsByEp.put(registrationUpdated.getEndpoint(), registrationUpdated);
-            return registrationUpdated;
+        try {
+            lock.writeLock().lock();
+
+            Client registration = getRegistration(update.getRegistrationId());
+            if (registration == null) {
+                return null;
+            } else {
+                Client registrationUpdated = update.updateClient(registration);
+                regsByEp.put(registrationUpdated.getEndpoint(), registrationUpdated);
+                return registrationUpdated;
+            }
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 
     @Override
     public Client getRegistration(String registrationId) {
-        Client result = null;
-        if (registrationId != null) {
-            for (Client client : clientsByEp.values()) {
-                if (registrationId.equals(client.getRegistrationId())) {
-                    result = client;
-                    break;
+        try {
+            lock.readLock().lock();
+
+            if (registrationId != null) {
+                for (Client registration : regsByEp.values()) {
+                    if (registrationId.equals(registration.getRegistrationId())) {
+                        return registration;
+                    }
                 }
             }
+            return null;
+        } finally {
+            lock.readLock().unlock();
         }
-        return result;
     }
 
     @Override
     public Client getRegistrationByEndpoint(String endpoint) {
-        return clientsByEp.get(endpoint);
+        try {
+            lock.readLock().lock();
+            return regsByEp.get(endpoint);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     @Override
@@ -112,19 +139,33 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
 
     @Override
     public Collection<Client> getAllRegistration() {
-        return clientsByEp.values();
+        try {
+            lock.readLock().lock();
+            return Collections.unmodifiableCollection(regsByEp.values());
+        } finally {
+            lock.readLock().unlock();
+        }
+
     }
 
     @Override
     public Deregistration removeRegistration(String registrationId) {
-        Client registration = getRegistration(registrationId);
-        if (registration != null) {
-            removeAll(registration.getRegistrationId());
-            clientsByEp.remove(registration.getEndpoint());
-            return new Deregistration(registration, null);
+        try {
+            lock.writeLock().lock();
+
+            Client registration = getRegistration(registrationId);
+            if (registration != null) {
+                Collection<Observation> observationsRemoved = unsafeRemoveAllObservations(registration.getRegistrationId());
+                regsByEp.remove(registration.getEndpoint());
+                return new Deregistration(registration, observationsRemoved);
+            }
+            return null;
+        } finally {
+            lock.writeLock().unlock();
         }
-        return null;
     }
+
+    /* *************** Leshan Observation API **************** */
 
     @Override
     public Observation addObservation(String registrationId, Observation observation) {
@@ -134,36 +175,177 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
 
     @Override
     public Observation removeObservation(String registrationId, byte[] observationId) {
-        Observation observation = build(get(observationId));
-        if (observation != null && registrationId.equals(observation.getRegistrationId())) {
-            remove(observationId);
-            return observation;
+        try {
+            lock.writeLock().lock();
+
+            Observation observation = build(unsafeGetObservation(new KeyToken(observationId)));
+            if (observation != null && registrationId.equals(observation.getRegistrationId())) {
+                // TODO remove API should returns the observation removed
+                unsafeRemoveObservation(observationId);
+                return observation;
+            }
+            return null;
+        } finally {
+            lock.writeLock().unlock();
         }
-        return null;
     }
 
     @Override
-    public Observation getObservation(String registrationId, byte[] ObservationId) {
-        return build(get(ObservationId));
+    public Observation getObservation(String registrationId, byte[] observationId) {
+        try {
+            lock.readLock().lock();
+            Observation observation = build(unsafeGetObservation(new KeyToken(observationId)));
+            if (observation != null && registrationId.equals(observation.getRegistrationId())) {
+                return observation;
+            }
+            return null;
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     @Override
     public Collection<Observation> getObservations(String registrationId) {
-        return build(getByRegistrationId(registrationId));
+        try {
+            lock.readLock().lock();
+
+            Collection<Observation> result = new ArrayList<>();
+            List<KeyToken> tokens = tokensByRegId.get(registrationId);
+            if (tokens != null) {
+                for (KeyToken token : tokens) {
+                    Observation obs = build(unsafeGetObservation(token));
+                    if (obs != null) {
+                        result.add(obs);
+                    }
+                }
+            }
+            return result;
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     @Override
     public Collection<Observation> removeObservations(String registrationId) {
-        return build(removeAll(registrationId));
+        try {
+            lock.writeLock().lock();
+            return unsafeRemoveAllObservations(registrationId);
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
-    private Collection<Observation> build(Collection<org.eclipse.californium.core.observe.Observation> cfObss) {
-        List<Observation> obs = new ArrayList<>();
+    /* *************** Californium ObservationStore API **************** */
 
-        for (org.eclipse.californium.core.observe.Observation cfObs : cfObss) {
-            obs.add(build(cfObs));
+    @Override
+    public void add(org.eclipse.californium.core.observe.Observation obs) {
+        if (obs != null) {
+            try {
+                lock.writeLock().lock();
+
+                validateObservation(obs);
+
+                String registrationId = extractRegistrationId(obs);
+                KeyToken token = new KeyToken(obs.getRequest().getToken());
+                org.eclipse.californium.core.observe.Observation previousObservation = obsByToken.put(token, obs);
+                if (!tokensByRegId.containsKey(registrationId)) {
+                    tokensByRegId.put(registrationId, new ArrayList<KeyToken>());
+                }
+                tokensByRegId.get(registrationId).add(token);
+
+                // log any collisions
+                if (previousObservation != null) {
+                    LOG.warn(
+                            "Token collision ? observation from request [{}] will be replaced by observation from request [{}] ",
+                            previousObservation.getRequest(), obs.getRequest());
+                }
+            } finally {
+                lock.writeLock().unlock();
+            }
         }
-        return obs;
+    }
+
+    @Override
+    public org.eclipse.californium.core.observe.Observation get(byte[] token) {
+        try {
+            lock.readLock().lock();
+            return unsafeGetObservation(new KeyToken(token));
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    @Override
+    public void setContext(byte[] token, CorrelationContext ctx) {
+        try {
+            lock.writeLock().lock();
+
+            org.eclipse.californium.core.observe.Observation obs = obsByToken.get(new KeyToken(token));
+            if (obs != null) {
+                obsByToken.put(new KeyToken(token),
+                        new org.eclipse.californium.core.observe.Observation(obs.getRequest(), ctx));
+            }
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    @Override
+    public void remove(byte[] token) {
+        try {
+            lock.writeLock().lock();
+            unsafeRemoveObservation(token);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    /* *************** Observation utility functions **************** */
+
+    private org.eclipse.californium.core.observe.Observation unsafeGetObservation(KeyToken token) {
+        org.eclipse.californium.core.observe.Observation obs = obsByToken.get(token);
+            if (obs != null) {
+                RawData serialize = serializer.serializeRequest(obs.getRequest(), null);
+                DataParser parser = new UdpDataParser();
+                Request newRequest = (Request) parser.parseMessage(serialize);
+                newRequest.setUserContext(obs.getRequest().getUserContext());
+                return new org.eclipse.californium.core.observe.Observation(newRequest, obs.getContext());
+            }
+            return null;
+    }
+
+    private void unsafeRemoveObservation(byte[] observationId) {
+        KeyToken kToken = new KeyToken(observationId);
+        org.eclipse.californium.core.observe.Observation removed = obsByToken.remove(kToken);
+
+        if (removed != null) {
+            String registrationId = extractRegistrationId(removed);
+            List<KeyToken> tokens = tokensByRegId.get(registrationId);
+            tokens.remove(kToken);
+            if (tokens.isEmpty()) {
+                tokensByRegId.remove(registrationId);
+            }
+        }
+    }
+
+    private Collection<Observation> unsafeRemoveAllObservations(String registrationId) {
+        Collection<Observation> removed = new ArrayList<>();
+        List<KeyToken> tokens = tokensByRegId.get(registrationId);
+        if (tokens != null) {
+            for (KeyToken token : tokens) {
+                Observation observationRemoved = build(obsByToken.remove(token));
+                if (observationRemoved != null) {
+                    removed.add(observationRemoved);
+                }
+            }
+        }
+        tokensByRegId.remove(registrationId);
+        return removed;
+    }
+
+    /* Retrieve the registrationId from the request context */
+    private String extractRegistrationId(org.eclipse.californium.core.observe.Observation observation) {
+        return observation.getRequest().getUserContext().get(CoapRequestBuilder.CTX_REGID);
     }
 
     private Observation build(org.eclipse.californium.core.observe.Observation cfObs) {
@@ -192,139 +374,6 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
         return new Observation(cfObs.getRequest().getToken(), regId, new LwM2mPath(lwm2mPath), context);
     }
 
-    @Override
-    public void add(org.eclipse.californium.core.observe.Observation obs) {
-        if (obs != null) {
-            try {
-                lock.writeLock().lock();
-
-                validateObservation(obs);
-
-                String registrationId = getRegistrationId(obs);
-                KeyToken token = new KeyToken(obs.getRequest().getToken());
-                org.eclipse.californium.core.observe.Observation previousObservation = byToken.put(token, obs);
-                if (!byRegId.containsKey(registrationId)) {
-                    byRegId.put(registrationId, new ArrayList<KeyToken>());
-                }
-                byRegId.get(registrationId).add(token);
-
-                // log any collisions
-                if (previousObservation != null) {
-                    LOG.warn(
-                            "Token collision ? observation from request [{}] will be replaced by observation from request [{}] ",
-                            previousObservation.getRequest(), obs.getRequest());
-                }
-            } finally {
-                lock.writeLock().unlock();
-            }
-        }
-    }
-
-    @Override
-    public org.eclipse.californium.core.observe.Observation get(byte[] token) {
-        return get(new KeyToken(token));
-    }
-
-    private org.eclipse.californium.core.observe.Observation get(KeyToken token) {
-        try {
-            lock.readLock().lock();
-
-            org.eclipse.californium.core.observe.Observation obs = byToken.get(token);
-            if (obs != null) {
-                RawData serialize = serializer.serializeRequest(obs.getRequest(), null);
-                DataParser parser = new UdpDataParser();
-                Request newRequest = (Request) parser.parseMessage(serialize);
-                newRequest.setUserContext(obs.getRequest().getUserContext());
-                return new org.eclipse.californium.core.observe.Observation(newRequest, obs.getContext());
-            }
-            return null;
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-
-    public Collection<org.eclipse.californium.core.observe.Observation> getByRegistrationId(String registrationId) {
-        try {
-            lock.readLock().lock();
-
-            Collection<org.eclipse.californium.core.observe.Observation> result = new ArrayList<>();
-            List<KeyToken> tokens = byRegId.get(registrationId);
-            if (tokens != null) {
-                for (KeyToken token : tokens) {
-                    org.eclipse.californium.core.observe.Observation obs = get(token);
-                    if (obs != null) {
-                        result.add(obs);
-                    }
-                }
-            }
-            return result;
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-
-    @Override
-    public void remove(byte[] token) {
-        try {
-            lock.writeLock().lock();
-
-            KeyToken kToken = new KeyToken(token);
-            org.eclipse.californium.core.observe.Observation removed = byToken.remove(kToken);
-
-            if (removed != null) {
-                String registrationId = getRegistrationId(removed);
-                List<KeyToken> tokens = byRegId.get(registrationId);
-                tokens.remove(kToken);
-                if (tokens.isEmpty()) {
-                    byRegId.remove(registrationId);
-                }
-            }
-        } finally {
-            lock.writeLock().unlock();
-        }
-    }
-
-    public Collection<org.eclipse.californium.core.observe.Observation> removeAll(String registrationId) {
-        try {
-            lock.writeLock().lock();
-
-            Collection<org.eclipse.californium.core.observe.Observation> removed = new ArrayList<>();
-            List<KeyToken> tokens = byRegId.get(registrationId);
-            if (tokens != null) {
-                for (KeyToken token : tokens) {
-                    org.eclipse.californium.core.observe.Observation observationRemoved = byToken.remove(token);
-                    if (observationRemoved != null) {
-                        removed.add(observationRemoved);
-                    }
-                }
-            }
-            byRegId.remove(registrationId);
-            return removed;
-        } finally {
-            lock.writeLock().unlock();
-        }
-    }
-
-    @Override
-    public void setContext(byte[] token, CorrelationContext ctx) {
-        try {
-            lock.writeLock().lock();
-
-            org.eclipse.californium.core.observe.Observation obs = byToken.get(new KeyToken(token));
-            if (obs != null) {
-                byToken.put(new KeyToken(token),
-                        new org.eclipse.californium.core.observe.Observation(obs.getRequest(), ctx));
-            }
-        } finally {
-            lock.writeLock().unlock();
-        }
-    }
-
-    /* Retrieve the registrationId from the request context */
-    private String getRegistrationId(org.eclipse.californium.core.observe.Observation observation) {
-        return observation.getRequest().getUserContext().get(CoapRequestBuilder.CTX_REGID);
-    }
-
     private void validateObservation(org.eclipse.californium.core.observe.Observation observation) {
         if (!observation.getRequest().getUserContext().containsKey(CoapRequestBuilder.CTX_REGID))
             throw new IllegalStateException("missing registrationId info in the request context");
@@ -334,6 +383,8 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
             throw new IllegalStateException("no registration for this Id");
         }
     }
+
+    /* *************** Expiration handling **************** */
 
     @Override
     public void setExpirationListener(ExpirationListener listener) {
@@ -370,6 +421,8 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
         @Override
         public void run() {
             try {
+                lock.readLock().lock();
+
                 for (Client client : getAllRegistration()) {
                     synchronized (client) {
                         if (!client.isAlive()) {
@@ -382,6 +435,8 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
                 }
             } catch (Exception e) {
                 LOG.warn("Unexcepted Exception while registration cleaning", e);
+            } finally {
+                lock.readLock().unlock();
             }
         }
     }
