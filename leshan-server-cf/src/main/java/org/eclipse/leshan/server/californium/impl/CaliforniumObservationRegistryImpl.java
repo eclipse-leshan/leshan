@@ -268,7 +268,7 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
                 LwM2mModel model = modelProvider.getObjectModel(client);
 
                 // get content format
-                ContentFormat contentFormat = null;
+                ContentFormat contentFormat = ContentFormat.TEXT;
                 if (coapResponse.getOptions().hasContentFormat()) {
                     contentFormat = ContentFormat.fromCode(coapResponse.getOptions().getContentFormat());
                 }
