@@ -17,6 +17,8 @@
 package org.eclipse.leshan.integration.tests;
 
 import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.LIFETIME;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.*;
 
 import java.net.InetAddress;
@@ -25,19 +27,27 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.LinkObject;
+import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.impl.CaliforniumLwM2mClientRequestSender;
 import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectEnabler;
+import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.DeregisterRequest;
+import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
+import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.RegisterResponse;
+import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.junit.After;
 import org.junit.Before;
@@ -181,6 +191,50 @@ public class RegistrationTest {
         helper.client.start();
         helper.waitForRegistration(1);
         helper.assertClientRegisterered();
+    }
+
+    @Test
+    public void register_observe_deregister_observe() throws NonUniqueSecurityInfoException, InterruptedException {
+        // Check client is not registered
+        helper.assertClientNotRegisterered();
+
+        // Start it and wait for registration
+        helper.client.start();
+        helper.waitForRegistration(1);
+
+        // Check client is well registered
+        helper.assertClientRegisterered();
+
+        // observe device timezone
+        ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(), new ObserveRequest(3, 0));
+        assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
+        assertNotNull(observeResponse.getCoapResponse());
+        assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
+
+        // check observation registry is not null
+        Client currentRegistration = helper.getCurrentRegistration();
+        Set<Observation> observations = helper.server.getObservationRegistry()
+                .getObservations(currentRegistration);
+        assertEquals(1, observations.size());
+        Observation obs = observations.iterator().next();
+        assertEquals(currentRegistration.getRegistrationId(), obs.getRegistrationId());
+        assertEquals(new LwM2mPath(3, 0), obs.getPath());
+
+        // Check de-registration
+        helper.client.stop(true);
+        helper.waitForDeregistration(1);
+        helper.assertClientNotRegisterered();
+        observations = helper.server.getObservationRegistry()
+                .getObservations(currentRegistration);
+        assertTrue(observations.isEmpty());
+
+        // try to send a new observation
+        observeResponse = helper.server.send(currentRegistration, new ObserveRequest(3, 0), 50);
+        assertNull(observeResponse);
+
+        // check observationStore is empty
+        observations = helper.server.getObservationRegistry().getObservations(currentRegistration);
+        assertTrue(observations.isEmpty());
     }
 
     // TODO not really a registration test
