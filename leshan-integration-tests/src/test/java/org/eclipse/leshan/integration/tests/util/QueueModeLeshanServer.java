@@ -26,7 +26,7 @@ import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.Startable;
 import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.ClientRegistry;
+import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.client.ClientRegistryListener;
 import org.eclipse.leshan.server.client.ClientUpdate;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
@@ -41,20 +41,20 @@ import org.slf4j.LoggerFactory;
 public class QueueModeLeshanServer implements LwM2mServer {
     private static final Logger LOG = LoggerFactory.getLogger(QueueModeLeshanServer.class);
     private final CoapServer coapServer;
-    private final ClientRegistry clientRegistry;
+    private final RegistrationService registrationService;
     private final ObservationRegistry observationRegistry;
     private final SecurityRegistry securityRegistry;
     private final LwM2mModelProvider modelProvider;
     private final LwM2mRequestSender lwM2mRequestSender;
     private final MessageStore messageStore;
 
-    public QueueModeLeshanServer(CoapServer coapServer, ClientRegistry clientRegistry,
+    public QueueModeLeshanServer(CoapServer coapServer, RegistrationService registrationService,
             ObservationRegistry observationRegistry, SecurityRegistry securityRegistry,
             LwM2mModelProvider modelProvider, LwM2mRequestSender lwM2mRequestSender,
             MessageStore inMemoryMessageStore) {
 
         this.coapServer = coapServer;
-        this.clientRegistry = clientRegistry;
+        this.registrationService = registrationService;
         this.observationRegistry = observationRegistry;
         this.securityRegistry = securityRegistry;
         this.modelProvider = modelProvider;
@@ -62,7 +62,7 @@ public class QueueModeLeshanServer implements LwM2mServer {
         this.messageStore = inMemoryMessageStore;
 
         // Cancel observations on client unregistering
-        this.clientRegistry.addListener(new ClientRegistryListener() {
+        this.registrationService.addListener(new ClientRegistryListener() {
 
             @Override
             public void updated(ClientUpdate update, Client clientUpdated) {
@@ -84,8 +84,8 @@ public class QueueModeLeshanServer implements LwM2mServer {
     @Override
     public void start() {
         // Start registries
-        if (clientRegistry instanceof Startable) {
-            ((Startable) clientRegistry).start();
+        if (registrationService instanceof Startable) {
+            ((Startable) registrationService).start();
         }
         if (securityRegistry instanceof Startable) {
             ((Startable) securityRegistry).start();
@@ -106,8 +106,8 @@ public class QueueModeLeshanServer implements LwM2mServer {
         coapServer.stop();
 
         // Start registries
-        if (clientRegistry instanceof Stoppable) {
-            ((Stoppable) clientRegistry).stop();
+        if (registrationService instanceof Stoppable) {
+            ((Stoppable) registrationService).stop();
         }
         if (securityRegistry instanceof Stoppable) {
             ((Stoppable) securityRegistry).stop();
@@ -128,8 +128,8 @@ public class QueueModeLeshanServer implements LwM2mServer {
         coapServer.destroy();
 
         // Destroy registries
-        if (clientRegistry instanceof Destroyable) {
-            ((Destroyable) clientRegistry).destroy();
+        if (registrationService instanceof Destroyable) {
+            ((Destroyable) registrationService).destroy();
         }
         if (securityRegistry instanceof Destroyable) {
             ((Destroyable) securityRegistry).destroy();
@@ -175,8 +175,8 @@ public class QueueModeLeshanServer implements LwM2mServer {
     }
 
     @Override
-    public ClientRegistry getClientRegistry() {
-        return clientRegistry;
+    public RegistrationService getRegistrationService() {
+        return registrationService;
     }
 
     @Override

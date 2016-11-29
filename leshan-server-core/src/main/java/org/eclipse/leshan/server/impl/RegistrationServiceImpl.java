@@ -16,7 +16,6 @@
 package org.eclipse.leshan.server.impl;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -24,9 +23,9 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.Startable;
 import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.client.ClientRegistryListener;
 import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.registration.Deregistration;
 import org.eclipse.leshan.server.registration.ExpirationListener;
 import org.eclipse.leshan.server.registration.RegistrationStore;
@@ -35,17 +34,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * In memory client registry
+ * An implementation of {@link RegistrationService}
  */
-public class ClientRegistryImpl implements ClientRegistry, Startable, Stoppable, ExpirationListener {
+public class RegistrationServiceImpl implements RegistrationService, Startable, Stoppable, ExpirationListener {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ClientRegistryImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RegistrationServiceImpl.class);
 
     private final List<ClientRegistryListener> listeners = new CopyOnWriteArrayList<>();
 
     private RegistrationStore store;
 
-    public ClientRegistryImpl(RegistrationStore store) {
+    public RegistrationServiceImpl(RegistrationStore store) {
         this.store = store;
         store.setExpirationListener(this);
     }
@@ -61,12 +60,12 @@ public class ClientRegistryImpl implements ClientRegistry, Startable, Stoppable,
     }
 
     @Override
-    public Collection<Client> allClients() {
-        return Collections.unmodifiableCollection(store.getAllRegistration());
+    public Collection<Client> getAllRegistrations() {
+        return store.getAllRegistration();
     }
 
     @Override
-    public Client get(String endpoint) {
+    public Client getByEndpoint(String endpoint) {
         return store.getRegistrationByEndpoint(endpoint);
     }
 
@@ -116,8 +115,12 @@ public class ClientRegistryImpl implements ClientRegistry, Startable, Stoppable,
         return unregistered.getRegistration();
     }
 
+    public RegistrationStore getStore() {
+        return store;
+    }
+
     @Override
-    public Client findByRegistrationId(String id) {
+    public Client getById(String id) {
         return store.getRegistration(id);
     }
 

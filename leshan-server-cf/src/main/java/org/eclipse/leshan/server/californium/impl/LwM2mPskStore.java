@@ -20,22 +20,22 @@ import java.util.Arrays;
 
 import org.eclipse.californium.scandium.dtls.pskstore.PskStore;
 import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.ClientRegistry;
+import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.SecurityStore;
 
 public class LwM2mPskStore implements PskStore {
 
     private SecurityStore securityStore;
-    private ClientRegistry clientRegistry;
+    private RegistrationStore registrationStore;
 
     public LwM2mPskStore(SecurityStore securityStore) {
         this(securityStore, null);
     }
 
-    public LwM2mPskStore(SecurityStore securityStore, ClientRegistry clientRegistry) {
+    public LwM2mPskStore(SecurityStore securityStore, RegistrationStore registrationStore) {
         this.securityStore = securityStore;
-        this.clientRegistry = clientRegistry;
+        this.registrationStore = registrationStore;
     }
 
     @Override
@@ -51,10 +51,10 @@ public class LwM2mPskStore implements PskStore {
 
     @Override
     public String getIdentity(InetSocketAddress inetAddress) {
-        if (clientRegistry == null)
+        if (registrationStore == null)
             return null;
 
-        for (Client c : clientRegistry.allClients()) {
+        for (Client c : registrationStore.getAllRegistration()) {
             if (inetAddress.getPort() == c.getPort() && inetAddress.getAddress().equals(c.getAddress())) {
                 SecurityInfo securityInfo = securityStore.getByEndpoint(c.getEndpoint());
                 if (securityInfo != null) {

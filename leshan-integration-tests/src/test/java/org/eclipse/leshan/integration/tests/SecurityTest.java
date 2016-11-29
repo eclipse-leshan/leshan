@@ -230,7 +230,7 @@ public class SecurityTest {
         helper.client.start();
         helper.waitForRegistration(1);
 
-        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+        assertEquals(1, helper.server.getRegistrationService().getAllRegistrations().size());
         assertNotNull(helper.getCurrentRegistration());
     }
 
@@ -286,7 +286,7 @@ public class SecurityTest {
         helper.client.start();
         helper.waitForRegistration(1);
 
-        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+        assertEquals(1, helper.server.getRegistrationService().getAllRegistrations().size());
         assertNotNull(helper.getCurrentRegistration());
     }
 
@@ -381,7 +381,7 @@ public class SecurityTest {
         helper.client.start();
         helper.waitForRegistration(1);
 
-        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+        assertEquals(1, helper.server.getRegistrationService().getAllRegistrations().size());
         assertNotNull(helper.getCurrentRegistration());
     }
 
@@ -401,7 +401,7 @@ public class SecurityTest {
         helper.client.start();
         helper.waitForRegistration(1);
 
-        assertEquals(1, helper.server.getClientRegistry().allClients().size());
+        assertEquals(1, helper.server.getRegistrationService().getAllRegistrations().size());
         assertNotNull(helper.getCurrentRegistration());
     }
 }

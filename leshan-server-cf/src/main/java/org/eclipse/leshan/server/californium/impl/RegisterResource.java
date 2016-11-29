@@ -45,7 +45,7 @@ import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.response.DeregisterResponse;
 import org.eclipse.leshan.core.response.RegisterResponse;
 import org.eclipse.leshan.core.response.UpdateResponse;
-import org.eclipse.leshan.server.client.ClientRegistry;
+import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
  * A CoAP {@link Resource} in charge of handling clients registration requests.
  * <p>
  * This resource is the entry point of the Resource Directory ("/rd"). Each new client is added to the
- * {@link ClientRegistry}.
+ * {@link RegistrationService}.
  * </p>
  */
 public class RegisterResource extends CoapResource {

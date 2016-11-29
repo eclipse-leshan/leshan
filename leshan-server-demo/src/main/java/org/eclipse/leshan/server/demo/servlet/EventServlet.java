@@ -104,7 +104,7 @@ public class EventServlet extends EventSourceServlet {
                 LOG.debug("Received notification from [{}] containing value [{}]", observation.getPath(),
                         response.getContent().toString());
             }
-            Client client = server.getClientRegistry().findByRegistrationId(observation.getRegistrationId());
+            Client client = server.getRegistrationService().getById(observation.getRegistrationId());
 
             if (client != null) {
                 String data = new StringBuffer("{\"ep\":\"").append(client.getEndpoint()).append("\",\"res\":\"")
@@ -123,11 +123,11 @@ public class EventServlet extends EventSourceServlet {
 
     public EventServlet(LeshanServer server, int securePort) {
         this.server = server;
-        server.getClientRegistry().addListener(this.clientRegistryListener);
+        server.getRegistrationService().addListener(this.clientRegistryListener);
         server.getObservationRegistry().addListener(this.observationRegistryListener);
 
         // add an interceptor to each endpoint to trace all CoAP messages
-        coapMessageTracer = new CoapMessageTracer(server.getClientRegistry());
+        coapMessageTracer = new CoapMessageTracer(server.getRegistrationService());
         for (Endpoint endpoint : server.getCoapServer().getEndpoints()) {
             endpoint.addInterceptor(coapMessageTracer);
         }

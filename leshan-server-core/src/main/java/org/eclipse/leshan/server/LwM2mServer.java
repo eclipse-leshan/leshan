@@ -20,7 +20,7 @@ import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.ClientRegistry;
+import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
 import org.eclipse.leshan.server.response.ResponseListener;
@@ -106,10 +106,10 @@ public interface LwM2mServer {
     void removeResponseListener(ResponseListener listener);
 
     /**
-     * Get the client registry containing the list of connected clients. You can use this object for listening client
-     * registration/deregistration.
+     * Get the registration service to access to registered clients. You can use this object for listening client
+     * registration lifecycle.
      */
-    ClientRegistry getClientRegistry();
+    RegistrationService getRegistrationService();
 
     /**
      * Get the Observation registry containing of current observation. You can use this object for listening resource

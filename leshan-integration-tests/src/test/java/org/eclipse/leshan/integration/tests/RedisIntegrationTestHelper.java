@@ -67,7 +67,7 @@ public class RedisIntegrationTestHelper extends IntegrationTestHelper {
         server = builder.build();
         // monitor client registration
         resetLatch();
-        server.getClientRegistry().addListener(new ClientRegistryListener() {
+        server.getRegistrationService().addListener(new ClientRegistryListener() {
             @Override
             public void updated(ClientUpdate update, Client clientUpdated) {
                 if (clientUpdated.getEndpoint().equals(getCurrentEndpoint())) {

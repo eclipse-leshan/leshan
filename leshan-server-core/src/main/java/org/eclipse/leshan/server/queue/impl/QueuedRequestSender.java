@@ -35,9 +35,9 @@ import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.client.ClientRegistryListener;
 import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
 import org.eclipse.leshan.server.observation.ObservationRegistryListener;
 import org.eclipse.leshan.server.queue.MessageStore;
@@ -63,7 +63,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
     private final MessageStore messageStore;
     private final QueueModeClientRegistryListener queueModeClientRegistryListener;
     private final QueueModeObservationRegistryListener queueModeObservationRegistryListener;
-    private final ClientRegistry clientRegistry;
+    private final RegistrationService registrationService;
     private final ObservationRegistry observationRegistry;
     private final ClientStatusTracker clientStatusTracker;
     private final Collection<ResponseListener> responseListeners = new ConcurrentLinkedQueue<>();
@@ -77,14 +77,14 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
      */
     private QueuedRequestSender(Builder builder) {
         this.messageStore = builder.messageStore;
-        this.clientRegistry = builder.clientRegistry;
+        this.registrationService = builder.registrationService;
         this.observationRegistry = builder.observationRegistry;
         this.delegateSender = builder.delegateSender;
 
         this.clientStatusTracker = new ClientStatusTracker();
 
         this.queueModeClientRegistryListener = new QueueModeClientRegistryListener();
-        clientRegistry.addListener(queueModeClientRegistryListener);
+        registrationService.addListener(queueModeClientRegistryListener);
         this.queueModeObservationRegistryListener = new QueueModeObservationRegistryListener();
         observationRegistry.addListener(queueModeObservationRegistryListener);
         delegateSender.addResponseListener(createResponseListener());
@@ -125,7 +125,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
         readWriteLock.readLock().lock();
         try {
             // Check whether client is still known to ClientRegistry
-            if (clientRegistry.get(endpoint) != null) {
+            if (registrationService.getByEndpoint(endpoint) != null) {
                 QueuedRequest queuedRequest = new QueuedRequestImpl(endpoint, castedDownlinkRequest, requestTicket);
                 messageStore.add(queuedRequest);
                 // If Client is reachable and this is the first message, we send it
@@ -157,7 +157,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
 
     @Override
     public void stop() {
-        clientRegistry.removeListener(queueModeClientRegistryListener);
+        registrationService.removeListener(queueModeClientRegistryListener);
         observationRegistry.removeListener(queueModeObservationRegistryListener);
         processingExecutor.shutdown();
         try {
@@ -254,14 +254,14 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
     }
 
     private RequestSendingTask newRequestSendingTask(String clientEndpoint) {
-        return new RequestSendingTask(clientRegistry, delegateSender, clientStatusTracker, messageStore,
+        return new RequestSendingTask(registrationService, delegateSender, clientStatusTracker, messageStore,
                 clientEndpoint);
     }
 
     private final class QueueModeObservationRegistryListener implements ObservationRegistryListener {
         @Override
         public void newValue(Observation observation, ObserveResponse response) {
-            Client client = clientRegistry.findByRegistrationId(observation.getRegistrationId());
+            Client client = registrationService.getById(observation.getRegistrationId());
             // if client de-registered already, do nothing.
             if (client == null) {
                 if (LOG.isDebugEnabled()) {
@@ -331,7 +331,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
 
         private MessageStore messageStore;
         private LwM2mRequestSender delegateSender;
-        private ClientRegistry clientRegistry;
+        private RegistrationService registrationService;
         private ObservationRegistry observationRegistry;
 
         public Builder setMessageStore(MessageStore messageStore) {
@@ -344,8 +344,8 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
             return this;
         }
 
-        public Builder setClientRegistry(ClientRegistry clientRegistry) {
-            this.clientRegistry = clientRegistry;
+        public Builder setRegistrationService(RegistrationService registrationService) {
+            this.registrationService = registrationService;
             return this;
         }
 
@@ -357,7 +357,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
         public QueuedRequestSender build() {
             Validate.notNull(messageStore, "messageStore cannot be null");
             Validate.notNull(delegateSender, "delegateSender cannot be null");
-            Validate.notNull(clientRegistry, "clientRegistry cannot be null");
+            Validate.notNull(registrationService, "registrationService cannot be null");
             Validate.notNull(observationRegistry, "observationRegistry cannot be null");
 
             return new QueuedRequestSender(this);

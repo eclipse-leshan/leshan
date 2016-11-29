@@ -42,9 +42,7 @@ import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.californium.CaliforniumObservationRegistry;
 import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
 import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
-import org.eclipse.leshan.server.observation.ObservationRegistry;
 import org.eclipse.leshan.server.observation.ObservationRegistryListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +58,6 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
     private final Logger LOG = LoggerFactory.getLogger(CaliforniumObservationRegistry.class);
 
     private final CaliforniumRegistrationStore registrationStore;
-    private final ClientRegistry clientRegistry;
     private final LwM2mModelProvider modelProvider;
     private final LwM2mNodeDecoder decoder;
     private Endpoint secureEndpoint;
@@ -72,15 +69,13 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
      * Creates an instance of {@link CaliforniumObservationRegistryImpl}
      * 
      * @param store instance of californium's {@link ObservationStore}
-     * @param clientRegistry instance of {@link ObservationRegistry}
      * @param modelProvider instance of {@link LwM2mModelProvider}
      * @param decoder instance of {@link LwM2mNodeDecoder}
      */
-    public CaliforniumObservationRegistryImpl(CaliforniumRegistrationStore store, ClientRegistry clientRegistry,
+    public CaliforniumObservationRegistryImpl(CaliforniumRegistrationStore store,
             LwM2mModelProvider modelProvider, LwM2mNodeDecoder decoder) {
         this.registrationStore = store;
         this.modelProvider = modelProvider;
-        this.clientRegistry = clientRegistry;
         this.decoder = decoder;
     }
 
@@ -227,7 +222,7 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
                     return;
 
                 // get client for this registration ID
-                Client client = clientRegistry.findByRegistrationId(observation.getRegistrationId());
+                Client client = registrationStore.getRegistration(observation.getRegistrationId());
                 if (client == null)
                     // TODO Should we clean registrationIDs maps ?
                     return;

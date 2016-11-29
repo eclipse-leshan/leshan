@@ -19,7 +19,7 @@ package org.eclipse.leshan.server.queue.impl;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.ClientRegistry;
+import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.queue.MessageStore;
 import org.eclipse.leshan.server.queue.QueuedRequest;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  */
 class RequestSendingTask implements Runnable {
     private static final Logger LOG = LoggerFactory.getLogger(RequestSendingTask.class);
-    private final ClientRegistry clientRegistry;
+    private final RegistrationService registrationService;
     private final LwM2mRequestSender requestSender;
     private final String endpoint;
     private final MessageStore messageStore;
@@ -42,15 +42,15 @@ class RequestSendingTask implements Runnable {
     /**
      * Creates a new task which is responsible for sending a queue request.
      *
-     * @param clientRegistry client registry
+     * @param registrationService registration service
      * @param delegateSender sender to perform send on (delegate)
      * @param clientStatusTracker tracks the status of the client
      * @param messageStore holds queued messages for the client
      * @param endpoint clients endpoint identifier
      */
-    public RequestSendingTask(ClientRegistry clientRegistry, LwM2mRequestSender delegateSender,
+    public RequestSendingTask(RegistrationService registrationService, LwM2mRequestSender delegateSender,
             ClientStatusTracker clientStatusTracker, MessageStore messageStore, String endpoint) {
-        this.clientRegistry = clientRegistry;
+        this.registrationService = registrationService;
         this.requestSender = delegateSender;
         this.clientStatusTracker = clientStatusTracker;
         this.endpoint = endpoint;
@@ -73,7 +73,7 @@ class RequestSendingTask implements Runnable {
         if (firstRequest != null) {
             DownlinkRequest<LwM2mResponse> downlinkRequest = firstRequest.getDownlinkRequest();
             LOG.debug("Sending request: {}", downlinkRequest);
-            Client client = clientRegistry.get(firstRequest.getEndpoint());
+            Client client = registrationService.getByEndpoint(firstRequest.getEndpoint());
             if (client == null) {
                 // client not registered anymore -> don't send this request
                 LOG.debug("Client {} not registered anymore: {}", endpoint, downlinkRequest);

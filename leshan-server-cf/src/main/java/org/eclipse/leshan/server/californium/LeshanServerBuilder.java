@@ -26,7 +26,7 @@ import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.californium.impl.CaliforniumObservationRegistryImpl;
 import org.eclipse.leshan.server.californium.impl.InMemoryRegistrationStore;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
-import org.eclipse.leshan.server.impl.ClientRegistryImpl;
+import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
 import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StandardModelProvider;
@@ -124,12 +124,13 @@ public class LeshanServerBuilder {
         if (decoder == null)
             decoder = new DefaultLwM2mNodeDecoder();
 
-        ClientRegistryImpl clientRegistry = new ClientRegistryImpl(registrationStore);
+        RegistrationServiceImpl registrationService = new RegistrationServiceImpl(registrationStore);
         
         CaliforniumObservationRegistryImpl observationRegistry = new CaliforniumObservationRegistryImpl(
-                registrationStore, clientRegistry, modelProvider, decoder);
+                registrationStore, modelProvider, decoder);
 
-        return new LeshanServer(localAddress, localSecureAddress, clientRegistry, securityRegistry, observationRegistry,
+        return new LeshanServer(localAddress, localSecureAddress, registrationService, securityRegistry,
+                observationRegistry,
                 modelProvider, encoder, decoder);
     }
 }

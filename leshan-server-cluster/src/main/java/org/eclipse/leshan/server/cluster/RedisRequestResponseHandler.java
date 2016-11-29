@@ -29,7 +29,7 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.ClientRegistry;
+import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.cluster.serialization.DownlinkRequestSerDes;
 import org.eclipse.leshan.server.cluster.serialization.ResponseSerDes;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
@@ -60,17 +60,17 @@ public class RedisRequestResponseHandler {
 
     private final LwM2mServer server;
     private final Pool<Jedis> pool;
-    private final ClientRegistry clientRegistry;
+    private final RegistrationService registrationService;
     private final ExecutorService executorService;
     private final RedisTokenHandler tokenHandler;
     private final ObservationRegistry observationRegistry;
     private final Map<KeyId, String> observatioIdToTicket = new ConcurrentHashMap<>();
 
-    public RedisRequestResponseHandler(Pool<Jedis> p, LwM2mServer server, ClientRegistry clientRegistry,
+    public RedisRequestResponseHandler(Pool<Jedis> p, LwM2mServer server, RegistrationService registrationService,
             RedisTokenHandler tokenHandler, ObservationRegistry observationRegistry) {
         // Listen LWM2M response
         this.server = server;
-        this.clientRegistry = clientRegistry;
+        this.registrationService = registrationService;
         this.observationRegistry = observationRegistry;
         this.tokenHandler = tokenHandler;
         this.executorService = Executors.newCachedThreadPool(
@@ -210,7 +210,7 @@ public class RedisRequestResponseHandler {
                 return;
 
             // Get the registration for this endpoint
-            Client destination = clientRegistry.get(endpoint);
+            Client destination = registrationService.getByEndpoint(endpoint);
             if (destination == null) {
                 sendError(ticket, String.format("No registration for this endpoint %s.", endpoint));
             }

@@ -46,8 +46,8 @@ import org.eclipse.leshan.server.californium.impl.CaliforniumObservationRegistry
 import org.eclipse.leshan.server.californium.impl.InMemoryRegistrationStore;
 import org.eclipse.leshan.server.californium.impl.RegisterResource;
 import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.impl.ClientRegistryImpl;
 import org.eclipse.leshan.server.impl.LwM2mRequestSenderImpl;
+import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
 import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StandardModelProvider;
@@ -84,7 +84,7 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         super.updateLatch = new CountDownLatch(1);
 
         InMemoryRegistrationStore registrationStore = new InMemoryRegistrationStore();
-        ClientRegistryImpl clientRegistry = new ClientRegistryImpl(registrationStore);
+        RegistrationServiceImpl registrationService = new RegistrationServiceImpl(registrationStore);
         SecurityRegistry securityRegistry = new SecurityRegistryImpl() {
             @Override
             protected void loadFromFile() {
@@ -108,7 +108,7 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         coapServer.addEndpoint(noSecureEndpoint);
         coapServer.addEndpoint(secureEndpoint);
 
-        RegisterResource rdResource = new RegisterResource(new RegistrationHandler(clientRegistry, securityRegistry));
+        RegisterResource rdResource = new RegisterResource(new RegistrationHandler(registrationService, securityRegistry));
         coapServer.add(rdResource);
 
         InMemoryMessageStore inMemoryMessageStore = new InMemoryMessageStore();
@@ -116,7 +116,7 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         LwM2mNodeEncoder encoder = new DefaultLwM2mNodeEncoder();
         LwM2mNodeDecoder decoder = new DefaultLwM2mNodeDecoder();
         CaliforniumObservationRegistryImpl observationRegistry = new CaliforniumObservationRegistryImpl(
-                registrationStore, clientRegistry, modelProvider, decoder);
+                registrationStore, modelProvider, decoder);
         observationRegistry.setSecureEndpoint(secureEndpoint);
         secureEndpoint.addNotificationListener(observationRegistry);
         observationRegistry.setNonSecureEndpoint(noSecureEndpoint);
@@ -126,11 +126,11 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         LwM2mRequestSender secondDelegateSender = new CaliforniumLwM2mRequestSender(
                 new HashSet<>(coapServer.getEndpoints()), observationRegistry, modelProvider, encoder, decoder);
         QueuedRequestSender queueRequestSender = QueuedRequestSender.builder().setMessageStore(inMemoryMessageStore)
-                .setRequestSender(secondDelegateSender).setClientRegistry(clientRegistry)
+                .setRequestSender(secondDelegateSender).setRegistrationService(registrationService)
                 .setObservationRegistry(observationRegistry).build();
         LwM2mRequestSender lwM2mRequestSender = new LwM2mRequestSenderImpl(delegateSender, queueRequestSender);
 
-        server = new QueueModeLeshanServer(coapServer, clientRegistry, observationRegistry, securityRegistry,
+        server = new QueueModeLeshanServer(coapServer, registrationService, observationRegistry, securityRegistry,
                 modelProvider, lwM2mRequestSender, inMemoryMessageStore);
     }
 
@@ -173,6 +173,6 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
 
     @Override
     public Client getCurrentRegistration() {
-        return server.getClientRegistry().get(getCurrentEndpoint());
+        return server.getRegistrationService().getByEndpoint(getCurrentEndpoint());
     }
 }

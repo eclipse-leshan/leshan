@@ -95,7 +95,7 @@ public class ClientServlet extends HttpServlet {
 
         // all registered clients
         if (req.getPathInfo() == null) {
-            Collection<Client> clients = server.getClientRegistry().allClients();
+            Collection<Client> clients = server.getRegistrationService().getAllRegistrations();
 
             String json = this.gson.toJson(clients.toArray(new Client[] {}));
             resp.setContentType("application/json");
@@ -113,7 +113,7 @@ public class ClientServlet extends HttpServlet {
 
         // /endPoint : get client
         if (path.length == 1) {
-            Client client = server.getClientRegistry().get(clientEndpoint);
+            Client client = server.getRegistrationService().getByEndpoint(clientEndpoint);
             if (client != null) {
                 resp.setContentType("application/json");
                 resp.getOutputStream().write(this.gson.toJson(client).getBytes("UTF-8"));
@@ -128,7 +128,7 @@ public class ClientServlet extends HttpServlet {
         // /clients/endPoint/LWRequest : do LightWeight M2M read request on a given client.
         try {
             String target = StringUtils.removeStart(req.getPathInfo(), "/" + clientEndpoint);
-            Client client = server.getClientRegistry().get(clientEndpoint);
+            Client client = server.getRegistrationService().getByEndpoint(clientEndpoint);
             if (client != null) {
                 // get content format
                 String contentFormatParam = req.getParameter(FORMAT_PARAM);
@@ -174,7 +174,7 @@ public class ClientServlet extends HttpServlet {
 
         try {
             String target = StringUtils.removeStart(req.getPathInfo(), "/" + clientEndpoint);
-            Client client = server.getClientRegistry().get(clientEndpoint);
+            Client client = server.getRegistrationService().getByEndpoint(clientEndpoint);
             if (client != null) {
                 // get content format
                 String contentFormatParam = req.getParameter(FORMAT_PARAM);
@@ -217,7 +217,7 @@ public class ClientServlet extends HttpServlet {
         if (path.length >= 4 && "observe".equals(path[path.length - 1])) {
             try {
                 String target = StringUtils.substringBetween(req.getPathInfo(), clientEndpoint, "/observe");
-                Client client = server.getClientRegistry().get(clientEndpoint);
+                Client client = server.getRegistrationService().getByEndpoint(clientEndpoint);
                 if (client != null) {
                     // get content format
                     String contentFormatParam = req.getParameter(FORMAT_PARAM);
@@ -253,7 +253,7 @@ public class ClientServlet extends HttpServlet {
         // /clients/endPoint/LWRequest : do LightWeight M2M execute request on a given client.
         if (path.length == 4) {
             try {
-                Client client = server.getClientRegistry().get(clientEndpoint);
+                Client client = server.getRegistrationService().getByEndpoint(clientEndpoint);
                 if (client != null) {
                     ExecuteRequest request = new ExecuteRequest(target, IOUtils.toString(req.getInputStream()));
                     ExecuteResponse cResponse = server.send(client, request, TIMEOUT);
@@ -281,7 +281,7 @@ public class ClientServlet extends HttpServlet {
         // /clients/endPoint/LWRequest : do LightWeight M2M create request on a given client.
         if (2 <= path.length && path.length <= 3) {
             try {
-                Client client = server.getClientRegistry().get(clientEndpoint);
+                Client client = server.getRegistrationService().getByEndpoint(clientEndpoint);
                 if (client != null) {
                     // get content format
                     String contentFormatParam = req.getParameter(FORMAT_PARAM);
@@ -327,7 +327,7 @@ public class ClientServlet extends HttpServlet {
         if (path.length >= 4 && "observe".equals(path[path.length - 1])) {
             try {
                 String target = StringUtils.substringsBetween(req.getPathInfo(), clientEndpoint, "/observe")[0];
-                Client client = server.getClientRegistry().get(clientEndpoint);
+                Client client = server.getRegistrationService().getByEndpoint(clientEndpoint);
                 if (client != null) {
                     server.getObservationRegistry().cancelObservations(client, target);
                     resp.setStatus(HttpServletResponse.SC_OK);
@@ -350,7 +350,7 @@ public class ClientServlet extends HttpServlet {
         // /clients/endPoint/LWRequest/ : delete instance
         try {
             String target = StringUtils.removeStart(req.getPathInfo(), "/" + clientEndpoint);
-            Client client = server.getClientRegistry().get(clientEndpoint);
+            Client client = server.getRegistrationService().getByEndpoint(clientEndpoint);
             if (client != null) {
                 DeleteRequest request = new DeleteRequest(target);
                 DeleteResponse cResponse = server.send(client, request, TIMEOUT);

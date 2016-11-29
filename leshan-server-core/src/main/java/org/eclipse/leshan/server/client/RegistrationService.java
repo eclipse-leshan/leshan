@@ -18,24 +18,34 @@ package org.eclipse.leshan.server.client;
 import java.util.Collection;
 
 /**
- * A registry to access registered clients
+ * A service to access registered clients
  */
-public interface ClientRegistry {
+public interface RegistrationService {
 
     /**
-     * Retrieves a registered client by end-point.
+     * Retrieves a registration by id.
+     * 
+     * @param registration id
+     * @return the matching registration or <code>null</code> if not found
+     */
+    Client getById(String id);
+
+    /**
+     * Retrieves a registration by end-point.
      * 
      * @param endpoint
-     * @return the matching client or <code>null</code> if not found
+     * @return the matching registration or <code>null</code> if not found
      */
-    Client get(String endpoint);
+    Client getByEndpoint(String endpoint);
 
     /**
-     * Returns an unmodifiable list of all registered clients.
+     * Returns an unmodifiable list of all registrations.
      * 
-     * @return the registered clients
+     * @return the registrations.
+     * @deprecated should be replace by an iterator
      */
-    Collection<Client> allClients();
+    @Deprecated
+    Collection<Client> getAllRegistrations();
 
     /**
      * Adds a new listener to be notified with client registration events.
@@ -50,12 +60,4 @@ public interface ClientRegistry {
      * @param listener the listener to be removed
      */
     void removeListener(ClientRegistryListener listener);
-
-    /**
-     * Retrieves a registered client by registration id.
-     * 
-     * @param registration id
-     * @return the matching client or <code>null</code> if not found
-     */
-    Client findByRegistrationId(String id);
 }

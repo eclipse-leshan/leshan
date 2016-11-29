@@ -22,14 +22,14 @@ import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientUpdate;
-import org.eclipse.leshan.server.impl.ClientRegistryImpl;
+import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ClientRegistryImplTest {
+public class RegistrationServiceImplTest {
 
-    ClientRegistryImpl registry;
+    RegistrationServiceImpl registry;
     String ep = "urn:endpoint";
     InetAddress address;
     int port = 23452;
@@ -43,7 +43,7 @@ public class ClientRegistryImplTest {
     @Before
     public void setUp() throws Exception {
         address = InetAddress.getLocalHost();
-        registry = new ClientRegistryImpl(new InMemoryRegistrationStore());
+        registry = new RegistrationServiceImpl(new InMemoryRegistrationStore());
     }
 
     @Test
@@ -57,7 +57,7 @@ public class ClientRegistryImplTest {
         Assert.assertSame(binding, updatedClient.getBindingMode());
         Assert.assertEquals(sms, updatedClient.getSmsNumber());
 
-        Client registeredClient = registry.get(ep);
+        Client registeredClient = registry.getByEndpoint(ep);
         Assert.assertEquals(lifetime, registeredClient.getLifeTimeInSec());
         Assert.assertSame(binding, registeredClient.getBindingMode());
         Assert.assertEquals(sms, registeredClient.getSmsNumber());
@@ -80,7 +80,7 @@ public class ClientRegistryImplTest {
         Client updatedClient = registry.updateClient(update);
         Assert.assertTrue(updatedClient.isAlive());
 
-        Client registeredClient = registry.get(ep);
+        Client registeredClient = registry.getByEndpoint(ep);
         Assert.assertTrue(registeredClient.isAlive());
     }
 

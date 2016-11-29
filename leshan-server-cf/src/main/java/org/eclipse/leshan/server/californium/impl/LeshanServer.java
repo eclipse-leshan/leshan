@@ -49,10 +49,10 @@ import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.californium.CaliforniumObservationRegistry;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.client.ClientRegistryListener;
 import org.eclipse.leshan.server.client.ClientUpdate;
-import org.eclipse.leshan.server.impl.ClientRegistryImpl;
+import org.eclipse.leshan.server.client.RegistrationService;
+import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
@@ -85,7 +85,7 @@ public class LeshanServer implements LwM2mServer {
 
     private final LwM2mRequestSender requestSender;
 
-    private final ClientRegistryImpl clientRegistry;
+    private final RegistrationServiceImpl registrationService;
 
     private final CaliforniumObservationRegistry observationRegistry;
 
@@ -106,7 +106,7 @@ public class LeshanServer implements LwM2mServer {
      *
      * @param localAddress the address to bind the CoAP server.
      * @param localSecureAddress the address to bind the CoAP server for DTLS connection.
-     * @param clientRegistry the registered {@link Client} registry.
+     * @param registrationService the {@link Client} service.
      * @param securityRegistry the {@link SecurityInfo} registry.
      * @param observationRegistry the {@link Observation} registry.
      * @param modelProvider provides the objects description for each client.
@@ -114,12 +114,12 @@ public class LeshanServer implements LwM2mServer {
      * @param encoder
      */
     public LeshanServer(InetSocketAddress localAddress, InetSocketAddress localSecureAddress,
-            final ClientRegistryImpl clientRegistry, final SecurityRegistry securityRegistry,
+            final RegistrationServiceImpl registrationService, final SecurityRegistry securityRegistry,
             final CaliforniumObservationRegistry observationRegistry, final LwM2mModelProvider modelProvider,
             LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
         Validate.notNull(localAddress, "IP address cannot be null");
         Validate.notNull(localSecureAddress, "Secure IP address cannot be null");
-        Validate.notNull(clientRegistry, "clientRegistry cannot be null");
+        Validate.notNull(registrationService, "registration service cannot be null");
         Validate.notNull(securityRegistry, "securityRegistry cannot be null");
         Validate.notNull(observationRegistry, "observationRegistry cannot be null");
         Validate.notNull(modelProvider, "modelProvider cannot be null");
@@ -127,7 +127,7 @@ public class LeshanServer implements LwM2mServer {
         Validate.notNull(decoder, "decoder cannot be null");
 
         // Init registries
-        this.clientRegistry = clientRegistry;
+        this.registrationService = registrationService;
         this.securityRegistry = securityRegistry;
         this.observationRegistry = observationRegistry;
         this.modelProvider = modelProvider;
@@ -135,7 +135,7 @@ public class LeshanServer implements LwM2mServer {
         this.decoder = decoder;
 
         // Cancel observations on client unregistering
-        this.clientRegistry.addListener(new ClientRegistryListener() {
+        this.registrationService.addListener(new ClientRegistryListener() {
 
             @Override
             public void updated(final ClientUpdate update, final Client clientUpdated) {
@@ -167,7 +167,7 @@ public class LeshanServer implements LwM2mServer {
 
         // secure endpoint
         Builder builder = new DtlsConnectorConfig.Builder(localSecureAddress);
-        builder.setPskStore(new LwM2mPskStore(this.securityRegistry, this.clientRegistry));
+        builder.setPskStore(new LwM2mPskStore(this.securityRegistry, this.registrationService.getStore()));
         PrivateKey privateKey = this.securityRegistry.getServerPrivateKey();
         PublicKey publicKey = this.securityRegistry.getServerPublicKey();
         X509Certificate[] X509CertChain = this.securityRegistry.getServerX509CertChain();
@@ -194,7 +194,7 @@ public class LeshanServer implements LwM2mServer {
 
         // define /rd resource
         final RegisterResource rdResource = new RegisterResource(
-                new RegistrationHandler(this.clientRegistry, this.securityRegistry));
+                new RegistrationHandler(this.registrationService, this.securityRegistry));
         coapServer.add(rdResource);
 
         // create sender
@@ -209,8 +209,8 @@ public class LeshanServer implements LwM2mServer {
     public void start() {
 
         // Start registries
-        if (clientRegistry instanceof Startable) {
-            ((Startable) clientRegistry).start();
+        if (registrationService instanceof Startable) {
+            ((Startable) registrationService).start();
         }
         if (securityRegistry instanceof Startable) {
             ((Startable) securityRegistry).start();
@@ -231,8 +231,8 @@ public class LeshanServer implements LwM2mServer {
         coapServer.stop();
 
         // Start registries
-        if (clientRegistry instanceof Stoppable) {
-            ((Stoppable) clientRegistry).stop();
+        if (registrationService instanceof Stoppable) {
+            ((Stoppable) registrationService).stop();
         }
         if (securityRegistry instanceof Stoppable) {
             ((Stoppable) securityRegistry).stop();
@@ -249,8 +249,8 @@ public class LeshanServer implements LwM2mServer {
         coapServer.destroy();
 
         // Destroy registries
-        if (clientRegistry instanceof Destroyable) {
-            ((Destroyable) clientRegistry).destroy();
+        if (registrationService instanceof Destroyable) {
+            ((Destroyable) registrationService).destroy();
         }
         if (securityRegistry instanceof Destroyable) {
             ((Destroyable) securityRegistry).destroy();
@@ -263,8 +263,8 @@ public class LeshanServer implements LwM2mServer {
     }
 
     @Override
-    public ClientRegistry getClientRegistry() {
-        return this.clientRegistry;
+    public RegistrationService getRegistrationService() {
+        return this.registrationService;
     }
 
     @Override

@@ -29,7 +29,6 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.californium.CaliforniumObservationRegistry;
 import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
 import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.impl.ClientRegistryImpl;
 import org.eclipse.leshan.server.model.StandardModelProvider;
 import org.junit.Assert;
 import org.junit.Before;
@@ -48,7 +47,7 @@ public class CaliforniumObservationTest {
     public void setUp() throws Exception {
         support.givenASimpleClient();
         store = new InMemoryRegistrationStore();
-        registry = new CaliforniumObservationRegistryImpl(store, new ClientRegistryImpl(store),
+        registry = new CaliforniumObservationRegistryImpl(store,
                 new StandardModelProvider(),
                 new DefaultLwM2mNodeDecoder());
     }
