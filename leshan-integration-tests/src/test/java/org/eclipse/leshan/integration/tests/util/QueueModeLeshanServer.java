@@ -27,7 +27,7 @@ import org.eclipse.leshan.server.Startable;
 import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.RegistrationService;
-import org.eclipse.leshan.server.client.ClientRegistryListener;
+import org.eclipse.leshan.server.client.RegistrationListener;
 import org.eclipse.leshan.server.client.ClientUpdate;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
@@ -62,7 +62,7 @@ public class QueueModeLeshanServer implements LwM2mServer {
         this.messageStore = inMemoryMessageStore;
 
         // Cancel observations on client unregistering
-        this.registrationService.addListener(new ClientRegistryListener() {
+        this.registrationService.addListener(new RegistrationListener() {
 
             @Override
             public void updated(ClientUpdate update, Client clientUpdated) {

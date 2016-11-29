@@ -52,12 +52,12 @@ public interface RegistrationService {
      * 
      * @param listener
      */
-    void addListener(ClientRegistryListener listener);
+    void addListener(RegistrationListener listener);
 
     /**
      * Removes a client registration listener.
      * 
      * @param listener the listener to be removed
      */
-    void removeListener(ClientRegistryListener listener);
+    void removeListener(RegistrationListener listener);
 }

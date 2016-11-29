@@ -35,8 +35,8 @@ import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.ClientRegistryListener;
 import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.client.RegistrationListener;
 import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
 import org.eclipse.leshan.server.observation.ObservationRegistryListener;
@@ -61,7 +61,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
     private final ExecutorService processingExecutor = Executors
             .newCachedThreadPool(new NamedThreadFactory("leshan-qmode-processingExecutor-%d"));
     private final MessageStore messageStore;
-    private final QueueModeClientRegistryListener queueModeClientRegistryListener;
+    private final QueueModeRegistrationListener queueModeRegistrationListener;
     private final QueueModeObservationRegistryListener queueModeObservationRegistryListener;
     private final RegistrationService registrationService;
     private final ObservationRegistry observationRegistry;
@@ -83,8 +83,8 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
 
         this.clientStatusTracker = new ClientStatusTracker();
 
-        this.queueModeClientRegistryListener = new QueueModeClientRegistryListener();
-        registrationService.addListener(queueModeClientRegistryListener);
+        this.queueModeRegistrationListener = new QueueModeRegistrationListener();
+        registrationService.addListener(queueModeRegistrationListener);
         this.queueModeObservationRegistryListener = new QueueModeObservationRegistryListener();
         observationRegistry.addListener(queueModeObservationRegistryListener);
         delegateSender.addResponseListener(createResponseListener());
@@ -157,7 +157,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
 
     @Override
     public void stop() {
-        registrationService.removeListener(queueModeClientRegistryListener);
+        registrationService.removeListener(queueModeRegistrationListener);
         observationRegistry.removeListener(queueModeObservationRegistryListener);
         processingExecutor.shutdown();
         try {
@@ -290,7 +290,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
         }
     }
 
-    private final class QueueModeClientRegistryListener implements ClientRegistryListener {
+    private final class QueueModeRegistrationListener implements RegistrationListener {
         @Override
         public void registered(Client client) {
             // When client is in QueueMode

@@ -18,7 +18,7 @@ package org.eclipse.leshan.server.client;
 /**
  * Listen for client registration events.
  */
-public interface ClientRegistryListener {
+public interface RegistrationListener {
 
     /**
      * Invoked when a new client has been registered on the server.

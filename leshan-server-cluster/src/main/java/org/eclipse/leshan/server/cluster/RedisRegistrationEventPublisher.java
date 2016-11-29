@@ -16,7 +16,7 @@
 package org.eclipse.leshan.server.cluster;
 
 import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.ClientRegistryListener;
+import org.eclipse.leshan.server.client.RegistrationListener;
 import org.eclipse.leshan.server.client.ClientUpdate;
 import org.eclipse.leshan.server.cluster.serialization.ClientSerDes;
 import org.eclipse.leshan.server.cluster.serialization.ClientUpdateSerDes;
@@ -29,7 +29,7 @@ import redis.clients.util.Pool;
 /**
  * A Client registry Listener which publish registration event on Redis channel.
  */
-public class RedisRegistrationEventPublisher implements ClientRegistryListener {
+public class RedisRegistrationEventPublisher implements RegistrationListener {
 
     private static String REGISTER_EVENT = "LESHAN_REG_NEW";
     private static String UPDATE_EVENT = "LESHAN_REG_UP";

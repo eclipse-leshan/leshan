@@ -23,8 +23,8 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.Startable;
 import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.ClientRegistryListener;
 import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.client.RegistrationListener;
 import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.registration.Deregistration;
 import org.eclipse.leshan.server.registration.ExpirationListener;
@@ -40,7 +40,7 @@ public class RegistrationServiceImpl implements RegistrationService, Startable, 
 
     private static final Logger LOG = LoggerFactory.getLogger(RegistrationServiceImpl.class);
 
-    private final List<ClientRegistryListener> listeners = new CopyOnWriteArrayList<>();
+    private final List<RegistrationListener> listeners = new CopyOnWriteArrayList<>();
 
     private RegistrationStore store;
 
@@ -50,12 +50,12 @@ public class RegistrationServiceImpl implements RegistrationService, Startable, 
     }
 
     @Override
-    public void addListener(ClientRegistryListener listener) {
+    public void addListener(RegistrationListener listener) {
         listeners.add(listener);
     }
 
     @Override
-    public void removeListener(ClientRegistryListener listener) {
+    public void removeListener(RegistrationListener listener) {
         listeners.remove(listener);
     }
 
@@ -76,11 +76,11 @@ public class RegistrationServiceImpl implements RegistrationService, Startable, 
 
         Deregistration previous = store.addRegistration(client);
         if (previous != null) {
-            for (ClientRegistryListener l : listeners) {
+            for (RegistrationListener l : listeners) {
                 l.unregistered(previous.getRegistration());
             }
         }
-        for (ClientRegistryListener l : listeners) {
+        for (RegistrationListener l : listeners) {
             l.registered(client);
         }
 
@@ -94,7 +94,7 @@ public class RegistrationServiceImpl implements RegistrationService, Startable, 
         Client clientUpdated = store.updateRegistration(update);
         if (clientUpdated != null) {
             // notify listener
-            for (ClientRegistryListener l : listeners) {
+            for (RegistrationListener l : listeners) {
                 l.updated(update, clientUpdated);
             }
             return clientUpdated;
@@ -108,7 +108,7 @@ public class RegistrationServiceImpl implements RegistrationService, Startable, 
         LOG.debug("Deregistering client with registrationId: {}", registrationId);
 
         Deregistration unregistered = store.removeRegistration(registrationId);
-        for (ClientRegistryListener l : listeners) {
+        for (RegistrationListener l : listeners) {
             l.unregistered(unregistered.getRegistration());
         }
         LOG.debug("Deregistered client: {}", unregistered);
@@ -144,7 +144,7 @@ public class RegistrationServiceImpl implements RegistrationService, Startable, 
 
     @Override
     public void registrationExpired(Client registration, Collection<Observation> observation) {
-        for (ClientRegistryListener l : listeners) {
+        for (RegistrationListener l : listeners) {
             l.unregistered(registration);
         }
     }

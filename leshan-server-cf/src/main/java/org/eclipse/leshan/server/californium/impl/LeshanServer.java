@@ -49,7 +49,7 @@ import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.californium.CaliforniumObservationRegistry;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.ClientRegistryListener;
+import org.eclipse.leshan.server.client.RegistrationListener;
 import org.eclipse.leshan.server.client.ClientUpdate;
 import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
@@ -135,7 +135,7 @@ public class LeshanServer implements LwM2mServer {
         this.decoder = decoder;
 
         // Cancel observations on client unregistering
-        this.registrationService.addListener(new ClientRegistryListener() {
+        this.registrationService.addListener(new RegistrationListener() {
 
             @Override
             public void updated(final ClientUpdate update, final Client clientUpdated) {

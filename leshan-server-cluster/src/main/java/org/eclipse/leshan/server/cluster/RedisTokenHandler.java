@@ -18,7 +18,7 @@ package org.eclipse.leshan.server.cluster;
 import java.util.Arrays;
 
 import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.ClientRegistryListener;
+import org.eclipse.leshan.server.client.RegistrationListener;
 import org.eclipse.leshan.server.client.ClientUpdate;
 import org.eclipse.leshan.util.Validate;
 
@@ -31,7 +31,7 @@ import redis.clients.util.Pool;
  * This class store the couple Cluster instance / LwM2M client in a Redis Store.</br>
  * Each Cluster instance is identified by a unique UI and each device by its endpoint.
  */
-public class RedisTokenHandler implements ClientRegistryListener {
+public class RedisTokenHandler implements RegistrationListener {
 
     private static final String EP_UID = "EP#UID#";
     private final Pool<Jedis> pool;

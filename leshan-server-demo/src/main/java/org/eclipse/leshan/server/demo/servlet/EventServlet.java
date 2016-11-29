@@ -28,8 +28,8 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.ClientRegistryListener;
 import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.client.RegistrationListener;
 import org.eclipse.leshan.server.demo.servlet.json.ClientSerializer;
 import org.eclipse.leshan.server.demo.servlet.json.LwM2mNodeSerializer;
 import org.eclipse.leshan.server.demo.servlet.log.CoapMessage;
@@ -71,7 +71,7 @@ public class EventServlet extends EventSourceServlet {
     private Set<LeshanEventSource> eventSources = Collections
             .newSetFromMap(new ConcurrentHashMap<LeshanEventSource, Boolean>());
 
-    private final ClientRegistryListener clientRegistryListener = new ClientRegistryListener() {
+    private final RegistrationListener registrationListener = new RegistrationListener() {
 
         @Override
         public void registered(Client client) {
@@ -123,7 +123,7 @@ public class EventServlet extends EventSourceServlet {
 
     public EventServlet(LeshanServer server, int securePort) {
         this.server = server;
-        server.getRegistrationService().addListener(this.clientRegistryListener);
+        server.getRegistrationService().addListener(this.registrationListener);
         server.getObservationRegistry().addListener(this.observationRegistryListener);
 
         // add an interceptor to each endpoint to trace all CoAP messages
