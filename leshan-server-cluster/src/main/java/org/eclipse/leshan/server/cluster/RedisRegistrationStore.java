@@ -57,7 +57,7 @@ import redis.clients.util.Pool;
  */
 public class RedisRegistrationStore implements CaliforniumRegistrationStore, Startable, Stoppable {
 
-    private static final Logger LOG = LoggerFactory.getLogger(RedisClientRegistry.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RedisRegistrationStore.class);
 
     // Redis key prefixes
     private static final String EP_REG = "EP#REG#";
