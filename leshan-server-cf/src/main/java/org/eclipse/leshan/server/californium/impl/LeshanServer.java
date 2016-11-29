@@ -52,6 +52,7 @@ import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.client.ClientRegistryListener;
 import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.impl.ClientRegistryImpl;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
@@ -84,7 +85,7 @@ public class LeshanServer implements LwM2mServer {
 
     private final LwM2mRequestSender requestSender;
 
-    private final ClientRegistry clientRegistry;
+    private final ClientRegistryImpl clientRegistry;
 
     private final CaliforniumObservationRegistry observationRegistry;
 
@@ -113,7 +114,7 @@ public class LeshanServer implements LwM2mServer {
      * @param encoder
      */
     public LeshanServer(InetSocketAddress localAddress, InetSocketAddress localSecureAddress,
-            final ClientRegistry clientRegistry, final SecurityRegistry securityRegistry,
+            final ClientRegistryImpl clientRegistry, final SecurityRegistry securityRegistry,
             final CaliforniumObservationRegistry observationRegistry, final LwM2mModelProvider modelProvider,
             LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
         Validate.notNull(localAddress, "IP address cannot be null");

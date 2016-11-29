@@ -70,7 +70,6 @@ public class ClientRegistryImpl implements ClientRegistry, Startable, Stoppable,
         return store.getRegistrationByEndpoint(endpoint);
     }
 
-    @Override
     public boolean registerClient(Client client) {
         Validate.notNull(client);
 
@@ -89,7 +88,6 @@ public class ClientRegistryImpl implements ClientRegistry, Startable, Stoppable,
         return true;
     }
 
-    @Override
     public Client updateClient(ClientUpdate update) {
         Validate.notNull(update);
 
@@ -105,7 +103,6 @@ public class ClientRegistryImpl implements ClientRegistry, Startable, Stoppable,
         return null;
     }
 
-    @Override
     public Client deregisterClient(String registrationId) {
         Validate.notNull(registrationId);
 

@@ -46,6 +46,7 @@ import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistryListener;
 import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.impl.ClientRegistryImpl;
 import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
 import org.eclipse.leshan.server.model.StaticModelProvider;
 
@@ -223,7 +224,7 @@ public class IntegrationTestHelper {
     public void deregisterClient() {
         Client c = getCurrentRegistration();
         if (c != null)
-            server.getClientRegistry().deregisterClient(c.getRegistrationId());
+            ((ClientRegistryImpl) server.getClientRegistry()).deregisterClient(c.getRegistrationId());
     }
 
     public void dispose() {

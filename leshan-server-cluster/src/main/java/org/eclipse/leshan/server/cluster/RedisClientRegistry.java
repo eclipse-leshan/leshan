@@ -108,7 +108,6 @@ public class RedisClientRegistry implements ClientRegistry, Startable, Stoppable
         }
     }
 
-    @Override
     public boolean registerClient(Client client) {
         try (Jedis j = pool.getResource()) {
             byte[] lockValue = null;
@@ -142,7 +141,6 @@ public class RedisClientRegistry implements ClientRegistry, Startable, Stoppable
         }
     }
 
-    @Override
     public Client updateClient(ClientUpdate update) {
         try (Jedis j = pool.getResource()) {
 
@@ -182,7 +180,6 @@ public class RedisClientRegistry implements ClientRegistry, Startable, Stoppable
         }
     }
 
-    @Override
     public Client deregisterClient(String registrationId) {
         try (Jedis j = pool.getResource()) {
 

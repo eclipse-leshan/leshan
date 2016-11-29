@@ -52,34 +52,6 @@ public interface ClientRegistry {
     void removeListener(ClientRegistryListener listener);
 
     /**
-     * Registers a new client.
-     * 
-     * An implementation must notify all registered listeners as part of processing the registration request.
-     * 
-     * @param client the client to register, identified by its end-point.
-     * @return <code>true</code> if the client was properly registered and <code>false</code> if the registration is not
-     *         allowed.
-     */
-    boolean registerClient(Client client);
-
-    /**
-     * Updates registration properties for a given client.
-     * 
-     * @param update the registration properties to update
-     * @return the updated registered client or <code>null</code> if no client is registered under the given end-point
-     *         name
-     */
-    Client updateClient(ClientUpdate update);
-
-    /**
-     * De-registers a client.
-     * 
-     * @param registrationId the client registrationId
-     * @return the previously registered client or <code>null</code> if no client is registered under the given ID
-     */
-    Client deregisterClient(String registrationId);
-
-    /**
      * Retrieves a registered client by registration id.
      * 
      * @param registration id

@@ -28,6 +28,7 @@ import org.eclipse.leshan.core.response.UpdateResponse;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.impl.ClientRegistryImpl;
 import org.eclipse.leshan.server.security.SecurityCheck;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.SecurityStore;
@@ -44,9 +45,9 @@ public class RegistrationHandler {
     private static final Logger LOG = LoggerFactory.getLogger(RegistrationHandler.class);
 
     private SecurityStore securityStore;
-    private ClientRegistry clientRegistry;
+    private ClientRegistryImpl clientRegistry;
 
-    public RegistrationHandler(ClientRegistry clientRegistry, SecurityStore securityStore) {
+    public RegistrationHandler(ClientRegistryImpl clientRegistry, SecurityStore securityStore) {
         this.clientRegistry = clientRegistry;
         this.securityStore = securityStore;
     }

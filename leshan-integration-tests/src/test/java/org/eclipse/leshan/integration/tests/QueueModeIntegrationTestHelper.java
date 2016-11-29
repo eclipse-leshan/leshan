@@ -46,7 +46,6 @@ import org.eclipse.leshan.server.californium.impl.CaliforniumObservationRegistry
 import org.eclipse.leshan.server.californium.impl.InMemoryRegistrationStore;
 import org.eclipse.leshan.server.californium.impl.RegisterResource;
 import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.impl.ClientRegistryImpl;
 import org.eclipse.leshan.server.impl.LwM2mRequestSenderImpl;
 import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
@@ -85,7 +84,7 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         super.updateLatch = new CountDownLatch(1);
 
         InMemoryRegistrationStore registrationStore = new InMemoryRegistrationStore();
-        ClientRegistry clientRegistry = new ClientRegistryImpl(registrationStore);
+        ClientRegistryImpl clientRegistry = new ClientRegistryImpl(registrationStore);
         SecurityRegistry securityRegistry = new SecurityRegistryImpl() {
             @Override
             protected void loadFromFile() {
