@@ -47,10 +47,11 @@ import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.Startable;
 import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.californium.CaliforniumObservationRegistry;
+import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.RegistrationListener;
 import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.client.RegistrationListener;
 import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
@@ -106,30 +107,28 @@ public class LeshanServer implements LwM2mServer {
      *
      * @param localAddress the address to bind the CoAP server.
      * @param localSecureAddress the address to bind the CoAP server for DTLS connection.
-     * @param registrationService the {@link Client} service.
+     * @param registrationStore the {@link Client} store.
      * @param securityRegistry the {@link SecurityInfo} registry.
-     * @param observationRegistry the {@link Observation} registry.
      * @param modelProvider provides the objects description for each client.
      * @param decoder
      * @param encoder
      */
     public LeshanServer(InetSocketAddress localAddress, InetSocketAddress localSecureAddress,
-            final RegistrationServiceImpl registrationService, final SecurityRegistry securityRegistry,
-            final CaliforniumObservationRegistry observationRegistry, final LwM2mModelProvider modelProvider,
+            CaliforniumRegistrationStore registrationStore, SecurityRegistry securityRegistry,
+            LwM2mModelProvider modelProvider,
             LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
         Validate.notNull(localAddress, "IP address cannot be null");
         Validate.notNull(localSecureAddress, "Secure IP address cannot be null");
-        Validate.notNull(registrationService, "registration service cannot be null");
+        Validate.notNull(registrationStore, "registration store cannot be null");
         Validate.notNull(securityRegistry, "securityRegistry cannot be null");
-        Validate.notNull(observationRegistry, "observationRegistry cannot be null");
         Validate.notNull(modelProvider, "modelProvider cannot be null");
         Validate.notNull(encoder, "encoder cannot be null");
         Validate.notNull(decoder, "decoder cannot be null");
 
         // Init registries
-        this.registrationService = registrationService;
+        this.registrationService = new RegistrationServiceImpl(registrationStore);
         this.securityRegistry = securityRegistry;
-        this.observationRegistry = observationRegistry;
+        this.observationRegistry = new CaliforniumObservationRegistryImpl(registrationStore, modelProvider, decoder);
         this.modelProvider = modelProvider;
         this.encoder = encoder;
         this.decoder = decoder;
