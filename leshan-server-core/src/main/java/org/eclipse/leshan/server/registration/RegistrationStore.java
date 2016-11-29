@@ -22,32 +22,99 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientUpdate;
 
+/**
+ * A store for registrations and observations. This interface is also responsible to handle registration expiration.
+ */
 public interface RegistrationStore {
 
+    /**
+     * Add a new registration. If there is already a registration with the same endpoint removed it.
+     * 
+     * @param registration the new registration.
+     * @return the old registration and its observations removed or null.
+     */
     Deregistration addRegistration(Client registration);
 
+    /**
+     * Update an existing registration
+     * 
+     * @param update data to update
+     * @return the registration updated
+     */
     Client updateRegistration(ClientUpdate update);
 
+    /**
+     * Get the registration by registration Id.
+     * 
+     * @param registrationId of the registration.
+     * @return the registration or null if there is no registration with this id.
+     */
     Client getRegistration(String registrationId);
 
+    /**
+     * Get the registration by endpoint.
+     * 
+     * @param endpoint of the registration.
+     * @return the registration or null if there is no registration with this endpoint.
+     */
     Client getRegistrationByEndpoint(String endpoint);
 
+    /**
+     * Get the registration by socket address.
+     * 
+     * @param address of the client registered.
+     * @return the registration or null if there is no client registered with this socket address.
+     */
     Collection<Client> getRegistrationByAdress(InetSocketAddress address);
 
-    // TODO should be removed
+    /**
+     * @return all registrations in this store.
+     * @Deprecated should be replaced by an iterator.
+     */
+    // TODO Should be replaced by an iterator.
+    @Deprecated
     Collection<Client> getAllRegistration();
 
+    /**
+     * Remove the registration with the given registration Id
+     * 
+     * @param registrationId the id of the registration to removed
+     * @return the registration and observations removed or null if there is no registration for this Id.
+     */
     Deregistration removeRegistration(String registrationId);
 
+    /**
+     * Add a new Observation for a given registration.
+     * 
+     * @param registrationId the id of the registration
+     * @param observation the observation to add
+     * 
+     * @return the previous observation or null if any.
+     */
     Observation addObservation(String registrationId, Observation observation);
 
+    /**
+     * Get the observation for the given registration with the given observationId
+     */
     Observation getObservation(String registrationId, byte[] observationId);
 
+    /**
+     * Remove the observation for the given registration with the given observationId
+     */
     Observation removeObservation(String registrationId, byte[] observationId);
 
+    /**
+     * Get all observations for the given registrationId
+     */
     Collection<Observation> getObservations(String registrationId);
 
+    /**
+     * Remove all observations for the given registrationId
+     */
     Collection<Observation> removeObservations(String registrationId);
 
+    /**
+     * set a listener for registration expiration.
+     */
     void setExpirationListener(ExpirationListener listener);
 }

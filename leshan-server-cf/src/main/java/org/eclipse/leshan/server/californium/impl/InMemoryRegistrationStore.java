@@ -51,6 +51,9 @@ import org.eclipse.leshan.server.registration.ExpirationListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * An in memory store for registration and observation.
+ */
 public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, Startable, Stoppable {
     private final Logger LOG = LoggerFactory.getLogger(InMemoryRegistrationStore.class);
 

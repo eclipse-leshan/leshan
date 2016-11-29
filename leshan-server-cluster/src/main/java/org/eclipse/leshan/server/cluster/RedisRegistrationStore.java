@@ -52,6 +52,9 @@ import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.util.Pool;
 
+/**
+ * A RegistrationStore which stores registrations and observations in Redis.
+ */
 public class RedisRegistrationStore implements CaliforniumRegistrationStore, Startable, Stoppable {
 
     private static final Logger LOG = LoggerFactory.getLogger(RedisClientRegistry.class);

@@ -21,6 +21,11 @@ import java.util.Collections;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.client.Client;
 
+/**
+ * A Deregistration contains all informations which are removed after a client was unregistered.
+ * 
+ * @see RegistrationStore
+ */
 public class Deregistration {
     final Client registration;
     final Collection<Observation> observations;

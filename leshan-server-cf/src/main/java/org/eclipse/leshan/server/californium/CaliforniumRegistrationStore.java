@@ -18,6 +18,9 @@ package org.eclipse.leshan.server.californium;
 import org.eclipse.californium.core.observe.ObservationStore;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 
+/**
+ * A registration store which is able to store Californium observation.
+ */
 public interface CaliforniumRegistrationStore extends RegistrationStore, ObservationStore
 {
 

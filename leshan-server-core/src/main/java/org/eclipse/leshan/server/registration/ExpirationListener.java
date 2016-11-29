@@ -20,6 +20,11 @@ import java.util.Collection;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.client.Client;
 
+/**
+ * A listener to be aware of registration expiration.
+ * 
+ * @see RegistrationStore
+ */
 public interface ExpirationListener {
 
     void registrationExpired(Client registration, Collection<Observation> observation);
