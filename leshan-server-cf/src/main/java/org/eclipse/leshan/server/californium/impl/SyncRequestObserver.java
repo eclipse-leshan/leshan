@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
-import org.eclipse.leshan.core.request.exception.RequestFailedException;
+import org.eclipse.leshan.core.request.exception.RequestRejectedException;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +74,7 @@ public abstract class SyncRequestObserver<T extends LwM2mResponse> extends Abstr
 
     @Override
     public void onReject() {
-        exception.set(new RequestFailedException("Rejected request"));
+        exception.set(new RequestRejectedException());
         latch.countDown();
     }
 

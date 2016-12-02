@@ -26,9 +26,4 @@ public class RequestCanceledException extends RuntimeException {
     public RequestCanceledException() {
         super();
     }
-
-    public RequestCanceledException(String message) {
-        super(message);
-    }
-
 }

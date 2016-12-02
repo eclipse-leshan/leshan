@@ -27,7 +27,8 @@ import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.client.request.LwM2mClientRequestSender;
 import org.eclipse.leshan.core.request.UplinkRequest;
-import org.eclipse.leshan.core.request.exception.RequestFailedException;
+import org.eclipse.leshan.core.request.exception.RequestCanceledException;
+import org.eclipse.leshan.core.request.exception.RequestRejectedException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
@@ -54,7 +55,7 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
         // TODO manage invalid parameters
         // if (!coapClientRequestBuilder.areParametersValid()) {
         // return OperationResponse.failure(ResponseCode.INTERNAL_SERVER_ERROR,
-        // "Request has invalid parameters.  Not sending.");
+        // "Request has invalid parameters. Not sending.");
         // }
         final Request coapRequest = coapClientRequestBuilder.getRequest();
 
@@ -91,7 +92,7 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
         // TODO manage invalid parameters
         // if (!coapClientRequestBuilder.areParametersValid()) {
         // responseCallback.onFailure(OperationResponse.failure(ResponseCode.INTERNAL_SERVER_ERROR,
-        // "Request has invalid parameters.  Not sending."));
+        // "Request has invalid parameters. Not sending."));
         // return;
         // }
         final Request coapRequest = coapClientRequestBuilder.getRequest();
@@ -163,12 +164,12 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
 
         @Override
         public void onCancel() {
-            errorCallback.onError(new RequestFailedException("Canceled request"));
+            errorCallback.onError(new RequestCanceledException());
         }
 
         @Override
         public void onReject() {
-            errorCallback.onError(new RequestFailedException("Reject request"));
+            errorCallback.onError(new RequestRejectedException());
         }
 
     }
@@ -215,7 +216,7 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
 
         @Override
         public void onReject() {
-            exception.set(new RequestFailedException("Rejected request"));
+            exception.set(new RequestRejectedException());
             latch.countDown();
         }
 

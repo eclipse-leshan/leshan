@@ -134,11 +134,10 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
                     processingExecutor.execute(newRequestSendingTask(endpoint));
                 }
             } else {
-                String message = String.format("message received in Queue Mode for the unknown client [%s]", endpoint);
-                LOG.warn(message);
+                LOG.warn("message received in Queue Mode for the unknown client {}", endpoint);
                 // notify application layer that the message will not be sent for unknown client
                 processingExecutor.execute(new ResponseProcessingTask(destination, requestTicket, responseListeners,
-                        new RequestCanceledException(message)));
+                        new RequestCanceledException()));
             }
         } finally {
             readWriteLock.readLock().unlock();
@@ -191,7 +190,7 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
             List<QueuedRequest> removedMessages = messageStore.removeAll(registration.getEndpoint());
             for (QueuedRequest request : removedMessages) {
                 processingExecutor.execute(new ResponseProcessingTask(registration, request.getRequestTicket(),
-                        responseListeners, new RequestCanceledException("Queued message cancelled")));
+                        responseListeners, new RequestCanceledException()));
             }
         } finally {
             readWriteLock.writeLock().unlock();
