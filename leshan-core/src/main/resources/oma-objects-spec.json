@@ -1705,7 +1705,7 @@
         "operations": "R",
         "instancetype": "single",
         "mandatory": false,
-        "type": "string",
+        "type": "float",
         "range": "",
         "units": "Defined by “Units” resource.",
         "description": "The minimum value that can be measured by the sensor"
