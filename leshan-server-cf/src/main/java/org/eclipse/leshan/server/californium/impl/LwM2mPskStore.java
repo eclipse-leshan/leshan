@@ -19,6 +19,7 @@ import java.net.InetSocketAddress;
 import java.util.Arrays;
 
 import org.eclipse.californium.scandium.dtls.pskstore.PskStore;
+import org.eclipse.californium.scandium.util.ServerNames;
 import org.eclipse.leshan.server.client.Client;
 import org.eclipse.leshan.server.client.ClientRegistry;
 import org.eclipse.leshan.server.security.SecurityInfo;
@@ -65,4 +66,10 @@ public class LwM2mPskStore implements PskStore {
         }
         return null;
     }
+
+    @Override
+    public byte[] getKey(ServerNames serverNames, String identity) {
+        return getKey(identity);
+    }
+
 }
