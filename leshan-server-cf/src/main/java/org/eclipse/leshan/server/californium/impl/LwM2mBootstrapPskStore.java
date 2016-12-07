@@ -19,6 +19,7 @@ import java.net.InetSocketAddress;
 import java.util.Arrays;
 
 import org.eclipse.californium.scandium.dtls.pskstore.PskStore;
+import org.eclipse.californium.scandium.util.ServerNames;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
 
@@ -50,5 +51,10 @@ public class LwM2mBootstrapPskStore implements PskStore {
     @Override
     public String getIdentity(InetSocketAddress inetAddress) {
         throw new UnsupportedOperationException("Getting PSK Id by IP addresss dos not make sense on BS server side.");
+    }
+
+    @Override
+    public byte[] getKey(ServerNames serverNames, String identity) {
+        return getKey(identity);
     }
 }
