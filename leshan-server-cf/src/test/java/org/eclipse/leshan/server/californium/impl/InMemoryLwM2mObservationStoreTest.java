@@ -15,7 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -40,7 +43,9 @@ public class InMemoryLwM2mObservationStoreTest {
 
     @Test(expected = IllegalStateException.class)
     public void missing_registration_id() {
-        store.add(new Observation(Request.newGet(), null));
+        Request request = Request.newGet();
+        request.getOptions().setObserve(0);
+        store.add(new Observation(request, null));
     }
 
     @Test
@@ -91,6 +96,7 @@ public class InMemoryLwM2mObservationStoreTest {
     private Observation newObservation(byte[] token, String registrationId) {
         Request coapRequest = Request.newGet();
         coapRequest.setToken(token);
+        coapRequest.getOptions().setObserve(0);
         Map<String, String> context = new HashMap<>();
         context.put(CoapRequestBuilder.CTX_REGID, registrationId);
         context.put(CoapRequestBuilder.CTX_LWM2M_PATH, "/3/0");

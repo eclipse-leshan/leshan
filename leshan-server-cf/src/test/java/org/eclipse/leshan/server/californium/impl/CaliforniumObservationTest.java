@@ -128,6 +128,7 @@ public class CaliforniumObservationTest {
         coapRequest.getOptions().addUriPath(String.valueOf(target.getObjectId()));
         coapRequest.getOptions().addUriPath(String.valueOf(target.getObjectInstanceId()));
         coapRequest.getOptions().addUriPath(String.valueOf(target.getResourceId()));
+        coapRequest.getOptions().setObserve(0);
         coapRequest.setDestination(support.client.getAddress());
         coapRequest.setDestinationPort(support.client.getPort());
         Map<String, String> context = new HashMap<>();
