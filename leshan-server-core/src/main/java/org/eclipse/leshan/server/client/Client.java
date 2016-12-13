@@ -221,7 +221,7 @@ public class Client implements Serializable {
         }
     }
 
-    public synchronized Long getLifeTimeInSec() {
+    public Long getLifeTimeInSec() {
         return lifeTimeInSec;
     }
 

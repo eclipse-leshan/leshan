@@ -424,22 +424,16 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
         @Override
         public void run() {
             try {
-                lock.readLock().lock();
-
-                for (Client client : getAllRegistration()) {
-                    synchronized (client) {
-                        if (!client.isAlive()) {
-                            // force de-registration
-                            Deregistration removedRegistration = removeRegistration(client.getRegistrationId());
-                            expirationListener.registrationExpired(removedRegistration.getRegistration(),
-                                    removedRegistration.getObservations());
-                        }
+                for (Client client : new ArrayList<Client>(getAllRegistration())) {
+                    if (!client.isAlive()) {
+                        // force de-registration
+                        Deregistration removedRegistration = removeRegistration(client.getRegistrationId());
+                        expirationListener.registrationExpired(removedRegistration.getRegistration(),
+                                removedRegistration.getObservations());
                     }
                 }
             } catch (Exception e) {
                 LOG.warn("Unexcepted Exception while registration cleaning", e);
-            } finally {
-                lock.readLock().unlock();
             }
         }
     }
