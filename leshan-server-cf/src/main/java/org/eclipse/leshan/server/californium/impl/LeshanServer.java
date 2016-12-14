@@ -37,7 +37,6 @@ import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
-import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -98,10 +97,6 @@ public class LeshanServer implements LwM2mServer {
 
     private final CoapEndpoint secureEndpoint;
 
-    private final LwM2mNodeEncoder encoder;
-
-    private final LwM2mNodeDecoder decoder;
-
     /**
      * Initialize a server which will bind to the specified address and port.
      *
@@ -130,8 +125,6 @@ public class LeshanServer implements LwM2mServer {
         this.securityRegistry = securityRegistry;
         this.observationRegistry = new CaliforniumObservationRegistryImpl(registrationStore, modelProvider, decoder);
         this.modelProvider = modelProvider;
-        this.encoder = encoder;
-        this.decoder = decoder;
 
         // Cancel observations on client unregistering
         this.registrationService.addListener(new RegistrationListener() {
