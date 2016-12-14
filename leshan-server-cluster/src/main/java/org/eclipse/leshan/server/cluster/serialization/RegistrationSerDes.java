@@ -22,7 +22,7 @@ import java.util.Map;
 
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.core.request.BindingMode;
-import org.eclipse.leshan.server.client.Client;
+import org.eclipse.leshan.server.client.Registration;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;
@@ -32,26 +32,26 @@ import com.eclipsesource.json.JsonValue;
 /**
  * Functions for serialize and deserialize a Client in JSON.
  */
-public class ClientSerDes {
+public class RegistrationSerDes {
 
-    public static JsonObject jSerialize(Client c) {
+    public static JsonObject jSerialize(Registration r) {
         JsonObject o = Json.object();
-        o.add("regDate", c.getRegistrationDate().getTime());
-        o.add("address", c.getAddress().getHostAddress());
-        o.add("port", c.getPort());
-        o.add("regAddr", c.getRegistrationEndpointAddress().getHostString());
-        o.add("regPort", c.getRegistrationEndpointAddress().getPort());
-        o.add("lt", c.getLifeTimeInSec());
-        if (c.getSmsNumber() != null) {
-            o.add("sms", c.getSmsNumber());
+        o.add("regDate", r.getRegistrationDate().getTime());
+        o.add("address", r.getAddress().getHostAddress());
+        o.add("port", r.getPort());
+        o.add("regAddr", r.getRegistrationEndpointAddress().getHostString());
+        o.add("regPort", r.getRegistrationEndpointAddress().getPort());
+        o.add("lt", r.getLifeTimeInSec());
+        if (r.getSmsNumber() != null) {
+            o.add("sms", r.getSmsNumber());
         }
-        o.add("ver", c.getLwM2mVersion());
-        o.add("bnd", c.getBindingMode().name());
-        o.add("ep", c.getEndpoint());
-        o.add("regId", c.getRegistrationId());
+        o.add("ver", r.getLwM2mVersion());
+        o.add("bnd", r.getBindingMode().name());
+        o.add("ep", r.getEndpoint());
+        o.add("regId", r.getId());
 
         JsonArray links = new JsonArray();
-        for (LinkObject l : c.getObjectLinks()) {
+        for (LinkObject l : r.getObjectLinks()) {
             JsonObject ol = Json.object();
             ol.add("url", l.getUrl());
             JsonObject at = Json.object();
@@ -67,25 +67,25 @@ public class ClientSerDes {
         }
         o.add("objLink", links);
         JsonObject addAttr = Json.object();
-        for (Map.Entry<String, String> e : c.getAdditionalRegistrationAttributes().entrySet()) {
+        for (Map.Entry<String, String> e : r.getAdditionalRegistrationAttributes().entrySet()) {
             addAttr.add(e.getKey(), e.getValue());
         }
         o.add("addAttr", addAttr);
-        o.add("root", c.getRootPath());
-        o.add("lastUp", c.getLastUpdate().getTime());
+        o.add("root", r.getRootPath());
+        o.add("lastUp", r.getLastUpdate().getTime());
         return o;
     }
 
-    public static String sSerialize(Client c) {
-        return jSerialize(c).toString();
+    public static String sSerialize(Registration r) {
+        return jSerialize(r).toString();
     }
 
-    public static byte[] bSerialize(Client c) {
-        return jSerialize(c).toString().getBytes();
+    public static byte[] bSerialize(Registration r) {
+        return jSerialize(r).toString().getBytes();
     }
 
-    public static Client deserialize(JsonObject jObj) {
-        Client.Builder b = new Client.Builder(jObj.getString("regId", null), jObj.getString("ep", null),
+    public static Registration deserialize(JsonObject jObj) {
+        Registration.Builder b = new Registration.Builder(jObj.getString("regId", null), jObj.getString("ep", null),
                 new InetSocketAddress(jObj.getString("address", null), jObj.getInt("port", 0)).getAddress(),
                 jObj.getInt("port", 0),
                 new InetSocketAddress(jObj.getString("regAddr", null), jObj.getInt("regPort", 0)));
@@ -127,7 +127,7 @@ public class ClientSerDes {
         return b.build();
     }
 
-    public static Client deserialize(byte[] data) {
+    public static Registration deserialize(byte[] data) {
         return deserialize((JsonObject) Json.parse(new String(data)));
     }
 }

@@ -26,7 +26,7 @@ import org.eclipse.leshan.util.Validate;
 /**
  * A container object for updating a LW-M2M client's registration properties on the server.
  */
-public class ClientUpdate {
+public class RegistrationUpdate {
 
     private final String registrationId;
 
@@ -38,7 +38,7 @@ public class ClientUpdate {
     private final BindingMode bindingMode;
     private final LinkObject[] objectLinks;
 
-    public ClientUpdate(String registrationId, InetAddress address, Integer port, Long lifeTimeInSec, String smsNumber,
+    public RegistrationUpdate(String registrationId, InetAddress address, Integer port, Long lifeTimeInSec, String smsNumber,
             BindingMode bindingMode, LinkObject[] objectLinks) {
         Validate.notNull(registrationId);
         Validate.notNull(address);
@@ -54,29 +54,30 @@ public class ClientUpdate {
     }
 
     /**
-     * Returns an updated version of the client.
+     * Returns an updated version of the registration.
      * 
-     * @param client the registered client
-     * @return the updated client
+     * @param registration the registration to update
+     * @return the updated registration
      */
-    public Client updateClient(Client client) {
-        InetAddress address = this.address != null ? this.address : client.getAddress();
-        int port = this.port != null ? this.port : client.getPort();
-        LinkObject[] linkObject = this.objectLinks != null ? this.objectLinks : client.getObjectLinks();
-        long lifeTimeInSec = this.lifeTimeInSec != null ? this.lifeTimeInSec : client.getLifeTimeInSec();
-        BindingMode bindingMode = this.bindingMode != null ? this.bindingMode : client.getBindingMode();
-        String smsNumber = this.smsNumber != null ? this.smsNumber : client.getSmsNumber();
+    public Registration update(Registration registration) {
+        InetAddress address = this.address != null ? this.address : registration.getAddress();
+        int port = this.port != null ? this.port : registration.getPort();
+        LinkObject[] linkObject = this.objectLinks != null ? this.objectLinks : registration.getObjectLinks();
+        long lifeTimeInSec = this.lifeTimeInSec != null ? this.lifeTimeInSec : registration.getLifeTimeInSec();
+        BindingMode bindingMode = this.bindingMode != null ? this.bindingMode : registration.getBindingMode();
+        String smsNumber = this.smsNumber != null ? this.smsNumber : registration.getSmsNumber();
 
         // this needs to be done in any case, even if no properties have changed, in order
-        // to extend the client registration's time-to-live period ...
+        // to extend the client registration time-to-live period ...
         Date lastUpdate = new Date();
 
-        Client.Builder builder = new Client.Builder(client.getRegistrationId(), client.getEndpoint(), address, port,
-                client.getRegistrationEndpointAddress());
+        Registration.Builder builder = new Registration.Builder(registration.getId(), registration.getEndpoint(),
+                address, port, registration.getRegistrationEndpointAddress());
 
-        builder.lwM2mVersion(client.getLwM2mVersion()).lifeTimeInSec(lifeTimeInSec).smsNumber(smsNumber)
-                .bindingMode(bindingMode).objectLinks(linkObject).registrationDate(client.getRegistrationDate())
-                .lastUpdate(lastUpdate).additionalRegistrationAttributes(client.getAdditionalRegistrationAttributes());
+        builder.lwM2mVersion(registration.getLwM2mVersion()).lifeTimeInSec(lifeTimeInSec).smsNumber(smsNumber)
+                .bindingMode(bindingMode).objectLinks(linkObject).registrationDate(registration.getRegistrationDate())
+                .lastUpdate(lastUpdate)
+                .additionalRegistrationAttributes(registration.getAdditionalRegistrationAttributes());
 
         return builder.build();
 
@@ -113,7 +114,7 @@ public class ClientUpdate {
     @Override
     public String toString() {
         return String.format(
-                "ClientUpdate [registrationId=%s, address=%s, port=%s, lifeTimeInSec=%s, smsNumber=%s, bindingMode=%s, objectLinks=%s]",
+                "RegistrationUpdate [registrationId=%s, address=%s, port=%s, lifeTimeInSec=%s, smsNumber=%s, bindingMode=%s, objectLinks=%s]",
                 registrationId, address, port, lifeTimeInSec, smsNumber, bindingMode, Arrays.toString(objectLinks));
     }
 
@@ -139,7 +140,7 @@ public class ClientUpdate {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        ClientUpdate other = (ClientUpdate) obj;
+        RegistrationUpdate other = (RegistrationUpdate) obj;
         if (address == null) {
             if (other.address != null)
                 return false;

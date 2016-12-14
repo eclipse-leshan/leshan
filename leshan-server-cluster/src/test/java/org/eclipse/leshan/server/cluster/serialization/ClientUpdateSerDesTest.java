@@ -23,7 +23,7 @@ import java.util.Map;
 
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.core.request.BindingMode;
-import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.junit.Test;
 
 public class ClientUpdateSerDesTest {
@@ -37,12 +37,12 @@ public class ClientUpdateSerDesTest {
         objs[0] = new LinkObject("/0/1024/2", att);
         objs[1] = new LinkObject("/0/2");
 
-        ClientUpdate cu = new ClientUpdate("myId", Inet4Address.getByName("127.0.0.1"), 5683, 60000l, null,
+        RegistrationUpdate ru = new RegistrationUpdate("myId", Inet4Address.getByName("127.0.0.1"), 5683, 60000l, null,
                 BindingMode.U, objs);
 
-        byte[] ser = ClientUpdateSerDes.bSerialize(cu);
-        ClientUpdate cu2 = ClientUpdateSerDes.deserialize(ser);
+        byte[] ser = RegistrationUpdateSerDes.bSerialize(ru);
+        RegistrationUpdate ru2 = RegistrationUpdateSerDes.deserialize(ser);
 
-        assertEquals(cu, cu2);
+        assertEquals(ru, ru2);
     }
 }

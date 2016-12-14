@@ -45,7 +45,7 @@ import org.eclipse.leshan.server.californium.impl.CaliforniumLwM2mRequestSender;
 import org.eclipse.leshan.server.californium.impl.CaliforniumObservationRegistryImpl;
 import org.eclipse.leshan.server.californium.impl.InMemoryRegistrationStore;
 import org.eclipse.leshan.server.californium.impl.RegisterResource;
-import org.eclipse.leshan.server.client.Client;
+import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.impl.LwM2mRequestSenderImpl;
 import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
 import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
@@ -172,7 +172,7 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
     }
 
     @Override
-    public Client getCurrentRegistration() {
+    public Registration getCurrentRegistration() {
         return server.getRegistrationService().getByEndpoint(getCurrentEndpoint());
     }
 }

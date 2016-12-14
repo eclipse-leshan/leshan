@@ -90,7 +90,7 @@ public class ObserveTest {
         // an observation response should have been sent
         Observation observation = observeResponse.getObservation();
         assertEquals("/3/0/15", observation.getPath().toString());
-        assertEquals(helper.getCurrentRegistration().getRegistrationId(), observation.getRegistrationId());
+        assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
 
         // write device timezone
         LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
@@ -119,7 +119,7 @@ public class ObserveTest {
         // an observation response should have been sent
         Observation observation = observeResponse.getObservation();
         assertEquals("/3/0", observation.getPath().toString());
-        assertEquals(helper.getCurrentRegistration().getRegistrationId(), observation.getRegistrationId());
+        assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
 
         // write device timezone
         LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
@@ -153,7 +153,7 @@ public class ObserveTest {
         // an observation response should have been sent
         Observation observation = observeResponse.getObservation();
         assertEquals("/3", observation.getPath().toString());
-        assertEquals(helper.getCurrentRegistration().getRegistrationId(), observation.getRegistrationId());
+        assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
 
         // write device timezone
         LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
@@ -188,7 +188,7 @@ public class ObserveTest {
         // an observation response should have been sent
         Observation observation = observeResponse.getObservation();
         assertEquals("/3/0/15", observation.getPath().toString());
-        assertEquals(helper.getCurrentRegistration().getRegistrationId(), observation.getRegistrationId());
+        assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
 
         // *** HACK send time-stamped notification as Leshan client does not support it *** //
         // create time-stamped nodes
@@ -228,7 +228,7 @@ public class ObserveTest {
         // an observation response should have been sent
         Observation observation = observeResponse.getObservation();
         assertEquals("/3/0", observation.getPath().toString());
-        assertEquals(helper.getCurrentRegistration().getRegistrationId(), observation.getRegistrationId());
+        assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
 
         // *** HACK send time-stamped notification as Leshan client does not support it *** //
         // create time-stamped nodes
@@ -268,7 +268,7 @@ public class ObserveTest {
         // an observation response should have been sent
         Observation observation = observeResponse.getObservation();
         assertEquals("/3", observation.getPath().toString());
-        assertEquals(helper.getCurrentRegistration().getRegistrationId(), observation.getRegistrationId());
+        assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
 
         // *** HACK send time-stamped notification as Leshan client does not support it *** //
         // create time-stamped nodes

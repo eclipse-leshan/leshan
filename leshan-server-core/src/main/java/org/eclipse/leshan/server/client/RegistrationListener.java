@@ -23,22 +23,22 @@ public interface RegistrationListener {
     /**
      * Invoked when a new client has been registered on the server.
      *
-     * @param client
+     * @param registration
      */
-    void registered(Client client);
+    void registered(Registration registration);
 
     /**
-     * Invoked when a client has been updated.
+     * Invoked when a client updated its registration.
      *
      * @param update the registration properties to update
-     * @param clientUpdated the client after the update
+     * @param updatedRegistration the registration after the update
      */
-    void updated(ClientUpdate update, Client clientUpdated);
+    void updated(RegistrationUpdate update, Registration updatedRegistration);
 
     /**
-     * Invoked when a new client has been unregistered from the server.
+     * Invoked when a client has been unregistered from the server.
      *
-     * @param client
+     * @param registration
      */
-    void unregistered(Client client);
+    void unregistered(Registration registration);
 }

@@ -21,7 +21,7 @@ import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.server.Stoppable;
-import org.eclipse.leshan.server.client.Client;
+import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.queue.impl.QueuedRequestSender;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
 import org.eclipse.leshan.server.response.ResponseListener;
@@ -48,14 +48,14 @@ public class LwM2mRequestSenderImpl implements LwM2mRequestSender, Stoppable {
 
     @SuppressWarnings("deprecation")
     @Override
-    public <T extends LwM2mResponse> T send(Client destination, DownlinkRequest<T> request, Long timeout)
+    public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request, Long timeout)
             throws InterruptedException {
         return defaultRequestSender.send(destination, request, timeout);
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public <T extends LwM2mResponse> void send(Client destination, DownlinkRequest<T> request,
+    public <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         if (destination.usesQueueMode()) {
             queuedRequestSender.send(destination, request, responseCallback, errorCallback);
@@ -65,7 +65,7 @@ public class LwM2mRequestSenderImpl implements LwM2mRequestSender, Stoppable {
     }
 
     @Override
-    public <T extends LwM2mResponse> void send(Client destination, String requestTicket, DownlinkRequest<T> request) {
+    public <T extends LwM2mResponse> void send(Registration destination, String requestTicket, DownlinkRequest<T> request) {
         if (destination.usesQueueMode()) {
             queuedRequestSender.send(destination, requestTicket, request);
         } else {
@@ -96,10 +96,10 @@ public class LwM2mRequestSenderImpl implements LwM2mRequestSender, Stoppable {
     }
 
     @Override
-    public void cancelPendingRequests(Client client) {
+    public void cancelPendingRequests(Registration registration) {
         // cancel on the both the senders are required for the scenario
         // where the LWM2M client could change binding modes.
-        defaultRequestSender.cancelPendingRequests(client);
-        queuedRequestSender.cancelPendingRequests(client);
+        defaultRequestSender.cancelPendingRequests(registration);
+        queuedRequestSender.cancelPendingRequests(registration);
     }
 }

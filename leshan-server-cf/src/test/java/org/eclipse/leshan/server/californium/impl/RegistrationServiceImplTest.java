@@ -20,8 +20,8 @@ import java.net.InetSocketAddress;
 
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.core.request.BindingMode;
-import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.client.Registration;
+import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
 import org.junit.Assert;
 import org.junit.Before;
@@ -38,7 +38,7 @@ public class RegistrationServiceImplTest {
     BindingMode binding = BindingMode.UQS;
     LinkObject[] objectLinks = LinkObject.parse("</3>".getBytes(org.eclipse.leshan.util.Charsets.UTF_8));
     String registrationId = "4711";
-    Client client;
+    Registration registration;
 
     @Before
     public void setUp() throws Exception {
@@ -48,47 +48,47 @@ public class RegistrationServiceImplTest {
 
     @Test
     public void update_registration_keeps_properties_unchanged() {
-        givenASimpleClient(lifetime);
-        registry.registerClient(client);
+        givenASimpleRegistration(lifetime);
+        registry.registerClient(registration);
 
-        ClientUpdate update = new ClientUpdate(registrationId, address, port, null, null, null, null);
-        Client updatedClient = registry.updateClient(update);
-        Assert.assertEquals(lifetime, updatedClient.getLifeTimeInSec());
-        Assert.assertSame(binding, updatedClient.getBindingMode());
-        Assert.assertEquals(sms, updatedClient.getSmsNumber());
+        RegistrationUpdate update = new RegistrationUpdate(registrationId, address, port, null, null, null, null);
+        Registration updatedRegistration = registry.updateRegistration(update);
+        Assert.assertEquals(lifetime, updatedRegistration.getLifeTimeInSec());
+        Assert.assertSame(binding, updatedRegistration.getBindingMode());
+        Assert.assertEquals(sms, updatedRegistration.getSmsNumber());
 
-        Client registeredClient = registry.getByEndpoint(ep);
-        Assert.assertEquals(lifetime, registeredClient.getLifeTimeInSec());
-        Assert.assertSame(binding, registeredClient.getBindingMode());
-        Assert.assertEquals(sms, registeredClient.getSmsNumber());
+        Registration reg = registry.getByEndpoint(ep);
+        Assert.assertEquals(lifetime, reg.getLifeTimeInSec());
+        Assert.assertSame(binding, reg.getBindingMode());
+        Assert.assertEquals(sms, reg.getSmsNumber());
     }
 
     @Test
     public void client_registration_sets_time_to_live() {
-        givenASimpleClient(lifetime);
-        registry.registerClient(client);
-        Assert.assertTrue(client.isAlive());
+        givenASimpleRegistration(lifetime);
+        registry.registerClient(registration);
+        Assert.assertTrue(registration.isAlive());
     }
 
     @Test
     public void update_registration_to_extend_time_to_live() {
-        givenASimpleClient(0L);
-        registry.registerClient(client);
-        Assert.assertFalse(client.isAlive());
+        givenASimpleRegistration(0L);
+        registry.registerClient(registration);
+        Assert.assertFalse(registration.isAlive());
 
-        ClientUpdate update = new ClientUpdate(registrationId, address, port, lifetime, null, null, null);
-        Client updatedClient = registry.updateClient(update);
-        Assert.assertTrue(updatedClient.isAlive());
+        RegistrationUpdate update = new RegistrationUpdate(registrationId, address, port, lifetime, null, null, null);
+        Registration updatedRegistration = registry.updateRegistration(update);
+        Assert.assertTrue(updatedRegistration.isAlive());
 
-        Client registeredClient = registry.getByEndpoint(ep);
-        Assert.assertTrue(registeredClient.isAlive());
+        Registration reg = registry.getByEndpoint(ep);
+        Assert.assertTrue(reg.isAlive());
     }
 
-    private void givenASimpleClient(Long lifetime) {
+    private void givenASimpleRegistration(Long lifetime) {
 
-        Client.Builder builder = new Client.Builder(registrationId, ep, address, port,
+        Registration.Builder builder = new Registration.Builder(registrationId, ep, address, port,
                 InetSocketAddress.createUnresolved("localhost", 5683));
 
-        client = builder.lifeTimeInSec(lifetime).smsNumber(sms).bindingMode(binding).objectLinks(objectLinks).build();
+        registration = builder.lifeTimeInSec(lifetime).smsNumber(sms).bindingMode(binding).objectLinks(objectLinks).build();
     }
 }

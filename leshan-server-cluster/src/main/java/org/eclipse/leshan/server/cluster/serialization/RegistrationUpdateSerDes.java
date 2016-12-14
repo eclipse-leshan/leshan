@@ -22,7 +22,7 @@ import java.util.Map;
 
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.core.request.BindingMode;
-import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.client.RegistrationUpdate;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;
@@ -32,26 +32,26 @@ import com.eclipsesource.json.JsonValue;
 /**
  * Functions for serialize and deserialize a ClientUpdate in JSON.
  */
-public class ClientUpdateSerDes {
+public class RegistrationUpdateSerDes {
 
-    public static JsonObject jSerialize(ClientUpdate c) {
+    public static JsonObject jSerialize(RegistrationUpdate u) {
         JsonObject o = Json.object();
 
         // mandatory fields
-        o.add("regId", c.getRegistrationId());
-        o.add("address", c.getAddress().getHostAddress());
-        o.add("port", c.getPort());
+        o.add("regId", u.getRegistrationId());
+        o.add("address", u.getAddress().getHostAddress());
+        o.add("port", u.getPort());
 
         // optional fields
-        if (c.getLifeTimeInSec() != null)
-            o.add("lt", c.getLifeTimeInSec());
-        if (c.getSmsNumber() != null)
-            o.add("sms", c.getSmsNumber());
-        if (c.getBindingMode() != null)
-            o.add("bnd", c.getBindingMode().name());
-        if (c.getObjectLinks() != null) {
+        if (u.getLifeTimeInSec() != null)
+            o.add("lt", u.getLifeTimeInSec());
+        if (u.getSmsNumber() != null)
+            o.add("sms", u.getSmsNumber());
+        if (u.getBindingMode() != null)
+            o.add("bnd", u.getBindingMode().name());
+        if (u.getObjectLinks() != null) {
             JsonArray links = new JsonArray();
-            for (LinkObject l : c.getObjectLinks()) {
+            for (LinkObject l : u.getObjectLinks()) {
                 JsonObject ol = Json.object();
                 ol.add("url", l.getUrl());
                 JsonObject at = Json.object();
@@ -71,15 +71,15 @@ public class ClientUpdateSerDes {
         return o;
     }
 
-    public static String sSerialize(ClientUpdate c) {
-        return jSerialize(c).toString();
+    public static String sSerialize(RegistrationUpdate r) {
+        return jSerialize(r).toString();
     }
 
-    public static byte[] bSerialize(ClientUpdate c) {
-        return jSerialize(c).toString().getBytes();
+    public static byte[] bSerialize(RegistrationUpdate r) {
+        return jSerialize(r).toString().getBytes();
     }
 
-    public static ClientUpdate deserialize(byte[] data) throws UnknownHostException {
+    public static RegistrationUpdate deserialize(byte[] data) throws UnknownHostException {
         JsonObject v = (JsonObject) Json.parse(new String(data));
 
         // mandatory fields
@@ -124,6 +124,6 @@ public class ClientUpdateSerDes {
             }
         }
 
-        return new ClientUpdate(regId, addr, port, lifetime, sms, b, linkObjs);
+        return new RegistrationUpdate(regId, addr, port, lifetime, sms, b, linkObjs);
     }
 }

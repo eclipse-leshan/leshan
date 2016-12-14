@@ -33,12 +33,12 @@ public class ClientSortObjectTest {
         objs[1] = new LinkObject("/0/2");
         objs[2] = null;
 
-        Client.Builder builder = new Client.Builder("registrationId", "endpoint", Inet4Address.getByName("127.0.0.1"),
+        Registration.Builder builder = new Registration.Builder("registrationId", "endpoint", Inet4Address.getByName("127.0.0.1"),
                 1, new InetSocketAddress(212)).objectLinks(objs);
 
-        Client c = builder.build();
+        Registration r = builder.build();
 
-        LinkObject[] res = c.getSortedObjectLinks();
+        LinkObject[] res = r.getSortedObjectLinks();
         Assert.assertEquals(3, res.length);
         Assert.assertNull(res[0]);
         Assert.assertEquals("/0/2", res[1].getUrl());

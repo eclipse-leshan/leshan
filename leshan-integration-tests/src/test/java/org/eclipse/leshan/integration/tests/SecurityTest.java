@@ -24,7 +24,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 
-import org.eclipse.leshan.server.client.Client;
+import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.junit.After;
@@ -130,7 +130,7 @@ public class SecurityTest {
         helper.assertClientNotRegisterered();
         helper.client.start();
         helper.waitForRegistration(1);
-        Client registration = helper.getCurrentRegistration();
+        Registration registration = helper.getCurrentRegistration();
         helper.assertClientRegisterered();
 
         // Check for update
@@ -147,8 +147,8 @@ public class SecurityTest {
         helper.client.start();
         helper.waitForRegistration(1);
         helper.assertClientRegisterered();
-        Client newRegistration = helper.getCurrentRegistration();
-        assertNotEquals(registration.getRegistrationId(), newRegistration.getRegistrationId());
+        Registration newRegistration = helper.getCurrentRegistration();
+        assertNotEquals(registration.getId(), newRegistration.getId());
 
     }
 

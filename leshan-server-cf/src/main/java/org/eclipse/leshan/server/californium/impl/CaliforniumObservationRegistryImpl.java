@@ -41,7 +41,7 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.californium.CaliforniumObservationRegistry;
 import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
-import org.eclipse.leshan.server.client.Client;
+import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationRegistryListener;
 import org.slf4j.Logger;
@@ -107,9 +107,9 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
     }
 
     @Override
-    public int cancelObservations(Client client) {
+    public int cancelObservations(Registration registration) {
         // check registration id
-        String registrationId = client.getRegistrationId();
+        String registrationId = registration.getId();
         if (registrationId == null)
             return 0;
 
@@ -133,11 +133,11 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
     }
 
     @Override
-    public int cancelObservations(Client client, String resourcepath) {
-        if (client == null || client.getRegistrationId() == null || resourcepath == null || resourcepath.isEmpty())
+    public int cancelObservations(Registration registration, String resourcepath) {
+        if (registration == null || registration.getId() == null || resourcepath == null || resourcepath.isEmpty())
             return 0;
 
-        Set<Observation> observations = getObservations(client.getRegistrationId(), resourcepath);
+        Set<Observation> observations = getObservations(registration.getId(), resourcepath);
         for (Observation observation : observations) {
             cancelObservation(observation);
         }
@@ -161,8 +161,8 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
     }
 
     @Override
-    public Set<Observation> getObservations(Client client) {
-        return getObservations(client.getRegistrationId());
+    public Set<Observation> getObservations(Registration registration) {
+        return getObservations(registration.getId());
     }
 
     private Set<Observation> getObservations(String registrationId) {
@@ -221,14 +221,14 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
                 if (observation == null)
                     return;
 
-                // get client for this registration ID
-                Client client = registrationStore.getRegistration(observation.getRegistrationId());
-                if (client == null)
+                // get registration
+                Registration registration = registrationStore.getRegistration(observation.getRegistrationId());
+                if (registration == null)
                     // TODO Should we clean registrationIDs maps ?
                     return;
 
-                // get model for this client
-                LwM2mModel model = modelProvider.getObjectModel(client);
+                // get model for this registration
+                LwM2mModel model = modelProvider.getObjectModel(registration);
 
                 // get content format
                 ContentFormat contentFormat = null;

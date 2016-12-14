@@ -25,10 +25,10 @@ import org.eclipse.leshan.server.Destroyable;
 import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.Startable;
 import org.eclipse.leshan.server.Stoppable;
-import org.eclipse.leshan.server.client.Client;
+import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.client.RegistrationListener;
-import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
 import org.eclipse.leshan.server.queue.MessageStore;
@@ -65,17 +65,17 @@ public class QueueModeLeshanServer implements LwM2mServer {
         this.registrationService.addListener(new RegistrationListener() {
 
             @Override
-            public void updated(ClientUpdate update, Client clientUpdated) {
+            public void updated(RegistrationUpdate update, Registration updatedRegistration) {
             }
 
             @Override
-            public void unregistered(Client client) {
-                QueueModeLeshanServer.this.observationRegistry.cancelObservations(client);
-                QueueModeLeshanServer.this.lwM2mRequestSender.cancelPendingRequests(client);
+            public void unregistered(Registration registration) {
+                QueueModeLeshanServer.this.observationRegistry.cancelObservations(registration);
+                QueueModeLeshanServer.this.lwM2mRequestSender.cancelPendingRequests(registration);
             }
 
             @Override
-            public void registered(Client client) {
+            public void registered(Registration registration) {
             }
         });
 
@@ -142,25 +142,25 @@ public class QueueModeLeshanServer implements LwM2mServer {
     }
 
     @Override
-    public <T extends LwM2mResponse> T send(Client destination, DownlinkRequest<T> request)
+    public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request)
             throws InterruptedException {
         throw new UnsupportedOperationException("Server doesn't support synchronous sending of messages");
     }
 
     @Override
-    public <T extends LwM2mResponse> T send(Client destination, DownlinkRequest<T> request, long timeout)
+    public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request, long timeout)
             throws InterruptedException {
         throw new UnsupportedOperationException("Server doesn't support synchronous sending of messages");
     }
 
     @Override
-    public <T extends LwM2mResponse> void send(Client destination, DownlinkRequest<T> request,
+    public <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request,
             final ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         // Noop.
     }
 
     @Override
-    public <T extends LwM2mResponse> void send(Client destination, String requestTicket, DownlinkRequest<T> request) {
+    public <T extends LwM2mResponse> void send(Registration destination, String requestTicket, DownlinkRequest<T> request) {
         lwM2mRequestSender.send(destination, requestTicket, request);
     }
 

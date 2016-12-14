@@ -25,9 +25,9 @@ import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.response.DeregisterResponse;
 import org.eclipse.leshan.core.response.RegisterResponse;
 import org.eclipse.leshan.core.response.UpdateResponse;
-import org.eclipse.leshan.server.client.Client;
+import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.client.RegistrationService;
-import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
 import org.eclipse.leshan.server.security.SecurityCheck;
 import org.eclipse.leshan.server.security.SecurityInfo;
@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Handle the client registration logic. Check if the client is allowed to register, with the wanted security scheme.
- * Create the {@link Client} representing the registered client and add it to the {@link RegistrationService}
+ * Create the {@link Registration} representing the registered client and add it to the {@link RegistrationService}
  */
 public class RegistrationHandler {
 
@@ -63,7 +63,7 @@ public class RegistrationHandler {
             return RegisterResponse.forbidden(null);
         }
 
-        Client.Builder builder = new Client.Builder(RegistrationHandler.createRegistrationId(),
+        Registration.Builder builder = new Registration.Builder(RegistrationHandler.createRegistrationId(),
                 registerRequest.getEndpointName(), sender.getPeerAddress().getAddress(), sender.getPeerAddress()
                         .getPort(), serverEndpoint);
 
@@ -72,11 +72,11 @@ public class RegistrationHandler {
                 .smsNumber(registerRequest.getSmsNumber()).registrationDate(new Date()).lastUpdate(new Date())
                 .additionalRegistrationAttributes(registerRequest.getAdditionalAttributes());
 
-        Client client = builder.build();
+        Registration registration = builder.build();
 
-        if (registrationService.registerClient(client)) {
-            LOG.debug("New registered client: {}", client);
-            return RegisterResponse.success(client.getRegistrationId());
+        if (registrationService.registerClient(registration)) {
+            LOG.debug("New registered client: {}", registration);
+            return RegisterResponse.success(registration.getId());
         } else {
             return RegisterResponse.forbidden(null);
         }
@@ -89,18 +89,18 @@ public class RegistrationHandler {
         }
 
         // We must check if the client is using the right identity.
-        Client client = registrationService.getById(updateRequest.getRegistrationId());
-        if (client == null) {
+        Registration registration = registrationService.getById(updateRequest.getRegistrationId());
+        if (registration == null) {
             return UpdateResponse.notFound();
         }
-        if (!isAuthorized(client.getEndpoint(), sender)) {
+        if (!isAuthorized(registration.getEndpoint(), sender)) {
             return UpdateResponse.badRequest("forbidden");
         }
 
-        client = registrationService.updateClient(new ClientUpdate(updateRequest.getRegistrationId(), sender
+        registration = registrationService.updateRegistration(new RegistrationUpdate(updateRequest.getRegistrationId(), sender
                 .getPeerAddress().getAddress(), sender.getPeerAddress().getPort(), updateRequest.getLifeTimeInSec(),
                 updateRequest.getSmsNumber(), updateRequest.getBindingMode(), updateRequest.getObjectLinks()));
-        if (client == null) {
+        if (registration == null) {
             return UpdateResponse.notFound();
         } else {
             return UpdateResponse.success();
@@ -113,15 +113,15 @@ public class RegistrationHandler {
         }
 
         // We must check if the client is using the right identity.
-        Client client = registrationService.getById(deregisterRequest.getRegistrationID());
-        if (client == null) {
+        Registration registration = registrationService.getById(deregisterRequest.getRegistrationID());
+        if (registration == null) {
             return DeregisterResponse.notFound();
         }
-        if (!isAuthorized(client.getEndpoint(), sender)) {
+        if (!isAuthorized(registration.getEndpoint(), sender)) {
             return DeregisterResponse.badRequest("forbidden");
         }
 
-        Client unregistered = registrationService.deregisterClient(deregisterRequest.getRegistrationID());
+        Registration unregistered = registrationService.deregisterClient(deregisterRequest.getRegistrationID());
         if (unregistered != null) {
             return DeregisterResponse.success();
         } else {

@@ -48,8 +48,8 @@ import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.californium.CaliforniumObservationRegistry;
 import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
-import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.client.Registration;
+import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.server.client.RegistrationListener;
 import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
@@ -102,7 +102,7 @@ public class LeshanServer implements LwM2mServer {
      *
      * @param localAddress the address to bind the CoAP server.
      * @param localSecureAddress the address to bind the CoAP server for DTLS connection.
-     * @param registrationStore the {@link Client} store.
+     * @param registrationStore the {@link Registration} store.
      * @param securityRegistry the {@link SecurityInfo} registry.
      * @param modelProvider provides the objects description for each client.
      * @param decoder
@@ -130,17 +130,17 @@ public class LeshanServer implements LwM2mServer {
         this.registrationService.addListener(new RegistrationListener() {
 
             @Override
-            public void updated(final ClientUpdate update, final Client clientUpdated) {
+            public void updated(final RegistrationUpdate update, final Registration updatedRegistration) {
             }
 
             @Override
-            public void unregistered(final Client client) {
-                LeshanServer.this.observationRegistry.cancelObservations(client);
-                requestSender.cancelPendingRequests(client);
+            public void unregistered(final Registration registration) {
+                LeshanServer.this.observationRegistry.cancelObservations(registration);
+                requestSender.cancelPendingRequests(registration);
             }
 
             @Override
-            public void registered(final Client client) {
+            public void registered(final Registration registration) {
             }
         });
 
@@ -275,25 +275,25 @@ public class LeshanServer implements LwM2mServer {
     }
 
     @Override
-    public <T extends LwM2mResponse> T send(final Client destination, final DownlinkRequest<T> request)
+    public <T extends LwM2mResponse> T send(final Registration destination, final DownlinkRequest<T> request)
             throws InterruptedException {
         return requestSender.send(destination, request, null);
     }
 
     @Override
-    public <T extends LwM2mResponse> T send(final Client destination, final DownlinkRequest<T> request, long timeout)
+    public <T extends LwM2mResponse> T send(final Registration destination, final DownlinkRequest<T> request, long timeout)
             throws InterruptedException {
         return requestSender.send(destination, request, timeout);
     }
 
     @Override
-    public <T extends LwM2mResponse> void send(final Client destination, final DownlinkRequest<T> request,
+    public <T extends LwM2mResponse> void send(final Registration destination, final DownlinkRequest<T> request,
             final ResponseCallback<T> responseCallback, final ErrorCallback errorCallback) {
         requestSender.send(destination, request, responseCallback, errorCallback);
     }
 
     @Override
-    public <T extends LwM2mResponse> void send(Client destination, String requestTicket, DownlinkRequest<T> request) {
+    public <T extends LwM2mResponse> void send(Registration destination, String requestTicket, DownlinkRequest<T> request) {
         requestSender.send(destination, requestTicket, request);
     }
 

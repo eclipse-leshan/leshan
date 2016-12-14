@@ -43,9 +43,9 @@ import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
-import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.client.RegistrationListener;
+import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
 import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
 import org.eclipse.leshan.server.model.StaticModelProvider;
@@ -76,7 +76,7 @@ public class IntegrationTestHelper {
     String currentEndpointIdentifier;
 
     CountDownLatch registerLatch;
-    Client last_registration;
+    Registration last_registration;
     CountDownLatch deregisterLatch;
     CountDownLatch updateLatch;
 
@@ -164,23 +164,23 @@ public class IntegrationTestHelper {
         resetLatch();
         server.getRegistrationService().addListener(new RegistrationListener() {
             @Override
-            public void updated(ClientUpdate update, Client clientUpdated) {
-                if (clientUpdated.getEndpoint().equals(currentEndpointIdentifier)) {
+            public void updated(RegistrationUpdate update, Registration updatedRegistration) {
+                if (updatedRegistration.getEndpoint().equals(currentEndpointIdentifier)) {
                     updateLatch.countDown();
                 }
             }
 
             @Override
-            public void unregistered(Client client) {
-                if (client.getEndpoint().equals(currentEndpointIdentifier)) {
+            public void unregistered(Registration registration) {
+                if (registration.getEndpoint().equals(currentEndpointIdentifier)) {
                     deregisterLatch.countDown();
                 }
             }
 
             @Override
-            public void registered(Client client) {
-                if (client.getEndpoint().equals(currentEndpointIdentifier)) {
-                    last_registration = client;
+            public void registered(Registration registration) {
+                if (registration.getEndpoint().equals(currentEndpointIdentifier)) {
+                    last_registration = registration;
                     registerLatch.countDown();
                 }
             }
@@ -217,14 +217,14 @@ public class IntegrationTestHelper {
         }
     }
 
-    public Client getCurrentRegistration() {
+    public Registration getCurrentRegistration() {
         return server.getRegistrationService().getByEndpoint(currentEndpointIdentifier);
     }
 
     public void deregisterClient() {
-        Client c = getCurrentRegistration();
-        if (c != null)
-            ((RegistrationServiceImpl) server.getRegistrationService()).deregisterClient(c.getRegistrationId());
+        Registration r = getCurrentRegistration();
+        if (r != null)
+            ((RegistrationServiceImpl) server.getRegistrationService()).deregisterClient(r.getId());
     }
 
     public void dispose() {

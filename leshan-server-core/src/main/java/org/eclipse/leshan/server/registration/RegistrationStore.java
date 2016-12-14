@@ -19,8 +19,8 @@ import java.net.InetSocketAddress;
 import java.util.Collection;
 
 import org.eclipse.leshan.core.observation.Observation;
-import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.client.Registration;
+import org.eclipse.leshan.server.client.RegistrationUpdate;
 
 /**
  * A store for registrations and observations. This interface is also responsible to handle registration expiration.
@@ -33,7 +33,7 @@ public interface RegistrationStore {
      * @param registration the new registration.
      * @return the old registration and its observations removed or null.
      */
-    Deregistration addRegistration(Client registration);
+    Deregistration addRegistration(Registration registration);
 
     /**
      * Update an existing registration
@@ -41,7 +41,7 @@ public interface RegistrationStore {
      * @param update data to update
      * @return the registration updated
      */
-    Client updateRegistration(ClientUpdate update);
+    Registration updateRegistration(RegistrationUpdate update);
 
     /**
      * Get the registration by registration Id.
@@ -49,7 +49,7 @@ public interface RegistrationStore {
      * @param registrationId of the registration.
      * @return the registration or null if there is no registration with this id.
      */
-    Client getRegistration(String registrationId);
+    Registration getRegistration(String registrationId);
 
     /**
      * Get the registration by endpoint.
@@ -57,7 +57,7 @@ public interface RegistrationStore {
      * @param endpoint of the registration.
      * @return the registration or null if there is no registration with this endpoint.
      */
-    Client getRegistrationByEndpoint(String endpoint);
+    Registration getRegistrationByEndpoint(String endpoint);
 
     /**
      * Get the registration by socket address.
@@ -65,7 +65,7 @@ public interface RegistrationStore {
      * @param address of the client registered.
      * @return the registration or null if there is no client registered with this socket address.
      */
-    Collection<Client> getRegistrationByAdress(InetSocketAddress address);
+    Collection<Registration> getRegistrationByAdress(InetSocketAddress address);
 
     /**
      * @return all registrations in this store.
@@ -73,7 +73,7 @@ public interface RegistrationStore {
      */
     // TODO Should be replaced by an iterator.
     @Deprecated
-    Collection<Client> getAllRegistration();
+    Collection<Registration> getAllRegistration();
 
     /**
      * Remove the registration with the given registration Id

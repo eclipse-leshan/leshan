@@ -20,8 +20,8 @@ import java.net.InetSocketAddress;
 
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
-import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.client.Registration;
+import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.server.client.RegistrationListener;
 import org.eclipse.leshan.server.cluster.RedisRegistrationStore;
 import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
@@ -69,23 +69,23 @@ public class RedisIntegrationTestHelper extends IntegrationTestHelper {
         resetLatch();
         server.getRegistrationService().addListener(new RegistrationListener() {
             @Override
-            public void updated(ClientUpdate update, Client clientUpdated) {
-                if (clientUpdated.getEndpoint().equals(getCurrentEndpoint())) {
+            public void updated(RegistrationUpdate update, Registration updatedRegistration) {
+                if (updatedRegistration.getEndpoint().equals(getCurrentEndpoint())) {
                     updateLatch.countDown();
                 }
             }
 
             @Override
-            public void unregistered(Client client) {
-                if (client.getEndpoint().equals(getCurrentEndpoint())) {
+            public void unregistered(Registration registration) {
+                if (registration.getEndpoint().equals(getCurrentEndpoint())) {
                     deregisterLatch.countDown();
                 }
             }
 
             @Override
-            public void registered(Client client) {
-                if (client.getEndpoint().equals(getCurrentEndpoint())) {
-                    last_registration = client;
+            public void registered(Registration registration) {
+                if (registration.getEndpoint().equals(getCurrentEndpoint())) {
+                    last_registration = registration;
                     registerLatch.countDown();
                 }
             }

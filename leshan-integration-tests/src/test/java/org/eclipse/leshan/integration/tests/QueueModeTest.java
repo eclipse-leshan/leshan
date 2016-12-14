@@ -38,7 +38,7 @@ import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 import org.eclipse.leshan.integration.tests.util.QueuedModeLeshanClient;
 import org.eclipse.leshan.integration.tests.util.QueuedModeLeshanClient.OnGetCallback;
-import org.eclipse.leshan.server.client.Client;
+import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.observation.ObservationRegistryListener;
 import org.eclipse.leshan.server.queue.MessageStore;
 import org.eclipse.leshan.server.queue.impl.InMemoryMessageStore;
@@ -230,16 +230,16 @@ public class QueueModeTest {
 
         responseListener = new ResponseListener() {
             @Override
-            public void onResponse(Client client, String requestTicket, LwM2mResponse response) {
+            public void onResponse(Registration registration, String requestTicket, LwM2mResponse response) {
                 if (response instanceof ObserveResponse) {
                     Observation observation = ((ObserveResponse) response).getObservation();
                     assertEquals("/3/0/15", observation.getPath().toString());
-                    assertEquals(helper.getCurrentRegistration().getRegistrationId(), observation.getRegistrationId());
+                    assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
                 }
             }
 
             @Override
-            public void onError(Client client, String requestTicket, Exception exception) {
+            public void onError(Registration registration, String requestTicket, Exception exception) {
                 throw new IllegalStateException("unexpected exception occurred: ", exception);
             }
         };
@@ -287,17 +287,17 @@ public class QueueModeTest {
 
         responseListener = new ResponseListener() {
             @Override
-            public void onResponse(Client client, String requestTicket, LwM2mResponse response) {
+            public void onResponse(Registration registration, String requestTicket, LwM2mResponse response) {
                 if (response instanceof ObserveResponse) {
                     LOG.trace("Received observe response for ticket {} from LWM2M client {}", requestTicket, response);
                     Observation observation = ((ObserveResponse) response).getObservation();
                     assertEquals("/3/0/15", observation.getPath().toString());
-                    assertEquals(helper.getCurrentRegistration().getRegistrationId(), observation.getRegistrationId());
+                    assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
                 }
             }
 
             @Override
-            public void onError(Client client, String requestTicket, Exception exception) {
+            public void onError(Registration registration, String requestTicket, Exception exception) {
                 throw new IllegalStateException("unexpected exception occurred: ", exception);
             }
         };
@@ -322,7 +322,7 @@ public class QueueModeTest {
         createAndAddResponseListener(acceptCountDownLatch);
         responseListener = new ResponseListener() {
             @Override
-            public void onResponse(Client client, String requestTicket, LwM2mResponse response) {
+            public void onResponse(Registration registration, String requestTicket, LwM2mResponse response) {
                 if (response instanceof WriteResponse) {
                     LOG.trace("Received write response for ticket {} from LWM2M client {}", requestTicket, response);
                     acceptCountDownLatch.countDown();
@@ -331,7 +331,7 @@ public class QueueModeTest {
             }
 
             @Override
-            public void onError(Client client, String requestTicket, Exception exception) {
+            public void onError(Registration registration, String requestTicket, Exception exception) {
                 throw new IllegalStateException("unexpected exception occurred: ", exception);
             }
         };
@@ -364,18 +364,18 @@ public class QueueModeTest {
         final CountDownLatch serverResponseReceivedCountDownLatch = new CountDownLatch(2);
         responseListener = new ResponseListener() {
             @Override
-            public void onResponse(Client client, String requestTicket, LwM2mResponse response) {
+            public void onResponse(Registration registration, String requestTicket, LwM2mResponse response) {
                 if (response instanceof ObserveResponse) {
                     serverResponseReceivedCountDownLatch.countDown();
                     LOG.trace("Received observe response for ticket {} from LWM2M client {}", requestTicket, response);
                     Observation observation = ((ObserveResponse) response).getObservation();
                     assertEquals("/3/0/15", observation.getPath().toString());
-                    assertEquals(helper.getCurrentRegistration().getRegistrationId(), observation.getRegistrationId());
+                    assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
                 }
             }
 
             @Override
-            public void onError(Client client, String requestTicket, Exception exception) {
+            public void onError(Registration registration, String requestTicket, Exception exception) {
                 throw new IllegalStateException("unexpected exception occurred: ", exception);
             }
         };
@@ -496,12 +496,12 @@ public class QueueModeTest {
         helper.server.getLwM2mRequestSender().addResponseListener(new ResponseListener() {
 
             @Override
-            public void onResponse(Client client, String requestTicket, LwM2mResponse response) {
+            public void onResponse(Registration registration, String requestTicket, LwM2mResponse response) {
                 responseCountDownLatch.countDown();
             }
 
             @Override
-            public void onError(Client client, String requestTicket, Exception exception) {
+            public void onError(Registration registration, String requestTicket, Exception exception) {
                 assertTrue("Expected a RequestCanceledException but received " + exception,
                         exception instanceof RequestCanceledException);
                 exceptionCountDownLatch.countDown();
@@ -536,12 +536,12 @@ public class QueueModeTest {
         helper.server.getLwM2mRequestSender().addResponseListener(new ResponseListener() {
 
             @Override
-            public void onResponse(Client client, String requestTicket, LwM2mResponse response) {
+            public void onResponse(Registration registration, String requestTicket, LwM2mResponse response) {
                 unexpectedResponseCountDownLatch.countDown();
             }
 
             @Override
-            public void onError(Client client, String requestTicket, Exception exception) {
+            public void onError(Registration registration, String requestTicket, Exception exception) {
                 assertTrue("Expected a RequestCanceledException but received " + exception,
                         exception instanceof RequestCanceledException);
                 exceptionCountDownLatch.countDown();
@@ -563,7 +563,7 @@ public class QueueModeTest {
 
     @Test
     public void sending_message_for_unknown_client_gives_error_response() throws InterruptedException {
-        Client destination = helper.getCurrentRegistration();
+        Registration destination = helper.getCurrentRegistration();
         // stop the lwm2m client created by default
         helper.client.stop(DEREGISTER);
 
@@ -574,12 +574,12 @@ public class QueueModeTest {
         helper.server.getLwM2mRequestSender().addResponseListener(new ResponseListener() {
 
             @Override
-            public void onResponse(Client client, String requestTicket, LwM2mResponse response) {
+            public void onResponse(Registration registration, String requestTicket, LwM2mResponse response) {
                 responseCountDownLatch.countDown();
             }
 
             @Override
-            public void onError(Client client, String requestTicket, Exception exception) {
+            public void onError(Registration registration, String requestTicket, Exception exception) {
                 assertTrue("Expected a RequestCanceledException but received " + exception,
                         exception instanceof RequestCanceledException);
                 exceptionCountDownLatch.countDown();
@@ -600,12 +600,12 @@ public class QueueModeTest {
         responseListener = new ResponseListener() {
 
             @Override
-            public void onResponse(Client client, String requestTicket, LwM2mResponse response) {
+            public void onResponse(Registration registration, String requestTicket, LwM2mResponse response) {
                 acceptCountDownLatch.countDown();
             }
 
             @Override
-            public void onError(Client client, String requestTicket, Exception exception) {
+            public void onError(Registration registration, String requestTicket, Exception exception) {
                 throw new IllegalStateException("unexpected exception occurred: ", exception);
             }
         };

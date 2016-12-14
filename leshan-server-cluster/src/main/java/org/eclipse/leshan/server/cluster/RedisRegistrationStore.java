@@ -37,9 +37,9 @@ import org.eclipse.leshan.server.Startable;
 import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
 import org.eclipse.leshan.server.californium.impl.CoapRequestBuilder;
-import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.ClientUpdate;
-import org.eclipse.leshan.server.cluster.serialization.ClientSerDes;
+import org.eclipse.leshan.server.client.Registration;
+import org.eclipse.leshan.server.client.RegistrationUpdate;
+import org.eclipse.leshan.server.cluster.serialization.RegistrationSerDes;
 import org.eclipse.leshan.server.cluster.serialization.ObservationSerDes;
 import org.eclipse.leshan.server.registration.Deregistration;
 import org.eclipse.leshan.server.registration.ExpirationListener;
@@ -99,7 +99,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     /* *************** Leshan Registration API **************** */
 
     @Override
-    public Deregistration addRegistration(Client registration) {
+    public Deregistration addRegistration(Registration registration) {
         try (Jedis j = pool.getResource()) {
             byte[] lockValue = null;
             byte[] lockKey = toLockKey(registration.getEndpoint());
@@ -112,13 +112,13 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
                 byte[] old = j.getSet(k, serializeReg(registration));
 
                 // add registration: secondary index
-                byte[] idx = toRegIdKey(registration.getRegistrationId());
+                byte[] idx = toRegIdKey(registration.getId());
                 j.set(idx, registration.getEndpoint().getBytes(UTF_8));
 
                 if (old != null) {
-                    Client oldRegistration = deserializeReg(old);
+                    Registration oldRegistration = deserializeReg(old);
                     Collection<Observation> obsRemoved = unsafeRemoveAllObservations(j,
-                            oldRegistration.getRegistrationId());
+                            oldRegistration.getId());
                     return new Deregistration(oldRegistration, obsRemoved);
                 }
 
@@ -130,7 +130,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     }
 
     @Override
-    public Client updateRegistration(ClientUpdate update) {
+    public Registration updateRegistration(RegistrationUpdate update) {
         try (Jedis j = pool.getResource()) {
 
             // fetch the client ep by registration ID index
@@ -145,19 +145,19 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
                 return null;
             }
 
-            Client r = deserializeReg(data);
+            Registration r = deserializeReg(data);
 
             byte[] lockValue = null;
             byte[] lockKey = toLockKey(r.getEndpoint());
             try {
                 lockValue = RedisLock.acquire(j, lockKey);
 
-                Client clientUpdated = update.updateClient(r);
+                Registration updatedRegistration = update.update(r);
 
                 // store the new client
-                j.set(toEndpointKey(clientUpdated.getEndpoint()), serializeReg(clientUpdated));
+                j.set(toEndpointKey(updatedRegistration.getEndpoint()), serializeReg(updatedRegistration));
 
-                return clientUpdated;
+                return updatedRegistration;
 
             } finally {
                 RedisLock.release(j, lockKey, lockValue);
@@ -166,7 +166,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     }
 
     @Override
-    public Client getRegistration(String registrationId) {
+    public Registration getRegistration(String registrationId) {
         try (Jedis j = pool.getResource()) {
             byte[] ep = j.get(toRegIdKey(registrationId));
             if (ep == null) {
@@ -182,38 +182,38 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     }
 
     @Override
-    public Client getRegistrationByEndpoint(String endpoint) {
+    public Registration getRegistrationByEndpoint(String endpoint) {
         Validate.notNull(endpoint);
         try (Jedis j = pool.getResource()) {
             byte[] data = j.get(toEndpointKey(endpoint));
             if (data == null) {
                 return null;
             }
-            Client r = deserializeReg(data);
+            Registration r = deserializeReg(data);
             return r.isAlive() ? r : null;
         }
     }
 
     @Override
-    public Collection<Client> getRegistrationByAdress(InetSocketAddress address) {
+    public Collection<Registration> getRegistrationByAdress(InetSocketAddress address) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public Collection<Client> getAllRegistration() {
+    public Collection<Registration> getAllRegistration() {
         try (Jedis j = pool.getResource()) {
             ScanParams params = new ScanParams().match(EP_REG + "*").count(100);
-            Collection<Client> list = new LinkedList<>();
+            Collection<Registration> list = new LinkedList<>();
             String cursor = "0";
             do {
                 ScanResult<byte[]> res = j.scan(cursor.getBytes(), params);
                 for (byte[] key : res.getResult()) {
                     byte[] element = j.get(key);
                     if (element != null) {
-                        Client c = deserializeReg(element);
-                        if (c.isAlive()) {
-                            list.add(c);
+                        Registration r = deserializeReg(element);
+                        if (r.isAlive()) {
+                            list.add(r);
                         }
                     }
                 }
@@ -240,22 +240,22 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
                 return null;
             }
 
-            Client r = deserializeReg(data);
-            deleteClient(j, r);
-            Collection<Observation> obsRemoved = unsafeRemoveAllObservations(j, r.getRegistrationId());
+            Registration r = deserializeReg(data);
+            deleteRegistration(j, r);
+            Collection<Observation> obsRemoved = unsafeRemoveAllObservations(j, r.getId());
             return new Deregistration(r, obsRemoved);
         }
     }
 
-    private void deleteClient(Jedis j, Client c) {
+    private void deleteRegistration(Jedis j, Registration r) {
         byte[] lockValue = null;
-        byte[] lockKey = toLockKey(c.getEndpoint());
+        byte[] lockKey = toLockKey(r.getEndpoint());
         try {
             lockValue = RedisLock.acquire(j, lockKey);
 
             // delete all entries
-            j.del(toRegIdKey(c.getRegistrationId()));
-            j.del(toEndpointKey(c.getEndpoint()));
+            j.del(toRegIdKey(r.getId()));
+            j.del(toEndpointKey(r.getEndpoint()));
 
         } finally {
             RedisLock.release(j, lockKey, lockValue);
@@ -274,12 +274,12 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
         return toKey(EP_REG.getBytes(UTF_8), endpoint);
     }
 
-    private byte[] serializeReg(Client client) {
-        return ClientSerDes.bSerialize(client);
+    private byte[] serializeReg(Registration registration) {
+        return RegistrationSerDes.bSerialize(registration);
     }
 
-    private Client deserializeReg(byte[] data) {
-        return ClientSerDes.deserialize(data);
+    private Registration deserializeReg(byte[] data) {
+        return RegistrationSerDes.deserialize(data);
     }
 
     /* *************** Leshan Observation API **************** */
@@ -342,7 +342,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     public Collection<Observation> removeObservations(String registrationId) {
         try (Jedis j = pool.getResource()) {
             // check registration exists
-            Client registration = getRegistration(registrationId);
+            Registration registration = getRegistration(registrationId);
             if (registration == null)
                 return Collections.emptyList();
 
@@ -407,7 +407,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
 
             org.eclipse.californium.core.observe.Observation obs = deserializeObs(serializedObs);
             String registrationId = extractRegistrationId(obs);
-            Client registration = getRegistration(registrationId);
+            Registration registration = getRegistration(registrationId);
             String endpoint = registration.getEndpoint();
 
             byte[] lockValue = null;
@@ -556,10 +556,10 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
                     // TODO we probably need a lock here
                     ScanResult<byte[]> res = j.scan(cursor.getBytes(), params);
                     for (byte[] key : res.getResult()) {
-                        Client c = deserializeReg(j.get(key));
-                        if (!c.isAlive()) {
-                            deleteClient(j, c);
-                            expirationListener.registrationExpired(c, new ArrayList<Observation>());
+                        Registration r = deserializeReg(j.get(key));
+                        if (!r.isAlive()) {
+                            deleteRegistration(j, r);
+                            expirationListener.registrationExpired(r, new ArrayList<Observation>());
                         }
                     }
                     cursor = res.getStringCursor();

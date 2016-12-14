@@ -19,7 +19,7 @@ import java.util.Collection;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
-import org.eclipse.leshan.server.client.Client;
+import org.eclipse.leshan.server.client.Registration;
 
 /**
  * A LwM2mModelProvider which uses only one model for all registered clients.
@@ -36,7 +36,7 @@ public class StaticModelProvider implements LwM2mModelProvider {
     }
 
     @Override
-    public LwM2mModel getObjectModel(Client client) {
+    public LwM2mModel getObjectModel(Registration registration) {
         // same model for all clients
         return model;
     }

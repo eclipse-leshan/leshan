@@ -18,7 +18,7 @@ package org.eclipse.leshan.server.queue.impl;
 
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.server.client.Client;
+import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.queue.MessageStore;
 import org.eclipse.leshan.server.queue.QueuedRequest;
@@ -73,12 +73,12 @@ class RequestSendingTask implements Runnable {
         if (firstRequest != null) {
             DownlinkRequest<LwM2mResponse> downlinkRequest = firstRequest.getDownlinkRequest();
             LOG.debug("Sending request: {}", downlinkRequest);
-            Client client = registrationService.getByEndpoint(firstRequest.getEndpoint());
-            if (client == null) {
+            Registration registration = registrationService.getByEndpoint(firstRequest.getEndpoint());
+            if (registration == null) {
                 // client not registered anymore -> don't send this request
                 LOG.debug("Client {} not registered anymore: {}", endpoint, downlinkRequest);
             } else {
-                requestSender.send(client, firstRequest.getRequestTicket(), downlinkRequest);
+                requestSender.send(registration, firstRequest.getRequestTicket(), downlinkRequest);
             }
         } else {
             LOG.debug("No more requests to send to client {}", endpoint);

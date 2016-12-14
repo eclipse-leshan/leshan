@@ -15,11 +15,11 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.cluster;
 
-import org.eclipse.leshan.server.client.Client;
+import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.client.RegistrationListener;
-import org.eclipse.leshan.server.client.ClientUpdate;
-import org.eclipse.leshan.server.cluster.serialization.ClientSerDes;
-import org.eclipse.leshan.server.cluster.serialization.ClientUpdateSerDes;
+import org.eclipse.leshan.server.client.RegistrationUpdate;
+import org.eclipse.leshan.server.cluster.serialization.RegistrationSerDes;
+import org.eclipse.leshan.server.cluster.serialization.RegistrationUpdateSerDes;
 
 import com.eclipsesource.json.JsonObject;
 
@@ -27,7 +27,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.util.Pool;
 
 /**
- * A Client registry Listener which publish registration event on Redis channel.
+ * A Registration registry Listener which publish registration event on Redis channel.
  */
 public class RedisRegistrationEventPublisher implements RegistrationListener {
 
@@ -41,18 +41,18 @@ public class RedisRegistrationEventPublisher implements RegistrationListener {
     }
 
     @Override
-    public void registered(Client client) {
-        String payload = ClientSerDes.sSerialize(client);
+    public void registered(Registration registration) {
+        String payload = RegistrationSerDes.sSerialize(registration);
         try (Jedis j = pool.getResource()) {
             j.publish(REGISTER_EVENT, payload);
         }
     }
 
     @Override
-    public void updated(ClientUpdate update, Client registrationUpdated) {
+    public void updated(RegistrationUpdate update, Registration updatedRegistration) {
         JsonObject value = new JsonObject();
-        value.add("regUpdate", ClientUpdateSerDes.jSerialize(update));
-        value.add("regUpdated", ClientSerDes.jSerialize(registrationUpdated));
+        value.add("regUpdate", RegistrationUpdateSerDes.jSerialize(update));
+        value.add("regUpdated", RegistrationSerDes.jSerialize(updatedRegistration));
 
         try (Jedis j = pool.getResource()) {
             j.publish(UPDATE_EVENT, value.toString());
@@ -60,8 +60,8 @@ public class RedisRegistrationEventPublisher implements RegistrationListener {
     }
 
     @Override
-    public void unregistered(Client client) {
-        String payload = ClientSerDes.sSerialize(client);
+    public void unregistered(Registration registration) {
+        String payload = RegistrationSerDes.sSerialize(registration);
         try (Jedis j = pool.getResource()) {
             j.publish(DEREGISTER_EVENT, payload);
         }

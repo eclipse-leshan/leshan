@@ -28,7 +28,7 @@ import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.LwM2mServer;
-import org.eclipse.leshan.server.client.Client;
+import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.cluster.serialization.DownlinkRequestSerDes;
 import org.eclipse.leshan.server.cluster.serialization.ResponseSerDes;
@@ -98,13 +98,13 @@ public class RedisRequestResponseHandler {
         this.server.addResponseListener(new ResponseListener() {
             
             @Override
-            public void onResponse(Client client, String requestTicket, LwM2mResponse response) {
-                handleResponse(client.getEndpoint(), requestTicket, response);
+            public void onResponse(Registration registration, String requestTicket, LwM2mResponse response) {
+                handleResponse(registration.getEndpoint(), requestTicket, response);
             }
 
             @Override
-            public void onError(Client client, String requestTicket, Exception exception) {
-                handlerError(client.getEndpoint(), requestTicket, exception);
+            public void onError(Registration registration, String requestTicket, Exception exception) {
+                handlerError(registration.getEndpoint(), requestTicket, exception);
             }
 
         });
@@ -210,7 +210,7 @@ public class RedisRequestResponseHandler {
                 return;
 
             // Get the registration for this endpoint
-            Client destination = registrationService.getByEndpoint(endpoint);
+            Registration destination = registrationService.getByEndpoint(endpoint);
             if (destination == null) {
                 sendError(ticket, String.format("No registration for this endpoint %s.", endpoint));
             }

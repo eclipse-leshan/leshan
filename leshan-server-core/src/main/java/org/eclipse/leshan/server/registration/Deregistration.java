@@ -19,7 +19,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.eclipse.leshan.core.observation.Observation;
-import org.eclipse.leshan.server.client.Client;
+import org.eclipse.leshan.server.client.Registration;
 
 /**
  * A Deregistration contains all informations which are removed after a client was unregistered.
@@ -27,10 +27,10 @@ import org.eclipse.leshan.server.client.Client;
  * @see RegistrationStore
  */
 public class Deregistration {
-    final Client registration;
+    final Registration registration;
     final Collection<Observation> observations;
 
-    public Deregistration(Client registration, Collection<Observation> observations) {
+    public Deregistration(Registration registration, Collection<Observation> observations) {
         this.registration = registration;
         if (observations == null)
             this.observations = Collections.emptyList();
@@ -38,7 +38,7 @@ public class Deregistration {
             this.observations = observations;
     }
 
-    public Client getRegistration() {
+    public Registration getRegistration() {
         return registration;
     }
 

@@ -19,7 +19,7 @@ import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
-import org.eclipse.leshan.server.client.Client;
+import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
@@ -60,7 +60,7 @@ public interface LwM2mServer {
      * @return the response or <code>null</code> if the CoAP timeout expires ( see
      *         http://tools.ietf.org/html/rfc7252#section-4.2 ).
      */
-    <T extends LwM2mResponse> T send(Client destination, DownlinkRequest<T> request) throws InterruptedException;
+    <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request) throws InterruptedException;
 
     /**
      * Sends a Lightweight M2M request synchronously. Will block until a response is received from the remote client.
@@ -70,13 +70,13 @@ public interface LwM2mServer {
      * @param timeout the request timeout in millisecond
      * @return the response or <code>null</code> if the timeout expires (given parameter or CoAP timeout).
      */
-    <T extends LwM2mResponse> T send(Client destination, DownlinkRequest<T> request, long timeout)
+    <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request, long timeout)
             throws InterruptedException;
 
     /**
      * Sends a Lightweight M2M request asynchronously.
      */
-    <T extends LwM2mResponse> void send(Client destination, DownlinkRequest<T> request,
+    <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback);
 
     /**
@@ -88,7 +88,7 @@ public interface LwM2mServer {
      * @param request an instance of downlink request.
      * @param <T> instance of LwM2mResponse
      */
-    <T extends LwM2mResponse> void send(Client destination, String requestTicket, DownlinkRequest<T> request);
+    <T extends LwM2mResponse> void send(Registration destination, String requestTicket, DownlinkRequest<T> request);
 
     /**
      * adds the listener for the given LWM2M client. This method shall be used to re-register a listener for already

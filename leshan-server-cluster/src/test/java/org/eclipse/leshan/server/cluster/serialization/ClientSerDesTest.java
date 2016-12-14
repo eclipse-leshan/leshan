@@ -24,8 +24,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.leshan.LinkObject;
-import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.cluster.serialization.ClientSerDes;
+import org.eclipse.leshan.server.client.Registration;
+import org.eclipse.leshan.server.cluster.serialization.RegistrationSerDes;
 import org.junit.Test;
 
 public class ClientSerDesTest {
@@ -39,16 +39,16 @@ public class ClientSerDesTest {
         objs[0] = new LinkObject("/0/1024/2", att);
         objs[1] = new LinkObject("/0/2");
 
-        Client.Builder builder = new Client.Builder("registrationId", "endpoint", Inet4Address.getByName("127.0.0.1"),
+        Registration.Builder builder = new Registration.Builder("registrationId", "endpoint", Inet4Address.getByName("127.0.0.1"),
                 1, new InetSocketAddress(212)).objectLinks(objs);
 
         builder.registrationDate(new Date(100L));
         builder.lastUpdate(new Date(101L));
-        Client c = builder.build();
+        Registration r = builder.build();
 
-        byte[] ser = ClientSerDes.bSerialize(c);
-        Client c2 = ClientSerDes.deserialize(ser);
+        byte[] ser = RegistrationSerDes.bSerialize(r);
+        Registration r2 = RegistrationSerDes.deserialize(ser);
 
-        assertEquals(c, c2);
+        assertEquals(r, r2);
     }
 }

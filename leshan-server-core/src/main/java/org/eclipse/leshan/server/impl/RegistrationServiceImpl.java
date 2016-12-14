@@ -22,8 +22,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.Startable;
 import org.eclipse.leshan.server.Stoppable;
-import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.client.Registration;
+import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.server.client.RegistrationListener;
 import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.registration.Deregistration;
@@ -60,49 +60,49 @@ public class RegistrationServiceImpl implements RegistrationService, Startable, 
     }
 
     @Override
-    public Collection<Client> getAllRegistrations() {
+    public Collection<Registration> getAllRegistrations() {
         return store.getAllRegistration();
     }
 
     @Override
-    public Client getByEndpoint(String endpoint) {
+    public Registration getByEndpoint(String endpoint) {
         return store.getRegistrationByEndpoint(endpoint);
     }
 
-    public boolean registerClient(Client client) {
-        Validate.notNull(client);
+    public boolean registerClient(Registration registration) {
+        Validate.notNull(registration);
 
-        LOG.debug("Registering new client: {}", client);
+        LOG.debug("Registering new client: {}", registration);
 
-        Deregistration previous = store.addRegistration(client);
+        Deregistration previous = store.addRegistration(registration);
         if (previous != null) {
             for (RegistrationListener l : listeners) {
                 l.unregistered(previous.getRegistration());
             }
         }
         for (RegistrationListener l : listeners) {
-            l.registered(client);
+            l.registered(registration);
         }
 
         return true;
     }
 
-    public Client updateClient(ClientUpdate update) {
+    public Registration updateRegistration(RegistrationUpdate update) {
         Validate.notNull(update);
 
         LOG.debug("Updating registration for client: {}", update);
-        Client clientUpdated = store.updateRegistration(update);
-        if (clientUpdated != null) {
+        Registration updatedRegistration = store.updateRegistration(update);
+        if (updatedRegistration != null) {
             // notify listener
             for (RegistrationListener l : listeners) {
-                l.updated(update, clientUpdated);
+                l.updated(update, updatedRegistration);
             }
-            return clientUpdated;
+            return updatedRegistration;
         }
         return null;
     }
 
-    public Client deregisterClient(String registrationId) {
+    public Registration deregisterClient(String registrationId) {
         Validate.notNull(registrationId);
 
         LOG.debug("Deregistering client with registrationId: {}", registrationId);
@@ -120,7 +120,7 @@ public class RegistrationServiceImpl implements RegistrationService, Startable, 
     }
 
     @Override
-    public Client getById(String id) {
+    public Registration getById(String id) {
         return store.getRegistration(id);
     }
 
@@ -143,7 +143,7 @@ public class RegistrationServiceImpl implements RegistrationService, Startable, 
     }
 
     @Override
-    public void registrationExpired(Client registration, Collection<Observation> observation) {
+    public void registrationExpired(Registration registration, Collection<Observation> observation) {
         for (RegistrationListener l : listeners) {
             l.unregistered(registration);
         }

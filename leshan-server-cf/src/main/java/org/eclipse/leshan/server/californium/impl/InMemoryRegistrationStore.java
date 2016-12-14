@@ -44,8 +44,8 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.Startable;
 import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
-import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.client.Registration;
+import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.server.registration.Deregistration;
 import org.eclipse.leshan.server.registration.ExpirationListener;
 import org.slf4j.Logger;
@@ -58,7 +58,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     private final Logger LOG = LoggerFactory.getLogger(InMemoryRegistrationStore.class);
 
     // Data structure
-    private final Map<String /* end-point */, Client> regsByEp = new HashMap<>();
+    private final Map<String /* end-point */, Registration> regsByEp = new HashMap<>();
     private Map<KeyToken, org.eclipse.californium.core.observe.Observation> obsByToken = new HashMap<>();
     private Map<String, List<KeyToken>> tokensByRegId = new HashMap<>();
 
@@ -73,13 +73,13 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     /* *************** Leshan Registration API **************** */
 
     @Override
-    public Deregistration addRegistration(Client registration) {
+    public Deregistration addRegistration(Registration registration) {
         try {
             lock.writeLock().lock();
 
-            Client registrationRemoved = regsByEp.put(registration.getEndpoint(), registration);
+            Registration registrationRemoved = regsByEp.put(registration.getEndpoint(), registration);
             if (registrationRemoved != null) {
-                Collection<Observation> observationsRemoved = unsafeRemoveAllObservations(registrationRemoved.getRegistrationId());
+                Collection<Observation> observationsRemoved = unsafeRemoveAllObservations(registrationRemoved.getId());
                 return new Deregistration(registrationRemoved, observationsRemoved);
             }
         } finally {
@@ -89,17 +89,17 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     }
 
     @Override
-    public Client updateRegistration(ClientUpdate update) {
+    public Registration updateRegistration(RegistrationUpdate update) {
         try {
             lock.writeLock().lock();
 
-            Client registration = getRegistration(update.getRegistrationId());
+            Registration registration = getRegistration(update.getRegistrationId());
             if (registration == null) {
                 return null;
             } else {
-                Client registrationUpdated = update.updateClient(registration);
-                regsByEp.put(registrationUpdated.getEndpoint(), registrationUpdated);
-                return registrationUpdated;
+                Registration updatedRegistration = update.update(registration);
+                regsByEp.put(updatedRegistration.getEndpoint(), updatedRegistration);
+                return updatedRegistration;
             }
         } finally {
             lock.writeLock().unlock();
@@ -107,13 +107,13 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     }
 
     @Override
-    public Client getRegistration(String registrationId) {
+    public Registration getRegistration(String registrationId) {
         try {
             lock.readLock().lock();
 
             if (registrationId != null) {
-                for (Client registration : regsByEp.values()) {
-                    if (registrationId.equals(registration.getRegistrationId())) {
+                for (Registration registration : regsByEp.values()) {
+                    if (registrationId.equals(registration.getId())) {
                         return registration;
                     }
                 }
@@ -125,7 +125,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     }
 
     @Override
-    public Client getRegistrationByEndpoint(String endpoint) {
+    public Registration getRegistrationByEndpoint(String endpoint) {
         try {
             lock.readLock().lock();
             return regsByEp.get(endpoint);
@@ -135,13 +135,13 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     }
 
     @Override
-    public Collection<Client> getRegistrationByAdress(InetSocketAddress address) {
+    public Collection<Registration> getRegistrationByAdress(InetSocketAddress address) {
         // TODO needed to remove getAllRegistration()
         return null;
     }
 
     @Override
-    public Collection<Client> getAllRegistration() {
+    public Collection<Registration> getAllRegistration() {
         try {
             lock.readLock().lock();
             return Collections.unmodifiableCollection(regsByEp.values());
@@ -156,9 +156,9 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
         try {
             lock.writeLock().lock();
 
-            Client registration = getRegistration(registrationId);
+            Registration registration = getRegistration(registrationId);
             if (registration != null) {
-                Collection<Observation> observationsRemoved = unsafeRemoveAllObservations(registration.getRegistrationId());
+                Collection<Observation> observationsRemoved = unsafeRemoveAllObservations(registration.getId());
                 regsByEp.remove(registration.getEndpoint());
                 return new Deregistration(registration, observationsRemoved);
             }
@@ -424,10 +424,10 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
         @Override
         public void run() {
             try {
-                for (Client client : new ArrayList<Client>(getAllRegistration())) {
-                    if (!client.isAlive()) {
+                for (Registration reg : new ArrayList<Registration>(getAllRegistration())) {
+                    if (!reg.isAlive()) {
                         // force de-registration
-                        Deregistration removedRegistration = removeRegistration(client.getRegistrationId());
+                        Deregistration removedRegistration = removeRegistration(reg.getId());
                         expirationListener.registrationExpired(removedRegistration.getRegistration(),
                                 removedRegistration.getObservations());
                     }

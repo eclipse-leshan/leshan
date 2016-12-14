@@ -17,9 +17,9 @@ package org.eclipse.leshan.server.cluster;
 
 import java.util.Arrays;
 
-import org.eclipse.leshan.server.client.Client;
+import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.client.RegistrationListener;
-import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.util.Validate;
 
 import redis.clients.jedis.Jedis;
@@ -44,30 +44,30 @@ public class RedisTokenHandler implements RegistrationListener {
     }
 
     @Override
-    public void registered(Client client) {
+    public void registered(Registration registration) {
         try (Jedis j = pool.getResource()) {
             // create registration entry
-            byte[] k = (EP_UID + client.getEndpoint()).getBytes();
+            byte[] k = (EP_UID + registration.getEndpoint()).getBytes();
             j.set(k, instanceUID.getBytes());
-            j.expire(k, client.getLifeTimeInSec().intValue());
+            j.expire(k, registration.getLifeTimeInSec().intValue());
         }
     }
 
     @Override
-    public void updated(ClientUpdate update, Client clientUpdated) {
+    public void updated(RegistrationUpdate update, Registration updatedRegistration) {
         try (Jedis j = pool.getResource()) {
             // create registration entry
-            byte[] k = (EP_UID + clientUpdated.getEndpoint()).getBytes();
+            byte[] k = (EP_UID + updatedRegistration.getEndpoint()).getBytes();
             j.set(k, instanceUID.getBytes());
-            j.expire(k, clientUpdated.getLifeTimeInSec().intValue());
+            j.expire(k, updatedRegistration.getLifeTimeInSec().intValue());
         }
     }
 
     @Override
-    public void unregistered(Client client) {
+    public void unregistered(Registration registration) {
         try (Jedis j = pool.getResource()) {
             // create registration entry
-            byte[] k = (EP_UID + client.getEndpoint()).getBytes();
+            byte[] k = (EP_UID + registration.getEndpoint()).getBytes();
             j.del(k);
         }
     }

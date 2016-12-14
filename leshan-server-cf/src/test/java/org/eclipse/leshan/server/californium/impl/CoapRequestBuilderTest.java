@@ -45,8 +45,8 @@ import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
-import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.Client.Builder;
+import org.eclipse.leshan.server.client.Registration;
+import org.eclipse.leshan.server.client.Registration.Builder;
 import org.eclipse.leshan.tlv.Tlv;
 import org.eclipse.leshan.tlv.Tlv.TlvType;
 import org.eclipse.leshan.tlv.TlvDecoder;
@@ -67,12 +67,12 @@ public class CoapRequestBuilderTest {
         encoder = new DefaultLwM2mNodeEncoder();
     }
 
-    private Client newClient() throws UnknownHostException {
-        return newClient(null);
+    private Registration newRegistration() throws UnknownHostException {
+        return newRegistration(null);
     }
 
-    private Client newClient(String rootpath) throws UnknownHostException {
-        Builder b = new Client.Builder("regid", "endpoint", Inet4Address.getByName("127.0.0.1"), 12354,
+    private Registration newRegistration(String rootpath) throws UnknownHostException {
+        Builder b = new Registration.Builder("regid", "endpoint", Inet4Address.getByName("127.0.0.1"), 12354,
                 new InetSocketAddress(0));
         if (rootpath != null) {
             Map<String, String> attr = new HashMap<>();
@@ -84,12 +84,12 @@ public class CoapRequestBuilderTest {
 
     @Test
     public void build_read_request() throws Exception {
-        Client client = newClient();
+        Registration reg = newRegistration();
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(
-                new InetSocketAddress(client.getAddress(), client.getPort()), client.getRootPath(),
-                client.getRegistrationId(), client.getEndpoint(), model, encoder);
+                new InetSocketAddress(reg.getAddress(), reg.getPort()), reg.getRootPath(),
+                reg.getId(), reg.getEndpoint(), model, encoder);
         ReadRequest request = new ReadRequest(3, 0);
         builder.visit(request);
 
@@ -103,12 +103,12 @@ public class CoapRequestBuilderTest {
 
     @Test
     public void build_read_request_with_non_default_object_path() throws Exception {
-        Client client = newClient("/lwm2m");
+        Registration reg = newRegistration("/lwm2m");
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(
-                new InetSocketAddress(client.getAddress(), client.getPort()), client.getRootPath(),
-                client.getRegistrationId(), client.getEndpoint(), model, encoder);
+                new InetSocketAddress(reg.getAddress(), reg.getPort()), reg.getRootPath(),
+                reg.getId(), reg.getEndpoint(), model, encoder);
         ReadRequest request = new ReadRequest(3, 0, 1);
         builder.visit(request);
 
@@ -119,12 +119,12 @@ public class CoapRequestBuilderTest {
 
     @Test
     public void build_read_request_with_root_path() throws Exception {
-        Client client = newClient("/");
+        Registration reg = newRegistration("/");
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(
-                new InetSocketAddress(client.getAddress(), client.getPort()), client.getRootPath(),
-                client.getRegistrationId(), client.getEndpoint(), model, encoder);
+                new InetSocketAddress(reg.getAddress(), reg.getPort()), reg.getRootPath(),
+                reg.getId(), reg.getEndpoint(), model, encoder);
         ReadRequest request = new ReadRequest(3);
         builder.visit(request);
 
@@ -135,12 +135,12 @@ public class CoapRequestBuilderTest {
 
     @Test
     public void build_discover_request() throws Exception {
-        Client client = newClient();
+        Registration reg = newRegistration();
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(
-                new InetSocketAddress(client.getAddress(), client.getPort()), client.getRootPath(),
-                client.getRegistrationId(), client.getEndpoint(), model, encoder);
+                new InetSocketAddress(reg.getAddress(), reg.getPort()), reg.getRootPath(),
+                reg.getId(), reg.getEndpoint(), model, encoder);
         DiscoverRequest request = new DiscoverRequest(3, 0);
         builder.visit(request);
 
@@ -155,12 +155,12 @@ public class CoapRequestBuilderTest {
 
     @Test
     public void build_write_request() throws Exception {
-        Client client = newClient();
+        Registration reg = newRegistration();
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(
-                new InetSocketAddress(client.getAddress(), client.getPort()), client.getRootPath(),
-                client.getRegistrationId(), client.getEndpoint(), model, encoder);
+                new InetSocketAddress(reg.getAddress(), reg.getPort()), reg.getRootPath(),
+                reg.getId(), reg.getEndpoint(), model, encoder);
         WriteRequest request = new WriteRequest(Mode.UPDATE, 3, 0, LwM2mSingleResource.newStringResource(4, "value"));
         builder.visit(request);
 
@@ -180,12 +180,12 @@ public class CoapRequestBuilderTest {
 
     @Test
     public void build_write_request_replace() throws Exception {
-        Client client = newClient();
+        Registration reg = newRegistration();
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(
-                new InetSocketAddress(client.getAddress(), client.getPort()), client.getRootPath(),
-                client.getRegistrationId(), client.getEndpoint(), model, encoder);
+                new InetSocketAddress(reg.getAddress(), reg.getPort()), reg.getRootPath(),
+                reg.getId(), reg.getEndpoint(), model, encoder);
         WriteRequest request = new WriteRequest(3, 0, 14, "value");
         builder.visit(request);
 
@@ -196,12 +196,12 @@ public class CoapRequestBuilderTest {
 
     @Test
     public void build_write_attribute_request() throws Exception {
-        Client client = newClient();
+        Registration reg = newRegistration();
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(
-                new InetSocketAddress(client.getAddress(), client.getPort()), client.getRootPath(),
-                client.getRegistrationId(), client.getEndpoint(), model, encoder);
+                new InetSocketAddress(reg.getAddress(), reg.getPort()), reg.getRootPath(),
+                reg.getId(), reg.getEndpoint(), model, encoder);
         WriteAttributesRequest request = new WriteAttributesRequest(3, 0, 14,
                 new ObserveSpec.Builder().minPeriod(10).maxPeriod(100).build());
         builder.visit(request);
@@ -216,12 +216,12 @@ public class CoapRequestBuilderTest {
 
     @Test
     public void build_execute_request() throws Exception {
-        Client client = newClient();
+        Registration reg = newRegistration();
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(
-                new InetSocketAddress(client.getAddress(), client.getPort()), client.getRootPath(),
-                client.getRegistrationId(), client.getEndpoint(), model, encoder);
+                new InetSocketAddress(reg.getAddress(), reg.getPort()), reg.getRootPath(),
+                reg.getId(), reg.getEndpoint(), model, encoder);
         ExecuteRequest request = new ExecuteRequest(3, 0, 12, "params");
         builder.visit(request);
 
@@ -236,12 +236,12 @@ public class CoapRequestBuilderTest {
 
     @Test
     public void build_create_request__without_instance_id() throws Exception {
-        Client client = newClient();
+        Registration reg = newRegistration();
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(
-                new InetSocketAddress(client.getAddress(), client.getPort()), client.getRootPath(),
-                client.getRegistrationId(), client.getEndpoint(), model, encoder);
+                new InetSocketAddress(reg.getAddress(), reg.getPort()), reg.getRootPath(),
+                reg.getId(), reg.getEndpoint(), model, encoder);
         CreateRequest request = new CreateRequest(12, LwM2mSingleResource.newStringResource(0, "value"));
         builder.visit(request);
 
@@ -260,12 +260,12 @@ public class CoapRequestBuilderTest {
 
     @Test
     public void build_create_request__with_instance_id() throws Exception {
-        Client client = newClient();
+        Registration reg = newRegistration();
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(
-                new InetSocketAddress(client.getAddress(), client.getPort()), client.getRootPath(),
-                client.getRegistrationId(), client.getEndpoint(), model, encoder);
+                new InetSocketAddress(reg.getAddress(), reg.getPort()), reg.getRootPath(),
+                reg.getId(), reg.getEndpoint(), model, encoder);
         CreateRequest request = new CreateRequest(12,
                 new LwM2mObjectInstance(26, LwM2mSingleResource.newStringResource(0, "value")));
         builder.visit(request);
@@ -286,12 +286,12 @@ public class CoapRequestBuilderTest {
 
     @Test
     public void build_delete_request() throws Exception {
-        Client client = newClient();
+        Registration reg = newRegistration();
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(
-                new InetSocketAddress(client.getAddress(), client.getPort()), client.getRootPath(),
-                client.getRegistrationId(), client.getEndpoint(), model, encoder);
+                new InetSocketAddress(reg.getAddress(), reg.getPort()), reg.getRootPath(),
+                reg.getId(), reg.getEndpoint(), model, encoder);
         DeleteRequest request = new DeleteRequest(12, 0);
         builder.visit(request);
 
@@ -305,12 +305,12 @@ public class CoapRequestBuilderTest {
 
     @Test
     public void build_observe_request() throws Exception {
-        Client client = newClient();
+        Registration reg = newRegistration();
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(
-                new InetSocketAddress(client.getAddress(), client.getPort()), client.getRootPath(),
-                client.getRegistrationId(), client.getEndpoint(), model, encoder);
+                new InetSocketAddress(reg.getAddress(), reg.getPort()), reg.getRootPath(),
+                reg.getId(), reg.getEndpoint(), model, encoder);
         ObserveRequest request = new ObserveRequest(12, 0);
         builder.visit(request);
 

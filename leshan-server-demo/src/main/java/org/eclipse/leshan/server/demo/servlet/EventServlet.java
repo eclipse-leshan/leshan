@@ -27,10 +27,10 @@ import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
-import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.client.Registration;
+import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.server.client.RegistrationListener;
-import org.eclipse.leshan.server.demo.servlet.json.ClientSerializer;
+import org.eclipse.leshan.server.demo.servlet.json.RegistrationSerializer;
 import org.eclipse.leshan.server.demo.servlet.json.LwM2mNodeSerializer;
 import org.eclipse.leshan.server.demo.servlet.log.CoapMessage;
 import org.eclipse.leshan.server.demo.servlet.log.CoapMessageListener;
@@ -74,21 +74,21 @@ public class EventServlet extends EventSourceServlet {
     private final RegistrationListener registrationListener = new RegistrationListener() {
 
         @Override
-        public void registered(Client client) {
-            String jClient = EventServlet.this.gson.toJson(client);
-            sendEvent(EVENT_REGISTRATION, jClient, client.getEndpoint());
+        public void registered(Registration registration) {
+            String jReg = EventServlet.this.gson.toJson(registration);
+            sendEvent(EVENT_REGISTRATION, jReg, registration.getEndpoint());
         }
 
         @Override
-        public void updated(ClientUpdate update, Client clientUpdated) {
-            String jClient = EventServlet.this.gson.toJson(clientUpdated);
-            sendEvent(EVENT_UPDATED, jClient, clientUpdated.getEndpoint());
+        public void updated(RegistrationUpdate update, Registration updatedRegistration) {
+            String jReg = EventServlet.this.gson.toJson(updatedRegistration);
+            sendEvent(EVENT_UPDATED, jReg, updatedRegistration.getEndpoint());
         };
 
         @Override
-        public void unregistered(Client client) {
-            String jClient = EventServlet.this.gson.toJson(client);
-            sendEvent(EVENT_DEREGISTRATION, jClient, client.getEndpoint());
+        public void unregistered(Registration registration) {
+            String jReg = EventServlet.this.gson.toJson(registration);
+            sendEvent(EVENT_DEREGISTRATION, jReg, registration.getEndpoint());
         }
     };
 
@@ -104,15 +104,15 @@ public class EventServlet extends EventSourceServlet {
                 LOG.debug("Received notification from [{}] containing value [{}]", observation.getPath(),
                         response.getContent().toString());
             }
-            Client client = server.getRegistrationService().getById(observation.getRegistrationId());
+            Registration registration = server.getRegistrationService().getById(observation.getRegistrationId());
 
-            if (client != null) {
-                String data = new StringBuffer("{\"ep\":\"").append(client.getEndpoint()).append("\",\"res\":\"")
+            if (registration != null) {
+                String data = new StringBuffer("{\"ep\":\"").append(registration.getEndpoint()).append("\",\"res\":\"")
                         .append(observation.getPath().toString()).append("\",\"val\":")
                         .append(gson.toJson(response.getContent()))
                         .append("}").toString();
 
-                sendEvent(EVENT_NOTIFICATION, data, client.getEndpoint());
+                sendEvent(EVENT_NOTIFICATION, data, registration.getEndpoint());
             }
         }
 
@@ -133,7 +133,7 @@ public class EventServlet extends EventSourceServlet {
         }
 
         GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeHierarchyAdapter(Client.class, new ClientSerializer(securePort));
+        gsonBuilder.registerTypeHierarchyAdapter(Registration.class, new RegistrationSerializer(securePort));
         gsonBuilder.registerTypeHierarchyAdapter(LwM2mNode.class, new LwM2mNodeSerializer());
         gsonBuilder.setDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
         this.gson = gsonBuilder.create();

@@ -28,7 +28,7 @@ public interface RegistrationService {
      * @param registration id
      * @return the matching registration or <code>null</code> if not found
      */
-    Client getById(String id);
+    Registration getById(String id);
 
     /**
      * Retrieves a registration by end-point.
@@ -36,7 +36,7 @@ public interface RegistrationService {
      * @param endpoint
      * @return the matching registration or <code>null</code> if not found
      */
-    Client getByEndpoint(String endpoint);
+    Registration getByEndpoint(String endpoint);
 
     /**
      * Returns an unmodifiable list of all registrations.
@@ -45,7 +45,7 @@ public interface RegistrationService {
      * @deprecated should be replace by an iterator
      */
     @Deprecated
-    Collection<Client> getAllRegistrations();
+    Collection<Registration> getAllRegistrations();
 
     /**
      * Adds a new listener to be notified with client registration events.

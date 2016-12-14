@@ -28,7 +28,7 @@ import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.californium.CaliforniumObservationRegistry;
 import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
-import org.eclipse.leshan.server.client.Client;
+import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.model.StandardModelProvider;
 import org.junit.Assert;
 import org.junit.Before;
@@ -54,76 +54,76 @@ public class CaliforniumObservationTest {
 
     @Test
     public void observe_twice_cancels_first() {
-        givenAnObservation(support.client.getRegistrationId(), new LwM2mPath(3, 0, 12));
-        givenAnObservation(support.client.getRegistrationId(), new LwM2mPath(3, 0, 12));
+        givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 12));
+        givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 12));
 
         // check the presence of only one observation.
-        Set<Observation> observations = registry.getObservations(support.client);
+        Set<Observation> observations = registry.getObservations(support.registration);
         Assert.assertEquals(1, observations.size());
     }
 
     @Test
     public void cancel_by_client() {
         // create some observations and add it to registry
-        givenAnObservation(support.client.getRegistrationId(), new LwM2mPath(3, 0, 13));
-        givenAnObservation(support.client.getRegistrationId(), new LwM2mPath(3, 0, 12));
+        givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 13));
+        givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 12));
 
         givenAnObservation("anotherClient", new LwM2mPath(3, 0, 12));
 
         // check its presence
-        Set<Observation> observations = registry.getObservations(support.client);
+        Set<Observation> observations = registry.getObservations(support.registration);
         Assert.assertEquals(2, observations.size());
 
         // cancel it
-        int nbCancelled = registry.cancelObservations(support.client);
+        int nbCancelled = registry.cancelObservations(support.registration);
         Assert.assertEquals(2, nbCancelled);
 
         // check its absence
-        observations = registry.getObservations(support.client);
+        observations = registry.getObservations(support.registration);
         Assert.assertTrue(observations.isEmpty());
     }
 
     @Test
     public void cancel_by_path() {
         // create some observations and add it to registry
-        givenAnObservation(support.client.getRegistrationId(), new LwM2mPath(3, 0, 13));
-        givenAnObservation(support.client.getRegistrationId(), new LwM2mPath(3, 0, 12));
-        givenAnObservation(support.client.getRegistrationId(), new LwM2mPath(3, 0, 12));
+        givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 13));
+        givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 12));
+        givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 12));
 
         givenAnObservation("anotherClient", new LwM2mPath(3, 0, 12));
 
         // check its presence
-        Set<Observation> observations = registry.getObservations(support.client);
+        Set<Observation> observations = registry.getObservations(support.registration);
         Assert.assertEquals(2, observations.size());
 
         // cancel it
-        int nbCancelled = registry.cancelObservations(support.client, "/3/0/12");
+        int nbCancelled = registry.cancelObservations(support.registration, "/3/0/12");
         Assert.assertEquals(1, nbCancelled);
 
         // check its absence
-        observations = registry.getObservations(support.client);
+        observations = registry.getObservations(support.registration);
         Assert.assertEquals(1, observations.size());
     }
 
     @Test
     public void cancel_by_observation() throws UnknownHostException {
         // create some observations and add it to registry
-        givenAnObservation(support.client.getRegistrationId(), new LwM2mPath(3, 0, 13));
-        givenAnObservation(support.client.getRegistrationId(), new LwM2mPath(3, 0, 12));
+        givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 13));
+        givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 12));
         givenAnObservation("anotherClient", new LwM2mPath(3, 0, 12));
 
-        Observation observationToCancel = givenAnObservation(support.client.getRegistrationId(),
+        Observation observationToCancel = givenAnObservation(support.registration.getId(),
                 new LwM2mPath(3, 0, 12));
 
         // check its presence
-        Set<Observation> observations = registry.getObservations(support.client);
+        Set<Observation> observations = registry.getObservations(support.registration);
         Assert.assertEquals(2, observations.size());
 
         // cancel it
         registry.cancelObservation(observationToCancel);
 
         // check its absence
-        observations = registry.getObservations(support.client);
+        observations = registry.getObservations(support.registration);
         Assert.assertEquals(1, observations.size());
     }
 
@@ -136,8 +136,8 @@ public class CaliforniumObservationTest {
         coapRequest.getOptions().addUriPath(String.valueOf(target.getObjectId()));
         coapRequest.getOptions().addUriPath(String.valueOf(target.getObjectInstanceId()));
         coapRequest.getOptions().addUriPath(String.valueOf(target.getResourceId()));
-        coapRequest.setDestination(support.client.getAddress());
-        coapRequest.setDestinationPort(support.client.getPort());
+        coapRequest.setDestination(support.registration.getAddress());
+        coapRequest.setDestinationPort(support.registration.getPort());
         Map<String, String> context = new HashMap<>();
         context.put(CoapRequestBuilder.CTX_REGID, registrationId);
         context.put(CoapRequestBuilder.CTX_LWM2M_PATH, target.toString());
@@ -151,11 +151,11 @@ public class CaliforniumObservationTest {
         return observation;
     }
 
-    public Client givenASimpleClient(String registrationId) {
+    public Registration givenASimpleClient(String registrationId) {
         InetSocketAddress registrationAddress = InetSocketAddress.createUnresolved("localhost", 5683);
-        Client.Builder builder;
+        Registration.Builder builder;
         try {
-            builder = new Client.Builder(registrationId, registrationId + "_ep", InetAddress.getLocalHost(), 10000,
+            builder = new Registration.Builder(registrationId, registrationId + "_ep", InetAddress.getLocalHost(), 10000,
                     registrationAddress);
             return builder.build();
         } catch (UnknownHostException e) {

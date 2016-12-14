@@ -17,27 +17,27 @@ package org.eclipse.leshan.server.demo.servlet.json;
 
 import java.lang.reflect.Type;
 
-import org.eclipse.leshan.server.client.Client;
+import org.eclipse.leshan.server.client.Registration;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
-public class ClientSerializer implements JsonSerializer<Client> {
+public class RegistrationSerializer implements JsonSerializer<Registration> {
 
     private final int securePort;
 
-    public ClientSerializer(int securePort) {
+    public RegistrationSerializer(int securePort) {
         this.securePort = securePort;
     }
 
     @Override
-    public JsonElement serialize(Client src, Type typeOfSrc, JsonSerializationContext context) {
+    public JsonElement serialize(Registration src, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject element = new JsonObject();
 
         element.addProperty("endpoint", src.getEndpoint());
-        element.addProperty("registrationId", src.getRegistrationId());
+        element.addProperty("registrationId", src.getId());
         element.add("registrationDate", context.serialize(src.getRegistrationDate()));
         element.add("lastUpdate", context.serialize(src.getLastUpdate()));
         element.addProperty("address", src.getAddress().getHostAddress() + ":" + src.getPort());

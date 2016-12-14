@@ -30,9 +30,9 @@ import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.util.Validate;
 
 /**
- * An immutable structure which represent a LW-M2M client registered on the server
+ * An immutable structure which represent a LW-M2M client registration on the server
  */
-public class Client implements Serializable {
+public class Registration implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -64,7 +64,7 @@ public class Client implements Serializable {
      */
     private final String endpoint;
 
-    private final String registrationId;
+    private final String id;
 
     private final LinkObject[] objectLinks;
 
@@ -75,19 +75,19 @@ public class Client implements Serializable {
 
     private final Date lastUpdate;
 
-    protected Client(String registrationId, String endpoint, InetAddress address, int port, String lwM2mVersion,
+    protected Registration(String id, String endpoint, InetAddress address, int port, String lwM2mVersion,
             Long lifetimeInSec, String smsNumber, BindingMode bindingMode, LinkObject[] objectLinks,
             InetSocketAddress registrationEndpointAddress,
 
             Date registrationDate, Date lastUpdate, Map<String, String> additionalRegistrationAttributes) {
 
-        Validate.notNull(registrationId);
+        Validate.notNull(id);
         Validate.notEmpty(endpoint);
         Validate.notNull(address);
         Validate.notNull(port);
         Validate.notNull(registrationEndpointAddress);
 
-        this.registrationId = registrationId;
+        this.id = id;
         this.endpoint = endpoint;
         this.address = address;
         this.port = port;
@@ -118,8 +118,8 @@ public class Client implements Serializable {
 
     }
 
-    public String getRegistrationId() {
-        return registrationId;
+    public String getId() {
+        return id;
     }
 
     public Date getRegistrationDate() {
@@ -272,9 +272,9 @@ public class Client implements Serializable {
     @Override
     public String toString() {
         return String.format(
-                "Client [registrationDate=%s, address=%s, port=%s, registrationEndpoint=%s, lifeTimeInSec=%s, smsNumber=%s, lwM2mVersion=%s, bindingMode=%s, endpoint=%s, registrationId=%s, objectLinks=%s, lastUpdate=%s]",
+                "Registration [registrationDate=%s, address=%s, port=%s, registrationEndpoint=%s, lifeTimeInSec=%s, smsNumber=%s, lwM2mVersion=%s, bindingMode=%s, endpoint=%s, registrationId=%s, objectLinks=%s, lastUpdate=%s]",
                 registrationDate, address, port, registrationEndpointAddress, lifeTimeInSec, smsNumber, lwM2mVersion,
-                bindingMode, endpoint, registrationId, Arrays.toString(objectLinks), lastUpdate);
+                bindingMode, endpoint, id, Arrays.toString(objectLinks), lastUpdate);
     }
 
     /**
@@ -295,8 +295,8 @@ public class Client implements Serializable {
      */
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Client) {
-            Client other = (Client) obj;
+        if (obj instanceof Registration) {
+            Registration other = (Registration) obj;
             return this.getEndpoint().equals(other.getEndpoint());
         } else {
             return false;
@@ -375,8 +375,8 @@ public class Client implements Serializable {
             return this;
         }
 
-        public Client build() {
-            return new Client(Builder.this.registrationId, Builder.this.endpoint, Builder.this.address,
+        public Registration build() {
+            return new Registration(Builder.this.registrationId, Builder.this.endpoint, Builder.this.address,
                     Builder.this.port, Builder.this.lwM2mVersion, Builder.this.lifeTimeInSec, Builder.this.smsNumber,
                     this.bindingMode, this.objectLinks, this.registrationEndpointAddress, this.registrationDate,
                     this.lastUpdate, this.additionalRegistrationAttributes);

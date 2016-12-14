@@ -30,7 +30,7 @@ import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
-import org.eclipse.leshan.server.client.Client;
+import org.eclipse.leshan.server.client.Registration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,12 +65,12 @@ public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapReq
             public T buildResponse(final Response coapResponse) {
                 // TODO we need to fix that by removing the Client dependency from LwM2MResponseBuilder or by creating a
                 // LwM2mBootstrapResponseBuilder
-                Client client = new Client.Builder("fakeregistrationid", endpointName, clientAddress.getAddress(),
+                Registration registration = new Registration.Builder("fakeregistrationid", endpointName, clientAddress.getAddress(),
                         clientAddress.getPort(), secure ? secureEndpoint.getAddress() : nonSecureEndpoint.getAddress())
                                 .build();
                 // Build LwM2m response
                 final LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<T>(coapRequest,
-                        coapResponse, client, model, null, decoder);
+                        coapResponse, registration, model, null, decoder);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }
@@ -103,13 +103,13 @@ public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapReq
             public T buildResponse(final Response coapResponse) {
                 // TODO we need to fix that by removing the Client dependency from LwM2MResponseBuilder or by creating a
                 // LwM2mBootstrapResponseBuilder
-                Client client = new Client.Builder("fakeregistrationid", endpointName, clientAddress.getAddress(),
+                Registration registration = new Registration.Builder("fakeregistrationid", endpointName, clientAddress.getAddress(),
                         clientAddress.getPort(), secure ? secureEndpoint.getAddress() : nonSecureEndpoint.getAddress())
                                 .build();
 
                 // Build LwM2m response
                 final LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<T>(coapRequest,
-                        coapResponse, client, model, null, decoder);
+                        coapResponse, registration, model, null, decoder);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }

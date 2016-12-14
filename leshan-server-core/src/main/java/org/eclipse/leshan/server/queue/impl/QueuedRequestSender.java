@@ -34,10 +34,10 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.server.Stoppable;
-import org.eclipse.leshan.server.client.Client;
-import org.eclipse.leshan.server.client.ClientUpdate;
+import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.client.RegistrationListener;
 import org.eclipse.leshan.server.client.RegistrationService;
+import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
 import org.eclipse.leshan.server.observation.ObservationRegistryListener;
 import org.eclipse.leshan.server.queue.MessageStore;
@@ -100,20 +100,20 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
     }
 
     @Override
-    public <T extends LwM2mResponse> T send(Client destination, DownlinkRequest<T> request, Long requestTimeout)
+    public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request, Long requestTimeout)
             throws InterruptedException {
         throw new UnsupportedOperationException("QueueMode doesn't support sending of messages synchronously");
     }
 
     @Override
-    public <T extends LwM2mResponse> void send(Client destination, DownlinkRequest<T> request,
+    public <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         throw new UnsupportedOperationException(
                 "QueueMode doesn't support sending of messages with callbacks. Use a request ticket instead and register your response listeners");
     }
 
     @Override
-    public <T extends LwM2mResponse> void send(Client destination, String requestTicket, DownlinkRequest<T> request) {
+    public <T extends LwM2mResponse> void send(Registration destination, String requestTicket, DownlinkRequest<T> request) {
         LOG.trace("send(requestTicket={})", requestTicket);
         // safe because DownlinkRequest does not use generic itself
         @SuppressWarnings("unchecked")
@@ -173,24 +173,24 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
     }
 
     @Override
-    public void cancelPendingRequests(Client client) {
-        Validate.notNull(client);
+    public void cancelPendingRequests(Registration registration) {
+        Validate.notNull(registration);
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Cancelling and removing all pending messages for client {}", client.getEndpoint());
+            LOG.debug("Cancelling and removing all pending messages for client {}", registration.getEndpoint());
         }
 
         readWriteLock.writeLock().lock();
         try {
             // Potentially the first message in the queue would have been sent.
             // So try to cancel it now.
-            delegateSender.cancelPendingRequests(client);
+            delegateSender.cancelPendingRequests(registration);
 
             // It is better to notify the listener with a RequestCanceledException
             // for each queued message to keep the behavior consistent with CaliforniumLwM2mRequestSender.
-            List<QueuedRequest> removedMessages = messageStore.removeAll(client.getEndpoint());
+            List<QueuedRequest> removedMessages = messageStore.removeAll(registration.getEndpoint());
             for (QueuedRequest request : removedMessages) {
-                processingExecutor.execute(new ResponseProcessingTask(client, request.getRequestTicket(),
+                processingExecutor.execute(new ResponseProcessingTask(registration, request.getRequestTicket(),
                         responseListeners, new RequestCanceledException("Queued message cancelled")));
             }
         } finally {
@@ -207,44 +207,44 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
         return new ResponseListener() {
 
             @Override
-            public void onResponse(Client client, String requestTicket, LwM2mResponse response) {
+            public void onResponse(Registration registration, String requestTicket, LwM2mResponse response) {
                 // process only if the client has used Queue mode.
-                if (client != null && client.usesQueueMode()) {
+                if (registration != null && registration.usesQueueMode()) {
                     LOG.trace("response received in Queue mode successfully: {}", requestTicket);
-                    processResponse(client, requestTicket, response);
+                    processResponse(registration, requestTicket, response);
                 }
             }
 
             @Override
-            public void onError(Client client, String requestTicket, Exception exception) {
+            public void onError(Registration registration, String requestTicket, Exception exception) {
                 // process only if the client has used Queue mode.
-                if (client != null && client.usesQueueMode()) {
+                if (registration != null && registration.usesQueueMode()) {
                     LOG.debug("exception on sending the request: {}", requestTicket, exception);
                     if (exception instanceof TimeoutException) {
-                        timeout(client.getEndpoint());
+                        timeout(registration.getEndpoint());
                     } else {
-                        processException(client, requestTicket, exception);
+                        processException(registration, requestTicket, exception);
                     }
                 }
             }
         };
     }
 
-    private void processResponse(Client client, String requestTicket, LwM2mResponse response) {
+    private void processResponse(Registration registration, String requestTicket, LwM2mResponse response) {
         LOG.debug("Received Response -> {}", requestTicket);
-        messageStore.deleteFirst(client.getEndpoint());
-        processingExecutor.execute(new ResponseProcessingTask(client, requestTicket, responseListeners, response));
-        processingExecutor.execute(newRequestSendingTask(client.getEndpoint()));
+        messageStore.deleteFirst(registration.getEndpoint());
+        processingExecutor.execute(new ResponseProcessingTask(registration, requestTicket, responseListeners, response));
+        processingExecutor.execute(newRequestSendingTask(registration.getEndpoint()));
     }
 
-    private void processException(Client client, String requestTicket, Exception exception) {
+    private void processException(Registration registration, String requestTicket, Exception exception) {
         LOG.debug("Received error response {}", requestTicket);
-        messageStore.deleteFirst(client.getEndpoint());
-        processingExecutor.execute(new ResponseProcessingTask(client, requestTicket, responseListeners, exception));
+        messageStore.deleteFirst(registration.getEndpoint());
+        processingExecutor.execute(new ResponseProcessingTask(registration, requestTicket, responseListeners, exception));
         // If RequestCanceledException is thrown due to cancelPendingMessages call, then there
         // is no use processing next requests which would be removed in the next few moments.
         if (!(exception instanceof RequestCanceledException)) {
-            processingExecutor.execute(newRequestSendingTask(client.getEndpoint()));
+            processingExecutor.execute(newRequestSendingTask(registration.getEndpoint()));
         }
     }
 
@@ -261,21 +261,21 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
     private final class QueueModeObservationRegistryListener implements ObservationRegistryListener {
         @Override
         public void newValue(Observation observation, ObserveResponse response) {
-            Client client = registrationService.getById(observation.getRegistrationId());
+            Registration registration = registrationService.getById(observation.getRegistrationId());
             // if client de-registered already, do nothing.
-            if (client == null) {
+            if (registration == null) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("No registered client found for registrationId: {}. Request is not sent.",
                             observation.getRegistrationId());
                 }
                 return;
             }
-            if (client.usesQueueMode() && clientStatusTracker.setClientReachable(client.getEndpoint())
-                    && clientStatusTracker.startClientReceiving(client.getEndpoint())) {
+            if (registration.usesQueueMode() && clientStatusTracker.setClientReachable(registration.getEndpoint())
+                    && clientStatusTracker.startClientReceiving(registration.getEndpoint())) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Notify from {}. Sending queued requests.", client.getEndpoint());
+                    LOG.debug("Notify from {}. Sending queued requests.", registration.getEndpoint());
                 }
-                processingExecutor.execute(newRequestSendingTask(client.getEndpoint()));
+                processingExecutor.execute(newRequestSendingTask(registration.getEndpoint()));
             }
         }
 
@@ -292,34 +292,34 @@ public class QueuedRequestSender implements LwM2mRequestSender, Stoppable {
 
     private final class QueueModeRegistrationListener implements RegistrationListener {
         @Override
-        public void registered(Client client) {
+        public void registered(Registration registration) {
             // When client is in QueueMode
-            if (client.usesQueueMode()) {
-                clientStatusTracker.setClientReachable(client.getEndpoint());
+            if (registration.usesQueueMode()) {
+                clientStatusTracker.setClientReachable(registration.getEndpoint());
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Client {} registered.", client.getEndpoint());
+                    LOG.debug("Client {} registered.", registration.getEndpoint());
                 }
             }
         }
 
         @Override
-        public void updated(ClientUpdate update, Client clientUpdated) {
+        public void updated(RegistrationUpdate update, Registration updatedRegistration) {
             // When client is in QueueMode and was previously in unreachable
             // state and when RECEIVING state could be set
             // i.e:- there is no other message currently being sent
-            if (clientUpdated.usesQueueMode() && clientStatusTracker.setClientReachable(clientUpdated.getEndpoint())
-                    && clientStatusTracker.startClientReceiving(clientUpdated.getEndpoint())) {
+            if (updatedRegistration.usesQueueMode() && clientStatusTracker.setClientReachable(updatedRegistration.getEndpoint())
+                    && clientStatusTracker.startClientReceiving(updatedRegistration.getEndpoint())) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Client {} updated. Sending queued request.", clientUpdated.getEndpoint());
+                    LOG.debug("Registration {} updated. Sending queued request.", updatedRegistration.getEndpoint());
                 }
-                processingExecutor.execute(newRequestSendingTask(clientUpdated.getEndpoint()));
+                processingExecutor.execute(newRequestSendingTask(updatedRegistration.getEndpoint()));
             }
         }
 
         @Override
-        public void unregistered(Client client) {
-            if (client.usesQueueMode()) {
-                clientStatusTracker.clearClientState(client.getEndpoint());
+        public void unregistered(Registration registration) {
+            if (registration.usesQueueMode()) {
+                clientStatusTracker.clearClientState(registration.getEndpoint());
             }
         }
     }

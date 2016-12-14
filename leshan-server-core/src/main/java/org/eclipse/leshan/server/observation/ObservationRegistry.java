@@ -18,7 +18,7 @@ package org.eclipse.leshan.server.observation;
 import java.util.Set;
 
 import org.eclipse.leshan.core.observation.Observation;
-import org.eclipse.leshan.server.client.Client;
+import org.eclipse.leshan.server.client.Registration;
 
 /**
  * A registry for keeping track of observed resources implemented by LWM2M Clients.
@@ -34,27 +34,27 @@ public interface ObservationRegistry {
     void addObservation(Observation observation);
 
     /**
-     * Cancels all active observations of resource(s) implemented by a particular LWM2M Client.
+     * Cancels all active observations of resource(s) implemented by a particular LWM2M registration.
      * 
      * As a consequence the LWM2M Client will stop sending notifications about updated values of resources in scope of
      * the canceled observation.
      * 
-     * @param client the LWM2M Client to cancel observations for
+     * @param registration the LWM2M Client to cancel observations for
      * @return the number of canceled observations
      */
-    int cancelObservations(Client client);
+    int cancelObservations(Registration registration);
 
     /**
-     * Cancels all active observations for the given resource of a given client.
+     * Cancels all active observations for the given resource of a given registration.
      * 
      * As a consequence the LWM2M Client will stop sending notifications about updated values of resources in scope of
      * the canceled observation.
      * 
-     * @param client the LWM2M Client to cancel observation for
+     * @param registration the LWM2M Client to cancel observation for
      * @param resourcepath resource to cancel observation for
      * @return the number of canceled observations
      */
-    int cancelObservations(Client client, String resourcepath);
+    int cancelObservations(Registration registration, String resourcepath);
 
     /**
      * Cancels an observation.
@@ -67,11 +67,11 @@ public interface ObservationRegistry {
     void cancelObservation(Observation observation);
 
     /**
-     * Get all running observation for a given client
+     * Get all running observation for a given registration
      * 
      * @return an unmodifiable set of observation
      */
-    Set<Observation> getObservations(Client client);
+    Set<Observation> getObservations(Registration registration);
 
     void addListener(ObservationRegistryListener listener);
 

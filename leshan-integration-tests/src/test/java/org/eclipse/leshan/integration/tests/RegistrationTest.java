@@ -47,7 +47,7 @@ import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.RegisterResponse;
-import org.eclipse.leshan.server.client.Client;
+import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.junit.After;
 import org.junit.Before;
@@ -212,12 +212,12 @@ public class RegistrationTest {
         assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
 
         // check observation registry is not null
-        Client currentRegistration = helper.getCurrentRegistration();
+        Registration currentRegistration = helper.getCurrentRegistration();
         Set<Observation> observations = helper.server.getObservationRegistry()
                 .getObservations(currentRegistration);
         assertEquals(1, observations.size());
         Observation obs = observations.iterator().next();
-        assertEquals(currentRegistration.getRegistrationId(), obs.getRegistrationId());
+        assertEquals(currentRegistration.getId(), obs.getRegistrationId());
         assertEquals(new LwM2mPath(3, 0), obs.getPath());
 
         // Check de-registration
