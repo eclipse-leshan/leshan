@@ -254,9 +254,9 @@ public class RegisterResource extends CoapResource {
                 return Identity.rpk(peerAddress, publicKey);
             } else if (senderIdentity instanceof X500Principal) {
                 // Extract common name
-                Matcher endpointMatcher = Pattern.compile("CN=.*?,").matcher(senderIdentity.getName());
+                Matcher endpointMatcher = Pattern.compile("CN=(.*?)(,|$)").matcher(senderIdentity.getName());
                 if (endpointMatcher.find()) {
-                    String x509CommonName = endpointMatcher.group().substring(3, endpointMatcher.group().length() - 1);
+                    String x509CommonName = endpointMatcher.group(1);
                     return Identity.x509(peerAddress, x509CommonName);
                 } else {
                     return null;
