@@ -185,7 +185,7 @@ public class QueueModeLeshanServer implements LwM2mServer {
     }
 
     @Override
-    public SecurityRegistry getSecurityRegistry() {
+    public SecurityRegistry getSecurityStore() {
         return securityRegistry;
     }
 

@@ -52,6 +52,7 @@ import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
+import org.eclipse.leshan.server.security.SecurityRegistry;
 import org.eclipse.leshan.util.Charsets;
 import org.eclipse.leshan.util.Hex;
 
@@ -239,7 +240,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         builder.setPublicKey(serverPublicKey);
         builder.setPrivateKey(serverPrivateKey);
-        builder.setSecurityRegistry(new SecurityRegistryImpl() {
+        builder.setSecurityStore(new SecurityRegistryImpl() {
             // TODO we should separate SecurityRegistryImpl in 2 registries :
             // InMemorySecurityRegistry and PersistentSecurityRegistry
             @Override
@@ -263,7 +264,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         builder.setPrivateKey(serverPrivateKeyFromCert);
         builder.setCertificateChain(serverX509CertChain);
         builder.setTrustedCertificates(trustedCertificates);
-        builder.setSecurityRegistry(
+        builder.setSecurityStore(
                 new SecurityRegistryImpl() {
                     // TODO we should separate SecurityRegistryImpl in 2 registries :
                     // InMemorySecurityRegistry and PersistentSecurityRegistry
@@ -285,10 +286,14 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         return serverPublicKey;
     }
 
+    public SecurityRegistry getSecurityRegistry() {
+        return (SecurityRegistry) server.getSecurityStore();
+    }
+
     @Override
     public void dispose() {
         super.dispose();
-        server.getSecurityRegistry().remove(getCurrentEndpoint());
-        server.getSecurityRegistry().remove(BAD_ENDPOINT);
+        getSecurityRegistry().remove(getCurrentEndpoint());
+        getSecurityRegistry().remove(BAD_ENDPOINT);
     }
 }

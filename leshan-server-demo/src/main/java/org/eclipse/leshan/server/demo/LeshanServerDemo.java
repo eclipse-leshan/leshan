@@ -55,6 +55,7 @@ import org.eclipse.leshan.server.demo.servlet.SecurityServlet;
 import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StandardModelProvider;
+import org.eclipse.leshan.server.security.SecurityRegistry;
 import org.eclipse.leshan.util.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -207,22 +208,26 @@ public class LeshanServerDemo {
             privateKey = KeyFactory.getInstance("EC").generatePrivate(privateKeySpec);
             builder.setPublicKey(publicKey);
             builder.setPrivateKey(privateKey);
-
-            LwM2mModelProvider modelProvider = new StandardModelProvider();
-            builder.setObjectModelProvider(modelProvider);
-
-            if (jedis == null) {
-                // in memory security registry (with file persistence)
-                builder.setSecurityRegistry(new SecurityRegistryImpl());
-            } else {
-                // use Redis
-                builder.setSecurityRegistry(new RedisSecurityRegistry(jedis));
-                builder.setRegistrationStore(new RedisRegistrationStore(jedis));
-            }
         } catch (InvalidKeySpecException | NoSuchAlgorithmException | InvalidParameterSpecException e) {
             LOG.error("Unable to initialize RPK.", e);
             System.exit(-1);
         }
+
+        // Define model provider
+        LwM2mModelProvider modelProvider = new StandardModelProvider();
+        builder.setObjectModelProvider(modelProvider);
+
+        // Set securityStore & registrationStore
+        SecurityRegistry securityRegistry;
+        if (jedis == null) {
+            // in memory security registry (with file persistence)
+            securityRegistry = new SecurityRegistryImpl();
+        } else {
+            // use Redis
+            securityRegistry = new RedisSecurityRegistry(jedis);
+            builder.setRegistrationStore(new RedisRegistrationStore(jedis));
+        }
+        builder.setSecurityStore(securityRegistry);
 
         // Create and start LWM2M server
         LeshanServer lwServer = builder.build();
@@ -245,7 +250,7 @@ public class LeshanServerDemo {
         root.addServlet(clientServletHolder, "/api/clients/*");
 
         ServletHolder securityServletHolder = new ServletHolder(
-                new SecurityServlet(lwServer.getSecurityRegistry(), publicKey));
+                new SecurityServlet(securityRegistry, publicKey));
         root.addServlet(securityServletHolder, "/api/security/*");
 
         ServletHolder objectSpecServletHolder = new ServletHolder(new ObjectSpecServlet(lwServer.getModelProvider()));

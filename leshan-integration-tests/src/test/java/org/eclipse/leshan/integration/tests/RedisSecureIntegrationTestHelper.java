@@ -49,7 +49,7 @@ public class RedisSecureIntegrationTestHelper extends SecureIntegrationTestHelpe
             redisURI = "";
         Pool<Jedis> jedis = new JedisPool(redisURI);
         builder.setRegistrationStore(new RedisRegistrationStore(jedis));
-        builder.setSecurityRegistry(new RedisSecurityRegistry(jedis));
+        builder.setSecurityStore(new RedisSecurityRegistry(jedis));
 
         // Build server !
         server = builder.build();

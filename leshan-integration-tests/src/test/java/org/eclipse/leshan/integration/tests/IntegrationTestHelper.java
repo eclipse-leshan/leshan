@@ -145,7 +145,7 @@ public class IntegrationTestHelper {
         builder.setObjectModelProvider(new StaticModelProvider(createObjectModels()));
         builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-        builder.setSecurityRegistry(new SecurityRegistryImpl() {
+        builder.setSecurityStore(new SecurityRegistryImpl() {
             // TODO we should separate SecurityRegistryImpl in 2 registries :
             // InMemorySecurityRegistry and PersistentSecurityRegistry
 

@@ -59,7 +59,7 @@ public class SecurityTest {
         helper.createPSKClient();
 
         // Add client credentials to the server
-        helper.server.getSecurityRegistry()
+        helper.getSecurityRegistry()
                 .add(SecurityInfo.newPreSharedKeyInfo(helper.getCurrentEndpoint(), GOOD_PSK_ID, GOOD_PSK_KEY));
 
         // Check client is not registered
@@ -84,7 +84,7 @@ public class SecurityTest {
         helper.createPSKClient();
 
         // Add client credentials to the server
-        helper.server.getSecurityRegistry()
+        helper.getSecurityRegistry()
                 .add(SecurityInfo.newPreSharedKeyInfo(helper.getCurrentEndpoint(), GOOD_PSK_ID, GOOD_PSK_KEY));
 
         // Check client is not registered
@@ -123,7 +123,7 @@ public class SecurityTest {
         helper.createPSKClient();
 
         // Add client credentials to the server
-        helper.server.getSecurityRegistry()
+        helper.getSecurityRegistry()
                 .add(SecurityInfo.newPreSharedKeyInfo(helper.getCurrentEndpoint(), GOOD_PSK_ID, GOOD_PSK_KEY));
 
         // Check for registration
@@ -162,7 +162,7 @@ public class SecurityTest {
         helper.createPSKClient();
 
         // Add client credentials with BAD PSK ID to the server
-        helper.server.getSecurityRegistry()
+        helper.getSecurityRegistry()
                 .add(SecurityInfo.newPreSharedKeyInfo(helper.getCurrentEndpoint(), BAD_PSK_ID, GOOD_PSK_KEY));
 
         // Check client can not register
@@ -183,7 +183,7 @@ public class SecurityTest {
         helper.createPSKClient();
 
         // Add client credentials with BAD PSK KEY to the server
-        helper.server.getSecurityRegistry()
+        helper.getSecurityRegistry()
                 .add(SecurityInfo.newPreSharedKeyInfo(helper.getCurrentEndpoint(), GOOD_PSK_ID, BAD_PSK_KEY));
 
         // Check client can not register
@@ -204,7 +204,7 @@ public class SecurityTest {
         helper.createPSKClient();
 
         // Add client credentials for another endpoint to the server
-        helper.server.getSecurityRegistry()
+        helper.getSecurityRegistry()
                 .add(SecurityInfo.newPreSharedKeyInfo(BAD_ENDPOINT, GOOD_PSK_ID, GOOD_PSK_KEY));
 
         // Check client can not register
@@ -224,7 +224,7 @@ public class SecurityTest {
 
         helper.createRPKClient();
 
-        helper.server.getSecurityRegistry()
+        helper.getSecurityRegistry()
                 .add(SecurityInfo.newRawPublicKeyInfo(helper.getCurrentEndpoint(), helper.clientPublicKey));
 
         helper.client.start();
@@ -245,7 +245,7 @@ public class SecurityTest {
 
         // as it is complex to create a public key, I use the server one :p as bad client public key
         PublicKey bad_client_public_key = helper.getServerPublicKey();
-        helper.server.getSecurityRegistry()
+        helper.getSecurityRegistry()
                 .add(SecurityInfo.newRawPublicKeyInfo(helper.getCurrentEndpoint(), bad_client_public_key));
 
         helper.client.start();
@@ -263,7 +263,7 @@ public class SecurityTest {
 
         helper.createRPKClient();
 
-        helper.server.getSecurityRegistry()
+        helper.getSecurityRegistry()
                 .add(SecurityInfo.newRawPublicKeyInfo("bad_endpoint", helper.clientPublicKey));
 
         helper.client.start();
@@ -281,7 +281,7 @@ public class SecurityTest {
 
         helper.createX509CertClient(helper.clientPrivateKeyFromCert, helper.trustedCertificates);
 
-        helper.server.getSecurityRegistry().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+        helper.getSecurityRegistry().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
 
         helper.client.start();
         helper.waitForRegistration(1);
@@ -300,7 +300,7 @@ public class SecurityTest {
 
         helper.createX509CertClient(helper.clientPrivateKeyFromCert, helper.trustedCertificates);
 
-        helper.server.getSecurityRegistry().add(SecurityInfo.newX509CertInfo("bad_endpoint"));
+        helper.getSecurityRegistry().add(SecurityInfo.newX509CertInfo("bad_endpoint"));
 
         helper.client.start();
         boolean timedout = !helper.waitForRegistration(1);
@@ -318,7 +318,7 @@ public class SecurityTest {
 
         helper.createX509CertClient(helper.clientPrivateKeyFromCert, helper.trustedCertificates);
 
-        helper.server.getSecurityRegistry().add(SecurityInfo.newX509CertInfo("good_endpoint"));
+        helper.getSecurityRegistry().add(SecurityInfo.newX509CertInfo("good_endpoint"));
 
         helper.client.start();
         boolean timedout = !helper.waitForRegistration(1);
@@ -338,7 +338,7 @@ public class SecurityTest {
         PrivateKey badPrivateKey = helper.serverPrivateKey;
 
         helper.createX509CertClient(badPrivateKey, helper.trustedCertificates);
-        helper.server.getSecurityRegistry().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+        helper.getSecurityRegistry().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
 
         helper.client.start();
         boolean timedout = !helper.waitForRegistration(1);
@@ -357,7 +357,7 @@ public class SecurityTest {
 
         helper.createX509CertClient(helper.clientPrivateKeyFromCert, helper.trustedCertificates);
 
-        helper.server.getSecurityRegistry().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+        helper.getSecurityRegistry().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
 
         helper.client.start();
         boolean timedout = !helper.waitForRegistration(1);
@@ -374,7 +374,7 @@ public class SecurityTest {
 
         helper.createX509CertClient(helper.clientPrivateKeyFromCert, helper.trustedCertificates);
 
-        helper.server.getSecurityRegistry().add(
+        helper.getSecurityRegistry().add(
                 SecurityInfo.newRawPublicKeyInfo(helper.getCurrentEndpoint(),
                         helper.clientX509CertChain[0].getPublicKey()));
 
@@ -395,7 +395,7 @@ public class SecurityTest {
         helper.createRPKClient();
         helper.client.start();
 
-        helper.server.getSecurityRegistry()
+        helper.getSecurityRegistry()
                 .add(SecurityInfo.newRawPublicKeyInfo(helper.getCurrentEndpoint(), helper.clientPublicKey));
 
         helper.client.start();

@@ -157,7 +157,7 @@ public class LeshanClusterServer {
         builder.setRegistrationStore(registrationStore);
 
         // TODO add support of public and private server key
-        builder.setSecurityRegistry(new RedisSecurityRegistry(jedis));
+        builder.setSecurityStore(new RedisSecurityRegistry(jedis));
 
         // Create and start LWM2M server
         LeshanServer lwServer = builder.build();
