@@ -54,7 +54,6 @@ import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteAttributesResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 import org.eclipse.leshan.server.client.Registration;
-import org.eclipse.leshan.server.observation.ObservationRegistry;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,7 +65,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     private LwM2mResponse lwM2mresponse;
     private final Request coapRequest;
     private final Response coapResponse;
-    private final ObservationRegistry observationRegistry;
+    private final CaliforniumObservationRegistryImpl observationRegistry;
     private final Registration registration;
     private final LwM2mModel model;
     private final LwM2mNodeDecoder decoder;
@@ -106,7 +105,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     }
 
     public LwM2mResponseBuilder(final Request coapRequest, final Response coapResponse, final Registration registration,
-            final LwM2mModel model, final ObservationRegistry observationRegistry, final LwM2mNodeDecoder decoder) {
+            final LwM2mModel model, final CaliforniumObservationRegistryImpl observationRegistry,
+            final LwM2mNodeDecoder decoder) {
         this.coapRequest = coapRequest;
         this.coapResponse = coapResponse;
         this.observationRegistry = observationRegistry;

@@ -27,13 +27,6 @@ import org.eclipse.leshan.server.client.Registration;
 public interface ObservationRegistry {
 
     /**
-     * Adds an observation of resource(s) to the registry.
-     * 
-     * @param observation the observation
-     */
-    void addObservation(Observation observation);
-
-    /**
      * Cancels all active observations of resource(s) implemented by a particular LWM2M registration.
      * 
      * As a consequence the LWM2M Client will stop sending notifications about updated values of resources in scope of
