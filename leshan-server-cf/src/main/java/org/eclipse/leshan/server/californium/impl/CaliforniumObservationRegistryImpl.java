@@ -29,6 +29,7 @@ import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
+import org.eclipse.californium.core.observe.NotificationListener;
 import org.eclipse.californium.core.observe.ObservationStore;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -39,23 +40,23 @@ import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.response.ObserveResponse;
-import org.eclipse.leshan.server.californium.CaliforniumObservationRegistry;
 import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
 import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
+import org.eclipse.leshan.server.observation.ObservationRegistry;
 import org.eclipse.leshan.server.observation.ObservationRegistryListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Implementation of the {@link CaliforniumObservationRegistry} accessing the persisted observation via the provided
+ * Implementation of the {@link ObservationRegistry} accessing the persisted observation via the provided
  * {@link LwM2mObservationStore}.
  * 
  * When a new observation is added or changed or canceled, the registered listeners are notified.
  */
-public class CaliforniumObservationRegistryImpl implements CaliforniumObservationRegistry {
+public class CaliforniumObservationRegistryImpl implements ObservationRegistry, NotificationListener {
 
-    private final Logger LOG = LoggerFactory.getLogger(CaliforniumObservationRegistry.class);
+    private final Logger LOG = LoggerFactory.getLogger(CaliforniumObservationRegistryImpl.class);
 
     private final CaliforniumRegistrationStore registrationStore;
     private final LwM2mModelProvider modelProvider;
@@ -72,14 +73,13 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
      * @param modelProvider instance of {@link LwM2mModelProvider}
      * @param decoder instance of {@link LwM2mNodeDecoder}
      */
-    public CaliforniumObservationRegistryImpl(CaliforniumRegistrationStore store,
-            LwM2mModelProvider modelProvider, LwM2mNodeDecoder decoder) {
+    public CaliforniumObservationRegistryImpl(CaliforniumRegistrationStore store, LwM2mModelProvider modelProvider,
+            LwM2mNodeDecoder decoder) {
         this.registrationStore = store;
         this.modelProvider = modelProvider;
         this.decoder = decoder;
     }
 
-    @Override
     public void addObservation(Observation observation) {
         // cancel any other observation for the same path and registration id.
         // delegate this to the observation store to avoid race conditions on add/cancel?
@@ -96,12 +96,10 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
         }
     }
 
-    @Override
     public void setNonSecureEndpoint(Endpoint endpoint) {
         nonSecureEndpoint = endpoint;
     }
 
-    @Override
     public void setSecureEndpoint(Endpoint endpoint) {
         secureEndpoint = endpoint;
     }
@@ -186,7 +184,9 @@ public class CaliforniumObservationRegistryImpl implements CaliforniumObservatio
         return result;
     }
 
-    @Override
+    /**
+     * @return the Californium {@link ObservationStore}
+     */
     public ObservationStore getObservationStore() {
         return registrationStore;
     }

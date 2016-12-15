@@ -45,13 +45,12 @@ import org.eclipse.leshan.server.Destroyable;
 import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.Startable;
 import org.eclipse.leshan.server.Stoppable;
-import org.eclipse.leshan.server.californium.CaliforniumObservationRegistry;
 import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.client.Registration;
-import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.server.client.RegistrationListener;
 import org.eclipse.leshan.server.client.RegistrationService;
+import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationRegistry;
@@ -87,7 +86,7 @@ public class LeshanServer implements LwM2mServer {
 
     private final RegistrationServiceImpl registrationService;
 
-    private final CaliforniumObservationRegistry observationRegistry;
+    private final CaliforniumObservationRegistryImpl observationRegistry;
 
     private final SecurityRegistry securityRegistry;
 

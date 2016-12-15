@@ -38,7 +38,6 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
-import org.eclipse.leshan.server.observation.ObservationRegistry;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
 import org.eclipse.leshan.server.response.ResponseListener;
 import org.eclipse.leshan.server.response.ResponseProcessingTask;
@@ -48,7 +47,7 @@ import org.eclipse.leshan.util.Validate;
 public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
     private final Set<Endpoint> endpoints;
-    private final ObservationRegistry observationRegistry;
+    private final CaliforniumObservationRegistryImpl observationRegistry;
     private final LwM2mModelProvider modelProvider;
     private final LwM2mNodeDecoder decoder;
     private final LwM2mNodeEncoder encoder;
@@ -64,8 +63,9 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
      * @param observationRegistry the registry for keeping track of observed resources
      * @param modelProvider provides the supported objects definitions
      */
-    public CaliforniumLwM2mRequestSender(final Set<Endpoint> endpoints, final ObservationRegistry observationRegistry,
-            LwM2mModelProvider modelProvider, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
+    public CaliforniumLwM2mRequestSender(final Set<Endpoint> endpoints,
+            final CaliforniumObservationRegistryImpl observationRegistry, LwM2mModelProvider modelProvider,
+            LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
         Validate.notNull(endpoints);
         Validate.notNull(observationRegistry);
         Validate.notNull(modelProvider);
