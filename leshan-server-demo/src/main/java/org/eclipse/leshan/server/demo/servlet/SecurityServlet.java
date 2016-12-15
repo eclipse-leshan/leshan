@@ -52,8 +52,11 @@ public class SecurityServlet extends HttpServlet {
     private final Gson gsonSer;
     private final Gson gsonDes;
 
-    public SecurityServlet(SecurityRegistry registry) {
+    private PublicKey serverPublicKey;
+
+    public SecurityServlet(SecurityRegistry registry, PublicKey serverPublicKey) {
         this.registry = registry;
+        this.serverPublicKey = serverPublicKey;
 
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(SecurityInfo.class, new SecuritySerializer());
@@ -121,8 +124,7 @@ public class SecurityServlet extends HttpServlet {
         }
 
         if ("server".equals(path[0])) {
-            PublicKey publicKey = this.registry.getServerPublicKey();
-            String json = this.gsonSer.toJson(SecurityInfo.newRawPublicKeyInfo("leshan", publicKey));
+            String json = this.gsonSer.toJson(SecurityInfo.newRawPublicKeyInfo("leshan", serverPublicKey));
             resp.setContentType("application/json");
             resp.getOutputStream().write(json.getBytes("UTF-8"));
             resp.setStatus(HttpServletResponse.SC_OK);

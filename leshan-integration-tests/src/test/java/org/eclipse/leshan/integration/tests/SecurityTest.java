@@ -244,7 +244,7 @@ public class SecurityTest {
         helper.createRPKClient();
 
         // as it is complex to create a public key, I use the server one :p as bad client public key
-        PublicKey bad_client_public_key = helper.server.getSecurityRegistry().getServerPublicKey();
+        PublicKey bad_client_public_key = helper.getServerPublicKey();
         helper.server.getSecurityRegistry()
                 .add(SecurityInfo.newRawPublicKeyInfo(helper.getCurrentEndpoint(), bad_client_public_key));
 

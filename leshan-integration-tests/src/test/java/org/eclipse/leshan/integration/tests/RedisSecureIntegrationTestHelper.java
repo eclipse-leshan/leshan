@@ -22,8 +22,8 @@ import java.security.cert.Certificate;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.client.Registration;
-import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.server.client.RegistrationListener;
+import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.server.cluster.RedisRegistrationStore;
 import org.eclipse.leshan.server.cluster.RedisSecurityRegistry;
 import org.eclipse.leshan.server.model.StaticModelProvider;
@@ -49,7 +49,7 @@ public class RedisSecureIntegrationTestHelper extends SecureIntegrationTestHelpe
             redisURI = "";
         Pool<Jedis> jedis = new JedisPool(redisURI);
         builder.setRegistrationStore(new RedisRegistrationStore(jedis));
-        builder.setSecurityRegistry(new RedisSecurityRegistry(jedis, null, null));
+        builder.setSecurityRegistry(new RedisSecurityRegistry(jedis));
 
         // Build server !
         server = builder.build();

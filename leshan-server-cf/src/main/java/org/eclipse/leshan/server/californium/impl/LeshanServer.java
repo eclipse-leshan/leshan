@@ -104,13 +104,19 @@ public class LeshanServer implements LwM2mServer {
      * @param registrationStore the {@link Registration} store.
      * @param securityRegistry the {@link SecurityInfo} registry.
      * @param modelProvider provides the objects description for each client.
-     * @param decoder
-     * @param encoder
+     * @param decoder decoder used to decode response payload.
+     * @param encoder encode used to encode request payload.
+     * @param publicKey the server public key used for RPK DTLS authentication.
+     * @param privateKey the server private key used to RPK or X509 DTLS authentication.
+     * @param certificateChain the server X509 certificate (will be used for RPK too, in this case no need to set public
+     *        key).
+     * @param trustedCertificates the trusted certificates used to authenticate client certificates.
      */
     public LeshanServer(InetSocketAddress localAddress, InetSocketAddress localSecureAddress,
             CaliforniumRegistrationStore registrationStore, SecurityRegistry securityRegistry,
             LwM2mModelProvider modelProvider,
-            LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
+            LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder, PublicKey publicKey, PrivateKey privateKey,
+            X509Certificate[] x509CertChain, Certificate[] trustedCertificates) {
         Validate.notNull(localAddress, "IP address cannot be null");
         Validate.notNull(localSecureAddress, "Secure IP address cannot be null");
         Validate.notNull(registrationStore, "registration store cannot be null");
@@ -159,20 +165,16 @@ public class LeshanServer implements LwM2mServer {
         // secure endpoint
         Builder builder = new DtlsConnectorConfig.Builder(localSecureAddress);
         builder.setPskStore(new LwM2mPskStore(this.securityRegistry, this.registrationService.getStore()));
-        PrivateKey privateKey = this.securityRegistry.getServerPrivateKey();
-        PublicKey publicKey = this.securityRegistry.getServerPublicKey();
-        X509Certificate[] X509CertChain = this.securityRegistry.getServerX509CertChain();
 
         // if in raw key mode and not in X.509 set the raw keys
-        if (X509CertChain == null && privateKey != null && publicKey != null) {
+        if (x509CertChain == null && privateKey != null && publicKey != null) {
             builder.setIdentity(privateKey, publicKey);
         }
         // if in X.509 mode set the private key, certificate chain, public key is extracted from the certificate
-        if (privateKey != null && X509CertChain != null && X509CertChain.length > 0) {
-            builder.setIdentity(privateKey, X509CertChain, false);
+        if (privateKey != null && x509CertChain != null && x509CertChain.length > 0) {
+            builder.setIdentity(privateKey, x509CertChain, false);
         }
 
-        Certificate[] trustedCertificates = securityRegistry.getTrustedCertificates();
         if (trustedCertificates != null && trustedCertificates.length > 0) {
             builder.setTrustStore(trustedCertificates);
         }

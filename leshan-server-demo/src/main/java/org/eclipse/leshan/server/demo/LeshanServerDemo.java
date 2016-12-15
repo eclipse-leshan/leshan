@@ -205,16 +205,18 @@ public class LeshanServerDemo {
             // Get keys
             publicKey = KeyFactory.getInstance("EC").generatePublic(publicKeySpec);
             privateKey = KeyFactory.getInstance("EC").generatePrivate(privateKeySpec);
+            builder.setPublicKey(publicKey);
+            builder.setPrivateKey(privateKey);
 
             LwM2mModelProvider modelProvider = new StandardModelProvider();
             builder.setObjectModelProvider(modelProvider);
 
             if (jedis == null) {
                 // in memory security registry (with file persistence)
-                builder.setSecurityRegistry(new SecurityRegistryImpl(privateKey, publicKey));
+                builder.setSecurityRegistry(new SecurityRegistryImpl());
             } else {
                 // use Redis
-                builder.setSecurityRegistry(new RedisSecurityRegistry(jedis, privateKey, publicKey));
+                builder.setSecurityRegistry(new RedisSecurityRegistry(jedis));
                 builder.setRegistrationStore(new RedisRegistrationStore(jedis));
             }
         } catch (InvalidKeySpecException | NoSuchAlgorithmException | InvalidParameterSpecException e) {
@@ -242,7 +244,8 @@ public class LeshanServerDemo {
                 new ClientServlet(lwServer, lwServer.getSecureAddress().getPort()));
         root.addServlet(clientServletHolder, "/api/clients/*");
 
-        ServletHolder securityServletHolder = new ServletHolder(new SecurityServlet(lwServer.getSecurityRegistry()));
+        ServletHolder securityServletHolder = new ServletHolder(
+                new SecurityServlet(lwServer.getSecurityRegistry(), publicKey));
         root.addServlet(securityServletHolder, "/api/security/*");
 
         ServletHolder objectSpecServletHolder = new ServletHolder(new ObjectSpecServlet(lwServer.getModelProvider()));

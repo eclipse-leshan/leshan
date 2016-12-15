@@ -17,6 +17,10 @@ package org.eclipse.leshan.server.californium;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
@@ -46,12 +50,17 @@ public class LeshanServerBuilder {
     private CaliforniumRegistrationStore registrationStore;
     private SecurityRegistry securityRegistry;
     private LwM2mModelProvider modelProvider;
+
     private InetSocketAddress localAddress;
     private InetSocketAddress localSecureAddress;
 
     private LwM2mNodeEncoder encoder;
-
     private LwM2mNodeDecoder decoder;
+
+    private PublicKey publicKey;
+    private PrivateKey privateKey;
+    private X509Certificate[] certificateChain;
+    private Certificate[] trustedCertificates;
 
     public LeshanServerBuilder setLocalAddress(String hostname, int port) {
         if (hostname == null) {
@@ -96,6 +105,26 @@ public class LeshanServerBuilder {
         return this;
     }
 
+    public LeshanServerBuilder setPublicKey(PublicKey publicKey) {
+        this.publicKey = publicKey;
+        return this;
+    }
+
+    public LeshanServerBuilder setPrivateKey(PrivateKey privateKey) {
+        this.privateKey = privateKey;
+        return this;
+    }
+
+    public LeshanServerBuilder setCertificateChain(X509Certificate[] certificateChain) {
+        this.certificateChain = certificateChain;
+        return this;
+    }
+
+    public LeshanServerBuilder setTrustedCertificates(Certificate[] trustedCertificates) {
+        this.trustedCertificates = trustedCertificates;
+        return this;
+    }
+
     public LeshanServerBuilder setEncoder(LwM2mNodeEncoder encoder) {
         this.encoder = encoder;
         return this;
@@ -123,6 +152,6 @@ public class LeshanServerBuilder {
             decoder = new DefaultLwM2mNodeDecoder();
 
         return new LeshanServer(localAddress, localSecureAddress, registrationStore, securityRegistry, modelProvider,
-                encoder, decoder);
+                encoder, decoder, publicKey, privateKey, certificateChain, trustedCertificates);
     }
 }

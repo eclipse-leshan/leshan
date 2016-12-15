@@ -237,7 +237,9 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         LeshanServerBuilder builder = new LeshanServerBuilder();
         builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-        builder.setSecurityRegistry(new SecurityRegistryImpl(serverPrivateKey, serverPublicKey) {
+        builder.setPublicKey(serverPublicKey);
+        builder.setPrivateKey(serverPrivateKey);
+        builder.setSecurityRegistry(new SecurityRegistryImpl() {
             // TODO we should separate SecurityRegistryImpl in 2 registries :
             // InMemorySecurityRegistry and PersistentSecurityRegistry
             @Override
@@ -258,9 +260,11 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         LeshanServerBuilder builder = new LeshanServerBuilder();
         builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-
+        builder.setPrivateKey(serverPrivateKeyFromCert);
+        builder.setCertificateChain(serverX509CertChain);
+        builder.setTrustedCertificates(trustedCertificates);
         builder.setSecurityRegistry(
-                new SecurityRegistryImpl(serverPrivateKeyFromCert, serverX509CertChain, trustedCertificates) {
+                new SecurityRegistryImpl() {
                     // TODO we should separate SecurityRegistryImpl in 2 registries :
                     // InMemorySecurityRegistry and PersistentSecurityRegistry
                     @Override
@@ -275,6 +279,10 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
                 });
 
         server = builder.build();
+    }
+
+    public PublicKey getServerPublicKey() {
+        return serverPublicKey;
     }
 
     @Override
