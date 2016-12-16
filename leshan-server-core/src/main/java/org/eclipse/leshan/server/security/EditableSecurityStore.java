@@ -17,7 +17,7 @@ package org.eclipse.leshan.server.security;
 
 import java.util.Collection;
 
-public interface SecurityRegistry extends SecurityStore {
+public interface EditableSecurityStore extends SecurityStore {
 
     /**
      * Returns the {@link SecurityInfo} for all end-points.

@@ -29,7 +29,7 @@ import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.californium.impl.InMemoryRegistrationStore;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
-import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
+import org.eclipse.leshan.server.impl.FileSecurityStore;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StandardModelProvider;
 import org.eclipse.leshan.server.security.SecurityStore;
@@ -143,7 +143,7 @@ public class LeshanServerBuilder {
         if (registrationStore == null)
             registrationStore = new InMemoryRegistrationStore();
         if (securityStore == null)
-            securityStore = new SecurityRegistryImpl();
+            securityStore = new FileSecurityStore();
         if (modelProvider == null)
             modelProvider = new StandardModelProvider();
         if (encoder == null)

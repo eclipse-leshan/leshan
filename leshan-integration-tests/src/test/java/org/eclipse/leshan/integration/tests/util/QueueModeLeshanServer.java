@@ -34,7 +34,7 @@ import org.eclipse.leshan.server.observation.ObservationService;
 import org.eclipse.leshan.server.queue.MessageStore;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
 import org.eclipse.leshan.server.response.ResponseListener;
-import org.eclipse.leshan.server.security.SecurityRegistry;
+import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,20 +43,20 @@ public class QueueModeLeshanServer implements LwM2mServer {
     private final CoapServer coapServer;
     private final RegistrationService registrationService;
     private final ObservationService observationService;
-    private final SecurityRegistry securityRegistry;
+    private final EditableSecurityStore securityStore;
     private final LwM2mModelProvider modelProvider;
     private final LwM2mRequestSender lwM2mRequestSender;
     private final MessageStore messageStore;
 
     public QueueModeLeshanServer(CoapServer coapServer, RegistrationService registrationService,
-            ObservationService observationService, SecurityRegistry securityRegistry,
+            ObservationService observationService, EditableSecurityStore securityStore,
             LwM2mModelProvider modelProvider, LwM2mRequestSender lwM2mRequestSender,
             MessageStore inMemoryMessageStore) {
 
         this.coapServer = coapServer;
         this.registrationService = registrationService;
         this.observationService = observationService;
-        this.securityRegistry = securityRegistry;
+        this.securityStore = securityStore;
         this.modelProvider = modelProvider;
         this.lwM2mRequestSender = lwM2mRequestSender;
         this.messageStore = inMemoryMessageStore;
@@ -87,8 +87,8 @@ public class QueueModeLeshanServer implements LwM2mServer {
         if (registrationService instanceof Startable) {
             ((Startable) registrationService).start();
         }
-        if (securityRegistry instanceof Startable) {
-            ((Startable) securityRegistry).start();
+        if (securityStore instanceof Startable) {
+            ((Startable) securityStore).start();
         }
         if (observationService instanceof Startable) {
             ((Startable) observationService).start();
@@ -109,8 +109,8 @@ public class QueueModeLeshanServer implements LwM2mServer {
         if (registrationService instanceof Stoppable) {
             ((Stoppable) registrationService).stop();
         }
-        if (securityRegistry instanceof Stoppable) {
-            ((Stoppable) securityRegistry).stop();
+        if (securityStore instanceof Stoppable) {
+            ((Stoppable) securityStore).stop();
         }
         if (observationService instanceof Stoppable) {
             ((Stoppable) observationService).stop();
@@ -131,8 +131,8 @@ public class QueueModeLeshanServer implements LwM2mServer {
         if (registrationService instanceof Destroyable) {
             ((Destroyable) registrationService).destroy();
         }
-        if (securityRegistry instanceof Destroyable) {
-            ((Destroyable) securityRegistry).destroy();
+        if (securityStore instanceof Destroyable) {
+            ((Destroyable) securityStore).destroy();
         }
         if (observationService instanceof Destroyable) {
             ((Destroyable) observationService).destroy();
@@ -185,8 +185,8 @@ public class QueueModeLeshanServer implements LwM2mServer {
     }
 
     @Override
-    public SecurityRegistry getSecurityStore() {
-        return securityRegistry;
+    public EditableSecurityStore getSecurityStore() {
+        return securityStore;
     }
 
     @Override

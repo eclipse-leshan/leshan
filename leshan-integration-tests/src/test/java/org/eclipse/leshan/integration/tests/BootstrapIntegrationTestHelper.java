@@ -37,7 +37,7 @@ import org.eclipse.leshan.server.californium.impl.LwM2mBootstrapServerImpl;
 import org.eclipse.leshan.server.impl.BootstrapSessionManagerImpl;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
-import org.eclipse.leshan.server.security.SecurityRegistry;
+import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.util.Charsets;
 import org.eclipse.leshan.util.Hex;
 
@@ -181,6 +181,6 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
     @Override
     public void dispose() {
         super.dispose();
-        ((SecurityRegistry) server.getSecurityStore()).remove(getCurrentEndpoint());
+        ((EditableSecurityStore) server.getSecurityStore()).remove(getCurrentEndpoint());
     }
 }

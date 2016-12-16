@@ -42,20 +42,20 @@ import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.integration.tests.util.QueueModeLeshanServer;
 import org.eclipse.leshan.integration.tests.util.QueuedModeLeshanClient;
 import org.eclipse.leshan.server.californium.impl.CaliforniumLwM2mRequestSender;
-import org.eclipse.leshan.server.californium.impl.ObservationServiceImpl;
 import org.eclipse.leshan.server.californium.impl.InMemoryRegistrationStore;
+import org.eclipse.leshan.server.californium.impl.ObservationServiceImpl;
 import org.eclipse.leshan.server.californium.impl.RegisterResource;
 import org.eclipse.leshan.server.client.Registration;
+import org.eclipse.leshan.server.impl.FileSecurityStore;
 import org.eclipse.leshan.server.impl.LwM2mRequestSenderImpl;
 import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
-import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StandardModelProvider;
 import org.eclipse.leshan.server.queue.impl.InMemoryMessageStore;
 import org.eclipse.leshan.server.queue.impl.QueuedRequestSender;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
-import org.eclipse.leshan.server.security.SecurityRegistry;
+import org.eclipse.leshan.server.security.EditableSecurityStore;
 
 /**
  * IntegrationTestHelper, which is intended to create a client/server environment for testing the Queue Mode feature.
@@ -85,7 +85,7 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
 
         InMemoryRegistrationStore registrationStore = new InMemoryRegistrationStore();
         RegistrationServiceImpl registrationService = new RegistrationServiceImpl(registrationStore);
-        SecurityRegistry securityRegistry = new SecurityRegistryImpl() {
+        EditableSecurityStore securityStore = new FileSecurityStore() {
             @Override
             protected void loadFromFile() {
                 // do not load From File
@@ -108,7 +108,7 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         coapServer.addEndpoint(noSecureEndpoint);
         coapServer.addEndpoint(secureEndpoint);
 
-        RegisterResource rdResource = new RegisterResource(new RegistrationHandler(registrationService, securityRegistry));
+        RegisterResource rdResource = new RegisterResource(new RegistrationHandler(registrationService, securityStore));
         coapServer.add(rdResource);
 
         InMemoryMessageStore inMemoryMessageStore = new InMemoryMessageStore();
@@ -130,7 +130,7 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
                 .setObservationService(observationService).build();
         LwM2mRequestSender lwM2mRequestSender = new LwM2mRequestSenderImpl(delegateSender, queueRequestSender);
 
-        server = new QueueModeLeshanServer(coapServer, registrationService, observationService, securityRegistry,
+        server = new QueueModeLeshanServer(coapServer, registrationService, observationService, securityStore,
                 modelProvider, lwM2mRequestSender, inMemoryMessageStore);
     }
 

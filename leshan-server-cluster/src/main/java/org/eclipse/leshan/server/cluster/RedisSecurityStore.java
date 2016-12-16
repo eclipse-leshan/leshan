@@ -19,9 +19,10 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 import org.eclipse.leshan.server.cluster.serialization.SecurityInfoSerDes;
+import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
-import org.eclipse.leshan.server.security.SecurityRegistry;
+import org.eclipse.leshan.server.security.SecurityStore;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ScanParams;
@@ -29,14 +30,11 @@ import redis.clients.jedis.ScanResult;
 import redis.clients.util.Pool;
 
 /**
- * A security registry storing values in a Redis store.
- * 
- * Only root CA (trust chain) used for validating X.509 certificate and raw public/private server keys are stored in
- * each node memory. Because they are static.
+ * A {@link SecurityStore} implementation based on Redis.
  * 
  * Security info are stored using the endpoint as primary key and a secondary index is created for psk-identity lookup.
  */
-public class RedisSecurityRegistry implements SecurityRegistry {
+public class RedisSecurityStore implements EditableSecurityStore {
 
     private static final String SEC_EP = "SEC#EP#";
 
@@ -44,7 +42,7 @@ public class RedisSecurityRegistry implements SecurityRegistry {
 
     private final Pool<Jedis> pool;
 
-    public RedisSecurityRegistry(Pool<Jedis> pool) {
+    public RedisSecurityStore(Pool<Jedis> pool) {
         this.pool = pool;
     }
 

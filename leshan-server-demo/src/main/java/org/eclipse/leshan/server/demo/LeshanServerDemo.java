@@ -47,15 +47,15 @@ import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.cluster.RedisRegistrationStore;
-import org.eclipse.leshan.server.cluster.RedisSecurityRegistry;
+import org.eclipse.leshan.server.cluster.RedisSecurityStore;
 import org.eclipse.leshan.server.demo.servlet.ClientServlet;
 import org.eclipse.leshan.server.demo.servlet.EventServlet;
 import org.eclipse.leshan.server.demo.servlet.ObjectSpecServlet;
 import org.eclipse.leshan.server.demo.servlet.SecurityServlet;
-import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
+import org.eclipse.leshan.server.impl.FileSecurityStore;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StandardModelProvider;
-import org.eclipse.leshan.server.security.SecurityRegistry;
+import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.util.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -218,16 +218,16 @@ public class LeshanServerDemo {
         builder.setObjectModelProvider(modelProvider);
 
         // Set securityStore & registrationStore
-        SecurityRegistry securityRegistry;
+        EditableSecurityStore securityStore;
         if (jedis == null) {
-            // in memory security registry (with file persistence)
-            securityRegistry = new SecurityRegistryImpl();
+            // use file persistence
+            securityStore = new FileSecurityStore();
         } else {
-            // use Redis
-            securityRegistry = new RedisSecurityRegistry(jedis);
+            // use Redis Store
+            securityStore = new RedisSecurityStore(jedis);
             builder.setRegistrationStore(new RedisRegistrationStore(jedis));
         }
-        builder.setSecurityStore(securityRegistry);
+        builder.setSecurityStore(securityStore);
 
         // Create and start LWM2M server
         LeshanServer lwServer = builder.build();
@@ -250,7 +250,7 @@ public class LeshanServerDemo {
         root.addServlet(clientServletHolder, "/api/clients/*");
 
         ServletHolder securityServletHolder = new ServletHolder(
-                new SecurityServlet(securityRegistry, publicKey));
+                new SecurityServlet(securityStore, publicKey));
         root.addServlet(securityServletHolder, "/api/security/*");
 
         ServletHolder objectSpecServletHolder = new ServletHolder(new ObjectSpecServlet(lwServer.getModelProvider()));

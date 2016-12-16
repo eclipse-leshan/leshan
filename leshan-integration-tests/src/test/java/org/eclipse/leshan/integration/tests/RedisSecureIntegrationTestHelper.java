@@ -25,7 +25,7 @@ import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.client.RegistrationListener;
 import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.server.cluster.RedisRegistrationStore;
-import org.eclipse.leshan.server.cluster.RedisSecurityRegistry;
+import org.eclipse.leshan.server.cluster.RedisSecurityStore;
 import org.eclipse.leshan.server.model.StaticModelProvider;
 
 import redis.clients.jedis.Jedis;
@@ -49,7 +49,7 @@ public class RedisSecureIntegrationTestHelper extends SecureIntegrationTestHelpe
             redisURI = "";
         Pool<Jedis> jedis = new JedisPool(redisURI);
         builder.setRegistrationStore(new RedisRegistrationStore(jedis));
-        builder.setSecurityStore(new RedisSecurityRegistry(jedis));
+        builder.setSecurityStore(new RedisSecurityStore(jedis));
 
         // Build server !
         server = builder.build();

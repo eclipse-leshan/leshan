@@ -29,23 +29,24 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
-import org.eclipse.leshan.server.security.SecurityRegistry;
+import org.eclipse.leshan.server.security.SecurityStore;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * An in-memory security store.
+ * A {@link SecurityStore} which persists {@link SecurityInfo} in a file.
  * <p>
- * This implementation serializes the registry content into a file to be able to re-load the security infos when the
+ * This implementation serializes the store content into a file to be able to re-load the {@link SecurityInfo} when the
  * server is restarted.
  * </p>
  */
-public class SecurityRegistryImpl implements SecurityRegistry {
+public class FileSecurityStore implements EditableSecurityStore {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SecurityRegistryImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FileSecurityStore.class);
 
     // lock for the two maps
     private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
@@ -58,17 +59,17 @@ public class SecurityRegistryImpl implements SecurityRegistry {
     // by PSK identity
     private Map<String, SecurityInfo> securityByIdentity = new HashMap<>();
 
-    // the name of the file used to persist the registry content
+    // the name of the file used to persist the store content
     private final String filename;
 
     // default location for persistence
     private static final String DEFAULT_FILE = "data/security.data";
 
-    public SecurityRegistryImpl() {
+    public FileSecurityStore() {
         this(DEFAULT_FILE);
     }
 
-    public SecurityRegistryImpl(String file) {
+    public FileSecurityStore(String file) {
         Validate.notEmpty(file);
         filename = file;
         loadFromFile();
@@ -109,7 +110,7 @@ public class SecurityRegistryImpl implements SecurityRegistry {
         }
     }
 
-    private SecurityInfo addToRegistry(SecurityInfo info) throws NonUniqueSecurityInfoException {
+    private SecurityInfo addToStore(SecurityInfo info) throws NonUniqueSecurityInfoException {
         writeLock.lock();
         try {
             String identity = info.getIdentity();
@@ -134,7 +135,7 @@ public class SecurityRegistryImpl implements SecurityRegistry {
     public SecurityInfo add(SecurityInfo info) throws NonUniqueSecurityInfoException {
         writeLock.lock();
         try {
-            SecurityInfo previous = addToRegistry(info);
+            SecurityInfo previous = addToStore(info);
             saveToFile();
             return previous;
         } finally {
@@ -172,7 +173,7 @@ public class SecurityRegistryImpl implements SecurityRegistry {
 
             if (infos != null) {
                 for (SecurityInfo info : infos) {
-                    addToRegistry(info);
+                    addToStore(info);
                 }
                 if (infos.length > 0) {
                     LOG.debug("{} security infos loaded", infos.length);
