@@ -21,10 +21,9 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.client.Registration;
 
 /**
- * A registry for keeping track of observed resources implemented by LWM2M Clients.
- * 
+ * A service keeping track observation. Can be used for finding observations and cancel them.
  */
-public interface ObservationRegistry {
+public interface ObservationService {
 
     /**
      * Cancels all active observations of resource(s) implemented by a particular LWM2M registration.
@@ -66,7 +65,7 @@ public interface ObservationRegistry {
      */
     Set<Observation> getObservations(Registration registration);
 
-    void addListener(ObservationRegistryListener listener);
+    void addListener(ObservationListener listener);
 
-    void removeListener(ObservationRegistryListener listener);
+    void removeListener(ObservationListener listener);
 }

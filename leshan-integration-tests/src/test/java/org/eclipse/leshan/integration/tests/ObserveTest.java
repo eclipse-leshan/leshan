@@ -50,7 +50,7 @@ import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
-import org.eclipse.leshan.server.observation.ObservationRegistryListener;
+import org.eclipse.leshan.server.observation.ObservationListener;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -79,7 +79,7 @@ public class ObserveTest {
     @Test
     public void can_observe_resource() throws InterruptedException {
         TestObservationListener listener = new TestObservationListener();
-        helper.server.getObservationRegistry().addListener(listener);
+        helper.server.getObservationService().addListener(listener);
 
         // observe device timezone
         ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(), new ObserveRequest(3, 0, 15));
@@ -108,7 +108,7 @@ public class ObserveTest {
     @Test
     public void can_observe_instance() throws InterruptedException {
         TestObservationListener listener = new TestObservationListener();
-        helper.server.getObservationRegistry().addListener(listener);
+        helper.server.getObservationService().addListener(listener);
 
         // observe device timezone
         ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(), new ObserveRequest(3, 0));
@@ -142,7 +142,7 @@ public class ObserveTest {
     @Test
     public void can_observe_object() throws InterruptedException {
         TestObservationListener listener = new TestObservationListener();
-        helper.server.getObservationRegistry().addListener(listener);
+        helper.server.getObservationService().addListener(listener);
 
         // observe device timezone
         ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(), new ObserveRequest(3));
@@ -176,7 +176,7 @@ public class ObserveTest {
     @Test
     public void can_observe_timestamped_resource() throws InterruptedException {
         TestObservationListener listener = new TestObservationListener();
-        helper.server.getObservationRegistry().addListener(listener);
+        helper.server.getObservationService().addListener(listener);
 
         // observe device timezone
         ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(),
@@ -216,7 +216,7 @@ public class ObserveTest {
     @Test
     public void can_observe_timestamped_instance() throws InterruptedException {
         TestObservationListener listener = new TestObservationListener();
-        helper.server.getObservationRegistry().addListener(listener);
+        helper.server.getObservationService().addListener(listener);
 
         // observe device timezone
         ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(),
@@ -256,7 +256,7 @@ public class ObserveTest {
     @Test
     public void can_observe_timestamped_object() throws InterruptedException {
         TestObservationListener listener = new TestObservationListener();
-        helper.server.getObservationRegistry().addListener(listener);
+        helper.server.getObservationService().addListener(listener);
 
         // observe device timezone
         ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(),
@@ -322,7 +322,7 @@ public class ObserveTest {
         }
     }
 
-    private final class TestObservationListener implements ObservationRegistryListener {
+    private final class TestObservationListener implements ObservationListener {
 
         private final CountDownLatch latch = new CountDownLatch(1);
         private final AtomicBoolean receivedNotify = new AtomicBoolean();

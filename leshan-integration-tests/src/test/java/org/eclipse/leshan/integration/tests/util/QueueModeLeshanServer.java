@@ -26,11 +26,11 @@ import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.Startable;
 import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.client.Registration;
-import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.client.RegistrationListener;
+import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
-import org.eclipse.leshan.server.observation.ObservationRegistry;
+import org.eclipse.leshan.server.observation.ObservationService;
 import org.eclipse.leshan.server.queue.MessageStore;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
 import org.eclipse.leshan.server.response.ResponseListener;
@@ -42,20 +42,20 @@ public class QueueModeLeshanServer implements LwM2mServer {
     private static final Logger LOG = LoggerFactory.getLogger(QueueModeLeshanServer.class);
     private final CoapServer coapServer;
     private final RegistrationService registrationService;
-    private final ObservationRegistry observationRegistry;
+    private final ObservationService observationService;
     private final SecurityRegistry securityRegistry;
     private final LwM2mModelProvider modelProvider;
     private final LwM2mRequestSender lwM2mRequestSender;
     private final MessageStore messageStore;
 
     public QueueModeLeshanServer(CoapServer coapServer, RegistrationService registrationService,
-            ObservationRegistry observationRegistry, SecurityRegistry securityRegistry,
+            ObservationService observationService, SecurityRegistry securityRegistry,
             LwM2mModelProvider modelProvider, LwM2mRequestSender lwM2mRequestSender,
             MessageStore inMemoryMessageStore) {
 
         this.coapServer = coapServer;
         this.registrationService = registrationService;
-        this.observationRegistry = observationRegistry;
+        this.observationService = observationService;
         this.securityRegistry = securityRegistry;
         this.modelProvider = modelProvider;
         this.lwM2mRequestSender = lwM2mRequestSender;
@@ -70,7 +70,7 @@ public class QueueModeLeshanServer implements LwM2mServer {
 
             @Override
             public void unregistered(Registration registration) {
-                QueueModeLeshanServer.this.observationRegistry.cancelObservations(registration);
+                QueueModeLeshanServer.this.observationService.cancelObservations(registration);
                 QueueModeLeshanServer.this.lwM2mRequestSender.cancelPendingRequests(registration);
             }
 
@@ -90,8 +90,8 @@ public class QueueModeLeshanServer implements LwM2mServer {
         if (securityRegistry instanceof Startable) {
             ((Startable) securityRegistry).start();
         }
-        if (observationRegistry instanceof Startable) {
-            ((Startable) observationRegistry).start();
+        if (observationService instanceof Startable) {
+            ((Startable) observationService).start();
         }
 
         // Start server
@@ -112,8 +112,8 @@ public class QueueModeLeshanServer implements LwM2mServer {
         if (securityRegistry instanceof Stoppable) {
             ((Stoppable) securityRegistry).stop();
         }
-        if (observationRegistry instanceof Stoppable) {
-            ((Stoppable) observationRegistry).stop();
+        if (observationService instanceof Stoppable) {
+            ((Stoppable) observationService).stop();
         }
         if (lwM2mRequestSender instanceof Stoppable) {
             ((Stoppable) lwM2mRequestSender).stop();
@@ -134,8 +134,8 @@ public class QueueModeLeshanServer implements LwM2mServer {
         if (securityRegistry instanceof Destroyable) {
             ((Destroyable) securityRegistry).destroy();
         }
-        if (observationRegistry instanceof Destroyable) {
-            ((Destroyable) observationRegistry).destroy();
+        if (observationService instanceof Destroyable) {
+            ((Destroyable) observationService).destroy();
         }
 
         LOG.info("LW-M2M server destroyed");
@@ -180,8 +180,8 @@ public class QueueModeLeshanServer implements LwM2mServer {
     }
 
     @Override
-    public ObservationRegistry getObservationRegistry() {
-        return observationRegistry;
+    public ObservationService getObservationService() {
+        return observationService;
     }
 
     @Override

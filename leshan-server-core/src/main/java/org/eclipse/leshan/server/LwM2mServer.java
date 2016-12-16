@@ -22,7 +22,7 @@ import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
-import org.eclipse.leshan.server.observation.ObservationRegistry;
+import org.eclipse.leshan.server.observation.ObservationService;
 import org.eclipse.leshan.server.response.ResponseListener;
 import org.eclipse.leshan.server.security.SecurityRegistry;
 
@@ -112,10 +112,10 @@ public interface LwM2mServer {
     RegistrationService getRegistrationService();
 
     /**
-     * Get the Observation registry containing of current observation. You can use this object for listening resource
+     * Get the Observation service to access current observations. You can use this object for listening resource
      * observation or cancel it.
      */
-    ObservationRegistry getObservationRegistry();
+    ObservationService getObservationService();
 
     /**
      * Get the SecurityRegistry containing of security information.

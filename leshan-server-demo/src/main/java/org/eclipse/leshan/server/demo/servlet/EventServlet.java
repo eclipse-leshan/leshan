@@ -37,7 +37,7 @@ import org.eclipse.leshan.server.demo.servlet.log.CoapMessageListener;
 import org.eclipse.leshan.server.demo.servlet.log.CoapMessageTracer;
 import org.eclipse.leshan.server.demo.utils.EventSource;
 import org.eclipse.leshan.server.demo.utils.EventSourceServlet;
-import org.eclipse.leshan.server.observation.ObservationRegistryListener;
+import org.eclipse.leshan.server.observation.ObservationListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,7 +92,7 @@ public class EventServlet extends EventSourceServlet {
         }
     };
 
-    private final ObservationRegistryListener observationRegistryListener = new ObservationRegistryListener() {
+    private final ObservationListener observationListener = new ObservationListener() {
 
         @Override
         public void cancelled(Observation observation) {
@@ -124,7 +124,7 @@ public class EventServlet extends EventSourceServlet {
     public EventServlet(LeshanServer server, int securePort) {
         this.server = server;
         server.getRegistrationService().addListener(this.registrationListener);
-        server.getObservationRegistry().addListener(this.observationRegistryListener);
+        server.getObservationService().addListener(this.observationListener);
 
         // add an interceptor to each endpoint to trace all CoAP messages
         coapMessageTracer = new CoapMessageTracer(server.getRegistrationService());

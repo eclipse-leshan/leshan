@@ -42,7 +42,7 @@ import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.integration.tests.util.QueueModeLeshanServer;
 import org.eclipse.leshan.integration.tests.util.QueuedModeLeshanClient;
 import org.eclipse.leshan.server.californium.impl.CaliforniumLwM2mRequestSender;
-import org.eclipse.leshan.server.californium.impl.CaliforniumObservationRegistryImpl;
+import org.eclipse.leshan.server.californium.impl.ObservationServiceImpl;
 import org.eclipse.leshan.server.californium.impl.InMemoryRegistrationStore;
 import org.eclipse.leshan.server.californium.impl.RegisterResource;
 import org.eclipse.leshan.server.client.Registration;
@@ -115,22 +115,22 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         LwM2mModelProvider modelProvider = new StandardModelProvider();
         LwM2mNodeEncoder encoder = new DefaultLwM2mNodeEncoder();
         LwM2mNodeDecoder decoder = new DefaultLwM2mNodeDecoder();
-        CaliforniumObservationRegistryImpl observationRegistry = new CaliforniumObservationRegistryImpl(
+        ObservationServiceImpl observationService = new ObservationServiceImpl(
                 registrationStore, modelProvider, decoder);
-        observationRegistry.setSecureEndpoint(secureEndpoint);
-        secureEndpoint.addNotificationListener(observationRegistry);
-        observationRegistry.setNonSecureEndpoint(noSecureEndpoint);
-        noSecureEndpoint.addNotificationListener(observationRegistry);
+        observationService.setSecureEndpoint(secureEndpoint);
+        secureEndpoint.addNotificationListener(observationService);
+        observationService.setNonSecureEndpoint(noSecureEndpoint);
+        noSecureEndpoint.addNotificationListener(observationService);
         LwM2mRequestSender delegateSender = new CaliforniumLwM2mRequestSender(new HashSet<>(coapServer.getEndpoints()),
-                observationRegistry, modelProvider, encoder, decoder);
+                observationService, modelProvider, encoder, decoder);
         LwM2mRequestSender secondDelegateSender = new CaliforniumLwM2mRequestSender(
-                new HashSet<>(coapServer.getEndpoints()), observationRegistry, modelProvider, encoder, decoder);
+                new HashSet<>(coapServer.getEndpoints()), observationService, modelProvider, encoder, decoder);
         QueuedRequestSender queueRequestSender = QueuedRequestSender.builder().setMessageStore(inMemoryMessageStore)
                 .setRequestSender(secondDelegateSender).setRegistrationService(registrationService)
-                .setObservationRegistry(observationRegistry).build();
+                .setObservationService(observationService).build();
         LwM2mRequestSender lwM2mRequestSender = new LwM2mRequestSenderImpl(delegateSender, queueRequestSender);
 
-        server = new QueueModeLeshanServer(coapServer, registrationService, observationRegistry, securityRegistry,
+        server = new QueueModeLeshanServer(coapServer, registrationService, observationService, securityRegistry,
                 modelProvider, lwM2mRequestSender, inMemoryMessageStore);
     }
 

@@ -213,7 +213,7 @@ public class RegistrationTest {
 
         // check observation registry is not null
         Registration currentRegistration = helper.getCurrentRegistration();
-        Set<Observation> observations = helper.server.getObservationRegistry()
+        Set<Observation> observations = helper.server.getObservationService()
                 .getObservations(currentRegistration);
         assertEquals(1, observations.size());
         Observation obs = observations.iterator().next();
@@ -224,7 +224,7 @@ public class RegistrationTest {
         helper.client.stop(true);
         helper.waitForDeregistration(1);
         helper.assertClientNotRegisterered();
-        observations = helper.server.getObservationRegistry()
+        observations = helper.server.getObservationService()
                 .getObservations(currentRegistration);
         assertTrue(observations.isEmpty());
 
@@ -233,7 +233,7 @@ public class RegistrationTest {
         assertNull(observeResponse);
 
         // check observationStore is empty
-        observations = helper.server.getObservationRegistry().getObservations(currentRegistration);
+        observations = helper.server.getObservationService().getObservations(currentRegistration);
         assertTrue(observations.isEmpty());
     }
 

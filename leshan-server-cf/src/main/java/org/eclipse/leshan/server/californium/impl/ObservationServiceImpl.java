@@ -43,20 +43,20 @@ import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
 import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
-import org.eclipse.leshan.server.observation.ObservationRegistry;
-import org.eclipse.leshan.server.observation.ObservationRegistryListener;
+import org.eclipse.leshan.server.observation.ObservationService;
+import org.eclipse.leshan.server.observation.ObservationListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Implementation of the {@link ObservationRegistry} accessing the persisted observation via the provided
+ * Implementation of the {@link ObservationService} accessing the persisted observation via the provided
  * {@link LwM2mObservationStore}.
  * 
  * When a new observation is added or changed or canceled, the registered listeners are notified.
  */
-public class CaliforniumObservationRegistryImpl implements ObservationRegistry, NotificationListener {
+public class ObservationServiceImpl implements ObservationService, NotificationListener {
 
-    private final Logger LOG = LoggerFactory.getLogger(CaliforniumObservationRegistryImpl.class);
+    private final Logger LOG = LoggerFactory.getLogger(ObservationServiceImpl.class);
 
     private final CaliforniumRegistrationStore registrationStore;
     private final LwM2mModelProvider modelProvider;
@@ -64,16 +64,16 @@ public class CaliforniumObservationRegistryImpl implements ObservationRegistry, 
     private Endpoint secureEndpoint;
     private Endpoint nonSecureEndpoint;
 
-    private final List<ObservationRegistryListener> listeners = new CopyOnWriteArrayList<>();
+    private final List<ObservationListener> listeners = new CopyOnWriteArrayList<>();
 
     /**
-     * Creates an instance of {@link CaliforniumObservationRegistryImpl}
+     * Creates an instance of {@link ObservationServiceImpl}
      * 
      * @param store instance of californium's {@link ObservationStore}
      * @param modelProvider instance of {@link LwM2mModelProvider}
      * @param decoder instance of {@link LwM2mNodeDecoder}
      */
-    public CaliforniumObservationRegistryImpl(CaliforniumRegistrationStore store, LwM2mModelProvider modelProvider,
+    public ObservationServiceImpl(CaliforniumRegistrationStore store, LwM2mModelProvider modelProvider,
             LwM2mNodeDecoder decoder) {
         this.registrationStore = store;
         this.modelProvider = modelProvider;
@@ -91,7 +91,7 @@ public class CaliforniumObservationRegistryImpl implements ObservationRegistry, 
 
         // the observation is already persisted by the CoAP layer
 
-        for (ObservationRegistryListener listener : listeners) {
+        for (ObservationListener listener : listeners) {
             listener.newObservation(observation);
         }
     }
@@ -122,7 +122,7 @@ public class CaliforniumObservationRegistryImpl implements ObservationRegistry, 
             if (nonSecureEndpoint != null)
                 nonSecureEndpoint.cancelObservation(observation.getId());
 
-            for (ObservationRegistryListener listener : listeners) {
+            for (ObservationListener listener : listeners) {
                 listener.cancelled(observation);
             }
         }
@@ -153,7 +153,7 @@ public class CaliforniumObservationRegistryImpl implements ObservationRegistry, 
             nonSecureEndpoint.cancelObservation(observation.getId());
         registrationStore.removeObservation(observation.getRegistrationId(), observation.getId());
 
-        for (ObservationRegistryListener listener : listeners) {
+        for (ObservationListener listener : listeners) {
             listener.cancelled(observation);
         }
     }
@@ -192,12 +192,12 @@ public class CaliforniumObservationRegistryImpl implements ObservationRegistry, 
     }
 
     @Override
-    public void addListener(ObservationRegistryListener listener) {
+    public void addListener(ObservationListener listener) {
         listeners.add(listener);
     }
 
     @Override
-    public void removeListener(ObservationRegistryListener listener) {
+    public void removeListener(ObservationListener listener) {
         listeners.remove(listener);
     }
 
@@ -251,7 +251,7 @@ public class CaliforniumObservationRegistryImpl implements ObservationRegistry, 
                 }
 
                 // notify all listeners
-                for (ObservationRegistryListener listener : listeners) {
+                for (ObservationListener listener : listeners) {
                     listener.newValue(observation, response);
                 }
             } catch (InvalidValueException e) {

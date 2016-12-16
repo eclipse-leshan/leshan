@@ -47,7 +47,7 @@ import org.eclipse.leshan.util.Validate;
 public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
     private final Set<Endpoint> endpoints;
-    private final CaliforniumObservationRegistryImpl observationRegistry;
+    private final ObservationServiceImpl observationService;
     private final LwM2mModelProvider modelProvider;
     private final LwM2mNodeDecoder decoder;
     private final LwM2mNodeEncoder encoder;
@@ -60,16 +60,16 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
     /**
      * @param endpoints the CoAP endpoints to use for sending requests
-     * @param observationRegistry the registry for keeping track of observed resources
+     * @param observationService the service for keeping track of observed resources
      * @param modelProvider provides the supported objects definitions
      */
     public CaliforniumLwM2mRequestSender(final Set<Endpoint> endpoints,
-            final CaliforniumObservationRegistryImpl observationRegistry, LwM2mModelProvider modelProvider,
+            final ObservationServiceImpl observationService, LwM2mModelProvider modelProvider,
             LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
         Validate.notNull(endpoints);
-        Validate.notNull(observationRegistry);
+        Validate.notNull(observationService);
         Validate.notNull(modelProvider);
-        this.observationRegistry = observationRegistry;
+        this.observationService = observationService;
         this.endpoints = endpoints;
         this.modelProvider = modelProvider;
         this.encoder = encoder;
@@ -96,7 +96,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
             public T buildResponse(final Response coapResponse) {
                 // Build LwM2m response
                 final LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<T>(coapRequest,
-                        coapResponse, destination, model, observationRegistry, decoder);
+                        coapResponse, destination, model, observationService, decoder);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }
@@ -133,7 +133,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
             public T buildResponse(final Response coapResponse) {
                 // Build LwM2m response
                 final LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<T>(coapRequest,
-                        coapResponse, destination, model, observationRegistry, decoder);
+                        coapResponse, destination, model, observationService, decoder);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }
