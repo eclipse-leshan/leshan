@@ -96,6 +96,8 @@ public class LeshanServer implements LwM2mServer {
 
     private final CoapEndpoint secureEndpoint;
 
+    private final CaliforniumRegistrationStore registrationStore;
+
     /**
      * Initialize a server which will bind to the specified address and port.
      *
@@ -125,7 +127,8 @@ public class LeshanServer implements LwM2mServer {
         Validate.notNull(encoder, "encoder cannot be null");
         Validate.notNull(decoder, "decoder cannot be null");
 
-        // Init registries
+        // Init services and stores
+        this.registrationStore = registrationStore;
         this.registrationService = new RegistrationServiceImpl(registrationStore);
         this.securityStore = securityStore;
         this.observationService = new ObservationServiceImpl(registrationStore, modelProvider, decoder);
@@ -201,15 +204,12 @@ public class LeshanServer implements LwM2mServer {
     @Override
     public void start() {
 
-        // Start registries
-        if (registrationService instanceof Startable) {
-            ((Startable) registrationService).start();
+        // Start stores
+        if (registrationStore instanceof Startable) {
+            ((Startable) registrationStore).start();
         }
         if (securityStore instanceof Startable) {
             ((Startable) securityStore).start();
-        }
-        if (observationService instanceof Startable) {
-            ((Startable) observationService).start();
         }
 
         // Start server
@@ -223,15 +223,12 @@ public class LeshanServer implements LwM2mServer {
         // Stop server
         coapServer.stop();
 
-        // Start registries
-        if (registrationService instanceof Stoppable) {
-            ((Stoppable) registrationService).stop();
+        // Stop stores
+        if (registrationStore instanceof Stoppable) {
+            ((Stoppable) registrationStore).stop();
         }
         if (securityStore instanceof Stoppable) {
             ((Stoppable) securityStore).stop();
-        }
-        if (observationService instanceof Stoppable) {
-            ((Stoppable) observationService).stop();
         }
 
         LOG.info("LWM2M server stopped.");
@@ -241,15 +238,12 @@ public class LeshanServer implements LwM2mServer {
         // Destroy server
         coapServer.destroy();
 
-        // Destroy registries
-        if (registrationService instanceof Destroyable) {
-            ((Destroyable) registrationService).destroy();
+        // Destroy stores
+        if (registrationStore instanceof Destroyable) {
+            ((Destroyable) registrationStore).destroy();
         }
         if (securityStore instanceof Destroyable) {
             ((Destroyable) securityStore).destroy();
-        }
-        if (observationService instanceof Destroyable) {
-            ((Destroyable) observationService).destroy();
         }
 
         LOG.info("LWM2M server destroyed.");
