@@ -32,8 +32,8 @@ import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.cluster.serialization.DownlinkRequestSerDes;
 import org.eclipse.leshan.server.cluster.serialization.ResponseSerDes;
-import org.eclipse.leshan.server.observation.ObservationRegistry;
-import org.eclipse.leshan.server.observation.ObservationRegistryListener;
+import org.eclipse.leshan.server.observation.ObservationService;
+import org.eclipse.leshan.server.observation.ObservationListener;
 import org.eclipse.leshan.server.response.ResponseListener;
 import org.eclipse.leshan.util.NamedThreadFactory;
 import org.slf4j.Logger;
@@ -63,21 +63,21 @@ public class RedisRequestResponseHandler {
     private final RegistrationService registrationService;
     private final ExecutorService executorService;
     private final RedisTokenHandler tokenHandler;
-    private final ObservationRegistry observationRegistry;
+    private final ObservationService observationService;
     private final Map<KeyId, String> observatioIdToTicket = new ConcurrentHashMap<>();
 
     public RedisRequestResponseHandler(Pool<Jedis> p, LwM2mServer server, RegistrationService registrationService,
-            RedisTokenHandler tokenHandler, ObservationRegistry observationRegistry) {
+            RedisTokenHandler tokenHandler, ObservationService observationService) {
         // Listen LWM2M response
         this.server = server;
         this.registrationService = registrationService;
-        this.observationRegistry = observationRegistry;
+        this.observationService = observationService;
         this.tokenHandler = tokenHandler;
         this.executorService = Executors.newCachedThreadPool(
                 new NamedThreadFactory(String.format("Redis %s channel writer", RESPONSE_CHANNEL)));
 
         // Listen LWM2M notification from client
-        this.observationRegistry.addListener(new ObservationRegistryListener() {
+        this.observationService.addListener(new ObservationListener() {
 
             @Override
             public void newValue(Observation observation, ObserveResponse response) {

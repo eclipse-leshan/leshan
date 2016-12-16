@@ -65,7 +65,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     private LwM2mResponse lwM2mresponse;
     private final Request coapRequest;
     private final Response coapResponse;
-    private final CaliforniumObservationRegistryImpl observationRegistry;
+    private final ObservationServiceImpl observationService;
     private final Registration registration;
     private final LwM2mModel model;
     private final LwM2mNodeDecoder decoder;
@@ -105,11 +105,11 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     }
 
     public LwM2mResponseBuilder(final Request coapRequest, final Response coapResponse, final Registration registration,
-            final LwM2mModel model, final CaliforniumObservationRegistryImpl observationRegistry,
+            final LwM2mModel model, final ObservationServiceImpl observationService,
             final LwM2mNodeDecoder decoder) {
         this.coapRequest = coapRequest;
         this.coapResponse = coapResponse;
-        this.observationRegistry = observationRegistry;
+        this.observationService = observationService;
         this.registration = registration;
         this.model = model;
         this.decoder = decoder;
@@ -274,10 +274,10 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         case CONTENT:
             LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse);
             if (coapResponse.getOptions().hasObserve()) {
-                // observe request succeed so we can add and observation to registry
+                // observe request successful
                 Observation observation = new Observation(coapRequest.getToken(), registration.getId(),
                         request.getPath(), request.getContext());
-                observationRegistry.addObservation(observation);
+                observationService.addObservation(observation);
                 // add the observation to an ObserveResponse instance
                 lwM2mresponse = new ObserveResponse(ResponseCode.CONTENT, content, null, observation, null,
                         coapResponse);

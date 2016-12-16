@@ -37,7 +37,7 @@ public class CaliforniumObservationTest {
 
     Request coapRequest;
     LwM2mPath target;
-    CaliforniumObservationRegistryImpl registry;
+    ObservationServiceImpl observationService;
     CaliforniumRegistrationStore store;
 
     private CaliforniumTestSupport support = new CaliforniumTestSupport();
@@ -46,7 +46,7 @@ public class CaliforniumObservationTest {
     public void setUp() throws Exception {
         support.givenASimpleClient();
         store = new InMemoryRegistrationStore();
-        registry = new CaliforniumObservationRegistryImpl(store,
+        observationService = new ObservationServiceImpl(store,
                 new StandardModelProvider(),
                 new DefaultLwM2mNodeDecoder());
     }
@@ -57,34 +57,34 @@ public class CaliforniumObservationTest {
         givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 12));
 
         // check the presence of only one observation.
-        Set<Observation> observations = registry.getObservations(support.registration);
+        Set<Observation> observations = observationService.getObservations(support.registration);
         Assert.assertEquals(1, observations.size());
     }
 
     @Test
     public void cancel_by_client() {
-        // create some observations and add it to registry
+        // create some observations
         givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 13));
         givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 12));
 
         givenAnObservation("anotherClient", new LwM2mPath(3, 0, 12));
 
         // check its presence
-        Set<Observation> observations = registry.getObservations(support.registration);
+        Set<Observation> observations = observationService.getObservations(support.registration);
         Assert.assertEquals(2, observations.size());
 
         // cancel it
-        int nbCancelled = registry.cancelObservations(support.registration);
+        int nbCancelled = observationService.cancelObservations(support.registration);
         Assert.assertEquals(2, nbCancelled);
 
         // check its absence
-        observations = registry.getObservations(support.registration);
+        observations = observationService.getObservations(support.registration);
         Assert.assertTrue(observations.isEmpty());
     }
 
     @Test
     public void cancel_by_path() {
-        // create some observations and add it to registry
+        // create some observations
         givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 13));
         givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 12));
         givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 12));
@@ -92,21 +92,21 @@ public class CaliforniumObservationTest {
         givenAnObservation("anotherClient", new LwM2mPath(3, 0, 12));
 
         // check its presence
-        Set<Observation> observations = registry.getObservations(support.registration);
+        Set<Observation> observations = observationService.getObservations(support.registration);
         Assert.assertEquals(2, observations.size());
 
         // cancel it
-        int nbCancelled = registry.cancelObservations(support.registration, "/3/0/12");
+        int nbCancelled = observationService.cancelObservations(support.registration, "/3/0/12");
         Assert.assertEquals(1, nbCancelled);
 
         // check its absence
-        observations = registry.getObservations(support.registration);
+        observations = observationService.getObservations(support.registration);
         Assert.assertEquals(1, observations.size());
     }
 
     @Test
     public void cancel_by_observation() throws UnknownHostException {
-        // create some observations and add it to registry
+        // create some observations
         givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 13));
         givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 12));
         givenAnObservation("anotherClient", new LwM2mPath(3, 0, 12));
@@ -115,14 +115,14 @@ public class CaliforniumObservationTest {
                 new LwM2mPath(3, 0, 12));
 
         // check its presence
-        Set<Observation> observations = registry.getObservations(support.registration);
+        Set<Observation> observations = observationService.getObservations(support.registration);
         Assert.assertEquals(2, observations.size());
 
         // cancel it
-        registry.cancelObservation(observationToCancel);
+        observationService.cancelObservation(observationToCancel);
 
         // check its absence
-        observations = registry.getObservations(support.registration);
+        observations = observationService.getObservations(support.registration);
         Assert.assertEquals(1, observations.size());
     }
 
@@ -145,7 +145,7 @@ public class CaliforniumObservationTest {
         store.add(new org.eclipse.californium.core.observe.Observation(coapRequest, null));
 
         Observation observation = new Observation(coapRequest.getToken(), registrationId, target, null);
-        registry.addObservation(observation);
+        observationService.addObservation(observation);
 
         return observation;
     }

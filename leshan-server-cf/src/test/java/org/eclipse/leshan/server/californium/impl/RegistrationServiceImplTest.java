@@ -29,7 +29,7 @@ import org.junit.Test;
 
 public class RegistrationServiceImplTest {
 
-    RegistrationServiceImpl registry;
+    RegistrationServiceImpl registrationService;
     String ep = "urn:endpoint";
     InetAddress address;
     int port = 23452;
@@ -43,21 +43,21 @@ public class RegistrationServiceImplTest {
     @Before
     public void setUp() throws Exception {
         address = InetAddress.getLocalHost();
-        registry = new RegistrationServiceImpl(new InMemoryRegistrationStore());
+        registrationService = new RegistrationServiceImpl(new InMemoryRegistrationStore());
     }
 
     @Test
     public void update_registration_keeps_properties_unchanged() {
         givenASimpleRegistration(lifetime);
-        registry.registerClient(registration);
+        registrationService.registerClient(registration);
 
         RegistrationUpdate update = new RegistrationUpdate(registrationId, address, port, null, null, null, null);
-        Registration updatedRegistration = registry.updateRegistration(update);
+        Registration updatedRegistration = registrationService.updateRegistration(update);
         Assert.assertEquals(lifetime, updatedRegistration.getLifeTimeInSec());
         Assert.assertSame(binding, updatedRegistration.getBindingMode());
         Assert.assertEquals(sms, updatedRegistration.getSmsNumber());
 
-        Registration reg = registry.getByEndpoint(ep);
+        Registration reg = registrationService.getByEndpoint(ep);
         Assert.assertEquals(lifetime, reg.getLifeTimeInSec());
         Assert.assertSame(binding, reg.getBindingMode());
         Assert.assertEquals(sms, reg.getSmsNumber());
@@ -66,21 +66,21 @@ public class RegistrationServiceImplTest {
     @Test
     public void client_registration_sets_time_to_live() {
         givenASimpleRegistration(lifetime);
-        registry.registerClient(registration);
+        registrationService.registerClient(registration);
         Assert.assertTrue(registration.isAlive());
     }
 
     @Test
     public void update_registration_to_extend_time_to_live() {
         givenASimpleRegistration(0L);
-        registry.registerClient(registration);
+        registrationService.registerClient(registration);
         Assert.assertFalse(registration.isAlive());
 
         RegistrationUpdate update = new RegistrationUpdate(registrationId, address, port, lifetime, null, null, null);
-        Registration updatedRegistration = registry.updateRegistration(update);
+        Registration updatedRegistration = registrationService.updateRegistration(update);
         Assert.assertTrue(updatedRegistration.isAlive());
 
-        Registration reg = registry.getByEndpoint(ep);
+        Registration reg = registrationService.getByEndpoint(ep);
         Assert.assertTrue(reg.isAlive());
     }
 

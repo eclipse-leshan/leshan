@@ -39,7 +39,7 @@ import org.eclipse.leshan.core.response.WriteResponse;
 import org.eclipse.leshan.integration.tests.util.QueuedModeLeshanClient;
 import org.eclipse.leshan.integration.tests.util.QueuedModeLeshanClient.OnGetCallback;
 import org.eclipse.leshan.server.client.Registration;
-import org.eclipse.leshan.server.observation.ObservationRegistryListener;
+import org.eclipse.leshan.server.observation.ObservationListener;
 import org.eclipse.leshan.server.queue.MessageStore;
 import org.eclipse.leshan.server.queue.impl.InMemoryMessageStore;
 import org.eclipse.leshan.server.response.ResponseListener;
@@ -219,7 +219,7 @@ public class QueueModeTest {
     @Test
     public void request_sent_after_client_notify() throws Exception {
         TestObservationListener listener = new TestObservationListener();
-        helper.server.getObservationRegistry().addListener(listener);
+        helper.server.getObservationService().addListener(listener);
         // stop default client as we need client with a custom life time.
         helper.client.stop(false);
 
@@ -282,7 +282,7 @@ public class QueueModeTest {
     @Test
     public void all_requests_sent_if_client_reachable() throws Exception {
         TestObservationListener listener = new TestObservationListener();
-        helper.server.getObservationRegistry().addListener(listener);
+        helper.server.getObservationService().addListener(listener);
         QueuedModeLeshanClient client = (QueuedModeLeshanClient) helper.client;
 
         responseListener = new ResponseListener() {
@@ -350,7 +350,7 @@ public class QueueModeTest {
     @Test
     public void no_duplicate_send_on_consecutive_notifies() throws Exception {
         TestObservationListener listener = new TestObservationListener();
-        helper.server.getObservationRegistry().addListener(listener);
+        helper.server.getObservationService().addListener(listener);
         // stop default client as we need client with a custom life time.
         helper.client.stop(false);
 
@@ -665,7 +665,7 @@ public class QueueModeTest {
         };
     }
 
-    private final class TestObservationListener implements ObservationRegistryListener {
+    private final class TestObservationListener implements ObservationListener {
 
         private CountDownLatch latch = new CountDownLatch(1);
         private final AtomicBoolean receivedNotify = new AtomicBoolean();

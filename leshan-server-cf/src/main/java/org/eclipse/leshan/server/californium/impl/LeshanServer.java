@@ -53,7 +53,7 @@ import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
-import org.eclipse.leshan.server.observation.ObservationRegistry;
+import org.eclipse.leshan.server.observation.ObservationService;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
 import org.eclipse.leshan.server.response.ResponseListener;
@@ -86,7 +86,7 @@ public class LeshanServer implements LwM2mServer {
 
     private final RegistrationServiceImpl registrationService;
 
-    private final CaliforniumObservationRegistryImpl observationRegistry;
+    private final ObservationServiceImpl observationService;
 
     private final SecurityRegistry securityRegistry;
 
@@ -122,7 +122,7 @@ public class LeshanServer implements LwM2mServer {
         // Init registries
         this.registrationService = new RegistrationServiceImpl(registrationStore);
         this.securityRegistry = securityRegistry;
-        this.observationRegistry = new CaliforniumObservationRegistryImpl(registrationStore, modelProvider, decoder);
+        this.observationService = new ObservationServiceImpl(registrationStore, modelProvider, decoder);
         this.modelProvider = modelProvider;
 
         // Cancel observations on client unregistering
@@ -134,7 +134,7 @@ public class LeshanServer implements LwM2mServer {
 
             @Override
             public void unregistered(final Registration registration) {
-                LeshanServer.this.observationRegistry.cancelObservations(registration);
+                LeshanServer.this.observationService.cancelObservations(registration);
                 requestSender.cancelPendingRequests(registration);
             }
 
@@ -151,9 +151,9 @@ public class LeshanServer implements LwM2mServer {
             }
         };
         nonSecureEndpoint = new CoapEndpoint(localAddress, NetworkConfig.getStandard(),
-                this.observationRegistry.getObservationStore());
-        nonSecureEndpoint.addNotificationListener(observationRegistry);
-        observationRegistry.setNonSecureEndpoint(nonSecureEndpoint);
+                this.observationService.getObservationStore());
+        nonSecureEndpoint.addNotificationListener(observationService);
+        observationService.setNonSecureEndpoint(nonSecureEndpoint);
         coapServer.addEndpoint(nonSecureEndpoint);
 
         // secure endpoint
@@ -178,9 +178,9 @@ public class LeshanServer implements LwM2mServer {
         }
 
         secureEndpoint = new CoapEndpoint(new DTLSConnector(builder.build()), NetworkConfig.getStandard(),
-                this.observationRegistry.getObservationStore());
-        secureEndpoint.addNotificationListener(observationRegistry);
-        observationRegistry.setSecureEndpoint(secureEndpoint);
+                this.observationService.getObservationStore());
+        secureEndpoint.addNotificationListener(observationService);
+        observationService.setSecureEndpoint(secureEndpoint);
         coapServer.addEndpoint(secureEndpoint);
 
         // define /rd resource
@@ -192,7 +192,7 @@ public class LeshanServer implements LwM2mServer {
         final Set<Endpoint> endpoints = new HashSet<>();
         endpoints.add(nonSecureEndpoint);
         endpoints.add(secureEndpoint);
-        requestSender = new CaliforniumLwM2mRequestSender(endpoints, this.observationRegistry, modelProvider, encoder,
+        requestSender = new CaliforniumLwM2mRequestSender(endpoints, this.observationService, modelProvider, encoder,
                 decoder);
     }
 
@@ -206,8 +206,8 @@ public class LeshanServer implements LwM2mServer {
         if (securityRegistry instanceof Startable) {
             ((Startable) securityRegistry).start();
         }
-        if (observationRegistry instanceof Startable) {
-            ((Startable) observationRegistry).start();
+        if (observationService instanceof Startable) {
+            ((Startable) observationService).start();
         }
 
         // Start server
@@ -228,8 +228,8 @@ public class LeshanServer implements LwM2mServer {
         if (securityRegistry instanceof Stoppable) {
             ((Stoppable) securityRegistry).stop();
         }
-        if (observationRegistry instanceof Stoppable) {
-            ((Stoppable) observationRegistry).stop();
+        if (observationService instanceof Stoppable) {
+            ((Stoppable) observationService).stop();
         }
 
         LOG.info("LWM2M server stopped.");
@@ -246,8 +246,8 @@ public class LeshanServer implements LwM2mServer {
         if (securityRegistry instanceof Destroyable) {
             ((Destroyable) securityRegistry).destroy();
         }
-        if (observationRegistry instanceof Destroyable) {
-            ((Destroyable) observationRegistry).destroy();
+        if (observationService instanceof Destroyable) {
+            ((Destroyable) observationService).destroy();
         }
 
         LOG.info("LWM2M server destroyed.");
@@ -259,8 +259,8 @@ public class LeshanServer implements LwM2mServer {
     }
 
     @Override
-    public ObservationRegistry getObservationRegistry() {
-        return this.observationRegistry;
+    public ObservationService getObservationService() {
+        return this.observationService;
     }
 
     @Override
