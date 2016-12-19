@@ -352,7 +352,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         LwM2mNode content;
         try {
             // get content format
-            ContentFormat contentFormat = null;
+            ContentFormat contentFormat = ContentFormat.TEXT;
             if (coapResponse.getOptions().hasContentFormat()) {
                 contentFormat = ContentFormat.fromCode(coapResponse.getOptions().getContentFormat());
             }
