@@ -74,7 +74,7 @@ public abstract class SyncRequestObserver<T extends LwM2mResponse> extends Abstr
 
     @Override
     public void onReject() {
-        exception.set(new RequestRejectedException("Rejected request"));
+        exception.set(new RequestRejectedException());
         latch.countDown();
     }
 

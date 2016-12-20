@@ -63,12 +63,12 @@ public abstract class AsyncRequestObserver<T extends LwM2mResponse> extends Abst
 
     @Override
     public void onCancel() {
-        errorCallback.onError(new RequestCanceledException("Canceled request"));
+        errorCallback.onError(new RequestCanceledException());
     }
 
     @Override
     public void onReject() {
-        errorCallback.onError(new RequestRejectedException("Rejected request"));
+        errorCallback.onError(new RequestRejectedException());
     }
 
 }

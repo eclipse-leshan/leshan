@@ -36,7 +36,7 @@ import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
-import org.eclipse.leshan.core.request.exception.RequestFailedException;
+import org.eclipse.leshan.core.request.exception.RequestRejectedException;
 import org.eclipse.leshan.core.request.exception.ResourceAccessException;
 import org.eclipse.leshan.core.response.CreateResponse;
 import org.eclipse.leshan.core.response.DeleteResponse;
@@ -147,7 +147,7 @@ public class ClientServlet extends HttpServlet {
             LOG.warn("Invalid request or response", e);
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             resp.getWriter().append(e.getMessage()).flush();
-        } catch (ResourceAccessException | RequestFailedException e) {
+        } catch (ResourceAccessException | RequestRejectedException e) {
             LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.getWriter().append(e.getMessage()).flush();
@@ -194,7 +194,7 @@ public class ClientServlet extends HttpServlet {
             LOG.warn("Invalid request or response", e);
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             resp.getWriter().append(e.getMessage()).flush();
-        } catch (ResourceAccessException | RequestFailedException e) {
+        } catch (ResourceAccessException | RequestRejectedException e) {
             LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.getWriter().append(e.getMessage()).flush();
@@ -236,7 +236,7 @@ public class ClientServlet extends HttpServlet {
                 LOG.warn("Invalid request or response", e);
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().append(e.getMessage()).flush();
-            } catch (ResourceAccessException | RequestFailedException e) {
+            } catch (ResourceAccessException | RequestRejectedException e) {
                 LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 resp.getWriter().append(e.getMessage()).flush();
@@ -266,7 +266,7 @@ public class ClientServlet extends HttpServlet {
                 LOG.warn("Invalid request or response", e);
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().append(e.getMessage()).flush();
-            } catch (ResourceAccessException | RequestFailedException e) {
+            } catch (ResourceAccessException | RequestRejectedException e) {
                 LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 resp.getWriter().append(e.getMessage()).flush();
@@ -305,7 +305,7 @@ public class ClientServlet extends HttpServlet {
                 LOG.warn("Invalid request or response", e);
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().append(e.getMessage()).flush();
-            } catch (ResourceAccessException | RequestFailedException e) {
+            } catch (ResourceAccessException | RequestRejectedException e) {
                 LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 resp.getWriter().append(e.getMessage()).flush();
@@ -339,7 +339,7 @@ public class ClientServlet extends HttpServlet {
                 LOG.warn("Invalid request or response", e);
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().append(e.getMessage()).flush();
-            } catch (ResourceAccessException | RequestFailedException e) {
+            } catch (ResourceAccessException | RequestRejectedException e) {
                 LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 resp.getWriter().append(e.getMessage()).flush();
@@ -363,7 +363,7 @@ public class ClientServlet extends HttpServlet {
             LOG.warn("Invalid request or response", e);
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             resp.getWriter().append(e.getMessage()).flush();
-        } catch (ResourceAccessException | RequestFailedException e) {
+        } catch (ResourceAccessException | RequestRejectedException  e) {
             LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.getWriter().append(e.getMessage()).flush();

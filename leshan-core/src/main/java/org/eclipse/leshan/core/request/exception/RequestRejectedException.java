@@ -17,21 +17,16 @@
 package org.eclipse.leshan.core.request.exception;
 
 /**
- * Exception indicating that the message was rejected by the LWM2M client.
+ * Exception indicating that the message was rejected by the Request receiver.
  */
 public class RequestRejectedException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * default constructor.
+     */
     public RequestRejectedException() {
         super();
     }
-
-    /**
-     * @param message the message returned by the server or <code>null</code> if the server did not return a message
-     */
-    public RequestRejectedException(String message) {
-        super(message);
-    }
-
 }

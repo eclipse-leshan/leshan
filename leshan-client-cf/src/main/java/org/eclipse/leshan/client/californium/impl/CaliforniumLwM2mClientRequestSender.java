@@ -164,12 +164,12 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
 
         @Override
         public void onCancel() {
-            errorCallback.onError(new RequestCanceledException("Canceled request"));
+            errorCallback.onError(new RequestCanceledException());
         }
 
         @Override
         public void onReject() {
-            errorCallback.onError(new RequestRejectedException("Reject request"));
+            errorCallback.onError(new RequestRejectedException());
         }
 
     }
@@ -216,7 +216,7 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
 
         @Override
         public void onReject() {
-            exception.set(new RequestRejectedException("Rejected request"));
+            exception.set(new RequestRejectedException());
             latch.countDown();
         }
 
