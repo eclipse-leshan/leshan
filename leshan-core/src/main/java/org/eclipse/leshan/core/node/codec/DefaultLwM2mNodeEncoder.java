@@ -46,6 +46,7 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
         byte[] encoded = null;
         switch (format.getCode()) {
         case ContentFormat.TLV_CODE:
+        case ContentFormat.OLD_TLV_CODE:
             encoded = LwM2mNodeTlvEncoder.encode(node, path, model);
             break;
         case ContentFormat.TEXT_CODE:
@@ -55,6 +56,7 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
             encoded = LwM2mNodeOpaqueEncoder.encode(node, path, model);
             break;
         case ContentFormat.JSON_CODE:
+        case ContentFormat.OLD_JSON_CODE:
             encoded = LwM2mNodeJsonEncoder.encode(node, path, model);
             break;
         default:
@@ -91,8 +93,10 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
         switch (format.getCode()) {
         case ContentFormat.TEXT_CODE:
         case ContentFormat.TLV_CODE:
+        case ContentFormat.OLD_TLV_CODE:
         case ContentFormat.OPAQUE_CODE:
         case ContentFormat.JSON_CODE:
+        case ContentFormat.OLD_JSON_CODE:
             return true;
         default:
             return false;
