@@ -29,9 +29,7 @@ import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
-import org.eclipse.leshan.server.security.SecurityCheck;
-import org.eclipse.leshan.server.security.SecurityInfo;
-import org.eclipse.leshan.server.security.SecurityStore;
+import org.eclipse.leshan.server.security.Authorizer;
 import org.eclipse.leshan.util.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,23 +42,18 @@ public class RegistrationHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(RegistrationHandler.class);
 
-    private SecurityStore securityStore;
     private RegistrationServiceImpl registrationService;
+    private Authorizer authorizer;
 
-    public RegistrationHandler(RegistrationServiceImpl registrationService, SecurityStore securityStore) {
+    public RegistrationHandler(RegistrationServiceImpl registrationService, Authorizer authorizer) {
         this.registrationService = registrationService;
-        this.securityStore = securityStore;
+        this.authorizer = authorizer;
     }
 
     public RegisterResponse register(Identity sender, RegisterRequest registerRequest, InetSocketAddress serverEndpoint) {
 
         if (registerRequest.getEndpointName() == null || registerRequest.getEndpointName().isEmpty() || sender == null) {
             return RegisterResponse.badRequest(null);
-        }
-
-        // We must check if the client is using the right identity.
-        if (!isAuthorized(registerRequest.getEndpointName(), sender)) {
-            return RegisterResponse.forbidden(null);
         }
 
         Registration.Builder builder = new Registration.Builder(RegistrationHandler.createRegistrationId(),
@@ -73,6 +66,11 @@ public class RegistrationHandler {
                 .additionalRegistrationAttributes(registerRequest.getAdditionalAttributes());
 
         Registration registration = builder.build();
+
+        // We must check if the client is using the right identity.
+        if (!authorizer.isAuthorized(registerRequest, registration, sender)) {
+            return RegisterResponse.forbidden(null);
+        }
 
         if (registrationService.registerClient(registration)) {
             LOG.debug("New registered client: {}", registration);
@@ -93,7 +91,9 @@ public class RegistrationHandler {
         if (registration == null) {
             return UpdateResponse.notFound();
         }
-        if (!isAuthorized(registration.getEndpoint(), sender)) {
+        if (!authorizer.isAuthorized(updateRequest, registration, sender)) {
+            // TODO replace by Forbidden if https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/181 is
+            // closed.
             return UpdateResponse.badRequest("forbidden");
         }
 
@@ -117,7 +117,9 @@ public class RegistrationHandler {
         if (registration == null) {
             return DeregisterResponse.notFound();
         }
-        if (!isAuthorized(registration.getEndpoint(), sender)) {
+        if (!authorizer.isAuthorized(deregisterRequest, registration, sender)) {
+            // TODO replace by Forbidden if https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/181 is
+            // closed.
             return DeregisterResponse.badRequest("forbidden");
         }
 
@@ -133,19 +135,4 @@ public class RegistrationHandler {
     private static String createRegistrationId() {
         return RandomStringUtils.random(10, true, true);
     }
-
-    /**
-     * Return true if the client with the given lightweight M2M endPoint is authorized to communicate with the given
-     * security parameters.
-     * 
-     * @param lwM2mEndPointName the lightweight M2M endPoint name
-     * @param clientIdentity the identity at TLS level
-     * @return true if device get authorization
-     */
-    private boolean isAuthorized(String lwM2mEndPointName, Identity clientIdentity) {
-        // do we have security information for this client?
-        SecurityInfo expectedSecurityInfo = securityStore.getByEndpoint(lwM2mEndPointName);
-        return SecurityCheck.checkSecurityInfo(lwM2mEndPointName, clientIdentity, expectedSecurityInfo);
-    }
-
 }

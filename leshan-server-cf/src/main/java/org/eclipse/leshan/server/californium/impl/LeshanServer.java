@@ -57,6 +57,7 @@ import org.eclipse.leshan.server.observation.ObservationService;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
 import org.eclipse.leshan.server.response.ResponseListener;
+import org.eclipse.leshan.server.security.Authorizer;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.SecurityStore;
 import org.eclipse.leshan.util.Validate;
@@ -105,6 +106,7 @@ public class LeshanServer implements LwM2mServer {
      * @param localSecureAddress the address to bind the CoAP server for DTLS connection.
      * @param registrationStore the {@link Registration} store.
      * @param securityStore the {@link SecurityInfo} store.
+     * @param authorizer define which devices is allow to register on this server.
      * @param modelProvider provides the objects description for each client.
      * @param decoder decoder used to decode response payload.
      * @param encoder encode used to encode request payload.
@@ -115,7 +117,7 @@ public class LeshanServer implements LwM2mServer {
      * @param trustedCertificates the trusted certificates used to authenticate client certificates.
      */
     public LeshanServer(InetSocketAddress localAddress, InetSocketAddress localSecureAddress,
-            CaliforniumRegistrationStore registrationStore, SecurityStore securityStore,
+            CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
             LwM2mModelProvider modelProvider,
             LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder, PublicKey publicKey, PrivateKey privateKey,
             X509Certificate[] x509CertChain, Certificate[] trustedCertificates) {
@@ -123,6 +125,7 @@ public class LeshanServer implements LwM2mServer {
         Validate.notNull(localSecureAddress, "Secure IP address cannot be null");
         Validate.notNull(registrationStore, "registration store cannot be null");
         Validate.notNull(securityStore, "securityStore cannot be null");
+        Validate.notNull(authorizer, "authorizer cannot be null");
         Validate.notNull(modelProvider, "modelProvider cannot be null");
         Validate.notNull(encoder, "encoder cannot be null");
         Validate.notNull(decoder, "decoder cannot be null");
@@ -190,7 +193,7 @@ public class LeshanServer implements LwM2mServer {
 
         // define /rd resource
         final RegisterResource rdResource = new RegisterResource(
-                new RegistrationHandler(this.registrationService, this.securityStore));
+                new RegistrationHandler(this.registrationService, authorizer));
         coapServer.add(rdResource);
 
         // create sender

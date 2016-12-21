@@ -33,7 +33,7 @@ public enum ResponseCode {
     BAD_REQUEST,
     /** This method (GET/PUT/POST/DELETE) is not allowed on this resource */
     METHOD_NOT_ALLOWED,
-    /** The End-point Client Name results in a duplicate entry on the LWM2M Server */
+    /** The Endpoint Client Name registration in the LWM2M Server is not allowed */
     FORBIDDEN,
     /** Resource not found */
     NOT_FOUND,

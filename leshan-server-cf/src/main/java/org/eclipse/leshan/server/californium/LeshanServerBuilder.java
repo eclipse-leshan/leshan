@@ -32,6 +32,8 @@ import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.impl.FileSecurityStore;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StandardModelProvider;
+import org.eclipse.leshan.server.security.Authorizer;
+import org.eclipse.leshan.server.security.DefaultAuthorizer;
 import org.eclipse.leshan.server.security.SecurityStore;
 
 /**
@@ -50,6 +52,7 @@ public class LeshanServerBuilder {
     private CaliforniumRegistrationStore registrationStore;
     private SecurityStore securityStore;
     private LwM2mModelProvider modelProvider;
+    private Authorizer authorizer;
 
     private InetSocketAddress localAddress;
     private InetSocketAddress localSecureAddress;
@@ -100,6 +103,11 @@ public class LeshanServerBuilder {
         return this;
     }
 
+    public LeshanServerBuilder setAuthorizer(Authorizer authorizer) {
+        this.authorizer = authorizer;
+        return this;
+    }
+
     public LeshanServerBuilder setObjectModelProvider(LwM2mModelProvider objectModelProvider) {
         this.modelProvider = objectModelProvider;
         return this;
@@ -144,6 +152,8 @@ public class LeshanServerBuilder {
             registrationStore = new InMemoryRegistrationStore();
         if (securityStore == null)
             securityStore = new FileSecurityStore();
+        if (authorizer == null)
+            authorizer = new DefaultAuthorizer(securityStore);
         if (modelProvider == null)
             modelProvider = new StandardModelProvider();
         if (encoder == null)
@@ -151,7 +161,7 @@ public class LeshanServerBuilder {
         if (decoder == null)
             decoder = new DefaultLwM2mNodeDecoder();
 
-        return new LeshanServer(localAddress, localSecureAddress, registrationStore, securityStore, modelProvider,
-                encoder, decoder, publicKey, privateKey, certificateChain, trustedCertificates);
+        return new LeshanServer(localAddress, localSecureAddress, registrationStore, securityStore, authorizer,
+                modelProvider, encoder, decoder, publicKey, privateKey, certificateChain, trustedCertificates);
     }
 }
