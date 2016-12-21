@@ -74,11 +74,20 @@ public class WriteTest {
     public void can_write_string_resource_in_tlv() throws InterruptedException {
         write_string_resource(ContentFormat.TLV);
     }
+    
+    @Test
+    public void can_write_string_resource_in__old_tlv() throws InterruptedException {
+        write_string_resource(ContentFormat.fromCode(ContentFormat.OLD_TLV_CODE));
+    }
 
     @Test
-    // TODO fix json format
     public void can_write_string_resource_in_json() throws InterruptedException {
         write_string_resource(ContentFormat.JSON);
+    }
+
+    @Test
+    public void can_write_string_resource_in__old_json() throws InterruptedException {
+        write_string_resource(ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE));
     }
 
     private void write_string_resource(ContentFormat format) throws InterruptedException {
@@ -110,8 +119,18 @@ public class WriteTest {
     }
 
     @Test
+    public void can_write_boolean_resource_in_old_tlv() throws InterruptedException {
+        write_boolean_resource(ContentFormat.fromCode(ContentFormat.OLD_TLV_CODE));
+    }
+
+    @Test
     public void can_write_boolean_resource_in_json() throws InterruptedException {
         write_boolean_resource(ContentFormat.JSON);
+    }
+    
+    @Test
+    public void can_write_boolean_resource_in_old_json() throws InterruptedException {
+        write_boolean_resource(ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE));
     }
 
     private void write_boolean_resource(ContentFormat format) throws InterruptedException {
@@ -143,8 +162,18 @@ public class WriteTest {
     }
 
     @Test
+    public void can_write_integer_resource_in_old_tlv() throws InterruptedException {
+        write_integer_resource(ContentFormat.fromCode(ContentFormat.OLD_TLV_CODE));
+    }
+
+    @Test
     public void can_write_integer_resource_in_json() throws InterruptedException {
         write_integer_resource(ContentFormat.JSON);
+    }
+
+    @Test
+    public void can_write_integer_resource_in_old_json() throws InterruptedException {
+        write_integer_resource(ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE));
     }
 
     private void write_integer_resource(ContentFormat format) throws InterruptedException {
@@ -176,8 +205,18 @@ public class WriteTest {
     }
 
     @Test
+    public void can_write_float_resource_in_old_tlv() throws InterruptedException {
+        write_float_resource(ContentFormat.fromCode(ContentFormat.OLD_TLV_CODE));
+    }
+
+    @Test
     public void can_write_float_resource_in_json() throws InterruptedException {
         write_float_resource(ContentFormat.JSON);
+    }
+
+    @Test
+    public void can_write_float_resource_in_old_json() throws InterruptedException {
+        write_float_resource(ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE));
     }
 
     private void write_float_resource(ContentFormat format) throws InterruptedException {
@@ -209,8 +248,18 @@ public class WriteTest {
     }
 
     @Test
+    public void can_write_time_resource_in_old_tlv() throws InterruptedException {
+        write_time_resource(ContentFormat.fromCode(ContentFormat.OLD_TLV_CODE));
+    }
+
+    @Test
     public void can_write_time_resource_in_json() throws InterruptedException {
         write_time_resource(ContentFormat.JSON);
+    }
+
+    @Test
+    public void can_write_time_resource_in_old_json() throws InterruptedException {
+        write_time_resource(ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE));
     }
 
     private void write_time_resource(ContentFormat format) throws InterruptedException {
@@ -242,8 +291,18 @@ public class WriteTest {
     }
 
     @Test
+    public void can_write_opaque_resource_in_old_tlv() throws InterruptedException {
+        write_opaque_resource(ContentFormat.fromCode(ContentFormat.OLD_TLV_CODE));
+    }
+
+    @Test
     public void can_write_opaque_resource_in_json() throws InterruptedException {
         write_opaque_resource(ContentFormat.JSON);
+    }
+
+    @Test
+    public void can_write_opaque_resource_in_old_json() throws InterruptedException {
+        write_opaque_resource(ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE));
     }
 
     private void write_opaque_resource(ContentFormat format) throws InterruptedException {
@@ -289,12 +348,31 @@ public class WriteTest {
     }
 
     @Test
-    public void can_write_object_instance() throws InterruptedException {
+    public void can_write_object_instance_in_tlv() throws InterruptedException {
+        can_write_object_instance(ContentFormat.TLV);
+    }
+
+    @Test
+    public void can_write_object_instance_in_old_tlv() throws InterruptedException {
+        can_write_object_instance(ContentFormat.fromCode(ContentFormat.OLD_TLV_CODE));
+    }
+
+    @Test
+    public void can_write_object_instance_in_json() throws InterruptedException {
+        can_write_object_instance(ContentFormat.JSON);
+    }
+
+    @Test
+    public void can_write_object_instance_in_old_json() throws InterruptedException {
+        can_write_object_instance(ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE));
+    }
+
+    public void can_write_object_instance(ContentFormat format) throws InterruptedException {
         // write device timezone and offset
         LwM2mResource utcOffset = LwM2mSingleResource.newStringResource(14, "+02");
         LwM2mResource timeZone = LwM2mSingleResource.newStringResource(15, "Europe/Paris");
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(Mode.REPLACE, 3, 0, utcOffset, timeZone));
+                new WriteRequest(Mode.REPLACE, format, 3, 0, utcOffset, timeZone));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
@@ -384,26 +462,6 @@ public class WriteTest {
         assertNotNull(instance.getResource(3));
         assertNotNull(instance.getResource(6));
         assertNotNull(instance.getResource(7));
-    }
-
-    @Test
-    public void can_write_object_instance_in_json() throws InterruptedException {
-        // write device timezone and offset
-        LwM2mResource utcOffset = LwM2mSingleResource.newStringResource(14, "+02");
-        LwM2mResource timeZone = LwM2mSingleResource.newStringResource(15, "Europe/Paris");
-        WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(Mode.REPLACE, ContentFormat.JSON, 3, 0, utcOffset, timeZone));
-
-        // verify result
-        assertEquals(ResponseCode.CHANGED, response.getCode());
-        assertNotNull(response.getCoapResponse());
-        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
-
-        // read the timezone to check the value changed
-        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0));
-        LwM2mObjectInstance instance = (LwM2mObjectInstance) readResponse.getContent();
-        assertEquals(utcOffset, instance.getResource(14));
-        assertEquals(timeZone, instance.getResource(15));
     }
 
     @Test
