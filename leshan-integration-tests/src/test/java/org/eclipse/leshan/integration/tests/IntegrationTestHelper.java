@@ -46,8 +46,8 @@ import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.client.RegistrationListener;
 import org.eclipse.leshan.server.client.RegistrationUpdate;
+import org.eclipse.leshan.server.impl.InMemorySecurityStore;
 import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
-import org.eclipse.leshan.server.impl.FileSecurityStore;
 import org.eclipse.leshan.server.model.StaticModelProvider;
 
 /**
@@ -145,20 +145,7 @@ public class IntegrationTestHelper {
         builder.setObjectModelProvider(new StaticModelProvider(createObjectModels()));
         builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-        builder.setSecurityStore(new FileSecurityStore() {
-            // TODO we should separate SecurityRegistryImpl in 2 registries :
-            // InMemorySecurityRegistry and PersistentSecurityRegistry
-
-            @Override
-            protected void loadFromFile() {
-                // do not load From File
-            }
-
-            @Override
-            protected void saveToFile() {
-                // do not save to file
-            }
-        });
+        builder.setSecurityStore(new InMemorySecurityStore());
         server = builder.build();
         // monitor client registration
         resetLatch();

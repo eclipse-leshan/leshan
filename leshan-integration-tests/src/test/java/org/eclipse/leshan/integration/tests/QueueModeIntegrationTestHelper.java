@@ -46,7 +46,7 @@ import org.eclipse.leshan.server.californium.impl.InMemoryRegistrationStore;
 import org.eclipse.leshan.server.californium.impl.ObservationServiceImpl;
 import org.eclipse.leshan.server.californium.impl.RegisterResource;
 import org.eclipse.leshan.server.client.Registration;
-import org.eclipse.leshan.server.impl.FileSecurityStore;
+import org.eclipse.leshan.server.impl.InMemorySecurityStore;
 import org.eclipse.leshan.server.impl.LwM2mRequestSenderImpl;
 import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
@@ -85,17 +85,7 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
 
         InMemoryRegistrationStore registrationStore = new InMemoryRegistrationStore();
         RegistrationServiceImpl registrationService = new RegistrationServiceImpl(registrationStore);
-        EditableSecurityStore securityStore = new FileSecurityStore() {
-            @Override
-            protected void loadFromFile() {
-                // do not load From File
-            }
-
-            @Override
-            protected void saveToFile() {
-                // do not save to file
-            }
-        };
+        EditableSecurityStore securityStore = new InMemorySecurityStore();
 
         // coap server
         noSecureEndpoint = new CoapEndpoint(

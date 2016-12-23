@@ -51,7 +51,7 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
-import org.eclipse.leshan.server.impl.FileSecurityStore;
+import org.eclipse.leshan.server.impl.InMemorySecurityStore;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.util.Charsets;
 import org.eclipse.leshan.util.Hex;
@@ -240,19 +240,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         builder.setPublicKey(serverPublicKey);
         builder.setPrivateKey(serverPrivateKey);
-        builder.setSecurityStore(new FileSecurityStore() {
-            // TODO we should separate SecurityRegistryImpl in 2 registries :
-            // InMemorySecurityRegistry and PersistentSecurityRegistry
-            @Override
-            protected void loadFromFile() {
-                // do not load From File
-            }
-
-            @Override
-            protected void saveToFile() {
-                // do not save to file
-            }
-        });
+        builder.setSecurityStore(new InMemorySecurityStore());
 
         server = builder.build();
     }
@@ -264,20 +252,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         builder.setPrivateKey(serverPrivateKeyFromCert);
         builder.setCertificateChain(serverX509CertChain);
         builder.setTrustedCertificates(trustedCertificates);
-        builder.setSecurityStore(
-                new FileSecurityStore() {
-                    // TODO we should separate SecurityRegistryImpl in 2 registries :
-                    // InMemorySecurityRegistry and PersistentSecurityRegistry
-                    @Override
-                    protected void loadFromFile() {
-                        // do not load From File
-                    }
-
-                    @Override
-                    protected void saveToFile() {
-                        // do not save to file
-                    }
-                });
+        builder.setSecurityStore(new InMemorySecurityStore());
 
         server = builder.build();
     }
