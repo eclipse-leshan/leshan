@@ -20,12 +20,10 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.leshan.core.observation.Observation;
-import org.eclipse.leshan.server.Startable;
-import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.client.Registration;
-import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.server.client.RegistrationListener;
 import org.eclipse.leshan.server.client.RegistrationService;
+import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.server.registration.Deregistration;
 import org.eclipse.leshan.server.registration.ExpirationListener;
 import org.eclipse.leshan.server.registration.RegistrationStore;
@@ -36,7 +34,7 @@ import org.slf4j.LoggerFactory;
 /**
  * An implementation of {@link RegistrationService}
  */
-public class RegistrationServiceImpl implements RegistrationService, Startable, Stoppable, ExpirationListener {
+public class RegistrationServiceImpl implements RegistrationService, ExpirationListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(RegistrationServiceImpl.class);
 
@@ -122,24 +120,6 @@ public class RegistrationServiceImpl implements RegistrationService, Startable, 
     @Override
     public Registration getById(String id) {
         return store.getRegistration(id);
-    }
-
-    /**
-     * start the registration manager, will start regular cleanup of dead registrations.
-     */
-    @Override
-    public void start() {
-        if (store instanceof Startable)
-            ((Startable) store).start();
-    }
-
-    /**
-     * Stop the underlying cleanup of the registrations.
-     */
-    @Override
-    public void stop() {
-        if (store instanceof Stoppable)
-            ((Stoppable) store).stop();
     }
 
     @Override
