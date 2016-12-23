@@ -24,7 +24,7 @@ import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationService;
 import org.eclipse.leshan.server.response.ResponseListener;
-import org.eclipse.leshan.server.security.SecurityRegistry;
+import org.eclipse.leshan.server.security.SecurityStore;
 
 /**
  * An OMA Lightweight M2M device management server.
@@ -118,9 +118,9 @@ public interface LwM2mServer {
     ObservationService getObservationService();
 
     /**
-     * Get the SecurityRegistry containing of security information.
+     * Get the SecurityStore containing of security information.
      */
-    SecurityRegistry getSecurityRegistry();
+    SecurityStore getSecurityStore();
 
     /**
      * Get the provider in charge of retrieving the object definitions for each client.

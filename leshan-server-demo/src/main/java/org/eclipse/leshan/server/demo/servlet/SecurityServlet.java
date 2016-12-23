@@ -28,9 +28,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.leshan.server.demo.servlet.json.SecurityDeserializer;
 import org.eclipse.leshan.server.demo.servlet.json.SecuritySerializer;
+import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
-import org.eclipse.leshan.server.security.SecurityRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,13 +47,16 @@ public class SecurityServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
-    private final SecurityRegistry registry;
+    private final EditableSecurityStore store;
 
     private final Gson gsonSer;
     private final Gson gsonDes;
 
-    public SecurityServlet(SecurityRegistry registry) {
-        this.registry = registry;
+    private PublicKey serverPublicKey;
+
+    public SecurityServlet(EditableSecurityStore store, PublicKey serverPublicKey) {
+        this.store = store;
+        this.serverPublicKey = serverPublicKey;
 
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(SecurityInfo.class, new SecuritySerializer());
@@ -80,7 +83,7 @@ public class SecurityServlet extends HttpServlet {
             SecurityInfo info = gsonDes.fromJson(new InputStreamReader(req.getInputStream()), SecurityInfo.class);
             LOG.debug("New security info for end-point {}: {}", info.getEndpoint(), info);
 
-            registry.add(info);
+            store.add(info);
 
             resp.setStatus(HttpServletResponse.SC_OK);
 
@@ -111,7 +114,7 @@ public class SecurityServlet extends HttpServlet {
         }
 
         if ("clients".equals(path[0])) {
-            Collection<SecurityInfo> infos = this.registry.getAll();
+            Collection<SecurityInfo> infos = this.store.getAll();
 
             String json = this.gsonSer.toJson(infos);
             resp.setContentType("application/json");
@@ -121,8 +124,7 @@ public class SecurityServlet extends HttpServlet {
         }
 
         if ("server".equals(path[0])) {
-            PublicKey publicKey = this.registry.getServerPublicKey();
-            String json = this.gsonSer.toJson(SecurityInfo.newRawPublicKeyInfo("leshan", publicKey));
+            String json = this.gsonSer.toJson(SecurityInfo.newRawPublicKeyInfo("leshan", serverPublicKey));
             resp.setContentType("application/json");
             resp.getOutputStream().write(json.getBytes("UTF-8"));
             resp.setStatus(HttpServletResponse.SC_OK);
@@ -144,7 +146,7 @@ public class SecurityServlet extends HttpServlet {
         }
 
         LOG.debug("Removing security info for end-point {}", endpoint);
-        if (this.registry.remove(endpoint) != null) {
+        if (this.store.remove(endpoint) != null) {
             resp.sendError(HttpServletResponse.SC_OK);
         } else {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);

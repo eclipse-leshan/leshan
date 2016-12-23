@@ -47,14 +47,15 @@ import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.cluster.RedisRegistrationStore;
-import org.eclipse.leshan.server.cluster.RedisSecurityRegistry;
+import org.eclipse.leshan.server.cluster.RedisSecurityStore;
 import org.eclipse.leshan.server.demo.servlet.ClientServlet;
 import org.eclipse.leshan.server.demo.servlet.EventServlet;
 import org.eclipse.leshan.server.demo.servlet.ObjectSpecServlet;
 import org.eclipse.leshan.server.demo.servlet.SecurityServlet;
-import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
+import org.eclipse.leshan.server.impl.FileSecurityStore;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StandardModelProvider;
+import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.util.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -205,22 +206,28 @@ public class LeshanServerDemo {
             // Get keys
             publicKey = KeyFactory.getInstance("EC").generatePublic(publicKeySpec);
             privateKey = KeyFactory.getInstance("EC").generatePrivate(privateKeySpec);
-
-            LwM2mModelProvider modelProvider = new StandardModelProvider();
-            builder.setObjectModelProvider(modelProvider);
-
-            if (jedis == null) {
-                // in memory security registry (with file persistence)
-                builder.setSecurityRegistry(new SecurityRegistryImpl(privateKey, publicKey));
-            } else {
-                // use Redis
-                builder.setSecurityRegistry(new RedisSecurityRegistry(jedis, privateKey, publicKey));
-                builder.setRegistrationStore(new RedisRegistrationStore(jedis));
-            }
+            builder.setPublicKey(publicKey);
+            builder.setPrivateKey(privateKey);
         } catch (InvalidKeySpecException | NoSuchAlgorithmException | InvalidParameterSpecException e) {
             LOG.error("Unable to initialize RPK.", e);
             System.exit(-1);
         }
+
+        // Define model provider
+        LwM2mModelProvider modelProvider = new StandardModelProvider();
+        builder.setObjectModelProvider(modelProvider);
+
+        // Set securityStore & registrationStore
+        EditableSecurityStore securityStore;
+        if (jedis == null) {
+            // use file persistence
+            securityStore = new FileSecurityStore();
+        } else {
+            // use Redis Store
+            securityStore = new RedisSecurityStore(jedis);
+            builder.setRegistrationStore(new RedisRegistrationStore(jedis));
+        }
+        builder.setSecurityStore(securityStore);
 
         // Create and start LWM2M server
         LeshanServer lwServer = builder.build();
@@ -242,7 +249,8 @@ public class LeshanServerDemo {
                 new ClientServlet(lwServer, lwServer.getSecureAddress().getPort()));
         root.addServlet(clientServletHolder, "/api/clients/*");
 
-        ServletHolder securityServletHolder = new ServletHolder(new SecurityServlet(lwServer.getSecurityRegistry()));
+        ServletHolder securityServletHolder = new ServletHolder(
+                new SecurityServlet(securityStore, publicKey));
         root.addServlet(securityServletHolder, "/api/security/*");
 
         ServletHolder objectSpecServletHolder = new ServletHolder(new ObjectSpecServlet(lwServer.getModelProvider()));

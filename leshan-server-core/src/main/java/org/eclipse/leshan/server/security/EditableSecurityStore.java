@@ -15,13 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.security;
 
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.util.Collection;
 
-public interface SecurityRegistry extends SecurityStore {
+public interface EditableSecurityStore extends SecurityStore {
 
     /**
      * Returns the {@link SecurityInfo} for all end-points.
@@ -48,24 +44,4 @@ public interface SecurityRegistry extends SecurityStore {
      * @return the removed {@link SecurityInfo} or <code>null</code> if no info for the end-point.
      */
     SecurityInfo remove(String endpoint);
-
-    /**
-     * Returns the Server Public Key
-     */
-    PublicKey getServerPublicKey();
-
-    /**
-     * Returns the Server Private Key
-     */
-    PrivateKey getServerPrivateKey();
-
-    /**
-     * Returns the Server X509 Certificate Chain
-     */
-    X509Certificate[] getServerX509CertChain();
-
-    /**
-     * Returns the trusted certificates
-     */
-    Certificate[] getTrustedCertificates();
 }

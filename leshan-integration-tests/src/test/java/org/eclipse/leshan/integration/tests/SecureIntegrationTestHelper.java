@@ -51,7 +51,8 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
-import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
+import org.eclipse.leshan.server.impl.FileSecurityStore;
+import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.util.Charsets;
 import org.eclipse.leshan.util.Hex;
 
@@ -237,7 +238,9 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         LeshanServerBuilder builder = new LeshanServerBuilder();
         builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-        builder.setSecurityRegistry(new SecurityRegistryImpl(serverPrivateKey, serverPublicKey) {
+        builder.setPublicKey(serverPublicKey);
+        builder.setPrivateKey(serverPrivateKey);
+        builder.setSecurityStore(new FileSecurityStore() {
             // TODO we should separate SecurityRegistryImpl in 2 registries :
             // InMemorySecurityRegistry and PersistentSecurityRegistry
             @Override
@@ -258,9 +261,11 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         LeshanServerBuilder builder = new LeshanServerBuilder();
         builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-
-        builder.setSecurityRegistry(
-                new SecurityRegistryImpl(serverPrivateKeyFromCert, serverX509CertChain, trustedCertificates) {
+        builder.setPrivateKey(serverPrivateKeyFromCert);
+        builder.setCertificateChain(serverX509CertChain);
+        builder.setTrustedCertificates(trustedCertificates);
+        builder.setSecurityStore(
+                new FileSecurityStore() {
                     // TODO we should separate SecurityRegistryImpl in 2 registries :
                     // InMemorySecurityRegistry and PersistentSecurityRegistry
                     @Override
@@ -277,10 +282,18 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         server = builder.build();
     }
 
+    public PublicKey getServerPublicKey() {
+        return serverPublicKey;
+    }
+
+    public EditableSecurityStore getSecurityStore() {
+        return (EditableSecurityStore) server.getSecurityStore();
+    }
+
     @Override
     public void dispose() {
         super.dispose();
-        server.getSecurityRegistry().remove(getCurrentEndpoint());
-        server.getSecurityRegistry().remove(BAD_ENDPOINT);
+        getSecurityStore().remove(getCurrentEndpoint());
+        getSecurityStore().remove(BAD_ENDPOINT);
     }
 }

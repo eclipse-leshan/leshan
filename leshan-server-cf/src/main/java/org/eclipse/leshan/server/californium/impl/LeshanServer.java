@@ -58,7 +58,7 @@ import org.eclipse.leshan.server.registration.RegistrationHandler;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
 import org.eclipse.leshan.server.response.ResponseListener;
 import org.eclipse.leshan.server.security.SecurityInfo;
-import org.eclipse.leshan.server.security.SecurityRegistry;
+import org.eclipse.leshan.server.security.SecurityStore;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,7 +88,7 @@ public class LeshanServer implements LwM2mServer {
 
     private final ObservationServiceImpl observationService;
 
-    private final SecurityRegistry securityRegistry;
+    private final SecurityStore securityStore;
 
     private final LwM2mModelProvider modelProvider;
 
@@ -102,26 +102,32 @@ public class LeshanServer implements LwM2mServer {
      * @param localAddress the address to bind the CoAP server.
      * @param localSecureAddress the address to bind the CoAP server for DTLS connection.
      * @param registrationStore the {@link Registration} store.
-     * @param securityRegistry the {@link SecurityInfo} registry.
+     * @param securityStore the {@link SecurityInfo} store.
      * @param modelProvider provides the objects description for each client.
-     * @param decoder
-     * @param encoder
+     * @param decoder decoder used to decode response payload.
+     * @param encoder encode used to encode request payload.
+     * @param publicKey the server public key used for RPK DTLS authentication.
+     * @param privateKey the server private key used to RPK or X509 DTLS authentication.
+     * @param certificateChain the server X509 certificate (will be used for RPK too, in this case no need to set public
+     *        key).
+     * @param trustedCertificates the trusted certificates used to authenticate client certificates.
      */
     public LeshanServer(InetSocketAddress localAddress, InetSocketAddress localSecureAddress,
-            CaliforniumRegistrationStore registrationStore, SecurityRegistry securityRegistry,
+            CaliforniumRegistrationStore registrationStore, SecurityStore securityStore,
             LwM2mModelProvider modelProvider,
-            LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
+            LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder, PublicKey publicKey, PrivateKey privateKey,
+            X509Certificate[] x509CertChain, Certificate[] trustedCertificates) {
         Validate.notNull(localAddress, "IP address cannot be null");
         Validate.notNull(localSecureAddress, "Secure IP address cannot be null");
         Validate.notNull(registrationStore, "registration store cannot be null");
-        Validate.notNull(securityRegistry, "securityRegistry cannot be null");
+        Validate.notNull(securityStore, "securityStore cannot be null");
         Validate.notNull(modelProvider, "modelProvider cannot be null");
         Validate.notNull(encoder, "encoder cannot be null");
         Validate.notNull(decoder, "decoder cannot be null");
 
         // Init registries
         this.registrationService = new RegistrationServiceImpl(registrationStore);
-        this.securityRegistry = securityRegistry;
+        this.securityStore = securityStore;
         this.observationService = new ObservationServiceImpl(registrationStore, modelProvider, decoder);
         this.modelProvider = modelProvider;
 
@@ -158,21 +164,17 @@ public class LeshanServer implements LwM2mServer {
 
         // secure endpoint
         Builder builder = new DtlsConnectorConfig.Builder(localSecureAddress);
-        builder.setPskStore(new LwM2mPskStore(this.securityRegistry, this.registrationService.getStore()));
-        PrivateKey privateKey = this.securityRegistry.getServerPrivateKey();
-        PublicKey publicKey = this.securityRegistry.getServerPublicKey();
-        X509Certificate[] X509CertChain = this.securityRegistry.getServerX509CertChain();
+        builder.setPskStore(new LwM2mPskStore(this.securityStore, this.registrationService.getStore()));
 
         // if in raw key mode and not in X.509 set the raw keys
-        if (X509CertChain == null && privateKey != null && publicKey != null) {
+        if (x509CertChain == null && privateKey != null && publicKey != null) {
             builder.setIdentity(privateKey, publicKey);
         }
         // if in X.509 mode set the private key, certificate chain, public key is extracted from the certificate
-        if (privateKey != null && X509CertChain != null && X509CertChain.length > 0) {
-            builder.setIdentity(privateKey, X509CertChain, false);
+        if (privateKey != null && x509CertChain != null && x509CertChain.length > 0) {
+            builder.setIdentity(privateKey, x509CertChain, false);
         }
 
-        Certificate[] trustedCertificates = securityRegistry.getTrustedCertificates();
         if (trustedCertificates != null && trustedCertificates.length > 0) {
             builder.setTrustStore(trustedCertificates);
         }
@@ -185,7 +187,7 @@ public class LeshanServer implements LwM2mServer {
 
         // define /rd resource
         final RegisterResource rdResource = new RegisterResource(
-                new RegistrationHandler(this.registrationService, this.securityRegistry));
+                new RegistrationHandler(this.registrationService, this.securityStore));
         coapServer.add(rdResource);
 
         // create sender
@@ -203,8 +205,8 @@ public class LeshanServer implements LwM2mServer {
         if (registrationService instanceof Startable) {
             ((Startable) registrationService).start();
         }
-        if (securityRegistry instanceof Startable) {
-            ((Startable) securityRegistry).start();
+        if (securityStore instanceof Startable) {
+            ((Startable) securityStore).start();
         }
         if (observationService instanceof Startable) {
             ((Startable) observationService).start();
@@ -225,8 +227,8 @@ public class LeshanServer implements LwM2mServer {
         if (registrationService instanceof Stoppable) {
             ((Stoppable) registrationService).stop();
         }
-        if (securityRegistry instanceof Stoppable) {
-            ((Stoppable) securityRegistry).stop();
+        if (securityStore instanceof Stoppable) {
+            ((Stoppable) securityStore).stop();
         }
         if (observationService instanceof Stoppable) {
             ((Stoppable) observationService).stop();
@@ -243,8 +245,8 @@ public class LeshanServer implements LwM2mServer {
         if (registrationService instanceof Destroyable) {
             ((Destroyable) registrationService).destroy();
         }
-        if (securityRegistry instanceof Destroyable) {
-            ((Destroyable) securityRegistry).destroy();
+        if (securityStore instanceof Destroyable) {
+            ((Destroyable) securityStore).destroy();
         }
         if (observationService instanceof Destroyable) {
             ((Destroyable) observationService).destroy();
@@ -264,8 +266,8 @@ public class LeshanServer implements LwM2mServer {
     }
 
     @Override
-    public SecurityRegistry getSecurityRegistry() {
-        return this.securityRegistry;
+    public SecurityStore getSecurityStore() {
+        return this.securityStore;
     }
 
     @Override

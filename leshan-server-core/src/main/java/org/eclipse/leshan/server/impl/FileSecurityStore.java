@@ -21,10 +21,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,23 +29,24 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
-import org.eclipse.leshan.server.security.SecurityRegistry;
+import org.eclipse.leshan.server.security.SecurityStore;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * An in-memory security store.
+ * A {@link SecurityStore} which persists {@link SecurityInfo} in a file.
  * <p>
- * This implementation serializes the registry content into a file to be able to re-load the security infos when the
+ * This implementation serializes the store content into a file to be able to re-load the {@link SecurityInfo} when the
  * server is restarted.
  * </p>
  */
-public class SecurityRegistryImpl implements SecurityRegistry {
+public class FileSecurityStore implements EditableSecurityStore {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SecurityRegistryImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FileSecurityStore.class);
 
     // lock for the two maps
     private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
@@ -62,69 +59,21 @@ public class SecurityRegistryImpl implements SecurityRegistry {
     // by PSK identity
     private Map<String, SecurityInfo> securityByIdentity = new HashMap<>();
 
-    // the name of the file used to persist the registry content
+    // the name of the file used to persist the store content
     private final String filename;
-
-    private PublicKey serverPublicKey;
-
-    private PrivateKey serverPrivateKey;
-
-    private X509Certificate[] serverX509CertChain;
-
-    private Certificate[] trustedCertificates = null; // TODO retrieve certs from JRE trustStore ?
 
     // default location for persistence
     private static final String DEFAULT_FILE = "data/security.data";
 
-    public SecurityRegistryImpl() {
-        this(DEFAULT_FILE, null, null);
+    public FileSecurityStore() {
+        this(DEFAULT_FILE);
     }
 
-    /**
-     * Constructor for RPK
-     */
-    public SecurityRegistryImpl(PrivateKey serverPrivateKey, PublicKey serverPublicKey) {
-        this(DEFAULT_FILE, serverPrivateKey, serverPublicKey);
-    }
-
-    /**
-     * Constructor for X509 certificates
-     */
-    public SecurityRegistryImpl(PrivateKey serverPrivateKey, X509Certificate[] serverX509CertChain,
-            Certificate[] trustedCertificates) {
-        this(DEFAULT_FILE, serverPrivateKey, serverX509CertChain, trustedCertificates);
-    }
-
-    /**
-     * @param file the file path to persist the registry
-     */
-    public SecurityRegistryImpl(String file, PrivateKey serverPrivateKey, PublicKey serverPublicKey) {
+    public FileSecurityStore(String file) {
         Validate.notEmpty(file);
-
         filename = file;
-        this.serverPrivateKey = serverPrivateKey;
-        this.serverPublicKey = serverPublicKey;
         loadFromFile();
     }
-
-    /**
-     * @param file the file path to persist the registry
-     */
-    public SecurityRegistryImpl(String file, PrivateKey serverPrivateKey, X509Certificate[] serverX509CertChain,
-            Certificate[] trustedCertificates) {
-        Validate.notEmpty(file);
-        Validate.notEmpty(serverX509CertChain);
-        Validate.notEmpty(trustedCertificates);
-
-        filename = file;
-        this.serverPrivateKey = serverPrivateKey;
-        this.serverX509CertChain = serverX509CertChain;
-        // extract the raw public key from the first certificate in the chain
-        this.serverPublicKey = serverX509CertChain[0].getPublicKey();
-        this.trustedCertificates = trustedCertificates;
-        loadFromFile();
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -161,7 +110,7 @@ public class SecurityRegistryImpl implements SecurityRegistry {
         }
     }
 
-    private SecurityInfo addToRegistry(SecurityInfo info) throws NonUniqueSecurityInfoException {
+    private SecurityInfo addToStore(SecurityInfo info) throws NonUniqueSecurityInfoException {
         writeLock.lock();
         try {
             String identity = info.getIdentity();
@@ -186,7 +135,7 @@ public class SecurityRegistryImpl implements SecurityRegistry {
     public SecurityInfo add(SecurityInfo info) throws NonUniqueSecurityInfoException {
         writeLock.lock();
         try {
-            SecurityInfo previous = addToRegistry(info);
+            SecurityInfo previous = addToStore(info);
             saveToFile();
             return previous;
         } finally {
@@ -224,7 +173,7 @@ public class SecurityRegistryImpl implements SecurityRegistry {
 
             if (infos != null) {
                 for (SecurityInfo info : infos) {
-                    addToRegistry(info);
+                    addToStore(info);
                 }
                 if (infos.length > 0) {
                     LOG.debug("{} security infos loaded", infos.length);
@@ -251,25 +200,5 @@ public class SecurityRegistryImpl implements SecurityRegistry {
         } catch (IOException e) {
             LOG.error("Could not save security infos to file", e);
         }
-    }
-
-    @Override
-    public PublicKey getServerPublicKey() {
-        return serverPublicKey;
-    }
-
-    @Override
-    public PrivateKey getServerPrivateKey() {
-        return serverPrivateKey;
-    }
-
-    @Override
-    public X509Certificate[] getServerX509CertChain() {
-        return serverX509CertChain;
-    }
-
-    @Override
-    public Certificate[] getTrustedCertificates() {
-        return trustedCertificates;
     }
 }

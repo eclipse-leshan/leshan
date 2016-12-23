@@ -24,7 +24,7 @@ import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.server.client.RegistrationListener;
 import org.eclipse.leshan.server.cluster.RedisRegistrationStore;
-import org.eclipse.leshan.server.impl.SecurityRegistryImpl;
+import org.eclipse.leshan.server.impl.FileSecurityStore;
 import org.eclipse.leshan.server.model.StaticModelProvider;
 
 import redis.clients.jedis.Jedis;
@@ -41,7 +41,7 @@ public class RedisIntegrationTestHelper extends IntegrationTestHelper {
         builder.setDecoder(decoder);
         builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-        builder.setSecurityRegistry(new SecurityRegistryImpl() {
+        builder.setSecurityStore(new FileSecurityStore() {
             // TODO we should separate SecurityRegistryImpl in 2 registries :
             // InMemorySecurityRegistry and PersistentSecurityRegistry
 
