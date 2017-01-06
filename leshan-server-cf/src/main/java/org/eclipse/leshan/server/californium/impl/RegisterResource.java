@@ -15,16 +15,13 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
+import static org.eclipse.leshan.core.californium.ExchangeUtil.extractIdentity;
+import static org.eclipse.leshan.core.californium.ResponseCodeUtil.fromLwM2mCode;
+
 import java.net.InetSocketAddress;
-import java.security.Principal;
-import java.security.PublicKey;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.security.auth.x500.X500Principal;
 
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
@@ -34,8 +31,6 @@ import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
-import org.eclipse.californium.scandium.auth.PreSharedKeyIdentity;
-import org.eclipse.californium.scandium.auth.RawPublicKeyIdentity;
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.DeregisterRequest;
@@ -47,7 +42,6 @@ import org.eclipse.leshan.core.response.RegisterResponse;
 import org.eclipse.leshan.core.response.UpdateResponse;
 import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
-import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -239,62 +233,6 @@ public class RegisterResource extends CoapResource {
 
         // Create CoAP Response from LwM2m request
         exchange.respond(fromLwM2mCode(deregisterResponse.getCode()), deregisterResponse.getErrorMessage());
-    }
-
-    // TODO leshan-core-cf: this code should be factorized in a leshan-core-cf project.
-    private Identity extractIdentity(CoapExchange exchange) {
-        InetSocketAddress peerAddress = new InetSocketAddress(exchange.getSourceAddress(), exchange.getSourcePort());
-
-        Principal senderIdentity = exchange.advanced().getRequest().getSenderIdentity();
-        if (senderIdentity != null) {
-            if (senderIdentity instanceof PreSharedKeyIdentity) {
-                return Identity.psk(peerAddress, senderIdentity.getName());
-            } else if (senderIdentity instanceof RawPublicKeyIdentity) {
-                PublicKey publicKey = ((RawPublicKeyIdentity) senderIdentity).getKey();
-                return Identity.rpk(peerAddress, publicKey);
-            } else if (senderIdentity instanceof X500Principal) {
-                // Extract common name
-                Matcher endpointMatcher = Pattern.compile("CN=(.*?)(,|$)").matcher(senderIdentity.getName());
-                if (endpointMatcher.find()) {
-                    String x509CommonName = endpointMatcher.group(1);
-                    return Identity.x509(peerAddress, x509CommonName);
-                } else {
-                    return null;
-                }
-            }
-        }
-        return Identity.unsecure(peerAddress);
-    }
-
-    // TODO leshan-core-cf: this code should be factorized in a leshan-core-cf project.
-    // duplicated from org.eclipse.leshan.client.californium.impl.ObjectResource
-    public static ResponseCode fromLwM2mCode(final org.eclipse.leshan.ResponseCode code) {
-        Validate.notNull(code);
-
-        switch (code) {
-        case CREATED:
-            return ResponseCode.CREATED;
-        case DELETED:
-            return ResponseCode.DELETED;
-        case CHANGED:
-            return ResponseCode.CHANGED;
-        case CONTENT:
-            return ResponseCode.CONTENT;
-        case BAD_REQUEST:
-            return ResponseCode.BAD_REQUEST;
-        case UNAUTHORIZED:
-            return ResponseCode.UNAUTHORIZED;
-        case NOT_FOUND:
-            return ResponseCode.NOT_FOUND;
-        case METHOD_NOT_ALLOWED:
-            return ResponseCode.METHOD_NOT_ALLOWED;
-        case FORBIDDEN:
-            return ResponseCode.FORBIDDEN;
-        case INTERNAL_SERVER_ERROR:
-            return ResponseCode.INTERNAL_SERVER_ERROR;
-        default:
-            throw new IllegalArgumentException("Invalid CoAP code for LWM2M response: " + code);
-        }
     }
 
     // Since the V1_0-20150615-D version of specification, the registration update should be a CoAP POST.

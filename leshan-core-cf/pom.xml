@@ -1,6 +1,6 @@
-<!-- 
+<!--
 
-Copyright (c) 2013-2014 Sierra Wireless and others.
+Copyright (c) 2013-2016 Sierra Wireless and others.
 
 All rights reserved. This program and the accompanying materials
 are made available under the terms of the Eclipse Public License v1.0
@@ -13,30 +13,24 @@ and the Eclipse Distribution License is available at
 
 Contributors:
     Sierra Wireless - initial API and implementation
-    Zebra Technologies - initial API and implementation
-    Eurotech - initial API and implementation
- -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.eclipse.leshan</groupId>
         <artifactId>leshan</artifactId>
         <version>0.1.11-M15-SNAPSHOT</version>
     </parent>
-    <artifactId>leshan-client-cf</artifactId>
+    <artifactId>leshan-core-cf</artifactId>
     <packaging>bundle</packaging>
-    <name>leshan - client californium</name>
-    <description>A transport implementation for leshan client based on CoAP Californium</description>
+    <name>leshan - core californium</name>
+    <description>Shared classes between server and client which depends on CoAP Californium</description>
 
     <dependencies>
-         <dependency>
-            <groupId>org.eclipse.leshan</groupId>
-            <artifactId>leshan-core-cf</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.eclipse.leshan</groupId>
-            <artifactId>leshan-client-core</artifactId>
+            <artifactId>leshan-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.eclipse.californium</groupId>
@@ -45,23 +39,6 @@ Contributors:
         <dependency>
             <groupId>org.eclipse.californium</groupId>
             <artifactId>scandium</artifactId>
-        </dependency>
-
-        <!-- test dependencies -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 

@@ -13,16 +13,13 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.impl;
+package org.eclipse.leshan.core.californium;
 
 import org.eclipse.californium.core.coap.MessageObserverAdapter;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 
-// ////// Request Observer Class definition/////////////
-// TODO leshan-code-cf: All Request Observer should be factorize in a leshan-core-cf project.
-// duplicate from org.eclipse.leshan.server.californium.impl.CaliforniumLwM2mRequestSender
 public abstract class AbstractRequestObserver<T extends LwM2mResponse> extends MessageObserverAdapter {
     Request coapRequest;
 

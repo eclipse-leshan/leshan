@@ -15,13 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
-import java.net.InetSocketAddress;
-import java.security.Principal;
-import java.security.PublicKey;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.security.auth.x500.X500Principal;
+import static org.eclipse.leshan.core.californium.ResponseCodeUtil.fromLwM2mCode;
 
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
@@ -30,8 +24,7 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.server.resources.CoapExchange;
-import org.eclipse.californium.scandium.auth.PreSharedKeyIdentity;
-import org.eclipse.californium.scandium.auth.RawPublicKeyIdentity;
+import org.eclipse.leshan.core.californium.ExchangeUtil;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.BootstrapResponse;
@@ -61,32 +54,6 @@ public class BootstrapResource extends CoapResource {
         }
     }
 
-    // TODO leshan-core-cf: this code should be factorized in a leshan-core-cf project.
-    // TODO code is also in RegisterResource from leshan-server-cf
-    private static Identity extractIdentity(CoapExchange exchange) {
-        InetSocketAddress peerAddress = new InetSocketAddress(exchange.getSourceAddress(), exchange.getSourcePort());
-
-        Principal senderIdentity = exchange.advanced().getRequest().getSenderIdentity();
-        if (senderIdentity != null) {
-            if (senderIdentity instanceof PreSharedKeyIdentity) {
-                return Identity.psk(peerAddress, senderIdentity.getName());
-            } else if (senderIdentity instanceof RawPublicKeyIdentity) {
-                PublicKey publicKey = ((RawPublicKeyIdentity) senderIdentity).getKey();
-                return Identity.rpk(peerAddress, publicKey);
-            } else if (senderIdentity instanceof X500Principal) {
-                // Extract common name
-                Matcher endpointMatcher = Pattern.compile("CN=.*?,").matcher(senderIdentity.getName());
-                if (endpointMatcher.find()) {
-                    String x509CommonName = endpointMatcher.group().substring(3, endpointMatcher.group().length() - 1);
-                    return Identity.x509(peerAddress, x509CommonName);
-                } else {
-                    return null;
-                }
-            }
-        }
-        return Identity.unsecure(peerAddress);
-    }
-
     @Override
     public void handlePOST(final CoapExchange exchange) {
         Request request = exchange.advanced().getRequest();
@@ -109,14 +76,14 @@ public class BootstrapResource extends CoapResource {
         }
 
         // Extract client identity
-        Identity clientIdentity = extractIdentity(exchange);
+        Identity clientIdentity = ExchangeUtil.extractIdentity(exchange);
 
         // handle bootstrap request
         BootstrapResponse response = bootstrapHandler.bootstrap(clientIdentity, new BootstrapRequest(endpoint));
         if (response.isSuccess()) {
-            exchange.respond(RegisterResource.fromLwM2mCode(response.getCode()));
+            exchange.respond(fromLwM2mCode(response.getCode()));
         } else {
-            exchange.respond(RegisterResource.fromLwM2mCode(response.getCode()), response.getErrorMessage());
+            exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
         }
     }
 }

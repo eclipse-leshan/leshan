@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.impl;
+package org.eclipse.leshan.core.californium;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -27,18 +27,15 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-//////// Request Observer Class definition/////////////
-// TODO leshan-code-cf: All Request Observer should be factorize in a leshan-core-cf project.
-// duplicate from org.eclipse.leshan.client.californium.impl.CaliforniumLwM2mClientRequestSender
 public abstract class SyncRequestObserver<T extends LwM2mResponse> extends AbstractRequestObserver<T> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SyncRequestObserver.class);
 
-    CountDownLatch latch = new CountDownLatch(1);
-    AtomicReference<T> ref = new AtomicReference<T>(null);
-    AtomicBoolean coapTimeout = new AtomicBoolean(false);
-    AtomicReference<RuntimeException> exception = new AtomicReference<>();
-    Long timeout;
+    private CountDownLatch latch = new CountDownLatch(1);
+    private AtomicReference<T> ref = new AtomicReference<T>(null);
+    private AtomicBoolean coapTimeout = new AtomicBoolean(false);
+    private AtomicReference<RuntimeException> exception = new AtomicReference<>();
+    private Long timeout;
 
     public SyncRequestObserver(final Request coapRequest, final Long timeout) {
         super(coapRequest);

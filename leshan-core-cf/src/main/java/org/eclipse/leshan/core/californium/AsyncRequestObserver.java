@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.impl;
+package org.eclipse.leshan.core.californium;
 
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
@@ -25,16 +25,13 @@ import org.eclipse.leshan.core.response.ResponseCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-//////// Request Observer Class definition/////////////
-// TODO leshan-code-cf: All Request Observer should be factorize in a leshan-core-cf project.
-// duplicate from org.eclipse.leshan.client.californium.impl.CaliforniumLwM2mClientRequestSender
 public abstract class AsyncRequestObserver<T extends LwM2mResponse> extends AbstractRequestObserver<T> {
     private static final Logger LOG = LoggerFactory.getLogger(AsyncRequestObserver.class);
 
-    ResponseCallback<T> responseCallback;
-    ErrorCallback errorCallback;
+    private ResponseCallback<T> responseCallback;
+    private ErrorCallback errorCallback;
 
-    AsyncRequestObserver(final Request coapRequest, final ResponseCallback<T> responseCallback,
+    public AsyncRequestObserver(final Request coapRequest, final ResponseCallback<T> responseCallback,
             final ErrorCallback errorCallback) {
         super(coapRequest);
         this.responseCallback = responseCallback;

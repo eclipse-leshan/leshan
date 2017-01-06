@@ -16,6 +16,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.impl;
 
+import static org.eclipse.leshan.core.californium.ResponseCodeUtil.fromLwM2mCode;
+
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
@@ -24,7 +26,6 @@ import org.eclipse.leshan.client.servers.BootstrapHandler;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
 import org.eclipse.leshan.util.StringUtils;
-
 /**
  * A {@link CoapResource} resource in charge of handling Bootstrap Delete requests targeting the "/" URI.
  */
@@ -46,6 +47,6 @@ public class RootResource extends CoapResource {
 
         ServerIdentity identity = ResourceUtil.extractServerIdentity(exchange, bootstrapHandler);
         BootstrapDeleteResponse response = bootstrapHandler.delete(identity, new BootstrapDeleteRequest());
-        exchange.respond(ResourceUtil.fromLwM2mCode(response.getCode()), response.getErrorMessage());
+        exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
     }
 }
