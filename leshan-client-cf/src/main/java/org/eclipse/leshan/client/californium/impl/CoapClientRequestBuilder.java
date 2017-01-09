@@ -113,7 +113,7 @@ public class CoapClientRequestBuilder implements UplinkRequestVisitor {
     public void visit(final DeregisterRequest request) {
         coapRequest = Request.newDelete();
         buildRequestSettings();
-        coapRequest.getOptions().setUriPath(request.getRegistrationID());
+        coapRequest.getOptions().setUriPath(request.getRegistrationId());
     }
 
     public Request getRequest() {

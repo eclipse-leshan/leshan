@@ -23,20 +23,19 @@ import org.eclipse.leshan.util.Validate;
  */
 public class DeregisterRequest implements UplinkRequest<DeregisterResponse> {
 
-    private String registrationID = null;
+    private String registrationId = null;
 
     /**
      * Creates a request for removing the registration information from the LWM2M Server.
-     *
-     * @param registrationID the registration ID to remove
+     * @param registrationId the registration Id to remove
      */
-    public DeregisterRequest(String registrationID) {
-        Validate.notNull(registrationID);
-        this.registrationID = registrationID;
+    public DeregisterRequest(String registrationId) {
+        Validate.notNull(registrationId);
+        this.registrationId = registrationId;
     }
 
-    public String getRegistrationID() {
-        return registrationID;
+    public String getRegistrationId() {
+        return registrationId;
     }
 
     @Override

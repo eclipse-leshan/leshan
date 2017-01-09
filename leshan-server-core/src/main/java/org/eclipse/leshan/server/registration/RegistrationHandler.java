@@ -113,7 +113,7 @@ public class RegistrationHandler {
         }
 
         // We must check if the client is using the right identity.
-        Registration registration = registrationService.getById(deregisterRequest.getRegistrationID());
+        Registration registration = registrationService.getById(deregisterRequest.getRegistrationId());
         if (registration == null) {
             return DeregisterResponse.notFound();
         }
@@ -123,7 +123,7 @@ public class RegistrationHandler {
             return DeregisterResponse.badRequest("forbidden");
         }
 
-        Registration unregistered = registrationService.deregisterClient(deregisterRequest.getRegistrationID());
+        Registration unregistered = registrationService.deregisterClient(deregisterRequest.getRegistrationId());
         if (unregistered != null) {
             return DeregisterResponse.success();
         } else {
