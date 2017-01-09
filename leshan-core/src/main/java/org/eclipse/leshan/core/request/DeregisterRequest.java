@@ -15,8 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
+import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.DeregisterResponse;
-import org.eclipse.leshan.util.Validate;
 
 /**
  * A Lightweight M2M request for removing the registration information from the LWM2M Server.
@@ -27,10 +27,14 @@ public class DeregisterRequest implements UplinkRequest<DeregisterResponse> {
 
     /**
      * Creates a request for removing the registration information from the LWM2M Server.
+     * 
      * @param registrationId the registration Id to remove
+     * @exception InvalidRequestException if registrationId is empty.
      */
-    public DeregisterRequest(String registrationId) {
-        Validate.notNull(registrationId);
+    public DeregisterRequest(String registrationId) throws InvalidRequestException {
+        if (registrationId == null || registrationId.isEmpty()) {
+            throw new InvalidRequestException("registrationId is mandatory");
+        }
         this.registrationId = registrationId;
     }
 

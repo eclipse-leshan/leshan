@@ -16,8 +16,8 @@
 package org.eclipse.leshan.core.request;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.util.Validate;
 
 /**
  * A base class for concrete LWM2M Downlink request types.
@@ -29,12 +29,14 @@ public abstract class AbstractDownlinkRequest<T extends LwM2mResponse> implement
     private final LwM2mPath path;
 
     protected AbstractDownlinkRequest(LwM2mPath path) {
-        Validate.notNull(path);
+        if (path == null){
+            throw new InvalidRequestException("path is mandatory");
+        }
         if (path.isRoot()) {
-            throw new IllegalArgumentException("downlink request cannot target root path: " + path.toString());
+            throw new InvalidRequestException("downlink request cannot target root path: " + path.toString());
         }
         if (path.isResourceInstance()) {
-            throw new IllegalArgumentException(
+            throw new InvalidRequestException(
                     "downlink request cannot target resource instance path: " + path.toString());
         }
         this.path = path;
@@ -71,6 +73,14 @@ public abstract class AbstractDownlinkRequest<T extends LwM2mResponse> implement
         } else if (!path.equals(other.path))
             return false;
         return true;
+    }
+
+    protected static LwM2mPath newPath(String path) {
+        try {
+            return new LwM2mPath(path);
+        } catch (IllegalArgumentException e) {
+            throw new InvalidRequestException();
+        }
     }
 
 }

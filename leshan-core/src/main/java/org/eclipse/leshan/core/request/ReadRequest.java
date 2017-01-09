@@ -16,6 +16,7 @@
 package org.eclipse.leshan.core.request;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.ReadResponse;
 
 /**
@@ -95,10 +96,10 @@ public class ReadRequest extends AbstractDownlinkRequest<ReadResponse> {
      * Create a request for reading an object/instance/resource targeted by a specific path.
      * 
      * @param path the path to the LWM2M node to read
-     * @throws IllegalArgumentException if the target path is not valid
+     * @exception InvalidRequestException if the target path is not valid.
      */
-    public ReadRequest(String path) {
-        this(null, new LwM2mPath(path));
+    public ReadRequest(String path) throws InvalidRequestException {
+        this(null, newPath(path));
     }
 
     /**
@@ -106,10 +107,10 @@ public class ReadRequest extends AbstractDownlinkRequest<ReadResponse> {
      *
      * @param format the desired format for the response
      * @param path the path to the LWM2M node to read
-     * @throws IllegalArgumentException if the target path is not valid
+     * @exception InvalidRequestException if the target path is not valid.
      */
-    public ReadRequest(ContentFormat format, String path) {
-        this(format, new LwM2mPath(path));
+    public ReadRequest(ContentFormat format, String path) throws InvalidRequestException {
+        this(format, newPath(path));
     }
 
     private ReadRequest(ContentFormat format, LwM2mPath target) {

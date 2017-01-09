@@ -16,6 +16,7 @@
 package org.eclipse.leshan.core.request;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.DiscoverResponse;
 
 /**
@@ -58,10 +59,10 @@ public class DiscoverRequest extends AbstractDownlinkRequest<DiscoverResponse> {
      * path.
      *
      * @param path the path of the LWM2M node to discover
-     * @throw IllegalArgumentException if the path is not valid
+     * @exception InvalidRequestException if the path is not valid.
      */
-    public DiscoverRequest(String path) {
-        super(new LwM2mPath(path));
+    public DiscoverRequest(String path) throws InvalidRequestException {
+        super(newPath(path));
     }
 
     private DiscoverRequest(LwM2mPath target) {

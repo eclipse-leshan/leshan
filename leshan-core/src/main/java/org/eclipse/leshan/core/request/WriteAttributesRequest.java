@@ -17,32 +17,35 @@ package org.eclipse.leshan.core.request;
 
 import org.eclipse.leshan.ObserveSpec;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.WriteAttributesResponse;
-import org.eclipse.leshan.util.Validate;
 
 public class WriteAttributesRequest extends AbstractDownlinkRequest<WriteAttributesResponse> {
 
     private final ObserveSpec observeSpec;
 
-    public WriteAttributesRequest(int objectId, ObserveSpec observeSpec) {
+    public WriteAttributesRequest(int objectId, ObserveSpec observeSpec) throws InvalidRequestException {
         this(new LwM2mPath(objectId), observeSpec);
     }
 
-    public WriteAttributesRequest(int objectId, int objectInstanceId, ObserveSpec observeSpec) {
+    public WriteAttributesRequest(int objectId, int objectInstanceId, ObserveSpec observeSpec)
+            throws InvalidRequestException {
         this(new LwM2mPath(objectId, objectInstanceId), observeSpec);
     }
 
-    public WriteAttributesRequest(int objectId, int objectInstanceId, int resourceId, ObserveSpec observeSpec) {
+    public WriteAttributesRequest(int objectId, int objectInstanceId, int resourceId, ObserveSpec observeSpec)
+            throws InvalidRequestException {
         this(new LwM2mPath(objectId, objectInstanceId, resourceId), observeSpec);
     }
 
-    public WriteAttributesRequest(String path, ObserveSpec observeSpec) {
-        this(new LwM2mPath(path), observeSpec);
+    public WriteAttributesRequest(String path, ObserveSpec observeSpec) throws InvalidRequestException {
+        this(newPath(path), observeSpec);
     }
 
-    private WriteAttributesRequest(LwM2mPath path, ObserveSpec observeSpec) {
+    private WriteAttributesRequest(LwM2mPath path, ObserveSpec observeSpec) throws InvalidRequestException {
         super(path);
-        Validate.notNull(observeSpec);
+        if (observeSpec == null)
+            throw new InvalidRequestException("attributes are mandatory");
         this.observeSpec = observeSpec;
     }
 

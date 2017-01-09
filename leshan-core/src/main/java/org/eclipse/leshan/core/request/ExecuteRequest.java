@@ -16,8 +16,8 @@
 package org.eclipse.leshan.core.request;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.ExecuteResponse;
-import org.eclipse.leshan.util.Validate;
 
 /**
  * A Lightweight M2M request for initiate some action, it can only be performed on individual Resources.
@@ -30,10 +30,10 @@ public class ExecuteRequest extends AbstractDownlinkRequest<ExecuteResponse> {
      * Creates a new <em>execute</em> request for a resource that does not require any parameters.
      *
      * @param path the path of the resource to execute
-     * @throw IllegalArgumentException if the path is not valid
+     * @exception InvalidRequestException if the path is not valid.
      */
-    public ExecuteRequest(String path) {
-        this(new LwM2mPath(path), null);
+    public ExecuteRequest(String path) throws InvalidRequestException {
+        this(newPath(path), null);
     }
 
     /**
@@ -41,10 +41,10 @@ public class ExecuteRequest extends AbstractDownlinkRequest<ExecuteResponse> {
      *
      * @param path the path of the resource to execute
      * @param parameters the parameters
-     * @throw IllegalArgumentException if the path is not valid
+     * @exception InvalidRequestException if the path is not valid.
      */
-    public ExecuteRequest(String path, String parameters) {
-        this(new LwM2mPath(path), parameters);
+    public ExecuteRequest(String path, String parameters) throws InvalidRequestException {
+        this(newPath(path), parameters);
     }
 
     /**
@@ -72,7 +72,8 @@ public class ExecuteRequest extends AbstractDownlinkRequest<ExecuteResponse> {
 
     private ExecuteRequest(LwM2mPath path, String parameters) {
         super(path);
-        Validate.isTrue(path.isResource(), "Only resource can be executed.");
+        if (!path.isResource())
+            throw new InvalidRequestException("Only resource can be executed.");
         this.parameters = parameters;
     }
 

@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.ObserveResponse;
 
 /**
@@ -100,10 +101,10 @@ public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
      * Creates a request for observing future changes of a particular LWM2M node (object, object instance or resource).
      * 
      * @param path the path to the LWM2M node to observe
-     * @throw IllegalArgumentException if the path is not valid
+     * @exception InvalidRequestException if the path is not valid.
      */
-    public ObserveRequest(String path) {
-        this(null, new LwM2mPath(path), null);
+    public ObserveRequest(String path) throws InvalidRequestException {
+        this(null, newPath(path), null);
     }
 
     /**
@@ -111,10 +112,10 @@ public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
      * 
      * @param format the desired format for the response
      * @param path the path to the LWM2M node to observe
-     * @throw IllegalArgumentException if the path is not valid
+     * @exception InvalidRequestException if the path is not valid.
      */
-    public ObserveRequest(ContentFormat format, String path) {
-        this(format, new LwM2mPath(path), null);
+    public ObserveRequest(ContentFormat format, String path) throws InvalidRequestException {
+        this(format, newPath(path), null);
     }
 
     /**
@@ -124,10 +125,11 @@ public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
      * @param path the path to the LWM2M node to observe
      * @param context additional information about the request. This context will be available via the
      *        {@link Observation} once established.
-     * @throw IllegalArgumentException if the path is not valid
+     * @exception InvalidRequestException if the path is not valid.
      */
-    public ObserveRequest(ContentFormat format, String path, Map<String, String> context) {
-        this(format, new LwM2mPath(path), context);
+    public ObserveRequest(ContentFormat format, String path, Map<String, String> context)
+            throws InvalidRequestException {
+        this(format, newPath(path), context);
     }
 
     private ObserveRequest(ContentFormat format, LwM2mPath target, Map<String, String> context) {

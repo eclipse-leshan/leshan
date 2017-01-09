@@ -23,8 +23,8 @@ import java.util.List;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.CreateResponse;
-import org.eclipse.leshan.util.Validate;
 
 /**
  * A Lightweight M2M request for creating Object Instance(s) within the LWM2M Client.
@@ -44,8 +44,10 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
      * @param contentFormat the payload format
      * @param objectId the object id
      * @param resources the resource values for the new instance
+     * @exception InvalidRequestException if bad @{link ContentFormat} format was used.
      */
-    public CreateRequest(ContentFormat contentFormat, int objectId, LwM2mResource... resources) {
+    public CreateRequest(ContentFormat contentFormat, int objectId, LwM2mResource... resources)
+            throws InvalidRequestException {
         this(contentFormat, new LwM2mPath(objectId), null, resources);
     }
 
@@ -67,8 +69,10 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
      * @param contentFormat the payload format
      * @param objectId the object id
      * @param resources the resource values for the new instance
+     * @exception InvalidRequestException if bad @{link ContentFormat} format was used.
      */
-    public CreateRequest(ContentFormat contentFormat, int objectId, Collection<LwM2mResource> resources) {
+    public CreateRequest(ContentFormat contentFormat, int objectId, Collection<LwM2mResource> resources)
+            throws InvalidRequestException {
         this(contentFormat, objectId, resources.toArray(new LwM2mResource[resources.size()]));
     }
 
@@ -91,8 +95,10 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
      * @param contentFormat the payload format
      * @param objectId the object id
      * @param instance the object instance
+     * @exception InvalidRequestException if bad @{link ContentFormat} format was used.
      */
-    public CreateRequest(ContentFormat contentFormat, int objectId, LwM2mObjectInstance instance) {
+    public CreateRequest(ContentFormat contentFormat, int objectId, LwM2mObjectInstance instance)
+            throws InvalidRequestException {
         this(contentFormat, new LwM2mPath(objectId), instance.getId(),
                 instance.getResources().values().toArray(new LwM2mResource[0]));
     }
@@ -115,8 +121,9 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
      * 
      * @param path the target path (object or object instance)
      * @param resources the resource values for the new instance
+     * @exception InvalidRequestException if the target path is not valid.
      */
-    public CreateRequest(String path, Collection<LwM2mResource> resources) {
+    public CreateRequest(String path, Collection<LwM2mResource> resources) throws InvalidRequestException {
         this(path, resources.toArray(new LwM2mResource[resources.size()]));
     }
 
@@ -128,8 +135,10 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
      * @param contentFormat the payload format (TLV or JSON)
      * @param path the target path (object or object instance)
      * @param resources the resource values for the new instance
+     * @exception InvalidRequestException if parameters are invalid.
      */
-    public CreateRequest(ContentFormat contentFormat, String path, Collection<LwM2mResource> resources) {
+    public CreateRequest(ContentFormat contentFormat, String path, Collection<LwM2mResource> resources)
+            throws InvalidRequestException {
         this(contentFormat, path, resources.toArray(new LwM2mResource[resources.size()]));
     }
 
@@ -140,9 +149,10 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
      * 
      * @param path the target path (object or object instance)
      * @param resources the resource values for the new instance
+     * @exception InvalidRequestException if the target path is not valid.
      */
-    public CreateRequest(String path, LwM2mResource... resources) {
-        this(null, new LwM2mPath(path), null, resources);
+    public CreateRequest(String path, LwM2mResource... resources) throws InvalidRequestException {
+        this(null, newPath(path), null, resources);
     }
 
     /**
@@ -153,9 +163,11 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
      * @param contentFormat the payload format (TLV or JSON)
      * @param path the target path (object or object instance)
      * @param resources the resource values for the new instance
+     * @exception InvalidRequestException if parameters are invalid.
      */
-    public CreateRequest(ContentFormat contentFormat, String path, LwM2mResource... resources) {
-        this(contentFormat, new LwM2mPath(path), null, resources);
+    public CreateRequest(ContentFormat contentFormat, String path, LwM2mResource... resources)
+            throws InvalidRequestException {
+        this(contentFormat, newPath(path), null, resources);
     }
 
     /**
@@ -165,9 +177,10 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
      * 
      * @param path the target path (object or object instance)
      * @param instance the object instance
+     * @exception InvalidRequestException if the target path is not valid.
      */
-    public CreateRequest(String path, LwM2mObjectInstance instance) {
-        this(null, new LwM2mPath(path), instance.getId(),
+    public CreateRequest(String path, LwM2mObjectInstance instance) throws InvalidRequestException {
+        this(null, newPath(path), instance.getId(),
                 instance.getResources().values().toArray((new LwM2mResource[instance.getResources().size()])));
     }
 
@@ -179,9 +192,11 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
      * @param contentFormat the payload format (TLV or JSON)
      * @param path the target path (object or object instance)
      * @param instance the object instance
+     * @exception InvalidRequestException if parameters are invalid.
      */
-    public CreateRequest(ContentFormat contentFormat, String path, LwM2mObjectInstance instance) {
-        this(contentFormat, new LwM2mPath(path), instance.getId(),
+    public CreateRequest(ContentFormat contentFormat, String path, LwM2mObjectInstance instance)
+            throws InvalidRequestException {
+        this(contentFormat, newPath(path), instance.getId(),
                 instance.getResources().values().toArray((new LwM2mResource[instance.getResources().size()])));
     }
 
@@ -191,7 +206,7 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
 
         // accept only object and object instance path
         if (!target.isObject() && !target.isObjectInstance()) {
-            throw new IllegalArgumentException("Create request must target an object or object instance");
+            throw new InvalidRequestException("Create request must target an object or object instance");
         }
 
         // validate instance id
@@ -203,11 +218,12 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
                 instanceId = target.getObjectInstanceId();
             } else {
                 if (instanceId != target.getObjectInstanceId()) {
-                    throw new IllegalArgumentException("Conflict between path instance id and node instance id");
+                    throw new InvalidRequestException("Conflict between path instance id and node instance id");
                 }
             }
         }
-        Validate.isTrue(instanceId == null || instanceId >= 0, "Invalid instance id: " + instanceId);
+        if (instanceId != null && instanceId < 0)
+            throw new InvalidRequestException("Invalid instance id: " + instanceId);
 
         // store attributes
         this.instanceId = instanceId;

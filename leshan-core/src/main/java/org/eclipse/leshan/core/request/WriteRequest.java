@@ -27,8 +27,8 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
+import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.WriteResponse;
-import org.eclipse.leshan.util.Validate;
 
 /**
  * The request to change the value of a Resource, an array of Resources Instances or multiple Resources from an Object
@@ -66,9 +66,10 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
      * @param objectId the id of the object to write.
      * @param objectInstanceId the id of the object instance to write.
      * @param resources the list of resources to write.
+     * @exception InvalidRequestException if bad @{link ContentFormat} format was used.
      */
     public WriteRequest(Mode mode, ContentFormat contentFormat, int objectId, int objectInstanceId,
-            Collection<LwM2mResource> resources) {
+            Collection<LwM2mResource> resources) throws InvalidRequestException {
         this(mode, contentFormat, new LwM2mPath(objectId, objectInstanceId),
                 new LwM2mObjectInstance(objectId, resources));
     }
@@ -94,9 +95,10 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
      * @param objectId the id of the object to write.
      * @param objectInstanceId the id of the object instance to write.
      * @param resources the list of resources to write.
+     * @exception InvalidRequestException if bad @{link ContentFormat} format was used.
      */
     public WriteRequest(Mode mode, ContentFormat contentFormat, int objectId, int objectInstanceId,
-            LwM2mResource... resources) {
+            LwM2mResource... resources) throws InvalidRequestException {
         this(mode, contentFormat, new LwM2mPath(objectId, objectInstanceId),
                 new LwM2mObjectInstance(objectId, resources));
     }
@@ -124,8 +126,11 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
 
     /**
      * Request to write a <b>String Single-Instance Resource</b> using the given content format (TEXT, TLV, JSON).
+     * 
+     * @exception InvalidRequestException if bad @{link ContentFormat} format was used.
      */
-    public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId, String value) {
+    public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId, String value)
+            throws InvalidRequestException {
         this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId),
                 LwM2mSingleResource.newStringResource(resourceId, value));
     }
@@ -139,9 +144,11 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
 
     /**
      * Request to write a <b>Boolean Single-Instance Resource</b> using the given content format (TEXT, TLV, JSON).
+     * 
+     * @exception InvalidRequestException if bad @{link ContentFormat} format was used.
      */
-    public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId,
-            boolean value) {
+    public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId, boolean value)
+            throws InvalidRequestException {
         this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId),
                 LwM2mSingleResource.newBooleanResource(resourceId, value));
     }
@@ -155,8 +162,11 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
 
     /**
      * Request to write a <b>Integer Single-Instance Resource</b> using the given content format (TEXT, TLV, JSON).
+     * 
+     * @exception InvalidRequestException if bad @{link ContentFormat} format was used.
      */
-    public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId, long value) {
+    public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId, long value)
+            throws InvalidRequestException {
         this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId),
                 LwM2mSingleResource.newIntegerResource(resourceId, value));
     }
@@ -170,8 +180,11 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
 
     /**
      * Request to write a <b> Float Single-Instance Resource</b> using the given content format (TEXT, TLV, JSON).
+     * 
+     * @exception InvalidRequestException if bad @{link ContentFormat} format was used.
      */
-    public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId, double value) {
+    public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId, double value)
+            throws InvalidRequestException {
         this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId),
                 LwM2mSingleResource.newFloatResource(resourceId, value));
     }
@@ -185,8 +198,11 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
 
     /**
      * Request to write a <b> Date Single-Instance Resource</b> using the given content format (TEXT, TLV, JSON).
+     * 
+     * @exception InvalidRequestException if bad @{link ContentFormat} format was used.
      */
-    public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId, Date value) {
+    public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId, Date value)
+            throws InvalidRequestException {
         this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId),
                 LwM2mSingleResource.newDateResource(resourceId, value));
     }
@@ -200,8 +216,11 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
 
     /**
      * Request to write a <b> Binary Single-Instance Resource</b> using the given content format (OPAQUE, TLV, JSON).
+     * 
+     * @exception InvalidRequestException if bad @{link ContentFormat} format was used.
      */
-    public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId, byte[] value) {
+    public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId, byte[] value)
+            throws InvalidRequestException {
         this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId),
                 LwM2mSingleResource.newBinaryResource(resourceId, value));
     }
@@ -214,11 +233,12 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
     }
 
     /**
-     * Request to write a <b> Objlnk Single-Instance Resource</b> using the given content format (OPAQUE, TLV, JSON,
-     * TEXT).
+     * Request to write a <b> Objlnk Single-Instance Resource</b> using the given content format (TLV, JSON, TEXT).
+     * 
+     * @exception InvalidRequestException if bad @{link ContentFormat} format was used.
      */
     public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId,
-            ObjectLink value) {
+            ObjectLink value) throws InvalidRequestException {
         this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId),
                 LwM2mSingleResource.newObjectLinkResource(resourceId, value));
     }
@@ -233,9 +253,11 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
      * @param resourceId the id of the resource to write.
      * @param values the list of resource instance (id->value) to write.
      * @param type the data type of the resource.
+     * @exception InvalidRequestException if bad @{link ContentFormat} format was used.
+     * 
      */
     public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId,
-            Map<Integer, ?> values, Type type) {
+            Map<Integer, ?> values, Type type) throws InvalidRequestException {
         this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId),
                 LwM2mMultipleResource.newResource(resourceId, values, type));
     }
@@ -248,8 +270,10 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
      * @param resourceId the id of the resource to write.
      * @param values the list of resource instance (id->value) to write.
      * @param type the data type of the resource.
+     * @exception InvalidRequestException if parameters are invalid.
      */
-    public WriteRequest(int objectId, int objectInstanceId, int resourceId, Map<Integer, ?> values, Type type) {
+    public WriteRequest(int objectId, int objectInstanceId, int resourceId, Map<Integer, ?> values, Type type)
+            throws InvalidRequestException {
         this(Mode.REPLACE, ContentFormat.TLV, new LwM2mPath(objectId, objectInstanceId, resourceId),
                 LwM2mMultipleResource.newResource(resourceId, values, type));
     }
@@ -262,53 +286,56 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
      * @param contentFormat Format of the payload (TLV,JSON,TEXT,OPAQUE ..).
      * @param path the path of the LWM2M node to write (object instance or resource).
      * @param node the {@link LwM2mNode} to write.
+     * @exception InvalidRequestException if parameters are invalid.
      */
-    public WriteRequest(Mode mode, ContentFormat contentFormat, String path, LwM2mNode node) {
-        this(mode, contentFormat, new LwM2mPath(path), node);
+    public WriteRequest(Mode mode, ContentFormat contentFormat, String path, LwM2mNode node) throws InvalidRequestException {
+        this(mode, contentFormat, newPath(path), node);
     }
 
     private WriteRequest(Mode mode, ContentFormat format, LwM2mPath target, LwM2mNode node) {
         super(target);
-        Validate.notNull(mode);
-        Validate.notNull(node);
+        if (mode == null)
+            throw new InvalidRequestException("mode is mandatory");
+        if (node == null)
+            throw new InvalidRequestException("new node value is mandatory");
 
         // Validate Mode
         if (getPath().isResource() && mode == Mode.UPDATE) {
-            throw new IllegalArgumentException(
+            throw new InvalidRequestException(
                     String.format("Invalid mode for '%s': update is not allowed on resource", target.toString()));
         }
 
         // Validate node and path coherence
         if (getPath().isResource()) {
             if (!(node instanceof LwM2mResource)) {
-                throw new IllegalArgumentException(String.format("path '%s' and node type '%s' does not match",
+                throw new InvalidRequestException(String.format("path '%s' and node type '%s' does not match",
                         target.toString(), node.getClass().getSimpleName()));
             }
         } else if (getPath().isObjectInstance()) {
             if (!(node instanceof LwM2mObjectInstance)) {
-                throw new IllegalArgumentException(String.format("path '%s' and node type '%s' does not match",
+                throw new InvalidRequestException(String.format("path '%s' and node type '%s' does not match",
                         target.toString(), node.getClass().getSimpleName()));
             }
         } else if (getPath().isObject()) {
-            throw new IllegalArgumentException("write request cannot target an object: " + target.toString());
+            throw new InvalidRequestException("write request cannot target an object: " + target.toString());
         }
 
         // Validate content format
         if (ContentFormat.TEXT == format || ContentFormat.OPAQUE == format) {
             if (!getPath().isResource()) {
-                throw new IllegalArgumentException(
+                throw new InvalidRequestException(
                         String.format("%s format must be used only for single resources", format.toString()));
             } else {
                 LwM2mResource resource = (LwM2mResource) node;
                 if (resource.isMultiInstances()) {
-                    throw new IllegalArgumentException(
+                    throw new InvalidRequestException(
                             String.format("%s format must be used only for single resources", format.toString()));
                 } else {
                     if (resource.getType() == Type.OPAQUE && format == ContentFormat.TEXT) {
-                        throw new IllegalArgumentException(
+                        throw new InvalidRequestException(
                                 "TEXT format must not be used for byte array single resources");
                     } else if (resource.getType() != Type.OPAQUE && format == ContentFormat.OPAQUE) {
-                        throw new IllegalArgumentException(
+                        throw new InvalidRequestException(
                                 "OPAQUE format must be used only for byte array single resources");
                     }
                 }
