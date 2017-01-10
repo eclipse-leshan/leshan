@@ -118,6 +118,22 @@ Contributors:
         </repository>
     </distributionManagement>
 
+    <repositories>
+        <!-- 
+          This repository is only needed until Californium 2.0.0-M3 has been released.
+          The API changes to Californium's Endpoint interface that this branch depends
+          on are available in Californium > 2.0.0-M2 only. We therefore define and use
+          the Eclipse SNAPSHOTS repo here where the Californium nightlies are deployed
+          to.
+         -->
+        <repository>
+            <id>eclipse_snaps</id>
+            <url>https://repo.eclipse.org/content/groups/snapshots/</url>
+            <releases><enabled>false</enabled></releases>
+            <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+    </repositories>
+
     <profiles>
         <profile>
             <!-- This profile build the all in one jar -->
