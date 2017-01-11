@@ -28,7 +28,7 @@ public abstract class AbstractDownlinkRequest<T extends LwM2mResponse> implement
 
     private final LwM2mPath path;
 
-    protected AbstractDownlinkRequest(final LwM2mPath path) {
+    protected AbstractDownlinkRequest(LwM2mPath path) {
         Validate.notNull(path);
         if (path.isRoot()) {
             throw new IllegalArgumentException("downlink request cannot target root path: " + path.toString());

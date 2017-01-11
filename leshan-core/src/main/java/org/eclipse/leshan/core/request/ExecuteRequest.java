@@ -32,7 +32,7 @@ public class ExecuteRequest extends AbstractDownlinkRequest<ExecuteResponse> {
      * @param path the path of the resource to execute
      * @throw IllegalArgumentException if the path is not valid
      */
-    public ExecuteRequest(final String path) {
+    public ExecuteRequest(String path) {
         this(new LwM2mPath(path), null);
     }
 
@@ -43,7 +43,7 @@ public class ExecuteRequest extends AbstractDownlinkRequest<ExecuteResponse> {
      * @param parameters the parameters
      * @throw IllegalArgumentException if the path is not valid
      */
-    public ExecuteRequest(final String path, final String parameters) {
+    public ExecuteRequest(String path, String parameters) {
         this(new LwM2mPath(path), parameters);
     }
 
@@ -54,7 +54,7 @@ public class ExecuteRequest extends AbstractDownlinkRequest<ExecuteResponse> {
      * @param objectInstanceId the resource's object instance ID
      * @param resourceId the resource's ID
      */
-    public ExecuteRequest(final int objectId, final int objectInstanceId, final int resourceId) {
+    public ExecuteRequest(int objectId, int objectInstanceId, int resourceId) {
         this(new LwM2mPath(objectId, objectInstanceId, resourceId), null);
     }
 
@@ -66,12 +66,11 @@ public class ExecuteRequest extends AbstractDownlinkRequest<ExecuteResponse> {
      * @param resourceId the resource's ID
      * @param parameters the parameters
      */
-    public ExecuteRequest(final int objectId, final int objectInstanceId, final int resourceId,
-            final String parameters) {
+    public ExecuteRequest(int objectId, int objectInstanceId, int resourceId, String parameters) {
         this(new LwM2mPath(objectId, objectInstanceId, resourceId), parameters);
     }
 
-    private ExecuteRequest(final LwM2mPath path, final String parameters) {
+    private ExecuteRequest(LwM2mPath path, String parameters) {
         super(path);
         Validate.isTrue(path.isResource(), "Only resource can be executed.");
         this.parameters = parameters;
@@ -83,7 +82,7 @@ public class ExecuteRequest extends AbstractDownlinkRequest<ExecuteResponse> {
     }
 
     @Override
-    public void accept(final DownlinkRequestVisitor visitor) {
+    public void accept(DownlinkRequestVisitor visitor) {
         visitor.visit(this);
     }
 

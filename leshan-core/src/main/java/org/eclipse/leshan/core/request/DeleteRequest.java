@@ -30,7 +30,7 @@ public class DeleteRequest extends AbstractDownlinkRequest<DeleteResponse> {
      * @param objectId the object type
      * @param objectInstanceId the object instance
      */
-    public DeleteRequest(final int objectId, final int objectInstanceId) {
+    public DeleteRequest(int objectId, int objectInstanceId) {
         this(new LwM2mPath(objectId, objectInstanceId));
     }
 
@@ -40,17 +40,17 @@ public class DeleteRequest extends AbstractDownlinkRequest<DeleteResponse> {
      * @param path the path of the instance to delete
      * @throw IllegalArgumentException if the path is not valid
      */
-    public DeleteRequest(final String path) {
+    public DeleteRequest(String path) {
         super(new LwM2mPath(path));
     }
 
-    private DeleteRequest(final LwM2mPath target) {
+    private DeleteRequest(LwM2mPath target) {
         super(target);
         Validate.isTrue(target.isObjectInstance(), "Only object instance can be delete.");
     }
 
     @Override
-    public void accept(final DownlinkRequestVisitor visitor) {
+    public void accept(DownlinkRequestVisitor visitor) {
         visitor.visit(this);
     }
 

@@ -24,31 +24,30 @@ public class WriteAttributesRequest extends AbstractDownlinkRequest<WriteAttribu
 
     private final ObserveSpec observeSpec;
 
-    public WriteAttributesRequest(final int objectId, final ObserveSpec observeSpec) {
+    public WriteAttributesRequest(int objectId, ObserveSpec observeSpec) {
         this(new LwM2mPath(objectId), observeSpec);
     }
 
-    public WriteAttributesRequest(final int objectId, final int objectInstanceId, final ObserveSpec observeSpec) {
+    public WriteAttributesRequest(int objectId, int objectInstanceId, ObserveSpec observeSpec) {
         this(new LwM2mPath(objectId, objectInstanceId), observeSpec);
     }
 
-    public WriteAttributesRequest(final int objectId, final int objectInstanceId, final int resourceId,
-            final ObserveSpec observeSpec) {
+    public WriteAttributesRequest(int objectId, int objectInstanceId, int resourceId, ObserveSpec observeSpec) {
         this(new LwM2mPath(objectId, objectInstanceId, resourceId), observeSpec);
     }
 
-    public WriteAttributesRequest(final String path, final ObserveSpec observeSpec) {
+    public WriteAttributesRequest(String path, ObserveSpec observeSpec) {
         this(new LwM2mPath(path), observeSpec);
     }
 
-    private WriteAttributesRequest(final LwM2mPath path, final ObserveSpec observeSpec) {
+    private WriteAttributesRequest(LwM2mPath path, ObserveSpec observeSpec) {
         super(path);
         Validate.notNull(observeSpec);
         this.observeSpec = observeSpec;
     }
 
     @Override
-    public void accept(final DownlinkRequestVisitor visitor) {
+    public void accept(DownlinkRequestVisitor visitor) {
         visitor.visit(this);
     }
 

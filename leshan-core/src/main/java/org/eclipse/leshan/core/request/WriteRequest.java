@@ -67,8 +67,8 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
      * @param objectInstanceId the id of the object instance to write.
      * @param resources the list of resources to write.
      */
-    public WriteRequest(final Mode mode, final ContentFormat contentFormat, final int objectId,
-            final int objectInstanceId, final Collection<LwM2mResource> resources) {
+    public WriteRequest(Mode mode, ContentFormat contentFormat, int objectId, int objectInstanceId,
+            Collection<LwM2mResource> resources) {
         this(mode, contentFormat, new LwM2mPath(objectId, objectInstanceId),
                 new LwM2mObjectInstance(objectId, resources));
     }
@@ -81,8 +81,7 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
      * @param objectInstanceId the id of the object instance to write.
      * @param resources the list of resources to write.
      */
-    public WriteRequest(final Mode mode, final int objectId, final int objectInstanceId,
-            final Collection<LwM2mResource> resources) {
+    public WriteRequest(Mode mode, int objectId, int objectInstanceId, Collection<LwM2mResource> resources) {
         this(mode, ContentFormat.TLV, new LwM2mPath(objectId, objectInstanceId),
                 new LwM2mObjectInstance(objectId, resources));
     }
@@ -96,8 +95,8 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
      * @param objectInstanceId the id of the object instance to write.
      * @param resources the list of resources to write.
      */
-    public WriteRequest(final Mode mode, final ContentFormat contentFormat, final int objectId,
-            final int objectInstanceId, final LwM2mResource... resources) {
+    public WriteRequest(Mode mode, ContentFormat contentFormat, int objectId, int objectInstanceId,
+            LwM2mResource... resources) {
         this(mode, contentFormat, new LwM2mPath(objectId, objectInstanceId),
                 new LwM2mObjectInstance(objectId, resources));
     }
@@ -110,8 +109,7 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
      * @param objectInstanceId the id of the object instance to write.
      * @param resources the list of resources to write.
      */
-    public WriteRequest(final Mode mode, final int objectId, final int objectInstanceId,
-            final LwM2mResource... resources) {
+    public WriteRequest(Mode mode, int objectId, int objectInstanceId, LwM2mResource... resources) {
         this(mode, ContentFormat.TLV, new LwM2mPath(objectId, objectInstanceId),
                 new LwM2mObjectInstance(objectId, resources));
     }
@@ -120,15 +118,14 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
     /**
      * Request to write a <b>String Single-Instance Resource</b> using the TLV content format.
      */
-    public WriteRequest(final int objectId, final int objectInstanceId, final int resourceId, String value) {
+    public WriteRequest(int objectId, int objectInstanceId, int resourceId, String value) {
         this(ContentFormat.TLV, objectId, objectInstanceId, resourceId, value);
     }
 
     /**
      * Request to write a <b>String Single-Instance Resource</b> using the given content format (TEXT, TLV, JSON).
      */
-    public WriteRequest(final ContentFormat contentFormat, final int objectId, final int objectInstanceId,
-            final int resourceId, String value) {
+    public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId, String value) {
         this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId),
                 LwM2mSingleResource.newStringResource(resourceId, value));
     }
@@ -136,15 +133,15 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
     /**
      * Request to write a <b>Boolean Single-Instance Resource</b> using the TLV content format.
      */
-    public WriteRequest(final int objectId, final int objectInstanceId, final int resourceId, boolean value) {
+    public WriteRequest(int objectId, int objectInstanceId, int resourceId, boolean value) {
         this(ContentFormat.TLV, objectId, objectInstanceId, resourceId, value);
     }
 
     /**
      * Request to write a <b>Boolean Single-Instance Resource</b> using the given content format (TEXT, TLV, JSON).
      */
-    public WriteRequest(final ContentFormat contentFormat, final int objectId, final int objectInstanceId,
-            final int resourceId, boolean value) {
+    public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId,
+            boolean value) {
         this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId),
                 LwM2mSingleResource.newBooleanResource(resourceId, value));
     }
@@ -152,15 +149,14 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
     /**
      * Request to write a <b>Integer Single-Instance Resource</b> using the TLV content format.
      */
-    public WriteRequest(final int objectId, final int objectInstanceId, final int resourceId, long value) {
+    public WriteRequest(int objectId, int objectInstanceId, int resourceId, long value) {
         this(ContentFormat.TLV, objectId, objectInstanceId, resourceId, value);
     }
 
     /**
      * Request to write a <b>Integer Single-Instance Resource</b> using the given content format (TEXT, TLV, JSON).
      */
-    public WriteRequest(final ContentFormat contentFormat, final int objectId, final int objectInstanceId,
-            final int resourceId, long value) {
+    public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId, long value) {
         this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId),
                 LwM2mSingleResource.newIntegerResource(resourceId, value));
     }
@@ -168,15 +164,14 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
     /**
      * Request to write a <b> Float Single-Instance Resource</b> using the TLV content format.
      */
-    public WriteRequest(final int objectId, final int objectInstanceId, final int resourceId, double value) {
+    public WriteRequest(int objectId, int objectInstanceId, int resourceId, double value) {
         this(ContentFormat.TLV, objectId, objectInstanceId, resourceId, value);
     }
 
     /**
      * Request to write a <b> Float Single-Instance Resource</b> using the given content format (TEXT, TLV, JSON).
      */
-    public WriteRequest(final ContentFormat contentFormat, final int objectId, final int objectInstanceId,
-            final int resourceId, double value) {
+    public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId, double value) {
         this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId),
                 LwM2mSingleResource.newFloatResource(resourceId, value));
     }
@@ -184,15 +179,14 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
     /**
      * Request to write a <b> Date Single-Instance Resource</b> using the TLV content format.
      */
-    public WriteRequest(final int objectId, final int objectInstanceId, final int resourceId, Date value) {
+    public WriteRequest(int objectId, int objectInstanceId, int resourceId, Date value) {
         this(ContentFormat.TLV, objectId, objectInstanceId, resourceId, value);
     }
 
     /**
      * Request to write a <b> Date Single-Instance Resource</b> using the given content format (TEXT, TLV, JSON).
      */
-    public WriteRequest(final ContentFormat contentFormat, final int objectId, final int objectInstanceId,
-            final int resourceId, Date value) {
+    public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId, Date value) {
         this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId),
                 LwM2mSingleResource.newDateResource(resourceId, value));
     }
@@ -200,15 +194,14 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
     /**
      * Request to write a <b> Binary Single-Instance Resource</b> using the TLV content format.
      */
-    public WriteRequest(final int objectId, final int objectInstanceId, final int resourceId, byte[] value) {
+    public WriteRequest(int objectId, int objectInstanceId, int resourceId, byte[] value) {
         this(ContentFormat.TLV, objectId, objectInstanceId, resourceId, value);
     }
 
     /**
      * Request to write a <b> Binary Single-Instance Resource</b> using the given content format (OPAQUE, TLV, JSON).
      */
-    public WriteRequest(final ContentFormat contentFormat, final int objectId, final int objectInstanceId,
-            final int resourceId, byte[] value) {
+    public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId, byte[] value) {
         this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId),
                 LwM2mSingleResource.newBinaryResource(resourceId, value));
     }
@@ -216,7 +209,7 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
     /**
      * Request to write a <b> Objlnk Single-Instance Resource</b> using the TLV content format.
      */
-    public WriteRequest(final int objectId, final int objectInstanceId, final int resourceId, ObjectLink value) {
+    public WriteRequest(int objectId, int objectInstanceId, int resourceId, ObjectLink value) {
         this(ContentFormat.TLV, objectId, objectInstanceId, resourceId, value);
     }
 
@@ -224,8 +217,8 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
      * Request to write a <b> Objlnk Single-Instance Resource</b> using the given content format (OPAQUE, TLV, JSON,
      * TEXT).
      */
-    public WriteRequest(final ContentFormat contentFormat, final int objectId, final int objectInstanceId,
-            final int resourceId, ObjectLink value) {
+    public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId,
+            ObjectLink value) {
         this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId),
                 LwM2mSingleResource.newObjectLinkResource(resourceId, value));
     }
@@ -241,8 +234,8 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
      * @param values the list of resource instance (id->value) to write.
      * @param type the data type of the resource.
      */
-    public WriteRequest(final ContentFormat contentFormat, final int objectId, final int objectInstanceId,
-            final int resourceId, final Map<Integer, ?> values, Type type) {
+    public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId,
+            Map<Integer, ?> values, Type type) {
         this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId),
                 LwM2mMultipleResource.newResource(resourceId, values, type));
     }
@@ -256,8 +249,7 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
      * @param values the list of resource instance (id->value) to write.
      * @param type the data type of the resource.
      */
-    public WriteRequest(final int objectId, final int objectInstanceId, final int resourceId,
-            final Map<Integer, ?> values, Type type) {
+    public WriteRequest(int objectId, int objectInstanceId, int resourceId, Map<Integer, ?> values, Type type) {
         this(Mode.REPLACE, ContentFormat.TLV, new LwM2mPath(objectId, objectInstanceId, resourceId),
                 LwM2mMultipleResource.newResource(resourceId, values, type));
     }
@@ -271,11 +263,11 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
      * @param path the path of the LWM2M node to write (object instance or resource).
      * @param node the {@link LwM2mNode} to write.
      */
-    public WriteRequest(final Mode mode, final ContentFormat contentFormat, final String path, final LwM2mNode node) {
+    public WriteRequest(Mode mode, ContentFormat contentFormat, String path, LwM2mNode node) {
         this(mode, contentFormat, new LwM2mPath(path), node);
     }
 
-    private WriteRequest(final Mode mode, ContentFormat format, final LwM2mPath target, final LwM2mNode node) {
+    private WriteRequest(Mode mode, ContentFormat format, LwM2mPath target, LwM2mNode node) {
         super(target);
         Validate.notNull(mode);
         Validate.notNull(node);
@@ -355,7 +347,7 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
     }
 
     @Override
-    public void accept(final DownlinkRequestVisitor visitor) {
+    public void accept(DownlinkRequestVisitor visitor) {
         visitor.visit(this);
     }
 

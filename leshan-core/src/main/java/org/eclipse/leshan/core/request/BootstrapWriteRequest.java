@@ -32,7 +32,7 @@ public class BootstrapWriteRequest extends AbstractDownlinkRequest<BootstrapWrit
     private final LwM2mNode node;
     private final ContentFormat contentFormat;
 
-    public BootstrapWriteRequest(final LwM2mPath target, final LwM2mNode node, ContentFormat format) {
+    public BootstrapWriteRequest(LwM2mPath target, LwM2mNode node, ContentFormat format) {
         super(target);
         Validate.notNull(node);
 
@@ -93,7 +93,7 @@ public class BootstrapWriteRequest extends AbstractDownlinkRequest<BootstrapWrit
     }
 
     @Override
-    public void accept(final DownlinkRequestVisitor visitor) {
+    public void accept(DownlinkRequestVisitor visitor) {
         visitor.visit(this);
     }
 
