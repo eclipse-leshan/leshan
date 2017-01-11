@@ -21,6 +21,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.*;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -29,7 +30,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.californium.core.coap.CoAP.Code;
+import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
+import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.LinkObject;
 import org.eclipse.leshan.ResponseCode;
@@ -40,6 +44,7 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectEnabler;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -286,5 +291,29 @@ public class RegistrationTest {
 
         sender.send(helper.server.getNonSecureAddress(), false, new DeregisterRequest(resp.getRegistrationID()), 5000l);
         lclient.getCoapServer().stop();
+    }
+
+    @Test
+    public void register_with_invalid_request() throws InterruptedException, IOException {
+        // Check registration
+        helper.assertClientNotRegisterered();
+
+        // create a register request without the list of supported object
+        Request coapRequest = new Request(Code.POST);
+        coapRequest.setDestination(helper.server.getNonSecureAddress().getAddress());
+        coapRequest.setDestinationPort(helper.server.getNonSecureAddress().getPort());
+        coapRequest.getOptions().setContentFormat(ContentFormat.LINK.getCode());
+        coapRequest.getOptions().addUriPath("rd");
+        coapRequest.getOptions().addUriQuery("ep=" + helper.currentEndpointIdentifier);
+        
+        // send request
+        CoapEndpoint coapEndpoint = new CoapEndpoint(new InetSocketAddress(0));
+        coapEndpoint.start();
+        coapEndpoint.sendRequest(coapRequest);
+        
+        // check response
+        Response response = coapRequest.waitForResponse(1000);
+        assertEquals(response.getCode(), org.eclipse.californium.core.coap.CoAP.ResponseCode.BAD_REQUEST);
+        coapEndpoint.stop();
     }
 }
