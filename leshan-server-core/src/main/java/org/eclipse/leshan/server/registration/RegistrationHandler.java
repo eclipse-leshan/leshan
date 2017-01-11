@@ -52,10 +52,6 @@ public class RegistrationHandler {
 
     public RegisterResponse register(Identity sender, RegisterRequest registerRequest, InetSocketAddress serverEndpoint) {
 
-        if (registerRequest.getEndpointName() == null || registerRequest.getEndpointName().isEmpty() || sender == null) {
-            return RegisterResponse.badRequest(null);
-        }
-
         Registration.Builder builder = new Registration.Builder(RegistrationHandler.createRegistrationId(),
                 registerRequest.getEndpointName(), sender.getPeerAddress().getAddress(), sender.getPeerAddress()
                         .getPort(), serverEndpoint);
@@ -82,10 +78,6 @@ public class RegistrationHandler {
 
     public UpdateResponse update(Identity sender, UpdateRequest updateRequest) {
 
-        if (sender == null) {
-            return UpdateResponse.badRequest(null);
-        }
-
         // We must check if the client is using the right identity.
         Registration registration = registrationService.getById(updateRequest.getRegistrationId());
         if (registration == null) {
@@ -108,9 +100,6 @@ public class RegistrationHandler {
     }
 
     public DeregisterResponse deregister(Identity sender, DeregisterRequest deregisterRequest) {
-        if (sender == null) {
-            return DeregisterResponse.badRequest(null);
-        }
 
         // We must check if the client is using the right identity.
         Registration registration = registrationService.getById(deregisterRequest.getRegistrationId());
