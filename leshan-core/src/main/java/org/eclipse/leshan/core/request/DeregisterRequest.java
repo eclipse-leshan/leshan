@@ -32,9 +32,9 @@ public class DeregisterRequest implements UplinkRequest<DeregisterResponse> {
      * @exception InvalidRequestException if registrationId is empty.
      */
     public DeregisterRequest(String registrationId) throws InvalidRequestException {
-        if (registrationId == null || registrationId.isEmpty()) {
+        if (registrationId == null || registrationId.isEmpty())
             throw new InvalidRequestException("registrationId is mandatory");
-        }
+
         this.registrationId = registrationId;
     }
 

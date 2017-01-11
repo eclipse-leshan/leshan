@@ -300,10 +300,9 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
             throw new InvalidRequestException("new node value is mandatory");
 
         // Validate Mode
-        if (getPath().isResource() && mode == Mode.UPDATE) {
+        if (getPath().isResource() && mode == Mode.UPDATE)
             throw new InvalidRequestException(
                     String.format("Invalid mode for '%s': update is not allowed on resource", target.toString()));
-        }
 
         // Validate node and path coherence
         if (getPath().isResource()) {

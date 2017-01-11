@@ -205,9 +205,8 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
         super(target);
 
         // accept only object and object instance path
-        if (!target.isObject() && !target.isObjectInstance()) {
+        if (!target.isObject() && !target.isObjectInstance())
             throw new InvalidRequestException("Create request must target an object or object instance");
-        }
 
         // validate instance id
         if (instanceId != null && instanceId == LwM2mObjectInstance.UNDEFINED) {

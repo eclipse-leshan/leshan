@@ -53,13 +53,13 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
             String smsNumber, LinkObject[] objectLinks, Map<String, String> additionalAttributes)
             throws InvalidRequestException {
 
-        if (endpointName == null || endpointName.isEmpty()) {
+        if (endpointName == null || endpointName.isEmpty())
             throw new InvalidRequestException("endpoint is mandatory");
-        }
-        if (objectLinks == null || objectLinks.length == 0) {
+
+        if (objectLinks == null || objectLinks.length == 0)
             throw new InvalidRequestException(
                     "supported object list is mandatory and mandatory objects should be present)");
-        }
+
 
         this.endpointName = endpointName;
         this.lifetime = lifetime;

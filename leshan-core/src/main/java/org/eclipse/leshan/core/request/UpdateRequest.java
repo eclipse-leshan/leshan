@@ -44,9 +44,9 @@ public class UpdateRequest implements UplinkRequest<UpdateResponse> {
     public UpdateRequest(String registrationId, Long lifetime, String smsNumber, BindingMode binding,
             LinkObject[] objectLinks) throws InvalidRequestException {
 
-        if (registrationId == null || registrationId.isEmpty()) {
+        if (registrationId == null || registrationId.isEmpty())
             throw new InvalidRequestException("registrationId is mandatory");
-        }
+
         this.registrationId = registrationId;
         this.objectLinks = objectLinks;
         this.lifeTimeInSec = lifetime;

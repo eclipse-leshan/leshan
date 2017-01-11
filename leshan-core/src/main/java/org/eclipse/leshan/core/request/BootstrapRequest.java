@@ -26,9 +26,9 @@ public class BootstrapRequest implements UplinkRequest<BootstrapResponse> {
     private final String endpointName;
 
     public BootstrapRequest(String endpointName) throws InvalidRequestException {
-        if (endpointName == null || endpointName.isEmpty()) {
+        if (endpointName == null || endpointName.isEmpty())
             throw new InvalidRequestException("endpoint is mandatory");
-        }
+
         this.endpointName = endpointName;
     }
 
