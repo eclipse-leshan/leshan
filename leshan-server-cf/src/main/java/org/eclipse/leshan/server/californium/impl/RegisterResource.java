@@ -37,6 +37,7 @@ import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
+import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.DeregisterResponse;
 import org.eclipse.leshan.core.response.RegisterResponse;
 import org.eclipse.leshan.core.response.UpdateResponse;
@@ -81,8 +82,17 @@ public class RegisterResource extends CoapResource {
     public void handleRequest(Exchange exchange) {
         try {
             super.handleRequest(exchange);
+        } catch (InvalidRequestException e) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(String.format("InvalidRequestException while handling request(%s) on the /rd resource",
+                        exchange.getRequest()), e);
+            }
+            Response response = new Response(ResponseCode.BAD_REQUEST);
+            response.setPayload(e.getMessage());
+            exchange.sendResponse(response);
         } catch (Exception e) {
-            LOG.error("Exception while handling a request on the /rd resource", e);
+            LOG.error(String.format("Exception while handling request(%s) on the /rd resource", exchange.getRequest()),
+                    e);
             exchange.sendResponse(new Response(ResponseCode.INTERNAL_SERVER_ERROR));
         }
     }

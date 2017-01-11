@@ -55,6 +55,7 @@ import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
+import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.BootstrapWriteResponse;
 import org.eclipse.leshan.core.response.CreateResponse;
 import org.eclipse.leshan.core.response.DeleteResponse;
@@ -94,8 +95,17 @@ public class ObjectResource extends CoapResource implements NotifySender {
     public void handleRequest(Exchange exchange) {
         try {
             super.handleRequest(exchange);
+        } catch (InvalidRequestException e) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(String.format("InvalidRequestException while handling request(%s) on the %s resource",
+                        exchange.getRequest(), getURI()), e);
+            }
+            Response response = new Response(ResponseCode.BAD_REQUEST);
+            response.setPayload(e.getMessage());
+            exchange.sendResponse(response);
         } catch (Exception e) {
-            LOG.error(String.format("Exception while handling a request on the %s resource", getURI()), e);
+            LOG.error(String.format("Exception while handling request(%s) on the %s resource", exchange.getRequest(),
+                    getURI()), e);
             exchange.sendResponse(new Response(ResponseCode.INTERNAL_SERVER_ERROR));
         }
     }
