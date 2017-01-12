@@ -53,8 +53,8 @@ public class DownlinkRequestSerDes {
             @Override
             public void visit(ObserveRequest request) {
                 o.add("kind", "observe");
-                if (request.getFormat() == null)
-                    o.add("contentFormat", request.getFormat().getCode());
+                if (request.getContentFormat() == null)
+                    o.add("contentFormat", request.getContentFormat().getCode());
             }
 
             @Override
@@ -104,8 +104,8 @@ public class DownlinkRequestSerDes {
             @Override
             public void visit(ReadRequest request) {
                 o.add("kind", "read");
-                if (request.getFormat() == null)
-                    o.add("contentFormat", request.getFormat().getCode());
+                if (request.getContentFormat() == null)
+                    o.add("contentFormat", request.getContentFormat().getCode());
             }
         });
         return o;

@@ -141,7 +141,7 @@ public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
     /**
      * @return the desired format of the resource to read
      */
-    public ContentFormat getFormat() {
+    public ContentFormat getContentFormat() {
         return format;
     }
 
