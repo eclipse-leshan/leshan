@@ -174,6 +174,37 @@ public class ObserveTest {
     }
 
     @Test
+    public void can_handle_error_on_notification() throws InterruptedException {
+        TestObservationListener listener = new TestObservationListener();
+        helper.server.getObservationService().addListener(listener);
+
+        // observe device timezone
+        ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(),
+                new ObserveRequest(3, 0, 15));
+        assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
+        assertNotNull(observeResponse.getCoapResponse());
+        assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
+
+        // an observation response should have been sent
+        Observation observation = observeResponse.getObservation();
+        assertEquals("/3/0/15", observation.getPath().toString());
+        assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
+
+        // *** HACK send a notification with unsupported content format *** //
+        byte[] payload = LwM2mNodeJsonEncoder.encode(LwM2mSingleResource.newStringResource(15, "Paris"),
+                new LwM2mPath("/3/0/15"),
+                new LwM2mModel(helper.createObjectModels()));
+        Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
+        sendNotification(payload, firstCoapResponse, 666); // 666 is not a supported contentFormat.
+        // *** Hack End *** //
+
+        // verify result
+        listener.waitForNotification(2000);
+        assertTrue(listener.receivedNotify().get());
+        assertNotNull(listener.getError());
+    }
+
+    @Test
     public void can_observe_timestamped_resource() throws InterruptedException {
         TestObservationListener listener = new TestObservationListener();
         helper.server.getObservationService().addListener(listener);
@@ -201,7 +232,7 @@ public class ObserveTest {
         byte[] payload = LwM2mNodeJsonEncoder.encodeTimestampedData(timestampedNodes, new LwM2mPath("/3/0/15"),
                 new LwM2mModel(helper.createObjectModels()));
         Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
-        sendNotification(payload, firstCoapResponse);
+        sendNotification(payload, firstCoapResponse, ContentFormat.JSON_CODE);
         // *** Hack End *** //
 
         // verify result
@@ -241,7 +272,7 @@ public class ObserveTest {
         byte[] payload = LwM2mNodeJsonEncoder.encodeTimestampedData(timestampedNodes, new LwM2mPath("/3/0"),
                 new LwM2mModel(helper.createObjectModels()));
         Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
-        sendNotification(payload, firstCoapResponse);
+        sendNotification(payload, firstCoapResponse, ContentFormat.JSON_CODE);
         // *** Hack End *** //
 
         // verify result
@@ -282,7 +313,7 @@ public class ObserveTest {
                 new LwM2mModel(helper.createObjectModels()));
 
         Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
-        sendNotification(payload, firstCoapResponse);
+        sendNotification(payload, firstCoapResponse, ContentFormat.JSON_CODE);
         // *** Hack End *** //
 
         // verify result
@@ -294,7 +325,7 @@ public class ObserveTest {
         assertThat(listener.getResponse().getCoapResponse(), is(instanceOf(Response.class)));
     }
 
-    private void sendNotification(final byte[] payload, final Response firstCoapResponse) {
+    private void sendNotification(final byte[] payload, final Response firstCoapResponse, int contentFormat) {
 
         // encode and send it
         try (DatagramSocket clientSocket = new DatagramSocket()) {
@@ -306,7 +337,7 @@ public class ObserveTest {
             response.setMID(firstCoapResponse.getMID() + 1);
             response.setToken(firstCoapResponse.getToken());
             OptionSet options = new OptionSet()
-                    .setContentFormat(ContentFormat.JSON_CODE)
+                    .setContentFormat(contentFormat)
                     .setObserve(firstCoapResponse.getOptions().getObserve() + 1);
             response.setOptions(options);
 
@@ -327,11 +358,13 @@ public class ObserveTest {
         private final CountDownLatch latch = new CountDownLatch(1);
         private final AtomicBoolean receivedNotify = new AtomicBoolean();
         private ObserveResponse response;
+        private Exception error;
 
         @Override
         public void onResponse(Observation observation, ObserveResponse response) {
             receivedNotify.set(true);
             this.response = response;
+            this.error = null;
             latch.countDown();
         }
 
@@ -339,6 +372,7 @@ public class ObserveTest {
         public void onError(Observation observation, Exception error) {
             receivedNotify.set(true);
             this.response = null;
+            this.error = error;
             latch.countDown();
         }
 
@@ -357,6 +391,10 @@ public class ObserveTest {
 
         public ObserveResponse getResponse() {
             return response;
+        }
+
+        public Exception getError() {
+            return error;
         }
 
         public void waitForNotification(long timeout) throws InterruptedException {
