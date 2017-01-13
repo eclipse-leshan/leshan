@@ -69,8 +69,9 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
             return LwM2mNodeJsonDecoder.decode(content, path, model, nodeClass);
         case ContentFormat.LINK_CODE:
             throw new UnsupportedOperationException("Content format " + format + " not yet implemented '" + path + "'");
+        default:
+            throw new UnsupportedOperationException("Content format " + format + " is not supported");
         }
-        return null;
     }
 
     @Override
@@ -94,8 +95,9 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
             return LwM2mNodeJsonDecoder.decodeTimestamped(content, path, model, nodeClassFromPath(path));
         case ContentFormat.LINK_CODE:
             throw new UnsupportedOperationException("Content format " + format + " not yet implemented '" + path + "'");
+        default:
+            throw new UnsupportedOperationException("Content format " + format + " is not supported");
         }
-        return null;
     }
 
     private static List<TimestampedLwM2mNode> toTimestampedNodes(LwM2mNode node) {
