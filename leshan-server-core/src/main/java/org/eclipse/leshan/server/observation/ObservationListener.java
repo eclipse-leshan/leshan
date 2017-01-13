@@ -30,5 +30,13 @@ public interface ObservationListener {
      * @param observation the observation for which new data are received
      * @param reponse the lwm2m response received
      */
-    void newValue(Observation observation, ObserveResponse response);
+    void onResponse(Observation observation, ObserveResponse response);
+
+    /**
+     * Called when an error occurs on new notification.
+     * 
+     * @param observation the observation for which new data are received
+     * @param error the exception raised when we handle the notification
+     */
+    void onError(Observation observation, Exception error);
 }
