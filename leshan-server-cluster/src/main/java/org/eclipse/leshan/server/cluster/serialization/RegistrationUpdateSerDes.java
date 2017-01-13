@@ -20,7 +20,7 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.leshan.LinkObject;
+import org.eclipse.leshan.Link;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.server.client.RegistrationUpdate;
 
@@ -51,7 +51,7 @@ public class RegistrationUpdateSerDes {
             o.add("bnd", u.getBindingMode().name());
         if (u.getObjectLinks() != null) {
             JsonArray links = new JsonArray();
-            for (LinkObject l : u.getObjectLinks()) {
+            for (Link l : u.getObjectLinks()) {
                 JsonObject ol = Json.object();
                 ol.add("url", l.getUrl());
                 JsonObject at = Json.object();
@@ -103,9 +103,9 @@ public class RegistrationUpdateSerDes {
 
         // parse object link
         JsonArray links = (JsonArray) v.get("objLink");
-        LinkObject[] linkObjs = null;
+        Link[] linkObjs = null;
         if (links != null) {
-            linkObjs = new LinkObject[links.size()];
+            linkObjs = new Link[links.size()];
             for (int i = 0; i < links.size(); i++) {
                 JsonObject ol = (JsonObject) links.get(i);
 
@@ -119,7 +119,7 @@ public class RegistrationUpdateSerDes {
                         attMap.put(k, jsonValue.asString());
                     }
                 }
-                LinkObject o = new LinkObject(ol.getString("url", null), attMap);
+                Link o = new Link(ol.getString("url", null), attMap);
                 linkObjs[i] = o;
             }
         }

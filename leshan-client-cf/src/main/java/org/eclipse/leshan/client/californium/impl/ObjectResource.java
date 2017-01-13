@@ -31,7 +31,7 @@ import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
-import org.eclipse.leshan.LinkObject;
+import org.eclipse.leshan.Link;
 import org.eclipse.leshan.ObserveSpec;
 import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
@@ -121,7 +121,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
             if (response.getCode().isError()) {
                 exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
             } else {
-                exchange.respond(fromLwM2mCode(response.getCode()), LinkObject.serialize(response.getObjectLinks()),
+                exchange.respond(fromLwM2mCode(response.getCode()), Link.serialize(response.getObjectLinks()),
                         MediaTypeRegistry.APPLICATION_LINK_FORMAT);
             }
         } else {

@@ -23,7 +23,7 @@ package org.eclipse.leshan.client.resource;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.eclipse.leshan.LinkObject;
+import org.eclipse.leshan.Link;
 import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
@@ -295,8 +295,8 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         if (path.isObject()) {
 
             // Manage discover on object
-            LinkObject[] linkObjects = LinkFormatHelper.getObjectDescription(getObjectModel(), null);
-            return DiscoverResponse.success(linkObjects);
+            Link[] ObjectLinks = LinkFormatHelper.getObjectDescription(getObjectModel(), null);
+            return DiscoverResponse.success(ObjectLinks);
 
         } else if (path.isObjectInstance()) {
 
@@ -304,9 +304,9 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
             if (!getAvailableInstanceIds().contains(path.getObjectInstanceId()))
                 return DiscoverResponse.notFound();
 
-            LinkObject linkObject = LinkFormatHelper.getInstanceDescription(getObjectModel(),
+            Link instanceLink = LinkFormatHelper.getInstanceDescription(getObjectModel(),
                     path.getObjectInstanceId(), null);
-            return DiscoverResponse.success(new LinkObject[] { linkObject });
+            return DiscoverResponse.success(new Link[] { instanceLink });
 
         } else if (path.isResource()) {
             // Manage discover on resource
@@ -317,9 +317,9 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
             if (resourceModel == null)
                 return DiscoverResponse.notFound();
 
-            LinkObject linkObject = LinkFormatHelper.getResourceDescription(getObjectModel().id,
+            Link resourceLink = LinkFormatHelper.getResourceDescription(getObjectModel().id,
                     path.getObjectInstanceId(), resourceModel, null);
-            return DiscoverResponse.success(new LinkObject[] { linkObject });
+            return DiscoverResponse.success(new Link[] { resourceLink });
         }
         return DiscoverResponse.badRequest(null);
     }

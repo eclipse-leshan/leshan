@@ -19,7 +19,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
-import org.eclipse.leshan.LinkObject;
+import org.eclipse.leshan.Link;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.junit.Test;
@@ -30,52 +30,52 @@ public class LinkFormatHelperTest {
     public void encode_objectModel_to_linkObject_without_root_path() {
         ObjectModel locationModel = getObjectModel(6);
 
-        LinkObject[] linkObjects = LinkFormatHelper.getObjectDescription(locationModel, null);
-        String strLinkObjects = LinkObject.serialize(linkObjects);
+        Link[] links = LinkFormatHelper.getObjectDescription(locationModel, null);
+        String strLinks = Link.serialize(links);
 
-        assertEquals("</6>, </6/0/0>, </6/0/1>, </6/0/2>, </6/0/3>, </6/0/4>, </6/0/5>", strLinkObjects);
+        assertEquals("</6>, </6/0/0>, </6/0/1>, </6/0/2>, </6/0/3>, </6/0/4>, </6/0/5>", strLinks);
     }
 
     @Test
     public void encode_objectModel_to_linkObject_with_simple_root_path() {
         ObjectModel locationModel = getObjectModel(6);
 
-        LinkObject[] linkObjects = LinkFormatHelper.getObjectDescription(locationModel, "rp");
-        String strLinkObjects = LinkObject.serialize(linkObjects);
+        Link[] links = LinkFormatHelper.getObjectDescription(locationModel, "rp");
+        String strLinks = Link.serialize(links);
 
         assertEquals("</rp/6>, </rp/6/0/0>, </rp/6/0/1>, </rp/6/0/2>, </rp/6/0/3>, </rp/6/0/4>, </rp/6/0/5>",
-                strLinkObjects);
+                strLinks);
     }
 
     @Test
     public void encode_objectModel_to_linkObject_with_empty_root_path() {
         ObjectModel locationModel = getObjectModel(6);
 
-        LinkObject[] linkObjects = LinkFormatHelper.getObjectDescription(locationModel, "");
-        String strLinkObjects = LinkObject.serialize(linkObjects);
+        Link[] links = LinkFormatHelper.getObjectDescription(locationModel, "");
+        String strLinks = Link.serialize(links);
 
-        assertEquals("</6>, </6/0/0>, </6/0/1>, </6/0/2>, </6/0/3>, </6/0/4>, </6/0/5>", strLinkObjects);
+        assertEquals("</6>, </6/0/0>, </6/0/1>, </6/0/2>, </6/0/3>, </6/0/4>, </6/0/5>", strLinks);
     }
 
     @Test
     public void encode_objectModel_to_linkObject_with_explicit_empty_root_path() {
         ObjectModel locationModel = getObjectModel(6);
 
-        LinkObject[] linkObjects = LinkFormatHelper.getObjectDescription(locationModel, "/");
-        String strLinkObjects = LinkObject.serialize(linkObjects);
+        Link[] links = LinkFormatHelper.getObjectDescription(locationModel, "/");
+        String strLinks = Link.serialize(links);
 
-        assertEquals("</6>, </6/0/0>, </6/0/1>, </6/0/2>, </6/0/3>, </6/0/4>, </6/0/5>", strLinkObjects);
+        assertEquals("</6>, </6/0/0>, </6/0/1>, </6/0/2>, </6/0/3>, </6/0/4>, </6/0/5>", strLinks);
     }
 
     @Test
     public void encode_objectModel_to_linkObject_with_explicit_complex_root_path() {
         ObjectModel locationModel = getObjectModel(6);
 
-        LinkObject[] linkObjects = LinkFormatHelper.getObjectDescription(locationModel, "/r/t/");
-        String strLinkObjects = LinkObject.serialize(linkObjects);
+        Link[] links = LinkFormatHelper.getObjectDescription(locationModel, "/r/t/");
+        String strLinks = Link.serialize(links);
 
         assertEquals("</r/t/6>, </r/t/6/0/0>, </r/t/6/0/1>, </r/t/6/0/2>, </r/t/6/0/3>, </r/t/6/0/4>, </r/t/6/0/5>",
-                strLinkObjects);
+                strLinks);
     }
 
     private ObjectModel getObjectModel(int id) {

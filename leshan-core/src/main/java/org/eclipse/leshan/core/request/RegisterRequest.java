@@ -19,7 +19,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.leshan.LinkObject;
+import org.eclipse.leshan.Link;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.RegisterResponse;
 
@@ -34,7 +34,7 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
     private final String lwVersion;
     private final BindingMode bindingMode;
     private final String smsNumber;
-    private final LinkObject[] objectLinks;
+    private final Link[] objectLinks;
     private final Map<String, String> additionalAttributes;
 
     /**
@@ -50,7 +50,7 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
      * @exception InvalidRequestException if endpoint name or objectlinks is empty.
      */
     public RegisterRequest(String endpointName, Long lifetime, String lwVersion, BindingMode bindingMode,
-            String smsNumber, LinkObject[] objectLinks, Map<String, String> additionalAttributes)
+            String smsNumber, Link[] objectLinks, Map<String, String> additionalAttributes)
             throws InvalidRequestException {
 
         if (endpointName == null || endpointName.isEmpty())
@@ -93,7 +93,7 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
         return smsNumber;
     }
 
-    public LinkObject[] getObjectLinks() {
+    public Link[] getObjectLinks() {
         return objectLinks;
     }
 

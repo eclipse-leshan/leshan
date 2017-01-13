@@ -23,7 +23,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.leshan.LinkObject;
+import org.eclipse.leshan.Link;
 import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.cluster.serialization.RegistrationSerDes;
 import org.junit.Test;
@@ -32,12 +32,12 @@ public class ClientSerDesTest {
 
     @Test
     public void ser_and_des_are_equals() throws Exception {
-        LinkObject[] objs = new LinkObject[2];
+        Link[] objs = new Link[2];
         Map<String, Object> att = new HashMap<>();
         att.put("ts", new Integer(12));
         att.put("rt", "test");
-        objs[0] = new LinkObject("/0/1024/2", att);
-        objs[1] = new LinkObject("/0/2");
+        objs[0] = new Link("/0/1024/2", att);
+        objs[1] = new Link("/0/2");
 
         Registration.Builder builder = new Registration.Builder("registrationId", "endpoint", Inet4Address.getByName("127.0.0.1"),
                 1, new InetSocketAddress(212)).objectLinks(objs);

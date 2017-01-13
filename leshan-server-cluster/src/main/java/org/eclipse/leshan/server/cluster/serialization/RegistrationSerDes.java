@@ -20,7 +20,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.leshan.LinkObject;
+import org.eclipse.leshan.Link;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.server.client.Registration;
 
@@ -51,7 +51,7 @@ public class RegistrationSerDes {
         o.add("regId", r.getId());
 
         JsonArray links = new JsonArray();
-        for (LinkObject l : r.getObjectLinks()) {
+        for (Link l : r.getObjectLinks()) {
             JsonObject ol = Json.object();
             ol.add("url", l.getUrl());
             JsonObject at = Json.object();
@@ -99,7 +99,7 @@ public class RegistrationSerDes {
         }
 
         JsonArray links = (JsonArray) jObj.get("objLink");
-        LinkObject[] linkObjs = new LinkObject[links.size()];
+        Link[] linkObjs = new Link[links.size()];
         for (int i = 0; i < links.size(); i++) {
             JsonObject ol = (JsonObject) links.get(i);
 
@@ -113,7 +113,7 @@ public class RegistrationSerDes {
                     attMap.put(k, jsonValue.asString());
                 }
             }
-            LinkObject o = new LinkObject(ol.getString("url", null), attMap);
+            Link o = new Link(ol.getString("url", null), attMap);
             linkObjs[i] = o;
         }
         b.objectLinks(linkObjs);

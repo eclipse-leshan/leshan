@@ -31,7 +31,7 @@ import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
-import org.eclipse.leshan.LinkObject;
+import org.eclipse.leshan.Link;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.Identity;
@@ -156,7 +156,7 @@ public class RegisterResource extends CoapResource {
         BindingMode binding = null;
 
         // Get object Links
-        LinkObject[] objectLinks = LinkObject.parse(request.getPayload());
+        Link[] objectLinks = Link.parse(request.getPayload());
 
         Map<String, String> additionalParams = new HashMap<String, String>();
 
@@ -207,7 +207,7 @@ public class RegisterResource extends CoapResource {
         Long lifetime = null;
         String smsNumber = null;
         BindingMode binding = null;
-        LinkObject[] objectLinks = null;
+        Link[] objectLinks = null;
         for (String param : request.getOptions().getUriQuery()) {
             if (param.startsWith(QUERY_PARAM_LIFETIME)) {
                 lifetime = Long.valueOf(param.substring(3));
@@ -218,7 +218,7 @@ public class RegisterResource extends CoapResource {
             }
         }
         if (request.getPayload() != null && request.getPayload().length > 0) {
-            objectLinks = LinkObject.parse(request.getPayload());
+            objectLinks = Link.parse(request.getPayload());
         }
         UpdateRequest updateRequest = new UpdateRequest(registrationId, lifetime, smsNumber, binding, objectLinks);
 

@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 
 import org.eclipse.californium.core.coap.Request;
-import org.eclipse.leshan.LinkObject;
+import org.eclipse.leshan.Link;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -78,9 +78,9 @@ public class CoapClientRequestBuilder implements UplinkRequestVisitor {
             coapRequest.getOptions().addUriQuery(attr.getKey() + "=" + attr.getValue());
         }
 
-        LinkObject[] linkObjects = request.getObjectLinks();
-        if (linkObjects != null)
-            coapRequest.setPayload(LinkObject.serialize(linkObjects));
+        Link[] objectLinks = request.getObjectLinks();
+        if (objectLinks != null)
+            coapRequest.setPayload(Link.serialize(objectLinks));
 
     }
 
@@ -102,10 +102,10 @@ public class CoapClientRequestBuilder implements UplinkRequestVisitor {
         if (bindingMode != null)
             coapRequest.getOptions().addUriQuery("b=" + bindingMode.toString());
 
-        LinkObject[] linkObjects = request.getObjectLinks();
+        Link[] linkObjects = request.getObjectLinks();
         if (linkObjects != null) {
             coapRequest.getOptions().setContentFormat(ContentFormat.LINK.getCode());
-            coapRequest.setPayload(LinkObject.serialize(linkObjects));
+            coapRequest.setPayload(Link.serialize(linkObjects));
         }
     }
 

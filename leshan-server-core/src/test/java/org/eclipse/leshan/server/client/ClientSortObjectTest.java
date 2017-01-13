@@ -20,7 +20,7 @@ import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
-import org.eclipse.leshan.LinkObject;
+import org.eclipse.leshan.Link;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -28,9 +28,9 @@ public class ClientSortObjectTest {
 
     @Test
     public void sort_link_object_on_get() throws UnknownHostException {
-        LinkObject[] objs = new LinkObject[3];
-        objs[0] = new LinkObject("/0/1024/2");
-        objs[1] = new LinkObject("/0/2");
+        Link[] objs = new Link[3];
+        objs[0] = new Link("/0/1024/2");
+        objs[1] = new Link("/0/2");
         objs[2] = null;
 
         Registration.Builder builder = new Registration.Builder("registrationId", "endpoint", Inet4Address.getByName("127.0.0.1"),
@@ -38,7 +38,7 @@ public class ClientSortObjectTest {
 
         Registration r = builder.build();
 
-        LinkObject[] res = r.getSortedObjectLinks();
+        Link[] res = r.getSortedObjectLinks();
         Assert.assertEquals(3, res.length);
         Assert.assertNull(res[0]);
         Assert.assertEquals("/0/2", res[1].getUrl());

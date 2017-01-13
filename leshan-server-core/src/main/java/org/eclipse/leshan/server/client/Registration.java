@@ -25,7 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.leshan.LinkObject;
+import org.eclipse.leshan.Link;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.util.Validate;
 
@@ -66,7 +66,7 @@ public class Registration implements Serializable {
 
     private final String id;
 
-    private final LinkObject[] objectLinks;
+    private final Link[] objectLinks;
 
     private final Map<String, String> additionalRegistrationAttributes;
 
@@ -76,7 +76,7 @@ public class Registration implements Serializable {
     private final Date lastUpdate;
 
     protected Registration(String id, String endpoint, InetAddress address, int port, String lwM2mVersion,
-            Long lifetimeInSec, String smsNumber, BindingMode bindingMode, LinkObject[] objectLinks,
+            Long lifetimeInSec, String smsNumber, BindingMode bindingMode, Link[] objectLinks,
             InetSocketAddress registrationEndpointAddress,
 
             Date registrationDate, Date lastUpdate, Map<String, String> additionalRegistrationAttributes) {
@@ -98,7 +98,7 @@ public class Registration implements Serializable {
         // extract the root objects path from the object links
         String rootPath = "/";
         if (objectLinks != null) {
-            for (LinkObject link : objectLinks) {
+            for (Link link : objectLinks) {
                 if (link != null && "oma.lwm2m".equals(link.getAttributes().get("rt"))) {
                     rootPath = link.getUrl();
                     break;
@@ -161,23 +161,23 @@ public class Registration implements Serializable {
         return registrationEndpointAddress;
     }
 
-    public LinkObject[] getObjectLinks() {
+    public Link[] getObjectLinks() {
         return objectLinks;
     }
 
-    public LinkObject[] getSortedObjectLinks() {
+    public Link[] getSortedObjectLinks() {
         // sort the list of objects
         if (objectLinks == null) {
             return null;
         }
 
-        LinkObject[] res = Arrays.copyOf(objectLinks, objectLinks.length);
+        Link[] res = Arrays.copyOf(objectLinks, objectLinks.length);
 
-        Arrays.sort(res, new Comparator<LinkObject>() {
+        Arrays.sort(res, new Comparator<Link>() {
 
             /* sort by path */
             @Override
-            public int compare(LinkObject o1, LinkObject o2) {
+            public int compare(Link o1, Link o2) {
                 if (o1 == null && o2 == null)
                     return 0;
                 if (o1 == null)
@@ -316,7 +316,7 @@ public class Registration implements Serializable {
         private String smsNumber;
         private BindingMode bindingMode;
         private String lwM2mVersion;
-        private LinkObject[] objectLinks;
+        private Link[] objectLinks;
         private Map<String, String> additionalRegistrationAttributes;
 
         public Builder(String registrationId, String endpoint, InetAddress address, int port,
@@ -365,7 +365,7 @@ public class Registration implements Serializable {
             return this;
         }
 
-        public Builder objectLinks(LinkObject[] objectLinks) {
+        public Builder objectLinks(Link[] objectLinks) {
             this.objectLinks = objectLinks;
             return this;
         }

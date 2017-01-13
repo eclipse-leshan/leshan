@@ -27,7 +27,7 @@ import java.util.Map;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
-import org.eclipse.leshan.LinkObject;
+import org.eclipse.leshan.Link;
 import org.eclipse.leshan.ObserveSpec;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
@@ -77,7 +77,7 @@ public class CoapRequestBuilderTest {
         if (rootpath != null) {
             Map<String, String> attr = new HashMap<>();
             attr.put("rt", "oma.lwm2m");
-            b.objectLinks(new LinkObject[] { new LinkObject(rootpath, attr) });
+            b.objectLinks(new Link[] { new Link(rootpath, attr) });
         }
         return b.build();
     }

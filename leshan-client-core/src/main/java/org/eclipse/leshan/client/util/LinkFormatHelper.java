@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.leshan.LinkObject;
+import org.eclipse.leshan.Link;
 import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -31,7 +31,7 @@ import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 
 /**
- * An Utility class which help to generate Link Objects from {@link LwM2mObjectEnabler} and {@link LwM2mModel}.<br>
+ * An Utility class which help to generate @{link Link} from {@link LwM2mObjectEnabler} and {@link LwM2mModel}.<br>
  * Used for register and discover payload.
  */
 public final class LinkFormatHelper {
@@ -39,18 +39,18 @@ public final class LinkFormatHelper {
     private LinkFormatHelper() {
     }
 
-    public static LinkObject[] getClientDescription(final Collection<LwM2mObjectEnabler> objectEnablers,
+    public static Link[] getClientDescription(final Collection<LwM2mObjectEnabler> objectEnablers,
             final String rootPath) {
-        List<LinkObject> linkObjects = new ArrayList<>();
+        List<Link> links = new ArrayList<>();
 
         // clean root path
         String root = rootPath == null ? "" : rootPath;
 
-        // create link object for "object"
+        // create links for "object"
         String rootURL = getPath("/", root);
         Map<String, Object> attributes = new HashMap<>();
         attributes.put("rt", "oma.lwm2m");
-        linkObjects.add(new LinkObject(rootURL, attributes));
+        links.add(new Link(rootURL, attributes));
 
         // sort resources
         List<LwM2mObjectEnabler> objEnablerList = new ArrayList<LwM2mObjectEnabler>(objectEnablers);
@@ -67,28 +67,28 @@ public final class LinkFormatHelper {
             List<Integer> availableInstance = objectEnabler.getAvailableInstanceIds();
             if (availableInstance.isEmpty()) {
                 String objectInstanceUrl = getPath("/", root, Integer.toString(objectEnabler.getId()));
-                linkObjects.add(new LinkObject(objectInstanceUrl));
+                links.add(new Link(objectInstanceUrl));
             } else {
                 for (Integer instanceId : objectEnabler.getAvailableInstanceIds()) {
                     String objectInstanceUrl = getPath("/", root, Integer.toString(objectEnabler.getId()),
                             instanceId.toString());
-                    linkObjects.add(new LinkObject(objectInstanceUrl));
+                    links.add(new Link(objectInstanceUrl));
                 }
             }
         }
 
-        return linkObjects.toArray(new LinkObject[] {});
+        return links.toArray(new Link[] {});
     }
 
-    public static LinkObject[] getObjectDescription(final ObjectModel objectModel, final String root) {
-        List<LinkObject> linkObjects = new ArrayList<>();
+    public static Link[] getObjectDescription(final ObjectModel objectModel, final String root) {
+        List<Link> links = new ArrayList<>();
 
         // clean root path
         String rootPath = root == null ? "" : root;
 
-        // create link object for "object"
+        // create link for "object"
         String objectURL = getPath("/", rootPath, Integer.toString(objectModel.id));
-        linkObjects.add(new LinkObject(objectURL));
+        links.add(new Link(objectURL));
 
         // sort resources
         List<ResourceModel> resources = new ArrayList<>(objectModel.resources.values());
@@ -99,35 +99,35 @@ public final class LinkFormatHelper {
             }
         });
 
-        // create link object for resource
+        // create links for resource
         for (ResourceModel resourceModel : resources) {
             String resourceURL = getPath("/", rootPath, Integer.toString(objectModel.id), "0",
                     Integer.toString(resourceModel.id));
-            linkObjects.add(new LinkObject(resourceURL));
+            links.add(new Link(resourceURL));
         }
 
-        return linkObjects.toArray(new LinkObject[] {});
+        return links.toArray(new Link[] {});
     }
 
-    public static LinkObject getInstanceDescription(final ObjectModel objectModel, final int instanceId,
+    public static Link getInstanceDescription(final ObjectModel objectModel, final int instanceId,
             final String root) {
         // clean root path
         String rootPath = root == null ? "" : root;
 
-        // create link object for "object"
+        // create link for "instance"
         String objectURL = getPath("/", rootPath, Integer.toString(objectModel.id), Integer.toString(instanceId));
-        return new LinkObject(objectURL);
+        return new Link(objectURL);
     }
 
-    public static LinkObject getResourceDescription(final int objectId, final int instanceId,
+    public static Link getResourceDescription(final int objectId, final int instanceId,
             final ResourceModel resourceModel, final String root) {
         // clean root path
         String rootPath = root == null ? "" : root;
 
-        // create link object for "object"
+        // create link for "resource"
         String objectURL = getPath("/", rootPath, Integer.toString(objectId), Integer.toString(instanceId),
                 Integer.toString(resourceModel.id));
-        return new LinkObject(objectURL);
+        return new Link(objectURL);
     }
 
     private static final String getPath(String first, String... more) {

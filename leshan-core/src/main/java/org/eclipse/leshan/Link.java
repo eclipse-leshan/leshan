@@ -25,11 +25,10 @@ import org.eclipse.leshan.util.Charsets;
 import org.eclipse.leshan.util.StringUtils;
 
 /**
- * A Link Format object. see (http://tools.ietf.org/html/rfc6690)
+ * A Link as defined in http://tools.ietf.org/html/rfc6690.
  */
-// TODO this class should not have a lwM2M flavor.
 // TODO we should have a look at org.eclipse.californium.core.coap.LinkFormat
-public class LinkObject implements Serializable {
+public class Link implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -38,21 +37,21 @@ public class LinkObject implements Serializable {
     private final Map<String, Object> attributes;
 
     /**
-     * Creates a new link object without attributes.
+     * Creates a new Link without attributes.
      * 
      * @param url the object link URL
      */
-    public LinkObject(String url) {
+    public Link(String url) {
         this(url, null);
     }
 
     /**
-     * Creates a new instance from a URL and attributes.
+     * Creates a new link and with its attributes.
      * 
-     * @param url the object link URL
+     * @param url the link URL
      * @param attributes the object link attributes or <code>null</code> if the link has no attributes
      */
-    public LinkObject(String url, Map<String, ?> attributes) {
+    public Link(String url, Map<String, ?> attributes) {
         this.url = url;
         if (attributes != null) {
             this.attributes = Collections.unmodifiableMap(new HashMap<String, Object>(attributes));
@@ -99,13 +98,13 @@ public class LinkObject implements Serializable {
         return builder.toString();
     }
 
-    public static LinkObject[] parse(byte[] content) {
+    public static Link[] parse(byte[] content) {
         if (content == null) {
-            return new LinkObject[] {};
+            return new Link[] {};
         }
         String s = new String(content, Charsets.UTF_8);
         String[] links = s.split(",");
-        LinkObject[] linksResult = new LinkObject[links.length];
+        Link[] linksResult = new Link[links.length];
         int index = 0;
         for (String link : links) {
             String[] linkParts = link.split(";");
@@ -136,7 +135,7 @@ public class LinkObject implements Serializable {
                     }
                 }
             }
-            linksResult[index] = new LinkObject(url, attributes);
+            linksResult[index] = new Link(url, attributes);
             index++;
         }
         return linksResult;
@@ -145,10 +144,10 @@ public class LinkObject implements Serializable {
     public static final String INVALID_LINK_PAYLOAD = "<>";
     private static final String TRAILER = ", ";
 
-    public static String serialize(LinkObject... linkObjects) {
+    public static String serialize(Link... linkObjects) {
         try {
             final StringBuilder builder = new StringBuilder();
-            for (final LinkObject link : linkObjects) {
+            for (final Link link : linkObjects) {
                 builder.append(link.toString()).append(TRAILER);
             }
 
@@ -177,7 +176,7 @@ public class LinkObject implements Serializable {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        LinkObject other = (LinkObject) obj;
+        Link other = (Link) obj;
         if (attributes == null) {
             if (other.attributes != null)
                 return false;

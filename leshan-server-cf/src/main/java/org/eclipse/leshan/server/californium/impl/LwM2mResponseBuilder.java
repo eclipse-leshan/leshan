@@ -20,7 +20,7 @@ import static org.eclipse.leshan.core.californium.ResponseCodeUtil.fromCoapCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
-import org.eclipse.leshan.LinkObject;
+import org.eclipse.leshan.Link;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -106,14 +106,14 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     public void visit(final DiscoverRequest request) {
         switch (coapResponse.getCode()) {
         case CONTENT:
-            LinkObject[] links = null;
+            Link[] links = null;
             if (MediaTypeRegistry.APPLICATION_LINK_FORMAT != coapResponse.getOptions().getContentFormat()) {
                 LOG.debug("Expected LWM2M Client [{}] to return application/link-format [{}] content but got [{}]",
                         registration.getEndpoint(), MediaTypeRegistry.APPLICATION_LINK_FORMAT,
                         coapResponse.getOptions().getContentFormat());
-                links = new LinkObject[] {}; // empty list
+                links = new Link[] {}; // empty list
             } else {
-                links = LinkObject.parse(coapResponse.getPayload());
+                links = Link.parse(coapResponse.getPayload());
             }
             lwM2mresponse = new DiscoverResponse(ResponseCode.CONTENT, links, null, coapResponse);
             break;

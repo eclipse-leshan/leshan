@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
-import org.eclipse.leshan.LinkObject;
+import org.eclipse.leshan.Link;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.UpdateResponse;
 
@@ -29,7 +29,7 @@ public class UpdateRequest implements UplinkRequest<UpdateResponse> {
     private final String smsNumber;
     private final BindingMode bindingMode;
     private final String registrationId;
-    private final LinkObject[] objectLinks;
+    private final Link[] objectLinks;
 
     /**
      * Sets all fields.
@@ -42,7 +42,7 @@ public class UpdateRequest implements UplinkRequest<UpdateResponse> {
      * @exception InvalidRequestException if the registrationId is empty.
      */
     public UpdateRequest(String registrationId, Long lifetime, String smsNumber, BindingMode binding,
-            LinkObject[] objectLinks) throws InvalidRequestException {
+            Link[] objectLinks) throws InvalidRequestException {
 
         if (registrationId == null || registrationId.isEmpty())
             throw new InvalidRequestException("registrationId is mandatory");
@@ -58,7 +58,7 @@ public class UpdateRequest implements UplinkRequest<UpdateResponse> {
         return registrationId;
     }
 
-    public LinkObject[] getObjectLinks() {
+    public Link[] getObjectLinks() {
         return objectLinks;
     }
 
