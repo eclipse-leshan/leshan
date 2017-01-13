@@ -43,8 +43,8 @@ import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
 import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
-import org.eclipse.leshan.server.observation.ObservationService;
 import org.eclipse.leshan.server.observation.ObservationListener;
+import org.eclipse.leshan.server.observation.ObservationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -212,15 +212,15 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
 
         if (coapResponse.getCode() == CoAP.ResponseCode.CHANGED
                 || coapResponse.getCode() == CoAP.ResponseCode.CONTENT) {
-            try {
-                // get registration Id
-                String regid = coapRequest.getUserContext().get(CTX_REGID);
-                
-                // get observation for this request
-                Observation observation = registrationStore.getObservation(regid, coapResponse.getToken());
-                if (observation == null)
-                    return;
+            // get registration Id
+            String regid = coapRequest.getUserContext().get(CTX_REGID);
 
+            // get observation for this request
+            Observation observation = registrationStore.getObservation(regid, coapResponse.getToken());
+            if (observation == null)
+                return;
+
+            try {
                 // get registration
                 Registration registration = registrationStore.getRegistration(observation.getRegistrationId());
                 if (registration == null)
@@ -252,10 +252,15 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
 
                 // notify all listeners
                 for (ObservationListener listener : listeners) {
-                    listener.newValue(observation, response);
+                    listener.onResponse(observation, response);
                 }
-            } catch (InvalidValueException e) {
-                LOG.debug(String.format("[%s] ([%s])", e.getMessage(), e.getPath().toString()));
+            } catch (InvalidValueException | RuntimeException e) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(String.format("Unable to handle notification for observation [%s]", observation), e);
+                }
+                for (ObservationListener listener : listeners) {
+                    listener.onError(observation, e);
+                }
             }
         }
     }

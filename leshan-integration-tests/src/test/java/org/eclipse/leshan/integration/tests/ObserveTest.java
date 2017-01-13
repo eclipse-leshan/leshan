@@ -329,9 +329,16 @@ public class ObserveTest {
         private ObserveResponse response;
 
         @Override
-        public void newValue(Observation observation, ObserveResponse response) {
+        public void onResponse(Observation observation, ObserveResponse response) {
             receivedNotify.set(true);
             this.response = response;
+            latch.countDown();
+        }
+
+        @Override
+        public void onError(Observation observation, Exception error) {
+            receivedNotify.set(true);
+            this.response = null;
             latch.countDown();
         }
 

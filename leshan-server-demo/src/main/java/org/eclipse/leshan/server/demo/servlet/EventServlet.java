@@ -28,10 +28,10 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.client.Registration;
-import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.server.client.RegistrationListener;
-import org.eclipse.leshan.server.demo.servlet.json.RegistrationSerializer;
+import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.server.demo.servlet.json.LwM2mNodeSerializer;
+import org.eclipse.leshan.server.demo.servlet.json.RegistrationSerializer;
 import org.eclipse.leshan.server.demo.servlet.log.CoapMessage;
 import org.eclipse.leshan.server.demo.servlet.log.CoapMessageListener;
 import org.eclipse.leshan.server.demo.servlet.log.CoapMessageTracer;
@@ -99,7 +99,7 @@ public class EventServlet extends EventSourceServlet {
         }
 
         @Override
-        public void newValue(Observation observation, ObserveResponse response) {
+        public void onResponse(Observation observation, ObserveResponse response) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Received notification from [{}] containing value [{}]", observation.getPath(),
                         response.getContent().toString());
@@ -113,6 +113,14 @@ public class EventServlet extends EventSourceServlet {
                         .append("}").toString();
 
                 sendEvent(EVENT_NOTIFICATION, data, registration.getEndpoint());
+            }
+        }
+
+        @Override
+        public void onError(Observation observation, Exception error) {
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(String.format("Unable to handle notification of [%s:%s]", observation.getRegistrationId(),
+                        observation.getPath()), error);
             }
         }
 
