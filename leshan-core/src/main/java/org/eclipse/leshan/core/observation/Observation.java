@@ -18,6 +18,7 @@ package org.eclipse.leshan.core.observation;
 import java.util.Map;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.util.Hex;
 
 /**
  * An observation of a resource provided by a LWM2M Client.
@@ -77,4 +78,9 @@ public class Observation {
         return context;
     }
 
+    @Override
+    public String toString() {
+        return String.format("Observation [id=%s, path=%s, registrationId=%s, context=%s]", Hex.encodeHexString(id),
+                path, registrationId, context);
+    }
 }
