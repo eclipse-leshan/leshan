@@ -44,11 +44,6 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
         // Create the CoAP request from LwM2m request
         final CoapClientRequestBuilder coapClientRequestBuilder = new CoapClientRequestBuilder(serverAddress);
         request.accept(coapClientRequestBuilder);
-        // TODO manage invalid parameters
-        // if (!coapClientRequestBuilder.areParametersValid()) {
-        // return OperationResponse.failure(ResponseCode.INTERNAL_SERVER_ERROR,
-        // "Request has invalid parameters. Not sending.");
-        // }
         final Request coapRequest = coapClientRequestBuilder.getRequest();
 
         // Send CoAP request synchronously
@@ -81,12 +76,6 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
         // Create the CoAP request from LwM2m request
         final CoapClientRequestBuilder coapClientRequestBuilder = new CoapClientRequestBuilder(serverAddress);
         request.accept(coapClientRequestBuilder);
-        // TODO manage invalid parameters
-        // if (!coapClientRequestBuilder.areParametersValid()) {
-        // responseCallback.onFailure(OperationResponse.failure(ResponseCode.INTERNAL_SERVER_ERROR,
-        // "Request has invalid parameters. Not sending."));
-        // return;
-        // }
         final Request coapRequest = coapClientRequestBuilder.getRequest();
 
         // Add CoAP request callback
