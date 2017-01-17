@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Type;
 import java.util.Collections;
@@ -95,7 +94,6 @@ public class BootstrapStoreImpl implements BootstrapStore {
 
     // /////// File persistence
 
-    @SuppressWarnings("unchecked")
     private void loadFromFile() {
         try {
             File file = new File(filename);
@@ -103,16 +101,6 @@ public class BootstrapStoreImpl implements BootstrapStore {
                 try (InputStreamReader in = new InputStreamReader(new FileInputStream(file))) {
                     Map<String, BootstrapConfig> config = gson.fromJson(in, gsonType);
                     bootstrapByEndpoint.putAll(config);
-                }
-            } else {
-                // TODO temporary code for retro compatibility: remove it later.
-                if (DEFAULT_FILE.equals(filename)) {
-                    file = new File("data/bootstrap.data");// old bootstrap configurations default filename
-                    if (file.exists()) {
-                        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
-                            bootstrapByEndpoint.putAll((Map<String, BootstrapConfig>) in.readObject());
-                        }
-                    }
                 }
             }
         } catch (Exception e) {
