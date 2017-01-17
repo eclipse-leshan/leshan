@@ -104,7 +104,6 @@ public class Device extends BaseInstanceEnabler {
     public ExecuteResponse execute(int resourceid, String params) {
 
         if (resourceid == 4) { // reboot
-            // TODO implement reboot executable resource
             return ExecuteResponse.internalServerError("not implemented");
         } else {
             return super.execute(resourceid, params);

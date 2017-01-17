@@ -70,7 +70,7 @@ public class BootstrapHandler {
                 return BootstrapDeleteResponse.badRequest("not from a bootstrap server");
             }
 
-            // TODO the spec say that delete on "/" should delete all the existing Object Instances - except LWM2M
+            // The spec say that delete on "/" should delete all the existing Object Instances - except LWM2M
             // Bootstrap Server Account, (see 5.2.5.2 Bootstrap Delete)
             // For now we only remove security and server object.
 
