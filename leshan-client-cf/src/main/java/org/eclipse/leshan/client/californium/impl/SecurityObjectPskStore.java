@@ -16,11 +16,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.impl;
 
-import static org.eclipse.leshan.LwM2mId.SECURITY;
-import static org.eclipse.leshan.LwM2mId.SEC_PUBKEY_IDENTITY;
-import static org.eclipse.leshan.LwM2mId.SEC_SECRET_KEY;
-import static org.eclipse.leshan.LwM2mId.SEC_SECURITY_MODE;
-import static org.eclipse.leshan.LwM2mId.SEC_SERVER_URI;
+import static org.eclipse.leshan.LwM2mId.*;
 import static org.eclipse.leshan.client.request.ServerIdentity.SYSTEM;
 
 import java.net.InetSocketAddress;
@@ -29,6 +25,7 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 
 import org.eclipse.californium.scandium.dtls.pskstore.PskStore;
+import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.node.LwM2mObject;
@@ -57,8 +54,7 @@ public class SecurityObjectPskStore implements PskStore {
         LwM2mObject securities = (LwM2mObject) securityEnabler.read(SYSTEM, new ReadRequest(SECURITY)).getContent();
         for (LwM2mObjectInstance security : securities.getInstances().values()) {
             long securityMode = (long) security.getResource(SEC_SECURITY_MODE).getValue();
-            // TODO use SecurityMode from serve.core ?
-            if (securityMode == 0) // psk
+            if (securityMode == SecurityMode.PSK.code) // psk
             {
                 byte[] pskIdentity = (byte[]) security.getResource(SEC_PUBKEY_IDENTITY).getValue();
                 if (Arrays.equals(identity.getBytes(), pskIdentity))
@@ -76,8 +72,7 @@ public class SecurityObjectPskStore implements PskStore {
         LwM2mObject securities = (LwM2mObject) securityEnabler.read(SYSTEM, new ReadRequest(SECURITY)).getContent();
         for (LwM2mObjectInstance security : securities.getInstances().values()) {
             long securityMode = (long) security.getResource(SEC_SECURITY_MODE).getValue();
-            // TODO use SecurityMode from server.core ?
-            if (securityMode == 0) // psk
+            if (securityMode == SecurityMode.PSK.code)
             {
                 try {
                     URI uri = new URI((String) security.getResource(SEC_SERVER_URI).getValue());

@@ -16,21 +16,14 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.servers;
 
-import static org.eclipse.leshan.LwM2mId.SECURITY;
-import static org.eclipse.leshan.LwM2mId.SEC_BOOTSTRAP;
-import static org.eclipse.leshan.LwM2mId.SEC_SECURITY_MODE;
-import static org.eclipse.leshan.LwM2mId.SEC_SERVER_ID;
-import static org.eclipse.leshan.LwM2mId.SEC_SERVER_URI;
-import static org.eclipse.leshan.LwM2mId.SERVER;
-import static org.eclipse.leshan.LwM2mId.SRV_BINDING;
-import static org.eclipse.leshan.LwM2mId.SRV_LIFETIME;
-import static org.eclipse.leshan.LwM2mId.SRV_SERVER_ID;
+import static org.eclipse.leshan.LwM2mId.*;
 import static org.eclipse.leshan.client.request.ServerIdentity.SYSTEM;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 
+import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
@@ -66,7 +59,8 @@ public class ServersInfoExtractor {
                         ServerInfo info = new ServerInfo();
                         info.serverId = (long) security.getResource(SEC_SERVER_ID).getValue();
                         info.serverUri = new URI((String) security.getResource(SEC_SERVER_URI).getValue());
-                        info.secureMode = (long) security.getResource(SEC_SECURITY_MODE).getValue();
+                        info.secureMode = SecurityMode
+                                .fromCode((long) security.getResource(SEC_SECURITY_MODE).getValue());
                         infos.bootstrap = info;
                     }
                 } else {
@@ -74,7 +68,7 @@ public class ServersInfoExtractor {
                     DmServerInfo info = new DmServerInfo();
                     info.serverUri = new URI((String) security.getResource(SEC_SERVER_URI).getValue());
                     info.serverId = (long) security.getResource(SEC_SERVER_ID).getValue();
-                    info.secureMode = (long) security.getResource(SEC_SECURITY_MODE).getValue();
+                    info.secureMode = SecurityMode.fromCode((long) security.getResource(SEC_SECURITY_MODE).getValue());
 
                     // search corresponding device management server
                     for (LwM2mObjectInstance server : servers.getInstances().values()) {

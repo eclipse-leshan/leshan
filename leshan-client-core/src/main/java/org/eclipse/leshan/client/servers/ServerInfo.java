@@ -19,6 +19,7 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.eclipse.leshan.SecurityMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,8 +29,7 @@ public class ServerInfo {
 
     public long serverId;
     public URI serverUri;
-    // TODO use SecureMode from server.core
-    public long secureMode;
+    public SecurityMode secureMode;
 
     public InetSocketAddress getAddress() {
         return getAddress(serverUri);
@@ -40,7 +40,7 @@ public class ServerInfo {
     }
 
     public boolean isSecure() {
-        return secureMode != 3;
+        return secureMode != SecurityMode.NO_SEC;
     }
 
     @Override

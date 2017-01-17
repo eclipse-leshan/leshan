@@ -26,4 +26,17 @@ public enum SecurityMode {
     private SecurityMode(int code) {
         this.code = code;
     }
+
+    public static SecurityMode fromCode(long code) {
+        return fromCode((int) code);
+    }
+
+    public static SecurityMode fromCode(int code) {
+        for (SecurityMode sm : SecurityMode.values()) {
+            if (sm.code == code) {
+                return sm;
+            }
+        }
+        throw new IllegalArgumentException(String.format("Unsupported security code : %d", code));
+    }
 }
