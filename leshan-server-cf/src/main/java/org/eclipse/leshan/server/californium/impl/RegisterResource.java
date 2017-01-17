@@ -148,7 +148,7 @@ public class RegisterResource extends CoapResource {
 
         // Create LwM2m request from CoAP request
         // --------------------------------
-        // TODO: assert content media type is APPLICATION LINK FORMAT?
+        // We don't check content media type is APPLICATION LINK FORMAT for now as this is the only format we can expect
         String endpoint = null;
         Long lifetime = null;
         String smsNumber = null;
