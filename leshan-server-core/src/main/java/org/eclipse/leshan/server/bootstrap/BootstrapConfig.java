@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.core.request.BindingMode;
 
 /**
