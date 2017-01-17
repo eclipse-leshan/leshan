@@ -271,7 +271,7 @@ public class RegistrationTest {
         Map<String, String> additionalAttributes = new HashMap<>();
         additionalAttributes.put("key1", "value1");
         additionalAttributes.put("imei", "2136872368");
-        Link[] objectLinks = Link.parse("</>;rt=\"oma.lwm2m\",</0/0>,</1/0>,</2>,</3/0>".getBytes());
+        Link[] objectLinks = Link.parse("</>;rt=\"oma.lwm2m\",</1/0>,</2>,</3/0>".getBytes());
         RegisterRequest registerRequest = new RegisterRequest(helper.getCurrentEndpoint(), null, null,
                 null,
                 null, objectLinks,
@@ -285,8 +285,7 @@ public class RegistrationTest {
         helper.assertClientRegisterered();
         assertNotNull(helper.last_registration);
         assertEquals(additionalAttributes, helper.last_registration.getAdditionalRegistrationAttributes());
-        // TODO </0/0> should not be part of the object links
-        assertArrayEquals(Link.parse("</>;rt=\"oma.lwm2m\",</0/0>,</1/0>,</2>,</3/0>".getBytes()),
+        assertArrayEquals(Link.parse("</>;rt=\"oma.lwm2m\",</1/0>,</2>,</3/0>".getBytes()),
                 helper.getCurrentRegistration().getObjectLinks());
 
         sender.send(helper.server.getNonSecureAddress(), false, new DeregisterRequest(resp.getRegistrationID()), 5000l);
