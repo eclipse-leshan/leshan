@@ -346,7 +346,6 @@ public class LwM2mNodeJsonDecoder {
                 // JSON format specs said v = integer or float
                 return ((Number) value).doubleValue();
             case TIME:
-                // TODO Specs page 44, Resource 13 (current time) of device object represented as Float value
                 return new Date(((Number) value).longValue() * 1000L);
             case OPAQUE:
                 // If the Resource data type is opaque the string value
