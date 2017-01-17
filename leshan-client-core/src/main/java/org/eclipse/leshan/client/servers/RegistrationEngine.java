@@ -290,6 +290,8 @@ public class RegistrationEngine {
                 }
             } catch (InterruptedException e) {
                 LOG.info("Registration task interrupted.");
+            } catch (RuntimeException e) {
+                LOG.error("Unexpected exception during update registration task", e);
             }
         }
     }
@@ -324,6 +326,8 @@ public class RegistrationEngine {
                 }
             } catch (InterruptedException e) {
                 LOG.info("Registration update task interrupted.");
+            } catch (RuntimeException e) {
+                LOG.error("Unexpected exception during update registration task", e);
             }
         }
     }
