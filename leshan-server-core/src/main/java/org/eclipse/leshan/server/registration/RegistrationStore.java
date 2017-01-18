@@ -65,7 +65,7 @@ public interface RegistrationStore {
      * @param address of the client registered.
      * @return the registration or null if there is no client registered with this socket address.
      */
-    Collection<Registration> getRegistrationByAdress(InetSocketAddress address);
+    Registration getRegistrationByAdress(InetSocketAddress address);
 
     /**
      * @return all registrations in this store.
