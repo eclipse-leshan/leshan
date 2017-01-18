@@ -41,6 +41,7 @@ import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.DeregisterResponse;
 import org.eclipse.leshan.core.response.RegisterResponse;
 import org.eclipse.leshan.core.response.UpdateResponse;
+import org.eclipse.leshan.server.impl.SendableResponse;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
 import org.eclipse.leshan.server.registration.RegistrationService;
 import org.slf4j.Logger;
@@ -187,7 +188,18 @@ public class RegisterResource extends CoapResource {
         // Handle request
         // -------------------------------
         InetSocketAddress serverEndpoint = exchange.advanced().getEndpoint().getAddress();
-        RegisterResponse response = registrationHandler.register(sender, registerRequest, serverEndpoint);
+        final SendableResponse<RegisterResponse> sendableResponse = registrationHandler.register(sender,
+                registerRequest, serverEndpoint);
+        RegisterResponse response = sendableResponse.getResponse();
+
+        // Mark the response as sended when the exchange is complete
+        exchange.advanced().setObserver(new ExchangeObserverAdapter() {
+            @Override
+            public void completed(Exchange exchange) {
+                sendableResponse.sent();
+
+            }
+        });
 
         // Create CoAP Response from LwM2m request
         // -------------------------------
@@ -223,7 +235,16 @@ public class RegisterResource extends CoapResource {
         UpdateRequest updateRequest = new UpdateRequest(registrationId, lifetime, smsNumber, binding, objectLinks);
 
         // Handle request
-        UpdateResponse updateResponse = registrationHandler.update(sender, updateRequest);
+        final SendableResponse<UpdateResponse> sendableResponse = registrationHandler.update(sender, updateRequest);
+        UpdateResponse updateResponse = sendableResponse.getResponse();
+
+        // Mark the response as sended when the exchange is complete
+        exchange.advanced().setObserver(new ExchangeObserverAdapter() {
+            @Override
+            public void completed(Exchange exchange) {
+                sendableResponse.sent();
+            }
+        });
 
         // Create CoAP Response from LwM2m request
         exchange.respond(fromLwM2mCode(updateResponse.getCode()), updateResponse.getErrorMessage());
@@ -237,7 +258,17 @@ public class RegisterResource extends CoapResource {
         DeregisterRequest deregisterRequest = new DeregisterRequest(registrationId);
 
         // Handle request
-        DeregisterResponse deregisterResponse = registrationHandler.deregister(sender, deregisterRequest);
+        final SendableResponse<DeregisterResponse> sendableResponse = registrationHandler.deregister(sender,
+                deregisterRequest);
+        DeregisterResponse deregisterResponse = sendableResponse.getResponse();
+
+        // Mark the response as sended when the exchange is complete
+        exchange.advanced().setObserver(new ExchangeObserverAdapter() {
+            @Override
+            public void completed(Exchange exchange) {
+                sendableResponse.sent();
+            }
+        });
 
         // Create CoAP Response from LwM2m request
         exchange.respond(fromLwM2mCode(deregisterResponse.getCode()), deregisterResponse.getErrorMessage());
