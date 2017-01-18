@@ -41,6 +41,7 @@ import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.DeregisterResponse;
 import org.eclipse.leshan.core.response.RegisterResponse;
 import org.eclipse.leshan.core.response.UpdateResponse;
+import org.eclipse.leshan.server.impl.SendableResponse;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
 import org.eclipse.leshan.server.registration.RegistrationService;
 import org.slf4j.Logger;
@@ -184,7 +185,9 @@ public class RegisterResource extends CoapResource {
         // Handle request
         // -------------------------------
         InetSocketAddress serverEndpoint = exchange.advanced().getEndpoint().getAddress();
-        RegisterResponse response = registrationHandler.register(sender, registerRequest, serverEndpoint);
+        final SendableResponse<RegisterResponse> sendableResponse = registrationHandler.register(sender,
+                registerRequest, serverEndpoint);
+        RegisterResponse response = sendableResponse.getResponse();
 
         // Create CoAP Response from LwM2m request
         // -------------------------------
@@ -194,6 +197,7 @@ public class RegisterResource extends CoapResource {
         } else {
             exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
         }
+        sendableResponse.sent();
     }
 
     private void handleUpdate(CoapExchange exchange, Request request, String registrationId) {
@@ -220,10 +224,12 @@ public class RegisterResource extends CoapResource {
         UpdateRequest updateRequest = new UpdateRequest(registrationId, lifetime, smsNumber, binding, objectLinks);
 
         // Handle request
-        UpdateResponse updateResponse = registrationHandler.update(sender, updateRequest);
+        final SendableResponse<UpdateResponse> sendableResponse = registrationHandler.update(sender, updateRequest);
+        UpdateResponse updateResponse = sendableResponse.getResponse();
 
         // Create CoAP Response from LwM2m request
         exchange.respond(fromLwM2mCode(updateResponse.getCode()), updateResponse.getErrorMessage());
+        sendableResponse.sent();
     }
 
     private void handleDeregister(CoapExchange exchange, String registrationId) {
@@ -234,10 +240,13 @@ public class RegisterResource extends CoapResource {
         DeregisterRequest deregisterRequest = new DeregisterRequest(registrationId);
 
         // Handle request
-        DeregisterResponse deregisterResponse = registrationHandler.deregister(sender, deregisterRequest);
+        final SendableResponse<DeregisterResponse> sendableResponse = registrationHandler.deregister(sender,
+                deregisterRequest);
+        DeregisterResponse deregisterResponse = sendableResponse.getResponse();
 
         // Create CoAP Response from LwM2m request
         exchange.respond(fromLwM2mCode(deregisterResponse.getCode()), deregisterResponse.getErrorMessage());
+        sendableResponse.sent();
     }
 
     // Since the V1_0-20150615-D version of specification, the registration update should be a CoAP POST.
