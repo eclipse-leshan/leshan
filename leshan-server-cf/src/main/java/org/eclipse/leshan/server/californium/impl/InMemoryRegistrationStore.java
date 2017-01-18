@@ -135,8 +135,13 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     }
 
     @Override
-    public Collection<Registration> getRegistrationByAdress(InetSocketAddress address) {
-        // TODO needed to remove getAllRegistration()
+    public Registration getRegistrationByAdress(InetSocketAddress address) {
+        // TODO we should create an index instead of iterate all over the collection
+        for (Registration r : regsByEp.values()) {
+            if (address.getPort() == r.getPort() && address.getAddress().equals(r.getAddress())) {
+                return r;
+            }
+        }
         return null;
     }
 

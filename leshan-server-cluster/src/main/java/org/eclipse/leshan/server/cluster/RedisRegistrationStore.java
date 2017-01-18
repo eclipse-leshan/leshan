@@ -39,8 +39,8 @@ import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
 import org.eclipse.leshan.server.californium.impl.CoapRequestBuilder;
 import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.client.RegistrationUpdate;
-import org.eclipse.leshan.server.cluster.serialization.RegistrationSerDes;
 import org.eclipse.leshan.server.cluster.serialization.ObservationSerDes;
+import org.eclipse.leshan.server.cluster.serialization.RegistrationSerDes;
 import org.eclipse.leshan.server.registration.Deregistration;
 import org.eclipse.leshan.server.registration.ExpirationListener;
 import org.eclipse.leshan.util.Validate;
@@ -195,8 +195,13 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     }
 
     @Override
-    public Collection<Registration> getRegistrationByAdress(InetSocketAddress address) {
-        // TODO Auto-generated method stub
+    public Registration getRegistrationByAdress(InetSocketAddress address) {
+        // TODO we should create an index instead of iterate all over the collection
+        for (Registration r : getAllRegistration()) {
+            if (address.getPort() == r.getPort() && address.getAddress().equals(r.getAddress())) {
+                return r;
+            }
+        }
         return null;
     }
 
