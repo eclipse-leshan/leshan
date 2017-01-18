@@ -22,14 +22,14 @@ import org.eclipse.leshan.Link;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.client.RegistrationUpdate;
-import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
+import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class RegistrationServiceImplTest {
+public class InMemoryRegistrationStoreTest {
 
-    RegistrationServiceImpl registrationService;
+    RegistrationStore store;
     String ep = "urn:endpoint";
     InetAddress address;
     int port = 23452;
@@ -43,21 +43,21 @@ public class RegistrationServiceImplTest {
     @Before
     public void setUp() throws Exception {
         address = InetAddress.getLocalHost();
-        registrationService = new RegistrationServiceImpl(new InMemoryRegistrationStore());
+        store = new InMemoryRegistrationStore();
     }
 
     @Test
     public void update_registration_keeps_properties_unchanged() {
         givenASimpleRegistration(lifetime);
-        registrationService.registerClient(registration);
+        store.addRegistration(registration);
 
         RegistrationUpdate update = new RegistrationUpdate(registrationId, address, port, null, null, null, null);
-        Registration updatedRegistration = registrationService.updateRegistration(update);
+        Registration updatedRegistration = store.updateRegistration(update);
         Assert.assertEquals(lifetime, updatedRegistration.getLifeTimeInSec());
         Assert.assertSame(binding, updatedRegistration.getBindingMode());
         Assert.assertEquals(sms, updatedRegistration.getSmsNumber());
 
-        Registration reg = registrationService.getByEndpoint(ep);
+        Registration reg = store.getRegistrationByEndpoint(ep);
         Assert.assertEquals(lifetime, reg.getLifeTimeInSec());
         Assert.assertSame(binding, reg.getBindingMode());
         Assert.assertEquals(sms, reg.getSmsNumber());
@@ -66,21 +66,21 @@ public class RegistrationServiceImplTest {
     @Test
     public void client_registration_sets_time_to_live() {
         givenASimpleRegistration(lifetime);
-        registrationService.registerClient(registration);
+        store.addRegistration(registration);
         Assert.assertTrue(registration.isAlive());
     }
 
     @Test
     public void update_registration_to_extend_time_to_live() {
         givenASimpleRegistration(0L);
-        registrationService.registerClient(registration);
+        store.addRegistration(registration);
         Assert.assertFalse(registration.isAlive());
 
         RegistrationUpdate update = new RegistrationUpdate(registrationId, address, port, lifetime, null, null, null);
-        Registration updatedRegistration = registrationService.updateRegistration(update);
+        Registration updatedRegistration = store.updateRegistration(update);
         Assert.assertTrue(updatedRegistration.isAlive());
 
-        Registration reg = registrationService.getByEndpoint(ep);
+        Registration reg = store.getRegistrationByEndpoint(ep);
         Assert.assertTrue(reg.isAlive());
     }
 
