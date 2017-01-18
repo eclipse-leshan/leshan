@@ -211,7 +211,7 @@ public class IntegrationTestHelper {
     public void deregisterClient() {
         Registration r = getCurrentRegistration();
         if (r != null)
-            ((RegistrationServiceImpl) server.getRegistrationService()).deregisterClient(r.getId());
+            ((RegistrationServiceImpl) server.getRegistrationService()).getStore().removeRegistration(r.getId());
     }
 
     public void dispose() {
