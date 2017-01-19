@@ -20,8 +20,8 @@ import static org.eclipse.leshan.server.californium.impl.CoapRequestBuilder.*;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -146,14 +146,13 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     }
 
     @Override
-    public Collection<Registration> getAllRegistration() {
+    public Iterator<Registration> getAllRegistrations() {
         try {
             lock.readLock().lock();
-            return Collections.unmodifiableCollection(regsByEp.values());
+            return new ArrayList<>(regsByEp.values()).iterator();
         } finally {
             lock.readLock().unlock();
         }
-
     }
 
     @Override
@@ -429,7 +428,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
         @Override
         public void run() {
             try {
-                for (Registration reg : new ArrayList<Registration>(getAllRegistration())) {
+                for (Registration reg : new ArrayList<Registration>(regsByEp.values())) {
                     if (!reg.isAlive()) {
                         // force de-registration
                         Deregistration removedRegistration = removeRegistration(reg.getId());
