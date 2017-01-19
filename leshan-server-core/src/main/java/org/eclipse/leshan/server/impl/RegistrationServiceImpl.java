@@ -15,7 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.impl;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -58,12 +57,8 @@ public class RegistrationServiceImpl implements RegistrationService, ExpirationL
     }
 
     @Override
-    public Collection<Registration> getAllRegistrations() {
-        ArrayList<Registration> result = new ArrayList<Registration>();
-        for (Iterator<Registration> iterator = store.getAllRegistrations(); iterator.hasNext();) {
-            result.add(iterator.next());
-        }
-        return result;
+    public Iterator<Registration> getAllRegistrations() {
+        return store.getAllRegistrations();
     }
 
     @Override
