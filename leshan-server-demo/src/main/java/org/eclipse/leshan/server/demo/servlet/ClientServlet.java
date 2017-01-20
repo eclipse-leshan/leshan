@@ -16,7 +16,9 @@
 package org.eclipse.leshan.server.demo.servlet;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -47,9 +49,9 @@ import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.client.Registration;
-import org.eclipse.leshan.server.demo.servlet.json.RegistrationSerializer;
 import org.eclipse.leshan.server.demo.servlet.json.LwM2mNodeDeserializer;
 import org.eclipse.leshan.server.demo.servlet.json.LwM2mNodeSerializer;
+import org.eclipse.leshan.server.demo.servlet.json.RegistrationSerializer;
 import org.eclipse.leshan.server.demo.servlet.json.ResponseSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,7 +97,11 @@ public class ClientServlet extends HttpServlet {
 
         // all registered clients
         if (req.getPathInfo() == null) {
-            Collection<Registration> registrations = server.getRegistrationService().getAllRegistrations();
+            Collection<Registration> registrations = new ArrayList<>();
+            for (Iterator<Registration> iterator = server.getRegistrationService().getAllRegistrations(); iterator
+                    .hasNext();) {
+                registrations.add(iterator.next());
+            }
 
             String json = this.gson.toJson(registrations.toArray(new Registration[] {}));
             resp.setContentType("application/json");

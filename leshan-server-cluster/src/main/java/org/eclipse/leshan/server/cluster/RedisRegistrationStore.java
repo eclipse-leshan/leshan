@@ -23,9 +23,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -39,8 +41,8 @@ import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
 import org.eclipse.leshan.server.californium.impl.CoapRequestBuilder;
 import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.client.RegistrationUpdate;
-import org.eclipse.leshan.server.cluster.serialization.RegistrationSerDes;
 import org.eclipse.leshan.server.cluster.serialization.ObservationSerDes;
+import org.eclipse.leshan.server.cluster.serialization.RegistrationSerDes;
 import org.eclipse.leshan.server.registration.Deregistration;
 import org.eclipse.leshan.server.registration.ExpirationListener;
 import org.eclipse.leshan.util.Validate;
@@ -195,32 +197,66 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     }
 
     @Override
-    public Collection<Registration> getRegistrationByAdress(InetSocketAddress address) {
-        // TODO Auto-generated method stub
+    public Registration getRegistrationByAdress(InetSocketAddress address) {
+        // TODO we should create an index instead of iterate all over the collection
+        for (Iterator<Registration> iterator = getAllRegistrations(); iterator.hasNext();) {
+            Registration r = iterator.next();
+            if (address.getPort() == r.getPort() && address.getAddress().equals(r.getAddress())) {
+                return r;
+            }
+        }
         return null;
     }
 
     @Override
-    public Collection<Registration> getAllRegistration() {
-        try (Jedis j = pool.getResource()) {
-            ScanParams params = new ScanParams().match(EP_REG + "*").count(100);
-            Collection<Registration> list = new LinkedList<>();
-            String cursor = "0";
-            do {
-                ScanResult<byte[]> res = j.scan(cursor.getBytes(), params);
-                for (byte[] key : res.getResult()) {
-                    byte[] element = j.get(key);
-                    if (element != null) {
-                        Registration r = deserializeReg(element);
-                        if (r.isAlive()) {
-                            list.add(r);
-                        }
-                    }
-                }
-                cursor = res.getStringCursor();
-            } while (!"0".equals(cursor));
-            return list;
+    public Iterator<Registration> getAllRegistrations() {
+        return new RedisIterator(pool, new ScanParams().match(EP_REG + "*").count(100));
+    }
+
+    protected class RedisIterator implements Iterator<Registration> {
+
+        private Pool<Jedis> pool;
+        private ScanParams scanParams;
+
+        String cursor;
+        List<byte[]> results;
+
+        public RedisIterator(Pool<Jedis> p, ScanParams scanParams) {
+            pool = p;
+            this.scanParams = scanParams;
+            // init scan result
+            scanNext("0");
         }
+
+        private void scanNext(String cursor) {
+            try (Jedis j = pool.getResource()) {
+                ScanResult<byte[]> sr = j.scan(cursor.getBytes(), scanParams);
+                this.results = new ArrayList<>(sr.getResult());
+                this.cursor = sr.getStringCursor();
+            }
+        }
+
+        @Override
+        public boolean hasNext() {
+            try (Jedis j = pool.getResource()) {
+                return !results.isEmpty() || !"0".equals(cursor);
+            }
+        }
+
+        @Override
+        public Registration next() {
+            try (Jedis j = pool.getResource()) {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                if (results.isEmpty()) {
+                    scanNext(cursor);
+                }
+
+                return deserializeReg(j.get(results.remove(0)));
+            }
+        }
+
     }
 
     @Override

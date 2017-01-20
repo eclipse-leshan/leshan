@@ -16,6 +16,7 @@
 package org.eclipse.leshan.server.impl;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -56,8 +57,8 @@ public class RegistrationServiceImpl implements RegistrationService, ExpirationL
     }
 
     @Override
-    public Collection<Registration> getAllRegistrations() {
-        return store.getAllRegistration();
+    public Iterator<Registration> getAllRegistrations() {
+        return store.getAllRegistrations();
     }
 
     @Override

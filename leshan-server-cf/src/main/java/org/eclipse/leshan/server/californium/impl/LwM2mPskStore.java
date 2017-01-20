@@ -54,14 +54,13 @@ public class LwM2mPskStore implements PskStore {
         if (registrationStore == null)
             return null;
 
-        for (Registration r : registrationStore.getAllRegistration()) {
-            if (inetAddress.getPort() == r.getPort() && inetAddress.getAddress().equals(r.getAddress())) {
-                SecurityInfo securityInfo = securityStore.getByEndpoint(r.getEndpoint());
-                if (securityInfo != null) {
-                    return securityInfo.getIdentity();
-                }
-                return null;
+        Registration registration = registrationStore.getRegistrationByAdress(inetAddress);
+        if (registration != null) {
+            SecurityInfo securityInfo = securityStore.getByEndpoint(registration.getEndpoint());
+            if (securityInfo != null) {
+                return securityInfo.getIdentity();
             }
+            return null;
         }
         return null;
     }

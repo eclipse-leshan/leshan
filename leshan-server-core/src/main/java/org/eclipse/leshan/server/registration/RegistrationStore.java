@@ -17,6 +17,7 @@ package org.eclipse.leshan.server.registration;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
+import java.util.Iterator;
 
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.client.Registration;
@@ -65,15 +66,15 @@ public interface RegistrationStore {
      * @param address of the client registered.
      * @return the registration or null if there is no client registered with this socket address.
      */
-    Collection<Registration> getRegistrationByAdress(InetSocketAddress address);
+    Registration getRegistrationByAdress(InetSocketAddress address);
 
     /**
-     * @return all registrations in this store.
-     * @Deprecated should be replaced by an iterator.
+     * Returns an iterator over the registration of this store. There are no guarantees concerning the order in which
+     * the elements are returned (unless the implementation provides a guarantee).
+     *
+     * @return an <tt>Iterator</tt> over the registration in this store
      */
-    // TODO Should be replaced by an iterator.
-    @Deprecated
-    Collection<Registration> getAllRegistration();
+    Iterator<Registration> getAllRegistrations();
 
     /**
      * Remove the registration with the given registration Id
