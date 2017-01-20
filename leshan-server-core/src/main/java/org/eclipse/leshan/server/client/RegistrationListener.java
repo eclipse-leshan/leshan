@@ -15,6 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.client;
 
+import java.util.Collection;
+
+import org.eclipse.leshan.core.observation.Observation;
+
 /**
  * Listen for client registration events.
  */
@@ -39,6 +43,7 @@ public interface RegistrationListener {
      * Invoked when a client has been unregistered from the server.
      *
      * @param registration
+     * @param observations all the observations linked to this registration which has been passively cancelled
      */
-    void unregistered(Registration registration);
+    void unregistered(Registration registration, Collection<Observation> observations);
 }

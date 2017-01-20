@@ -15,6 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.cluster;
 
+import java.util.Collection;
+
+import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.client.RegistrationListener;
 import org.eclipse.leshan.server.client.RegistrationUpdate;
@@ -60,7 +63,7 @@ public class RedisRegistrationEventPublisher implements RegistrationListener {
     }
 
     @Override
-    public void unregistered(Registration registration) {
+    public void unregistered(Registration registration, Collection<Observation> observations) {
         String payload = RegistrationSerDes.sSerialize(registration);
         try (Jedis j = pool.getResource()) {
             j.publish(DEREGISTER_EVENT, payload);

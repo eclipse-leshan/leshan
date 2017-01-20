@@ -17,8 +17,10 @@ package org.eclipse.leshan.integration.tests;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.Collection;
 
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
+import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.client.RegistrationListener;
@@ -63,7 +65,7 @@ public class RedisIntegrationTestHelper extends IntegrationTestHelper {
             }
 
             @Override
-            public void unregistered(Registration registration) {
+            public void unregistered(Registration registration, Collection<Observation> observations) {
                 if (registration.getEndpoint().equals(getCurrentEndpoint())) {
                     deregisterLatch.countDown();
                 }

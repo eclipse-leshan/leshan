@@ -75,7 +75,7 @@ public class RegistrationHandler {
         // notify new registration and de-registration
         LOG.debug("New registration: {}", registration);
         if (deregistration != null) {
-            registrationService.fireUnregistered(deregistration.getRegistration());
+            registrationService.fireUnregistered(deregistration.getRegistration(), deregistration.getObservations());
         }
         registrationService.fireRegistred(registration);
             
@@ -133,7 +133,7 @@ public class RegistrationHandler {
         if (deregistration != null) {
             LOG.debug("Deregistered client: {}", deregistration.getRegistration());
             // notify new de-registration
-            registrationService.fireUnregistered(registration);
+            registrationService.fireUnregistered(deregistration.getRegistration(), deregistration.getObservations());
             return DeregisterResponse.success();
         } else {
             LOG.debug("Invalid deregistration :  registration {} not found", registration.getId());

@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
@@ -39,6 +40,7 @@ import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Operations;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
@@ -158,7 +160,7 @@ public class IntegrationTestHelper {
             }
 
             @Override
-            public void unregistered(Registration registration) {
+            public void unregistered(Registration registration, Collection<Observation> observations) {
                 if (registration.getEndpoint().equals(currentEndpointIdentifier)) {
                     deregisterLatch.countDown();
                 }

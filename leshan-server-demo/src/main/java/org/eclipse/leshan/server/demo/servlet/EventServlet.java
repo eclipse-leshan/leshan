@@ -16,6 +16,7 @@
 package org.eclipse.leshan.server.demo.servlet;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -86,7 +87,7 @@ public class EventServlet extends EventSourceServlet {
         };
 
         @Override
-        public void unregistered(Registration registration) {
+        public void unregistered(Registration registration, Collection<Observation> observations) {
             String jReg = EventServlet.this.gson.toJson(registration);
             sendEvent(EVENT_DEREGISTRATION, jReg, registration.getEndpoint());
         }
