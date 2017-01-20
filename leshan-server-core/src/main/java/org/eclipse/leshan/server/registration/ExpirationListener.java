@@ -27,5 +27,5 @@ import org.eclipse.leshan.server.client.Registration;
  */
 public interface ExpirationListener {
 
-    void registrationExpired(Registration registration, Collection<Observation> observation);
+    void registrationExpired(Registration registration, Collection<Observation> observations);
 }
