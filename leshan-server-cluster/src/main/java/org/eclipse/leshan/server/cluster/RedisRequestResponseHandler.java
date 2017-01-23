@@ -32,8 +32,8 @@ import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.cluster.serialization.DownlinkRequestSerDes;
 import org.eclipse.leshan.server.cluster.serialization.ResponseSerDes;
-import org.eclipse.leshan.server.observation.ObservationService;
 import org.eclipse.leshan.server.observation.ObservationListener;
+import org.eclipse.leshan.server.observation.ObservationService;
 import org.eclipse.leshan.server.response.ResponseListener;
 import org.eclipse.leshan.util.NamedThreadFactory;
 import org.slf4j.Logger;
@@ -80,8 +80,16 @@ public class RedisRequestResponseHandler {
         this.observationService.addListener(new ObservationListener() {
 
             @Override
-            public void newValue(Observation observation, ObserveResponse response) {
+            public void onResponse(Observation observation, ObserveResponse response) {
                 handleNotification(observation, response.getContent());
+            }
+
+            @Override
+            public void onError(Observation observation, Exception error) {
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn(String.format("Unable to handle notification of [%s:%s]", observation.getRegistrationId(),
+                            observation.getPath()), error);
+                }
             }
 
             @Override
