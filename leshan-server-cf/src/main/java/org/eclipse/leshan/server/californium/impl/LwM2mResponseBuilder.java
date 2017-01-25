@@ -243,7 +243,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                 // observe request successful
                 Observation observation = new Observation(coapRequest.getToken(), registration.getId(),
                         request.getPath(), request.getContext());
-                observationService.addObservation(observation);
+                observationService.addObservation(registration, observation);
                 // add the observation to an ObserveResponse instance
                 lwM2mresponse = new ObserveResponse(ResponseCode.CONTENT, content, null, observation, null,
                         coapResponse);

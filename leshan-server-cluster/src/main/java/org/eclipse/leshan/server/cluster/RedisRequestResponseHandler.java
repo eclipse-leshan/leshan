@@ -80,12 +80,12 @@ public class RedisRequestResponseHandler {
         this.observationService.addListener(new ObservationListener() {
 
             @Override
-            public void onResponse(Observation observation, ObserveResponse response) {
+            public void onResponse(Observation observation, Registration registration, ObserveResponse response) {
                 handleNotification(observation, response.getContent());
             }
 
             @Override
-            public void onError(Observation observation, Exception error) {
+            public void onError(Observation observation, Registration registration, Exception error) {
                 if (LOG.isWarnEnabled()) {
                     LOG.warn(String.format("Unable to handle notification of [%s:%s]", observation.getRegistrationId(),
                             observation.getPath()), error);
@@ -93,7 +93,7 @@ public class RedisRequestResponseHandler {
             }
 
             @Override
-            public void newObservation(Observation observation) {
+            public void newObservation(Observation observation, Registration registration) {
             }
 
             @Override
