@@ -80,7 +80,7 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
         this.decoder = decoder;
     }
 
-    public void addObservation(Observation observation) {
+    public void addObservation(Registration registration, Observation observation) {
         // cancel any other observation for the same path and registration id.
         // delegate this to the observation store to avoid race conditions on add/cancel?
         for (Observation obs : getObservations(observation.getRegistrationId())) {
@@ -92,7 +92,7 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
         // the observation is already persisted by the CoAP layer
 
         for (ObservationListener listener : listeners) {
-            listener.newObservation(observation);
+            listener.newObservation(observation, registration);
         }
     }
 
@@ -220,13 +220,15 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
             if (observation == null)
                 return;
 
-            try {
-                // get registration
-                Registration registration = registrationStore.getRegistration(observation.getRegistrationId());
-                if (registration == null)
-                    // TODO Should we clean registrationIDs maps ?
-                    return;
+            // get registration
+            Registration registration = registrationStore.getRegistration(observation.getRegistrationId());
+            if (registration == null) {
+                LOG.error("Unexcepted error: There is no registration with id {} for this observation {}",
+                        observation.getRegistrationId(), observation);
+                return;
+            }
 
+            try {
                 // get model for this registration
                 LwM2mModel model = modelProvider.getObjectModel(registration);
 
@@ -252,14 +254,14 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
 
                 // notify all listeners
                 for (ObservationListener listener : listeners) {
-                    listener.onResponse(observation, response);
+                    listener.onResponse(observation, registration, response);
                 }
             } catch (InvalidValueException | RuntimeException e) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug(String.format("Unable to handle notification for observation [%s]", observation), e);
                 }
                 for (ObservationListener listener : listeners) {
-                    listener.onError(observation, e);
+                    listener.onError(observation, registration, e);
                 }
             }
         }

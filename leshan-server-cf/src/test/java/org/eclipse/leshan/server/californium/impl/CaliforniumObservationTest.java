@@ -127,9 +127,12 @@ public class CaliforniumObservationTest {
     }
 
     private Observation givenAnObservation(String registrationId, LwM2mPath target) {
-        if (store.getRegistration(registrationId) == null)
-            store.addRegistration(givenASimpleClient(registrationId));
-        
+        Registration registration = store.getRegistration(registrationId);
+        if (registration == null) {
+            registration = givenASimpleClient(registrationId);
+            store.addRegistration(registration);
+        }
+
         coapRequest = Request.newGet();
         coapRequest.setToken(CaliforniumTestSupport.createToken());
         coapRequest.getOptions().addUriPath(String.valueOf(target.getObjectId()));
@@ -145,7 +148,7 @@ public class CaliforniumObservationTest {
         store.add(new org.eclipse.californium.core.observe.Observation(coapRequest, null));
 
         Observation observation = new Observation(coapRequest.getToken(), registrationId, target, null);
-        observationService.addObservation(observation);
+        observationService.addObservation(registration, observation);
 
         return observation;
     }
