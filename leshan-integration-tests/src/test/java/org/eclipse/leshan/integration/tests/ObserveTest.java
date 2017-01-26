@@ -50,6 +50,7 @@ import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.observation.ObservationListener;
 import org.junit.After;
 import org.junit.Before;
@@ -361,7 +362,7 @@ public class ObserveTest {
         private Exception error;
 
         @Override
-        public void onResponse(Observation observation, ObserveResponse response) {
+        public void onResponse(Observation observation, Registration registration, ObserveResponse response) {
             receivedNotify.set(true);
             this.response = response;
             this.error = null;
@@ -369,7 +370,7 @@ public class ObserveTest {
         }
 
         @Override
-        public void onError(Observation observation, Exception error) {
+        public void onError(Observation observation, Registration registration, Exception error) {
             receivedNotify.set(true);
             this.response = null;
             this.error = error;
@@ -382,7 +383,7 @@ public class ObserveTest {
         }
 
         @Override
-        public void newObservation(final Observation observation) {
+        public void newObservation(Observation observation, Registration registration) {
         }
 
         public AtomicBoolean receivedNotify() {

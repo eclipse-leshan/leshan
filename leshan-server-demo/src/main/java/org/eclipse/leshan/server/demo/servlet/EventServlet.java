@@ -99,12 +99,11 @@ public class EventServlet extends EventSourceServlet {
         }
 
         @Override
-        public void onResponse(Observation observation, ObserveResponse response) {
+        public void onResponse(Observation observation, Registration registration, ObserveResponse response) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Received notification from [{}] containing value [{}]", observation.getPath(),
                         response.getContent().toString());
             }
-            Registration registration = server.getRegistrationService().getById(observation.getRegistrationId());
 
             if (registration != null) {
                 String data = new StringBuffer("{\"ep\":\"").append(registration.getEndpoint()).append("\",\"res\":\"")
@@ -117,7 +116,7 @@ public class EventServlet extends EventSourceServlet {
         }
 
         @Override
-        public void onError(Observation observation, Exception error) {
+        public void onError(Observation observation, Registration registration, Exception error) {
             if (LOG.isWarnEnabled()) {
                 LOG.warn(String.format("Unable to handle notification of [%s:%s]", observation.getRegistrationId(),
                         observation.getPath()), error);
@@ -125,7 +124,7 @@ public class EventServlet extends EventSourceServlet {
         }
 
         @Override
-        public void newObservation(Observation observation) {
+        public void newObservation(Observation observation, Registration registration) {
         }
     };
 
