@@ -15,8 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec;
 
-import org.eclipse.leshan.core.node.LwM2mPath;
-
 /**
  * Thrown if a problem occurs during LWM2M node encoding or decoding.
  */
@@ -24,23 +22,11 @@ public class CodecException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
-    private final LwM2mPath path;
-
-    public CodecException(String message, LwM2mPath path) {
+    public CodecException(String message) {
         super(message);
-        this.path = path;
     }
 
-    public CodecException(String message, LwM2mPath path, Exception e) {
+    public CodecException(String message, Exception e) {
         super(message, e);
-        this.path = path;
     }
-
-    /**
-     * @return the path of the resource with an invalid value
-     */
-    public LwM2mPath getPath() {
-        return path;
-    }
-
 }

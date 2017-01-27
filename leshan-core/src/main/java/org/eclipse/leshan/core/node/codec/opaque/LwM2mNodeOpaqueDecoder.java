@@ -31,8 +31,9 @@ public class LwM2mNodeOpaqueDecoder {
         Validate.notNull(path.getResourceId());
         ResourceModel desc = model.getResourceModel(path.getObjectId(), path.getResourceId());
         if (desc != null && desc.type != Type.OPAQUE) {
-            throw new CodecException(
-                    "Invalid content format, OPAQUE can only be used for single OPAQUE resource", path);
+            throw new CodecException(String.format(
+                    "Invalid content format [%s] for path [%s], OPAQUE can only be used for single OPAQUE resource",
+                    desc.type, path));
         }
         return LwM2mSingleResource.newBinaryResource(path.getResourceId(), content);
     }

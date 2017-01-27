@@ -326,7 +326,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             // decode payload
             content = decoder.decode(coapResponse.getPayload(), contentFormat, path, model);
         } catch (final CodecException e) {
-            final String msg = String.format("[%s] (%s:%s)", e.getMessage(), e.getPath().toString(),
+            final String msg = String.format("[%s] (%s:%s)", e.getMessage(), path.toString(),
                     coapResponse.getCode().toString());
             throw new ResourceAccessException(path.toString(), msg, e);
         }

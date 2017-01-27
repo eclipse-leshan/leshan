@@ -65,7 +65,7 @@ public class LwM2mNodeJsonDecoder {
                 return (T) timestampedNodes.get(0).getNode();
             }
         } catch (LwM2mJsonException e) {
-            throw new CodecException("Unable to deSerialize json", path, e);
+            throw new CodecException(String.format("Unable to deserialize json [path:%s]", path), e);
         }
     }
 
@@ -76,7 +76,7 @@ public class LwM2mNodeJsonDecoder {
             JsonRootObject json = LwM2mJson.fromJsonLwM2m(jsonStrValue);
             return parseJSON(json, path, model, nodeClass);
         } catch (LwM2mJsonException e) {
-            throw new CodecException("Unable to deSerialize json", path, e);
+            throw new CodecException(String.format("Unable to deserialize json [path:%s]", path), e);
         }
     }
 
@@ -116,7 +116,8 @@ public class LwM2mNodeJsonDecoder {
             } else if (nodeClass == LwM2mObjectInstance.class) {
                 // validate we have resources for only 1 instance
                 if (jsonEntryByInstanceId.size() > 1)
-                    throw new CodecException("Only one instance expected in the payload", path);
+                    throw new CodecException(
+                            String.format("Only one instance expected in the payload [path:%s]", path));
 
                 // Extract resources
                 Entry<Integer, Collection<JsonArrayEntry>> instanceEntry = jsonEntryByInstanceId.entrySet().iterator()
@@ -129,7 +130,8 @@ public class LwM2mNodeJsonDecoder {
             } else if (nodeClass == LwM2mResource.class) {
                 // validate we have resources for only 1 instance
                 if (jsonEntryByInstanceId.size() > 1)
-                    throw new CodecException("Only one instance expected in the payload", path);
+                    throw new CodecException(
+                            String.format("Only one instance expected in the payload [path:%s]", path));
 
                 // Extract resources
                 Map<Integer, LwM2mResource> resourcesMap = extractLwM2mResources(
@@ -137,7 +139,8 @@ public class LwM2mNodeJsonDecoder {
 
                 // validate there is only 1 resource
                 if (resourcesMap.size() != 1)
-                    throw new CodecException("Only one resource should be present in the payload", path);
+                    throw new CodecException(
+                            String.format("Only one resource should be present in the payload [path:%s]", path));
 
                 node = resourcesMap.values().iterator().next();
             } else {
@@ -226,8 +229,9 @@ public class LwM2mNodeJsonDecoder {
 
             // Validate path
             if (!nodePath.isResourceInstance() && !nodePath.isResource()) {
-                throw new CodecException(
-                        "Invalid path for resource, it should be a resource or a resource instance path", nodePath);
+                throw new CodecException(String.format(
+                        "Invalid path [%s] for resource, it should be a resource or a resource instance path",
+                        nodePath));
             }
 
             // Get jsonArray for this instance
@@ -253,15 +257,18 @@ public class LwM2mNodeJsonDecoder {
             // check returned base name path is under requested path
             if (requestPath.getObjectId() != null && bnPath.getObjectId() != null) {
                 if (!bnPath.getObjectId().equals(requestPath.getObjectId())) {
-                    throw new CodecException("Basename path does not match requested path.", bnPath);
+                    throw new CodecException(String.format("Basename path [%s] does not match requested path [%s].",
+                            bnPath, requestPath));
                 }
                 if (requestPath.getObjectInstanceId() != null && bnPath.getObjectInstanceId() != null) {
                     if (!bnPath.getObjectInstanceId().equals(requestPath.getObjectInstanceId())) {
-                        throw new CodecException("Basename path does not match requested path.", bnPath);
+                        throw new CodecException(String.format("Basename path [%s] does not match requested path [%s].",
+                                bnPath, requestPath));
                     }
                     if (requestPath.getResourceId() != null && bnPath.getResourceId() != null) {
                         if (!bnPath.getResourceId().equals(requestPath.getResourceId())) {
-                            throw new CodecException("Basename path does not match requested path.", bnPath);
+                            throw new CodecException(String.format(
+                                    "Basename path [%s] does not match requested path [%s].", bnPath, requestPath));
                         }
                     }
                 }
@@ -305,8 +312,9 @@ public class LwM2mNodeJsonDecoder {
                         parseJsonValue(resourceElt.getResourceValue(), expectedType, nodePath), expectedType);
                 lwM2mResourceMap.put(nodePath.getResourceId(), res);
             } else {
-                throw new CodecException(
-                        "Invalid path for resource, it should be a resource or a resource instance path", nodePath);
+                throw new CodecException(String.format(
+                        "Invalid path [%s] for resource, it should be a resource or a resource instance path",
+                        nodePath));
             }
         }
 
@@ -354,10 +362,11 @@ public class LwM2mNodeJsonDecoder {
             case STRING:
                 return value;
             default:
-                throw new CodecException("Unsupported type " + expectedType, path);
+                throw new CodecException(String.format("Unsupported type %s for path %s", expectedType, path));
             }
         } catch (Exception e) {
-            throw new CodecException("Invalid content for type " + expectedType, path, e);
+            throw new CodecException(
+                    String.format("Invalid content [%s] for type %s for path %s", value, expectedType, path), e);
         }
     }
 

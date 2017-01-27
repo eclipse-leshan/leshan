@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec.text;
 
+import java.util.Arrays;
 import java.util.Date;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -52,50 +53,53 @@ public class LwM2mNodeTextDecoder {
     private static Object parseTextValue(String value, Type type, LwM2mPath path) throws CodecException {
         LOG.trace("TEXT value for path {} and expected type {}: {}", path, type, value);
 
-        try {
-            switch (type) {
-            case STRING:
-                return value;
-            case INTEGER:
-                try {
-                    return Long.valueOf(value);
-                } catch (NumberFormatException e) {
-                    throw new CodecException("Invalid value for integer resource: " + value, path);
-                }
-            case BOOLEAN:
-                switch (value) {
-                case "0":
-                    return false;
-                case "1":
-                    return true;
-                default:
-                    throw new CodecException("Invalid value for boolean resource: " + value, path);
-                }
-            case FLOAT:
-                try {
-                    return Double.valueOf(value);
-                } catch (NumberFormatException e) {
-                    throw new CodecException("Invalid value for float resource: " + value, path);
-                }
-            case TIME:
-                // number of seconds since 1970/1/1
-                return new Date(Long.valueOf(value) * 1000L);
-            case OBJLNK:
-                String[] intArr = value.split(":");
-                if (intArr.length != 2)
-                    throw new CodecException("Invalid value for objectLink resource: " + value, path);
-                try {
-                    return new ObjectLink(Integer.parseInt(intArr[0]), Integer.parseInt(intArr[1]));
-                } catch (NumberFormatException e) {
-                    throw new CodecException("Invalid value for objectLinkresource: " + value, path);
-                }
-            case OPAQUE:
-                // not specified
-            default:
-                throw new CodecException("Could not parse opaque value with content format " + type, path);
+        switch (type) {
+        case STRING:
+            return value;
+        case INTEGER:
+            try {
+                return Long.valueOf(value);
+            } catch (NumberFormatException e) {
+                throw new CodecException(String.format("Invalid value [%s] for integer resource [%s]", value, path));
             }
-        } catch (NumberFormatException e) {
-            throw new CodecException("Invalid numeric value: " + value, path, e);
+        case BOOLEAN:
+            switch (value) {
+            case "0":
+                return false;
+            case "1":
+                return true;
+            default:
+                throw new CodecException(String.format("Invalid value [%s] for boolean resource [%s]", value, path));
+            }
+        case FLOAT:
+            try {
+                return Double.valueOf(value);
+            } catch (NumberFormatException e) {
+                throw new CodecException(String.format("Invalid value [%s] for float resource [%s]", value, path));
+            }
+        case TIME:
+            // number of seconds since 1970/1/1
+            try {
+                return new Date(Long.valueOf(value) * 1000L);
+            } catch (NumberFormatException e) {
+                throw new CodecException(String.format("Invalid value [%s] for date resource [%s]", value, path));
+            }
+        case OBJLNK:
+            String[] intArr = value.split(":");
+            if (intArr.length != 2)
+                throw new CodecException(
+                        String.format("Invalid value %s for objectLink resource [%s]", Arrays.toString(intArr), path));
+            try {
+                return new ObjectLink(Integer.parseInt(intArr[0]), Integer.parseInt(intArr[1]));
+            } catch (NumberFormatException e) {
+                throw new CodecException(
+                        String.format("Invalid value %s for objectLink resource [%s] ", Arrays.toString(intArr), path));
+            }
+        case OPAQUE:
+            // not specified
+        default:
+            throw new CodecException(
+                    String.format("Could not handle %s value with TEXT encoder for resource %s", type, path));
         }
     }
 }
