@@ -198,7 +198,7 @@ public class LwM2mNodeEncoderTest {
     }
 
     @Test
-    public void json_encode_timestamped_resources() throws InvalidValueException {
+    public void json_encode_timestamped_resources() throws CodecException {
         List<TimestampedLwM2mNode> data = new ArrayList<>();
         data.add(new TimestampedLwM2mNode(500L, LwM2mSingleResource.newFloatResource(1, 22.9)));
         data.add(new TimestampedLwM2mNode(510L, LwM2mSingleResource.newFloatResource(1, 22.4)));
@@ -217,7 +217,7 @@ public class LwM2mNodeEncoderTest {
     }
 
     @Test
-    public void json_encode_timestamped_instances() throws InvalidValueException {
+    public void json_encode_timestamped_instances() throws CodecException {
         List<TimestampedLwM2mNode> data = new ArrayList<>();
 
         LwM2mObjectInstance instanceAt110 = new LwM2mObjectInstance(0, LwM2mSingleResource.newFloatResource(1, 22.9));
@@ -243,7 +243,7 @@ public class LwM2mNodeEncoderTest {
     }
 
     @Test
-    public void json_encode_timestamped_Object() throws InvalidValueException {
+    public void json_encode_timestamped_Object() throws CodecException {
         List<TimestampedLwM2mNode> data = new ArrayList<>();
 
         LwM2mObject objectAt210 = new LwM2mObject(1204,

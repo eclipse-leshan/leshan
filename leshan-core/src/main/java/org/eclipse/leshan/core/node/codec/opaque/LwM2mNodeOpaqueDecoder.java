@@ -21,17 +21,17 @@ import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
-import org.eclipse.leshan.core.node.codec.InvalidValueException;
+import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.util.Validate;
 
 public class LwM2mNodeOpaqueDecoder {
 
-    public static LwM2mNode decode(byte[] content, LwM2mPath path, LwM2mModel model) throws InvalidValueException {
+    public static LwM2mNode decode(byte[] content, LwM2mPath path, LwM2mModel model) throws CodecException {
         // single resource value
         Validate.notNull(path.getResourceId());
         ResourceModel desc = model.getResourceModel(path.getObjectId(), path.getResourceId());
         if (desc != null && desc.type != Type.OPAQUE) {
-            throw new InvalidValueException(
+            throw new CodecException(
                     "Invalid content format, OPAQUE can only be used for single OPAQUE resource", path);
         }
         return LwM2mSingleResource.newBinaryResource(path.getResourceId(), content);

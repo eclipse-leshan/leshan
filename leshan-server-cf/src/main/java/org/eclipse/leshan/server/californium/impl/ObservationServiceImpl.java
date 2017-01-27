@@ -35,7 +35,7 @@ import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
-import org.eclipse.leshan.core.node.codec.InvalidValueException;
+import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -256,7 +256,7 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
                 for (ObservationListener listener : listeners) {
                     listener.onResponse(observation, registration, response);
                 }
-            } catch (InvalidValueException | RuntimeException e) {
+            } catch (CodecException | RuntimeException e) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug(String.format("Unable to handle notification for observation [%s]", observation), e);
                 }

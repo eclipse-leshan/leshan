@@ -55,7 +55,7 @@ public class LwM2mNodeDecoderTest {
     }
 
     @Test
-    public void text_manufacturer_resource() throws InvalidValueException {
+    public void text_manufacturer_resource() throws CodecException {
         String value = "MyManufacturer";
         LwM2mSingleResource resource = (LwM2mSingleResource) decoder.decode(value.getBytes(Charsets.UTF_8),
                 ContentFormat.TEXT, new LwM2mPath(3, 0, 0), model);
@@ -67,13 +67,13 @@ public class LwM2mNodeDecoderTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void content_format_is_mandatory() throws InvalidValueException {
+    public void content_format_is_mandatory() throws CodecException {
         String value = "MyManufacturer";
         decoder.decode(value.getBytes(Charsets.UTF_8), null, new LwM2mPath(666, 0, 0), model);
     }
 
     @Test
-    public void text_battery_resource() throws InvalidValueException {
+    public void text_battery_resource() throws CodecException {
         LwM2mSingleResource resource = (LwM2mSingleResource) decoder.decode("100".getBytes(Charsets.UTF_8),
                 ContentFormat.TEXT, new LwM2mPath(3, 0, 9), model);
 
@@ -84,7 +84,7 @@ public class LwM2mNodeDecoderTest {
     }
 
     @Test
-    public void tlv_manufacturer_resource() throws InvalidValueException {
+    public void tlv_manufacturer_resource() throws CodecException {
         String value = "MyManufacturer";
         byte[] content = TlvEncoder.encode(new Tlv[] { new Tlv(TlvType.RESOURCE_VALUE, null, value.getBytes(), 0) })
                 .array();
@@ -138,7 +138,7 @@ public class LwM2mNodeDecoderTest {
     }
 
     @Test
-    public void tlv_device_object_instance0_from_resources_tlv() throws InvalidValueException {
+    public void tlv_device_object_instance0_from_resources_tlv() throws CodecException {
 
         LwM2mObjectInstance oInstance = (LwM2mObjectInstance) decoder.decode(ENCODED_DEVICE, ContentFormat.TLV,
                 new LwM2mPath(3, 0), model);
@@ -146,7 +146,7 @@ public class LwM2mNodeDecoderTest {
     }
 
     @Test
-    public void tlv_device_object_instance0_from_resources_tlv__instance_expected() throws InvalidValueException {
+    public void tlv_device_object_instance0_from_resources_tlv__instance_expected() throws CodecException {
 
         LwM2mObjectInstance oInstance = (LwM2mObjectInstance) decoder.decode(ENCODED_DEVICE, ContentFormat.TLV,
                 new LwM2mPath(3), model, LwM2mObjectInstance.class);
@@ -154,7 +154,7 @@ public class LwM2mNodeDecoderTest {
     }
 
     @Test
-    public void tlv_device_object_instance0_from_instance_tlv() throws InvalidValueException {
+    public void tlv_device_object_instance0_from_instance_tlv() throws CodecException {
 
         // TLV instance = { type=INSTANCE, instanceId=0, length=DEVICE_ENCODED.lentgh, value=DEVICE_ENCODED }
         byte[] instanceTlv = new byte[ENCODED_DEVICE.length + 3];
@@ -167,7 +167,7 @@ public class LwM2mNodeDecoderTest {
     }
 
     @Test
-    public void tlv_power_source__array_values() throws InvalidValueException {
+    public void tlv_power_source__array_values() throws CodecException {
         byte[] content = new byte[] { 65, 0, 1, 65, 1, 5 };
 
         LwM2mResource resource = (LwM2mResource) decoder.decode(content, ContentFormat.TLV, new LwM2mPath(3, 0, 6),
@@ -180,7 +180,7 @@ public class LwM2mNodeDecoderTest {
     }
 
     @Test
-    public void tlv_power_source__multiple_resource() throws InvalidValueException {
+    public void tlv_power_source__multiple_resource() throws CodecException {
         // this content (a single TLV of type 'multiple_resource' containing the values)
         // is probably not compliant with the spec but it should be supported by the server
         byte[] content = new byte[] { -122, 6, 65, 0, 1, 65, 1, 5 };
@@ -194,8 +194,8 @@ public class LwM2mNodeDecoderTest {
         assertEquals(5L, resource.getValue(1));
     }
 
-    @Test(expected = InvalidValueException.class)
-    public void tlv_multi_instance_object__missing_instance_tlv() throws InvalidValueException {
+    @Test(expected = CodecException.class)
+    public void tlv_multi_instance_object__missing_instance_tlv() throws CodecException {
 
         byte[] content = TlvEncoder.encode(new Tlv[] { new Tlv(TlvType.RESOURCE_VALUE, null, "value1".getBytes(), 1),
                                 new Tlv(TlvType.RESOURCE_VALUE, null, "value1".getBytes(), 2) })
@@ -205,7 +205,7 @@ public class LwM2mNodeDecoderTest {
     }
 
     @Test
-    public void tlv_unknown_object__missing_instance_tlv() throws InvalidValueException {
+    public void tlv_unknown_object__missing_instance_tlv() throws CodecException {
 
         byte[] content = TlvEncoder.encode(new Tlv[] { new Tlv(TlvType.RESOURCE_VALUE, null, "value1".getBytes(), 1),
                                 new Tlv(TlvType.RESOURCE_VALUE, null, "value1".getBytes(), 2) })
@@ -218,7 +218,7 @@ public class LwM2mNodeDecoderTest {
     }
 
     @Test
-    public void json_device_object_instance0() throws InvalidValueException {
+    public void json_device_object_instance0() throws CodecException {
         // json content for instance 0 of device object
         StringBuilder b = new StringBuilder();
         b.append("{\"e\":[");
@@ -246,7 +246,7 @@ public class LwM2mNodeDecoderTest {
     }
 
     @Test
-    public void json_device_object_instance0_with_root_basename() throws InvalidValueException {
+    public void json_device_object_instance0_with_root_basename() throws CodecException {
         // json content for instance 0 of device object
         StringBuilder b = new StringBuilder();
         b.append("{\"bn\":\"/\",");
@@ -275,7 +275,7 @@ public class LwM2mNodeDecoderTest {
     }
 
     @Test
-    public void json_custom_object_instance() throws InvalidValueException {
+    public void json_custom_object_instance() throws CodecException {
         // json content for instance 0 of device object
         StringBuilder b = new StringBuilder();
         b.append("{\"e\":[");
@@ -293,7 +293,7 @@ public class LwM2mNodeDecoderTest {
     }
 
     @Test
-    public void json_timestamped_resources() throws InvalidValueException {
+    public void json_timestamped_resources() throws CodecException {
         // json content for instance 0 of device object
         StringBuilder b = new StringBuilder();
         b.append("{\"e\":[");
@@ -315,7 +315,7 @@ public class LwM2mNodeDecoderTest {
     }
 
     @Test
-    public void json_timestamped_instances() throws InvalidValueException {
+    public void json_timestamped_instances() throws CodecException {
         // json content for instance 0 of device object
         StringBuilder b = new StringBuilder();
         b.append("{\"e\":[");
@@ -342,7 +342,7 @@ public class LwM2mNodeDecoderTest {
     }
 
     @Test
-    public void json_timestamped_Object() throws InvalidValueException {
+    public void json_timestamped_Object() throws CodecException {
         // json content for instance 0 of device object
         StringBuilder b = new StringBuilder();
         b.append("{\"e\":[");

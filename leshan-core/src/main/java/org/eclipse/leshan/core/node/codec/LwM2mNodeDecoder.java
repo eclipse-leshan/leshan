@@ -35,10 +35,10 @@ public interface LwM2mNodeDecoder {
      * @param path the path of the node to build
      * @param model the collection of supported object models
      * @return the resulting node
-     * @throws InvalidValueException
+     * @throws CodecException
      */
     LwM2mNode decode(byte[] content, ContentFormat format, LwM2mPath path, LwM2mModel model)
-            throws InvalidValueException;
+            throws CodecException;
 
     /**
      * Deserializes a binary content into a {@link LwM2mNode} of the expected type.
@@ -49,10 +49,10 @@ public interface LwM2mNodeDecoder {
      * @param model the collection of supported object models
      * @param nodeClass the class of the {@link LwM2mNode} to decode
      * @return the resulting node
-     * @throws InvalidValueException
+     * @throws CodecException
      */
     <T extends LwM2mNode> T decode(byte[] content, ContentFormat format, LwM2mPath path, LwM2mModel model,
-            Class<T> nodeClass) throws InvalidValueException;
+            Class<T> nodeClass) throws CodecException;
 
     /**
      * Deserializes a binary content into a list of time-stamped {@link LwM2mNode} ordering by time-stamp.
@@ -63,10 +63,10 @@ public interface LwM2mNodeDecoder {
      * @param model the collection of supported object models
      * @param nodeClass the class of the {@link LwM2mNode} to decode
      * @return the resulting list of time-stamped {@link LwM2mNode} ordering by time-stamp
-     * @throws InvalidValueException
+     * @throws CodecException
      */
     List<TimestampedLwM2mNode> decodeTimestampedData(byte[] content, ContentFormat format, LwM2mPath path,
-            LwM2mModel model) throws InvalidValueException;
+            LwM2mModel model) throws CodecException;
 
     /**
      * return true is the given {@link ContentFormat} is supported

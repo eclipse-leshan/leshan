@@ -42,14 +42,14 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
 
     @Override
     public LwM2mNode decode(byte[] content, ContentFormat format, LwM2mPath path, LwM2mModel model)
-            throws InvalidValueException {
+            throws CodecException {
         return decode(content, format, path, model, nodeClassFromPath(path));
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T extends LwM2mNode> T decode(byte[] content, ContentFormat format, LwM2mPath path, LwM2mModel model,
-            Class<T> nodeClass) throws InvalidValueException {
+            Class<T> nodeClass) throws CodecException {
 
         LOG.debug("Decoding value for path {} and format {}: {}", path, format, content);
         Validate.notNull(path);
@@ -76,7 +76,7 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
 
     @Override
     public List<TimestampedLwM2mNode> decodeTimestampedData(byte[] content, ContentFormat format, LwM2mPath path,
-            LwM2mModel model) throws InvalidValueException {
+            LwM2mModel model) throws CodecException {
         LOG.debug("Decoding value for path {} and format {}: {}", path, format, content);
         Validate.notNull(path);
         Validate.notNull(format);

@@ -25,7 +25,7 @@ import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.node.codec.InvalidValueException;
+import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
@@ -325,7 +325,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
 
             // decode payload
             content = decoder.decode(coapResponse.getPayload(), contentFormat, path, model);
-        } catch (final InvalidValueException e) {
+        } catch (final CodecException e) {
             final String msg = String.format("[%s] (%s:%s)", e.getMessage(), e.getPath().toString(),
                     coapResponse.getCode().toString());
             throw new ResourceAccessException(path.toString(), msg, e);

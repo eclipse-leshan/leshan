@@ -24,7 +24,7 @@ import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
-import org.eclipse.leshan.core.node.codec.InvalidValueException;
+import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.util.Charsets;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 public class LwM2mNodeTextDecoder {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeTextDecoder.class);
 
-    public static LwM2mNode decode(byte[] content, LwM2mPath path, LwM2mModel model) throws InvalidValueException {
+    public static LwM2mNode decode(byte[] content, LwM2mPath path, LwM2mModel model) throws CodecException {
         // single resource value
         Validate.notNull(path.getResourceId());
         ResourceModel rDesc = model.getResourceModel(path.getObjectId(), path.getResourceId());
@@ -49,7 +49,7 @@ public class LwM2mNodeTextDecoder {
 
     }
 
-    private static Object parseTextValue(String value, Type type, LwM2mPath path) throws InvalidValueException {
+    private static Object parseTextValue(String value, Type type, LwM2mPath path) throws CodecException {
         LOG.trace("TEXT value for path {} and expected type {}: {}", path, type, value);
 
         try {
@@ -60,7 +60,7 @@ public class LwM2mNodeTextDecoder {
                 try {
                     return Long.valueOf(value);
                 } catch (NumberFormatException e) {
-                    throw new InvalidValueException("Invalid value for integer resource: " + value, path);
+                    throw new CodecException("Invalid value for integer resource: " + value, path);
                 }
             case BOOLEAN:
                 switch (value) {
@@ -69,13 +69,13 @@ public class LwM2mNodeTextDecoder {
                 case "1":
                     return true;
                 default:
-                    throw new InvalidValueException("Invalid value for boolean resource: " + value, path);
+                    throw new CodecException("Invalid value for boolean resource: " + value, path);
                 }
             case FLOAT:
                 try {
                     return Double.valueOf(value);
                 } catch (NumberFormatException e) {
-                    throw new InvalidValueException("Invalid value for float resource: " + value, path);
+                    throw new CodecException("Invalid value for float resource: " + value, path);
                 }
             case TIME:
                 // number of seconds since 1970/1/1
@@ -83,19 +83,19 @@ public class LwM2mNodeTextDecoder {
             case OBJLNK:
                 String[] intArr = value.split(":");
                 if (intArr.length != 2)
-                    throw new InvalidValueException("Invalid value for objectLink resource: " + value, path);
+                    throw new CodecException("Invalid value for objectLink resource: " + value, path);
                 try {
                     return new ObjectLink(Integer.parseInt(intArr[0]), Integer.parseInt(intArr[1]));
                 } catch (NumberFormatException e) {
-                    throw new InvalidValueException("Invalid value for objectLinkresource: " + value, path);
+                    throw new CodecException("Invalid value for objectLinkresource: " + value, path);
                 }
             case OPAQUE:
                 // not specified
             default:
-                throw new InvalidValueException("Could not parse opaque value with content format " + type, path);
+                throw new CodecException("Could not parse opaque value with content format " + type, path);
             }
         } catch (NumberFormatException e) {
-            throw new InvalidValueException("Invalid numeric value: " + value, path, e);
+            throw new CodecException("Invalid numeric value: " + value, path, e);
         }
     }
 }

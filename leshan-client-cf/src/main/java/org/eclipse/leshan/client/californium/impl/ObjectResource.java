@@ -41,7 +41,7 @@ import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.node.codec.InvalidValueException;
+import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
@@ -216,7 +216,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
                 }
 
                 return;
-            } catch (InvalidValueException e) {
+            } catch (CodecException e) {
                 LOG.warn("Unable to decode payload to write", e);
                 coapExchange.respond(ResponseCode.INTERNAL_SERVER_ERROR);
                 return;
@@ -261,7 +261,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
                 WriteResponse response = nodeEnabler.write(identity,
                         new WriteRequest(Mode.UPDATE, contentFormat, URI, lwM2mNode));
                 exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
-            } catch (InvalidValueException e) {
+            } catch (CodecException e) {
                 LOG.warn("Unable to decode payload to write", e);
                 exchange.respond(ResponseCode.BAD_REQUEST);
             }
@@ -299,7 +299,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
                 exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
                 return;
             }
-        } catch (InvalidValueException e) {
+        } catch (CodecException e) {
             LOG.warn("Unable to decode payload to create", e);
             exchange.respond(ResponseCode.BAD_REQUEST);
             return;

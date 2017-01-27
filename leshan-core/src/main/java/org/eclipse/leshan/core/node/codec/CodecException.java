@@ -17,18 +17,21 @@ package org.eclipse.leshan.core.node.codec;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
 
-public class InvalidValueException extends Exception {
+/**
+ * Thrown if a problem occurs during LWM2M node encoding or decoding.
+ */
+public class CodecException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
     private final LwM2mPath path;
 
-    public InvalidValueException(String message, LwM2mPath path) {
+    public CodecException(String message, LwM2mPath path) {
         super(message);
         this.path = path;
     }
 
-    public InvalidValueException(String message, LwM2mPath path, Exception e) {
+    public CodecException(String message, LwM2mPath path, Exception e) {
         super(message, e);
         this.path = path;
     }
