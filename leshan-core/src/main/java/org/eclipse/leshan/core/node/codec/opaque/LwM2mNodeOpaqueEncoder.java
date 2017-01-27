@@ -24,6 +24,7 @@ import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.Lwm2mNodeEncoderUtil;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
@@ -32,7 +33,7 @@ import org.slf4j.LoggerFactory;
 public class LwM2mNodeOpaqueEncoder {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeOpaqueEncoder.class);
 
-    public static byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model) {
+    public static byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model) throws CodecException {
         Validate.notNull(node);
         Validate.notNull(path);
         Validate.notNull(model);
@@ -53,22 +54,22 @@ public class LwM2mNodeOpaqueEncoder {
 
         @Override
         public void visit(LwM2mObject object) {
-            throw new IllegalArgumentException("Object cannot be encoded in opaque format");
+            throw new CodecException("Object cannot be encoded in opaque format");
         }
 
         @Override
         public void visit(LwM2mObjectInstance instance) {
-            throw new IllegalArgumentException("Object instance cannot be encoded in opaque format");
+            throw new CodecException("Object instance cannot be encoded in opaque format");
         }
 
         @Override
         public void visit(LwM2mResource resource) {
             if (resource.isMultiInstances()) {
-                throw new IllegalArgumentException("Mulitple instances resource cannot be encoded in opaque format");
+                throw new CodecException("Mulitple instances resource cannot be encoded in opaque format");
             }
             ResourceModel rSpec = model.getResourceModel(objectId, resource.getId());
             if (rSpec != null && rSpec.type != Type.OPAQUE) {
-                throw new IllegalArgumentException("Only single opaque resource can be encoded in opaque format");
+                throw new CodecException("Only single opaque resource can be encoded in opaque format");
             }
             LOG.trace("Encoding resource {} into text", resource);
             Object value = Lwm2mNodeEncoderUtil.convertValue(resource.getValue(), resource.getType(), Type.OPAQUE);

@@ -15,10 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.junit.Test;
@@ -33,13 +31,13 @@ public class Lwm2mNodeEncoderUtilTest {
         assertThat((byte[]) opaqueValue, is(new byte[] { (byte) 0x10, (byte) 0xff }));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = CodecException.class)
     public void testConvertValueDetectsNonHexChars() {
         String hexString = "10R8";
         Lwm2mNodeEncoderUtil.convertValue(hexString, Type.STRING, Type.OPAQUE);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = CodecException.class)
     public void testConvertValueDetectsInvalidHexStringLength() {
         String hexString = "10F";
         Lwm2mNodeEncoderUtil.convertValue(hexString, Type.STRING, Type.OPAQUE);
@@ -59,13 +57,13 @@ public class Lwm2mNodeEncoderUtilTest {
         assertEquals(-2015l, convertValue);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = CodecException.class)
     public void testConvertFloatToIntegerDetectsInvalidConvertion() {
         double floatValue = 10.5d;
         Lwm2mNodeEncoderUtil.convertValue(floatValue, Type.FLOAT, Type.INTEGER);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = CodecException.class)
     public void testConvertMaxFloatToIntegerDetectsInvalidConvertion() {
         double floatValue = Double.MAX_VALUE;
         Lwm2mNodeEncoderUtil.convertValue(floatValue, Type.FLOAT, Type.INTEGER);
@@ -85,7 +83,7 @@ public class Lwm2mNodeEncoderUtilTest {
         assertEquals(-10.0d, convertValue);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = CodecException.class)
     public void testConvertIntegerToFloatDetectsInvalidConvertion() {
         long longValue = 9223372036854775806l;
         Lwm2mNodeEncoderUtil.convertValue(longValue, Type.INTEGER, Type.FLOAT);

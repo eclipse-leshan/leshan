@@ -32,6 +32,7 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.ObjectLink;
+import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.Lwm2mNodeEncoderUtil;
 import org.eclipse.leshan.tlv.Tlv;
 import org.eclipse.leshan.tlv.Tlv.TlvType;
@@ -47,7 +48,7 @@ public class LwM2mNodeTlvEncoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeTlvEncoder.class);
 
-    public static byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model) {
+    public static byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model) throws CodecException {
         Validate.notNull(node);
         Validate.notNull(path);
         Validate.notNull(model);
@@ -169,23 +170,27 @@ public class LwM2mNodeTlvEncoder {
 
         private byte[] encodeTlvValue(Object value, Type type) {
             LOG.trace("Encoding value {} in TLV", value);
-            switch (type) {
-            case STRING:
-                return TlvEncoder.encodeString((String) value);
-            case INTEGER:
-                return TlvEncoder.encodeInteger((Number) value);
-            case FLOAT:
-                return TlvEncoder.encodeFloat((Number) value);
-            case BOOLEAN:
-                return TlvEncoder.encodeBoolean((Boolean) value);
-            case TIME:
-                return TlvEncoder.encodeDate((Date) value);
-            case OPAQUE:
-                return (byte[]) value;
-            case OBJLNK:
-                return TlvEncoder.encodeObjlnk((ObjectLink) value);
-            default:
-                throw new IllegalArgumentException("Invalid value type: " + type);
+            try {
+                switch (type) {
+                case STRING:
+                    return TlvEncoder.encodeString((String) value);
+                case INTEGER:
+                    return TlvEncoder.encodeInteger((Number) value);
+                case FLOAT:
+                    return TlvEncoder.encodeFloat((Number) value);
+                case BOOLEAN:
+                    return TlvEncoder.encodeBoolean((Boolean) value);
+                case TIME:
+                    return TlvEncoder.encodeDate((Date) value);
+                case OPAQUE:
+                    return (byte[]) value;
+                case OBJLNK:
+                    return TlvEncoder.encodeObjlnk((ObjectLink) value);
+                default:
+                    throw new CodecException(String.format("Invalid value %s for type %s", value, type));
+                }
+            } catch (IllegalArgumentException e) {
+                throw new CodecException(String.format("Invalid value %s for type %s", value, type), e);
             }
         }
     }

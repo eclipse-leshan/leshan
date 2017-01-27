@@ -33,8 +33,10 @@ public interface LwM2mNodeEncoder {
      * @param path the path of the node to serialize
      * @param model the collection of supported object models
      * @return the encoded node as a byte array
+     * @throws CodecException if there payload is malformed.
      */
-    byte[] encode(LwM2mNode node, ContentFormat format, LwM2mPath path, LwM2mModel model);
+    byte[] encode(LwM2mNode node, ContentFormat format, LwM2mPath path, LwM2mModel model)
+            throws CodecException;
 
     /**
      * Serializes a list of time-stamped {@link LwM2mNode} with the given content format.
@@ -44,9 +46,10 @@ public interface LwM2mNodeEncoder {
      * @param path the path of the node to serialize
      * @param model the collection of supported object models
      * @return the encoded node as a byte array
+     * @throws CodecException if there payload is malformed.
      */
     byte[] encodeTimestampedData(List<TimestampedLwM2mNode> timestampedNodes, ContentFormat format, LwM2mPath path,
-            LwM2mModel model);
+            LwM2mModel model) throws CodecException;
 
     /**
      * return true is the given {@link ContentFormat} is supported

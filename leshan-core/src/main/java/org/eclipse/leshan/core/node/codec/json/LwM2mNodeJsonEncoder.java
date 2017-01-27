@@ -30,6 +30,7 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
+import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.Lwm2mNodeEncoderUtil;
 import org.eclipse.leshan.json.JsonArrayEntry;
 import org.eclipse.leshan.json.JsonRootObject;
@@ -43,7 +44,7 @@ public class LwM2mNodeJsonEncoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeJsonEncoder.class);
 
-    public static byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model) {
+    public static byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model) throws CodecException {
         Validate.notNull(node);
         Validate.notNull(path);
         Validate.notNull(model);
@@ -94,7 +95,7 @@ public class LwM2mNodeJsonEncoder {
             LOG.trace("Encoding Object {} into JSON", object);
             // Validate request path
             if (!requestPath.isObject()) {
-                throw new IllegalArgumentException("Invalid request path for JSON object encoding");
+                throw new CodecException("Invalid request path for JSON object encoding");
             }
 
             // Create resources
@@ -119,7 +120,7 @@ public class LwM2mNodeJsonEncoder {
                 } else if (requestPath.isObjectInstance()) {
                     prefixPath = Integer.toString(resource.getId());
                 } else {
-                    throw new IllegalArgumentException("Invalid request path for JSON instance encoding");
+                    throw new CodecException("Invalid request path for JSON instance encoding");
                 }
                 // Create resources
                 resourceList.addAll(lwM2mResourceToJsonArrayEntry(prefixPath, timestamp, resource));
@@ -130,7 +131,7 @@ public class LwM2mNodeJsonEncoder {
         public void visit(LwM2mResource resource) {
             LOG.trace("Encoding resource {} into JSON", resource);
             if (!requestPath.isResource()) {
-                throw new IllegalArgumentException("Invalid request path for JSON resource encoding");
+                throw new CodecException("Invalid request path for JSON resource encoding");
             }
 
             resourceList = lwM2mResourceToJsonArrayEntry("", timestamp, resource);
@@ -203,7 +204,7 @@ public class LwM2mNodeJsonEncoder {
                 jsonResource.setStringValue(Base64.encodeBase64String((byte[]) value));
                 break;
             default:
-                throw new IllegalArgumentException("Invalid value type: " + type);
+                throw new CodecException("Invalid value type: " + type);
             }
         }
     }

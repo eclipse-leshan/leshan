@@ -42,9 +42,9 @@ public class Lwm2mNodeEncoderUtil {
     /**
      * Convert the given value to the expected type given in parameter.
      * 
-     * @throws IllegalArgumentException the value is not convertible.
+     * @exception CodexException the value is not convertible.
      */
-    public static Object convertValue(Object value, Type currentType, Type expectedType) {
+    public static Object convertValue(Object value, Type currentType, Type expectedType) throws CodecException {
         if (expectedType == null) {
             // unknown resource, trusted value
             return value;
@@ -119,8 +119,9 @@ public class Lwm2mNodeEncoderUtil {
                     DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
                     XMLGregorianCalendar cal = datatypeFactory.newXMLGregorianCalendar((String) value);
                     return cal.toGregorianCalendar().getTime();
-                } catch (DatatypeConfigurationException e) {
+                } catch (DatatypeConfigurationException | IllegalArgumentException e) {
                     LOG.debug("Unable to convert string to date", e);
+                    throw new CodecException(String.format("Unable to convert string (%s) to date", value));
                 }
             default:
                 break;
@@ -141,12 +142,16 @@ public class Lwm2mNodeEncoderUtil {
                 // let's assume we received an hexadecimal string
                 LOG.debug("Trying to convert hexadecimal string {} to byte array", value);
                 // TODO: check if we shouldn't instead assume that the string contains Base64 encoded data
-                return Hex.decodeHex(((String) value).toCharArray());
+                try {
+                    return Hex.decodeHex(((String) value).toCharArray());
+                } catch (IllegalArgumentException e) {
+                    throw new CodecException(String.format("Unable to convert hexastring [%s] to byte array", value));
+                }
             }
             break;
         default:
         }
 
-        throw new IllegalArgumentException("Invalid value type, expected " + expectedType + ", got " + currentType);
+        throw new CodecException("Invalid value type, expected " + expectedType + ", got " + currentType);
     }
 }

@@ -79,7 +79,7 @@ public class LwM2mNodeEncoderTest {
         Assert.assertEquals("1367491215", new String(encoded, Charsets.UTF_8));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = CodecException.class)
     public void text_encode_multiple_instances() {
         Map<Integer, Long> values = new HashMap<>();
         values.put(0, 1L);
