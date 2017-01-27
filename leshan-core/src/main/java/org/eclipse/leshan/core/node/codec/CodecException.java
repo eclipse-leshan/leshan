@@ -18,7 +18,7 @@ package org.eclipse.leshan.core.node.codec;
 /**
  * Thrown if a problem occurs during LWM2M node encoding or decoding.
  */
-public class CodecException extends Exception {
+public class CodecException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
