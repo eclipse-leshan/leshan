@@ -218,7 +218,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
                 return;
             } catch (CodecException e) {
                 LOG.warn("Unable to decode payload to write", e);
-                coapExchange.respond(ResponseCode.INTERNAL_SERVER_ERROR);
+                coapExchange.respond(ResponseCode.BAD_REQUEST);
                 return;
             }
 

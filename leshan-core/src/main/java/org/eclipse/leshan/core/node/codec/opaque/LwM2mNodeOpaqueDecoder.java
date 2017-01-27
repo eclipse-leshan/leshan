@@ -22,13 +22,13 @@ import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.codec.CodecException;
-import org.eclipse.leshan.util.Validate;
 
 public class LwM2mNodeOpaqueDecoder {
 
     public static LwM2mNode decode(byte[] content, LwM2mPath path, LwM2mModel model) throws CodecException {
-        // single resource value
-        Validate.notNull(path.getResourceId());
+        if (!path.isResource())
+            throw new CodecException(String.format("Invalid path %s : OpaqueDecoder decodes resource only", path));
+
         ResourceModel desc = model.getResourceModel(path.getObjectId(), path.getResourceId());
         if (desc != null && desc.type != Type.OPAQUE) {
             throw new CodecException(String.format(

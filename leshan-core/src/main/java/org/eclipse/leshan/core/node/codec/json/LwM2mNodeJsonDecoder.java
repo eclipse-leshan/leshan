@@ -370,8 +370,7 @@ public class LwM2mNodeJsonDecoder {
         }
     }
 
-    public static Type getResourceType(LwM2mPath rscPath, LwM2mModel model, JsonArrayEntry resourceElt)
-            throws CodecException {
+    public static Type getResourceType(LwM2mPath rscPath, LwM2mModel model, JsonArrayEntry resourceElt) {
         ResourceModel rscDesc = model.getResourceModel(rscPath.getObjectId(), rscPath.getResourceId());
         if (rscDesc == null || rscDesc.type == null) {
             Type type = resourceElt.getType();

@@ -53,7 +53,10 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
 
         LOG.debug("Decoding value for path {} and format {}: {}", path, format, content);
         Validate.notNull(path);
-        Validate.notNull(format);
+
+        if (format == null){
+            throw new CodecException("Content format is mandatory.");
+        }
 
         // Decode content.
         switch (format.getCode()) {
@@ -68,9 +71,9 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
         case ContentFormat.OLD_JSON_CODE:
             return LwM2mNodeJsonDecoder.decode(content, path, model, nodeClass);
         case ContentFormat.LINK_CODE:
-            throw new UnsupportedOperationException("Content format " + format + " not yet implemented '" + path + "'");
+            throw new CodecException("Content format " + format + " not yet implemented '" + path + "'");
         default:
-            throw new UnsupportedOperationException("Content format " + format + " is not supported");
+            throw new CodecException("Content format " + format + " is not supported");
         }
     }
 
@@ -79,7 +82,10 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
             LwM2mModel model) throws CodecException {
         LOG.debug("Decoding value for path {} and format {}: {}", path, format, content);
         Validate.notNull(path);
-        Validate.notNull(format);
+
+        if (format == null) {
+            throw new CodecException("Content format is mandatory.");
+        }
 
         // Decode content.
         switch (format.getCode()) {
@@ -94,9 +100,9 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
         case ContentFormat.OLD_JSON_CODE:
             return LwM2mNodeJsonDecoder.decodeTimestamped(content, path, model, nodeClassFromPath(path));
         case ContentFormat.LINK_CODE:
-            throw new UnsupportedOperationException("Content format " + format + " not yet implemented '" + path + "'");
+            throw new CodecException("Content format " + format + " not yet implemented '" + path + "'");
         default:
-            throw new UnsupportedOperationException("Content format " + format + " is not supported");
+            throw new CodecException("Content format " + format + " is not supported");
         }
     }
 

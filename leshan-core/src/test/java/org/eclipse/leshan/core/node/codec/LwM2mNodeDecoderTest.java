@@ -16,9 +16,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 import java.util.Date;
 import java.util.List;
@@ -66,7 +64,7 @@ public class LwM2mNodeDecoderTest {
         assertEquals(value, resource.getValue());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = CodecException.class)
     public void content_format_is_mandatory() throws CodecException {
         String value = "MyManufacturer";
         decoder.decode(value.getBytes(Charsets.UTF_8), null, new LwM2mPath(666, 0, 0), model);

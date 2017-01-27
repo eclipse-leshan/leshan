@@ -27,7 +27,6 @@ import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.util.Charsets;
-import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,8 +34,9 @@ public class LwM2mNodeTextDecoder {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeTextDecoder.class);
 
     public static LwM2mNode decode(byte[] content, LwM2mPath path, LwM2mModel model) throws CodecException {
-        // single resource value
-        Validate.notNull(path.getResourceId());
+        if (!path.isResource())
+            throw new CodecException(String.format("Invalid path %s : TextDecoder decodes resource only", path));
+
         ResourceModel rDesc = model.getResourceModel(path.getObjectId(), path.getResourceId());
 
         String strValue = content != null ? new String(content, Charsets.UTF_8) : "";
