@@ -35,11 +35,14 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
+import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
+import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.response.WriteResponse;
 import org.junit.After;
 import org.junit.Before;
@@ -74,7 +77,7 @@ public class WriteTest {
     public void can_write_string_resource_in_tlv() throws InterruptedException {
         write_string_resource(ContentFormat.TLV);
     }
-    
+
     @Test
     public void can_write_string_resource_in__old_tlv() throws InterruptedException {
         write_string_resource(ContentFormat.fromCode(ContentFormat.OLD_TLV_CODE));
@@ -127,7 +130,7 @@ public class WriteTest {
     public void can_write_boolean_resource_in_json() throws InterruptedException {
         write_boolean_resource(ContentFormat.JSON);
     }
-    
+
     @Test
     public void can_write_boolean_resource_in_old_json() throws InterruptedException {
         write_boolean_resource(ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE));
@@ -539,5 +542,27 @@ public class WriteTest {
         // verify read value
         assertEquals(((ObjectLink) resource.getValue()).getObjectId(), 10245);
         assertEquals(((ObjectLink) resource.getValue()).getObjectInstanceId(), 0);
+    }
+
+    @Test(expected = CodecException.class)
+    public void send_writerequest_synchronously_with_bad_payload_raises_codeexception() throws InterruptedException {
+        helper.server.send(helper.getCurrentRegistration(),
+                new WriteRequest(3, 0, 13, "a string instead of timestamp for currenttime resource"));
+
+    }
+
+    @Test(expected = CodecException.class)
+    public void send_writerequest_asynchronously_with_bad_payload_raises_codeexception() throws InterruptedException {
+        helper.server.send(helper.getCurrentRegistration(),
+                new WriteRequest(3, 0, 13, "a string instead of timestamp for currenttime resource"),
+                new ResponseCallback<WriteResponse>() {
+                    @Override
+                    public void onResponse(WriteResponse response) {
+                    }
+                }, new ErrorCallback() {
+                    @Override
+                    public void onError(Exception e) {
+                    }
+                });
     }
 }
