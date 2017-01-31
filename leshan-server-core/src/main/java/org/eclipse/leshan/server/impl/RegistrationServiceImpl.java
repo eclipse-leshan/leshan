@@ -27,15 +27,11 @@ import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.server.registration.ExpirationListener;
 import org.eclipse.leshan.server.registration.RegistrationStore;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * An implementation of {@link RegistrationService}
  */
 public class RegistrationServiceImpl implements RegistrationService, ExpirationListener {
-
-    private static final Logger LOG = LoggerFactory.getLogger(RegistrationServiceImpl.class);
 
     private final List<RegistrationListener> listeners = new CopyOnWriteArrayList<>();
 

@@ -67,8 +67,6 @@ public class EventServlet extends EventSourceServlet {
 
     private final CoapMessageTracer coapMessageTracer;
 
-    private final LeshanServer server;
-
     private Set<LeshanEventSource> eventSources = Collections
             .newSetFromMap(new ConcurrentHashMap<LeshanEventSource, Boolean>());
 
@@ -130,7 +128,6 @@ public class EventServlet extends EventSourceServlet {
     };
 
     public EventServlet(LeshanServer server, int securePort) {
-        this.server = server;
         server.getRegistrationService().addListener(this.registrationListener);
         server.getObservationService().addListener(this.observationListener);
 
