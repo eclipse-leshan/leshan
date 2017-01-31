@@ -1,0 +1,50 @@
+/*******************************************************************************
+ * Copyright (c) 2017 Bosch Software Innovations GmbH and others.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * and Eclipse Distribution License v1.0 which accompany this distribution.
+ *
+ * The Eclipse Public License is available at
+ *    http://www.eclipse.org/legal/epl-v10.html
+ * and the Eclipse Distribution License is available at
+ *    http://www.eclipse.org/org/documents/edl-v10.html.
+ *
+ * Contributors:
+ *     Bosch Software Innovations GmbH - initial API
+ *******************************************************************************/
+package org.eclipse.leshan.server.queue;
+
+import org.eclipse.leshan.server.registration.Registration;
+
+/**
+ * Tracks the status of each LWM2M client registered with Queue mode binding. Also ensures that the
+ * {@link PresenceListener} are notified on state changes only for those LWM2M clients registered using Queue mode
+ * binding.
+ *
+ * @see Presence
+ */
+public interface PresenceService {
+
+    /**
+     * Add the listener to get notified when the LWM2M client goes online or offline.
+     * 
+     * @param listener target to notify
+     */
+    void addListener(PresenceListener listener);
+
+    /**
+     * Remove the listener previously added. This method has no effect if the given listener is not previously added.
+     * 
+     * @param listener target to be removed.
+     */
+    void removeListener(PresenceListener listener);
+    
+    /**
+     * Returns the current status of a given LWM2M client registration.
+     * 
+     * @param registration data to check
+     * @return true if the status is {@link Presence#ONLINE}
+     */
+    boolean isOnline(Registration registration);
+}
