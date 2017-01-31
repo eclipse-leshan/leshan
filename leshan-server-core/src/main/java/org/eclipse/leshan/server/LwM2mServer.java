@@ -24,7 +24,6 @@ import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationService;
-import org.eclipse.leshan.server.response.ResponseListener;
 import org.eclipse.leshan.server.security.SecurityStore;
 
 /**
@@ -61,7 +60,7 @@ public interface LwM2mServer {
      * @return the response or <code>null</code> if the CoAP timeout expires ( see
      *         http://tools.ietf.org/html/rfc7252#section-4.2 ).
      * 
-     * @exception CodecException if request payload can not be encoded.
+     * @throws CodecException if request payload can not be encoded.
      */
     <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request)
             throws InterruptedException, CodecException;
@@ -74,8 +73,8 @@ public interface LwM2mServer {
      * @param timeout the request timeout in millisecond
      * @return the response or <code>null</code> if the timeout expires (given parameter or CoAP timeout).
      * 
-     * @exception CodecException if request payload can not be encoded.
-     * @exception InterruptedException if the thread was interrupted.
+     * @throws CodecException if request payload can not be encoded.
+     * @throws InterruptedException if the thread was interrupted.
      */
     <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request, long timeout)
             throws InterruptedException, CodecException;
@@ -88,39 +87,10 @@ public interface LwM2mServer {
      * @param responseCallback a callback called when a response is received (successful or error response)
      * @param errorCallback a callback called when an error or exception occurred when response is received
      * 
-     * @exception CodecException if request payload can not be encoded.
+     * @throws CodecException if request payload can not be encoded.
      */
     <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) throws CodecException;
-
-    /**
-     * sends a Lightweight M2M request asynchronously and uses the requestTicket to correlate the response from a LWM2M
-     * Client.
-     *
-     * @param destination registration meta data of a LWM2M client.
-     * @param requestTicket a globally unique identifier for correlating the response
-     * @param request an instance of downlink request.
-     * @param <T> instance of LwM2mResponse
-     * 
-     * @exception CodecException if request payload can not be encoded.
-     */
-    <T extends LwM2mResponse> void send(Registration destination, String requestTicket, DownlinkRequest<T> request)
-            throws CodecException;
-
-    /**
-     * adds the listener for the given LWM2M client. This method shall be used to re-register a listener for already
-     * sent messages or pending messages.
-     *
-     * @param listener global listener for handling the responses from a LWM2M client.
-     */
-    void addResponseListener(ResponseListener listener);
-
-    /**
-     * removes the given instance of response listener from LWM2M Sender's list of response listeners.
-     * 
-     * @param listener target listener to be removed.
-     */
-    void removeResponseListener(ResponseListener listener);
 
     /**
      * Get the registration service to access to registered clients. You can use this object for listening client
