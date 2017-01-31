@@ -16,14 +16,10 @@
 package org.eclipse.leshan.server.californium.impl;
 
 import java.net.InetSocketAddress;
-import java.util.Collection;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.eclipse.californium.core.coap.MessageObserver;
 import org.eclipse.californium.core.coap.Request;
@@ -41,9 +37,6 @@ import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
-import org.eclipse.leshan.server.response.ResponseListener;
-import org.eclipse.leshan.server.response.ResponseProcessingTask;
-import org.eclipse.leshan.util.NamedThreadFactory;
 import org.eclipse.leshan.util.Validate;
 
 public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
@@ -56,9 +49,6 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
     // A map which contains all pending CoAP requests
     // This is mainly used to cancel request and avoid retransmission on de-registration
     private final ConcurrentNavigableMap<String/* registrationId#requestId */, Request /* pending coap Request */> pendingRequests = new ConcurrentSkipListMap<>();
-    private final Collection<ResponseListener> responseListeners = new ConcurrentLinkedQueue<>();
-    private final ExecutorService processingExecutor = Executors
-            .newCachedThreadPool(new NamedThreadFactory("californium-lwm2m-requestsender-processingExecutor-%d"));
 
     /**
      * @param endpoints the CoAP endpoints to use for sending requests
@@ -147,69 +137,6 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         // Send CoAP request asynchronously
         final Endpoint endpoint = getEndpointForClient(destination);
         endpoint.sendRequest(coapRequest);
-    }
-
-    @SuppressWarnings("unchecked") // Java generic usage and strict type has to be removed from Leshan
-    @Override
-    public <T extends LwM2mResponse> void send(final Registration destination, final String requestTicket,
-            final DownlinkRequest<T> request) {
-        send(destination, request, (ResponseCallback<T>) getResponseCallback(destination, requestTicket),
-                getErrorCallback(destination, requestTicket));
-    }
-
-    /**
-     * callback that correlates the response to the given requestTicket
-     * 
-     * @parm requestTicket to correlate the response to a request.
-     * @return callback which is invoked on getting a response from LWM2M Client.
-     */
-    private <T extends LwM2mResponse> ResponseCallback<T> getResponseCallback(final Registration registration,
-            final String requestTicket) {
-        return new ResponseCallback<T>() {
-            @Override
-            public void onResponse(T response) {
-                processingExecutor
-                        .execute(new ResponseProcessingTask(registration, requestTicket, responseListeners, response));
-            }
-        };
-    }
-
-    /**
-     * callback that correlates the error from LWM2M client to the given requestTicket
-     * 
-     * @param requestTicket to correlate the error to a request.
-     * @return
-     */
-    private ErrorCallback getErrorCallback(final Registration registration, final String requestTicket) {
-        return new ErrorCallback() {
-            @Override
-            public void onError(Exception e) {
-                processingExecutor.execute(new ResponseProcessingTask(registration, requestTicket, responseListeners, e));
-            }
-        };
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.eclipse.leshan.server.request.LwM2mRequestSender#addResponseListener(java.lang.String,
-     * org.eclipse.leshan.server.response.ResponseListener)
-     */
-    @Override
-    public void addResponseListener(ResponseListener listener) {
-        responseListeners.add(listener);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.eclipse.leshan.server.request.LwM2mRequestSender#removeResponseListener(org.eclipse.leshan.server.response.
-     * ResponseListener)
-     */
-    @Override
-    public void removeResponseListener(ResponseListener listener) {
-        responseListeners.remove(listener);
     }
 
     @Override

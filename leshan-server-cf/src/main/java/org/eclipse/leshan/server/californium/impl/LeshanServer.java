@@ -58,7 +58,6 @@ import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationService;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
-import org.eclipse.leshan.server.response.ResponseListener;
 import org.eclipse.leshan.server.security.Authorizer;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.SecurityStore;
@@ -290,21 +289,6 @@ public class LeshanServer implements LwM2mServer {
     public <T extends LwM2mResponse> void send(final Registration destination, final DownlinkRequest<T> request,
             final ResponseCallback<T> responseCallback, final ErrorCallback errorCallback) {
         requestSender.send(destination, request, responseCallback, errorCallback);
-    }
-
-    @Override
-    public <T extends LwM2mResponse> void send(Registration destination, String requestTicket, DownlinkRequest<T> request) {
-        requestSender.send(destination, requestTicket, request);
-    }
-
-    @Override
-    public void addResponseListener(ResponseListener listener) {
-        requestSender.addResponseListener(listener);
-    }
-
-    @Override
-    public void removeResponseListener(ResponseListener listener) {
-        requestSender.removeResponseListener(listener);
     }
 
     /**
