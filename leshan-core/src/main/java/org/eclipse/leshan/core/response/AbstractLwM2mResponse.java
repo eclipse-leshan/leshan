@@ -16,7 +16,7 @@
 package org.eclipse.leshan.core.response;
 
 import org.eclipse.leshan.ResponseCode;
-import org.eclipse.leshan.util.Validate;
+import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 
 /**
  * A base class for concrete LWM2M response.
@@ -28,9 +28,10 @@ public abstract class AbstractLwM2mResponse implements LwM2mResponse {
     private final Object coapResponse;
 
     public AbstractLwM2mResponse(ResponseCode code, String errorMessage, Object coapResponse) {
-        Validate.notNull(code);
-        if (errorMessage != null)
-            Validate.isTrue(code.isError(), "Only error response could have an error message.");
+        if (code == null)
+            throw new InvalidResponseException("response code is mandatory");
+        if (errorMessage != null && !code.isError())
+            throw new InvalidResponseException("Only error response could have an error message");
         this.code = code;
         this.errorMessage = errorMessage;
         this.coapResponse = coapResponse;

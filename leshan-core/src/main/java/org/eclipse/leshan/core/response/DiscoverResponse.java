@@ -19,7 +19,7 @@ import java.util.Arrays;
 
 import org.eclipse.leshan.Link;
 import org.eclipse.leshan.ResponseCode;
-import org.eclipse.leshan.util.Validate;
+import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 
 public class DiscoverResponse extends AbstractLwM2mResponse {
 
@@ -32,7 +32,8 @@ public class DiscoverResponse extends AbstractLwM2mResponse {
     public DiscoverResponse(ResponseCode code, Link[] links, String errorMessage, Object coapResponse) {
         super(code, errorMessage, coapResponse);
         if (ResponseCode.CONTENT.equals(code)) {
-            Validate.notNull(links);
+            if (links == null)
+                throw new InvalidResponseException("links is mandatory for successfull response");
             this.links = Arrays.copyOf(links, links.length);
         } else {
             this.links = null;

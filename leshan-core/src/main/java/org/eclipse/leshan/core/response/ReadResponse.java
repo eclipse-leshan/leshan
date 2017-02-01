@@ -24,7 +24,7 @@ import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
-import org.eclipse.leshan.util.Validate;
+import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 
 public class ReadResponse extends AbstractLwM2mResponse {
 
@@ -38,7 +38,8 @@ public class ReadResponse extends AbstractLwM2mResponse {
         super(code, errorMessage, coapResponse);
 
         if (ResponseCode.CONTENT.equals(code)) {
-            Validate.notNull(content);
+            if (content == null)
+                throw new InvalidResponseException("Content is mandatory for successful response");
         }
         this.content = content;
     }
