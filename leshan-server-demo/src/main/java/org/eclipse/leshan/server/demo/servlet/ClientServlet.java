@@ -30,6 +30,7 @@ import org.apache.commons.lang.StringUtils;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
@@ -38,8 +39,9 @@ import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
+import org.eclipse.leshan.core.request.exception.InvalidRequestException;
+import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 import org.eclipse.leshan.core.request.exception.RequestRejectedException;
-import org.eclipse.leshan.core.request.exception.ResourceAccessException;
 import org.eclipse.leshan.core.response.CreateResponse;
 import org.eclipse.leshan.core.response.DeleteResponse;
 import org.eclipse.leshan.core.response.ExecuteResponse;
@@ -59,6 +61,7 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
+import com.sun.corba.se.impl.protocol.RequestCanceledException;
 
 /**
  * Service HTTP REST API calls.
@@ -149,18 +152,36 @@ public class ClientServlet extends HttpServlet {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().format("No registered client with id '%s'", clientEndpoint).flush();
             }
-        } catch (IllegalArgumentException e) {
-            LOG.warn("Invalid request or response", e);
+        } catch (RuntimeException | InterruptedException e) {
+            handleException(e, resp);
+        }
+    }
+
+    private void handleException(Exception e, HttpServletResponse resp) throws IOException {
+        if (e instanceof InvalidRequestException || e instanceof CodecException ) {
+            LOG.warn("Invalid request", e);
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            resp.getWriter().append(e.getMessage()).flush();
-        } catch (ResourceAccessException | RequestRejectedException e) {
-            LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
+            resp.getWriter().append("Invalid request:").append(e.getMessage()).flush();
+        } else if (e instanceof RequestRejectedException) {
+            LOG.warn("Request rejected", e);
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            resp.getWriter().append(e.getMessage()).flush();
-        } catch (InterruptedException e) {
+            resp.getWriter().append("Request rejected:").append(e.getMessage()).flush();
+        } else if (e instanceof RequestCanceledException) {
+            LOG.warn("Request cancelled", e);
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.getWriter().append("Request cancelled:").append(e.getMessage()).flush();
+        } else if (e instanceof InvalidResponseException) {
+            LOG.warn("Invalid response", e);
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.getWriter().append("Invalid Response:").append(e.getMessage()).flush();
+        } else if (e instanceof InterruptedException) {
             LOG.warn("Thread Interrupted", e);
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            resp.getWriter().append(e.getMessage()).flush();
+            resp.getWriter().append("Thread Interrupted:").append(e.getMessage()).flush();
+        } else {
+            LOG.warn("Unexcepted exception", e);
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.getWriter().append("Unexcepted exception:").append(e.getMessage()).flush();
         }
     }
 
@@ -196,18 +217,8 @@ public class ClientServlet extends HttpServlet {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().format("No registered client with id '%s'", clientEndpoint).flush();
             }
-        } catch (IllegalArgumentException e) {
-            LOG.warn("Invalid request or response", e);
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            resp.getWriter().append(e.getMessage()).flush();
-        } catch (ResourceAccessException | RequestRejectedException e) {
-            LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            resp.getWriter().append(e.getMessage()).flush();
-        } catch (InterruptedException e) {
-            LOG.warn("Thread Interrupted", e);
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            resp.getWriter().append(e.getMessage()).flush();
+        } catch (RuntimeException | InterruptedException e) {
+            handleException(e, resp);
         }
     }
 
@@ -238,18 +249,8 @@ public class ClientServlet extends HttpServlet {
                     resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
                 }
-            } catch (IllegalArgumentException e) {
-                LOG.warn("Invalid request or response", e);
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                resp.getWriter().append(e.getMessage()).flush();
-            } catch (ResourceAccessException | RequestRejectedException e) {
-                LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
-                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                resp.getWriter().append(e.getMessage()).flush();
-            } catch (InterruptedException e) {
-                LOG.warn("Thread Interrupted", e);
-                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                resp.getWriter().append(e.getMessage()).flush();
+            } catch (RuntimeException | InterruptedException e) {
+                handleException(e, resp);
             }
             return;
         }
@@ -268,18 +269,8 @@ public class ClientServlet extends HttpServlet {
                     resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
                 }
-            } catch (IllegalArgumentException e) {
-                LOG.warn("Invalid request or response", e);
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                resp.getWriter().append(e.getMessage()).flush();
-            } catch (ResourceAccessException | RequestRejectedException e) {
-                LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
-                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                resp.getWriter().append(e.getMessage()).flush();
-            } catch (InterruptedException e) {
-                LOG.warn("Thread Interrupted", e);
-                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                resp.getWriter().append(e.getMessage()).flush();
+            } catch (RuntimeException | InterruptedException e) {
+                handleException(e, resp);
             }
             return;
         }
@@ -307,18 +298,8 @@ public class ClientServlet extends HttpServlet {
                     resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
                 }
-            } catch (IllegalArgumentException e) {
-                LOG.warn("Invalid request or response", e);
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                resp.getWriter().append(e.getMessage()).flush();
-            } catch (ResourceAccessException | RequestRejectedException e) {
-                LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
-                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                resp.getWriter().append(e.getMessage()).flush();
-            } catch (InterruptedException e) {
-                LOG.warn("Thread Interrupted", e);
-                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                resp.getWriter().append(e.getMessage()).flush();
+            } catch (RuntimeException | InterruptedException e) {
+                handleException(e, resp);
             }
             return;
         }
@@ -341,14 +322,8 @@ public class ClientServlet extends HttpServlet {
                     resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
                 }
-            } catch (IllegalArgumentException e) {
-                LOG.warn("Invalid request or response", e);
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                resp.getWriter().append(e.getMessage()).flush();
-            } catch (ResourceAccessException | RequestRejectedException e) {
-                LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
-                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                resp.getWriter().append(e.getMessage()).flush();
+            } catch (RuntimeException e) {
+                handleException(e, resp);
             }
             return;
         }
@@ -365,18 +340,8 @@ public class ClientServlet extends HttpServlet {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
             }
-        } catch (IllegalArgumentException e) {
-            LOG.warn("Invalid request or response", e);
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            resp.getWriter().append(e.getMessage()).flush();
-        } catch (ResourceAccessException | RequestRejectedException  e) {
-            LOG.warn(String.format("Error accessing resource %s%s.", req.getServletPath(), req.getPathInfo()), e);
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            resp.getWriter().append(e.getMessage()).flush();
-        } catch (InterruptedException e) {
-            LOG.warn("Interrupted request", e);
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            resp.getWriter().append(e.getMessage()).flush();
+        } catch (RuntimeException | InterruptedException e) {
+            handleException(e, resp);
         }
     }
 
@@ -403,7 +368,7 @@ public class ClientServlet extends HttpServlet {
             try {
                 node = gson.fromJson(content, LwM2mNode.class);
             } catch (JsonSyntaxException e) {
-                throw new IllegalArgumentException("unable to parse json to tlv:" + e.getMessage(), e);
+                throw new InvalidRequestException("unable to parse json to tlv:" + e.getMessage(), e);
             }
             return node;
         } else if ("text/plain".equals(contentType)) {
@@ -411,6 +376,6 @@ public class ClientServlet extends HttpServlet {
             int rscId = Integer.valueOf(target.substring(target.lastIndexOf("/") + 1));
             return LwM2mSingleResource.newStringResource(rscId, content);
         }
-        throw new IllegalArgumentException("content type " + req.getContentType() + " not supported");
+        throw new InvalidRequestException("content type " + req.getContentType() + " not supported");
     }
 }
