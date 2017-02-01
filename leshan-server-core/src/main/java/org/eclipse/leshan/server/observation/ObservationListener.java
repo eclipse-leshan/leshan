@@ -30,7 +30,7 @@ public interface ObservationListener {
      * 
      * @param observation the observation for which new data are received
      * @param registration the registration concerned by this observation
-     * @param reponse the lwm2m response received
+     * @param reponse the lwm2m response received (successful or error response)
      * 
      */
     void onResponse(Observation observation, Registration registration, ObserveResponse response);
@@ -40,7 +40,11 @@ public interface ObservationListener {
      * 
      * @param observation the observation for which new data are received
      * @param registration the registration concerned by this observation
-     * @param error the exception raised when we handle the notification
+     * @param error the exception raised when we handle the notification. It can be :
+     *        <ul>
+     *        <li>InvalidResponseException if the response received is malformed.</li>
+     *        <li>or any other RuntimeException for unexpected issue.
+     *        </ul>
      */
     void onError(Observation observation, Registration registration, Exception error);
 }

@@ -35,15 +35,18 @@ import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
+import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
 import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationListener;
 import org.eclipse.leshan.server.observation.ObservationService;
+import org.eclipse.leshan.util.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,8 +113,7 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
         if (registrationId == null)
             return 0;
 
-        Collection<Observation> observations = registrationStore
-                .removeObservations(registrationId);
+        Collection<Observation> observations = registrationStore.removeObservations(registrationId);
         if (observations == null)
             return 0;
 
@@ -209,60 +211,90 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
         if (listeners.isEmpty())
             return;
 
-        if (coapResponse.getCode() == CoAP.ResponseCode.CHANGED
-                || coapResponse.getCode() == CoAP.ResponseCode.CONTENT) {
-            // get registration Id
-            String regid = coapRequest.getUserContext().get(CTX_REGID);
+        // get registration Id
+        String regid = coapRequest.getUserContext().get(CTX_REGID);
 
-            // get observation for this request
-            Observation observation = registrationStore.getObservation(regid, coapResponse.getToken());
-            if (observation == null)
-                return;
+        // get observation for this request
+        Observation observation = registrationStore.getObservation(regid, coapResponse.getToken());
+        if (observation == null) {
+            LOG.error("Unexpected error: Unable to find observation with token {} for registration {}", observation,
+                    coapResponse.getToken());
+            return;
+        }
 
-            // get registration
-            Registration registration = registrationStore.getRegistration(observation.getRegistrationId());
-            if (registration == null) {
-                LOG.error("Unexcepted error: There is no registration with id {} for this observation {}",
-                        observation.getRegistrationId(), observation);
-                return;
+        // get registration
+        Registration registration = registrationStore.getRegistration(observation.getRegistrationId());
+        if (registration == null) {
+            LOG.error("Unexpected error: There is no registration with id {} for this observation {}",
+                    observation.getRegistrationId(), observation);
+            return;
+        }
+
+        try {
+            // get model for this registration
+            LwM2mModel model = modelProvider.getObjectModel(registration);
+
+            // create response
+            ObserveResponse response = createObserveResponse(observation, model, coapResponse);
+
+            // notify all listeners
+            for (ObservationListener listener : listeners) {
+                listener.onResponse(observation, registration, response);
+            }
+        } catch (InvalidResponseException e) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(String.format("Invalid notification for observation [%s]", observation), e);
             }
 
-            try {
-                // get model for this registration
-                LwM2mModel model = modelProvider.getObjectModel(registration);
-
-                // get content format
-                ContentFormat contentFormat = null;
-                if (coapResponse.getOptions().hasContentFormat()) {
-                    contentFormat = ContentFormat.fromCode(coapResponse.getOptions().getContentFormat());
-                }
-
-                // decode response
-                List<TimestampedLwM2mNode> timestampedNodes = decoder.decodeTimestampedData(coapResponse.getPayload(),
-                        contentFormat, observation.getPath(), model);
-
-                // create lwm2m response
-                ObserveResponse response;
-                if (timestampedNodes.size() == 1 && !timestampedNodes.get(0).isTimestamped()) {
-                    response = new ObserveResponse(ResponseCode.CONTENT, timestampedNodes.get(0).getNode(), null,
-                            observation, null, coapResponse);
-                } else {
-                    response = new ObserveResponse(ResponseCode.CONTENT, null, timestampedNodes, observation, null,
-                            coapResponse);
-                }
-
-                // notify all listeners
-                for (ObservationListener listener : listeners) {
-                    listener.onResponse(observation, registration, response);
-                }
-            } catch (RuntimeException e) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug(String.format("Unable to handle notification for observation [%s]", observation), e);
-                }
-                for (ObservationListener listener : listeners) {
-                    listener.onError(observation, registration, e);
-                }
+            for (ObservationListener listener : listeners) {
+                listener.onError(observation, registration, e);
             }
+        } catch (RuntimeException e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(String.format("Unable to handle notification for observation [%s]", observation), e);
+            }
+
+            for (ObservationListener listener : listeners) {
+                listener.onError(observation, registration, e);
+            }
+        }
+
+    }
+
+    private ObserveResponse createObserveResponse(Observation observation, LwM2mModel model, Response coapResponse) {
+        // // We handle CONTENT and CHANGED response only
+        if (coapResponse.getCode() != CoAP.ResponseCode.CHANGED
+                && coapResponse.getCode() != CoAP.ResponseCode.CONTENT) {
+            throw new InvalidResponseException(String.format("Unexpected response code [%s]", coapResponse.getCode()));
+        }
+
+        // get content format
+        ContentFormat contentFormat = null;
+        if (coapResponse.getOptions().hasContentFormat()) {
+            contentFormat = ContentFormat.fromCode(coapResponse.getOptions().getContentFormat());
+        }
+
+        // decode response
+        try {
+            List<TimestampedLwM2mNode> timestampedNodes = decoder.decodeTimestampedData(coapResponse.getPayload(),
+                    contentFormat, observation.getPath(), model);
+
+            // create lwm2m response
+            if (timestampedNodes.size() == 1 && !timestampedNodes.get(0).isTimestamped()) {
+                return new ObserveResponse(ResponseCode.CONTENT, timestampedNodes.get(0).getNode(), null, observation,
+                        null, coapResponse);
+            } else {
+                return new ObserveResponse(ResponseCode.CONTENT, null, timestampedNodes, observation, null,
+                        coapResponse);
+            }
+        } catch (CodecException e) {
+            if (LOG.isDebugEnabled()) {
+                byte[] payload = coapResponse.getPayload() == null ? new byte[0] : coapResponse.getPayload();
+                LOG.debug(String.format("Unable to decode notification payload [%s] of observation [%s] ",
+                        Hex.encodeHexString(payload), observation), e);
+            }
+            throw new InvalidResponseException(
+                    String.format("Unable to decode notification payload  of observation [%s] ", observation), e);
         }
     }
 }
