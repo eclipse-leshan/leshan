@@ -17,14 +17,14 @@ package org.eclipse.leshan.client.californium.impl;
 
 import static org.eclipse.leshan.core.californium.ResponseCodeUtil.fromCoapCode;
 
-import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.DeregisterRequest;
+import org.eclipse.leshan.core.request.LwM2mRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.request.UplinkRequestVisitor;
-import org.eclipse.leshan.core.request.exception.ResourceAccessException;
+import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 import org.eclipse.leshan.core.response.BootstrapResponse;
 import org.eclipse.leshan.core.response.DeregisterResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -35,18 +35,16 @@ public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements Upli
 
     // private static final Logger LOG = LoggerFactory.getLogger(LwM2mClientResponseBuilder.class);
 
-    private final Request coapRequest;
     private final Response coapResponse;
 
     private LwM2mResponse lwM2mresponse;
 
-    public LwM2mClientResponseBuilder(final Request coapRequest, final Response coapResponse) {
-        this.coapRequest = coapRequest;
+    public LwM2mClientResponseBuilder(Response coapResponse) {
         this.coapResponse = coapResponse;
     }
 
     @Override
-    public void visit(final RegisterRequest request) {
+    public void visit(RegisterRequest request) {
         switch (coapResponse.getCode()) {
         case CREATED:
             lwM2mresponse = RegisterResponse.success(coapResponse.getOptions().getLocationString());
@@ -58,12 +56,12 @@ public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements Upli
                     coapResponse.getPayloadString());
             break;
         default:
-            handleUnexpectedResponseCode(coapRequest, coapResponse);
+            handleUnexpectedResponseCode(request, coapResponse);
         }
     }
 
     @Override
-    public void visit(final DeregisterRequest request) {
+    public void visit(DeregisterRequest request) {
         switch (coapResponse.getCode()) {
         case DELETED:
             lwM2mresponse = DeregisterResponse.success();
@@ -75,12 +73,12 @@ public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements Upli
                     coapResponse.getPayloadString());
             break;
         default:
-            handleUnexpectedResponseCode(coapRequest, coapResponse);
+            handleUnexpectedResponseCode(request, coapResponse);
         }
     }
 
     @Override
-    public void visit(final UpdateRequest request) {
+    public void visit(UpdateRequest request) {
         switch (coapResponse.getCode()) {
         case CHANGED:
             lwM2mresponse = UpdateResponse.success();
@@ -92,12 +90,12 @@ public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements Upli
                     coapResponse.getPayloadString());
             break;
         default:
-            handleUnexpectedResponseCode(coapRequest, coapResponse);
+            handleUnexpectedResponseCode(request, coapResponse);
         }
     }
 
     @Override
-    public void visit(final BootstrapRequest request) {
+    public void visit(BootstrapRequest request) {
         switch (coapResponse.getCode()) {
         case CHANGED:
             lwM2mresponse = BootstrapResponse.success();
@@ -108,7 +106,7 @@ public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements Upli
                     coapResponse.getPayloadString());
             break;
         default:
-            handleUnexpectedResponseCode(coapRequest, coapResponse);
+            handleUnexpectedResponseCode(request, coapResponse);
         }
     }
 
@@ -117,14 +115,8 @@ public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements Upli
         return (T) lwM2mresponse;
     }
 
-    /**
-     * Throws a generic {@link ResourceAccessException} indicating that the server returned an unexpected response code.
-     *
-     * @param coapRequest
-     * @param coapResponse
-     */
-    private void handleUnexpectedResponseCode(final Request coapRequest, final Response coapResponse) {
-        final String msg = String.format("Server returned unexpected response code [%s]", coapResponse.getCode());
-        throw new ResourceAccessException(coapRequest.getURI(), msg);
+    private void handleUnexpectedResponseCode(LwM2mRequest<?> request, Response coapResponse) {
+        throw new InvalidResponseException(String.format("Server returned unexpected response code [%s] for [%s]",
+                coapResponse.getCode(), request));
     }
 }

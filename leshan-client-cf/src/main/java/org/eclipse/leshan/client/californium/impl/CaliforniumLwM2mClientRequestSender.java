@@ -52,7 +52,7 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
             public T buildResponse(final Response coapResponse) {
                 // Build LwM2m response
                 final LwM2mClientResponseBuilder<T> lwm2mResponseBuilder = new LwM2mClientResponseBuilder<T>(
-                        coapRequest, coapResponse);
+                        coapResponse);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }
@@ -85,7 +85,7 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
             public T buildResponse(final Response coapResponse) {
                 // Build LwM2m response
                 final LwM2mClientResponseBuilder<T> lwm2mResponseBuilder = new LwM2mClientResponseBuilder<T>(
-                        coapRequest, coapResponse);
+                        coapResponse);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }

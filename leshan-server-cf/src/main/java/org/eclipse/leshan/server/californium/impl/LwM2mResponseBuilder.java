@@ -37,11 +37,12 @@ import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.DiscoverRequest;
 import org.eclipse.leshan.core.request.DownlinkRequestVisitor;
 import org.eclipse.leshan.core.request.ExecuteRequest;
+import org.eclipse.leshan.core.request.LwM2mRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
-import org.eclipse.leshan.core.request.exception.ResourceAccessException;
+import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
 import org.eclipse.leshan.core.response.BootstrapFinishResponse;
 import org.eclipse.leshan.core.response.BootstrapWriteResponse;
@@ -55,6 +56,7 @@ import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteAttributesResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 import org.eclipse.leshan.server.client.Registration;
+import org.eclipse.leshan.util.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,9 +72,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     private final LwM2mModel model;
     private final LwM2mNodeDecoder decoder;
 
-    public LwM2mResponseBuilder(final Request coapRequest, final Response coapResponse, final Registration registration,
-            final LwM2mModel model, final ObservationServiceImpl observationService,
-            final LwM2mNodeDecoder decoder) {
+    public LwM2mResponseBuilder(Request coapRequest, Response coapResponse, Registration registration, LwM2mModel model,
+            ObservationServiceImpl observationService, LwM2mNodeDecoder decoder) {
         this.coapRequest = coapRequest;
         this.coapResponse = coapResponse;
         this.observationService = observationService;
@@ -82,10 +83,11 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     }
 
     @Override
-    public void visit(final ReadRequest request) {
+    public void visit(ReadRequest request) {
         switch (coapResponse.getCode()) {
         case CONTENT:
-            LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse);
+            LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse, request,
+                    registration.getEndpoint());
             lwM2mresponse = new ReadResponse(ResponseCode.CONTENT, content, null, coapResponse);
             break;
         case BAD_REQUEST:
@@ -98,12 +100,12 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                     coapResponse.getPayloadString(), coapResponse);
             break;
         default:
-            handleUnexpectedResponseCode(registration.getEndpoint(), coapRequest, coapResponse);
+            handleUnexpectedResponseCode(registration.getEndpoint(), request, coapResponse);
         }
     }
 
     @Override
-    public void visit(final DiscoverRequest request) {
+    public void visit(DiscoverRequest request) {
         switch (coapResponse.getCode()) {
         case CONTENT:
             Link[] links = null;
@@ -126,12 +128,12 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                     coapResponse.getPayloadString(), coapResponse);
             break;
         default:
-            handleUnexpectedResponseCode(registration.getEndpoint(), coapRequest, coapResponse);
+            handleUnexpectedResponseCode(registration.getEndpoint(), request, coapResponse);
         }
     }
 
     @Override
-    public void visit(final WriteRequest request) {
+    public void visit(WriteRequest request) {
         switch (coapResponse.getCode()) {
         case CHANGED:
             lwM2mresponse = new WriteResponse(ResponseCode.CHANGED, null, coapResponse);
@@ -146,12 +148,12 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                     coapResponse.getPayloadString(), coapResponse);
             break;
         default:
-            handleUnexpectedResponseCode(registration.getEndpoint(), coapRequest, coapResponse);
+            handleUnexpectedResponseCode(registration.getEndpoint(), request, coapResponse);
         }
     }
 
     @Override
-    public void visit(final WriteAttributesRequest request) {
+    public void visit(WriteAttributesRequest request) {
         switch (coapResponse.getCode()) {
         case CHANGED:
             lwM2mresponse = new WriteAttributesResponse(ResponseCode.CHANGED, null, coapResponse);
@@ -165,12 +167,12 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                     coapResponse.getPayloadString(), coapResponse);
             break;
         default:
-            handleUnexpectedResponseCode(registration.getEndpoint(), coapRequest, coapResponse);
+            handleUnexpectedResponseCode(registration.getEndpoint(), request, coapResponse);
         }
     }
 
     @Override
-    public void visit(final ExecuteRequest request) {
+    public void visit(ExecuteRequest request) {
         switch (coapResponse.getCode()) {
         case CHANGED:
             lwM2mresponse = new ExecuteResponse(ResponseCode.CHANGED, null, coapResponse);
@@ -184,13 +186,13 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                     coapResponse.getPayloadString(), coapResponse);
             break;
         default:
-            handleUnexpectedResponseCode(registration.getEndpoint(), coapRequest, coapResponse);
+            handleUnexpectedResponseCode(registration.getEndpoint(), request, coapResponse);
         }
 
     }
 
     @Override
-    public void visit(final CreateRequest request) {
+    public void visit(CreateRequest request) {
         switch (coapResponse.getCode()) {
         case CREATED:
             lwM2mresponse = new CreateResponse(ResponseCode.CREATED, coapResponse.getOptions().getLocationPathString(),
@@ -206,12 +208,12 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                     coapResponse.getPayloadString(), coapResponse);
             break;
         default:
-            handleUnexpectedResponseCode(registration.getEndpoint(), coapRequest, coapResponse);
+            handleUnexpectedResponseCode(registration.getEndpoint(), request, coapResponse);
         }
     }
 
     @Override
-    public void visit(final DeleteRequest request) {
+    public void visit(DeleteRequest request) {
         switch (coapResponse.getCode()) {
         case DELETED:
             lwM2mresponse = new DeleteResponse(ResponseCode.DELETED, null, coapResponse);
@@ -225,12 +227,12 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                     coapResponse.getPayloadString(), coapResponse);
             break;
         default:
-            handleUnexpectedResponseCode(registration.getEndpoint(), coapRequest, coapResponse);
+            handleUnexpectedResponseCode(registration.getEndpoint(), request, coapResponse);
         }
     }
 
     @Override
-    public void visit(final ObserveRequest request) {
+    public void visit(ObserveRequest request) {
         switch (coapResponse.getCode()) {
         case CHANGED:
             // TODO now the spec say that NOTIFY should use 2.05 content so we should remove this.
@@ -238,7 +240,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             lwM2mresponse = null;
             break;
         case CONTENT:
-            LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse);
+            LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse, request,
+                    registration.getEndpoint());
             if (coapResponse.getOptions().hasObserve()) {
                 // observe request successful
                 Observation observation = new Observation(coapRequest.getToken(), registration.getId(),
@@ -261,12 +264,12 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                     coapResponse.getPayloadString(), coapResponse);
             break;
         default:
-            handleUnexpectedResponseCode(registration.getEndpoint(), coapRequest, coapResponse);
+            handleUnexpectedResponseCode(registration.getEndpoint(), request, coapResponse);
         }
     }
 
     @Override
-    public void visit(final BootstrapWriteRequest request) {
+    public void visit(BootstrapWriteRequest request) {
         switch (coapResponse.getCode()) {
         case CHANGED:
             lwM2mresponse = new BootstrapWriteResponse(ResponseCode.CHANGED, null, coapResponse);
@@ -278,12 +281,12 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                     coapResponse.getPayloadString(), coapResponse);
             break;
         default:
-            handleUnexpectedResponseCode(registration.getEndpoint(), coapRequest, coapResponse);
+            handleUnexpectedResponseCode(registration.getEndpoint(), request, coapResponse);
         }
     }
 
     @Override
-    public void visit(final BootstrapDeleteRequest request) {
+    public void visit(BootstrapDeleteRequest request) {
         switch (coapResponse.getCode()) {
         case DELETED:
             lwM2mresponse = new BootstrapDeleteResponse(ResponseCode.DELETED, null, coapResponse);
@@ -294,12 +297,12 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                     coapResponse.getPayloadString(), coapResponse);
             break;
         default:
-            handleUnexpectedResponseCode(registration.getEndpoint(), coapRequest, coapResponse);
+            handleUnexpectedResponseCode(registration.getEndpoint(), request, coapResponse);
         }
     }
 
     @Override
-    public void visit(final BootstrapFinishRequest request) {
+    public void visit(BootstrapFinishRequest request) {
         switch (coapResponse.getCode()) {
         case CHANGED:
             lwM2mresponse = new BootstrapFinishResponse(ResponseCode.CHANGED, null, coapResponse);
@@ -310,27 +313,32 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                     coapResponse.getPayloadString(), coapResponse);
             break;
         default:
-            handleUnexpectedResponseCode(registration.getEndpoint(), coapRequest, coapResponse);
+            handleUnexpectedResponseCode(registration.getEndpoint(), request, coapResponse);
         }
     }
 
-    private LwM2mNode decodeCoapResponse(final LwM2mPath path, final Response coapResponse) {
-        LwM2mNode content;
-        try {
-            // get content format
-            ContentFormat contentFormat = null;
-            if (coapResponse.getOptions().hasContentFormat()) {
-                contentFormat = ContentFormat.fromCode(coapResponse.getOptions().getContentFormat());
-            }
+    private LwM2mNode decodeCoapResponse(LwM2mPath path, Response coapResponse, LwM2mRequest<?> request,
+            String endpoint) {
 
-            // decode payload
-            content = decoder.decode(coapResponse.getPayload(), contentFormat, path, model);
-        } catch (final CodecException e) {
-            final String msg = String.format("[%s] (%s:%s)", e.getMessage(), path.toString(),
-                    coapResponse.getCode().toString());
-            throw new ResourceAccessException(path.toString(), msg, e);
+        // Get content format
+        ContentFormat contentFormat = null;
+        if (coapResponse.getOptions().hasContentFormat()) {
+            contentFormat = ContentFormat.fromCode(coapResponse.getOptions().getContentFormat());
         }
-        return content;
+
+        // Decode payload
+        try {
+            return decoder.decode(coapResponse.getPayload(), contentFormat, path, model);
+        } catch (final CodecException e) {
+            if (LOG.isDebugEnabled()) {
+                byte[] payload = coapResponse.getPayload() == null ? new byte[0] : coapResponse.getPayload();
+                LOG.debug(
+                        String.format("Unable do decode response payload of request [%s] from client [%s] [payload:%s]",
+                                request, endpoint, Hex.encodeHexString(payload)));
+            }
+            throw new InvalidResponseException(String.format(
+                    "Unable do decode response payload of request [%s] from client [%s]", request, endpoint), e);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -338,17 +346,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         return (T) lwM2mresponse;
     }
 
-    /**
-     * Throws a generic {@link ResourceAccessException} indicating that the client returned an unexpected response code.
-     *
-     * @param request
-     * @param coapRequest
-     * @param coapResponse
-     */
-    private void handleUnexpectedResponseCode(final String clientEndpoint, final Request coapRequest,
-            final Response coapResponse) {
-        final String msg = String.format("Client [%s] returned unexpected response code [%s]", clientEndpoint,
-                coapResponse.getCode());
-        throw new ResourceAccessException(coapRequest.getURI(), msg);
+    private void handleUnexpectedResponseCode(String clientEndpoint, LwM2mRequest<?> request, Response coapResponse) {
+        throw new InvalidResponseException(String.format("Client [%s] returned unexpected response code [%s] for [%s]",
+                clientEndpoint, coapResponse.getCode(), request));
     }
 }
