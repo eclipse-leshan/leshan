@@ -17,6 +17,9 @@ package org.eclipse.leshan.server;
 
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.request.DownlinkRequest;
+import org.eclipse.leshan.core.request.exception.InvalidResponseException;
+import org.eclipse.leshan.core.request.exception.RequestCanceledException;
+import org.eclipse.leshan.core.request.exception.RequestRejectedException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
@@ -61,9 +64,15 @@ public interface LwM2mServer {
      *         http://tools.ietf.org/html/rfc7252#section-4.2 ).
      * 
      * @throws CodecException if request payload can not be encoded.
+     * @throws InterruptedException if the thread was interrupted.
+     * @throws RequestRejectedException if the request is rejected by foreign peer.
+     * @throws RequestCanceledException if the request is cancelled.
+     * @throws InvalidResponseException if the response received is malformed.
+     * 
      */
     <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request)
-            throws InterruptedException, CodecException;
+            throws InterruptedException, CodecException, InvalidResponseException, RequestCanceledException,
+            RequestRejectedException;
 
     /**
      * Sends a Lightweight M2M request synchronously. Will block until a response is received from the remote client.
@@ -75,9 +84,13 @@ public interface LwM2mServer {
      * 
      * @throws CodecException if request payload can not be encoded.
      * @throws InterruptedException if the thread was interrupted.
+     * @throws RequestRejectedException if the request is rejected by foreign peer.
+     * @throws RequestCanceledException if the request is cancelled.
+     * @throws InvalidResponseException if the response received is malformed.
      */
     <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request, long timeout)
-            throws InterruptedException, CodecException;
+            throws InterruptedException, CodecException, InvalidResponseException, RequestCanceledException,
+            RequestRejectedException;
 
     /**
      * Sends a Lightweight M2M request asynchronously.
@@ -85,8 +98,13 @@ public interface LwM2mServer {
      * @param destination the remote client
      * @param request the request to send to the client
      * @param responseCallback a callback called when a response is received (successful or error response)
-     * @param errorCallback a callback called when an error or exception occurred when response is received
-     * 
+     * @param errorCallback a callback called when an error or exception occurred when response is received. It can be :
+     *        <ul>
+     *        <li>RequestRejectedException if the request is rejected by foreign peer.</li>
+     *        <li>RequestCanceledException if the request is cancelled.</li>
+     *        <li>InvalidResponseException if the response received is malformed.</li>
+     *        <li>or any other RuntimeException for unexpected issue.
+     *        </ul>
      * @throws CodecException if request payload can not be encoded.
      */
     <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request,
