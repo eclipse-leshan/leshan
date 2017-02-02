@@ -238,6 +238,7 @@ public class LeshanServer implements LwM2mServer {
         LOG.info("LWM2M server stopped.");
     }
 
+    @Override
     public void destroy() {
         // Destroy server
         coapServer.destroy();
@@ -320,6 +321,7 @@ public class LeshanServer implements LwM2mServer {
             exchange.respond(ResponseCode.NOT_FOUND);
         }
 
+        @Override
         public List<Endpoint> getEndpoints() {
             return coapServer.getEndpoints();
         }

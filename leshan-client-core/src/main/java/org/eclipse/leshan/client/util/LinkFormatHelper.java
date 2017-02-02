@@ -55,6 +55,7 @@ public final class LinkFormatHelper {
         // sort resources
         List<LwM2mObjectEnabler> objEnablerList = new ArrayList<LwM2mObjectEnabler>(objectEnablers);
         Collections.sort(objEnablerList, new Comparator<LwM2mObjectEnabler>() {
+            @Override
             public int compare(LwM2mObjectEnabler o1, LwM2mObjectEnabler o2) {
                 return o1.getId() - o2.getId();
             }

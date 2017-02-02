@@ -104,6 +104,7 @@ public class LwM2mBootstrapServerImpl implements LwM2mBootstrapServer {
     /**
      * Starts the server and binds it to the specified port.
      */
+    @Override
     public void start() {
         coapServer.start();
         LOG.info("Bootstrap server started at coap://{}, coaps://{}.", getNonSecureAddress(), getSecureAddress());
@@ -112,6 +113,7 @@ public class LwM2mBootstrapServerImpl implements LwM2mBootstrapServer {
     /**
      * Stops the server and unbinds it from assigned ports (can be restarted).
      */
+    @Override
     public void stop() {
         coapServer.stop();
         LOG.info("Bootstrap server stopped.");

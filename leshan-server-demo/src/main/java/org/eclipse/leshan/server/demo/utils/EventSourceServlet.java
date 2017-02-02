@@ -148,6 +148,7 @@ public abstract class EventSourceServlet extends HttpServlet {
             this.output = continuation.getServletResponse().getOutputStream();
         }
 
+        @Override
         public void event(String name, String data) throws IOException {
             synchronized (this) {
                 output.write(EVENT_FIELD);
@@ -157,6 +158,7 @@ public abstract class EventSourceServlet extends HttpServlet {
             }
         }
 
+        @Override
         public void data(String data) throws IOException {
             synchronized (this) {
                 BufferedReader reader = new BufferedReader(new StringReader(data));
@@ -171,6 +173,7 @@ public abstract class EventSourceServlet extends HttpServlet {
             }
         }
 
+        @Override
         public void comment(String comment) throws IOException {
             synchronized (this) {
                 output.write(COMMENT_FIELD);
@@ -181,6 +184,7 @@ public abstract class EventSourceServlet extends HttpServlet {
             }
         }
 
+        @Override
         public void run() {
             // If the other peer closes the connection, the first
             // flush() should generate a TCP reset that is detected
@@ -205,6 +209,7 @@ public abstract class EventSourceServlet extends HttpServlet {
             continuation.getServletResponse().flushBuffer();
         }
 
+        @Override
         public void close() {
             synchronized (this) {
                 closed = true;
