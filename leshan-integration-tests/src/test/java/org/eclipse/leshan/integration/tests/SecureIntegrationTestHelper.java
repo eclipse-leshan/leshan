@@ -104,9 +104,10 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
 
             // Get certificates from key store
             char[] clientKeyStorePwd = "client".toCharArray();
-            FileInputStream clientKeyStoreFile = new FileInputStream("./credentials/clientKeyStore.jks");
             KeyStore clientKeyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            clientKeyStore.load(clientKeyStoreFile, clientKeyStorePwd);
+            try (FileInputStream clientKeyStoreFile = new FileInputStream("./credentials/clientKeyStore.jks")) {
+                clientKeyStore.load(clientKeyStoreFile, clientKeyStorePwd);
+            }
 
             clientPrivateKeyFromCert = (PrivateKey) clientKeyStore.getKey("client", clientKeyStorePwd);
             clientCAX509Cert = (X509Certificate) clientKeyStore.getCertificate("clientCA");
@@ -144,9 +145,10 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
 
             // Get certificates from key store
             char[] serverKeyStorePwd = "server".toCharArray();
-            FileInputStream serverKeyStoreFile = new FileInputStream("./credentials/serverKeyStore.jks");
             KeyStore serverKeyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            serverKeyStore.load(serverKeyStoreFile, serverKeyStorePwd);
+            try (FileInputStream serverKeyStoreFile = new FileInputStream("./credentials/serverKeyStore.jks")) {
+                serverKeyStore.load(serverKeyStoreFile, serverKeyStorePwd);
+            }
 
             serverPrivateKeyFromCert = (PrivateKey) serverKeyStore.getKey("server", serverKeyStorePwd);
             serverCAX509Cert = (X509Certificate) serverKeyStore.getCertificate("serverCA");
