@@ -84,6 +84,9 @@
             var hex = [];
             for (var i in byteArray){
                 hex[i] = byteArray[i].toString(16).toUpperCase();
+                if (hex[i].length === 1){
+                    hex[i] = '0' + hex[i];
+                }
             }
             return hex.join('');
         };
