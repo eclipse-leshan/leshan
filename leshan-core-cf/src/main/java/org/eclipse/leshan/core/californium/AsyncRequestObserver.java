@@ -31,22 +31,22 @@ public abstract class AsyncRequestObserver<T extends LwM2mResponse> extends Abst
     private ResponseCallback<T> responseCallback;
     private ErrorCallback errorCallback;
 
-    public AsyncRequestObserver(final Request coapRequest, final ResponseCallback<T> responseCallback,
-            final ErrorCallback errorCallback) {
+    public AsyncRequestObserver(Request coapRequest, ResponseCallback<T> responseCallback,
+            ErrorCallback errorCallback) {
         super(coapRequest);
         this.responseCallback = responseCallback;
         this.errorCallback = errorCallback;
     }
 
     @Override
-    public void onResponse(final Response coapResponse) {
+    public void onResponse(Response coapResponse) {
         LOG.debug("Received coap response: {}", coapResponse);
         try {
-            final T lwM2mResponseT = buildResponse(coapResponse);
+            T lwM2mResponseT = buildResponse(coapResponse);
             if (lwM2mResponseT != null) {
                 responseCallback.onResponse(lwM2mResponseT);
             }
-        } catch (final Exception e) {
+        } catch (Exception e) {
             errorCallback.onError(e);
         } finally {
             coapRequest.removeMessageObserver(this);

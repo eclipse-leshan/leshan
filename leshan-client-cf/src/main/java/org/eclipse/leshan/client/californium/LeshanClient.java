@@ -69,8 +69,8 @@ public class LeshanClient implements LwM2mClient {
 
     private CoapEndpoint nonSecureEndpoint;
 
-    public LeshanClient(final String endpoint, final InetSocketAddress localAddress,
-            InetSocketAddress localSecureAddress, final List<? extends LwM2mObjectEnabler> objectEnablers) {
+    public LeshanClient(String endpoint, InetSocketAddress localAddress, InetSocketAddress localSecureAddress,
+            List<? extends LwM2mObjectEnabler> objectEnablers) {
 
         Validate.notNull(endpoint);
         Validate.notNull(localAddress);
@@ -146,8 +146,8 @@ public class LeshanClient implements LwM2mClient {
 
         // Create CoAP resources for each lwm2m Objects.
         for (LwM2mObjectEnabler enabler : objectEnablers) {
-            final ObjectResource clientObject = new ObjectResource(enabler, bootstrapHandler,
-                    new DefaultLwM2mNodeEncoder(), new DefaultLwM2mNodeDecoder());
+            ObjectResource clientObject = new ObjectResource(enabler, bootstrapHandler, new DefaultLwM2mNodeEncoder(),
+                    new DefaultLwM2mNodeDecoder());
             clientSideServer.add(clientObject);
         }
 

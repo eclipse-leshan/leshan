@@ -185,14 +185,14 @@ public final class ObserveSpec {
         }
 
         // parse parameters with value
-        for (final String query : uriQueries) {
-            final String[] split = query.split("=");
+        for (String query : uriQueries) {
+            String[] split = query.split("=");
             if (split.length != 2) {
                 throw new IllegalArgumentException();
             }
 
-            final String key = split[0];
-            final String value = split[1];
+            String key = split[0];
+            String value = split[1];
 
             switch (key) {
             case GREATER_THAN:

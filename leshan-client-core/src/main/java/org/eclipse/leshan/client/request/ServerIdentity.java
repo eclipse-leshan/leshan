@@ -48,8 +48,8 @@ public class ServerIdentity extends Identity {
     /**
      * Identity for system calls.
      */
-    public final static ServerIdentity SYSTEM = new ServerIdentity(Identity.unsecure(InetSocketAddress
-            .createUnresolved("system", 1)), Role.SYSTEM);
+    public final static ServerIdentity SYSTEM = new ServerIdentity(
+            Identity.unsecure(InetSocketAddress.createUnresolved("system", 1)), Role.SYSTEM);
 
     /**
      * Role of the associated identity.
@@ -63,7 +63,7 @@ public class ServerIdentity extends Identity {
      * @param identity identity to be used
      * @param role related role
      */
-    private ServerIdentity(final Identity identity, final Role role) {
+    private ServerIdentity(Identity identity, Role role) {
         super(identity);
         this.role = role;
     }
@@ -110,7 +110,7 @@ public class ServerIdentity extends Identity {
      * @param identity identity to be used
      * @return server identity with {@link Role#LWM2M_BOOTSTRAP_SERVER} associated.
      */
-    public static ServerIdentity createLwm2mBootstrapServerIdentity(final Identity identity) {
+    public static ServerIdentity createLwm2mBootstrapServerIdentity(Identity identity) {
         return new ServerIdentity(identity, Role.LWM2M_BOOTSTRAP_SERVER);
     }
 
@@ -120,7 +120,7 @@ public class ServerIdentity extends Identity {
      * @param identity identity to be used
      * @return server identity with {@link Role#LWM2M_SERVER} associated.
      */
-    public static ServerIdentity createLwm2mServerIdentity(final Identity identity) {
+    public static ServerIdentity createLwm2mServerIdentity(Identity identity) {
         return new ServerIdentity(identity, Role.LWM2M_SERVER);
     }
 

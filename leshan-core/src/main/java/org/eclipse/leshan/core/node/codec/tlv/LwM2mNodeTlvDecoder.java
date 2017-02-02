@@ -62,7 +62,7 @@ public class LwM2mNodeTlvDecoder {
 
         // Object
         if (nodeClass == LwM2mObject.class) {
-            final List<LwM2mObjectInstance> instances = new ArrayList<>();
+            List<LwM2mObjectInstance> instances = new ArrayList<>();
 
             // is it an array of TLV resources?
             if (tlvs.length > 0 && //

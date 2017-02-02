@@ -21,7 +21,7 @@ import org.eclipse.leshan.util.Validate;
 
 public class ResponseCodeUtil {
 
-    public static ResponseCode fromCoapCode(final int code) {
+    public static ResponseCode fromCoapCode(int code) {
         Validate.notNull(code);
 
         if (code == CoAP.ResponseCode.CREATED.value) {
@@ -53,7 +53,7 @@ public class ResponseCodeUtil {
         }
     }
 
-    public static org.eclipse.californium.core.coap.CoAP.ResponseCode fromLwM2mCode(final ResponseCode code) {
+    public static org.eclipse.californium.core.coap.CoAP.ResponseCode fromLwM2mCode(ResponseCode code) {
         Validate.notNull(code);
 
         switch (code) {

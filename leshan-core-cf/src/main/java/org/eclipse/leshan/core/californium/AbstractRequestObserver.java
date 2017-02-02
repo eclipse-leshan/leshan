@@ -23,7 +23,7 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 public abstract class AbstractRequestObserver<T extends LwM2mResponse> extends MessageObserverAdapter {
     Request coapRequest;
 
-    public AbstractRequestObserver(final Request coapRequest) {
+    public AbstractRequestObserver(Request coapRequest) {
         this.coapRequest = coapRequest;
     }
 

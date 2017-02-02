@@ -34,12 +34,12 @@ public class CoapClientRequestBuilder implements UplinkRequestVisitor {
     private Request coapRequest;
     private final InetSocketAddress serverAddress;
 
-    public CoapClientRequestBuilder(final InetSocketAddress serverAddress) {
+    public CoapClientRequestBuilder(InetSocketAddress serverAddress) {
         this.serverAddress = serverAddress;
     }
 
     @Override
-    public void visit(final BootstrapRequest request) {
+    public void visit(BootstrapRequest request) {
         coapRequest = Request.newPost();
         buildRequestSettings();
         coapRequest.getOptions().addUriPath("bs");
@@ -47,7 +47,7 @@ public class CoapClientRequestBuilder implements UplinkRequestVisitor {
     }
 
     @Override
-    public void visit(final RegisterRequest request) {
+    public void visit(RegisterRequest request) {
         coapRequest = Request.newPost();
         buildRequestSettings();
         coapRequest.getOptions().setContentFormat(ContentFormat.LINK.getCode());
@@ -85,7 +85,7 @@ public class CoapClientRequestBuilder implements UplinkRequestVisitor {
     }
 
     @Override
-    public void visit(final UpdateRequest request) {
+    public void visit(UpdateRequest request) {
         coapRequest = Request.newPost();
         buildRequestSettings();
         coapRequest.getOptions().setUriPath(request.getRegistrationId());
@@ -110,7 +110,7 @@ public class CoapClientRequestBuilder implements UplinkRequestVisitor {
     }
 
     @Override
-    public void visit(final DeregisterRequest request) {
+    public void visit(DeregisterRequest request) {
         coapRequest = Request.newDelete();
         buildRequestSettings();
         coapRequest.getOptions().setUriPath(request.getRegistrationId());

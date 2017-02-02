@@ -33,26 +33,25 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
     private final Endpoint nonSecureEndpoint;
     private final Endpoint secureEndpoint;
 
-    public CaliforniumLwM2mClientRequestSender(final Endpoint secureEndpoint, final Endpoint nonSecureEndpoint) {
+    public CaliforniumLwM2mClientRequestSender(Endpoint secureEndpoint, Endpoint nonSecureEndpoint) {
         this.secureEndpoint = secureEndpoint;
         this.nonSecureEndpoint = nonSecureEndpoint;
     }
 
     @Override
-    public <T extends LwM2mResponse> T send(final InetSocketAddress serverAddress, final boolean secure,
+    public <T extends LwM2mResponse> T send(InetSocketAddress serverAddress, boolean secure,
             final UplinkRequest<T> request, Long timeout) throws InterruptedException {
         // Create the CoAP request from LwM2m request
-        final CoapClientRequestBuilder coapClientRequestBuilder = new CoapClientRequestBuilder(serverAddress);
+        CoapClientRequestBuilder coapClientRequestBuilder = new CoapClientRequestBuilder(serverAddress);
         request.accept(coapClientRequestBuilder);
-        final Request coapRequest = coapClientRequestBuilder.getRequest();
+        Request coapRequest = coapClientRequestBuilder.getRequest();
 
         // Send CoAP request synchronously
-        final SyncRequestObserver<T> syncMessageObserver = new SyncRequestObserver<T>(coapRequest, timeout) {
+        SyncRequestObserver<T> syncMessageObserver = new SyncRequestObserver<T>(coapRequest, timeout) {
             @Override
-            public T buildResponse(final Response coapResponse) {
+            public T buildResponse(Response coapResponse) {
                 // Build LwM2m response
-                final LwM2mClientResponseBuilder<T> lwm2mResponseBuilder = new LwM2mClientResponseBuilder<T>(
-                        coapResponse);
+                LwM2mClientResponseBuilder<T> lwm2mResponseBuilder = new LwM2mClientResponseBuilder<T>(coapResponse);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }
@@ -70,22 +69,20 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
     }
 
     @Override
-    public <T extends LwM2mResponse> void send(final InetSocketAddress serverAddress, final boolean secure,
-            final UplinkRequest<T> request, final ResponseCallback<T> responseCallback,
-            final ErrorCallback errorCallback) {
+    public <T extends LwM2mResponse> void send(InetSocketAddress serverAddress, boolean secure,
+            final UplinkRequest<T> request, ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         // Create the CoAP request from LwM2m request
-        final CoapClientRequestBuilder coapClientRequestBuilder = new CoapClientRequestBuilder(serverAddress);
+        CoapClientRequestBuilder coapClientRequestBuilder = new CoapClientRequestBuilder(serverAddress);
         request.accept(coapClientRequestBuilder);
-        final Request coapRequest = coapClientRequestBuilder.getRequest();
+        Request coapRequest = coapClientRequestBuilder.getRequest();
 
         // Add CoAP request callback
         coapRequest.addMessageObserver(new AsyncRequestObserver<T>(coapRequest, responseCallback, errorCallback) {
 
             @Override
-            public T buildResponse(final Response coapResponse) {
+            public T buildResponse(Response coapResponse) {
                 // Build LwM2m response
-                final LwM2mClientResponseBuilder<T> lwm2mResponseBuilder = new LwM2mClientResponseBuilder<T>(
-                        coapResponse);
+                LwM2mClientResponseBuilder<T> lwm2mResponseBuilder = new LwM2mClientResponseBuilder<T>(coapResponse);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }

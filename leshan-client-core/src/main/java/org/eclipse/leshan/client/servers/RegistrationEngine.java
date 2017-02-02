@@ -237,7 +237,7 @@ public class RegistrationEngine {
 
         // Send update
         LOG.info("Trying to update registration to {} ...", dmInfo.getFullUri());
-        final UpdateResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(),
+        UpdateResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(),
                 new UpdateRequest(registrationID, null, null, null, null), null);
         if (response == null) {
             registrationID = null;

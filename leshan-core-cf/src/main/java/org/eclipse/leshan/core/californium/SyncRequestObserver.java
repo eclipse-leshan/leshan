@@ -37,20 +37,20 @@ public abstract class SyncRequestObserver<T extends LwM2mResponse> extends Abstr
     private AtomicReference<RuntimeException> exception = new AtomicReference<>();
     private Long timeout;
 
-    public SyncRequestObserver(final Request coapRequest, final Long timeout) {
+    public SyncRequestObserver(Request coapRequest, Long timeout) {
         super(coapRequest);
         this.timeout = timeout;
     }
 
     @Override
-    public void onResponse(final Response coapResponse) {
+    public void onResponse(Response coapResponse) {
         LOG.debug("Received coap response: {}", coapResponse);
         try {
-            final T lwM2mResponseT = buildResponse(coapResponse);
+            T lwM2mResponseT = buildResponse(coapResponse);
             if (lwM2mResponseT != null) {
                 ref.set(lwM2mResponseT);
             }
-        } catch (final RuntimeException e) {
+        } catch (RuntimeException e) {
             exception.set(e);
         } finally {
             latch.countDown();

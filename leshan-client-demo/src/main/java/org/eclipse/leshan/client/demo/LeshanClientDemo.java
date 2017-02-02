@@ -220,7 +220,8 @@ public class LeshanClientDemo {
         initializer.setClassForObject(DEVICE, MyDevice.class);
         initializer.setInstancesForObject(LOCATION, locationInstance);
         initializer.setInstancesForObject(OBJECT_ID_TEMPERATURE_SENSOR, new RandomTemperatureSensor());
-        List<LwM2mObjectEnabler> enablers = initializer.create(SECURITY, SERVER, DEVICE, LOCATION, OBJECT_ID_TEMPERATURE_SENSOR);
+        List<LwM2mObjectEnabler> enablers = initializer.create(SECURITY, SERVER, DEVICE, LOCATION,
+                OBJECT_ID_TEMPERATURE_SENSOR);
 
         // Create client
         LeshanClientBuilder builder = new LeshanClientBuilder(endpoint);
@@ -229,7 +230,8 @@ public class LeshanClientDemo {
         builder.setObjects(enablers);
         final LeshanClient client = builder.build();
 
-        LOG.info("Press 'w','a','s','d' to change reported Location ({},{}).", locationInstance.getLatitude(), locationInstance.getLongitude());
+        LOG.info("Press 'w','a','s','d' to change reported Location ({},{}).", locationInstance.getLatitude(),
+                locationInstance.getLongitude());
 
         // Start the client
         client.start();

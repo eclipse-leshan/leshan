@@ -83,7 +83,8 @@ public class ObserveTest {
         helper.server.getObservationService().addListener(listener);
 
         // observe device timezone
-        ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(), new ObserveRequest(3, 0, 15));
+        ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(),
+                new ObserveRequest(3, 0, 15));
         assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
         assertNotNull(observeResponse.getCoapResponse());
         assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
@@ -193,8 +194,7 @@ public class ObserveTest {
 
         // *** HACK send a notification with unsupported content format *** //
         byte[] payload = LwM2mNodeJsonEncoder.encode(LwM2mSingleResource.newStringResource(15, "Paris"),
-                new LwM2mPath("/3/0/15"),
-                new LwM2mModel(helper.createObjectModels()));
+                new LwM2mPath("/3/0/15"), new LwM2mModel(helper.createObjectModels()));
         Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
         sendNotification(payload, firstCoapResponse, 666); // 666 is not a supported contentFormat.
         // *** Hack End *** //
@@ -251,8 +251,7 @@ public class ObserveTest {
         helper.server.getObservationService().addListener(listener);
 
         // observe device timezone
-        ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(),
-                new ObserveRequest(3, 0));
+        ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(), new ObserveRequest(3, 0));
         assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
         assertNotNull(observeResponse.getCoapResponse());
         assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
@@ -291,8 +290,7 @@ public class ObserveTest {
         helper.server.getObservationService().addListener(listener);
 
         // observe device timezone
-        ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(),
-                new ObserveRequest(3));
+        ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(), new ObserveRequest(3));
         assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
         assertNotNull(observeResponse.getCoapResponse());
         assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
@@ -326,7 +324,7 @@ public class ObserveTest {
         assertThat(listener.getResponse().getCoapResponse(), is(instanceOf(Response.class)));
     }
 
-    private void sendNotification(final byte[] payload, final Response firstCoapResponse, int contentFormat) {
+    private void sendNotification(byte[] payload, Response firstCoapResponse, int contentFormat) {
 
         // encode and send it
         try (DatagramSocket clientSocket = new DatagramSocket()) {
@@ -337,8 +335,7 @@ public class ObserveTest {
             response.setPayload(payload);
             response.setMID(firstCoapResponse.getMID() + 1);
             response.setToken(firstCoapResponse.getToken());
-            OptionSet options = new OptionSet()
-                    .setContentFormat(contentFormat)
+            OptionSet options = new OptionSet().setContentFormat(contentFormat)
                     .setObserve(firstCoapResponse.getOptions().getObserve() + 1);
             response.setOptions(options);
 

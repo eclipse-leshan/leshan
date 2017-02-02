@@ -75,10 +75,10 @@ public class ExecuteTest {
 
     @Test
     public void cannot_execute_nonexisting_resource_on_existing_object() throws InterruptedException {
-        final int nonExistingResourceId = 9999;
+        int nonExistingResourceId = 9999;
         // execute non existing resource on device
-        ExecuteResponse response = helper.server.send(helper.getCurrentRegistration(), new ExecuteRequest(3, 0,
-                nonExistingResourceId));
+        ExecuteResponse response = helper.server.send(helper.getCurrentRegistration(),
+                new ExecuteRequest(3, 0, nonExistingResourceId));
 
         // verify result
         assertEquals(ResponseCode.NOT_FOUND, response.getCode());
@@ -88,9 +88,9 @@ public class ExecuteTest {
 
     @Test
     public void cannot_execute_nonexisting_resource_on_non_existing_object() throws InterruptedException {
-        final int nonExistingObjectId = 9999;
-        ExecuteResponse response = helper.server
-                .send(helper.getCurrentRegistration(), new ExecuteRequest(nonExistingObjectId, 0, 0));
+        int nonExistingObjectId = 9999;
+        ExecuteResponse response = helper.server.send(helper.getCurrentRegistration(),
+                new ExecuteRequest(nonExistingObjectId, 0, 0));
 
         // verify result
         assertEquals(ResponseCode.NOT_FOUND, response.getCode());
@@ -122,7 +122,8 @@ public class ExecuteTest {
     @Test
     public void can_execute_resource_with_parameters() throws InterruptedException {
         // execute reboot after 60 seconds on device
-        ExecuteResponse response = helper.server.send(helper.getCurrentRegistration(), new ExecuteRequest(3, 0, 4, "60"));
+        ExecuteResponse response = helper.server.send(helper.getCurrentRegistration(),
+                new ExecuteRequest(3, 0, 4, "60"));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());

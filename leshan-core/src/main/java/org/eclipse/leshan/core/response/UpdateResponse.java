@@ -19,11 +19,11 @@ import org.eclipse.leshan.ResponseCode;
 
 public class UpdateResponse extends AbstractLwM2mResponse {
 
-    public UpdateResponse(final ResponseCode code, final String errorMessage) {
+    public UpdateResponse(ResponseCode code, String errorMessage) {
         this(code, errorMessage, null);
     }
 
-    public UpdateResponse(final ResponseCode code, final String errorMessage, Object coapResponse) {
+    public UpdateResponse(ResponseCode code, String errorMessage, Object coapResponse) {
         super(code, errorMessage, coapResponse);
     }
 

@@ -75,12 +75,12 @@ public class Link implements Serializable {
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder();
         builder.append('<');
         builder.append(getUrl());
         builder.append('>');
 
-        final Map<String, Object> attributes = getAttributes();
+        Map<String, Object> attributes = getAttributes();
         if (attributes != null && !attributes.isEmpty()) {
             for (Entry<String, Object> entry : attributes.entrySet()) {
                 builder.append(";");
@@ -146,15 +146,15 @@ public class Link implements Serializable {
 
     public static String serialize(Link... linkObjects) {
         try {
-            final StringBuilder builder = new StringBuilder();
-            for (final Link link : linkObjects) {
+            StringBuilder builder = new StringBuilder();
+            for (Link link : linkObjects) {
                 builder.append(link.toString()).append(TRAILER);
             }
 
             builder.delete(builder.length() - TRAILER.length(), builder.length());
 
             return builder.toString();
-        } catch (final Exception e) {
+        } catch (Exception e) {
             return null;
         }
     }

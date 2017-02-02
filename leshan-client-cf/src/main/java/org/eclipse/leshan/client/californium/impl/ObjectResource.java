@@ -169,14 +169,14 @@ public class ObjectResource extends CoapResource implements NotifySender {
     }
 
     @Override
-    public void handlePUT(final CoapExchange coapExchange) {
+    public void handlePUT(CoapExchange coapExchange) {
         ServerIdentity identity = extractServerIdentity(coapExchange, bootstrapHandler);
         String URI = coapExchange.getRequestOptions().getUriPathString();
 
         // get Observe Spec
         ObserveSpec spec = null;
         if (coapExchange.advanced().getRequest().getOptions().getURIQueryCount() != 0) {
-            final List<String> uriQueries = coapExchange.advanced().getRequest().getOptions().getUriQuery();
+            List<String> uriQueries = coapExchange.advanced().getRequest().getOptions().getUriQuery();
             spec = ObserveSpec.parse(uriQueries);
         }
 
@@ -226,7 +226,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
     }
 
     @Override
-    public void handlePOST(final CoapExchange exchange) {
+    public void handlePOST(CoapExchange exchange) {
         ServerIdentity identity = extractServerIdentity(exchange, bootstrapHandler);
         String URI = exchange.getRequestOptions().getUriPathString();
 
@@ -307,7 +307,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
     }
 
     @Override
-    public void handleDELETE(final CoapExchange coapExchange) {
+    public void handleDELETE(CoapExchange coapExchange) {
         // Manage Delete Request
         String URI = coapExchange.getRequestOptions().getUriPathString();
         ServerIdentity identity = extractServerIdentity(coapExchange, bootstrapHandler);

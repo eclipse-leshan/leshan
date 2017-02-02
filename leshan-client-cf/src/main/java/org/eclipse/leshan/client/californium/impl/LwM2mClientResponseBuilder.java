@@ -33,8 +33,6 @@ import org.eclipse.leshan.core.response.UpdateResponse;
 
 public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements UplinkRequestVisitor {
 
-    // private static final Logger LOG = LoggerFactory.getLogger(LwM2mClientResponseBuilder.class);
-
     private final Response coapResponse;
 
     private LwM2mResponse lwM2mresponse;

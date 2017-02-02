@@ -62,8 +62,8 @@ public class ObserveSpecParserTest {
 
     @Test
     public void testAllTheThings() {
-        final ObserveSpec spec = new ObserveSpec.Builder().greaterThan(14).lessThan(8).minPeriod(5).maxPeriod(10)
-                .step(1).build();
+        ObserveSpec spec = new ObserveSpec.Builder().greaterThan(14).lessThan(8).minPeriod(5).maxPeriod(10).step(1)
+                .build();
         testCorrectSpec(spec, "gt=14.0", "lt=8.0", "pmin=5", "pmax=10", "st=1.0");
     }
 
@@ -72,13 +72,13 @@ public class ObserveSpecParserTest {
         ObserveSpec.parse(Arrays.asList("pmin=50", "pmax=10"));
     }
 
-    private void testCorrectSpec(final ObserveSpec expected, final String... inputs) {
-        final List<String> queries = Arrays.asList(inputs);
-        final ObserveSpec actual = ObserveSpec.parse(queries);
+    private void testCorrectSpec(ObserveSpec expected, String... inputs) {
+        List<String> queries = Arrays.asList(inputs);
+        ObserveSpec actual = ObserveSpec.parse(queries);
         assertSameSpecs(expected, actual);
     }
 
-    private void assertSameSpecs(final ObserveSpec expected, final ObserveSpec actual) {
+    private void assertSameSpecs(ObserveSpec expected, ObserveSpec actual) {
         assertEquals(expected.toString(), actual.toString());
     }
 

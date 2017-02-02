@@ -55,7 +55,7 @@ public class BootstrapResource extends CoapResource {
     }
 
     @Override
-    public void handlePOST(final CoapExchange exchange) {
+    public void handlePOST(CoapExchange exchange) {
         Request request = exchange.advanced().getRequest();
         LOG.debug("POST received : {}", request);
 

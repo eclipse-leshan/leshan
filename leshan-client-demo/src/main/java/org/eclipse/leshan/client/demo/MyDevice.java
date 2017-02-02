@@ -115,12 +115,12 @@ public class MyDevice extends BaseInstanceEnabler {
     }
 
     private int getBatteryLevel() {
-        final Random rand = new Random();
+        Random rand = new Random();
         return rand.nextInt(100);
     }
 
     private int getMemoryFree() {
-        final Random rand = new Random();
+        Random rand = new Random();
         return rand.nextInt(50) + 114;
     }
 

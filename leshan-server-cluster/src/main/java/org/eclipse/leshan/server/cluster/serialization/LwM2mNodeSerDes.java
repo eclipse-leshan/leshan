@@ -40,7 +40,7 @@ import com.eclipsesource.json.JsonValue;
  */
 public class LwM2mNodeSerDes {
     public static JsonObject jSerialize(LwM2mNode n) {
-        final JsonObject o = Json.object();
+        JsonObject o = Json.object();
         o.add("id", n.getId());
 
         if (n instanceof LwM2mObject) {

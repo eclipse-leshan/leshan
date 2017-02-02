@@ -329,7 +329,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         // Decode payload
         try {
             return decoder.decode(coapResponse.getPayload(), contentFormat, path, model);
-        } catch (final CodecException e) {
+        } catch (CodecException e) {
             if (LOG.isDebugEnabled()) {
                 byte[] payload = coapResponse.getPayload() == null ? new byte[0] : coapResponse.getPayload();
                 LOG.debug(

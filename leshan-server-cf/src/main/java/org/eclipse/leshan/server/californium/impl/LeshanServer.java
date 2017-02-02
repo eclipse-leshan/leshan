@@ -119,9 +119,8 @@ public class LeshanServer implements LwM2mServer {
      */
     public LeshanServer(InetSocketAddress localAddress, InetSocketAddress localSecureAddress,
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
-            LwM2mModelProvider modelProvider,
-            LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder, PublicKey publicKey, PrivateKey privateKey,
-            X509Certificate[] x509CertChain, Certificate[] trustedCertificates) {
+            LwM2mModelProvider modelProvider, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder, PublicKey publicKey,
+            PrivateKey privateKey, X509Certificate[] x509CertChain, Certificate[] trustedCertificates) {
         Validate.notNull(localAddress, "IP address cannot be null");
         Validate.notNull(localSecureAddress, "Secure IP address cannot be null");
         Validate.notNull(registrationStore, "registration store cannot be null");
@@ -141,22 +140,22 @@ public class LeshanServer implements LwM2mServer {
         this.registrationService.addListener(new RegistrationListener() {
 
             @Override
-            public void updated(final RegistrationUpdate update, final Registration updatedRegistration) {
+            public void updated(RegistrationUpdate update, Registration updatedRegistration) {
             }
 
             @Override
-            public void unregistered(final Registration registration, Collection<Observation> observations) {
+            public void unregistered(Registration registration, Collection<Observation> observations) {
                 LeshanServer.this.observationService.cancelObservations(registration);
                 requestSender.cancelPendingRequests(registration);
             }
 
             @Override
-            public void registered(final Registration registration) {
+            public void registered(Registration registration) {
             }
         });
 
         // define a set of endpoints
-        final Set<Endpoint> endpoints = new HashSet<>();
+        Set<Endpoint> endpoints = new HashSet<>();
 
         // default endpoint
         coapServer = new CoapServer() {
@@ -201,7 +200,7 @@ public class LeshanServer implements LwM2mServer {
         }
 
         // define /rd resource
-        final RegisterResource rdResource = new RegisterResource(
+        RegisterResource rdResource = new RegisterResource(
                 new RegistrationHandler(this.registrationService, authorizer));
         coapServer.add(rdResource);
 
@@ -280,20 +279,20 @@ public class LeshanServer implements LwM2mServer {
     }
 
     @Override
-    public <T extends LwM2mResponse> T send(final Registration destination, final DownlinkRequest<T> request)
+    public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request)
             throws InterruptedException {
         return requestSender.send(destination, request, null);
     }
 
     @Override
-    public <T extends LwM2mResponse> T send(final Registration destination, final DownlinkRequest<T> request, long timeout)
+    public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request, long timeout)
             throws InterruptedException {
         return requestSender.send(destination, request, timeout);
     }
 
     @Override
-    public <T extends LwM2mResponse> void send(final Registration destination, final DownlinkRequest<T> request,
-            final ResponseCallback<T> responseCallback, final ErrorCallback errorCallback) {
+    public <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request,
+            ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         requestSender.send(destination, request, responseCallback, errorCallback);
     }
 

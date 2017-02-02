@@ -28,8 +28,8 @@ import com.google.gson.JsonSerializer;
 public class ResponseSerializer implements JsonSerializer<LwM2mResponse> {
 
     @Override
-    public JsonElement serialize(final LwM2mResponse src, final Type typeOfSrc, final JsonSerializationContext context) {
-        final JsonObject element = new JsonObject();
+    public JsonElement serialize(LwM2mResponse src, Type typeOfSrc, JsonSerializationContext context) {
+        JsonObject element = new JsonObject();
 
         element.addProperty("status", src.getCode().toString());
 

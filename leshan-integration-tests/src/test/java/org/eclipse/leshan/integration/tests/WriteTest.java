@@ -95,7 +95,7 @@ public class WriteTest {
 
     private void write_string_resource(ContentFormat format) throws InterruptedException {
         // write resource
-        final String expectedvalue = "stringvalue";
+        String expectedvalue = "stringvalue";
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
                 new WriteRequest(format, TEST_OBJECT_ID, 0, STRING_RESOURCE_ID, expectedvalue));
 
@@ -138,7 +138,7 @@ public class WriteTest {
 
     private void write_boolean_resource(ContentFormat format) throws InterruptedException {
         // write resource
-        final boolean expectedvalue = true;
+        boolean expectedvalue = true;
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
                 new WriteRequest(format, TEST_OBJECT_ID, 0, BOOLEAN_RESOURCE_ID, expectedvalue));
 
@@ -181,7 +181,7 @@ public class WriteTest {
 
     private void write_integer_resource(ContentFormat format) throws InterruptedException {
         // write resource
-        final long expectedvalue = 999l;
+        long expectedvalue = 999l;
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
                 new WriteRequest(format, TEST_OBJECT_ID, 0, INTEGER_RESOURCE_ID, expectedvalue));
 
@@ -224,7 +224,7 @@ public class WriteTest {
 
     private void write_float_resource(ContentFormat format) throws InterruptedException {
         // write resource
-        final double expectedvalue = 999.99;
+        double expectedvalue = 999.99;
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
                 new WriteRequest(format, TEST_OBJECT_ID, 0, FLOAT_RESOURCE_ID, expectedvalue));
 
@@ -267,7 +267,7 @@ public class WriteTest {
 
     private void write_time_resource(ContentFormat format) throws InterruptedException {
         // write resource
-        final Date expectedvalue = new Date(946681000l); // second accuracy
+        Date expectedvalue = new Date(946681000l); // second accuracy
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
                 new WriteRequest(format, TEST_OBJECT_ID, 0, TIME_RESOURCE_ID, expectedvalue));
 
@@ -310,7 +310,7 @@ public class WriteTest {
 
     private void write_opaque_resource(ContentFormat format) throws InterruptedException {
         // write resource
-        final byte[] expectedvalue = new byte[] { 1, 2, 3 };
+        byte[] expectedvalue = new byte[] { 1, 2, 3 };
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
                 new WriteRequest(format, TEST_OBJECT_ID, 0, OPAQUE_RESOURCE_ID, expectedvalue));
 
@@ -329,8 +329,9 @@ public class WriteTest {
     @Test
     public void cannot_write_non_writable_resource() throws InterruptedException {
         // try to write unwritable resource like manufacturer on device
-        final String manufacturer = "new manufacturer";
-        WriteResponse response = helper.server.send(helper.getCurrentRegistration(), new WriteRequest(3, 0, 0, manufacturer));
+        String manufacturer = "new manufacturer";
+        WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
+                new WriteRequest(3, 0, 0, manufacturer));
 
         // verify result
         assertEquals(ResponseCode.METHOD_NOT_ALLOWED, response.getCode());
@@ -341,7 +342,7 @@ public class WriteTest {
     @Test
     public void cannot_write_security_resource() throws InterruptedException {
         // try to write unwritable resource like manufacturer on device
-        final String uri = "new.dest.server";
+        String uri = "new.dest.server";
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(), new WriteRequest(0, 0, 0, uri));
 
         // verify result
@@ -535,8 +536,9 @@ public class WriteTest {
         assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         // Reading back the written OBJLNK value
-        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(ContentFormat.TEXT,
-                IntegrationTestHelper.TEST_OBJECT_ID, 0, IntegrationTestHelper.OBJLNK_SINGLE_INSTANCE_RESOURCE_ID));
+        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
+                new ReadRequest(ContentFormat.TEXT, IntegrationTestHelper.TEST_OBJECT_ID, 0,
+                        IntegrationTestHelper.OBJLNK_SINGLE_INSTANCE_RESOURCE_ID));
         LwM2mSingleResource resource = (LwM2mSingleResource) readResponse.getContent();
 
         // verify read value

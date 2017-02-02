@@ -55,9 +55,8 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
      * @param observationService the service for keeping track of observed resources
      * @param modelProvider provides the supported objects definitions
      */
-    public CaliforniumLwM2mRequestSender(final Set<Endpoint> endpoints,
-            final ObservationServiceImpl observationService, LwM2mModelProvider modelProvider,
-            LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
+    public CaliforniumLwM2mRequestSender(Set<Endpoint> endpoints, ObservationServiceImpl observationService,
+            LwM2mModelProvider modelProvider, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
         Validate.notNull(endpoints);
         Validate.notNull(observationService);
         Validate.notNull(modelProvider);
@@ -69,26 +68,26 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
     }
 
     @Override
-    public <T extends LwM2mResponse> T send(final Registration destination, final DownlinkRequest<T> request, Long timeout)
-            throws InterruptedException {
+    public <T extends LwM2mResponse> T send(final Registration destination, final DownlinkRequest<T> request,
+            Long timeout) throws InterruptedException {
 
         // Retrieve the objects definition
         final LwM2mModel model = modelProvider.getObjectModel(destination);
 
         // Create the CoAP request from LwM2m request
-        final CoapRequestBuilder coapRequestBuilder = new CoapRequestBuilder(
+        CoapRequestBuilder coapRequestBuilder = new CoapRequestBuilder(
                 new InetSocketAddress(destination.getAddress(), destination.getPort()), destination.getRootPath(),
                 destination.getId(), destination.getEndpoint(), model, encoder);
         request.accept(coapRequestBuilder);
         final Request coapRequest = coapRequestBuilder.getRequest();
 
         // Send CoAP request synchronously
-        final SyncRequestObserver<T> syncMessageObserver = new SyncRequestObserver<T>(coapRequest, timeout) {
+        SyncRequestObserver<T> syncMessageObserver = new SyncRequestObserver<T>(coapRequest, timeout) {
             @Override
-            public T buildResponse(final Response coapResponse) {
+            public T buildResponse(Response coapResponse) {
                 // Build LwM2m response
-                final LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<T>(coapRequest,
-                        coapResponse, destination, model, observationService, decoder);
+                LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<T>(coapRequest, coapResponse,
+                        destination, model, observationService, decoder);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }
@@ -99,7 +98,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         addPendingRequest(destination.getId(), coapRequest);
 
         // Send CoAP request asynchronously
-        final Endpoint endpoint = getEndpointForClient(destination);
+        Endpoint endpoint = getEndpointForClient(destination);
         endpoint.sendRequest(coapRequest);
 
         // Wait for response, then return it
@@ -108,12 +107,12 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
     @Override
     public <T extends LwM2mResponse> void send(final Registration destination, final DownlinkRequest<T> request,
-            final ResponseCallback<T> responseCallback, final ErrorCallback errorCallback) {
+            ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         // Retrieve the objects definition
         final LwM2mModel model = modelProvider.getObjectModel(destination);
 
         // Create the CoAP request from LwM2m request
-        final CoapRequestBuilder coapRequestBuilder = new CoapRequestBuilder(
+        CoapRequestBuilder coapRequestBuilder = new CoapRequestBuilder(
                 new InetSocketAddress(destination.getAddress(), destination.getPort()), destination.getRootPath(),
                 destination.getId(), destination.getEndpoint(), model, encoder);
         request.accept(coapRequestBuilder);
@@ -122,10 +121,10 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         // Add CoAP request callback
         coapRequest.addMessageObserver(new AsyncRequestObserver<T>(coapRequest, responseCallback, errorCallback) {
             @Override
-            public T buildResponse(final Response coapResponse) {
+            public T buildResponse(Response coapResponse) {
                 // Build LwM2m response
-                final LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<T>(coapRequest,
-                        coapResponse, destination, model, observationService, decoder);
+                LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<T>(coapRequest, coapResponse,
+                        destination, model, observationService, decoder);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }
@@ -135,7 +134,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         addPendingRequest(destination.getId(), coapRequest);
 
         // Send CoAP request asynchronously
-        final Endpoint endpoint = getEndpointForClient(destination);
+        Endpoint endpoint = getEndpointForClient(destination);
         endpoint.sendRequest(coapRequest);
     }
 
@@ -231,9 +230,9 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
      *         registration. If no such CoAP endpoint is available, the first CoAP endpoint from the list of registered
      *         endpoints is returned
      */
-    private Endpoint getEndpointForClient(final Registration registration) {
-        for (final Endpoint ep : endpoints) {
-            final InetSocketAddress endpointAddress = ep.getAddress();
+    private Endpoint getEndpointForClient(Registration registration) {
+        for (Endpoint ep : endpoints) {
+            InetSocketAddress endpointAddress = ep.getAddress();
             if (endpointAddress.equals(registration.getRegistrationEndpointAddress())) {
                 return ep;
             }

@@ -78,8 +78,8 @@ public class BootstrapHandler {
         this.e = executor;
     }
 
-    public BootstrapResponse bootstrap(final Identity sender, final BootstrapRequest request) {
-        final String endpoint = request.getEndpointName();
+    public BootstrapResponse bootstrap(Identity sender, BootstrapRequest request) {
+        String endpoint = request.getEndpointName();
 
         // Start session, checking the BS credentials
         final BootstrapSession bsSession = this.bsSessionManager.begin(endpoint, sender);
@@ -152,8 +152,7 @@ public class BootstrapHandler {
                 public void onError(Exception e) {
                     LOG.warn(String.format("Error pending bootstrap write of security instance %s on %s",
                             securityInstance, bsSession.getEndpoint()), e);
-                    bsSessionManager.failed(bsSession, WRITE_SECURITY_FAILED,
-                            writeBootstrapRequest);
+                    bsSessionManager.failed(bsSession, WRITE_SECURITY_FAILED, writeBootstrapRequest);
                 }
             });
         } else {
@@ -199,23 +198,21 @@ public class BootstrapHandler {
                     if (response.isSuccess()) {
                         bsSessionManager.end(bsSession);
                     } else {
-                        bsSessionManager.failed(bsSession, FINISHED_WITH_ERROR,
-                                finishBootstrapRequest);
+                        bsSessionManager.failed(bsSession, FINISHED_WITH_ERROR, finishBootstrapRequest);
                     }
                 }
             }, new ErrorCallback() {
                 @Override
                 public void onError(Exception e) {
                     LOG.warn(String.format("Error pending bootstrap finished on %s", bsSession.getEndpoint()), e);
-                    bsSessionManager.failed(bsSession, SEND_FINISH_FAILED,
-                            finishBootstrapRequest);
+                    bsSessionManager.failed(bsSession, SEND_FINISH_FAILED, finishBootstrapRequest);
                 }
             });
         }
     }
 
-    private <T extends LwM2mResponse> void send(final BootstrapSession bsSession, final DownlinkRequest<T> request,
-            final ResponseCallback<T> responseCallback, final ErrorCallback errorCallback) {
+    private <T extends LwM2mResponse> void send(BootstrapSession bsSession, DownlinkRequest<T> request,
+            ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         requestSender.send(bsSession.getEndpoint(), bsSession.getClientIdentity().getPeerAddress(),
                 bsSession.getClientIdentity().isSecure(), request, responseCallback, errorCallback);
     }
