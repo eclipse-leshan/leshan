@@ -111,6 +111,7 @@ public class RedisRequestResponseHandler {
                 do {
                     try (Jedis j = pool.getResource()) {
                         j.subscribe(new JedisPubSub() {
+                            @Override
                             public void onMessage(String channel, final String message) {
                                 handleSendRequestMessage(message);
                             };

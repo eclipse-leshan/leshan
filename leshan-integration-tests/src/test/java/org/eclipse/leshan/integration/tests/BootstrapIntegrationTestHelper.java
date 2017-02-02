@@ -97,6 +97,7 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
                 new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), bsStore, securityStore, bsSessionManager);
     }
 
+    @Override
     public void createClient() {
         // Create Security Object (with bootstrap server only)
         String bsUrl = "coap://" + bootstrapServer.getNonSecureAddress().getHostString() + ":"
