@@ -15,7 +15,11 @@
  *******************************************************************************/
 package org.eclipse.leshan;
 
-import org.eclipse.leshan.ObserveSpec;
+import static org.junit.Assert.assertEquals;
+
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -72,5 +76,62 @@ public class ObserveSpecTest {
     @Test(expected = IllegalStateException.class)
     public void minPeriod_bigger_than_maxPeriod() {
         new ObserveSpec.Builder().minPeriod(5).maxPeriod(2).build();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void parse_with_invalid_format() {
+        ObserveSpec.parse(Arrays.asList("a=b=c"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void parse_with_invalid_key() {
+        ObserveSpec.parse(Arrays.asList("a=b"));
+    }
+
+    @Test
+    public void parse_cancel() {
+        assertSameSpecs(new ObserveSpec.Builder().cancel().build(), "cancel");
+    }
+
+    @Test
+    public void parse_greater_than_6() {
+        assertSameSpecs(new ObserveSpec.Builder().greaterThan(6).build(), "gt=6.0");
+    }
+
+    @Test
+    public void parse_greater_than_8() {
+        assertSameSpecs(new ObserveSpec.Builder().greaterThan(8).build(), "gt=8.0");
+    }
+
+    @Test
+    public void parse_less_than_8() {
+        assertSameSpecs(new ObserveSpec.Builder().lessThan(8).build(), "lt=8.0");
+    }
+
+    @Test
+    public void parse_less_than_8_and_greater_than_14() {
+        assertSameSpecs(new ObserveSpec.Builder().greaterThan(14).lessThan(8).build(), "lt=8.0", "gt=14.0");
+    }
+
+    @Test
+    public void parse_all_the_things() {
+        ObserveSpec spec = new ObserveSpec.Builder().greaterThan(14).lessThan(8).minPeriod(5).maxPeriod(10).step(1)
+                .build();
+        assertSameSpecs(spec, "gt=14.0", "lt=8.0", "pmin=5", "pmax=10", "st=1.0");
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void parse_out_of_order_pmin_pmax() {
+        ObserveSpec.parse(Arrays.asList("pmin=50", "pmax=10"));
+    }
+
+    private void assertSameSpecs(ObserveSpec expected, String... inputs) {
+        List<String> queries = Arrays.asList(inputs);
+        ObserveSpec actual = ObserveSpec.parse(queries);
+        assertSameSpecs(expected, actual);
+    }
+
+    private void assertSameSpecs(ObserveSpec expected, ObserveSpec actual) {
+        assertEquals(expected.toString(), actual.toString());
     }
 }
