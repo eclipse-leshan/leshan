@@ -243,11 +243,11 @@ public class LeshanClientDemo {
         });
 
         // Change the location through the Console
-        Scanner scanner = new Scanner(System.in);
-        while (scanner.hasNext()) {
-            String nextMove = scanner.next();
-            locationInstance.moveLocation(nextMove);
+        try (Scanner scanner = new Scanner(System.in)) {
+            while (scanner.hasNext()) {
+                String nextMove = scanner.next();
+                locationInstance.moveLocation(nextMove);
+            }
         }
-        scanner.close();
     }
 }
