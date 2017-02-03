@@ -20,8 +20,6 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.eclipse.leshan.core.observation.Observation;
-import org.eclipse.leshan.server.client.Registration;
-import org.eclipse.leshan.server.client.RegistrationUpdate;
 
 /**
  * A store for registrations and observations. This interface is also responsible to handle registration expiration.

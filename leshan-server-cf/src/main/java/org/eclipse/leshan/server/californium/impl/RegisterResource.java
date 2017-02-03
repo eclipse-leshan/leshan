@@ -41,8 +41,8 @@ import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.DeregisterResponse;
 import org.eclipse.leshan.core.response.RegisterResponse;
 import org.eclipse.leshan.core.response.UpdateResponse;
-import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
+import org.eclipse.leshan.server.registration.RegistrationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

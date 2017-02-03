@@ -18,7 +18,7 @@ package org.eclipse.leshan.server.observation;
 import java.util.Set;
 
 import org.eclipse.leshan.core.observation.Observation;
-import org.eclipse.leshan.server.client.Registration;
+import org.eclipse.leshan.server.registration.Registration;
 
 /**
  * A service keeping track observation. Can be used for finding observations and cancel them.

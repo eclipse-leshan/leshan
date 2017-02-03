@@ -17,7 +17,7 @@ package org.eclipse.leshan.server.observation;
 
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.response.ObserveResponse;
-import org.eclipse.leshan.server.client.Registration;
+import org.eclipse.leshan.server.registration.Registration;
 
 public interface ObservationListener {
 

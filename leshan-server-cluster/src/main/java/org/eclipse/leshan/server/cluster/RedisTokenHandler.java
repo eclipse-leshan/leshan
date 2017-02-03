@@ -19,9 +19,9 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.eclipse.leshan.core.observation.Observation;
-import org.eclipse.leshan.server.client.Registration;
-import org.eclipse.leshan.server.client.RegistrationListener;
-import org.eclipse.leshan.server.client.RegistrationUpdate;
+import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.RegistrationListener;
+import org.eclipse.leshan.server.registration.RegistrationUpdate;
 import org.eclipse.leshan.util.Validate;
 
 import redis.clients.jedis.Jedis;

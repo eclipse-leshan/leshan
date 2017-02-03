@@ -44,10 +44,10 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.Startable;
 import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
-import org.eclipse.leshan.server.client.Registration;
-import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.server.registration.Deregistration;
 import org.eclipse.leshan.server.registration.ExpirationListener;
+import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.RegistrationUpdate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

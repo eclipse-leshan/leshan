@@ -21,12 +21,12 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.leshan.core.observation.Observation;
-import org.eclipse.leshan.server.client.Registration;
-import org.eclipse.leshan.server.client.RegistrationListener;
-import org.eclipse.leshan.server.client.RegistrationService;
-import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.server.registration.ExpirationListener;
+import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.RegistrationListener;
+import org.eclipse.leshan.server.registration.RegistrationService;
 import org.eclipse.leshan.server.registration.RegistrationStore;
+import org.eclipse.leshan.server.registration.RegistrationUpdate;
 
 /**
  * An implementation of {@link RegistrationService}

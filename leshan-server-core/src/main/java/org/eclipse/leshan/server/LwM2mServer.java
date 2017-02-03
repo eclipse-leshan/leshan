@@ -23,10 +23,10 @@ import org.eclipse.leshan.core.request.exception.RequestRejectedException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
-import org.eclipse.leshan.server.client.Registration;
-import org.eclipse.leshan.server.client.RegistrationService;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationService;
+import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.RegistrationService;
 import org.eclipse.leshan.server.security.SecurityStore;
 
 /**

@@ -34,8 +34,8 @@ import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
-import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
+import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
 import org.eclipse.leshan.util.Validate;
 

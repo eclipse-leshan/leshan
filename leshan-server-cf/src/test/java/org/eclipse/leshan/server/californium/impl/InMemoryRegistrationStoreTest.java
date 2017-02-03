@@ -20,9 +20,9 @@ import java.net.InetSocketAddress;
 
 import org.eclipse.leshan.Link;
 import org.eclipse.leshan.core.request.BindingMode;
-import org.eclipse.leshan.server.client.Registration;
-import org.eclipse.leshan.server.client.RegistrationUpdate;
+import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
+import org.eclipse.leshan.server.registration.RegistrationUpdate;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.client;
+package org.eclipse.leshan.server.registration;
 
 import java.net.InetAddress;
 import java.util.Arrays;

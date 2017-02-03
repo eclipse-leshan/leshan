@@ -22,7 +22,7 @@ import java.util.Map;
 
 import org.eclipse.leshan.Link;
 import org.eclipse.leshan.core.request.BindingMode;
-import org.eclipse.leshan.server.client.Registration;
+import org.eclipse.leshan.server.registration.Registration;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;

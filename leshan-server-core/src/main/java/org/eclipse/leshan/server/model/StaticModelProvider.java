@@ -19,7 +19,7 @@ import java.util.Collection;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
-import org.eclipse.leshan.server.client.Registration;
+import org.eclipse.leshan.server.registration.Registration;
 
 /**
  * A LwM2mModelProvider which uses only one model for all registered clients.

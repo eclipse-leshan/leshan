@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.eclipse.leshan.core.observation.Observation;
-import org.eclipse.leshan.server.client.Registration;
 
 /**
  * A Deregistration contains all informations which are removed after a client was unregistered.

@@ -24,8 +24,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.leshan.Link;
-import org.eclipse.leshan.server.client.Registration;
 import org.eclipse.leshan.server.cluster.serialization.RegistrationSerDes;
+import org.eclipse.leshan.server.registration.Registration;
 import org.junit.Test;
 
 public class ClientSerDesTest {

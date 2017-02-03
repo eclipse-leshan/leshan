@@ -17,7 +17,7 @@ package org.eclipse.leshan.server.demo.servlet.json;
 
 import java.lang.reflect.Type;
 
-import org.eclipse.leshan.server.client.Registration;
+import org.eclipse.leshan.server.registration.Registration;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

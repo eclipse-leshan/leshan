@@ -52,7 +52,7 @@ import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.RegisterResponse;
-import org.eclipse.leshan.server.client.Registration;
+import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.junit.After;
 import org.junit.Before;

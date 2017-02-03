@@ -21,7 +21,7 @@ import java.net.UnknownHostException;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.eclipse.leshan.server.client.Registration;
+import org.eclipse.leshan.server.registration.Registration;
 
 public class CaliforniumTestSupport {
 

@@ -16,7 +16,7 @@
 package org.eclipse.leshan.server.response;
 
 import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.server.client.Registration;
+import org.eclipse.leshan.server.registration.Registration;
 
 /**
  * The listener is responsible for handling all the success and error responses for a given requestTicket.

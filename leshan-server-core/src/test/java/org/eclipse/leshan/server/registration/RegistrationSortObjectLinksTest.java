@@ -21,7 +21,6 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
 import org.eclipse.leshan.Link;
-import org.eclipse.leshan.server.client.Registration;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -22,12 +22,12 @@ import java.util.Collection;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
-import org.eclipse.leshan.server.client.Registration;
-import org.eclipse.leshan.server.client.RegistrationListener;
-import org.eclipse.leshan.server.client.RegistrationUpdate;
 import org.eclipse.leshan.server.cluster.RedisRegistrationStore;
 import org.eclipse.leshan.server.impl.InMemorySecurityStore;
 import org.eclipse.leshan.server.model.StaticModelProvider;
+import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.RegistrationListener;
+import org.eclipse.leshan.server.registration.RegistrationUpdate;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
