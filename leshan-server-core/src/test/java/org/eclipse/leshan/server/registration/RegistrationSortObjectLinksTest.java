@@ -14,17 +14,18 @@
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.leshan.server.client;
+package org.eclipse.leshan.server.registration;
 
 import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
 import org.eclipse.leshan.Link;
+import org.eclipse.leshan.server.client.Registration;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class ClientSortObjectTest {
+public class RegistrationSortObjectLinksTest {
 
     @Test
     public void sort_link_object_on_get() throws UnknownHostException {
