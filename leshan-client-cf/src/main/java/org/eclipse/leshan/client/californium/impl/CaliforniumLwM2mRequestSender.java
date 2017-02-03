@@ -20,7 +20,7 @@ import java.net.InetSocketAddress;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
-import org.eclipse.leshan.client.request.LwM2mClientRequestSender;
+import org.eclipse.leshan.client.request.LwM2mRequestSender;
 import org.eclipse.leshan.core.californium.AsyncRequestObserver;
 import org.eclipse.leshan.core.californium.SyncRequestObserver;
 import org.eclipse.leshan.core.request.UplinkRequest;
@@ -28,12 +28,12 @@ import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 
-public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSender {
+public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
     private final Endpoint nonSecureEndpoint;
     private final Endpoint secureEndpoint;
 
-    public CaliforniumLwM2mClientRequestSender(Endpoint secureEndpoint, Endpoint nonSecureEndpoint) {
+    public CaliforniumLwM2mRequestSender(Endpoint secureEndpoint, Endpoint nonSecureEndpoint) {
         this.secureEndpoint = secureEndpoint;
         this.nonSecureEndpoint = nonSecureEndpoint;
     }
@@ -42,7 +42,7 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
     public <T extends LwM2mResponse> T send(InetSocketAddress serverAddress, boolean secure,
             final UplinkRequest<T> request, Long timeout) throws InterruptedException {
         // Create the CoAP request from LwM2m request
-        CoapClientRequestBuilder coapClientRequestBuilder = new CoapClientRequestBuilder(serverAddress);
+        CoapRequestBuilder coapClientRequestBuilder = new CoapRequestBuilder(serverAddress);
         request.accept(coapClientRequestBuilder);
         Request coapRequest = coapClientRequestBuilder.getRequest();
 
@@ -72,7 +72,7 @@ public class CaliforniumLwM2mClientRequestSender implements LwM2mClientRequestSe
     public <T extends LwM2mResponse> void send(InetSocketAddress serverAddress, boolean secure,
             final UplinkRequest<T> request, ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         // Create the CoAP request from LwM2m request
-        CoapClientRequestBuilder coapClientRequestBuilder = new CoapClientRequestBuilder(serverAddress);
+        CoapRequestBuilder coapClientRequestBuilder = new CoapRequestBuilder(serverAddress);
         request.accept(coapClientRequestBuilder);
         Request coapRequest = coapClientRequestBuilder.getRequest();
 

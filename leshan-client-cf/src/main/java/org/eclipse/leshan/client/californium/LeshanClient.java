@@ -32,7 +32,7 @@ import org.eclipse.californium.scandium.dtls.InMemoryConnectionStore;
 import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.californium.impl.BootstrapResource;
-import org.eclipse.leshan.client.californium.impl.CaliforniumLwM2mClientRequestSender;
+import org.eclipse.leshan.client.californium.impl.CaliforniumLwM2mRequestSender;
 import org.eclipse.leshan.client.californium.impl.ObjectResource;
 import org.eclipse.leshan.client.californium.impl.RootResource;
 import org.eclipse.leshan.client.californium.impl.SecurityObjectPskStore;
@@ -60,7 +60,7 @@ public class LeshanClient implements LwM2mClient {
     private final ConcurrentHashMap<Integer, LwM2mObjectEnabler> objectEnablers;
 
     private final CoapServer clientSideServer;
-    private final CaliforniumLwM2mClientRequestSender requestSender;
+    private final CaliforniumLwM2mRequestSender requestSender;
     private final RegistrationEngine engine;
     private final BootstrapHandler bootstrapHandler;
     private final LwM2mClientObserverDispatcher observers;
@@ -103,7 +103,7 @@ public class LeshanClient implements LwM2mClient {
                 NetworkConfig.getStandard());
 
         // Create sender
-        requestSender = new CaliforniumLwM2mClientRequestSender(secureEndpoint, nonSecureEndpoint);
+        requestSender = new CaliforniumLwM2mRequestSender(secureEndpoint, nonSecureEndpoint);
 
         // Create Client Observers
         observers = new LwM2mClientObserverDispatcher();

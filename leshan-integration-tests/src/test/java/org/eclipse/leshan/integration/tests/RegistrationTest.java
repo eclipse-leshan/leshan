@@ -38,7 +38,7 @@ import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.Link;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.californium.LeshanClient;
-import org.eclipse.leshan.client.californium.impl.CaliforniumLwM2mClientRequestSender;
+import org.eclipse.leshan.client.californium.impl.CaliforniumLwM2mRequestSender;
 import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectEnabler;
@@ -264,7 +264,7 @@ public class RegistrationTest {
         lclient.getCoapServer().start();
         Endpoint secureEndpoint = lclient.getCoapServer().getEndpoint(lclient.getSecureAddress());
         Endpoint nonSecureEndpoint = lclient.getCoapServer().getEndpoint(lclient.getNonSecureAddress());
-        CaliforniumLwM2mClientRequestSender sender = new CaliforniumLwM2mClientRequestSender(secureEndpoint,
+        CaliforniumLwM2mRequestSender sender = new CaliforniumLwM2mRequestSender(secureEndpoint,
                 nonSecureEndpoint);
 
         // Create Request with additional attributes

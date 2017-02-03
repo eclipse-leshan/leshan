@@ -22,7 +22,7 @@ import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 
-public interface LwM2mClientRequestSender {
+public interface LwM2mRequestSender {
 
     /**
      * Send a Lightweight M2M request synchronously. Will block until a response is received from the remote server.

@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
-import org.eclipse.leshan.client.request.LwM2mClientRequestSender;
+import org.eclipse.leshan.client.request.LwM2mRequestSender;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.request.BootstrapRequest;
@@ -59,7 +59,7 @@ public class RegistrationEngine {
     private static final int BS_RETRY = 10 * 60; // in seconds
 
     private final String endpoint;
-    private final LwM2mClientRequestSender sender;
+    private final LwM2mRequestSender sender;
     private final Map<Integer, LwM2mObjectEnabler> objectEnablers;
     private final BootstrapHandler bootstrapHandler;
     private final LwM2mClientObserver observer;
@@ -71,7 +71,7 @@ public class RegistrationEngine {
     private final ScheduledExecutorService schedExecutor = Executors.newScheduledThreadPool(2);
 
     public RegistrationEngine(String endpoint, Map<Integer, LwM2mObjectEnabler> objectEnablers,
-            LwM2mClientRequestSender requestSender, BootstrapHandler bootstrapState, LwM2mClientObserver observer) {
+            LwM2mRequestSender requestSender, BootstrapHandler bootstrapState, LwM2mClientObserver observer) {
         this.endpoint = endpoint;
         this.objectEnablers = objectEnablers;
         this.bootstrapHandler = bootstrapState;

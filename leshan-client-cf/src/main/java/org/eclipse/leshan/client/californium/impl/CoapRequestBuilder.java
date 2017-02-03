@@ -29,12 +29,12 @@ import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.request.UplinkRequestVisitor;
 
-public class CoapClientRequestBuilder implements UplinkRequestVisitor {
+public class CoapRequestBuilder implements UplinkRequestVisitor {
 
     private Request coapRequest;
     private final InetSocketAddress serverAddress;
 
-    public CoapClientRequestBuilder(InetSocketAddress serverAddress) {
+    public CoapRequestBuilder(InetSocketAddress serverAddress) {
         this.serverAddress = serverAddress;
     }
 
