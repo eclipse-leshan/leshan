@@ -43,19 +43,18 @@ public class ConfigurationChecker {
                         "pre-shared-key mode, public key or id must not be empty");
                 break;
             case RPK:
-                assertIf(ArrayUtils.isEmpty(sec.secretKey), "pre-shared-key mode, secret key must not be empty");
+                assertIf(ArrayUtils.isEmpty(sec.secretKey), "raw-public-key mode, secret key must not be empty");
                 assertIf(ArrayUtils.isEmpty(sec.publicKeyOrId),
-                        "pre-shared-key mode, public key or id must not be empty");
+                        "raw-public-key mode, public key or id must not be empty");
                 assertIf(ArrayUtils.isEmpty(sec.serverPublicKeyOrId),
-                        "pre-shared-key mode, server public key or ID must not be empty");
+                        "raw-public-key mode, server public key or ID must not be empty");
                 break;
             case X509:
-                assertIf(ArrayUtils.isEmpty(sec.secretKey), "pre-shared-key mode, secret key must not be empty");
+                assertIf(ArrayUtils.isEmpty(sec.secretKey), "x509 mode, secret key must not be empty");
                 assertIf(ArrayUtils.isEmpty(sec.publicKeyOrId),
-                        "pre-shared-key mode, public key or id must not be empty");
+                        "x509 mode, public key or id must not be empty");
                 assertIf(ArrayUtils.isEmpty(sec.serverPublicKeyOrId),
-                        "pre-shared-key mode, server public key or ID must not be empty");
-            default:
+                        "x509 mode, server public key or ID must not be empty");
                 break;
             }
         }
