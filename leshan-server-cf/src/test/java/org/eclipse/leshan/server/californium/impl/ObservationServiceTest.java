@@ -33,7 +33,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class CaliforniumObservationTest {
+public class ObservationServiceTest {
 
     Request coapRequest;
     LwM2mPath target;
