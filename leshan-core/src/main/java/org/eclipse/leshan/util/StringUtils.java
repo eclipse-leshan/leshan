@@ -226,7 +226,7 @@ public class StringUtils {
     // -----------------------------------------------------------------------
     /**
      * <p>
-     * Removes a substring only if it is at the begining of a source string, otherwise returns the source string.
+     * Removes a substring only if it is at the beginning of a source string, otherwise returns the source string.
      * </p>
      *
      * <p>

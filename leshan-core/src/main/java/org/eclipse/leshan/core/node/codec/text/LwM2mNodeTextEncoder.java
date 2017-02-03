@@ -71,7 +71,7 @@ public class LwM2mNodeTextEncoder {
         @Override
         public void visit(LwM2mResource resource) {
             if (resource.isMultiInstances()) {
-                throw new CodecException("Mulitple instances resource cannot be encoded in text format");
+                throw new CodecException("Multiple instances resource cannot be encoded in text format");
             }
             LOG.trace("Encoding resource {} into text", resource);
 

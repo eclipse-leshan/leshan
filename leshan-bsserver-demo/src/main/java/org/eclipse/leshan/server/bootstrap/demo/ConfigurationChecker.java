@@ -21,8 +21,8 @@ import org.apache.commons.lang.ArrayUtils;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 
 /**
- * Check it's a BoostrapConfig is correct. this is a complex process, we need to check if the different objects are in
- * coherence with each others.
+ * Check a BootstrapConfig is correct. This is a complex process, we need to check if the different objects are in
+ * coherence with each other.
  */
 public class ConfigurationChecker {
 
@@ -78,7 +78,7 @@ public class ConfigurationChecker {
 
             if (security.bootstrapServer) {
                 throw new ConfigurationException("the security entry for server  " + e.getKey()
-                        + " should not be a boostrap server");
+                        + " should not be a bootstrap server");
             }
         }
     }

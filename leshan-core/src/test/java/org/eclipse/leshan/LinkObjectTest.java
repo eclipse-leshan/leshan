@@ -134,8 +134,8 @@ public class LinkObjectTest {
     public void parse_then_serialyse_with_rt_attribute() {
         String input = "</lwm2m>;rt=\"oma.lwm2m\", </lwm2m/1/101>, </lwm2m/1/102>, </lwm2m/2/0>";
         Link[] objs = Link.parse(input.getBytes());
-        String ouput = Link.serialize(objs);
-        Assert.assertEquals(input, ouput);
+        String output = Link.serialize(objs);
+        Assert.assertEquals(input, output);
 
     }
 }

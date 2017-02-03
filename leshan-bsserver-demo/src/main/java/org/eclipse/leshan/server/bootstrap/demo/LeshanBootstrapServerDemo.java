@@ -137,7 +137,7 @@ public class LeshanBootstrapServerDemo {
             createAndStartServer(webPort, localAddress, localPort, secureLocalAddress, secureLocalPort, configFilename);
         } catch (BindException e) {
             System.err.println(
-                    String.format("Web port %s is alreay used, you could change it using 'webport' option.", webPort));
+                    String.format("Web port %s is already in use, you can change it using the 'webport' option.", webPort));
             formatter.printHelp(USAGE, null, options, FOOTER);
         } catch (Exception e) {
             LOG.error("Jetty stopped with unexcepted error ...", e);

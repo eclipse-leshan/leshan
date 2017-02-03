@@ -30,7 +30,7 @@ public interface ObservationListener {
      * 
      * @param observation the observation for which new data are received
      * @param registration the registration concerned by this observation
-     * @param reponse the lwm2m response received (successful or error response)
+     * @param response the lwm2m response received (successful or error response)
      * 
      */
     void onResponse(Observation observation, Registration registration, ObserveResponse response);
