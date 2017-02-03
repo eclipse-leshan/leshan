@@ -81,7 +81,7 @@ public class ReadTest {
         LwM2mObject object = (LwM2mObject) response.getContent();
         assertEquals(3, object.getId());
 
-        LwM2mObjectInstance instance = (LwM2mObjectInstance) object.getInstance(0);
+        LwM2mObjectInstance instance = object.getInstance(0);
         assertEquals(0, instance.getId());
     }
 

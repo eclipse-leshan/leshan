@@ -161,7 +161,7 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
     }
 
     protected double createDefaultFloatValue(ObjectModel objectModel, ResourceModel resourceModel) {
-        return (double) Math.random() * 100;
+        return Math.random() * 100;
     }
 
     protected byte[] createDefaultOpaqueValue(ObjectModel objectModel, ResourceModel resourceModel) {

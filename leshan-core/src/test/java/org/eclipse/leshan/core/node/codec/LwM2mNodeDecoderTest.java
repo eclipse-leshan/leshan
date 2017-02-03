@@ -146,7 +146,7 @@ public class LwM2mNodeDecoderTest {
     @Test
     public void tlv_device_object_instance0_from_resources_tlv__instance_expected() throws CodecException {
 
-        LwM2mObjectInstance oInstance = (LwM2mObjectInstance) decoder.decode(ENCODED_DEVICE, ContentFormat.TLV,
+        LwM2mObjectInstance oInstance = decoder.decode(ENCODED_DEVICE, ContentFormat.TLV,
                 new LwM2mPath(3), model, LwM2mObjectInstance.class);
         assertDeviceInstance(oInstance);
     }
