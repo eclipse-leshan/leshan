@@ -171,7 +171,7 @@ public class LwM2mNodeTlvDecoder {
 
     private static Map<Integer, Object> parseTlvValues(Tlv[] tlvs, Type expectedType, LwM2mPath path)
             throws CodecException {
-        Map<Integer, Object> values = new HashMap<Integer, Object>();
+        Map<Integer, Object> values = new HashMap<>();
         for (int j = 0; j < tlvs.length; j++) {
             Tlv tlvChild = tlvs[j];
 

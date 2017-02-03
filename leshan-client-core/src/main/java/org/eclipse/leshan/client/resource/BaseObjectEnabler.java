@@ -168,7 +168,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
                 // REPLACE
                 // check, if all mandatory writable resources are provided
                 // Collect all mandatory writable resource IDs from the model
-                Set<Integer> mandatoryResources = new HashSet<Integer>();
+                Set<Integer> mandatoryResources = new HashSet<>();
                 for (ResourceModel resourceModel : getObjectModel().resources.values()) {
                     if (resourceModel.mandatory && (LwM2mId.SECURITY == id || resourceModel.operations.isWritable()))
                         mandatoryResources.add(resourceModel.id);

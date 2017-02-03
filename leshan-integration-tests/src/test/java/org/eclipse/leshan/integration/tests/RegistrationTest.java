@@ -119,10 +119,10 @@ public class RegistrationTest {
         helper.client.stop(false);
 
         // Send multiple reads which should be retransmitted.
-        List<Callback<ReadResponse>> callbacks = new ArrayList<Callback<ReadResponse>>();
+        List<Callback<ReadResponse>> callbacks = new ArrayList<>();
 
         for (int index = 0; index < 4; ++index) {
-            Callback<ReadResponse> callback = new Callback<ReadResponse>();
+            Callback<ReadResponse> callback = new Callback<>();
             helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), callback, callback);
             callbacks.add(callback);
         }

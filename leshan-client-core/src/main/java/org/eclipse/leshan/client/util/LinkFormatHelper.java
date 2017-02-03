@@ -52,7 +52,7 @@ public final class LinkFormatHelper {
         links.add(new Link(rootURL, attributes));
 
         // sort resources
-        List<LwM2mObjectEnabler> objEnablerList = new ArrayList<LwM2mObjectEnabler>(objectEnablers);
+        List<LwM2mObjectEnabler> objEnablerList = new ArrayList<>(objectEnablers);
         Collections.sort(objEnablerList, new Comparator<LwM2mObjectEnabler>() {
             @Override
             public int compare(LwM2mObjectEnabler o1, LwM2mObjectEnabler o2) {

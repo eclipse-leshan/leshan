@@ -44,7 +44,7 @@ public class LwM2mMultipleResource implements LwM2mResource {
 
     protected LwM2mMultipleResource(int id, Map<Integer, ?> values, Type type) {
         this.id = id;
-        this.values = Collections.unmodifiableMap(new HashMap<Integer, Object>(values));
+        this.values = Collections.unmodifiableMap(new HashMap<>(values));
         this.type = type;
     }
 

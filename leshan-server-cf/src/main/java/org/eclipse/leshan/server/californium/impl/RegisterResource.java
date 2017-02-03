@@ -158,7 +158,7 @@ public class RegisterResource extends CoapResource {
         // Get object Links
         Link[] objectLinks = Link.parse(request.getPayload());
 
-        Map<String, String> additionalParams = new HashMap<String, String>();
+        Map<String, String> additionalParams = new HashMap<>();
 
         // Get parameters
         for (String param : request.getOptions().getUriQuery()) {

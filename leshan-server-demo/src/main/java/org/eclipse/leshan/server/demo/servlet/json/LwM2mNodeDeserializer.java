@@ -80,7 +80,7 @@ public class LwM2mNodeDeserializer implements JsonDeserializer<LwM2mNode> {
                 node = LwM2mSingleResource.newResource(id, deserializeValue(val, expectedType), expectedType);
             } else if (object.has("values")) {
                 // multi-instances resource
-                Map<Integer, Object> values = new HashMap<Integer, Object>();
+                Map<Integer, Object> values = new HashMap<>();
                 // TODO handle id for multiple resource
                 int i = 0;
                 org.eclipse.leshan.core.model.ResourceModel.Type expectedType = null;

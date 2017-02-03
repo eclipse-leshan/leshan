@@ -199,7 +199,7 @@ public class LwM2mNodeJsonDecoder {
             // Get jsonArray for this time-stamp
             Collection<JsonArrayEntry> jsonArray = result.get(time);
             if (jsonArray == null) {
-                jsonArray = new ArrayList<JsonArrayEntry>();
+                jsonArray = new ArrayList<>();
                 result.put(time, jsonArray);
             }
 

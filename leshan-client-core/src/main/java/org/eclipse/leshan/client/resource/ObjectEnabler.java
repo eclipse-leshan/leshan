@@ -54,7 +54,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
     public ObjectEnabler(int id, ObjectModel objectModel, Map<Integer, LwM2mInstanceEnabler> instances,
             LwM2mInstanceEnablerFactory instanceFactory) {
         super(id, objectModel);
-        this.instances = new HashMap<Integer, LwM2mInstanceEnabler>(instances);
+        this.instances = new HashMap<>(instances);
         this.instanceFactory = instanceFactory;
         for (Entry<Integer, LwM2mInstanceEnabler> entry : this.instances.entrySet()) {
             addInstance(entry.getKey(), entry.getValue());
@@ -63,7 +63,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
 
     @Override
     public synchronized List<Integer> getAvailableInstanceIds() {
-        List<Integer> ids = new ArrayList<Integer>(instances.keySet());
+        List<Integer> ids = new ArrayList<>(instances.keySet());
         Collections.sort(ids);
         return ids;
     }
@@ -157,7 +157,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
             Map<Integer, LwM2mResource> writeResources = ((LwM2mObjectInstance) request.getNode()).getResources();
             if (request.isReplaceRequest()) {
                 // REPLACE
-                writeResources = new HashMap<Integer, LwM2mResource>(writeResources); // make them modifiable
+                writeResources = new HashMap<>(writeResources); // make them modifiable
                 for (ResourceModel resourceModel : getObjectModel().resources.values()) {
                     if (!identity.isLwm2mServer() || resourceModel.operations.isWritable()) {
                         LwM2mResource writeResource = writeResources.remove(resourceModel.id);

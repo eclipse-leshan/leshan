@@ -30,7 +30,7 @@ public class JsonSerializerTest {
     @Test
     public void serialize_device_object() throws LwM2mJsonException {
 
-        ArrayList<JsonArrayEntry> elements = new ArrayList<JsonArrayEntry>();
+        ArrayList<JsonArrayEntry> elements = new ArrayList<>();
         JsonArrayEntry elt1 = new JsonArrayEntry();
         elt1.setName("0");
         elt1.setStringValue("Open Mobile Alliance");

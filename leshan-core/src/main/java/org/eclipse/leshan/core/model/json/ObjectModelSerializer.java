@@ -36,7 +36,7 @@ public class ObjectModelSerializer implements JsonSerializer<ObjectModel> {
         JsonObject element = new JsonObject();
 
         // sort resources value
-        List<ResourceModel> resourceSpecs = new ArrayList<ResourceModel>(object.resources.values());
+        List<ResourceModel> resourceSpecs = new ArrayList<>(object.resources.values());
         Collections.sort(resourceSpecs, new Comparator<ResourceModel>() {
             @Override
             public int compare(ResourceModel r1, ResourceModel r2) {

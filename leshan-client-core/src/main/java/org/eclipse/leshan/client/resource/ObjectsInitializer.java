@@ -37,8 +37,8 @@ public class ObjectsInitializer {
         }
     };
 
-    protected Map<Integer, LwM2mInstanceEnablerFactory> factories = new HashMap<Integer, LwM2mInstanceEnablerFactory>();
-    protected Map<Integer, LwM2mInstanceEnabler[]> instances = new HashMap<Integer, LwM2mInstanceEnabler[]>();
+    protected Map<Integer, LwM2mInstanceEnablerFactory> factories = new HashMap<>();
+    protected Map<Integer, LwM2mInstanceEnabler[]> instances = new HashMap<>();
     protected LwM2mModel model;
 
     public ObjectsInitializer() {
@@ -91,7 +91,7 @@ public class ObjectsInitializer {
     public List<LwM2mObjectEnabler> createMandatory() {
         Collection<ObjectModel> objectModels = model.getObjectModels();
 
-        List<LwM2mObjectEnabler> enablers = new ArrayList<LwM2mObjectEnabler>();
+        List<LwM2mObjectEnabler> enablers = new ArrayList<>();
         for (ObjectModel objectModel : objectModels) {
             if (objectModel.mandatory) {
                 ObjectEnabler objectEnabler = createNodeEnabler(objectModel);
@@ -112,7 +112,7 @@ public class ObjectsInitializer {
     }
 
     public List<LwM2mObjectEnabler> create(int... objectId) {
-        List<LwM2mObjectEnabler> enablers = new ArrayList<LwM2mObjectEnabler>();
+        List<LwM2mObjectEnabler> enablers = new ArrayList<>();
         for (int i = 0; i < objectId.length; i++) {
             LwM2mObjectEnabler objectEnabler = create(objectId[i]);
             if (objectEnabler != null)
@@ -146,7 +146,7 @@ public class ObjectsInitializer {
     }
 
     protected ObjectEnabler createNodeEnabler(ObjectModel objectModel) {
-        Map<Integer, LwM2mInstanceEnabler> instances = new HashMap<Integer, LwM2mInstanceEnabler>();
+        Map<Integer, LwM2mInstanceEnabler> instances = new HashMap<>();
         LwM2mInstanceEnabler[] newInstances = createInstances(objectModel);
         for (int i = 0; i < newInstances.length; i++) {
             instances.put(i, newInstances[i]);

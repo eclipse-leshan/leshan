@@ -32,7 +32,7 @@ public abstract class SyncRequestObserver<T extends LwM2mResponse> extends Abstr
     private static final Logger LOG = LoggerFactory.getLogger(SyncRequestObserver.class);
 
     private CountDownLatch latch = new CountDownLatch(1);
-    private AtomicReference<T> ref = new AtomicReference<T>(null);
+    private AtomicReference<T> ref = new AtomicReference<>(null);
     private AtomicBoolean coapTimeout = new AtomicBoolean(false);
     private AtomicReference<RuntimeException> exception = new AtomicReference<>();
     private Long timeout;
