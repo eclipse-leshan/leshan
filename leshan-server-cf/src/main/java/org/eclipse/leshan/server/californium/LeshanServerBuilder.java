@@ -29,7 +29,6 @@ import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.californium.impl.InMemoryRegistrationStore;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
-import org.eclipse.leshan.server.impl.FileSecurityStore;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StandardModelProvider;
 import org.eclipse.leshan.server.security.Authorizer;
@@ -150,8 +149,6 @@ public class LeshanServerBuilder {
             localSecureAddress = new InetSocketAddress((InetAddress) null, PORT_DTLS);
         if (registrationStore == null)
             registrationStore = new InMemoryRegistrationStore();
-        if (securityStore == null)
-            securityStore = new FileSecurityStore();
         if (authorizer == null)
             authorizer = new DefaultAuthorizer(securityStore);
         if (modelProvider == null)
