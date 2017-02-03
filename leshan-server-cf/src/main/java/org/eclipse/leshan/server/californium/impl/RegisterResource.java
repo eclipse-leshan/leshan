@@ -192,15 +192,6 @@ public class RegisterResource extends CoapResource {
                 registerRequest, serverEndpoint);
         RegisterResponse response = sendableResponse.getResponse();
 
-        // Mark the response as sended when the exchange is complete
-        exchange.advanced().setObserver(new ExchangeObserverAdapter() {
-            @Override
-            public void completed(Exchange exchange) {
-                sendableResponse.sent();
-
-            }
-        });
-
         // Create CoAP Response from LwM2m request
         // -------------------------------
         if (response.getCode() == org.eclipse.leshan.ResponseCode.CREATED) {
@@ -209,6 +200,7 @@ public class RegisterResource extends CoapResource {
         } else {
             exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
         }
+        sendableResponse.sent();
     }
 
     private void handleUpdate(CoapExchange exchange, Request request, String registrationId) {
@@ -238,16 +230,9 @@ public class RegisterResource extends CoapResource {
         final SendableResponse<UpdateResponse> sendableResponse = registrationHandler.update(sender, updateRequest);
         UpdateResponse updateResponse = sendableResponse.getResponse();
 
-        // Mark the response as sended when the exchange is complete
-        exchange.advanced().setObserver(new ExchangeObserverAdapter() {
-            @Override
-            public void completed(Exchange exchange) {
-                sendableResponse.sent();
-            }
-        });
-
         // Create CoAP Response from LwM2m request
         exchange.respond(fromLwM2mCode(updateResponse.getCode()), updateResponse.getErrorMessage());
+        sendableResponse.sent();
     }
 
     private void handleDeregister(CoapExchange exchange, String registrationId) {
@@ -262,16 +247,9 @@ public class RegisterResource extends CoapResource {
                 deregisterRequest);
         DeregisterResponse deregisterResponse = sendableResponse.getResponse();
 
-        // Mark the response as sended when the exchange is complete
-        exchange.advanced().setObserver(new ExchangeObserverAdapter() {
-            @Override
-            public void completed(Exchange exchange) {
-                sendableResponse.sent();
-            }
-        });
-
         // Create CoAP Response from LwM2m request
         exchange.respond(fromLwM2mCode(deregisterResponse.getCode()), deregisterResponse.getErrorMessage());
+        sendableResponse.sent();
     }
 
     // Since the V1_0-20150615-D version of specification, the registration update should be a CoAP POST.
