@@ -114,7 +114,7 @@ public class RedisRequestResponseHandler {
                             @Override
                             public void onMessage(String channel, String message) {
                                 handleSendRequestMessage(message);
-                            };
+                            }
                         }, REQUEST_CHANNEL);
                     } catch (RuntimeException e) {
                         LOG.warn("Redis SUBSCRIBE interrupted.", e);

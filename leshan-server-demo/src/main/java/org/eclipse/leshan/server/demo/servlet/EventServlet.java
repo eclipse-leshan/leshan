@@ -82,7 +82,7 @@ public class EventServlet extends EventSourceServlet {
         public void updated(RegistrationUpdate update, Registration updatedRegistration) {
             String jReg = EventServlet.this.gson.toJson(updatedRegistration);
             sendEvent(EVENT_UPDATED, jReg, updatedRegistration.getEndpoint());
-        };
+        }
 
         @Override
         public void unregistered(Registration registration, Collection<Observation> observations) {

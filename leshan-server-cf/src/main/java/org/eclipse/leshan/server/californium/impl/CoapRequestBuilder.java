@@ -225,5 +225,5 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
 
     public Request getRequest() {
         return coapRequest;
-    };
+    }
 }
