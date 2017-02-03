@@ -31,7 +31,7 @@ angular.module('resourceDirectives', [])
             scope.resource.read  =  {tooltip : "Read <br/>"   + scope.resource.path};
             scope.resource.write =  {tooltip : "Write <br/>"  + scope.resource.path};
             scope.resource.exec  =  {tooltip : "Execute <br/>"+ scope.resource.path};
-            scope.resource.execwithparams = {tooltip : "Execute with paramaters<br/>"+ scope.resource.path};
+            scope.resource.execwithparams = {tooltip : "Execute with parameters<br/>"+ scope.resource.path};
             scope.resource.observe  =  {tooltip : "Observe <br/>"+ scope.resource.path};
             
             scope.readable = function() {

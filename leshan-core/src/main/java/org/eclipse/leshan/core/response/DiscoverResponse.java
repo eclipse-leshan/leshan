@@ -33,7 +33,7 @@ public class DiscoverResponse extends AbstractLwM2mResponse {
         super(code, errorMessage, coapResponse);
         if (ResponseCode.CONTENT.equals(code)) {
             if (links == null)
-                throw new InvalidResponseException("links is mandatory for successfull response");
+                throw new InvalidResponseException("links is mandatory for successful response");
             this.links = Arrays.copyOf(links, links.length);
         } else {
             this.links = null;

@@ -65,7 +65,7 @@ public class LwM2mNodeOpaqueEncoder {
         @Override
         public void visit(LwM2mResource resource) {
             if (resource.isMultiInstances()) {
-                throw new CodecException("Mulitple instances resource cannot be encoded in opaque format");
+                throw new CodecException("Multiple instances resource cannot be encoded in opaque format");
             }
             ResourceModel rSpec = model.getResourceModel(objectId, resource.getId());
             if (rSpec != null && rSpec.type != Type.OPAQUE) {
