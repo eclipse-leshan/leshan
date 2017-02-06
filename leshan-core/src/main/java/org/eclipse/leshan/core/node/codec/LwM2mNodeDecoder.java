@@ -60,7 +60,6 @@ public interface LwM2mNodeDecoder {
      * @param format the content format
      * @param path the path of the node to build
      * @param model the collection of supported object models
-     * @param nodeClass the class of the {@link LwM2mNode} to decode
      * @return the resulting list of time-stamped {@link LwM2mNode} ordering by time-stamp
      * @exception CodecException if there payload is malformed.
      */

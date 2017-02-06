@@ -251,7 +251,7 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
      * @param objectId the id of the object to write.
      * @param objectInstanceId the id of the object instance to write.
      * @param resourceId the id of the resource to write.
-     * @param values the list of resource instance (id->value) to write.
+     * @param values the list of resource instance (id-&gt;value) to write.
      * @param type the data type of the resource.
      * @exception InvalidRequestException if bad @{link ContentFormat} format was used.
      * 
@@ -268,7 +268,7 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
      * @param objectId the id of the object to write.
      * @param objectInstanceId the id of the object instance to write.
      * @param resourceId the id of the resource to write.
-     * @param values the list of resource instance (id->value) to write.
+     * @param values the list of resource instance (id-&gt;value) to write.
      * @param type the data type of the resource.
      * @exception InvalidRequestException if parameters are invalid.
      */

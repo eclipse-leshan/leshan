@@ -20,7 +20,8 @@ import org.eclipse.leshan.core.request.Identity;
 /**
  * Represent a single Bootstraping session.
  * 
- * Should be created by {@link BootstrapSessionManager} implementations in {@link BootstrapSessionManager.begin}.
+ * Should be created by {@link BootstrapSessionManager} implementations in
+ * {@link BootstrapSessionManager#begin(String,Identity)}.
  */
 public class BootstrapSession {
 

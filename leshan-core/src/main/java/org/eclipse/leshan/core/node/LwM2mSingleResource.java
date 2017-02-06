@@ -131,7 +131,7 @@ public class LwM2mSingleResource implements LwM2mResource {
     }
 
     /**
-     * @exception raise a {@link NoSuchElementException}
+     * @exception NoSuchElementException
      */
     @Override
     public Map<Integer, ?> getValues() {
@@ -139,7 +139,7 @@ public class LwM2mSingleResource implements LwM2mResource {
     }
 
     /**
-     * @exception raise a {@link NoSuchElementException}
+     * @exception NoSuchElementException
      */
     @Override
     public Object getValue(int id) {

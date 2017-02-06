@@ -42,7 +42,7 @@ public class Lwm2mNodeEncoderUtil {
     /**
      * Convert the given value to the expected type given in parameter.
      * 
-     * @exception CodexException the value is not convertible.
+     * @exception CodecException the value is not convertible.
      */
     public static Object convertValue(Object value, Type currentType, Type expectedType) throws CodecException {
         if (expectedType == null) {

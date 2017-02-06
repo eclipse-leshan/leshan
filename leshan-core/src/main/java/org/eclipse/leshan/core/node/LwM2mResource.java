@@ -43,12 +43,12 @@ public interface LwM2mResource extends LwM2mNode {
      * 
      * The type of the returned value depends on the {@link #getType()} method.
      * 
-     * If {@link #getType()} returns {@link Type#BOOLEAN}, the value is a {@link Boolean}.<br/>
-     * If {@link #getType()} returns {@link Type#STRING}, the value is a {@link String}.<br/>
-     * If {@link #getType()} returns {@link Type#OPAQUE}, the value is a byte array.<br/>
-     * If {@link #getType()} returns {@link Type#TIME}, the value is a {@link Date}.<br/>
-     * If {@link #getType()} returns {@link Type#INTEGER}, the value is a {@link Long}.<br/>
-     * If {@link #getType()} returns {@link Type#FLOAT}, the value is a {@link Double}.<br/>
+     * If {@link #getType()} returns {@link Type#BOOLEAN}, the value is a {@link Boolean}.<br>
+     * If {@link #getType()} returns {@link Type#STRING}, the value is a {@link String}.<br>
+     * If {@link #getType()} returns {@link Type#OPAQUE}, the value is a byte array.<br>
+     * If {@link #getType()} returns {@link Type#TIME}, the value is a {@link Date}.<br>
+     * If {@link #getType()} returns {@link Type#INTEGER}, the value is a {@link Long}.<br>
+     * If {@link #getType()} returns {@link Type#FLOAT}, the value is a {@link Double}.<br>
      * 
      * @return the value of the resource.
      */
@@ -59,12 +59,12 @@ public interface LwM2mResource extends LwM2mNode {
      * 
      * The type of the right part of the returned map depends on the {@link #getType()} method.
      * 
-     * If {@link #getType()} returns {@link Type#BOOLEAN}, the value is a {@link Boolean}.<br/>
-     * If {@link #getType()} returns {@link Type#STRING}, the value is a {@link String}.<br/>
-     * If {@link #getType()} returns {@link Type#OPAQUE}, the value is a byte array.<br/>
-     * If {@link #getType()} returns {@link Type#TIME}, the value is a {@link Date}.<br/>
-     * If {@link #getType()} returns {@link Type#INTEGER}, the value is a {@link Long}.<br/>
-     * If {@link #getType()} returns {@link Type#FLOAT}, the value is a {@link Double}.<br/>
+     * If {@link #getType()} returns {@link Type#BOOLEAN}, the value is a {@link Boolean}.<br>
+     * If {@link #getType()} returns {@link Type#STRING}, the value is a {@link String}.<br>
+     * If {@link #getType()} returns {@link Type#OPAQUE}, the value is a byte array.<br>
+     * If {@link #getType()} returns {@link Type#TIME}, the value is a {@link Date}.<br>
+     * If {@link #getType()} returns {@link Type#INTEGER}, the value is a {@link Long}.<br>
+     * If {@link #getType()} returns {@link Type#FLOAT}, the value is a {@link Double}.<br>
      * 
      * @return the values of each resource instances (key is the resource instance identifier).
      */
@@ -75,12 +75,12 @@ public interface LwM2mResource extends LwM2mNode {
      * 
      * The type of the returned value depends on the {@link #getType()} method.
      * 
-     * If {@link #getType()} returns {@link Type#BOOLEAN}, the value is a {@link Boolean}.<br/>
-     * If {@link #getType()} returns {@link Type#STRING}, the value is a {@link String}.<br/>
-     * If {@link #getType()} returns {@link Type#OPAQUE}, the value is a byte array.<br/>
-     * If {@link #getType()} returns {@link Type#TIME}, the value is a {@link Date}.<br/>
-     * If {@link #getType()} returns {@link Type#INTEGER}, the value is a {@link Long}.<br/>
-     * If {@link #getType()} returns {@link Type#FLOAT}, the value is a {@link Double}.<br/>
+     * If {@link #getType()} returns {@link Type#BOOLEAN}, the value is a {@link Boolean}.<br>
+     * If {@link #getType()} returns {@link Type#STRING}, the value is a {@link String}.<br>
+     * If {@link #getType()} returns {@link Type#OPAQUE}, the value is a byte array.<br>
+     * If {@link #getType()} returns {@link Type#TIME}, the value is a {@link Date}.<br>
+     * If {@link #getType()} returns {@link Type#INTEGER}, the value is a {@link Long}.<br>
+     * If {@link #getType()} returns {@link Type#FLOAT}, the value is a {@link Double}.<br>
      * 
      * @return the value a resource instance with the given identifier.
      */

@@ -129,7 +129,7 @@ public class LwM2mMultipleResource implements LwM2mResource {
     }
 
     /**
-     * @exception raise a {@link NoSuchElementException}
+     * @exception NoSuchElementException
      */
     @Override
     public Object getValue() {

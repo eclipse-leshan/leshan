@@ -18,9 +18,9 @@ package org.eclipse.leshan.server.model;
 import org.eclipse.leshan.core.model.ObjectLoader;
 
 /**
- * A static model provider which uses the default model embedded in Leshan. </br>
- * </br>
- * The MODELS_FOLDER environment variable can be used to add more model definitions.</br>
+ * A static model provider which uses the default model embedded in Leshan.
+ * <p>
+ * The MODELS_FOLDER environment variable can be used to add more model definitions.</p>
  * The MODELS_FOLDER should be set with the folder path where your custom models are available. Currently the Leshan
  * JSON format and OMA DDF file format are supported.
  */
