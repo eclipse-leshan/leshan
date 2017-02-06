@@ -25,7 +25,7 @@ public interface RegistrationService {
     /**
      * Retrieves a registration by id.
      * 
-     * @param registration id
+     * @param id registration id
      * @return the matching registration or <code>null</code> if not found
      */
     Registration getById(String id);

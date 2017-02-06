@@ -115,7 +115,7 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
 
     // ***************** string path constructor ******************* /
     /**
-     * Creates a request for creating an instance of a particular object using the default TLV content format. </br>
+     * Creates a request for creating an instance of a particular object using the default TLV content format.<br>
      * If the path is an object path, the instance id will be chosen by the client and accessible in the CreateResponse.
      * To choose instance id at server side, the path must be an object instance path.
      * 
@@ -128,7 +128,7 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
     }
 
     /**
-     * Creates a request for creating an instance of a particular object. </br>
+     * Creates a request for creating an instance of a particular object.<br>
      * If the path is an object path, the instance id will be chosen by the client and accessible in the CreateResponse.
      * To choose instance id at server side, the path must be an object instance path.
      * 
@@ -143,7 +143,7 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
     }
 
     /**
-     * Creates a request for creating an instance of a particular object using the default TLV content format. </br>
+     * Creates a request for creating an instance of a particular object using the default TLV content format.<br>
      * If the path is an object path, the instance id will be chosen by the client and accessible in the CreateResponse.
      * To choose instance id at server side, the path must be an object instance path.
      * 
@@ -156,7 +156,7 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
     }
 
     /**
-     * Creates a request for creating an instance of a particular object.</br>
+     * Creates a request for creating an instance of a particular object.<br>
      * If the path is an object path, the instance id will be chosen by the client and accessible in the CreateResponse.
      * To choose instance id at server side, the path must be an object instance path.
      * 
@@ -171,7 +171,7 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
     }
 
     /**
-     * Creates a request for creating an instance of a particular object.</br>
+     * Creates a request for creating an instance of a particular object.<br>
      * If the path is an object path, the instance id will be chosen by the client and accessible in the CreateResponse.
      * To choose instance id at server side, the path must be an object instance path.
      * 
@@ -185,7 +185,7 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
     }
 
     /**
-     * Creates a request for creating an instance of a particular object.</br>
+     * Creates a request for creating an instance of a particular object.<br>
      * If the path is an object path, the instance id will be chosen by the client and accessible in the CreateResponse.
      * To choose instance id at server side, the path must be an object instance path.
      * 
