@@ -86,14 +86,16 @@ public interface RegistrationStore {
     Deregistration removeRegistration(String registrationId);
 
     /**
-     * Add a new Observation for a given registration.
+     * Add a new {@link Observation} for a given registration.
+     * 
+     * The store is in charge of removing the observations already existing for the same path and registration id.
      * 
      * @param registrationId the id of the registration
      * @param observation the observation to add
      * 
-     * @return the previous observation or null if any.
+     * @return the list of removed observations or an empty list if none were removed.
      */
-    Observation addObservation(String registrationId, Observation observation);
+    Collection<Observation> addObservation(String registrationId, Observation observation);
 
     /**
      * Get the observation for the given registration with the given observationId
