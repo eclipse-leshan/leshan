@@ -17,7 +17,6 @@ package org.eclipse.leshan.server.californium.impl;
 
 import static org.eclipse.leshan.server.californium.impl.CoapRequestBuilder.CTX_REGID;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -83,15 +82,9 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
     }
 
     public void addObservation(Registration registration, Observation observation) {
-        // cancel any other observation for the same path and registration id.
-        // delegate this to the observation store to avoid race conditions on add/cancel?
-        for (Observation obs : getObservations(observation.getRegistrationId())) {
-            if (observation.getPath().equals(obs.getPath()) && !Arrays.equals(observation.getId(), obs.getId())) {
-                cancelObservation(obs);
-            }
+        for (Observation existing : registrationStore.addObservation(registration.getId(), observation)) {
+            cancel(existing);
         }
-
-        // the observation is already persisted by the CoAP layer
 
         for (ObservationListener listener : listeners) {
             listener.newObservation(observation, registration);
@@ -118,14 +111,7 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
             return 0;
 
         for (Observation observation : observations) {
-            if (secureEndpoint != null)
-                secureEndpoint.cancelObservation(observation.getId());
-            if (nonSecureEndpoint != null)
-                nonSecureEndpoint.cancelObservation(observation.getId());
-
-            for (ObservationListener listener : listeners) {
-                listener.cancelled(observation);
-            }
+            cancel(observation);
         }
 
         return observations.size();
@@ -148,11 +134,15 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
         if (observation == null)
             return;
 
+        registrationStore.removeObservation(observation.getRegistrationId(), observation.getId());
+        cancel(observation);
+    }
+
+    private void cancel(Observation observation) {
         if (secureEndpoint != null)
             secureEndpoint.cancelObservation(observation.getId());
         if (nonSecureEndpoint != null)
             nonSecureEndpoint.cancelObservation(observation.getId());
-        registrationStore.removeObservation(observation.getRegistrationId(), observation.getId());
 
         for (ObservationListener listener : listeners) {
             listener.cancelled(observation);

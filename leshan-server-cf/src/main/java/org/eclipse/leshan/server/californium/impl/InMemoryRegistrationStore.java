@@ -19,6 +19,7 @@ import static org.eclipse.leshan.server.californium.impl.CoapRequestBuilder.*;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -66,16 +67,16 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     private static final DataSerializer serializer = new UdpDataSerializer();
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
-    
+
     // Listener use to notify when a registration expires
     private ExpirationListener expirationListener;
-    
+
     private final ScheduledExecutorService schedExecutor;
-    
+
     public InMemoryRegistrationStore() {
         schedExecutor = Executors.newScheduledThreadPool(1);
     }
-    
+
     public InMemoryRegistrationStore(ScheduledExecutorService schedExecutor) {
         this.schedExecutor = schedExecutor;
     }
@@ -184,10 +185,29 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
 
     /* *************** Leshan Observation API **************** */
 
+    /*
+     * The observation is not persisted here, it is done by the Californium layer (in the implementation of the
+     * org.eclipse.californium.core.observe.ObservationStore#add method)
+     */
     @Override
-    public Observation addObservation(String registrationId, Observation observation) {
-        // not used observation was added by Californium
-        return null;
+    public Collection<Observation> addObservation(String registrationId, Observation observation) {
+
+        List<Observation> removed = new ArrayList<>();
+
+        try {
+            lock.writeLock().lock();
+            // cancel existing observations for the same path and registration id.
+            for (Observation obs : unsafeGetObservations(registrationId)) {
+                if (observation.getPath().equals(obs.getPath()) && !Arrays.equals(observation.getId(), obs.getId())) {
+                    unsafeRemoveObservation(obs.getId());
+                    removed.add(obs);
+                }
+            }
+        } finally {
+            lock.writeLock().unlock();
+        }
+
+        return removed;
     }
 
     @Override
@@ -197,7 +217,6 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
 
             Observation observation = build(unsafeGetObservation(new KeyToken(observationId)));
             if (observation != null && registrationId.equals(observation.getRegistrationId())) {
-                // TODO remove API should returns the observation removed
                 unsafeRemoveObservation(observationId);
                 return observation;
             }
@@ -225,18 +244,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     public Collection<Observation> getObservations(String registrationId) {
         try {
             lock.readLock().lock();
-
-            Collection<Observation> result = new ArrayList<>();
-            List<KeyToken> tokens = tokensByRegId.get(registrationId);
-            if (tokens != null) {
-                for (KeyToken token : tokens) {
-                    Observation obs = build(unsafeGetObservation(token));
-                    if (obs != null) {
-                        result.add(obs);
-                    }
-                }
-            }
-            return result;
+            return unsafeGetObservations(registrationId);
         } finally {
             lock.readLock().unlock();
         }
@@ -321,14 +329,14 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
 
     private org.eclipse.californium.core.observe.Observation unsafeGetObservation(KeyToken token) {
         org.eclipse.californium.core.observe.Observation obs = obsByToken.get(token);
-            if (obs != null) {
-                RawData serialize = serializer.serializeRequest(obs.getRequest(), null);
-                DataParser parser = new UdpDataParser();
-                Request newRequest = (Request) parser.parseMessage(serialize);
-                newRequest.setUserContext(obs.getRequest().getUserContext());
-                return new org.eclipse.californium.core.observe.Observation(newRequest, obs.getContext());
-            }
-            return null;
+        if (obs != null) {
+            RawData serialize = serializer.serializeRequest(obs.getRequest(), null);
+            DataParser parser = new UdpDataParser();
+            Request newRequest = (Request) parser.parseMessage(serialize);
+            newRequest.setUserContext(obs.getRequest().getUserContext());
+            return new org.eclipse.californium.core.observe.Observation(newRequest, obs.getContext());
+        }
+        return null;
     }
 
     private void unsafeRemoveObservation(byte[] observationId) {
@@ -358,6 +366,20 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
         }
         tokensByRegId.remove(registrationId);
         return removed;
+    }
+
+    private Collection<Observation> unsafeGetObservations(String registrationId) {
+        Collection<Observation> result = new ArrayList<>();
+        List<KeyToken> tokens = tokensByRegId.get(registrationId);
+        if (tokens != null) {
+            for (KeyToken token : tokens) {
+                Observation obs = build(unsafeGetObservation(token));
+                if (obs != null) {
+                    result.add(obs);
+                }
+            }
+        }
+        return result;
     }
 
     /* Retrieve the registrationId from the request context */
