@@ -27,10 +27,13 @@ import org.eclipse.leshan.core.observation.Observation;
 public interface RegistrationStore {
 
     /**
-     * Add a new registration. If there is already a registration with the same endpoint removed it.
+     * Store a new registration.
+     * 
+     * If a registration already exists with the given endpoint, the store is in charge of removing this registration as
+     * well as the ongoing observations.
      * 
      * @param registration the new registration.
-     * @return the old registration and its observations removed or null.
+     * @return the old registration and its observations or <code>null</code> if it does not already exists.
      */
     Deregistration addRegistration(Registration registration);
 
