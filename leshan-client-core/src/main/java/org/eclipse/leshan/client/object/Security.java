@@ -23,6 +23,7 @@ import static org.eclipse.leshan.LwM2mId.SEC_SERVER_ID;
 import static org.eclipse.leshan.LwM2mId.SEC_SERVER_PUBKEY;
 import static org.eclipse.leshan.LwM2mId.SEC_SERVER_URI;
 
+import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
@@ -65,28 +66,31 @@ public class Security extends BaseInstanceEnabler {
      * Returns a new security instance (NoSec) for a boostrap server.
      */
     public static Security noSecBootstap(String serverUri) {
-        return new Security(serverUri, true, 3, new byte[0], new byte[0], new byte[0], 0);
+        return new Security(serverUri, true, SecurityMode.NO_SEC.code, new byte[0], new byte[0], new byte[0], 0);
     }
 
     /**
      * Returns a new security instance (PSK) for a boostrap server.
      */
     public static Security pskBootstrap(String serverUri, byte[] pskIdentity, byte[] privateKey) {
-        return new Security(serverUri, true, 0, pskIdentity.clone(), new byte[0], privateKey.clone(), 0);
+        return new Security(serverUri, true, SecurityMode.PSK.code, pskIdentity.clone(), new byte[0],
+                privateKey.clone(), 0);
     }
 
     /**
      * Returns a new security instance (NoSec) for a device management server.
      */
     public static Security noSec(String serverUri, int shortServerId) {
-        return new Security(serverUri, false, 3, new byte[0], new byte[0], new byte[0], shortServerId);
+        return new Security(serverUri, false, SecurityMode.NO_SEC.code, new byte[0], new byte[0], new byte[0],
+                shortServerId);
     }
 
     /**
      * Returns a new security instance (PSK) for a device management server.
      */
     public static Security psk(String serverUri, int shortServerId, byte[] pskIdentity, byte[] privateKey) {
-        return new Security(serverUri, false, 0, pskIdentity.clone(), new byte[0], privateKey.clone(), shortServerId);
+        return new Security(serverUri, false, SecurityMode.PSK.code, pskIdentity.clone(), new byte[0],
+                privateKey.clone(), shortServerId);
     }
 
     /**
@@ -94,7 +98,7 @@ public class Security extends BaseInstanceEnabler {
      */
     public static Security rpk(String serverUri, int shortServerId, byte[] clientPublicKey, byte[] clientPrivateKey,
             byte[] serverPublicKey) {
-        return new Security(serverUri, false, 1, clientPublicKey.clone(), serverPublicKey.clone(),
+        return new Security(serverUri, false, SecurityMode.RPK.code, clientPublicKey.clone(), serverPublicKey.clone(),
                 clientPrivateKey.clone(), shortServerId);
     }
 
