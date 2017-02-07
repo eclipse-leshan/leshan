@@ -18,7 +18,7 @@ package org.eclipse.leshan.server.bootstrap;
 import org.eclipse.leshan.core.request.Identity;
 
 /**
- * Represent a single Bootstraping session.
+ * Represent a single Bootstrapping session.
  * 
  * Should be created by {@link BootstrapSessionManager} implementations in {@link BootstrapSessionManager.begin}.
  */

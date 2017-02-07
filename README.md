@@ -42,7 +42,7 @@ Get and run the last binary of our demo **client** :
 wget https://hudson.eclipse.org/leshan/job/leshan/lastSuccessfulBuild/artifact/leshan-client-demo.jar
 java -jar ./leshan-client-demo.jar
 ```
-Get and run the last binary of our **boostrap** demo server :
+Get and run the last binary of our **bootstrap** demo server :
 ```
 wget https://hudson.eclipse.org/leshan/job/leshan/lastSuccessfulBuild/artifact/leshan-bsserver-demo.jar
 java -jar ./leshan-bsserver-demo.jar

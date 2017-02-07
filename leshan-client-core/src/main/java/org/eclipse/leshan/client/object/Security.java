@@ -62,14 +62,14 @@ public class Security extends BaseInstanceEnabler {
     }
 
     /**
-     * Returns a new security instance (NoSec) for a boostrap server.
+     * Returns a new security instance (NoSec) for a bootstrap server.
      */
     public static Security noSecBootstap(String serverUri) {
         return new Security(serverUri, true, 3, new byte[0], new byte[0], new byte[0], 0);
     }
 
     /**
-     * Returns a new security instance (PSK) for a boostrap server.
+     * Returns a new security instance (PSK) for a bootstrap server.
      */
     public static Security pskBootstrap(String serverUri, byte[] pskIdentity, byte[] privateKey) {
         return new Security(serverUri, true, 0, pskIdentity.clone(), new byte[0], privateKey.clone(), 0);
