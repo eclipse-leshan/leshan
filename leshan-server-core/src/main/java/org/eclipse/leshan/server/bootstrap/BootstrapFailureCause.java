@@ -24,7 +24,7 @@ public enum BootstrapFailureCause {
      */
     UNAUTHORIZED,
     /**
-     * The Boostrap Server could not find a configuration to send to the device
+     * The Bootstrap Server could not find a configuration to send to the device
      */
     NO_BOOTSTRAP_CONFIG,
     /**

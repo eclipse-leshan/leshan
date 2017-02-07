@@ -97,13 +97,13 @@ public class RegistrationEngine {
             LOG.info("Trying to start bootstrap session to {} ...", serversInfo.bootstrap.getFullUri());
             try {
                 // Send bootstrap request
-                ServerInfo boostrapServer = serversInfo.bootstrap;
-                BootstrapResponse response = sender.send(boostrapServer.getAddress(), boostrapServer.isSecure(),
+                ServerInfo bootstrapServer = serversInfo.bootstrap;
+                BootstrapResponse response = sender.send(bootstrapServer.getAddress(), bootstrapServer.isSecure(),
                         new BootstrapRequest(endpoint), null);
                 if (response == null) {
                     LOG.error("Unable to start bootstrap session: Timeout.");
                     if (observer != null) {
-                        observer.onBootstrapTimeout(boostrapServer);
+                        observer.onBootstrapTimeout(bootstrapServer);
                     }
                     return false;
                 } else if (response.isSuccess()) {
@@ -113,21 +113,21 @@ public class RegistrationEngine {
                     if (timeout) {
                         LOG.error("Bootstrap sequence aborted: Timeout.");
                         if (observer != null) {
-                            observer.onBootstrapTimeout(boostrapServer);
+                            observer.onBootstrapTimeout(bootstrapServer);
                         }
                         return false;
                     } else {
                         serversInfo = ServersInfoExtractor.getInfo(objectEnablers);
                         LOG.info("Bootstrap finished {}.", serversInfo);
                         if (observer != null) {
-                            observer.onBootstrapSuccess(boostrapServer);
+                            observer.onBootstrapSuccess(bootstrapServer);
                         }
                         return true;
                     }
                 } else {
                     LOG.error("Bootstrap failed: {} {}.", response.getCode(), response.getErrorMessage());
                     if (observer != null) {
-                        observer.onBootstrapFailure(boostrapServer, response.getCode(), response.getErrorMessage());
+                        observer.onBootstrapFailure(bootstrapServer, response.getCode(), response.getErrorMessage());
                     }
                     return false;
                 }

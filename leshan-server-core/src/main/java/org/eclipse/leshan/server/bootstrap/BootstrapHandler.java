@@ -97,7 +97,7 @@ public class BootstrapHandler {
             return BootstrapResponse.badRequest("no bootstrap config");
         }
 
-        // Start the boostrap session
+        // Start the bootstrap session
         e.execute(new Runnable() {
             @Override
             public void run() {

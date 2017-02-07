@@ -36,14 +36,14 @@ public interface BootstrapSessionManager {
     public BootstrapSession begin(String endpoint, Identity clientIdentity);
 
     /**
-     * Performs any housekeeping related to the successful ending of a Boostraping session.
+     * Performs any housekeeping related to the successful ending of a Bootstrapping session.
      * 
      * @param bsSession
      */
     public void end(BootstrapSession bsSession);
 
     /**
-     * Performs any housekeeping related to the failure of a Boostraping session.
+     * Performs any housekeeping related to the failure of a Bootstrapping session.
      * 
      * @param bsSession
      * @param cause why the bootstrap failed
