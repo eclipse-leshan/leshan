@@ -20,7 +20,7 @@ Contributors:
     <parent>
         <groupId>org.eclipse.leshan</groupId>
         <artifactId>leshan</artifactId>
-        <version>0.1.11-M15-SNAPSHOT</version>
+        <version>1.0.0-M1</version>
     </parent>
     <artifactId>leshan-server-demo</artifactId>
     <name>leshan - server demo</name>
