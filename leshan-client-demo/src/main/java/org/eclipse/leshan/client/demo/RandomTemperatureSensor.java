@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.util.NamedThreadFactory;
 
 public class RandomTemperatureSensor extends BaseInstanceEnabler {
 
@@ -26,7 +27,7 @@ public class RandomTemperatureSensor extends BaseInstanceEnabler {
     private double maxMeasuredValue = currentTemp;
 
     public RandomTemperatureSensor() {
-        this.scheduler = Executors.newSingleThreadScheduledExecutor();
+        this.scheduler = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Temperature Sensor"));
         scheduler.scheduleAtFixedRate(new Runnable() {
 
             @Override

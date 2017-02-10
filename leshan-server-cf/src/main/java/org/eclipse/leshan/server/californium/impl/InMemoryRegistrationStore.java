@@ -49,6 +49,7 @@ import org.eclipse.leshan.server.registration.Deregistration;
 import org.eclipse.leshan.server.registration.ExpirationListener;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
+import org.eclipse.leshan.util.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +75,8 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     private final ScheduledExecutorService schedExecutor;
 
     public InMemoryRegistrationStore() {
-        schedExecutor = Executors.newScheduledThreadPool(1);
+        schedExecutor = Executors.newScheduledThreadPool(1,
+                new NamedThreadFactory("InMemoryRegistrationStore Cleaner"));
     }
 
     public InMemoryRegistrationStore(ScheduledExecutorService schedExecutor) {

@@ -46,6 +46,7 @@ import org.eclipse.leshan.server.registration.Deregistration;
 import org.eclipse.leshan.server.registration.ExpirationListener;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
+import org.eclipse.leshan.util.NamedThreadFactory;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -622,7 +623,8 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
         }
     }
 
-    private final ScheduledExecutorService schedExecutor = Executors.newScheduledThreadPool(1);
+    private final ScheduledExecutorService schedExecutor = Executors.newScheduledThreadPool(1,
+            new NamedThreadFactory("RedisRegistrationStore Cleaner"));
 
     private class Cleaner implements Runnable {
 

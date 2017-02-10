@@ -25,7 +25,7 @@ public class MyDevice extends BaseInstanceEnabler {
 
     public MyDevice() {
         // notify new date each 5 second
-        Timer timer = new Timer();
+        Timer timer = new Timer("Device-Current Time");
         timer.schedule(new TimerTask() {
             @Override
             public void run() {

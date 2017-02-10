@@ -35,6 +35,7 @@ import org.eclipse.leshan.core.response.BootstrapResponse;
 import org.eclipse.leshan.core.response.DeregisterResponse;
 import org.eclipse.leshan.core.response.RegisterResponse;
 import org.eclipse.leshan.core.response.UpdateResponse;
+import org.eclipse.leshan.util.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,7 +69,8 @@ public class RegistrationEngine {
     private String registrationID;
     private Future<?> registerFuture;
     private ScheduledFuture<?> updateFuture;
-    private final ScheduledExecutorService schedExecutor = Executors.newScheduledThreadPool(2);
+    private final ScheduledExecutorService schedExecutor = Executors.newScheduledThreadPool(2,
+            new NamedThreadFactory("RegistrationEngine#%d"));
 
     public RegistrationEngine(String endpoint, Map<Integer, LwM2mObjectEnabler> objectEnablers,
             LwM2mRequestSender requestSender, BootstrapHandler bootstrapState, LwM2mClientObserver observer) {
