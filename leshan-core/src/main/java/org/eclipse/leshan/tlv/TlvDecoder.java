@@ -20,13 +20,13 @@ import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.tlv.Tlv.TlvType;
-import org.eclipse.leshan.util.Charsets;
 import org.eclipse.leshan.util.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -153,7 +153,7 @@ public class TlvDecoder {
      * Decodes a byte array into string value.
      */
     public static String decodeString(byte[] value) {
-        return new String(value, Charsets.UTF_8);
+        return new String(value, StandardCharsets.UTF_8);
     }
 
     /**

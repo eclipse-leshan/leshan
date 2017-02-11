@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.security.AlgorithmParameters;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
@@ -53,7 +54,6 @@ import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.impl.InMemorySecurityStore;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
-import org.eclipse.leshan.util.Charsets;
 import org.eclipse.leshan.util.Hex;
 
 public class SecureIntegrationTestHelper extends IntegrationTestHelper {
@@ -167,7 +167,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
                 Security.psk(
                         "coaps://" + server.getSecureAddress().getHostString() + ":"
                                 + server.getSecureAddress().getPort(),
-                        12345, GOOD_PSK_ID.getBytes(Charsets.UTF_8), GOOD_PSK_KEY));
+                        12345, GOOD_PSK_ID.getBytes(StandardCharsets.UTF_8), GOOD_PSK_KEY));
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.U, false));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345", "U"));
         List<LwM2mObjectEnabler> objects = initializer.createMandatory();
