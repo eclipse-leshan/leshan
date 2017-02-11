@@ -19,13 +19,13 @@ package org.eclipse.leshan.server.bootstrap.demo.servlet;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.Charsets;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.demo.BootstrapStoreImpl;
@@ -82,7 +82,7 @@ public class BootstrapServlet extends HttpServlet {
 
         resp.setStatus(HttpServletResponse.SC_OK);
         resp.setContentType("application/json");
-        resp.getOutputStream().write(gson.toJson(bsStore.getBootstrapConfigs()).getBytes(Charsets.UTF_8));
+        resp.getOutputStream().write(gson.toJson(bsStore.getBootstrapConfigs()).getBytes(StandardCharsets.UTF_8));
     }
 
     @Override

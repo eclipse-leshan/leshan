@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.cluster;
 
-import static org.eclipse.leshan.util.Charsets.UTF_8;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.util.Arrays;
 import java.util.Random;

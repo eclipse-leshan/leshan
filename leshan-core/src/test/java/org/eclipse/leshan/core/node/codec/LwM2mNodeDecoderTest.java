@@ -18,6 +18,7 @@ package org.eclipse.leshan.core.node.codec;
 
 import static org.junit.Assert.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
 
@@ -34,7 +35,6 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.tlv.Tlv;
 import org.eclipse.leshan.tlv.Tlv.TlvType;
 import org.eclipse.leshan.tlv.TlvEncoder;
-import org.eclipse.leshan.util.Charsets;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -55,7 +55,7 @@ public class LwM2mNodeDecoderTest {
     @Test
     public void text_manufacturer_resource() throws CodecException {
         String value = "MyManufacturer";
-        LwM2mSingleResource resource = (LwM2mSingleResource) decoder.decode(value.getBytes(Charsets.UTF_8),
+        LwM2mSingleResource resource = (LwM2mSingleResource) decoder.decode(value.getBytes(StandardCharsets.UTF_8),
                 ContentFormat.TEXT, new LwM2mPath(3, 0, 0), model);
 
         assertEquals(0, resource.getId());
@@ -67,12 +67,12 @@ public class LwM2mNodeDecoderTest {
     @Test(expected = CodecException.class)
     public void content_format_is_mandatory() throws CodecException {
         String value = "MyManufacturer";
-        decoder.decode(value.getBytes(Charsets.UTF_8), null, new LwM2mPath(666, 0, 0), model);
+        decoder.decode(value.getBytes(StandardCharsets.UTF_8), null, new LwM2mPath(666, 0, 0), model);
     }
 
     @Test
     public void text_battery_resource() throws CodecException {
-        LwM2mSingleResource resource = (LwM2mSingleResource) decoder.decode("100".getBytes(Charsets.UTF_8),
+        LwM2mSingleResource resource = (LwM2mSingleResource) decoder.decode("100".getBytes(StandardCharsets.UTF_8),
                 ContentFormat.TEXT, new LwM2mPath(3, 0, 9), model);
 
         assertEquals(9, resource.getId());

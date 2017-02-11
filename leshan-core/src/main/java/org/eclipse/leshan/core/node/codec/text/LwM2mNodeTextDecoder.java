@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec.text;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -26,7 +27,6 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.codec.CodecException;
-import org.eclipse.leshan.util.Charsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +39,7 @@ public class LwM2mNodeTextDecoder {
 
         ResourceModel rDesc = model.getResourceModel(path.getObjectId(), path.getResourceId());
 
-        String strValue = content != null ? new String(content, Charsets.UTF_8) : "";
+        String strValue = content != null ? new String(content, StandardCharsets.UTF_8) : "";
         if (rDesc != null && rDesc.type != null) {
             return LwM2mSingleResource.newResource(path.getResourceId(), parseTextValue(strValue, rDesc.type, path),
                     rDesc.type);
