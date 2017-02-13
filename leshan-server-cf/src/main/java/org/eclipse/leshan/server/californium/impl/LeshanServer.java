@@ -249,9 +249,14 @@ public class LeshanServer implements LwM2mServer {
         // Destroy stores
         if (registrationStore instanceof Destroyable) {
             ((Destroyable) registrationStore).destroy();
+        } else if (registrationStore instanceof Stoppable) {
+            ((Stoppable) registrationStore).stop();
         }
+
         if (securityStore instanceof Destroyable) {
             ((Destroyable) securityStore).destroy();
+        } else if (securityStore instanceof Stoppable) {
+            ((Stoppable) securityStore).stop();
         }
 
         LOG.info("LWM2M server destroyed.");
