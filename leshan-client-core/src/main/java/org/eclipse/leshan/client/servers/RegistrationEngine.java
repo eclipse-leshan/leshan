@@ -21,6 +21,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
@@ -64,6 +65,7 @@ public class RegistrationEngine {
     private final Map<Integer, LwM2mObjectEnabler> objectEnablers;
     private final BootstrapHandler bootstrapHandler;
     private final LwM2mClientObserver observer;
+    private final AtomicBoolean started = new AtomicBoolean(false);
 
     // registration update
     private String registrationID;
@@ -84,6 +86,7 @@ public class RegistrationEngine {
 
     public void start() {
         stop(false); // stop without de-register
+        started.set(true);
         registerFuture = schedExecutor.submit(new RegistrationTask());
     }
 
@@ -299,16 +302,20 @@ public class RegistrationEngine {
     }
 
     private void scheduleRegistration() {
-        LOG.info("Unable to connect to any server, next retry in {}s...", BS_RETRY);
-        registerFuture = schedExecutor.schedule(new RegistrationTask(), BS_RETRY, TimeUnit.SECONDS);
+        if (started.get()) {
+            LOG.info("Unable to connect to any server, next retry in {}s...", BS_RETRY);
+            registerFuture = schedExecutor.schedule(new RegistrationTask(), BS_RETRY, TimeUnit.SECONDS);
+        }
     }
 
     private void scheduleUpdate(DmServerInfo dmInfo) {
-        // calculate next update : lifetime - 10%
-        // dmInfo.lifetime is in seconds
-        long nextUpdate = dmInfo.lifetime * 900l;
-        LOG.info("Next registration update in {}s...", nextUpdate / 1000.0);
-        updateFuture = schedExecutor.schedule(new UpdateRegistrationTask(), nextUpdate, TimeUnit.MILLISECONDS);
+        if (started.get()) {
+            // calculate next update : lifetime - 10%
+            // dmInfo.lifetime is in seconds
+            long nextUpdate = dmInfo.lifetime * 900l;
+            LOG.info("Next registration update in {}s...", nextUpdate / 1000.0);
+            updateFuture = schedExecutor.schedule(new UpdateRegistrationTask(), nextUpdate, TimeUnit.MILLISECONDS);
+        }
     }
 
     private class UpdateRegistrationTask implements Runnable {
@@ -347,6 +354,7 @@ public class RegistrationEngine {
     }
 
     public void stop(boolean deregister) {
+        started.set(false);
         cancelUpdateTask(true);
         // TODO we should manage the case where we stop in the middle of a bootstrap session ...
         cancelRegistrationTask();
@@ -358,6 +366,7 @@ public class RegistrationEngine {
     }
 
     public void destroy(boolean deregister) {
+        started.set(false);
         // TODO we should manage the case where we stop in the middle of a bootstrap session ...
         schedExecutor.shutdownNow();
         try {
