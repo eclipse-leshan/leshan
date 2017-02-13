@@ -15,8 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.cluster;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.eclipse.leshan.server.californium.impl.CoapRequestBuilder.*;
-import static org.eclipse.leshan.util.Charsets.UTF_8;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;

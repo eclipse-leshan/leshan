@@ -16,12 +16,12 @@
 package org.eclipse.leshan;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.eclipse.leshan.util.Charsets;
 import org.eclipse.leshan.util.StringUtils;
 
 /**
@@ -102,7 +102,7 @@ public class Link implements Serializable {
         if (content == null) {
             return new Link[] {};
         }
-        String s = new String(content, Charsets.UTF_8);
+        String s = new String(content, StandardCharsets.UTF_8);
         String[] links = s.split(",");
         Link[] linksResult = new Link[links.length];
         int index = 0;

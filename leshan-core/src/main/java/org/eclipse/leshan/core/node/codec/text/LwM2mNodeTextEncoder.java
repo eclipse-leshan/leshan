@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec.text;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -29,7 +30,6 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.Lwm2mNodeEncoderUtil;
-import org.eclipse.leshan.util.Charsets;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,7 +101,7 @@ public class LwM2mNodeTextEncoder {
                 throw new CodecException("Cannot encode " + val + " in text format");
             }
 
-            encoded = strValue.getBytes(Charsets.UTF_8);
+            encoded = strValue.getBytes(StandardCharsets.UTF_8);
         }
     }
 }

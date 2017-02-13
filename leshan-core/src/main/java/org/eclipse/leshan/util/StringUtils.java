@@ -17,6 +17,7 @@
 package org.eclipse.leshan.util;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * <p>
@@ -301,7 +302,7 @@ public class StringUtils {
      * @param charset The {@link Charset} to encode the <code>String</code>
      * @return A new <code>String</code> decoded from the specified array of bytes using the given charset, or
      *         <code>null</code> if the input byte array was <code>null</code>.
-     * @throws NullPointerException Thrown if {@link Charsets#UTF_8} is not initialized, which should never happen since
+     * @throws NullPointerException Thrown if {@link StandardCharsets#UTF_8} is not initialized, which should never happen since
      *         it is required by the Java platform specification.
      */
     private static String newString(final byte[] bytes, final Charset charset) {
@@ -314,12 +315,12 @@ public class StringUtils {
      * @param bytes The bytes to be decoded into characters
      * @return A new <code>String</code> decoded from the specified array of bytes using the UTF-8 charset, or
      *         <code>null</code> if the input byte array was <code>null</code>.
-     * @throws NullPointerException Thrown if {@link Charsets#UTF_8} is not initialized, which should never happen since
+     * @throws NullPointerException Thrown if {@link StandardCharsets#UTF_8} is not initialized, which should never happen since
      *         it is required by the Java platform specification.
      * @since As of 1.7, throws {@link NullPointerException} instead of UnsupportedEncodingException
      */
     public static String newStringUtf8(final byte[] bytes) {
-        return newString(bytes, Charsets.UTF_8);
+        return newString(bytes, StandardCharsets.UTF_8);
     }
 
     /**
@@ -342,13 +343,13 @@ public class StringUtils {
      *
      * @param string the String to encode, may be <code>null</code>
      * @return encoded bytes, or <code>null</code> if the input string was <code>null</code>
-     * @throws NullPointerException Thrown if {@link Charsets#UTF_8} is not initialized, which should never happen since
+     * @throws NullPointerException Thrown if {@link StandardCharsets#UTF_8} is not initialized, which should never happen since
      *         it is required by the Java platform specification.
      * @since As of 1.7, throws {@link NullPointerException} instead of UnsupportedEncodingException
      * @see <a href="http://download.oracle.com/javase/6/docs/api/java/nio/charset/Charset.html">Standard charsets</a>
      * @see #getBytesUnchecked(String, String)
      */
     public static byte[] getBytesUtf8(final String string) {
-        return getBytes(string, Charsets.UTF_8);
+        return getBytes(string, StandardCharsets.UTF_8);
     }
 }

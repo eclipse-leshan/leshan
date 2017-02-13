@@ -18,6 +18,7 @@
 package org.eclipse.leshan.util;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Converts hexadecimal Strings. The charset used for certain operation can be set, the default is set in
@@ -31,11 +32,11 @@ import java.nio.charset.Charset;
 public class Hex {
 
     /**
-     * Default charset name is {@link Charsets#UTF_8}
+     * Default charset name is {@link StandardCharsets#UTF_8}
      *
      * @since 1.7
      */
-    public static final Charset DEFAULT_CHARSET = Charsets.UTF_8;
+    public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
     /**
      * Used to build output as Hex

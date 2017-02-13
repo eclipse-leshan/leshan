@@ -18,6 +18,7 @@ package org.eclipse.leshan.integration.tests;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -38,7 +39,6 @@ import org.eclipse.leshan.server.impl.BootstrapSessionManagerImpl;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
-import org.eclipse.leshan.util.Charsets;
 import org.eclipse.leshan.util.Hex;
 
 /**
@@ -112,7 +112,7 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
         // Create Security Object (with bootstrap server only)
         String bsUrl = "coaps://" + bootstrapServer.getSecureAddress().getHostString() + ":"
                 + bootstrapServer.getSecureAddress().getPort();
-        byte[] pskId = pskIdentity.getBytes(Charsets.UTF_8);
+        byte[] pskId = pskIdentity.getBytes(StandardCharsets.UTF_8);
         Security security = Security.pskBootstrap(bsUrl, pskId, pskKey);
 
         createClient(security);

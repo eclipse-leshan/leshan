@@ -15,13 +15,13 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.demo.servlet.log;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.io.Charsets;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.EmptyMessage;
@@ -103,7 +103,7 @@ public class CoapMessage {
             }
         }
         if (payload != null && payload.length > 0) {
-            String strPayload = new String(payload, Charsets.UTF_8);
+            String strPayload = new String(payload, StandardCharsets.UTF_8);
             if (StringUtils.isAsciiPrintable(strPayload)) {
                 this.payload = strPayload;
             } else {

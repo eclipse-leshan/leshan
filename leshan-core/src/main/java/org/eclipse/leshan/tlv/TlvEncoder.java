@@ -17,10 +17,10 @@ package org.eclipse.leshan.tlv;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 import org.eclipse.leshan.core.node.ObjectLink;
-import org.eclipse.leshan.util.Charsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,7 +103,7 @@ public class TlvEncoder {
      * Encodes a string value.
      */
     public static byte[] encodeString(String value) {
-        return value.getBytes(Charsets.UTF_8);
+        return value.getBytes(StandardCharsets.UTF_8);
     }
 
     /**

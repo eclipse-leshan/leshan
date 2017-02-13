@@ -17,6 +17,7 @@ package org.eclipse.leshan.server.californium.impl;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 
 import org.eclipse.leshan.Link;
 import org.eclipse.leshan.core.request.BindingMode;
@@ -36,7 +37,7 @@ public class InMemoryRegistrationStoreTest {
     Long lifetime = 10000L;
     String sms = "0171-32423545";
     BindingMode binding = BindingMode.UQS;
-    Link[] objectLinks = Link.parse("</3>".getBytes(org.eclipse.leshan.util.Charsets.UTF_8));
+    Link[] objectLinks = Link.parse("</3>".getBytes(StandardCharsets.UTF_8));
     String registrationId = "4711";
     Registration registration;
 
