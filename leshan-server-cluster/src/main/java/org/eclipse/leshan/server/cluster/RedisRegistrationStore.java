@@ -75,8 +75,23 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     // Listener use to notify when a registration expires
     private ExpirationListener expirationListener;
 
+    private final ScheduledExecutorService schedExecutor;
+    private final long cleanPeriod; // in seconds
+
     public RedisRegistrationStore(Pool<Jedis> p) {
+        this(p, 60); // default clean period 60s
+    }
+
+    public RedisRegistrationStore(Pool<Jedis> p, long cleanPeriodInSec) {
+        this(p, Executors.newScheduledThreadPool(1,
+                new NamedThreadFactory(String.format("RedisRegistrationStore Cleaner (%ds)", cleanPeriodInSec))),
+                cleanPeriodInSec);
+    }
+
+    public RedisRegistrationStore(Pool<Jedis> p, ScheduledExecutorService schedExecutor, long cleanPeriodInSec) {
         this.pool = p;
+        this.schedExecutor = schedExecutor;
+        this.cleanPeriod = cleanPeriodInSec;
     }
 
     /* *************** Redis Key utility function **************** */
@@ -606,8 +621,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
      */
     @Override
     public void start() {
-        // clean the registration list every minute
-        schedExecutor.scheduleAtFixedRate(new Cleaner(), 1, 1, TimeUnit.MINUTES);
+        schedExecutor.scheduleAtFixedRate(new Cleaner(), cleanPeriod, cleanPeriod, TimeUnit.SECONDS);
     }
 
     /**
@@ -622,9 +636,6 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
             LOG.warn("Clean up registration thread was interrupted.", e);
         }
     }
-
-    private final ScheduledExecutorService schedExecutor = Executors.newScheduledThreadPool(1,
-            new NamedThreadFactory("RedisRegistrationStore Cleaner"));
 
     private class Cleaner implements Runnable {
 

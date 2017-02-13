@@ -73,14 +73,21 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     private ExpirationListener expirationListener;
 
     private final ScheduledExecutorService schedExecutor;
+    private final long cleanPeriod; // in seconds
 
     public InMemoryRegistrationStore() {
-        schedExecutor = Executors.newScheduledThreadPool(1,
-                new NamedThreadFactory("InMemoryRegistrationStore Cleaner"));
+        this(2); // default clean period : 2s
     }
 
-    public InMemoryRegistrationStore(ScheduledExecutorService schedExecutor) {
+    public InMemoryRegistrationStore(long cleanPeriodInSec) {
+        this(Executors.newScheduledThreadPool(1,
+                new NamedThreadFactory(String.format("InMemoryRegistrationStore Cleaner (%ds)", cleanPeriodInSec))),
+                cleanPeriodInSec);
+    }
+
+    public InMemoryRegistrationStore(ScheduledExecutorService schedExecutor, long cleanPeriodInSec) {
         this.schedExecutor = schedExecutor;
+        this.cleanPeriod = cleanPeriodInSec;
     }
 
     /* *************** Leshan Registration API **************** */
@@ -437,9 +444,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
      */
     @Override
     public void start() {
-        // every 2 seconds clean the registration list
-        // TODO re-consider clean-up interval: wouldn't 5 minutes do as well?
-        schedExecutor.scheduleAtFixedRate(new Cleaner(), 2, 2, TimeUnit.SECONDS);
+        schedExecutor.scheduleAtFixedRate(new Cleaner(), cleanPeriod, cleanPeriod, TimeUnit.SECONDS);
     }
 
     /**
