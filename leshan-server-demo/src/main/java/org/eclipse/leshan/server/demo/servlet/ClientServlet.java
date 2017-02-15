@@ -16,6 +16,7 @@
 package org.eclipse.leshan.server.demo.servlet;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -108,7 +109,7 @@ public class ClientServlet extends HttpServlet {
 
             String json = this.gson.toJson(registrations.toArray(new Registration[] {}));
             resp.setContentType("application/json");
-            resp.getOutputStream().write(json.getBytes("UTF-8"));
+            resp.getOutputStream().write(json.getBytes(StandardCharsets.UTF_8));
             resp.setStatus(HttpServletResponse.SC_OK);
             return;
         }
@@ -125,7 +126,7 @@ public class ClientServlet extends HttpServlet {
             Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
             if (registration != null) {
                 resp.setContentType("application/json");
-                resp.getOutputStream().write(this.gson.toJson(registration).getBytes("UTF-8"));
+                resp.getOutputStream().write(this.gson.toJson(registration).getBytes(StandardCharsets.UTF_8));
                 resp.setStatus(HttpServletResponse.SC_OK);
             } else {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);

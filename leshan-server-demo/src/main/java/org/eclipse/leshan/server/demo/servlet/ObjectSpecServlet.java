@@ -16,6 +16,7 @@
 package org.eclipse.leshan.server.demo.servlet;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -59,7 +60,7 @@ public class ObjectSpecServlet extends HttpServlet {
 
             String json = this.gson.toJson(model.getObjectModels().toArray(new ObjectModel[] {}));
             resp.setContentType("application/json");
-            resp.getOutputStream().write(json.getBytes("UTF-8"));
+            resp.getOutputStream().write(json.getBytes(StandardCharsets.UTF_8));
             resp.setStatus(HttpServletResponse.SC_OK);
             return;
         }

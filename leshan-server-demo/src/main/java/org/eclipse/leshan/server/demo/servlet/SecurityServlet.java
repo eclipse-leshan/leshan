@@ -17,6 +17,7 @@ package org.eclipse.leshan.server.demo.servlet;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.util.Collection;
 
@@ -118,7 +119,7 @@ public class SecurityServlet extends HttpServlet {
 
             String json = this.gsonSer.toJson(infos);
             resp.setContentType("application/json");
-            resp.getOutputStream().write(json.getBytes("UTF-8"));
+            resp.getOutputStream().write(json.getBytes(StandardCharsets.UTF_8));
             resp.setStatus(HttpServletResponse.SC_OK);
             return;
         }
@@ -126,7 +127,7 @@ public class SecurityServlet extends HttpServlet {
         if ("server".equals(path[0])) {
             String json = this.gsonSer.toJson(SecurityInfo.newRawPublicKeyInfo("leshan", serverPublicKey));
             resp.setContentType("application/json");
-            resp.getOutputStream().write(json.getBytes("UTF-8"));
+            resp.getOutputStream().write(json.getBytes(StandardCharsets.UTF_8));
             resp.setStatus(HttpServletResponse.SC_OK);
             return;
         }
