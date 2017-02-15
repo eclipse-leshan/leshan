@@ -465,7 +465,15 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
         @Override
         public void run() {
             try {
-                for (Registration reg : new ArrayList<>(regsByEp.values())) {
+                Collection<Registration> allRegs = new ArrayList<>();
+                try {
+                    lock.readLock().lock();
+                    allRegs.addAll(regsByEp.values());
+                } finally {
+                    lock.readLock().unlock();
+                }
+
+                for (Registration reg : allRegs) {
                     if (!reg.isAlive()) {
                         // force de-registration
                         Deregistration removedRegistration = removeRegistration(reg.getId());
