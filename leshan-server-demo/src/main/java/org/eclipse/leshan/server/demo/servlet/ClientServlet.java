@@ -34,6 +34,7 @@ import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
+import org.eclipse.leshan.core.request.DiscoverRequest;
 import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -44,6 +45,7 @@ import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 import org.eclipse.leshan.core.request.exception.RequestRejectedException;
 import org.eclipse.leshan.core.response.CreateResponse;
 import org.eclipse.leshan.core.response.DeleteResponse;
+import org.eclipse.leshan.core.response.DiscoverResponse;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
@@ -130,6 +132,26 @@ public class ClientServlet extends HttpServlet {
             } else {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
+            }
+            return;
+        }
+
+        // /clients/endPoint/LWRequest/discover : do LightWeight M2M discover request on a given client.
+        if (path.length >= 3 && "discover".equals(path[path.length - 1])) {
+            String target = StringUtils.substringBetween(req.getPathInfo(), clientEndpoint, "/discover");
+            try {
+                Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
+                if (registration != null) {
+                    // create & process request
+                    DiscoverRequest request = new DiscoverRequest(target);
+                    DiscoverResponse cResponse = server.send(registration, request, TIMEOUT);
+                    processDeviceResponse(req, resp, cResponse);
+                } else {
+                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    resp.getWriter().format("No registered client with id '%s'", clientEndpoint).flush();
+                }
+            } catch (RuntimeException | InterruptedException e) {
+                handleException(e, resp);
             }
             return;
         }
