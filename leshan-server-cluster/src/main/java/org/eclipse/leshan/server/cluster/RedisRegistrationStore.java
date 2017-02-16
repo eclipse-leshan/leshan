@@ -658,7 +658,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
                     cursor = res.getStringCursor();
                 } while (!"0".equals(cursor));
             } catch (Exception e) {
-                LOG.warn("Unexcepted Exception while registration cleaning", e);
+                LOG.warn("Unexpected Exception while registration cleaning", e);
             }
         }
     }

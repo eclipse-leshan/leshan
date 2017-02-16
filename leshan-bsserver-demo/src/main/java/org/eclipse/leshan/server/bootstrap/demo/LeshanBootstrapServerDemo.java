@@ -140,7 +140,7 @@ public class LeshanBootstrapServerDemo {
                     String.format("Web port %s is already in use, you can change it using the 'webport' option.", webPort));
             formatter.printHelp(USAGE, null, options, FOOTER);
         } catch (Exception e) {
-            LOG.error("Jetty stopped with unexcepted error ...", e);
+            LOG.error("Jetty stopped with unexpected error ...", e);
         }
     }
 
