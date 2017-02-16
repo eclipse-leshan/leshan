@@ -179,9 +179,9 @@ public class ClientServlet extends HttpServlet {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.getWriter().append("Thread Interrupted:").append(e.getMessage()).flush();
         } else {
-            LOG.warn("Unexcepted exception", e);
+            LOG.warn("Unexpected exception", e);
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            resp.getWriter().append("Unexcepted exception:").append(e.getMessage()).flush();
+            resp.getWriter().append("Unexpected exception:").append(e.getMessage()).flush();
         }
     }
 

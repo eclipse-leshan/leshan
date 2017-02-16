@@ -474,7 +474,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
                     }
                 }
             } catch (Exception e) {
-                LOG.warn("Unexcepted Exception while registration cleaning", e);
+                LOG.warn("Unexpected Exception while registration cleaning", e);
             }
         }
     }

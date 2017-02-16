@@ -133,7 +133,7 @@ public class LeshanClusterServer {
             createAndStartServer(clusterInstanceId, localAddress, localPort, secureLocalAddress,
                     secureLocalPort, redisUrl);
         }catch (Exception e) {
-            LOG.error("Jetty stopped with unexcepted error ...", e);
+            LOG.error("Jetty stopped with unexpected error ...", e);
         }
     }
 
