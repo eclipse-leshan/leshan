@@ -50,7 +50,7 @@ public class BootstrapSessionManagerImpl implements BootstrapSessionManager {
         if (authorized) {
             return BootstrapSession.authorized(endpoint, clientIdentity);
         } else {
-            return BootstrapSession.unauthorized();
+            return BootstrapSession.unauthorized(endpoint, clientIdentity);
         }
     }
 

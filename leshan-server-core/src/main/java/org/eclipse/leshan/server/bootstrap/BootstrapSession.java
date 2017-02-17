@@ -50,8 +50,8 @@ public class BootstrapSession {
     /**
      * A Bootstrapping session where the client was not authorized.
      */
-    public static BootstrapSession unauthorized() {
-        return new BootstrapSession(null, null, false);
+    public static BootstrapSession unauthorized(String endpoint, Identity clientIdentity) {
+        return new BootstrapSession(endpoint, clientIdentity, false);
     }
 
     /**
