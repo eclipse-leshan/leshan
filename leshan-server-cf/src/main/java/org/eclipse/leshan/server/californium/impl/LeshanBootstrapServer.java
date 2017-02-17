@@ -39,9 +39,9 @@ import org.slf4j.LoggerFactory;
 /**
  * A Lightweight M2M server, serving bootstrap information on /bs.
  */
-public class LwM2mBootstrapServerImpl implements LwM2mBootstrapServer {
+public class LeshanBootstrapServer implements LwM2mBootstrapServer {
 
-    private final static Logger LOG = LoggerFactory.getLogger(LwM2mBootstrapServerImpl.class);
+    private final static Logger LOG = LoggerFactory.getLogger(LeshanBootstrapServer.class);
 
     /** IANA assigned UDP port for CoAP (so for LWM2M) */
     public static final int PORT = 5683;
@@ -56,14 +56,14 @@ public class LwM2mBootstrapServerImpl implements LwM2mBootstrapServer {
     private final BootstrapStore bsStore;
     private final BootstrapSecurityStore bsSecurityStore;
 
-    public LwM2mBootstrapServerImpl(BootstrapStore bsStore, BootstrapSecurityStore securityStore,
+    public LeshanBootstrapServer(BootstrapStore bsStore, BootstrapSecurityStore securityStore,
             BootstrapSessionManager bsSessionManager) {
         this(new InetSocketAddress((InetAddress) null, PORT), new InetSocketAddress((InetAddress) null, PORT_DTLS),
                 bsStore, securityStore, bsSessionManager);
 
     }
 
-    public LwM2mBootstrapServerImpl(InetSocketAddress localAddress, InetSocketAddress localAddressSecure,
+    public LeshanBootstrapServer(InetSocketAddress localAddress, InetSocketAddress localAddressSecure,
             BootstrapStore bsStore, BootstrapSecurityStore bsSecurityStore, BootstrapSessionManager bsSessionManager) {
         Validate.notNull(bsStore, "bootstrap store must not be null");
 
