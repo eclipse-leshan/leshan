@@ -26,12 +26,12 @@ import org.eclipse.leshan.core.request.Identity;
 public class BootstrapSession {
 
     private final String endpoint;
-    private final Identity clientIdentity;
+    private final Identity identity;
     private final boolean authorized;
 
-    protected BootstrapSession(String endpoint, Identity clientIdentity, boolean authorized) {
+    protected BootstrapSession(String endpoint, Identity identity, boolean authorized) {
         this.endpoint = endpoint;
-        this.clientIdentity = clientIdentity;
+        this.identity = identity;
         this.authorized = authorized;
     }
 
@@ -39,8 +39,8 @@ public class BootstrapSession {
         return endpoint;
     }
 
-    public Identity getClientIdentity() {
-        return clientIdentity;
+    public Identity getIdentity() {
+        return identity;
     }
 
     public boolean isAuthorized() {
@@ -50,21 +50,21 @@ public class BootstrapSession {
     /**
      * A Bootstrapping session where the client was not authorized.
      */
-    public static BootstrapSession unauthorized(String endpoint, Identity clientIdentity) {
-        return new BootstrapSession(endpoint, clientIdentity, false);
+    public static BootstrapSession unauthorized(String endpoint, Identity identity) {
+        return new BootstrapSession(endpoint, identity, false);
     }
 
     /**
      * A Bootstrapping session where the client was properly authorized.
      */
-    public static BootstrapSession authorized(String endpoint, Identity clientIdentity) {
-        return new BootstrapSession(endpoint, clientIdentity, true);
+    public static BootstrapSession authorized(String endpoint, Identity identity) {
+        return new BootstrapSession(endpoint, identity, true);
     }
 
     @Override
     public String toString() {
-        return String.format("BootstrapSession [endpoint=%s, clientIdentity=%s, authorized=%s]", endpoint,
-                clientIdentity, authorized);
+        return String.format("BootstrapSession [endpoint=%s, identity=%s, authorized=%s]", endpoint, identity,
+                authorized);
     }
 
 }
