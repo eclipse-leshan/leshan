@@ -34,6 +34,7 @@ import org.eclipse.leshan.core.response.BootstrapWriteResponse;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
+import org.eclipse.leshan.server.impl.DefaultBootstrapSession;
 import org.junit.Test;
 
 public class BootstrapHandlerTest {
@@ -145,7 +146,7 @@ public class BootstrapHandlerTest {
 
         @Override
         public BootstrapSession begin(String endpoint, Identity clientIdentity) {
-            return new BootstrapSession(endpoint, clientIdentity, authorized);
+            return new DefaultBootstrapSession(endpoint, clientIdentity, authorized);
         }
 
         @Override

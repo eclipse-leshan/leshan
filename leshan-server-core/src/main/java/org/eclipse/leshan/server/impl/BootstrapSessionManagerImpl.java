@@ -47,11 +47,8 @@ public class BootstrapSessionManagerImpl implements BootstrapSessionManager {
     public BootstrapSession begin(String endpoint, Identity clientIdentity) {
         List<SecurityInfo> securityInfos = bsSecurityStore.getAllByEndpoint(endpoint);
         boolean authorized = SecurityCheck.checkSecurityInfos(endpoint, clientIdentity, securityInfos);
-        if (authorized) {
-            return BootstrapSession.authorized(endpoint, clientIdentity);
-        } else {
-            return BootstrapSession.unauthorized(endpoint, clientIdentity);
-        }
+
+        return new DefaultBootstrapSession(endpoint, clientIdentity, authorized);
     }
 
     @Override

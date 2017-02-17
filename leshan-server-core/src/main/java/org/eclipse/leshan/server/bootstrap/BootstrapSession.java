@@ -23,48 +23,21 @@ import org.eclipse.leshan.core.request.Identity;
  * Should be created by {@link BootstrapSessionManager} implementations in
  * {@link BootstrapSessionManager#begin(String,Identity)}.
  */
-public class BootstrapSession {
-
-    private final String endpoint;
-    private final Identity identity;
-    private final boolean authorized;
-
-    protected BootstrapSession(String endpoint, Identity identity, boolean authorized) {
-        this.endpoint = endpoint;
-        this.identity = identity;
-        this.authorized = authorized;
-    }
-
-    public String getEndpoint() {
-        return endpoint;
-    }
-
-    public Identity getIdentity() {
-        return identity;
-    }
-
-    public boolean isAuthorized() {
-        return authorized;
-    }
+public interface BootstrapSession {
 
     /**
-     * A Bootstrapping session where the client was not authorized.
+     * @return the endpoint of the LwM2M client
      */
-    public static BootstrapSession unauthorized(String endpoint, Identity identity) {
-        return new BootstrapSession(endpoint, identity, false);
-    }
+    String getEndpoint();
 
     /**
-     * A Bootstrapping session where the client was properly authorized.
+     * @return the network identity of the LwM2M client.
      */
-    public static BootstrapSession authorized(String endpoint, Identity identity) {
-        return new BootstrapSession(endpoint, identity, true);
-    }
+    Identity getIdentity();
 
-    @Override
-    public String toString() {
-        return String.format("BootstrapSession [endpoint=%s, identity=%s, authorized=%s]", endpoint, identity,
-                authorized);
-    }
+    /**
+     * @return true if the LwM2M client is authorized to start a bootstrap session.
+     */
+    boolean isAuthorized();
 
 }
