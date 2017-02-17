@@ -58,23 +58,23 @@ public class BootstrapHandler {
 
     private final Executor e;
 
-    private final BootstrapStore bsStore;
-    private final LwM2mBootstrapRequestSender requestSender;
-    private final BootstrapSessionManager bsSessionManager;
+    private final BootstrapStore store;
+    private final LwM2mBootstrapRequestSender sender;
+    private final BootstrapSessionManager sessionManager;
 
-    public BootstrapHandler(BootstrapStore store, LwM2mBootstrapRequestSender requestSender,
-            BootstrapSessionManager bsSessionManager) {
-        this.bsStore = store;
-        this.requestSender = requestSender;
-        this.bsSessionManager = bsSessionManager;
+    public BootstrapHandler(BootstrapStore store, LwM2mBootstrapRequestSender sender,
+            BootstrapSessionManager sessionManager) {
+        this.store = store;
+        this.sender = sender;
+        this.sessionManager = sessionManager;
         this.e = Executors.newFixedThreadPool(5);
     }
 
-    protected BootstrapHandler(BootstrapStore store, LwM2mBootstrapRequestSender requestSender,
-            BootstrapSessionManager bsSessionManager, Executor executor) {
-        this.bsStore = store;
-        this.requestSender = requestSender;
-        this.bsSessionManager = bsSessionManager;
+    protected BootstrapHandler(BootstrapStore store, LwM2mBootstrapRequestSender sender,
+            BootstrapSessionManager sessionManager, Executor executor) {
+        this.store = store;
+        this.sender = sender;
+        this.sessionManager = sessionManager;
         this.e = executor;
     }
 
@@ -82,18 +82,18 @@ public class BootstrapHandler {
         String endpoint = request.getEndpointName();
 
         // Start session, checking the BS credentials
-        final BootstrapSession bsSession = this.bsSessionManager.begin(endpoint, sender);
+        final BootstrapSession session = this.sessionManager.begin(endpoint, sender);
 
-        if (!bsSession.isAuthorized()) {
-            this.bsSessionManager.failed(bsSession, UNAUTHORIZED, null);
+        if (!session.isAuthorized()) {
+            this.sessionManager.failed(session, UNAUTHORIZED, null);
             return BootstrapResponse.badRequest("Unauthorized");
         }
 
         // Get the desired bootstrap config for the endpoint
-        final BootstrapConfig cfg = bsStore.getBootstrap(endpoint);
+        final BootstrapConfig cfg = store.getBootstrap(endpoint);
         if (cfg == null) {
             LOG.error("No bootstrap config for {}", endpoint);
-            this.bsSessionManager.failed(bsSession, NO_BOOTSTRAP_CONFIG, null);
+            this.sessionManager.failed(session, NO_BOOTSTRAP_CONFIG, null);
             return BootstrapResponse.badRequest("no bootstrap config");
         }
 
@@ -101,33 +101,33 @@ public class BootstrapHandler {
         e.execute(new Runnable() {
             @Override
             public void run() {
-                sendDelete(bsSession, cfg);
+                sendDelete(session, cfg);
             }
         });
 
         return BootstrapResponse.success();
     }
 
-    private void sendDelete(final BootstrapSession bsSession, final BootstrapConfig cfg) {
+    private void sendDelete(final BootstrapSession session, final BootstrapConfig cfg) {
 
-        final BootstrapDeleteRequest writeDeleteRequest = new BootstrapDeleteRequest();
-        send(bsSession, writeDeleteRequest, new ResponseCallback<BootstrapDeleteResponse>() {
+        final BootstrapDeleteRequest deleteRequest = new BootstrapDeleteRequest();
+        send(session, deleteRequest, new ResponseCallback<BootstrapDeleteResponse>() {
             @Override
             public void onResponse(BootstrapDeleteResponse response) {
-                LOG.debug("Bootstrap delete {} return code {}", bsSession.getEndpoint(), response.getCode());
+                LOG.debug("Bootstrap delete {} return code {}", session.getEndpoint(), response.getCode());
                 List<Integer> toSend = new ArrayList<>(cfg.security.keySet());
-                sendBootstrap(bsSession, cfg, toSend);
+                sendBootstrap(session, cfg, toSend);
             }
         }, new ErrorCallback() {
             @Override
             public void onError(Exception e) {
-                LOG.warn(String.format("Error pending bootstrap delete '/' on %s", bsSession.getEndpoint()), e);
-                bsSessionManager.failed(bsSession, DELETE_FAILED, writeDeleteRequest);
+                LOG.warn(String.format("Error pending bootstrap delete '/' on %s", session.getEndpoint()), e);
+                sessionManager.failed(session, DELETE_FAILED, deleteRequest);
             }
         });
     }
 
-    private void sendBootstrap(final BootstrapSession bsSession, final BootstrapConfig cfg,
+    private void sendBootstrap(final BootstrapSession session, final BootstrapConfig cfg,
             final List<Integer> toSend) {
         if (!toSend.isEmpty()) {
             // 1st encode them into a juicy TLV binary
@@ -140,29 +140,29 @@ public class BootstrapHandler {
 
             final BootstrapWriteRequest writeBootstrapRequest = new BootstrapWriteRequest(path, securityInstance,
                     ContentFormat.TLV);
-            send(bsSession, writeBootstrapRequest, new ResponseCallback<BootstrapWriteResponse>() {
+            send(session, writeBootstrapRequest, new ResponseCallback<BootstrapWriteResponse>() {
                 @Override
                 public void onResponse(BootstrapWriteResponse response) {
-                    LOG.debug("Bootstrap write {} return code {}", bsSession.getEndpoint(), response.getCode());
+                    LOG.debug("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
                     // recursive call until toSend is empty
-                    sendBootstrap(bsSession, cfg, toSend);
+                    sendBootstrap(session, cfg, toSend);
                 }
             }, new ErrorCallback() {
                 @Override
                 public void onError(Exception e) {
                     LOG.warn(String.format("Error pending bootstrap write of security instance %s on %s",
-                            securityInstance, bsSession.getEndpoint()), e);
-                    bsSessionManager.failed(bsSession, WRITE_SECURITY_FAILED, writeBootstrapRequest);
+                            securityInstance, session.getEndpoint()), e);
+                    sessionManager.failed(session, WRITE_SECURITY_FAILED, writeBootstrapRequest);
                 }
             });
         } else {
             // we are done, send the servers
             List<Integer> serversToSend = new ArrayList<>(cfg.servers.keySet());
-            sendServers(bsSession, cfg, serversToSend);
+            sendServers(session, cfg, serversToSend);
         }
     }
 
-    private void sendServers(final BootstrapSession bsSession, final BootstrapConfig cfg, final List<Integer> toSend) {
+    private void sendServers(final BootstrapSession session, final BootstrapConfig cfg, final List<Integer> toSend) {
         if (!toSend.isEmpty()) {
             // get next config
             Integer key = toSend.remove(0);
@@ -174,47 +174,47 @@ public class BootstrapHandler {
 
             final BootstrapWriteRequest writeServerRequest = new BootstrapWriteRequest(path, serverInstance,
                     ContentFormat.TLV);
-            send(bsSession, writeServerRequest, new ResponseCallback<BootstrapWriteResponse>() {
+            send(session, writeServerRequest, new ResponseCallback<BootstrapWriteResponse>() {
                 @Override
                 public void onResponse(BootstrapWriteResponse response) {
-                    LOG.debug("Bootstrap write {} return code {}", bsSession.getEndpoint(), response.getCode());
+                    LOG.debug("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
                     // recursive call until toSend is empty
-                    sendServers(bsSession, cfg, toSend);
+                    sendServers(session, cfg, toSend);
                 }
             }, new ErrorCallback() {
                 @Override
                 public void onError(Exception e) {
                     LOG.warn(String.format("Error pending bootstrap write of server instance %s on %s", serverInstance,
-                            bsSession.getEndpoint()), e);
-                    bsSessionManager.failed(bsSession, WRITE_SERVER_FAILED, writeServerRequest);
+                            session.getEndpoint()), e);
+                    sessionManager.failed(session, WRITE_SERVER_FAILED, writeServerRequest);
                 }
             });
         } else {
             final BootstrapFinishRequest finishBootstrapRequest = new BootstrapFinishRequest();
-            send(bsSession, finishBootstrapRequest, new ResponseCallback<BootstrapFinishResponse>() {
+            send(session, finishBootstrapRequest, new ResponseCallback<BootstrapFinishResponse>() {
                 @Override
                 public void onResponse(BootstrapFinishResponse response) {
-                    LOG.debug("Bootstrap Finished {} return code {}", bsSession.getEndpoint(), response.getCode());
+                    LOG.debug("Bootstrap Finished {} return code {}", session.getEndpoint(), response.getCode());
                     if (response.isSuccess()) {
-                        bsSessionManager.end(bsSession);
+                        sessionManager.end(session);
                     } else {
-                        bsSessionManager.failed(bsSession, FINISHED_WITH_ERROR, finishBootstrapRequest);
+                        sessionManager.failed(session, FINISHED_WITH_ERROR, finishBootstrapRequest);
                     }
                 }
             }, new ErrorCallback() {
                 @Override
                 public void onError(Exception e) {
-                    LOG.warn(String.format("Error pending bootstrap finished on %s", bsSession.getEndpoint()), e);
-                    bsSessionManager.failed(bsSession, SEND_FINISH_FAILED, finishBootstrapRequest);
+                    LOG.warn(String.format("Error pending bootstrap finished on %s", session.getEndpoint()), e);
+                    sessionManager.failed(session, SEND_FINISH_FAILED, finishBootstrapRequest);
                 }
             });
         }
     }
 
-    private <T extends LwM2mResponse> void send(BootstrapSession bsSession, DownlinkRequest<T> request,
+    private <T extends LwM2mResponse> void send(BootstrapSession session, DownlinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
-        requestSender.send(bsSession.getEndpoint(), bsSession.getClientIdentity().getPeerAddress(),
-                bsSession.getClientIdentity().isSecure(), request, responseCallback, errorCallback);
+        sender.send(session.getEndpoint(), session.getClientIdentity().getPeerAddress(),
+                session.getClientIdentity().isSecure(), request, responseCallback, errorCallback);
     }
 
     private LwM2mObjectInstance convertToSecurityInstance(int instanceId, ServerSecurity securityConfig) {
