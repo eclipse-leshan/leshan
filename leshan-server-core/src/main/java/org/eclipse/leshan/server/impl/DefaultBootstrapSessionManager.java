@@ -35,11 +35,11 @@ import org.eclipse.leshan.server.security.SecurityInfo;
  * Nothing specific is done on session's end.
  *
  */
-public class BootstrapSessionManagerImpl implements BootstrapSessionManager {
+public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
 
     private BootstrapSecurityStore bsSecurityStore;
 
-    public BootstrapSessionManagerImpl(BootstrapSecurityStore bsSecurityStore) {
+    public DefaultBootstrapSessionManager(BootstrapSecurityStore bsSecurityStore) {
         this.bsSecurityStore = bsSecurityStore;
     }
 

@@ -35,7 +35,7 @@ import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.BootstrapStore;
 import org.eclipse.leshan.server.californium.impl.LwM2mBootstrapServerImpl;
-import org.eclipse.leshan.server.impl.BootstrapSessionManagerImpl;
+import org.eclipse.leshan.server.impl.DefaultBootstrapSessionManager;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
@@ -91,7 +91,7 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
             securityStore = dummyBsSecurityStore();
         }
 
-        BootstrapSessionManager bsSessionManager = new BootstrapSessionManagerImpl(securityStore);
+        BootstrapSessionManager bsSessionManager = new DefaultBootstrapSessionManager(securityStore);
 
         bootstrapServer = new LwM2mBootstrapServerImpl(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0),
                 new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), bsStore, securityStore, bsSessionManager);
