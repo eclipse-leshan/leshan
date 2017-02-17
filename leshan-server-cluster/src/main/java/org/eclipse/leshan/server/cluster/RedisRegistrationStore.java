@@ -535,7 +535,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     /* *************** Observation utility functions **************** */
 
     private void unsafeRemoveObservation(Jedis j, String registrationId, byte[] observationId) {
-        if (j.del(observationId) > 0L) {
+        if (j.del(toKey(OBS_TKN, observationId)) > 0L) {
             j.lrem(toKey(OBS_REGID, registrationId), 0, observationId);
         }
     }
