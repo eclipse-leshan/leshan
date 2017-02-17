@@ -93,4 +93,16 @@ public class Identity {
     public static Identity x509(InetSocketAddress peerAddress, String commonName) {
         return new Identity(peerAddress, null, null, commonName);
     }
+
+    @Override
+    public String toString() {
+        if (pskIdentity != null)
+            return String.format("Identity %s[psk=%s]", peerAddress, pskIdentity);
+        else if (rawPublicKey != null)
+            return String.format("Identity %s[rpk=%s]", peerAddress, rawPublicKey);
+        else if (x509CommonName != null)
+            return String.format("Identity %s[x509=%s]", peerAddress, x509CommonName);
+        else
+            return String.format("Identity %s[unsecure]", peerAddress);
+    }
 }
