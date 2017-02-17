@@ -32,7 +32,6 @@ import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
-import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
@@ -127,8 +126,7 @@ public class BootstrapHandler {
         });
     }
 
-    private void sendBootstrap(final BootstrapSession session, final BootstrapConfig cfg,
-            final List<Integer> toSend) {
+    private void sendBootstrap(final BootstrapSession session, final BootstrapConfig cfg, final List<Integer> toSend) {
         if (!toSend.isEmpty()) {
             // 1st encode them into a juicy TLV binary
             Integer key = toSend.remove(0);
@@ -139,7 +137,7 @@ public class BootstrapHandler {
             final LwM2mNode securityInstance = convertToSecurityInstance(key, securityConfig);
 
             final BootstrapWriteRequest writeBootstrapRequest = new BootstrapWriteRequest(path, securityInstance,
-                    ContentFormat.TLV);
+                    session.getContentFormat());
             send(session, writeBootstrapRequest, new ResponseCallback<BootstrapWriteResponse>() {
                 @Override
                 public void onResponse(BootstrapWriteResponse response) {
@@ -173,7 +171,7 @@ public class BootstrapHandler {
             final LwM2mNode serverInstance = convertToServerInstance(key, serverConfig);
 
             final BootstrapWriteRequest writeServerRequest = new BootstrapWriteRequest(path, serverInstance,
-                    ContentFormat.TLV);
+                    session.getContentFormat());
             send(session, writeServerRequest, new ResponseCallback<BootstrapWriteResponse>() {
                 @Override
                 public void onResponse(BootstrapWriteResponse response) {
@@ -213,8 +211,8 @@ public class BootstrapHandler {
 
     private <T extends LwM2mResponse> void send(BootstrapSession session, DownlinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
-        sender.send(session.getEndpoint(), session.getIdentity().getPeerAddress(),
-                session.getIdentity().isSecure(), request, responseCallback, errorCallback);
+        sender.send(session.getEndpoint(), session.getIdentity().getPeerAddress(), session.getIdentity().isSecure(),
+                request, responseCallback, errorCallback);
     }
 
     private LwM2mObjectInstance convertToSecurityInstance(int instanceId, ServerSecurity securityConfig) {

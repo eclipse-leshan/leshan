@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
 
 /**
@@ -26,7 +27,7 @@ import org.eclipse.leshan.core.request.Identity;
 public interface BootstrapSession {
 
     /**
-     * @return the endpoint of the LwM2M client
+     * @return the endpoint of the LwM2M client.
      */
     String getEndpoint();
 
@@ -39,5 +40,10 @@ public interface BootstrapSession {
      * @return true if the LwM2M client is authorized to start a bootstrap session.
      */
     boolean isAuthorized();
+
+    /**
+     * @return the content format to use on write request during this bootstrap session.
+     */
+    ContentFormat getContentFormat();
 
 }
