@@ -245,6 +245,8 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         builder.setSecurityStore(new InMemorySecurityStore());
 
         server = builder.build();
+        // monitor client registration
+        setupRegistrationMonitoring();
     }
 
     public void createServerWithX509Cert(Certificate[] trustedCertificates) {
@@ -257,6 +259,8 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         builder.setSecurityStore(new InMemorySecurityStore());
 
         server = builder.build();
+        // monitor client registration
+        setupRegistrationMonitoring();
     }
 
     public PublicKey getServerPublicKey() {
