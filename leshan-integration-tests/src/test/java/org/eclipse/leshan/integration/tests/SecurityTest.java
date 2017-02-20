@@ -227,6 +227,7 @@ public class SecurityTest {
         helper.getSecurityStore()
                 .add(SecurityInfo.newRawPublicKeyInfo(helper.getCurrentEndpoint(), helper.clientPublicKey));
 
+        helper.assertClientNotRegisterered();
         helper.client.start();
         helper.waitForRegistration(1);
 
@@ -282,6 +283,7 @@ public class SecurityTest {
 
         helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
 
+        helper.assertClientNotRegisterered();
         helper.client.start();
         helper.waitForRegistration(1);
 
