@@ -23,6 +23,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.request.LwM2mRequestSender;
@@ -156,10 +157,11 @@ public class RegistrationEngine {
 
         // send register request
         LOG.info("Trying to register to {} ...", dmInfo.getFullUri());
-        RegisterResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(),
-                new RegisterRequest(endpoint, dmInfo.lifetime, null, dmInfo.binding, null,
-                        LinkFormatHelper.getClientDescription(objectEnablers.values(), null), null),
-                null);
+        RegisterResponse response = sender
+                .send(dmInfo.getAddress(),
+                        dmInfo.isSecure(), new RegisterRequest(endpoint, dmInfo.lifetime, LwM2m.VERSION, dmInfo.binding,
+                                null, LinkFormatHelper.getClientDescription(objectEnablers.values(), null), null),
+                        null);
         if (response == null) {
             registrationID = null;
             LOG.error("Registration failed: Timeout.");

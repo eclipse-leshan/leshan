@@ -17,6 +17,9 @@ package org.eclipse.leshan;
 
 public interface LwM2m {
 
+    /** The supported version of the specification */
+    static final String VERSION = "1.0";
+
     /** The default CoAP port for unsecured CoAP communication */
     static final int DEFAULT_COAP_PORT = 5683;
 
