@@ -60,6 +60,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
 
     public static final String GOOD_PSK_ID = "Good_Client_identity";
     public static final byte[] GOOD_PSK_KEY = Hex.decodeHex("73656372657450534b".toCharArray());
+    public static final String GOOD_ENDPOINT = "good_endpoint";
     public static final String BAD_PSK_ID = "Bad_Client_identity";
     public static final byte[] BAD_PSK_KEY = Hex.decodeHex("010101010101010101".toCharArray());
     public static final String BAD_ENDPOINT = "bad_endpoint";
