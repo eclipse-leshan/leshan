@@ -150,6 +150,10 @@ public class IntegrationTestHelper {
         builder.setSecurityStore(new InMemorySecurityStore());
         server = builder.build();
         // monitor client registration
+        setupRegistrationMonitoring();
+    }
+
+    protected void setupRegistrationMonitoring() {
         resetLatch();
         server.getRegistrationService().addListener(new RegistrationListener() {
             @Override
