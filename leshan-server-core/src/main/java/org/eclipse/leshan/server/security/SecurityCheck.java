@@ -42,7 +42,7 @@ public class SecurityCheck {
         // if this is a secure end-point, we must check that the registering client is using the right identity.
         if (clientIdentity.isSecure()) {
             if (securityInfos == null || securityInfos.isEmpty()) {
-                LOG.warn("Client '{}' without security info try to connect through the secure endpoint", endpoint);
+                LOG.debug("Client '{}' without security info try to connect through the secure endpoint", endpoint);
                 return false;
             } else {
                 for (SecurityInfo securityInfo : securityInfos) {
@@ -53,7 +53,7 @@ public class SecurityCheck {
                 return false;
             }
         } else if (securityInfos != null && !securityInfos.isEmpty()) {
-            LOG.warn("Client '{}' must connect using DTLS", endpoint);
+            LOG.debug("Client '{}' must connect using DTLS", endpoint);
             return false;
         }
         return true;
@@ -73,7 +73,7 @@ public class SecurityCheck {
         if (clientIdentity.isSecure()) {
             if (securityInfo == null) {
 
-                LOG.warn("Client '{}' without security info try to connect through the secure endpoint", endpoint);
+                LOG.debug("Client '{}' without security info try to connect through the secure endpoint", endpoint);
                 return false;
 
             } else if (clientIdentity.isPSK()) {
@@ -89,12 +89,12 @@ public class SecurityCheck {
                 return checkX509Identity(endpoint, clientIdentity, securityInfo);
 
             } else {
-                LOG.warn("Unable to authenticate client '{}': unknown authentication mode", endpoint);
+                LOG.debug("Unable to authenticate client '{}': unknown authentication mode", endpoint);
                 return false;
             }
         } else {
             if (securityInfo != null) {
-                LOG.warn("Client '{}' must connect using DTLS", endpoint);
+                LOG.debug("Client '{}' must connect using DTLS", endpoint);
                 return false;
             }
         }
@@ -105,14 +105,12 @@ public class SecurityCheck {
         // Manage PSK authentication
         // ----------------------------------------------------
         String pskIdentity = clientIdentity.getPskIdentity();
-        LOG.debug("Registration request received using the secure endpoint with identity {}", pskIdentity);
-
         if (pskIdentity == null || !pskIdentity.equals(securityInfo.getIdentity())) {
-            LOG.warn("Invalid identity for client '{}': expected '{}' but was '{}'", endpoint,
+            LOG.debug("Invalid identity for client '{}': expected '{}' but was '{}'", endpoint,
                     securityInfo.getIdentity(), pskIdentity);
             return false;
         } else {
-            LOG.debug("Authenticated client '{}' using DTLS PSK", endpoint);
+            LOG.trace("Authenticated client '{}' using DTLS PSK", endpoint);
             return true;
         }
     }
@@ -121,20 +119,15 @@ public class SecurityCheck {
         // Manage RPK authentication
         // ----------------------------------------------------
         PublicKey publicKey = clientIdentity.getRawPublicKey();
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Registration request received using the secure endpoint with rpk '{}'",
-                    Hex.encodeHexString(publicKey.getEncoded()));
-        }
-
         if (publicKey == null || !publicKey.equals(securityInfo.getRawPublicKey())) {
-            if (LOG.isWarnEnabled()) {
-                LOG.warn("Invalid rpk for client {}: expected \n'{}'\n but was \n'{}'", endpoint,
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Invalid rpk for client {}: expected \n'{}'\n but was \n'{}'", endpoint,
                         Hex.encodeHexString(securityInfo.getRawPublicKey().getEncoded()),
                         Hex.encodeHexString(publicKey.getEncoded()));
             }
             return false;
         } else {
-            LOG.debug("authenticated client '{}' using DTLS RPK", endpoint);
+            LOG.trace("authenticated client '{}' using DTLS RPK", endpoint);
             return true;
         }
     }
@@ -143,19 +136,18 @@ public class SecurityCheck {
         // Manage X509 certificate authentication
         // ----------------------------------------------------
         String x509CommonName = clientIdentity.getX509CommonName();
-        LOG.debug("Registration request received using the secure endpoint with X509 identity {}", x509CommonName);
 
         if (!securityInfo.useX509Cert()) {
-            LOG.warn("Client '{}' is not supposed to use X509 certificate to authenticate", endpoint);
+            LOG.debug("Client '{}' is not supposed to use X509 certificate to authenticate", endpoint);
             return false;
         }
 
         if (!x509CommonName.equals(endpoint)) {
-            LOG.warn("Invalid certificate common name for client '{}': expected \n'{}'\n but was \n'{}'", endpoint,
+            LOG.debug("Invalid certificate common name for client '{}': expected \n'{}'\n but was \n'{}'", endpoint,
                     endpoint, x509CommonName);
             return false;
         } else {
-            LOG.debug("authenticated client '{}' using DTLS X509 certificates", endpoint);
+            LOG.trace("authenticated client '{}' using DTLS X509 certificates", endpoint);
             return true;
         }
     }
