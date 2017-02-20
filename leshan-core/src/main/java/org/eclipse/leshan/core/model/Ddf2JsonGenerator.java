@@ -37,6 +37,9 @@ public class Ddf2JsonGenerator {
 
     private Gson gson;
 
+    static final String DEFAULT_DDF_FILES_PATH = "ddffiles";
+    static final String DEFAULT_OUTPUT_PATH = "src/main/resources/objectspec.json";
+
     public Ddf2JsonGenerator() {
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(ObjectModel.class, new ObjectModelSerializer());
@@ -51,7 +54,7 @@ public class Ddf2JsonGenerator {
         }
     }
 
-    private void generate(File input, OutputStream output) throws IOException {
+    void generate(File input, OutputStream output) throws IOException {
         // check input exists
         if (!input.exists())
             throw new FileNotFoundException(input.toString());
@@ -90,8 +93,8 @@ public class Ddf2JsonGenerator {
 
     public static void main(String[] args) throws FileNotFoundException, IOException {
         // default value
-        String ddfFilesPath = "ddffiles";
-        String outputPath = "src/main/resources/objectspec.json";
+        String ddfFilesPath = DEFAULT_DDF_FILES_PATH;
+        String outputPath = DEFAULT_OUTPUT_PATH;
 
         // use arguments if they exit
         if (args.length >= 1)
