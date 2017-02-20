@@ -263,7 +263,7 @@ public class SecurityTest {
         helper.createRPKClient();
 
         helper.getSecurityStore()
-                .add(SecurityInfo.newRawPublicKeyInfo("bad_endpoint", helper.clientPublicKey));
+                .add(SecurityInfo.newRawPublicKeyInfo(BAD_ENDPOINT, helper.clientPublicKey));
 
         helper.client.start();
         boolean timedout = !helper.waitForRegistration(1);
@@ -298,7 +298,7 @@ public class SecurityTest {
 
         helper.createX509CertClient(helper.clientPrivateKeyFromCert, helper.trustedCertificates);
 
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo("bad_endpoint"));
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(BAD_ENDPOINT));
 
         helper.client.start();
         boolean timedout = !helper.waitForRegistration(1);
@@ -316,7 +316,7 @@ public class SecurityTest {
 
         helper.createX509CertClient(helper.clientPrivateKeyFromCert, helper.trustedCertificates);
 
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo("good_endpoint"));
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(GOOD_ENDPOINT));
 
         helper.client.start();
         boolean timedout = !helper.waitForRegistration(1);
