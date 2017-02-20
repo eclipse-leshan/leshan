@@ -22,6 +22,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
@@ -53,9 +54,11 @@ public class LeshanClusterServer {
         options.addOption("h", "help", false, "Display help information.");
         options.addOption("n", "instanceID", true, "Sets the unique identifier of this instance in the cluster.");
         options.addOption("lh", "coaphost", true, "Sets the local CoAP address.\n  Default: any local address.");
-        options.addOption("lp", "coapport", true, "Sets the local CoAP port.\n  Default: 5683.");
+        options.addOption("lp", "coapport", true,
+                String.format("Sets the local CoAP port.\n  Default: %d.", LwM2m.DEFAULT_COAP_PORT));
         options.addOption("slh", "coapshost", true, "Sets the local secure CoAP address.\nDefault: any local address.");
-        options.addOption("slp", "coapsport", true, "Sets the local secure CoAP port.\nDefault: 5684.");
+        options.addOption("slp", "coapsport", true,
+                String.format("Sets the local secure CoAP port.\nDefault: %d.", LwM2m.DEFAULT_COAP_SECURE_PORT));
         options.addOption("r", "redis", true,
                 "Sets the location of the Redis database. The URL is in the format of: 'redis://:password@hostname:port/db_number'\n\nDefault: 'redis://localhost:6379'.");
         HelpFormatter formatter = new HelpFormatter();
@@ -104,7 +107,7 @@ public class LeshanClusterServer {
         if (cl.hasOption("lp")) {
             localPortOption = cl.getOptionValue("lp");
         }
-        int localPort = LeshanServerBuilder.PORT;
+        int localPort = LwM2m.DEFAULT_COAP_PORT;
         if (localPortOption != null) {
             localPort = Integer.parseInt(localPortOption);
         }
@@ -118,7 +121,7 @@ public class LeshanClusterServer {
         if (cl.hasOption("slp")) {
             secureLocalPortOption = cl.getOptionValue("slp");
         }
-        int secureLocalPort = LeshanServerBuilder.PORT_DTLS;
+        int secureLocalPort = LwM2m.DEFAULT_COAP_SECURE_PORT;
         if (secureLocalPortOption != null) {
             secureLocalPort = Integer.parseInt(secureLocalPortOption);
         }
@@ -130,9 +133,9 @@ public class LeshanClusterServer {
         }
 
         try {
-            createAndStartServer(clusterInstanceId, localAddress, localPort, secureLocalAddress,
-                    secureLocalPort, redisUrl);
-        }catch (Exception e) {
+            createAndStartServer(clusterInstanceId, localAddress, localPort, secureLocalAddress, secureLocalPort,
+                    redisUrl);
+        } catch (Exception e) {
             LOG.error("Jetty stopped with unexpected error ...", e);
         }
     }

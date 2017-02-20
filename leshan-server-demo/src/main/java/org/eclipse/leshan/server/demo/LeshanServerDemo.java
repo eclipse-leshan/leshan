@@ -41,6 +41,7 @@ import org.apache.commons.cli.ParseException;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
@@ -77,9 +78,11 @@ public class LeshanServerDemo {
 
         options.addOption("h", "help", false, "Display help information.");
         options.addOption("lh", "coaphost", true, "Set the local CoAP address.\n  Default: any local address.");
-        options.addOption("lp", "coapport", true, "Set the local CoAP port.\n  Default: 5683.");
+        options.addOption("lp", "coapport", true,
+                String.format("Set the local CoAP port.\n  Default: %d.", LwM2m.DEFAULT_COAP_PORT));
         options.addOption("slh", "coapshost", true, "Set the secure local CoAP address.\nDefault: any local address.");
-        options.addOption("slp", "coapsport", true, "Set the secure local CoAP port.\nDefault: 5684.");
+        options.addOption("slp", "coapsport", true,
+                String.format("Set the secure local CoAP port.\nDefault: %d.", LwM2m.DEFAULT_COAP_SECURE_PORT));
         options.addOption("wp", "webport", true, "Set the HTTP port for web server.\nDefault: 8080.");
         options.addOption("r", "redis", true,
                 "Set the location of the Redis database for running in cluster mode. The URL is in the format of: 'redis://:password@hostname:port/db_number'\nExample without DB and password: 'redis://localhost:6379'\nDefault: none, no Redis connection.");
@@ -118,7 +121,7 @@ public class LeshanServerDemo {
         if (cl.hasOption("lp")) {
             localPortOption = cl.getOptionValue("lp");
         }
-        int localPort = LeshanServerBuilder.PORT;
+        int localPort = LwM2m.DEFAULT_COAP_PORT;
         if (localPortOption != null) {
             localPort = Integer.parseInt(localPortOption);
         }
@@ -132,7 +135,7 @@ public class LeshanServerDemo {
         if (cl.hasOption("slp")) {
             secureLocalPortOption = cl.getOptionValue("slp");
         }
-        int secureLocalPort = LeshanServerBuilder.PORT_DTLS;
+        int secureLocalPort = LwM2m.DEFAULT_COAP_SECURE_PORT;
         if (secureLocalPortOption != null) {
             secureLocalPort = Integer.parseInt(secureLocalPortOption);
         }
@@ -249,8 +252,7 @@ public class LeshanServerDemo {
                 new ClientServlet(lwServer, lwServer.getSecureAddress().getPort()));
         root.addServlet(clientServletHolder, "/api/clients/*");
 
-        ServletHolder securityServletHolder = new ServletHolder(
-                new SecurityServlet(securityStore, publicKey));
+        ServletHolder securityServletHolder = new ServletHolder(new SecurityServlet(securityStore, publicKey));
         root.addServlet(securityServletHolder, "/api/security/*");
 
         ServletHolder objectSpecServletHolder = new ServletHolder(new ObjectSpecServlet(lwServer.getModelProvider()));

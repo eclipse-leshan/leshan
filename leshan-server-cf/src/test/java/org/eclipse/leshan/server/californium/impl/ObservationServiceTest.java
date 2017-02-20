@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.californium.core.coap.Request;
+import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.observation.Observation;
@@ -46,8 +47,7 @@ public class ObservationServiceTest {
     public void setUp() throws Exception {
         support.givenASimpleClient();
         store = new InMemoryRegistrationStore();
-        observationService = new ObservationServiceImpl(store,
-                new StandardModelProvider(),
+        observationService = new ObservationServiceImpl(store, new StandardModelProvider(),
                 new DefaultLwM2mNodeDecoder());
     }
 
@@ -111,8 +111,7 @@ public class ObservationServiceTest {
         givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 12));
         givenAnObservation("anotherClient", new LwM2mPath(3, 0, 12));
 
-        Observation observationToCancel = givenAnObservation(support.registration.getId(),
-                new LwM2mPath(3, 0, 12));
+        Observation observationToCancel = givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 12));
 
         // check its presence
         Set<Observation> observations = observationService.getObservations(support.registration);
@@ -154,11 +153,12 @@ public class ObservationServiceTest {
     }
 
     public Registration givenASimpleClient(String registrationId) {
-        InetSocketAddress registrationAddress = InetSocketAddress.createUnresolved("localhost", 5683);
+        InetSocketAddress registrationAddress = InetSocketAddress.createUnresolved("localhost",
+                LwM2m.DEFAULT_COAP_PORT);
         Registration.Builder builder;
         try {
-            builder = new Registration.Builder(registrationId, registrationId + "_ep", InetAddress.getLocalHost(), 10000,
-                    registrationAddress);
+            builder = new Registration.Builder(registrationId, registrationId + "_ep", InetAddress.getLocalHost(),
+                    10000, registrationAddress);
             return builder.build();
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);

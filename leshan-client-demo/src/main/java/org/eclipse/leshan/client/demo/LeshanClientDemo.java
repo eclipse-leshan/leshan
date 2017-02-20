@@ -31,6 +31,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.object.Server;
@@ -65,7 +66,8 @@ public class LeshanClientDemo {
         options.addOption("slh", true, "Set the secure local CoAP address of the Client.\nDefault: any local address.");
         options.addOption("slp", true,
                 "Set the secure local CoAP port of the Client.\nDefault: A valid port value is between 0 and 65535.");
-        options.addOption("u", true, "Set the LWM2M or Bootstrap server URL.\nDefault: localhost:5683.");
+        options.addOption("u", true, String.format("Set the LWM2M or Bootstrap server URL.\nDefault: localhost:%d.",
+                LwM2m.DEFAULT_COAP_PORT));
         options.addOption("i", true,
                 "Set the LWM2M or Bootstrap server PSK identity in ascii.\nUse none secure mode if not set.");
         options.addOption("p", true,
@@ -127,9 +129,9 @@ public class LeshanClientDemo {
                 serverURI = "coap://" + cl.getOptionValue("u");
         } else {
             if (cl.hasOption("i"))
-                serverURI = "coaps://localhost:5684";
+                serverURI = "coaps://localhost:" + LwM2m.DEFAULT_COAP_SECURE_PORT;
             else
-                serverURI = "coap://localhost:5683";
+                serverURI = "coap://localhost:" + LwM2m.DEFAULT_COAP_PORT;
         }
 
         // get security info

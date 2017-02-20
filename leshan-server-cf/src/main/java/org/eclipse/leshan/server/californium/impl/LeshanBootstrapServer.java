@@ -24,6 +24,7 @@ import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
+import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
@@ -43,12 +44,6 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
 
     private final static Logger LOG = LoggerFactory.getLogger(LeshanBootstrapServer.class);
 
-    /** IANA assigned UDP port for CoAP (so for LWM2M) */
-    public static final int PORT = 5683;
-
-    /** IANA assigned UDP port for CoAP with DTLS (so for LWM2M) */
-    public static final int PORT_DTLS = 5684;
-
     private final CoapServer coapServer;
     private final CoapEndpoint nonSecureEndpoint;
     private final CoapEndpoint secureEndpoint;
@@ -58,8 +53,9 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
 
     public LeshanBootstrapServer(BootstrapStore bsStore, BootstrapSecurityStore securityStore,
             BootstrapSessionManager bsSessionManager) {
-        this(new InetSocketAddress((InetAddress) null, PORT), new InetSocketAddress((InetAddress) null, PORT_DTLS),
-                bsStore, securityStore, bsSessionManager);
+        this(new InetSocketAddress((InetAddress) null, LwM2m.DEFAULT_COAP_PORT),
+                new InetSocketAddress((InetAddress) null, LwM2m.DEFAULT_COAP_SECURE_PORT), bsStore, securityStore,
+                bsSessionManager);
 
     }
 
@@ -86,8 +82,8 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
         LwM2mBootstrapRequestSender requestSender = new CaliforniumLwM2mBootstrapRequestSender(secureEndpoint,
                 nonSecureEndpoint, new LwM2mModel(ObjectLoader.loadDefault()));
 
-        BootstrapResource bsResource = new BootstrapResource(new BootstrapHandler(bsStore, requestSender,
-                bsSessionManager));
+        BootstrapResource bsResource = new BootstrapResource(
+                new BootstrapHandler(bsStore, requestSender, bsSessionManager));
         coapServer.add(bsResource);
     }
 

@@ -29,9 +29,9 @@ import org.apache.commons.cli.ParseException;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.BootstrapServlet;
-import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LeshanBootstrapServer;
 import org.eclipse.leshan.server.impl.DefaultBootstrapSessionManager;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
@@ -51,9 +51,11 @@ public class LeshanBootstrapServerDemo {
 
         options.addOption("h", "help", false, "Display help information.");
         options.addOption("lh", "coaphost", true, "Set the local CoAP address.\n  Default: any local address.");
-        options.addOption("lp", "coapport", true, "Set the local CoAP port.\n  Default: 5683.");
+        options.addOption("lp", "coapport", true,
+                String.format("Set the local CoAP port.\n  Default: %d.", LwM2m.DEFAULT_COAP_PORT));
         options.addOption("slh", "coapshost", true, "Set the secure local CoAP address.\nDefault: any local address.");
-        options.addOption("slp", "coapsport", true, "Set the secure local CoAP port.\nDefault: 5684.");
+        options.addOption("slp", "coapsport", true,
+                String.format("Set the secure local CoAP port.\nDefault: %d.", LwM2m.DEFAULT_COAP_SECURE_PORT));
         options.addOption("wp", "webport", true, "Set the HTTP port for web server.\nDefault: 8080.");
         options.addOption("cfg", "configfile", true,
                 "Set the filename for the configuration.\nDefault: " + BootstrapStoreImpl.DEFAULT_FILE + ".");
@@ -94,7 +96,7 @@ public class LeshanBootstrapServerDemo {
         if (cl.hasOption("lp")) {
             localPortOption = cl.getOptionValue("lp");
         }
-        int localPort = LeshanServerBuilder.PORT;
+        int localPort = LwM2m.DEFAULT_COAP_PORT;
         if (localPortOption != null) {
             localPort = Integer.parseInt(localPortOption);
         }
@@ -110,7 +112,7 @@ public class LeshanBootstrapServerDemo {
         if (cl.hasOption("slp")) {
             secureLocalPortOption = cl.getOptionValue("slp");
         }
-        int secureLocalPort = LeshanServerBuilder.PORT_DTLS;
+        int secureLocalPort = LwM2m.DEFAULT_COAP_SECURE_PORT;
         if (secureLocalPortOption != null) {
             secureLocalPort = Integer.parseInt(secureLocalPortOption);
         }
@@ -136,8 +138,8 @@ public class LeshanBootstrapServerDemo {
         try {
             createAndStartServer(webPort, localAddress, localPort, secureLocalAddress, secureLocalPort, configFilename);
         } catch (BindException e) {
-            System.err.println(
-                    String.format("Web port %s is already in use, you can change it using the 'webport' option.", webPort));
+            System.err.println(String
+                    .format("Web port %s is already in use, you can change it using the 'webport' option.", webPort));
             formatter.printHelp(USAGE, null, options, FOOTER);
         } catch (Exception e) {
             LOG.error("Jetty stopped with unexpected error ...", e);

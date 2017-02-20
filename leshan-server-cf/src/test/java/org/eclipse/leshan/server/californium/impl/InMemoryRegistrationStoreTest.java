@@ -20,6 +20,7 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 
 import org.eclipse.leshan.Link;
+import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
@@ -88,8 +89,9 @@ public class InMemoryRegistrationStoreTest {
     private void givenASimpleRegistration(Long lifetime) {
 
         Registration.Builder builder = new Registration.Builder(registrationId, ep, address, port,
-                InetSocketAddress.createUnresolved("localhost", 5683));
+                InetSocketAddress.createUnresolved("localhost", LwM2m.DEFAULT_COAP_PORT));
 
-        registration = builder.lifeTimeInSec(lifetime).smsNumber(sms).bindingMode(binding).objectLinks(objectLinks).build();
+        registration = builder.lifeTimeInSec(lifetime).smsNumber(sms).bindingMode(binding).objectLinks(objectLinks)
+                .build();
     }
 }

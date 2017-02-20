@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.leshan.Link;
+import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
 import org.junit.Test;
@@ -37,8 +38,8 @@ public class ClientUpdateSerDesTest {
         objs[0] = new Link("/0/1024/2", att);
         objs[1] = new Link("/0/2");
 
-        RegistrationUpdate ru = new RegistrationUpdate("myId", Inet4Address.getByName("127.0.0.1"), 5683, 60000l, null,
-                BindingMode.U, objs);
+        RegistrationUpdate ru = new RegistrationUpdate("myId", Inet4Address.getByName("127.0.0.1"),
+                LwM2m.DEFAULT_COAP_PORT, 60000l, null, BindingMode.U, objs);
 
         byte[] ser = RegistrationUpdateSerDes.bSerialize(ru);
         RegistrationUpdate ru2 = RegistrationUpdateSerDes.deserialize(ser);
