@@ -5,8 +5,8 @@
 [Eclipse Leshan™](https://eclipse.org/leshan) is an OMA Lightweight M2M server and client Java implementation.
 
 [What is OMA LWM2M ?](http://technical.openmobilealliance.org/Technical/release_program/lightweightM2M_v1_0.aspx)  
-[The specification](http://member.openmobilealliance.org/ftp/Public_documents/DM/LightweightM2M/).  
-[Introduction to LWM2M](http://fr.slideshare.net/zdshelby/oma-lightweightm2-mtutorial).  
+[The specification](http://openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf).  
+[Object and Resource Registry](http://www.openmobilealliance.org/wp/OMNA/LwM2M/LwM2MRegistry.html).  
 
 Leshan provides libraries which help people to develop their own Lightweight M2M server and client.  
 The project also provides a client, a server and a bootstrap server demonstration as an example of the Leshan API and for testing purpose.
