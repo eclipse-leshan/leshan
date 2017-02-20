@@ -96,14 +96,15 @@ mvn eclipse:eclipse
 
 Modules
 -----------------
-`Leshan-core` : commons elements.  
-`Leshan-server-core` : server lwm2m logic.  
-`Leshan-server-cf` : server implementation based on [californium](https://github.com/eclipse/californium).  
-`Leshan-client-core` : client lwm2m logic.  
-`Leshan-client-cf` : client implementation based on [californium](https://github.com/eclipse/californium).  
-`Leshan-all` : every previous modules in 1 jar.  
-`Leshan-client-demo` : a simple demo client.  
-`Leshan-server-demo` : a lwm2m demo server with a web UI.  
-`Leshan-bsserver-demo` : a bootstarp demo server with a web UI.  
-`Leshan-integration-tests` : integration automatic tests.  
+`leshan-core` : commons elements.  
+`leshan-core-cf` : commons elements which depend on [californium](https://github.com/eclipse/californium).  
+`leshan-server-core` : server lwm2m logic.  
+`leshan-server-cf` : server implementation based on [californium](https://github.com/eclipse/californium).  
+`leshan-client-core` : client lwm2m logic.  
+`leshan-client-cf` : client implementation based on [californium](https://github.com/eclipse/californium).  
+`leshan-all` : every previous modules in 1 jar.  
+`leshan-client-demo` : a simple demo client.  
+`leshan-server-demo` : a lwm2m demo server with a web UI.  
+`leshan-bsserver-demo` : a bootstarp demo server with a web UI.  
+`leshan-integration-tests` : integration automatic tests.  
 
