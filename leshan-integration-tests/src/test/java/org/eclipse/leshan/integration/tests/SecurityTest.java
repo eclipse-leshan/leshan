@@ -234,8 +234,6 @@ public class SecurityTest {
         assertNotNull(helper.getCurrentRegistration());
     }
 
-    @Ignore
-    // TODO implement RPK support for client
     @Test
     public void registered_device_with_bad_rpk_to_server_with_rpk() throws NonUniqueSecurityInfoException {
         helper.createServerWithRPK();
@@ -254,8 +252,6 @@ public class SecurityTest {
         assertTrue(timedout);
     }
 
-    @Ignore
-    // TODO implement RPK support for client
     @Test
     public void registered_device_with_rpk_and_bad_endpoint_to_server_with_rpk() throws NonUniqueSecurityInfoException {
         helper.createServerWithRPK();
@@ -290,8 +286,6 @@ public class SecurityTest {
         assertNotNull(helper.getCurrentRegistration());
     }
 
-    @Ignore
-    // TODO implement X509 support for client
     @Test
     public void registered_device_with_x509cert_and_bad_endpoint_to_server_with_x509cert()
             throws NonUniqueSecurityInfoException {
@@ -308,8 +302,6 @@ public class SecurityTest {
         assertTrue(timedout);
     }
 
-    @Ignore
-    // TODO implement X509 support for client
     @Test
     public void registered_device_with_x509cert_and_bad_cn_certificate_to_server_with_x509cert()
             throws NonUniqueSecurityInfoException {
@@ -326,8 +318,6 @@ public class SecurityTest {
         assertTrue(timedout);
     }
 
-    @Ignore
-    // TODO implement X509 support for client
     @Test
     public void registered_device_with_x509cert_and_bad_private_key_to_server_with_x509cert()
             throws NonUniqueSecurityInfoException {
@@ -346,8 +336,6 @@ public class SecurityTest {
         assertTrue(timedout);
     }
 
-    @Ignore
-    // TODO implement X509 support for client
     @Test
     public void registered_device_with_x509cert_and_untrusted_CA_to_server_with_x509cert()
             throws NonUniqueSecurityInfoException {
