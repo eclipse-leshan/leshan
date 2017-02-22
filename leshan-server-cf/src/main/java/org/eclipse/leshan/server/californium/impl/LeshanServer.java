@@ -189,7 +189,7 @@ public class LeshanServer implements LwM2mServer {
             }
 
             secureEndpoint = new CoapEndpoint(new DTLSConnector(builder.build()), NetworkConfig.getStandard(),
-                    this.observationService.getObservationStore());
+                    this.observationService.getObservationStore(), null);
             secureEndpoint.addNotificationListener(observationService);
             observationService.setSecureEndpoint(secureEndpoint);
             coapServer.addEndpoint(secureEndpoint);
