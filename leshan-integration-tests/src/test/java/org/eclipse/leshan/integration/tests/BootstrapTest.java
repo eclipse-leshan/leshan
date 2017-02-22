@@ -88,9 +88,9 @@ public class BootstrapTest {
 
         // Start it and wait for registration
         helper.client.start();
-        helper.waitForRegistration(1);
+        helper.ensureNoRegistration(1);
 
-        // check the client is registered
+        // check the client is not registered
         helper.assertClientNotRegisterered();
     }
 

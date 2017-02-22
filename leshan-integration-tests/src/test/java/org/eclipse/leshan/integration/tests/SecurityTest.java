@@ -15,7 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests;
 
-
 import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.LIFETIME;
 import static org.eclipse.leshan.integration.tests.SecureIntegrationTestHelper.*;
 import static org.junit.Assert.*;
@@ -139,7 +138,7 @@ public class SecurityTest {
 
         // Check stop do not de-register
         helper.client.stop(false);
-        helper.waitForDeregistration(1);
+        helper.ensureNoDeregistration(1);
         helper.assertClientRegisterered();
 
         // Check new registration
@@ -168,9 +167,7 @@ public class SecurityTest {
         // Check client can not register
         helper.assertClientNotRegisterered();
         helper.client.start();
-        boolean timedout = !helper.waitForRegistration(1);
-
-        assertTrue(timedout);
+        helper.ensureNoRegistration(1);
     }
 
     @Test
@@ -189,9 +186,7 @@ public class SecurityTest {
         // Check client can not register
         helper.assertClientNotRegisterered();
         helper.client.start();
-        boolean timedout = !helper.waitForRegistration(1);
-
-        assertTrue(timedout);
+        helper.ensureNoRegistration(1);
     }
 
     @Test
@@ -204,15 +199,12 @@ public class SecurityTest {
         helper.createPSKClient();
 
         // Add client credentials for another endpoint to the server
-        helper.getSecurityStore()
-                .add(SecurityInfo.newPreSharedKeyInfo(BAD_ENDPOINT, GOOD_PSK_ID, GOOD_PSK_KEY));
+        helper.getSecurityStore().add(SecurityInfo.newPreSharedKeyInfo(BAD_ENDPOINT, GOOD_PSK_ID, GOOD_PSK_KEY));
 
         // Check client can not register
         helper.assertClientNotRegisterered();
         helper.client.start();
-        boolean timedout = !helper.waitForRegistration(1);
-
-        assertTrue(timedout);
+        helper.ensureNoRegistration(1);
     }
 
     @Ignore
@@ -249,9 +241,7 @@ public class SecurityTest {
                 .add(SecurityInfo.newRawPublicKeyInfo(helper.getCurrentEndpoint(), bad_client_public_key));
 
         helper.client.start();
-        boolean timedout = !helper.waitForRegistration(1);
-
-        assertTrue(timedout);
+        helper.ensureNoRegistration(1);
     }
 
     @Ignore
@@ -263,13 +253,10 @@ public class SecurityTest {
 
         helper.createRPKClient();
 
-        helper.getSecurityStore()
-                .add(SecurityInfo.newRawPublicKeyInfo(BAD_ENDPOINT, helper.clientPublicKey));
+        helper.getSecurityStore().add(SecurityInfo.newRawPublicKeyInfo(BAD_ENDPOINT, helper.clientPublicKey));
 
         helper.client.start();
-        boolean timedout = !helper.waitForRegistration(1);
-
-        assertTrue(timedout);
+        helper.ensureNoRegistration(1);
     }
 
     @Ignore
@@ -303,9 +290,7 @@ public class SecurityTest {
         helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(BAD_ENDPOINT));
 
         helper.client.start();
-        boolean timedout = !helper.waitForRegistration(1);
-
-        assertTrue(timedout);
+        helper.ensureNoRegistration(1);
     }
 
     @Ignore
@@ -321,9 +306,7 @@ public class SecurityTest {
         helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(GOOD_ENDPOINT));
 
         helper.client.start();
-        boolean timedout = !helper.waitForRegistration(1);
-
-        assertTrue(timedout);
+        helper.ensureNoRegistration(1);
     }
 
     @Ignore
@@ -341,9 +324,7 @@ public class SecurityTest {
         helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
 
         helper.client.start();
-        boolean timedout = !helper.waitForRegistration(1);
-
-        assertTrue(timedout);
+        helper.ensureNoRegistration(1);
     }
 
     @Ignore
@@ -360,9 +341,7 @@ public class SecurityTest {
         helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
 
         helper.client.start();
-        boolean timedout = !helper.waitForRegistration(1);
-
-        assertTrue(timedout);
+        helper.ensureNoRegistration(1);
     }
 
     @Ignore
@@ -374,9 +353,8 @@ public class SecurityTest {
 
         helper.createX509CertClient(helper.clientPrivateKeyFromCert, helper.trustedCertificates);
 
-        helper.getSecurityStore().add(
-                SecurityInfo.newRawPublicKeyInfo(helper.getCurrentEndpoint(),
-                        helper.clientX509CertChain[0].getPublicKey()));
+        helper.getSecurityStore().add(SecurityInfo.newRawPublicKeyInfo(helper.getCurrentEndpoint(),
+                helper.clientX509CertChain[0].getPublicKey()));
 
         helper.client.start();
         helper.waitForRegistration(1);

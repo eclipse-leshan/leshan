@@ -188,7 +188,7 @@ public class RegistrationTest {
 
         // check stop do not de-register
         helper.client.stop(false);
-        helper.waitForDeregistration(1);
+        helper.ensureNoDeregistration(1);
         helper.assertClientRegisterered();
 
         // check new registration
@@ -218,8 +218,7 @@ public class RegistrationTest {
 
         // check observation registry is not null
         Registration currentRegistration = helper.getCurrentRegistration();
-        Set<Observation> observations = helper.server.getObservationService()
-                .getObservations(currentRegistration);
+        Set<Observation> observations = helper.server.getObservationService().getObservations(currentRegistration);
         assertEquals(1, observations.size());
         Observation obs = observations.iterator().next();
         assertEquals(currentRegistration.getId(), obs.getRegistrationId());
@@ -229,8 +228,7 @@ public class RegistrationTest {
         helper.client.stop(true);
         helper.waitForDeregistration(1);
         helper.assertClientNotRegisterered();
-        observations = helper.server.getObservationService()
-                .getObservations(currentRegistration);
+        observations = helper.server.getObservationService().getObservations(currentRegistration);
         assertTrue(observations.isEmpty());
 
         // try to send a new observation
@@ -264,18 +262,15 @@ public class RegistrationTest {
         lclient.getCoapServer().start();
         Endpoint secureEndpoint = lclient.getCoapServer().getEndpoint(lclient.getSecureAddress());
         Endpoint nonSecureEndpoint = lclient.getCoapServer().getEndpoint(lclient.getNonSecureAddress());
-        CaliforniumLwM2mRequestSender sender = new CaliforniumLwM2mRequestSender(secureEndpoint,
-                nonSecureEndpoint);
+        CaliforniumLwM2mRequestSender sender = new CaliforniumLwM2mRequestSender(secureEndpoint, nonSecureEndpoint);
 
         // Create Request with additional attributes
         Map<String, String> additionalAttributes = new HashMap<>();
         additionalAttributes.put("key1", "value1");
         additionalAttributes.put("imei", "2136872368");
         Link[] objectLinks = Link.parse("</>;rt=\"oma.lwm2m\",</1/0>,</2>,</3/0>".getBytes());
-        RegisterRequest registerRequest = new RegisterRequest(helper.getCurrentEndpoint(), null, null,
-                null,
-                null, objectLinks,
-                additionalAttributes);
+        RegisterRequest registerRequest = new RegisterRequest(helper.getCurrentEndpoint(), null, null, null, null,
+                objectLinks, additionalAttributes);
 
         // Send request
         RegisterResponse resp = sender.send(helper.server.getNonSecureAddress(), false, registerRequest, 5000l);
@@ -304,12 +299,12 @@ public class RegistrationTest {
         coapRequest.getOptions().setContentFormat(ContentFormat.LINK.getCode());
         coapRequest.getOptions().addUriPath("rd");
         coapRequest.getOptions().addUriQuery("ep=" + helper.currentEndpointIdentifier);
-        
+
         // send request
         CoapEndpoint coapEndpoint = new CoapEndpoint(new InetSocketAddress(0));
         coapEndpoint.start();
         coapEndpoint.sendRequest(coapRequest);
-        
+
         // check response
         Response response = coapRequest.waitForResponse(1000);
         assertEquals(response.getCode(), org.eclipse.californium.core.coap.CoAP.ResponseCode.BAD_REQUEST);

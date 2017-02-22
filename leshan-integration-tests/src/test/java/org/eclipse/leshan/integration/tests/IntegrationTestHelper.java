@@ -58,7 +58,7 @@ import org.eclipse.leshan.server.registration.RegistrationUpdate;
  */
 public class IntegrationTestHelper {
     public static final Random r = new Random();
-    
+
     static final String MODEL_NUMBER = "IT-TEST-123";
     public static final long LIFETIME = 2;
 
@@ -98,10 +98,10 @@ public class IntegrationTestHelper {
                 null, null, null);
         ResourceModel opaquefield = new ResourceModel(OPAQUE_RESOURCE_ID, "opaque", Operations.RW, false, false,
                 Type.OPAQUE, null, null, null);
-        ResourceModel objlnkfield = new ResourceModel(OBJLNK_MULTI_INSTANCE_RESOURCE_ID, "objlnk", Operations.RW, true, false, Type.OBJLNK, 
-                null, null, null);
-        ResourceModel objlnkSinglefield = new ResourceModel(OBJLNK_SINGLE_INSTANCE_RESOURCE_ID, "objlnk", Operations.RW, false, false, Type.OBJLNK,
-                null, null, null);
+        ResourceModel objlnkfield = new ResourceModel(OBJLNK_MULTI_INSTANCE_RESOURCE_ID, "objlnk", Operations.RW, true,
+                false, Type.OBJLNK, null, null, null);
+        ResourceModel objlnkSinglefield = new ResourceModel(OBJLNK_SINGLE_INSTANCE_RESOURCE_ID, "objlnk", Operations.RW,
+                false, false, Type.OBJLNK, null, null, null);
         objectModels.add(new ObjectModel(TEST_OBJECT_ID, "testobject", null, false, false, stringfield, booleanfield,
                 integerfield, floatfield, timefield, opaquefield, objlnkfield, objlnkSinglefield));
 
@@ -186,25 +186,49 @@ public class IntegrationTestHelper {
         updateLatch = new CountDownLatch(1);
     }
 
-    public boolean waitForRegistration(long timeInSeconds) {
+    public void waitForRegistration(long timeInSeconds) {
         try {
-            return registerLatch.await(timeInSeconds, TimeUnit.SECONDS);
+            assertTrue(registerLatch.await(timeInSeconds, TimeUnit.SECONDS));
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public boolean waitForUpdate(long timeInSeconds) {
+    public void ensureNoRegistration(long timeInSeconds) {
         try {
-            return updateLatch.await(timeInSeconds, TimeUnit.SECONDS);
+            assertFalse(registerLatch.await(timeInSeconds, TimeUnit.SECONDS));
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public boolean waitForDeregistration(long timeInSeconds) {
+    public void waitForUpdate(long timeInSeconds) {
         try {
-            return deregisterLatch.await(timeInSeconds, TimeUnit.SECONDS);
+            assertTrue(updateLatch.await(timeInSeconds, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void ensureNoUpdate(long timeInSeconds) {
+        try {
+            assertFalse(updateLatch.await(timeInSeconds, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void waitForDeregistration(long timeInSeconds) {
+        try {
+            assertTrue(deregisterLatch.await(timeInSeconds, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void ensureNoDeregistration(long timeInSeconds) {
+        try {
+            assertFalse(deregisterLatch.await(timeInSeconds, TimeUnit.SECONDS));
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
