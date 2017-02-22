@@ -25,6 +25,7 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 
 import org.eclipse.californium.scandium.dtls.pskstore.PskStore;
+import org.eclipse.californium.scandium.util.ServerNames;
 import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.servers.ServerInfo;
@@ -65,6 +66,12 @@ public class SecurityObjectPskStore implements PskStore {
     }
 
     @Override
+    public byte[] getKey(ServerNames serverNames, String identity) {
+        // serverNames is not supported
+        return getKey(identity);
+    }
+
+    @Override
     public String getIdentity(InetSocketAddress inetAddress) {
         if (inetAddress == null)
             return null;
@@ -72,8 +79,7 @@ public class SecurityObjectPskStore implements PskStore {
         LwM2mObject securities = (LwM2mObject) securityEnabler.read(SYSTEM, new ReadRequest(SECURITY)).getContent();
         for (LwM2mObjectInstance security : securities.getInstances().values()) {
             long securityMode = (long) security.getResource(SEC_SECURITY_MODE).getValue();
-            if (securityMode == SecurityMode.PSK.code)
-            {
+            if (securityMode == SecurityMode.PSK.code) {
                 try {
                     URI uri = new URI((String) security.getResource(SEC_SERVER_URI).getValue());
                     if (inetAddress.equals(ServerInfo.getAddress(uri))) {
