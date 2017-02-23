@@ -26,12 +26,12 @@ public class MyLocation extends BaseInstanceEnabler {
         if (latitude != null) {
             this.latitude = latitude + 90f;
         } else {
-            this.latitude = Float.valueOf(random.nextInt(180));
+            this.latitude = (float) random.nextInt(180);
         }
         if (longitude != null) {
             this.longitude = longitude + 180f;
         } else {
-            this.longitude = Float.valueOf(random.nextInt(360));
+            this.longitude = (float) random.nextInt(360);
         }
         this.scaleFactor = scaleFactor;
         timestamp = new Date();

@@ -34,7 +34,7 @@ public class ClientSerDesTest {
     public void ser_and_des_are_equals() throws Exception {
         Link[] objs = new Link[2];
         Map<String, Object> att = new HashMap<>();
-        att.put("ts", new Integer(12));
+        att.put("ts", 12);
         att.put("rt", "test");
         objs[0] = new Link("/0/1024/2", att);
         objs[1] = new Link("/0/2");

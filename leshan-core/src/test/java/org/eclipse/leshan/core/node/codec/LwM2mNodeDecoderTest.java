@@ -304,11 +304,11 @@ public class LwM2mNodeDecoderTest {
                 ContentFormat.JSON, new LwM2mPath(1024, 0, 1), model);
 
         assertEquals(3, timestampedResources.size());
-        assertEquals(new Long(25462634L - 5), timestampedResources.get(0).getTimestamp());
+        assertEquals(Long.valueOf(25462634L - 5), timestampedResources.get(0).getTimestamp());
         assertEquals(22.4d, ((LwM2mResource) timestampedResources.get(0).getNode()).getValue());
-        assertEquals(new Long(25462634L - 30), timestampedResources.get(1).getTimestamp());
+        assertEquals(Long.valueOf(25462634L - 30), timestampedResources.get(1).getTimestamp());
         assertEquals(22.9d, ((LwM2mResource) timestampedResources.get(1).getNode()).getValue());
-        assertEquals(new Long(25462634 - 50), timestampedResources.get(2).getTimestamp());
+        assertEquals(Long.valueOf(25462634 - 50), timestampedResources.get(2).getTimestamp());
         assertEquals(24.1d, ((LwM2mResource) timestampedResources.get(2).getNode()).getValue());
     }
 
@@ -327,15 +327,15 @@ public class LwM2mNodeDecoderTest {
                 ContentFormat.JSON, new LwM2mPath(1024, 0), model);
 
         assertEquals(3, timestampedResources.size());
-        assertEquals(new Long(25462634L - 5), timestampedResources.get(0).getTimestamp());
+        assertEquals(Long.valueOf(25462634L - 5), timestampedResources.get(0).getTimestamp());
         assertEquals("a string",
                 ((LwM2mObjectInstance) timestampedResources.get(0).getNode()).getResource(0).getValue());
         assertEquals(22.4d, ((LwM2mObjectInstance) timestampedResources.get(0).getNode()).getResource(1).getValue());
 
-        assertEquals(new Long(25462634L - 30), timestampedResources.get(1).getTimestamp());
+        assertEquals(Long.valueOf(25462634L - 30), timestampedResources.get(1).getTimestamp());
         assertEquals(22.9d, ((LwM2mObjectInstance) timestampedResources.get(1).getNode()).getResource(1).getValue());
 
-        assertEquals(new Long(25462634 - 50), timestampedResources.get(2).getTimestamp());
+        assertEquals(Long.valueOf(25462634 - 50), timestampedResources.get(2).getTimestamp());
         assertEquals(24.1d, ((LwM2mObjectInstance) timestampedResources.get(2).getNode()).getResource(1).getValue());
     }
 
@@ -355,17 +355,17 @@ public class LwM2mNodeDecoderTest {
                 ContentFormat.JSON, new LwM2mPath(1024), model);
 
         assertEquals(3, timestampedResources.size());
-        assertEquals(new Long(25462634L - 5), timestampedResources.get(0).getTimestamp());
+        assertEquals(Long.valueOf(25462634L - 5), timestampedResources.get(0).getTimestamp());
         assertEquals(22.4d,
                 ((LwM2mObject) timestampedResources.get(0).getNode()).getInstance(0).getResource(1).getValue());
         assertEquals("a string",
                 ((LwM2mObject) timestampedResources.get(0).getNode()).getInstance(0).getResource(0).getValue());
         assertEquals(23.0d,
                 ((LwM2mObject) timestampedResources.get(0).getNode()).getInstance(1).getResource(1).getValue());
-        assertEquals(new Long(25462634L - 30), timestampedResources.get(1).getTimestamp());
+        assertEquals(Long.valueOf(25462634L - 30), timestampedResources.get(1).getTimestamp());
         assertEquals(22.9d,
                 ((LwM2mObject) timestampedResources.get(1).getNode()).getInstance(0).getResource(1).getValue());
-        assertEquals(new Long(25462634 - 50), timestampedResources.get(2).getTimestamp());
+        assertEquals(Long.valueOf(25462634 - 50), timestampedResources.get(2).getTimestamp());
         assertEquals(24.1d,
                 ((LwM2mObject) timestampedResources.get(2).getNode()).getInstance(0).getResource(1).getValue());
     }
