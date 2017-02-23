@@ -232,9 +232,8 @@ public class LwM2mMultipleResource implements LwM2mResource {
             return false;
 
         try {
-            Iterator<?> i = m1.entrySet().iterator();
-            while (i.hasNext()) {
-                Entry<?, ?> e = (Entry<?, ?>) i.next();
+            for (Object o : m1.entrySet()) {
+                Entry<?, ?> e = (Entry<?, ?>) o;
                 Object key = e.getKey();
                 Object value = e.getValue();
                 if (value == null) {

@@ -113,8 +113,8 @@ public class ObjectsInitializer {
 
     public List<LwM2mObjectEnabler> create(int... objectId) {
         List<LwM2mObjectEnabler> enablers = new ArrayList<>();
-        for (int i = 0; i < objectId.length; i++) {
-            LwM2mObjectEnabler objectEnabler = create(objectId[i]);
+        for (int anObjectId : objectId) {
+            LwM2mObjectEnabler objectEnabler = create(anObjectId);
             if (objectEnabler != null)
                 enablers.add(objectEnabler);
         }

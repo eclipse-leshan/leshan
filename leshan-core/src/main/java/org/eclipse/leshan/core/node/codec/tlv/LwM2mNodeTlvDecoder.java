@@ -81,14 +81,14 @@ public class LwM2mNodeTlvDecoder {
                 }
 
             } else {
-                for (int i = 0; i < tlvs.length; i++) {
-                    if (tlvs[i].getType() != TlvType.OBJECT_INSTANCE)
+                for (Tlv tlv : tlvs) {
+                    if (tlv.getType() != TlvType.OBJECT_INSTANCE)
                         throw new CodecException(
                                 String.format("Expected TLV of type OBJECT_INSTANCE but was %s  [path:%s]",
-                                        tlvs[i].getType().name(), path));
+                                        tlv.getType().name(), path));
 
-                    instances.add(parseObjectInstanceTlv(tlvs[i].getChildren(), path.getObjectId(),
-                            tlvs[i].getIdentifier(), model));
+                    instances.add(parseObjectInstanceTlv(tlv.getChildren(), path.getObjectId(),
+                            tlv.getIdentifier(), model));
                 }
             }
             return (T) new LwM2mObject(path.getObjectId(), instances);
@@ -146,8 +146,8 @@ public class LwM2mNodeTlvDecoder {
             LwM2mModel model) throws CodecException {
         // read resources
         List<LwM2mResource> resources = new ArrayList<>(rscTlvs.length);
-        for (int i = 0; i < rscTlvs.length; i++) {
-            resources.add(parseResourceTlv(rscTlvs[i], objectId, instanceId, model));
+        for (Tlv rscTlv : rscTlvs) {
+            resources.add(parseResourceTlv(rscTlv, objectId, instanceId, model));
         }
         return new LwM2mObjectInstance(instanceId, resources);
     }
@@ -172,9 +172,7 @@ public class LwM2mNodeTlvDecoder {
     private static Map<Integer, Object> parseTlvValues(Tlv[] tlvs, Type expectedType, LwM2mPath path)
             throws CodecException {
         Map<Integer, Object> values = new HashMap<>();
-        for (int j = 0; j < tlvs.length; j++) {
-            Tlv tlvChild = tlvs[j];
-
+        for (Tlv tlvChild : tlvs) {
             if (tlvChild.getType() != TlvType.RESOURCE_INSTANCE)
                 throw new CodecException(String.format("Expected TLV of type RESOURCE_INSTANCE but was %s for path %s",
                         tlvChild.getType().name(), path));
