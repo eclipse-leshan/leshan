@@ -33,7 +33,7 @@ angular.module('resourceFormDirectives', [])
                     }
                 }
                 return false;
-            }
+            };
         }
-    }
+    };
 });

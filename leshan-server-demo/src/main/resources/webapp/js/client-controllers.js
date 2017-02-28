@@ -43,7 +43,7 @@ lwClientControllers.controller('ClientListCtrl', [
         // free resource when controller is destroyed
         $scope.$on('$destroy', function(){
             if ($scope.eventsource){
-                $scope.eventsource.close()
+                $scope.eventsource.close();
             }
         });
 
@@ -141,7 +141,7 @@ lwClientControllers.controller('ClientDetailCtrl', [
         // free resource when controller is destroyed
         $scope.$on('$destroy', function(){
             if ($scope.eventsource){
-                $scope.eventsource.close()
+                $scope.eventsource.close();
             }
         });
 
@@ -177,7 +177,7 @@ lwClientControllers.controller('ClientDetailCtrl', [
                         $scope.objects = objects;
                     });
                 });
-            }
+            };
             $scope.eventsource.addEventListener('REGISTRATION', registerCallback, false);
 
             var deregisterCallback = function(msg) {
@@ -185,7 +185,7 @@ lwClientControllers.controller('ClientDetailCtrl', [
                     $scope.deregistered = true;
                     $scope.client = null;
                 });
-            }
+            };
             $scope.eventsource.addEventListener('DEREGISTRATION', deregisterCallback, false);
 
             var notificationCallback = function(msg) {
@@ -195,13 +195,13 @@ lwClientControllers.controller('ClientDetailCtrl', [
                     if (resource) {
                         if("value" in content.val) {
                             // single value
-                            resource.value = content.val.value
+                            resource.value = content.val.value;
                         }
                         else if("values" in content.val) {
                             // multiple instances
                             var tab = new Array();
                             for (var i in content.val.values) {
-                                tab.push(i+"="+content.val.values[i])
+                                tab.push(i+"="+content.val.values[i]);
                             }
                             resource.value = tab.join(", ");
                         }
@@ -217,15 +217,15 @@ lwClientControllers.controller('ClientDetailCtrl', [
                             instance.observed = true;
                             for(var i in content.val.resources) {
                                 var tlvresource = content.val.resources[i];
-                                resource = lwResources.addResource(instance.parent, instance, tlvresource.id, null)
+                                resource = lwResources.addResource(instance.parent, instance, tlvresource.id, null);
                                 if("value" in tlvresource) {
                                     // single value
-                                    resource.value = tlvresource.value
+                                    resource.value = tlvresource.value;
                                 } else if("values" in tlvresource) {
                                     // multiple instances
                                     var tab = new Array();
                                     for (var j in tlvresource.values) {
-                                        tab.push(j+"="+tlvresource.values[j])
+                                        tab.push(j+"="+tlvresource.values[j]);
                                     }
                                     resource.value = tab.join(", ");
                                 }
