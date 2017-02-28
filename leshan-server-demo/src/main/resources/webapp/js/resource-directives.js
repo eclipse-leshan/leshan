@@ -39,7 +39,7 @@ angular.module('resourceDirectives', [])
                     return scope.resource.def.operations.indexOf("R") != -1;
                 }
                 return false;
-            }
+            };
            
             scope.writable = function() {
                 if(scope.resource.def.instancetype != "multiple") {
@@ -48,7 +48,7 @@ angular.module('resourceDirectives', [])
                     }
                 }
                 return false;
-            }
+            };
 
             scope.executable = function() {
                 if(scope.resource.def.instancetype != "multiple") {
@@ -57,7 +57,7 @@ angular.module('resourceDirectives', [])
                     }
                 }
                 return false;
-            }
+            };
 
             scope.startObserve = function() {
                 var format = scope.settings.single.format;
@@ -74,13 +74,13 @@ angular.module('resourceDirectives', [])
                         scope.resource.observed = true;
                         if("value" in data.content) {
                             // single value
-                            scope.resource.value = data.content.value
+                            scope.resource.value = data.content.value;
                         }
                         else if("values" in data.content) {
                             // multiple instances
                             var tab = new Array();
                             for (var i in data.content.values) {
-                                tab.push(i+"="+data.content.values[i])
+                                tab.push(i+"="+data.content.values[i]);
                             }
                             scope.resource.value = tab.join(", ");
                         }
@@ -88,10 +88,10 @@ angular.module('resourceDirectives', [])
                         scope.resource.tooltip = formattedDate;
                     }
                 }).error(function(data, status, headers, config) {
-                    errormessage = "Unable to start observation on resource " + scope.resource.path + " for "+ $routeParams.clientId + " : " + status +" "+ data
+                    errormessage = "Unable to start observation on resource " + scope.resource.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
                     dialog.open(errormessage);
-                    console.error(errormessage)
-                });;
+                    console.error(errormessage);
+                });
             };
             
             scope.stopObserve = function() {
@@ -101,10 +101,10 @@ angular.module('resourceDirectives', [])
                     scope.resource.observed = false;
                     scope.resource.observe.stop = "success";
                 }).error(function(data, status, headers, config) {
-                    errormessage = "Unable to stop observation on resource " + scope.resource.path + " for "+ $routeParams.clientId + " : " + status +" "+ data
+                    errormessage = "Unable to stop observation on resource " + scope.resource.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
                     dialog.open(errormessage);
-                    console.error(errormessage)
-                });;
+                    console.error(errormessage);
+                });
             };
             
             
@@ -124,13 +124,13 @@ angular.module('resourceDirectives', [])
                     if (data.status == "CONTENT" && data.content) {
                         if("value" in data.content) {
                             // single value
-                            scope.resource.value = data.content.value
+                            scope.resource.value = data.content.value;
                         }
                     else if("values" in data.content) {
                             // multiple instances
                             var tab = new Array();
                             for (var i in data.content.values) {
-                                tab.push(i+"="+data.content.values[i])
+                                tab.push(i+"="+data.content.values[i]);
                             }
                             scope.resource.value = tab.join(", ");
                         }
@@ -138,10 +138,10 @@ angular.module('resourceDirectives', [])
                         scope.resource.tooltip = formattedDate;
                     }
                 }).error(function(data, status, headers, config) {
-                    errormessage = "Unable to read resource " + scope.resource.path + " for "+ $routeParams.clientId + " : " + status +" "+ data
+                    errormessage = "Unable to read resource " + scope.resource.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
                     dialog.open(errormessage);
-                    console.error(errormessage)
-                });;
+                    console.error(errormessage);
+                });
             };
 
             scope.write = function() {
@@ -175,10 +175,10 @@ angular.module('resourceDirectives', [])
                                 scope.resource.tooltip = formattedDate;
                             }
                         }).error(function(data, status, headers, config) {
-                            errormessage = "Unable to write resource " + scope.resource.path + " for "+ $routeParams.clientId + " : " + status +" "+ data
+                            errormessage = "Unable to write resource " + scope.resource.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
                             dialog.open(errormessage);
-                            console.error(errormessage)
-                        });;
+                            console.error(errormessage);
+                        });
                     }
                 });
 
@@ -195,10 +195,10 @@ angular.module('resourceDirectives', [])
                     exec.tooltip = formattedDate + "<br/>" + exec.status;
                     scope.resource.execwithparams.tooltip = exec.tooltip;
                 }).error(function(data, status, headers, config) {
-                    errormessage = "Unable to execute resource " + scope.resource.path + " for "+ $routeParams.clientId + " : " + status +" "+ data
+                    errormessage = "Unable to execute resource " + scope.resource.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
                     dialog.open(errormessage);
-                    console.error(errormessage)
-                });;
+                    console.error(errormessage);
+                });
             };
 
             scope.execWithParams = function() {
@@ -221,7 +221,7 @@ angular.module('resourceDirectives', [])
                             exec.tooltip = formattedDate + "<br/>" + exec.status;
                             scope.resource.execwithparams.tooltip = exec.tooltip;
                         }).error(function(data, status, headers, config) {
-                            errormessage = "Unable to execute resource " + scope.resource.path + " for "+ $routeParams.clientId + " : " + status +" "+ data
+                            errormessage = "Unable to execute resource " + scope.resource.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
                             dialog.open(errormessage);
                             console.error(errormessage);
                         });
@@ -230,5 +230,5 @@ angular.module('resourceDirectives', [])
                 $('#writeModal').modal('show');
             };
         }
-    }
+    };
 });

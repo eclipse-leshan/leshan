@@ -51,16 +51,16 @@ angular.module('instanceDirectives', [])
                     if (data.status == "CONTENT" && data.content) {
                         for(var i in data.content.resources) {
                             var tlvresource = data.content.resources[i];
-                            resource = lwResources.addResource(scope.parent, scope.instance, tlvresource.id, null)
+                            resource = lwResources.addResource(scope.parent, scope.instance, tlvresource.id, null);
                             if("value" in tlvresource) {
                                 // single value
-                                resource.value = tlvresource.value
+                                resource.value = tlvresource.value;
                             }
                             else if("values" in tlvresource) {
                                 // multiple instances
                                 var tab = new Array();
                                 for (var j in tlvresource.values) {
-                                    tab.push(j+"="+tlvresource.values[j])
+                                    tab.push(j+"="+tlvresource.values[j]);
                                 }
                                 resource.value = tab.join(", ");
                             }
@@ -69,10 +69,10 @@ angular.module('instanceDirectives', [])
                         }
                     }
                 }).error(function(data, status, headers, config) {
-                    errormessage = "Unable to read instance " + scope.instance.path + " for "+ $routeParams.clientId + " : " + status +" "+ data
+                    errormessage = "Unable to read instance " + scope.instance.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
                     dialog.open(errormessage);
-                    console.error(errormessage)
-                });;
+                    console.error(errormessage);
+                });
             };
 
 
@@ -92,10 +92,10 @@ angular.module('instanceDirectives', [])
                         scope.parent.instances.splice(scope.instance,1);
                     }
                 }).error(function(data, status, headers, config) {
-                    errormessage = "Unable to delete instance " + scope.instance.path + " for "+ $routeParams.clientId + " : " + status +" "+ data
+                    errormessage = "Unable to delete instance " + scope.instance.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
                     dialog.open(errormessage);
-                    console.error(errormessage)
-                });;
+                    console.error(errormessage);
+                });
             };
 
             scope.write = function () {
@@ -103,8 +103,8 @@ angular.module('instanceDirectives', [])
                   templateUrl: 'partials/modal-instance.html',
                   controller: 'modalInstanceController',
                   resolve: {
-                    object: function(){ return scope.parent},
-                    instanceId: function(){return scope.instance.id}
+                    object: function(){ return scope.parent;},
+                    instanceId: function(){return scope.instance.id;}
                   }
                 });
 
@@ -120,7 +120,7 @@ angular.module('instanceDirectives', [])
                             payload.resources.push({
                                 id:resource.id,
                                 value:lwResources.getTypedValue(resource.value, resource.def.type)
-                            })
+                            });
                         }
                     }
                     // Send request
@@ -136,17 +136,17 @@ angular.module('instanceDirectives', [])
                         if (data.status == "CHANGED") {
                             for (var i in payload.resources) {
                                 var tlvresource = payload.resources[i];
-                                resource = lwResources.addResource(scope.parent, scope.instance, tlvresource.id, null)
+                                resource = lwResources.addResource(scope.parent, scope.instance, tlvresource.id, null);
                                 resource.value = tlvresource.value;
                                 resource.valuesupposed = true;
                                 resource.tooltip = formattedDate;
                             }
                         }
                     }).error(function(data, status, headers, config) {
-                        errormessage = "Unable to write resource " + scope.instance.path + " for "+ $routeParams.clientId + " : " + status +" "+ data
+                        errormessage = "Unable to write resource " + scope.instance.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
                         dialog.open(errormessage);
-                        console.error(errormessage)
-                    });;
+                        console.error(errormessage);
+                    });
 
                 });
             };
@@ -167,16 +167,16 @@ angular.module('instanceDirectives', [])
 
                         for(var i in data.content.resources) {
                             var tlvresource = data.content.resources[i];
-                            resource = lwResources.addResource(scope.parent, scope.instance, tlvresource.id, null)
+                            resource = lwResources.addResource(scope.parent, scope.instance, tlvresource.id, null);
                             if("value" in tlvresource) {
                                 // single value
-                                resource.value = tlvresource.value
+                                resource.value = tlvresource.value;
                             }
                             else if("values" in tlvresource) {
                                 // multiple instances
                                 var tab = new Array();
                                 for (var j in tlvresource.values) {
-                                    tab.push(j+"="+tlvresource.values[j])
+                                    tab.push(j+"="+tlvresource.values[j]);
                                 }
                                 resource.value = tab.join(", ");
                             }
@@ -189,10 +189,10 @@ angular.module('instanceDirectives', [])
                         scope.instance.tooltip = formattedDate;
                     }
                 }).error(function(data, status, headers, config) {
-                    errormessage = "Unable to start observation on instance " + scope.instance.path + " for "+ $routeParams.clientId + " : " + status +" "+ data
+                    errormessage = "Unable to start observation on instance " + scope.instance.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
                     dialog.open(errormessage);
-                    console.error(errormessage)
-                });;
+                    console.error(errormessage);
+                });
                 
             };
 
@@ -203,11 +203,11 @@ angular.module('instanceDirectives', [])
                     scope.instance.observed = false;
                     scope.instance.observe.stop = "success";
                 }).error(function(data, status, headers, config) {
-                    errormessage = "Unable to stop observation on instance " + scope.instance.path + " for "+ $routeParams.clientId + " : " + status +" "+ data
+                    errormessage = "Unable to stop observation on instance " + scope.instance.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
                     dialog.open(errormessage);
-                    console.error(errormessage)
-                });;
+                    console.error(errormessage);
+                });
             };
         }
-    }
+    };
 });

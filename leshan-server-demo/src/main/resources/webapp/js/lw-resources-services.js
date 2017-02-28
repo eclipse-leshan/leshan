@@ -36,20 +36,20 @@ myModule.factory('lwResources',["$http", function($http) {
           }
         }
         return array;
-    }
+    };
 
     /**
      * Search an element in an array by id
      */
     var searchById = function(array, id) {
         for (i in array) {
-            var elem = array[i]
+            var elem = array[i];
             if (elem.id == id) {
                 return elem;
             }
         }
         return null;
-    }
+    };
 
     /**
      * Search a resource in the given tree
@@ -60,14 +60,14 @@ myModule.factory('lwResources',["$http", function($http) {
         if (resourcepath.length == 3) {
             var object = searchById(tree, resourcepath[0]);
             if (object != undefined) {
-                var instance = searchById(object.instances, resourcepath[1])
+                var instance = searchById(object.instances, resourcepath[1]);
                 if (instance != undefined) {
-                    return searchById(instance.resources, resourcepath[2])
+                    return searchById(instance.resources, resourcepath[2]);
                 }
             }
         }
         return null;
-    }
+    };
 
     /**
      * Search a instance in the given tree
@@ -78,11 +78,11 @@ myModule.factory('lwResources',["$http", function($http) {
         if (instancepath.length == 2) {
             var object = searchById(tree, instancepath[0]);
             if (object != undefined) {
-                return searchById(object.instances, instancepath[1])
+                return searchById(object.instances, instancepath[1]);
             }
         }
         return null;
-    }
+    };
 
     /**
      * Build Resource Tree for the given rootPath and objectLinks
@@ -113,33 +113,33 @@ myModule.factory('lwResources',["$http", function($http) {
                 case 1:
                     // object
                     var object = addObject(tree, objectDefs, resourcepath[0],
-                            attributes)
+                            attributes);
 
                     // manage single instance
                     if (object.instancetype != "multiple") {
-                        addInstance(object, 0, null)
+                        addInstance(object, 0, null);
                     }
 
                     break;
                 case 2:
                     // instance
-                    var object = addObject(tree, objectDefs, resourcepath[0], null)
-                    addInstance(object, resourcepath[1], attributes)
+                    var object = addObject(tree, objectDefs, resourcepath[0], null);
+                    addInstance(object, resourcepath[1], attributes);
 
                     break;
                 case 3:
                 default:
                     // resource
-                    var object = addObject(tree, objectDefs, resourcepath[0], null)
-                    var instance = addInstance(object, resourcepath[1], null)
-                    addResource(object, instance, resourcepath[2], attributes)
+                    var object = addObject(tree, objectDefs, resourcepath[0], null);
+                    var instance = addInstance(object, resourcepath[1], null);
+                    addResource(object, instance, resourcepath[2], attributes);
 
                     break;
                 }
             }
             callback(tree);
         });
-    }
+    };
 
     /**
      * add object with the given ID to resource tree if necessary and return it
@@ -176,7 +176,7 @@ myModule.factory('lwResources',["$http", function($http) {
             }
         }
         return object;
-    }
+    };
 
     /**
      * add instance with the given ID to resource tree if necessary and return it
@@ -193,7 +193,7 @@ myModule.factory('lwResources',["$http", function($http) {
             };
 
             for (j in object.resourcedefs) {
-                var resourcedef = object.resourcedefs[j]
+                var resourcedef = object.resourcedefs[j];
                 instance.resources.push({
                     def : resourcedef,
                     id : resourcedef.id
@@ -209,7 +209,7 @@ myModule.factory('lwResources',["$http", function($http) {
             }
         }
         return instance;
-    }
+    };
 
     /**
      * add resource with the given ID to resource tree if necessary and return it
@@ -227,7 +227,7 @@ myModule.factory('lwResources',["$http", function($http) {
                     id : resourceId,
                     operations : "RW"
                 };
-                object.resourcedefs.push(resourcedef)
+                object.resourcedefs.push(resourcedef);
             }
 
             // create resource
@@ -245,7 +245,7 @@ myModule.factory('lwResources',["$http", function($http) {
             }
         }
         return resource;
-    }
+    };
 
     var getTypedValue = function(strValue, type) {
         var val = strValue;
@@ -262,7 +262,7 @@ myModule.factory('lwResources',["$http", function($http) {
             }
         }
         return val;
-    }
+    };
 
     /**
      * Load all the Object Definition known by the server.
@@ -274,18 +274,18 @@ myModule.factory('lwResources',["$http", function($http) {
             $http.get("api/objectspecs")
             .success(function(data, status, headers, config) {
                 if (data) {
-                    objectDefs = data
+                    objectDefs = data;
                     callback(objectDefs);
                 }else{
                     callback([]);
                 }
             }).error(function(data, status, headers, config) {
-                errormessage = "Unable to load object specfication : " + status +" "+ data
-                console.error(errormessage)
+                errormessage = "Unable to load object specfication : " + status +" "+ data;
+                console.error(errormessage);
                 callback([]);
-            });;
+            });
         }
-    }
+    };
 
     /**
      * Return a copy of model describing the LWM2M Objects defined by OMA
@@ -294,7 +294,7 @@ myModule.factory('lwResources',["$http", function($http) {
         loadObjectDefinitions(function(objectDefs){
             callback($.extend(true,[],objectDefs)); // make a deep copy of the cache
         });
-    }
+    };
 
     serviceInstance.buildResourceTree = buildResourceTree;
     serviceInstance.findResource = findResource;

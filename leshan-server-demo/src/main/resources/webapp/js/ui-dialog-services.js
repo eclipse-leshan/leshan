@@ -22,6 +22,6 @@ myModule.factory('dialog', function() {
   serviceInstance.open = function (message) {
       $('#messageModalLabel').text(message);
       $('#messageModal').modal('show');
-  }
+  };
   return serviceInstance;
 });

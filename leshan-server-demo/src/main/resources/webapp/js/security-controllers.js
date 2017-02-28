@@ -28,18 +28,18 @@ angular.module('securityControllers', [])
 
         // get the list of security info by end-point
         $http.get('api/security/clients'). error(function(data, status, headers, config){
-            $scope.error = "Unable to get the clients security info list: " + status + " " + data  
-            console.error($scope.error)
+            $scope.error = "Unable to get the clients security info list: " + status + " " + data;
+            console.error($scope.error);
         }).success(function(data, status, headers, config) {
-            $scope.securityInfos = {}
+            $scope.securityInfos = {};
             for (var i = 0; i < data.length; i++) {
                 $scope.securityInfos[data[i].endpoint] = data[i];
             }
         });
 
         $http.get('api/security/server'). error(function(data, status, headers, config){
-            $scope.error = "Unable to get the server security info list: " + status + " " + data  
-            console.error($scope.error)
+            $scope.error = "Unable to get the server security info list: " + status + " " + data;
+            console.error($scope.error);
         }).success(function(data, status, headers, config) {
                $scope.serverSecurityInfo = data;
         });
@@ -53,7 +53,7 @@ angular.module('securityControllers', [])
                dialog.open(errormessage);
                console.error(errormessage);
             });
-        }
+        };
 
         $scope.save = function() {
             $scope.$broadcast('show-errors-check-validity');
@@ -72,23 +72,23 @@ angular.module('securityControllers', [])
                     }).error(function(data, status, headers, config) {
                         errormessage = "Unable to add security info for endpoint " + $scope.endpoint + ": " + status + " - " + data;
                         dialog.open(errormessage);
-                        console.error(errormessage)
+                        console.error(errormessage);
                     });
                 }
             }
-        }
+        };
 
         $scope.showModal = function() {
             $('#newSecurityModal').modal('show');
             $scope.$broadcast('show-errors-reset');
-            $scope.endpoint = ''
-            $scope.securityMode = 'psk'
-            $scope.pskIdentity = ''
-            $scope.pskValue = ''
-            $scope.rpkXValue = ''
-            $scope.rpkYValue = ''
-            $scope.defaultParams = 'secp256r1'
-       }
+            $scope.endpoint = '';
+            $scope.securityMode = 'psk';
+            $scope.pskIdentity = '';
+            $scope.pskValue = '';
+            $scope.rpkXValue = '';
+            $scope.rpkYValue = '';
+            $scope.defaultParams = 'secp256r1';
+       };
 }])
 
 
@@ -120,5 +120,5 @@ angular.module('securityControllers', [])
                 }, 0, false);
             });
         }
-    }
-})
+    };
+});

@@ -38,8 +38,8 @@ angular.module('objectDirectives', [])
                   templateUrl: 'partials/modal-instance.html',
                   controller: 'modalInstanceController',
                   resolve: {
-                    object: function(){ return scope.object},
-                    instanceId: function(){ return null},
+                    object: function(){ return scope.object;},
+                    instanceId: function(){ return null;},
                   }
                 });
             
@@ -47,7 +47,7 @@ angular.module('objectDirectives', [])
                     // Build payload
                     var payload = {};
                     payload["id"] = instance.id;
-                    payload["resources"] = []
+                    payload["resources"] = [];
 
                     for(i in instance.resources){
                         var resource = instance.resources[i];
@@ -55,7 +55,7 @@ angular.module('objectDirectives', [])
                             payload.resources.push({
                                 id:resource.id,
                                 value:lwResources.getTypedValue(resource.value, resource.def.type)
-                            })
+                            });
                         } 
                     }
                     // Send request
@@ -70,22 +70,22 @@ angular.module('objectDirectives', [])
                         create.tooltip = formattedDate + "<br/>" + create.status;
                         
                         if (data.status == "CREATED") {
-                            var newinstance = lwResources.addInstance(scope.object, instance.id, null)
+                            var newinstance = lwResources.addInstance(scope.object, instance.id, null);
                             for (var i in payload.resources) {
                                 var tlvresource = payload.resources[i];
-                                resource = lwResources.addResource(scope.object, newinstance, tlvresource.id, null)
+                                resource = lwResources.addResource(scope.object, newinstance, tlvresource.id, null);
                                 resource.value = tlvresource.value;
                                 resource.valuesupposed = true;
                                 resource.tooltip = formattedDate;
                             }
                         }
                     }).error(function(data, status, headers, config) {
-                        errormessage = "Unable to create instance " + instancepath + " for "+ $routeParams.clientId + " : " + status +" "+ data
+                        errormessage = "Unable to create instance " + instancepath + " for "+ $routeParams.clientId + " : " + status +" "+ data;
                         dialog.open(errormessage);
-                        console.error(errormessage)
-                    });;
+                        console.error(errormessage);
+                    });
                 });
             };
         }
-    }
+    };
 });

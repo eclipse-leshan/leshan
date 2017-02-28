@@ -44,13 +44,13 @@ angular.module('modalInstanceControllers', [])
             resources : []
         };
         for (j in object.resourcedefs) {
-            var resourcedef = object.resourcedefs[j]
+            var resourcedef = object.resourcedefs[j];
             instance.resources.push({
                 def : resourcedef,
                 id : resourcedef.id
             });
         }
-        $scope.instance = instance
+        $scope.instance = instance;
 
         
         // Define button function 
