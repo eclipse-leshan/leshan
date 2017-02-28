@@ -333,11 +333,11 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             if (LOG.isDebugEnabled()) {
                 byte[] payload = coapResponse.getPayload() == null ? new byte[0] : coapResponse.getPayload();
                 LOG.debug(
-                        String.format("Unable do decode response payload of request [%s] from client [%s] [payload:%s]",
+                        String.format("Unable to decode response payload of request [%s] from client [%s] [payload:%s]",
                                 request, endpoint, Hex.encodeHexString(payload)));
             }
             throw new InvalidResponseException(String.format(
-                    "Unable do decode response payload of request [%s] from client [%s]", request, endpoint), e);
+                    "Unable to decode response payload of request [%s] from client [%s]", request, endpoint), e);
         }
     }
 
