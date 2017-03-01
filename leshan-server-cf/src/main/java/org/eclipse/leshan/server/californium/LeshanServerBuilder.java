@@ -22,6 +22,7 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
+import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
@@ -58,6 +59,8 @@ public class LeshanServerBuilder {
     private PrivateKey privateKey;
     private X509Certificate[] certificateChain;
     private Certificate[] trustedCertificates;
+
+    private NetworkConfig networkConfig;
 
     public LeshanServerBuilder setLocalAddress(String hostname, int port) {
         if (hostname == null) {
@@ -137,6 +140,11 @@ public class LeshanServerBuilder {
         return this;
     }
 
+    public LeshanServerBuilder setNetworkConfig(NetworkConfig config) {
+        this.networkConfig = config;
+        return this;
+    }
+
     public LeshanServer build() {
         if (localAddress == null)
             localAddress = new InetSocketAddress((InetAddress) null, LwM2m.DEFAULT_COAP_PORT);
@@ -152,8 +160,12 @@ public class LeshanServerBuilder {
             encoder = new DefaultLwM2mNodeEncoder();
         if (decoder == null)
             decoder = new DefaultLwM2mNodeDecoder();
+        if (networkConfig == null) {
+            networkConfig = new NetworkConfig();
+        }
 
         return new LeshanServer(localAddress, localSecureAddress, registrationStore, securityStore, authorizer,
-                modelProvider, encoder, decoder, publicKey, privateKey, certificateChain, trustedCertificates);
+                modelProvider, encoder, decoder, publicKey, privateKey, certificateChain, trustedCertificates,
+                networkConfig);
     }
 }
