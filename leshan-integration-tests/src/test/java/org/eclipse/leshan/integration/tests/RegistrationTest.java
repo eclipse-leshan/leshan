@@ -35,6 +35,7 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
+import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.leshan.Link;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.californium.LeshanClient;
@@ -249,7 +250,7 @@ public class RegistrationTest {
         objects.add(objectEnabler);
         objects.add(objectEnabler2);
         helper.client = new LeshanClient("test", new InetSocketAddress(InetAddress.getLoopbackAddress(), 0),
-                new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), objects);
+                new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), objects, new NetworkConfig());
     }
 
     @Test

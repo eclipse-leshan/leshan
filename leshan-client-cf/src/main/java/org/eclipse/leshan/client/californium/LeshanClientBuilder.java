@@ -18,6 +18,7 @@ package org.eclipse.leshan.client.californium;
 import java.net.InetSocketAddress;
 import java.util.List;
 
+import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Security;
@@ -38,6 +39,8 @@ public class LeshanClientBuilder {
     private InetSocketAddress localSecureAddress;
     private List<? extends LwM2mObjectEnabler> objectEnablers;
 
+    private NetworkConfig networkConfig;
+
     /**
      * Creates a new instance for setting the configuration options for a {@link LeshanClient} instance.
      * 
@@ -47,7 +50,8 @@ public class LeshanClientBuilder {
      * <li><em>local secure address</em>: a local address and an ephemeral port (picked up during binding)</li>
      * <li><em>object enablers</em>:
      * <ul>
-     * <li>Security(0) with one instance (DM server security): uri=<em>coap://leshan.eclipse.org:5683</em>, mode=NoSec</li>
+     * <li>Security(0) with one instance (DM server security): uri=<em>coap://leshan.eclipse.org:5683</em>, mode=NoSec
+     * </li>
      * <li>Server(1) with one instance (DM server): id=12345, lifetime=5minutes</li>
      * <li>Device(3): manufacturer=Eclipse Leshan, modelNumber=model12345, serialNumber=12345</li>
      * </ul>
@@ -93,6 +97,11 @@ public class LeshanClientBuilder {
         return this;
     }
 
+    public LeshanClientBuilder setNetworkConfig(NetworkConfig config) {
+        this.networkConfig = config;
+        return this;
+    }
+
     /**
      * Creates an instance of {@link LeshanClient} based on the properties set on this builder.
      */
@@ -105,12 +114,16 @@ public class LeshanClientBuilder {
         }
         if (objectEnablers == null) {
             ObjectsInitializer initializer = new ObjectsInitializer();
-            initializer
-                    .setInstancesForObject(LwM2mId.SECURITY, Security.noSec("coap://leshan.eclipse.org:5683", 12345));
+            initializer.setInstancesForObject(LwM2mId.SECURITY,
+                    Security.noSec("coap://leshan.eclipse.org:5683", 12345));
             initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, 5 * 60, BindingMode.U, false));
             initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", "model12345", "12345", "U"));
             objectEnablers = initializer.createMandatory();
         }
-        return new LeshanClient(endpoint, localAddress, localSecureAddress, objectEnablers);
+        if (networkConfig == null) {
+            networkConfig = new NetworkConfig();
+        }
+
+        return new LeshanClient(endpoint, localAddress, localSecureAddress, objectEnablers, networkConfig);
     }
 }
