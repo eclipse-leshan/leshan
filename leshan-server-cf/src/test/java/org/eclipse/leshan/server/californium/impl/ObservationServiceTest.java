@@ -137,6 +137,7 @@ public class ObservationServiceTest {
         coapRequest.getOptions().addUriPath(String.valueOf(target.getObjectId()));
         coapRequest.getOptions().addUriPath(String.valueOf(target.getObjectInstanceId()));
         coapRequest.getOptions().addUriPath(String.valueOf(target.getResourceId()));
+        coapRequest.setObserve();
         coapRequest.setDestination(support.registration.getAddress());
         coapRequest.setDestinationPort(support.registration.getPort());
         Map<String, String> context = new HashMap<>();
