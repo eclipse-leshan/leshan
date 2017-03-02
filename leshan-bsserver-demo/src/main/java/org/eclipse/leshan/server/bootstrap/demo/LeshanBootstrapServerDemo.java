@@ -26,6 +26,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -155,7 +156,8 @@ public class LeshanBootstrapServerDemo {
         BootstrapSessionManager bsSessionManager = new DefaultBootstrapSessionManager(securityStore);
 
         LeshanBootstrapServer bsServer = new LeshanBootstrapServer(new InetSocketAddress(localAddress, localPort),
-                new InetSocketAddress(secureLocalAddress, secureLocalPort), bsStore, securityStore, bsSessionManager);
+                new InetSocketAddress(secureLocalAddress, secureLocalPort), bsStore, securityStore, bsSessionManager,
+                new NetworkConfig());
         bsServer.start();
 
         // Now prepare and start jetty
