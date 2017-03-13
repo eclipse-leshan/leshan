@@ -254,7 +254,7 @@ public class ClientServlet extends HttpServlet {
         String clientEndpoint = path[0];
 
         // /clients/endPoint/LWRequest/observe : do LightWeight M2M observe request on a given client.
-        if (path.length >= 4 && "observe".equals(path[path.length - 1])) {
+        if (path.length >= 3 && "observe".equals(path[path.length - 1])) {
             try {
                 String target = StringUtils.substringBetween(req.getPathInfo(), clientEndpoint, "/observe");
                 Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
@@ -334,7 +334,7 @@ public class ClientServlet extends HttpServlet {
         String clientEndpoint = path[0];
 
         // /clients/endPoint/LWRequest/observe : cancel observation for the given resource.
-        if (path.length >= 4 && "observe".equals(path[path.length - 1])) {
+        if (path.length >= 3 && "observe".equals(path[path.length - 1])) {
             try {
                 String target = StringUtils.substringsBetween(req.getPathInfo(), clientEndpoint, "/observe")[0];
                 Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
