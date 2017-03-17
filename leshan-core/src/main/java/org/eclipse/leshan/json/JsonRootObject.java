@@ -17,7 +17,8 @@
 
 package org.eclipse.leshan.json;
 
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -30,12 +31,12 @@ public class JsonRootObject {
     private String baseName = null;
 
     @SerializedName("e")
-    private final ArrayList<JsonArrayEntry> jsonArray;
+    private final List<JsonArrayEntry> jsonArray;
 
     @SerializedName("bt")
     private Long baseTime;
 
-    public JsonRootObject(ArrayList<JsonArrayEntry> jsonArray) {
+    public JsonRootObject(List<JsonArrayEntry> jsonArray) {
         this.jsonArray = jsonArray;
     }
 
@@ -55,7 +56,9 @@ public class JsonRootObject {
         this.baseTime = baseTime;
     }
 
-    public ArrayList<JsonArrayEntry> getResourceList() {
+    public List<JsonArrayEntry> getResourceList() {
+        if (jsonArray == null)
+            return Collections.emptyList();
         return jsonArray;
     }
 

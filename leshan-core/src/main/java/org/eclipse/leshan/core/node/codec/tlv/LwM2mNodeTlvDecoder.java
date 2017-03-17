@@ -124,8 +124,13 @@ public class LwM2mNodeTlvDecoder {
 
         // Resource
         else if (nodeClass == LwM2mResource.class) {
+            ResourceModel resourceModel = model.getResourceModel(path.getObjectId(), path.getResourceId());
+            if (tlvs.length == 0 && resourceModel != null && !resourceModel.multiple) {
+                // If there is no TlV value and we know that this resource is a single resource we raise an exception
+                // else we consider this is a multi-instance resource
+                throw new CodecException(String.format("TLV payload is mandatory for single resource %s", path));
 
-            if (tlvs.length == 1 && tlvs[0].getType() != TlvType.RESOURCE_INSTANCE) {
+            } else if (tlvs.length == 1 && tlvs[0].getType() != TlvType.RESOURCE_INSTANCE) {
                 if (path.isResource() && path.getResourceId() != tlvs[0].getIdentifier()) {
                     throw new CodecException(String.format("Id conflict between path [%s] and resource TLV [%s]", path,
                             tlvs[0].getIdentifier()));

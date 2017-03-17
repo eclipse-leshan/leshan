@@ -115,9 +115,8 @@ public class LwM2mNodeJsonDecoder {
                 node = new LwM2mObject(baseName.getObjectId(), instances);
             } else if (nodeClass == LwM2mObjectInstance.class) {
                 // validate we have resources for only 1 instance
-                if (jsonEntryByInstanceId.size() > 1)
-                    throw new CodecException(
-                            String.format("Only one instance expected in the payload [path:%s]", path));
+                if (jsonEntryByInstanceId.size() != 1)
+                    throw new CodecException(String.format("One instance expected in the payload [path:%s]", path));
 
                 // Extract resources
                 Entry<Integer, Collection<JsonArrayEntry>> instanceEntry = jsonEntryByInstanceId.entrySet().iterator()
@@ -140,7 +139,7 @@ public class LwM2mNodeJsonDecoder {
                 // validate there is only 1 resource
                 if (resourcesMap.size() != 1)
                     throw new CodecException(
-                            String.format("Only one resource should be present in the payload [path:%s]", path));
+                            String.format("One resource should be present in the payload [path:%s]", path));
 
                 node = resourcesMap.values().iterator().next();
             } else {
@@ -207,6 +206,11 @@ public class LwM2mNodeJsonDecoder {
             jsonArray.add(e);
         }
 
+        // Ensure there is at least one entry for null timestamp
+        if (result.isEmpty()) {
+            result.put((Long) null, new ArrayList<JsonArrayEntry>());
+        }
+
         return result;
     }
 
@@ -245,6 +249,10 @@ public class LwM2mNodeJsonDecoder {
             jsonArray.add(e);
         }
 
+        // Create an entry for an empty instance if possible
+        if (result.isEmpty() && baseName.getObjectInstanceId() != null) {
+            result.put(baseName.getObjectInstanceId(), new ArrayList<JsonArrayEntry>());
+        }
         return result;
     }
 
@@ -336,6 +344,18 @@ public class LwM2mNodeJsonDecoder {
                 lwM2mResourceMap.put(resourcePath.getResourceId(), resource);
             }
         }
+
+        // If we found nothing, we try to create an empty multi-instance resource
+        if (lwM2mResourceMap.isEmpty() && baseName.isResource()) {
+            ResourceModel resourceModel = model.getResourceModel(baseName.getObjectId(), baseName.getResourceId());
+            // We create it only if this respect the model 
+            if (resourceModel == null || resourceModel.multiple) {
+                Type resourceType = getResourceType(baseName, model, null);
+                lwM2mResourceMap.put(baseName.getResourceId(), LwM2mMultipleResource
+                        .newResource(baseName.getResourceId(), new HashMap<Integer, Object>(), resourceType));
+            }
+        }
+
         return lwM2mResourceMap;
     }
 
@@ -371,16 +391,20 @@ public class LwM2mNodeJsonDecoder {
     }
 
     public static Type getResourceType(LwM2mPath rscPath, LwM2mModel model, JsonArrayEntry resourceElt) {
+        // Use model type in priority
         ResourceModel rscDesc = model.getResourceModel(rscPath.getObjectId(), rscPath.getResourceId());
-        if (rscDesc == null || rscDesc.type == null) {
+        if (rscDesc != null && rscDesc.type != null)
+            return rscDesc.type;
+
+        // Then json type
+        if (resourceElt != null) {
             Type type = resourceElt.getType();
             if (type != null)
                 return type;
-
-            LOG.trace("unknown type for resource use string as default: {}", rscPath);
-            return Type.STRING;
-        } else {
-            return rscDesc.type;
         }
+
+        // Else use String as default
+        LOG.trace("unknown type for resource use string as default: {}", rscPath);
+        return Type.STRING;
     }
 }
