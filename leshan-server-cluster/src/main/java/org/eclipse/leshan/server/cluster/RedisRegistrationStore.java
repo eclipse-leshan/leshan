@@ -64,11 +64,11 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     private static final Logger LOG = LoggerFactory.getLogger(RedisRegistrationStore.class);
 
     // Redis key prefixes
-    private static final String EP_REG = "EP#REG#";
-    private static final String REGID_EP = "REGID#EP#";
-    private static final String LOCK_EP = "LOCK#EP#";
-    private static final byte[] OBS_TKN = "OBS#TKN#".getBytes(UTF_8);
-    private static final String OBS_REGID = "OBS#REGID#";
+    private static final String REG_EP = "REG:EP:";
+    private static final String REG_EP_REGID_IDX = "EP:REGID:"; // secondary index key (registration)
+    private static final String LOCK_EP = "LOCK:EP:";
+    private static final byte[] OBS_TKN = "OBS:TKN:".getBytes(UTF_8);
+    private static final String OBS_TKNS_REGID_IDX = "TKNS:REGID:"; // secondary index (token list by registration)
 
     private final Pool<Jedis> pool;
 
@@ -226,7 +226,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
 
     @Override
     public Iterator<Registration> getAllRegistrations() {
-        return new RedisIterator(pool, new ScanParams().match(EP_REG + "*").count(100));
+        return new RedisIterator(pool, new ScanParams().match(REG_EP + "*").count(100));
     }
 
     protected class RedisIterator implements Iterator<Registration> {
@@ -234,8 +234,8 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
         private Pool<Jedis> pool;
         private ScanParams scanParams;
 
-        String cursor;
-        List<byte[]> results;
+        private String cursor;
+        private List<Registration> scanResult;
 
         public RedisIterator(Pool<Jedis> p, ScanParams scanParams) {
             pool = p;
@@ -247,30 +247,39 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
         private void scanNext(String cursor) {
             try (Jedis j = pool.getResource()) {
                 ScanResult<byte[]> sr = j.scan(cursor.getBytes(), scanParams);
-                this.results = new ArrayList<>(sr.getResult());
+
+                this.scanResult = new ArrayList<>();
+                if (sr.getResult() != null && !sr.getResult().isEmpty()) {
+                    for (byte[] value : j.mget(sr.getResult().toArray(new byte[][] {}))) {
+                        this.scanResult.add(deserializeReg(value));
+                    }
+                }
+
                 this.cursor = sr.getStringCursor();
             }
         }
 
         @Override
         public boolean hasNext() {
-            try (Jedis j = pool.getResource()) {
-                return !results.isEmpty() || !"0".equals(cursor);
+            if (!scanResult.isEmpty()) {
+                return true;
             }
+            if ("0".equals(cursor)) {
+                // no more elements to scan
+                return false;
+            }
+
+            // read more elements
+            scanNext(cursor);
+            return !scanResult.isEmpty();
         }
 
         @Override
         public Registration next() {
-            try (Jedis j = pool.getResource()) {
-                if (!hasNext()) {
-                    throw new NoSuchElementException();
-                }
-                if (results.isEmpty()) {
-                    scanNext(cursor);
-                }
-
-                return deserializeReg(j.get(results.remove(0)));
+            if (!hasNext()) {
+                throw new NoSuchElementException();
             }
+            return scanResult.remove(0);
         }
 
         @Override
@@ -319,15 +328,15 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     }
 
     private byte[] toRegIdKey(String registrationId) {
-        return toKey(REGID_EP, registrationId);
+        return toKey(REG_EP_REGID_IDX, registrationId);
     }
 
     private byte[] toEndpointKey(String endpoint) {
-        return toKey(EP_REG, endpoint);
+        return toKey(REG_EP, endpoint);
     }
 
     private byte[] toEndpointKey(byte[] endpoint) {
-        return toKey(EP_REG.getBytes(UTF_8), endpoint);
+        return toKey(REG_EP.getBytes(UTF_8), endpoint);
     }
 
     private byte[] serializeReg(Registration registration) {
@@ -413,8 +422,8 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     }
 
     @Override
-    public Observation getObservation(String registrationId, byte[] ObservationId) {
-        return build(get(ObservationId));
+    public Observation getObservation(String registrationId, byte[] observationId) {
+        return build(get(observationId));
     }
 
     @Override
@@ -426,7 +435,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
 
     private Collection<Observation> getObservations(Jedis j, String registrationId) {
         Collection<Observation> result = new ArrayList<>();
-        for (byte[] token : j.lrange(toKey(OBS_REGID, registrationId), 0, -1)) {
+        for (byte[] token : j.lrange(toKey(OBS_TKNS_REGID_IDX, registrationId), 0, -1)) {
             byte[] obs = j.get(toKey(OBS_TKN, token));
             if (obs != null) {
                 result.add(build(deserializeObs(obs)));
@@ -476,7 +485,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
                 byte[] previousValue = j.getSet(toKey(OBS_TKN, obs.getRequest().getToken()), serializeObs(obs));
 
                 // secondary index to get the list by registrationId
-                j.lpush(toKey(OBS_REGID, registrationId), obs.getRequest().getToken());
+                j.lpush(toKey(OBS_TKNS_REGID_IDX, registrationId), obs.getRequest().getToken());
 
                 // log any collisions
                 if (previousValue != null && previousValue.length != 0) {
@@ -503,7 +512,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
                 return;
 
             org.eclipse.californium.core.observe.Observation obs = deserializeObs(serializedObs);
-            String registrationId = extractRegistrationId(obs);
+            String registrationId = obs.getRequest().getUserContext().get(CoapRequestBuilder.CTX_REGID);
             Registration registration = getRegistration(registrationId);
             String endpoint = registration.getEndpoint();
 
@@ -536,13 +545,13 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
 
     private void unsafeRemoveObservation(Jedis j, String registrationId, byte[] observationId) {
         if (j.del(toKey(OBS_TKN, observationId)) > 0L) {
-            j.lrem(toKey(OBS_REGID, registrationId), 0, observationId);
+            j.lrem(toKey(OBS_TKNS_REGID_IDX, registrationId), 0, observationId);
         }
     }
 
     private Collection<Observation> unsafeRemoveAllObservations(Jedis j, String registrationId) {
         Collection<Observation> removed = new ArrayList<>();
-        byte[] regIdKey = toKey(OBS_REGID, registrationId);
+        byte[] regIdKey = toKey(OBS_TKNS_REGID_IDX, registrationId);
 
         // fetch all observations by token
         for (byte[] token : j.lrange(regIdKey, 0, -1)) {
@@ -568,11 +577,6 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
 
     private org.eclipse.californium.core.observe.Observation deserializeObs(byte[] data) {
         return ObservationSerDes.deserialize(data);
-    }
-
-    /* Retrieve the registrationId from the request context */
-    private String extractRegistrationId(org.eclipse.californium.core.observe.Observation observation) {
-        return observation.getRequest().getUserContext().get(CoapRequestBuilder.CTX_REGID);
     }
 
     private Observation build(org.eclipse.californium.core.observe.Observation cfObs) {
@@ -643,7 +647,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
         public void run() {
 
             try (Jedis j = pool.getResource()) {
-                ScanParams params = new ScanParams().match(EP_REG + "*").count(100);
+                ScanParams params = new ScanParams().match(REG_EP + "*").count(100);
                 String cursor = "0";
                 do {
                     // TODO we probably need a lock here
