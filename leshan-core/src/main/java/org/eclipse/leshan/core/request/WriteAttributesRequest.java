@@ -45,7 +45,7 @@ public class WriteAttributesRequest extends AbstractDownlinkRequest<WriteAttribu
     private WriteAttributesRequest(LwM2mPath path, ObserveSpec observeSpec) throws InvalidRequestException {
         super(path);
         if (observeSpec == null)
-            throw new InvalidRequestException("attributes are mandatory");
+            throw new InvalidRequestException("attributes are mandatory for %s", path);
         this.observeSpec = observeSpec;
     }
 

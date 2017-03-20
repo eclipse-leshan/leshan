@@ -58,8 +58,8 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
 
         if (objectLinks == null || objectLinks.length == 0)
             throw new InvalidRequestException(
-                    "supported object list is mandatory and mandatory objects should be present)");
-
+                    "supported object list is mandatory and mandatory objects should be present for endpoint %s",
+                    endpointName);
 
         this.endpointName = endpointName;
         this.lifetime = lifetime;

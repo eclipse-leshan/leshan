@@ -28,12 +28,20 @@ public class InvalidRequestException extends RuntimeException {
     public InvalidRequestException(String m) {
         super(m);
     }
-    
-    public InvalidRequestException(String m, Throwable e) {
-        super(m, e);
+
+    public InvalidRequestException(String m, Object... args) {
+        super(String.format(m, args));
     }
 
     public InvalidRequestException(Throwable e) {
         super(e);
+    }
+
+    public InvalidRequestException(String m, Throwable e) {
+        super(m, e);
+    }
+
+    public InvalidRequestException(Throwable e, String m, Object... args) {
+        super(String.format(m, args), e);
     }
 }
