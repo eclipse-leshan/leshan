@@ -36,6 +36,16 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultLwM2mNodeEncoder.class);
 
+    private LwM2mValueConverter converter;
+
+    public DefaultLwM2mNodeEncoder() {
+        this(new DefaultLwM2mValueConverter());
+    }
+
+    public DefaultLwM2mNodeEncoder(LwM2mValueConverter converter) {
+        this.converter = converter;
+    }
+
     @Override
     public byte[] encode(LwM2mNode node, ContentFormat format, LwM2mPath path, LwM2mModel model) throws CodecException {
         Validate.notNull(node);
@@ -50,17 +60,17 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
         switch (format.getCode()) {
         case ContentFormat.TLV_CODE:
         case ContentFormat.OLD_TLV_CODE:
-            encoded = LwM2mNodeTlvEncoder.encode(node, path, model);
+            encoded = LwM2mNodeTlvEncoder.encode(node, path, model, converter);
             break;
         case ContentFormat.TEXT_CODE:
-            encoded = LwM2mNodeTextEncoder.encode(node, path, model);
+            encoded = LwM2mNodeTextEncoder.encode(node, path, model, converter);
             break;
         case ContentFormat.OPAQUE_CODE:
-            encoded = LwM2mNodeOpaqueEncoder.encode(node, path, model);
+            encoded = LwM2mNodeOpaqueEncoder.encode(node, path, model, converter);
             break;
         case ContentFormat.JSON_CODE:
         case ContentFormat.OLD_JSON_CODE:
-            encoded = LwM2mNodeJsonEncoder.encode(node, path, model);
+            encoded = LwM2mNodeJsonEncoder.encode(node, path, model, converter);
             break;
         default:
             throw new CodecException("Cannot encode %s:%s with format %s.", path, node, format);
@@ -83,7 +93,7 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
         byte[] encoded;
         switch (format.getCode()) {
         case ContentFormat.JSON_CODE:
-            encoded = LwM2mNodeJsonEncoder.encodeTimestampedData(timestampedNodes, path, model);
+            encoded = LwM2mNodeJsonEncoder.encodeTimestampedData(timestampedNodes, path, model, converter);
             break;
         default:
             throw new CodecException("Cannot encode timestampedNode with format %s. [%s]", format, path);

@@ -25,7 +25,7 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.codec.CodecException;
-import org.eclipse.leshan.core.node.codec.Lwm2mNodeEncoderUtil;
+import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +33,8 @@ import org.slf4j.LoggerFactory;
 public class LwM2mNodeOpaqueEncoder {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeOpaqueEncoder.class);
 
-    public static byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model) throws CodecException {
+    public static byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model, LwM2mValueConverter converter)
+            throws CodecException {
         Validate.notNull(node);
         Validate.notNull(path);
         Validate.notNull(model);
@@ -41,6 +42,7 @@ public class LwM2mNodeOpaqueEncoder {
         InternalEncoder internalEncoder = new InternalEncoder();
         internalEncoder.path = path;
         internalEncoder.model = model;
+        internalEncoder.converter = converter;
         node.accept(internalEncoder);
         return internalEncoder.encoded;
     }
@@ -49,6 +51,7 @@ public class LwM2mNodeOpaqueEncoder {
 
         LwM2mPath path;
         LwM2mModel model;
+        LwM2mValueConverter converter;
 
         byte[] encoded = null;
 
@@ -72,8 +75,7 @@ public class LwM2mNodeOpaqueEncoder {
                 throw new CodecException("Only single opaque resource can be encoded in opaque format. [%s]", path);
             }
             LOG.trace("Encoding resource {} into text", resource);
-            Object value = Lwm2mNodeEncoderUtil.convertValue(resource.getValue(), resource.getType(), Type.OPAQUE,
-                    path);
+            Object value = converter.convertValue(resource.getValue(), resource.getType(), Type.OPAQUE, path);
             encoded = (byte[]) value;
         }
     }
