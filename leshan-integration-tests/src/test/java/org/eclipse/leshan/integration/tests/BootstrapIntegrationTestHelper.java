@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
@@ -37,8 +38,8 @@ import org.eclipse.leshan.server.bootstrap.BootstrapStore;
 import org.eclipse.leshan.server.californium.impl.LeshanBootstrapServer;
 import org.eclipse.leshan.server.impl.DefaultBootstrapSessionManager;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
-import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
+import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.util.Hex;
 
 /**
@@ -94,7 +95,8 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
         BootstrapSessionManager bsSessionManager = new DefaultBootstrapSessionManager(securityStore);
 
         bootstrapServer = new LeshanBootstrapServer(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0),
-                new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), bsStore, securityStore, bsSessionManager);
+                new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), bsStore, securityStore, bsSessionManager,
+                new NetworkConfig());
     }
 
     @Override

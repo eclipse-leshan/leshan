@@ -31,6 +31,7 @@ import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.scandium.DTLSConnector;
@@ -116,11 +117,13 @@ public class LeshanServer implements LwM2mServer {
      * @param certificateChain the server X509 certificate (will be used for RPK too, in this case no need to set public
      *        key).
      * @param trustedCertificates the trusted certificates used to authenticate client certificates.
+     * @param networkConfig the CoAP {@link NetworkConfig}.
      */
     public LeshanServer(InetSocketAddress localAddress, InetSocketAddress localSecureAddress,
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
             LwM2mModelProvider modelProvider, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder, PublicKey publicKey,
-            PrivateKey privateKey, X509Certificate[] x509CertChain, Certificate[] trustedCertificates) {
+            PrivateKey privateKey, X509Certificate[] x509CertChain, Certificate[] trustedCertificates,
+            NetworkConfig networkConfig) {
         Validate.notNull(localAddress, "IP address cannot be null");
         Validate.notNull(localSecureAddress, "Secure IP address cannot be null");
         Validate.notNull(registrationStore, "registration store cannot be null");
@@ -128,6 +131,7 @@ public class LeshanServer implements LwM2mServer {
         Validate.notNull(modelProvider, "modelProvider cannot be null");
         Validate.notNull(encoder, "encoder cannot be null");
         Validate.notNull(decoder, "decoder cannot be null");
+        Validate.notNull(networkConfig, "networkConfig cannot be null");
 
         // Init services and stores
         this.registrationStore = registrationStore;
@@ -157,13 +161,13 @@ public class LeshanServer implements LwM2mServer {
         Set<Endpoint> endpoints = new HashSet<>();
 
         // default endpoint
-        coapServer = new CoapServer() {
+        coapServer = new CoapServer(networkConfig) {
             @Override
             protected Resource createRoot() {
                 return new RootResource();
             }
         };
-        nonSecureEndpoint = new CoapEndpoint(localAddress, NetworkConfig.getStandard(),
+        nonSecureEndpoint = new CoapEndpoint(localAddress, networkConfig,
                 this.observationService.getObservationStore());
         nonSecureEndpoint.addNotificationListener(observationService);
         observationService.setNonSecureEndpoint(nonSecureEndpoint);
@@ -174,6 +178,10 @@ public class LeshanServer implements LwM2mServer {
         if (securityStore != null) {
             Builder builder = new DtlsConnectorConfig.Builder(localSecureAddress);
             builder.setPskStore(new LwM2mPskStore(this.securityStore, this.registrationService.getStore()));
+
+            // synchronize network configuration and DTLS configuration
+            builder.setMaxConnections(networkConfig.getInt(Keys.MAX_ACTIVE_PEERS));
+            builder.setStaleConnectionThreshold(networkConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
 
             // if in raw key mode and not in X.509 set the raw keys
             if (x509CertChain == null && privateKey != null && publicKey != null) {
@@ -188,7 +196,7 @@ public class LeshanServer implements LwM2mServer {
                 builder.setTrustStore(trustedCertificates);
             }
 
-            secureEndpoint = new CoapEndpoint(new DTLSConnector(builder.build()), NetworkConfig.getStandard(),
+            secureEndpoint = new CoapEndpoint(new DTLSConnector(builder.build()), networkConfig,
                     this.observationService.getObservationStore(), null);
             secureEndpoint.addNotificationListener(observationService);
             observationService.setSecureEndpoint(secureEndpoint);

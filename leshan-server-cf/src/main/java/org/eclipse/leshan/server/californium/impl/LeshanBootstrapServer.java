@@ -21,6 +21,7 @@ import java.net.InetSocketAddress;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
@@ -55,27 +56,31 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
             BootstrapSessionManager bsSessionManager) {
         this(new InetSocketAddress((InetAddress) null, LwM2m.DEFAULT_COAP_PORT),
                 new InetSocketAddress((InetAddress) null, LwM2m.DEFAULT_COAP_SECURE_PORT), bsStore, securityStore,
-                bsSessionManager);
+                bsSessionManager, new NetworkConfig());
 
     }
 
     public LeshanBootstrapServer(InetSocketAddress localAddress, InetSocketAddress localAddressSecure,
-            BootstrapStore bsStore, BootstrapSecurityStore bsSecurityStore, BootstrapSessionManager bsSessionManager) {
+            BootstrapStore bsStore, BootstrapSecurityStore bsSecurityStore, BootstrapSessionManager bsSessionManager,
+            NetworkConfig networkConfig) {
         Validate.notNull(bsStore, "bootstrap store must not be null");
+        Validate.notNull(networkConfig, "networkConfig must not be null");
 
         this.bsStore = bsStore;
         this.bsSecurityStore = bsSecurityStore;
 
         // init CoAP server
-        coapServer = new CoapServer();
-        nonSecureEndpoint = new CoapEndpoint(localAddress);
+        coapServer = new CoapServer(networkConfig);
+        nonSecureEndpoint = new CoapEndpoint(localAddress, networkConfig);
         coapServer.addEndpoint(nonSecureEndpoint);
 
         // init DTLS server
         Builder builder = new DtlsConnectorConfig.Builder(localAddressSecure);
         builder.setPskStore(new LwM2mBootstrapPskStore(this.bsSecurityStore));
+        builder.setMaxConnections(networkConfig.getInt(Keys.MAX_ACTIVE_PEERS));
+        builder.setStaleConnectionThreshold(networkConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
 
-        secureEndpoint = new CoapEndpoint(new DTLSConnector(builder.build()), NetworkConfig.getStandard());
+        secureEndpoint = new CoapEndpoint(new DTLSConnector(builder.build()), networkConfig);
         coapServer.addEndpoint(secureEndpoint);
 
         // create request sender
