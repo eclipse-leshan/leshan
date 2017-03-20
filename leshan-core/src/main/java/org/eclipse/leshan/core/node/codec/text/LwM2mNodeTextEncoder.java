@@ -29,7 +29,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.codec.CodecException;
-import org.eclipse.leshan.core.node.codec.Lwm2mNodeEncoderUtil;
+import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +38,8 @@ public class LwM2mNodeTextEncoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeTextEncoder.class);
 
-    public static byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model) throws CodecException {
+    public static byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model, LwM2mValueConverter converter)
+            throws CodecException {
         Validate.notNull(node);
         Validate.notNull(path);
         Validate.notNull(model);
@@ -46,6 +47,7 @@ public class LwM2mNodeTextEncoder {
         InternalEncoder internalEncoder = new InternalEncoder();
         internalEncoder.path = path;
         internalEncoder.model = model;
+        internalEncoder.converter = converter;
         node.accept(internalEncoder);
         return internalEncoder.encoded;
     }
@@ -54,6 +56,7 @@ public class LwM2mNodeTextEncoder {
         // visitor inputs
         private LwM2mPath path;
         private LwM2mModel model;
+        private LwM2mValueConverter converter;
 
         // visitor output
         private byte[] encoded = null;
@@ -77,7 +80,7 @@ public class LwM2mNodeTextEncoder {
 
             ResourceModel rSpec = model.getResourceModel(path.getObjectId(), resource.getId());
             Type expectedType = rSpec != null ? rSpec.type : resource.getType();
-            Object val = Lwm2mNodeEncoderUtil.convertValue(resource.getValue(), resource.getType(), expectedType, path);
+            Object val = converter.convertValue(resource.getValue(), resource.getType(), expectedType, path);
 
             String strValue = null;
             switch (expectedType) {

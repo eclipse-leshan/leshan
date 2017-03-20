@@ -33,7 +33,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.codec.CodecException;
-import org.eclipse.leshan.core.node.codec.Lwm2mNodeEncoderUtil;
+import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
 import org.eclipse.leshan.tlv.Tlv;
 import org.eclipse.leshan.tlv.Tlv.TlvType;
 import org.eclipse.leshan.tlv.TlvEncoder;
@@ -48,7 +48,8 @@ public class LwM2mNodeTlvEncoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeTlvEncoder.class);
 
-    public static byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model) throws CodecException {
+    public static byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model, LwM2mValueConverter converter)
+            throws CodecException {
         Validate.notNull(node);
         Validate.notNull(path);
         Validate.notNull(model);
@@ -56,6 +57,7 @@ public class LwM2mNodeTlvEncoder {
         InternalEncoder internalEncoder = new InternalEncoder();
         internalEncoder.path = path;
         internalEncoder.model = model;
+        internalEncoder.converter = converter;
         node.accept(internalEncoder);
         return internalEncoder.out.toByteArray();
     }
@@ -65,6 +67,7 @@ public class LwM2mNodeTlvEncoder {
         // visitor inputs
         private LwM2mPath path;
         private LwM2mModel model;
+        private LwM2mValueConverter converter;
 
         // visitor output
         private ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -156,16 +159,16 @@ public class LwM2mNodeTlvEncoder {
                 int i = 0;
                 for (Entry<Integer, ?> entry : resource.getValues().entrySet()) {
                     LwM2mPath resourceInstancePath = resourcePath.append(entry.getKey());
-                    Object convertedValue = Lwm2mNodeEncoderUtil.convertValue(entry.getValue(), resource.getType(),
-                            expectedType, resourceInstancePath);
+                    Object convertedValue = converter.convertValue(entry.getValue(), resource.getType(), expectedType,
+                            resourceInstancePath);
                     instances[i] = new Tlv(TlvType.RESOURCE_INSTANCE, null,
                             this.encodeTlvValue(convertedValue, expectedType, resourceInstancePath), entry.getKey());
                     i++;
                 }
                 rTlv = new Tlv(TlvType.MULTIPLE_RESOURCE, instances, null, resource.getId());
             } else {
-                Object convertedValue = Lwm2mNodeEncoderUtil.convertValue(resource.getValue(), resource.getType(),
-                        expectedType, resourcePath);
+                Object convertedValue = converter.convertValue(resource.getValue(), resource.getType(), expectedType,
+                        resourcePath);
                 rTlv = new Tlv(TlvType.RESOURCE_VALUE, null,
                         this.encodeTlvValue(convertedValue, expectedType, resourcePath), resource.getId());
             }
