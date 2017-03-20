@@ -39,7 +39,7 @@ public class LwM2mNodeOpaqueEncoder {
         Validate.notNull(model);
 
         InternalEncoder internalEncoder = new InternalEncoder();
-        internalEncoder.objectId = path.getObjectId();
+        internalEncoder.path = path;
         internalEncoder.model = model;
         node.accept(internalEncoder);
         return internalEncoder.encoded;
@@ -47,7 +47,7 @@ public class LwM2mNodeOpaqueEncoder {
 
     private static class InternalEncoder implements LwM2mNodeVisitor {
 
-        int objectId;
+        LwM2mPath path;
         LwM2mModel model;
 
         byte[] encoded = null;
@@ -67,12 +67,13 @@ public class LwM2mNodeOpaqueEncoder {
             if (resource.isMultiInstances()) {
                 throw new CodecException("Multiple instances resource cannot be encoded in opaque format");
             }
-            ResourceModel rSpec = model.getResourceModel(objectId, resource.getId());
+            ResourceModel rSpec = model.getResourceModel(path.getObjectId(), resource.getId());
             if (rSpec != null && rSpec.type != Type.OPAQUE) {
                 throw new CodecException("Only single opaque resource can be encoded in opaque format");
             }
             LOG.trace("Encoding resource {} into text", resource);
-            Object value = Lwm2mNodeEncoderUtil.convertValue(resource.getValue(), resource.getType(), Type.OPAQUE);
+            Object value = Lwm2mNodeEncoderUtil.convertValue(resource.getValue(), resource.getType(), Type.OPAQUE,
+                    path);
             encoded = (byte[]) value;
         }
     }

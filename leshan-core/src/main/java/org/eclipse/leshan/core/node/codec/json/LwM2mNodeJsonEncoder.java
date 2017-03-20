@@ -147,18 +147,22 @@ public class LwM2mNodeJsonEncoder {
             // create JSON resource element
             if (resource.isMultiInstances()) {
                 for (Entry<Integer, ?> entry : resource.getValues().entrySet()) {
+                    // compute resource instance path
+                    String resourceInstancePath;
+                    if (resourcePath == null || resourcePath.isEmpty()) {
+                        resourceInstancePath = Integer.toString(entry.getKey());
+                    } else {
+                        resourceInstancePath = resourcePath + "/" + entry.getKey();
+                    }
+
                     // Create resource element
                     JsonArrayEntry jsonResourceElt = new JsonArrayEntry();
-                    if (resourcePath == null || resourcePath.isEmpty()) {
-                        jsonResourceElt.setName(Integer.toString(entry.getKey()));
-                    } else {
-                        jsonResourceElt.setName(resourcePath + "/" + entry.getKey());
-                    }
+                    jsonResourceElt.setName(resourceInstancePath);
                     jsonResourceElt.setTime(timestamp);
 
                     // Convert value using expected type
                     Object convertedValue = Lwm2mNodeEncoderUtil.convertValue(entry.getValue(), resource.getType(),
-                            expectedType);
+                            expectedType, new LwM2mPath(resourceInstancePath));
                     this.setResourceValue(convertedValue, expectedType, jsonResourceElt);
 
                     // Add it to the List
@@ -171,9 +175,8 @@ public class LwM2mNodeJsonEncoder {
                 jsonResourceElt.setTime(timestamp);
 
                 // Convert value using expected type
-                this.setResourceValue(
-                        Lwm2mNodeEncoderUtil.convertValue(resource.getValue(), resource.getType(), expectedType),
-                        expectedType, jsonResourceElt);
+                this.setResourceValue(Lwm2mNodeEncoderUtil.convertValue(resource.getValue(), resource.getType(),
+                        expectedType, new LwM2mPath(resourcePath)), expectedType, jsonResourceElt);
 
                 // Add it to the List
                 resourcesList.add(jsonResourceElt);

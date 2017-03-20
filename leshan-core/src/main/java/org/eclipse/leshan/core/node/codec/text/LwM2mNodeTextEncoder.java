@@ -44,7 +44,7 @@ public class LwM2mNodeTextEncoder {
         Validate.notNull(model);
 
         InternalEncoder internalEncoder = new InternalEncoder();
-        internalEncoder.objectId = path.getObjectId();
+        internalEncoder.path = path;
         internalEncoder.model = model;
         node.accept(internalEncoder);
         return internalEncoder.encoded;
@@ -52,7 +52,7 @@ public class LwM2mNodeTextEncoder {
 
     private static class InternalEncoder implements LwM2mNodeVisitor {
         // visitor inputs
-        private int objectId;
+        private LwM2mPath path;
         private LwM2mModel model;
 
         // visitor output
@@ -75,9 +75,9 @@ public class LwM2mNodeTextEncoder {
             }
             LOG.trace("Encoding resource {} into text", resource);
 
-            ResourceModel rSpec = model.getResourceModel(objectId, resource.getId());
+            ResourceModel rSpec = model.getResourceModel(path.getObjectId(), resource.getId());
             Type expectedType = rSpec != null ? rSpec.type : resource.getType();
-            Object val = Lwm2mNodeEncoderUtil.convertValue(resource.getValue(), resource.getType(), expectedType);
+            Object val = Lwm2mNodeEncoderUtil.convertValue(resource.getValue(), resource.getType(), expectedType, path);
 
             String strValue;
             switch (expectedType) {
