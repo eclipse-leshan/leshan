@@ -155,23 +155,24 @@ public class LwM2mNodeTlvEncoder {
                 Tlv[] instances = new Tlv[resource.getValues().size()];
                 int i = 0;
                 for (Entry<Integer, ?> entry : resource.getValues().entrySet()) {
+                    LwM2mPath resourceInstancePath = resourcePath.append(entry.getKey());
                     Object convertedValue = Lwm2mNodeEncoderUtil.convertValue(entry.getValue(), resource.getType(),
-                            expectedType, resourcePath.append(entry.getKey()));
+                            expectedType, resourceInstancePath);
                     instances[i] = new Tlv(TlvType.RESOURCE_INSTANCE, null,
-                            this.encodeTlvValue(convertedValue, expectedType), entry.getKey());
+                            this.encodeTlvValue(convertedValue, expectedType, resourceInstancePath), entry.getKey());
                     i++;
                 }
                 rTlv = new Tlv(TlvType.MULTIPLE_RESOURCE, instances, null, resource.getId());
             } else {
                 Object convertedValue = Lwm2mNodeEncoderUtil.convertValue(resource.getValue(), resource.getType(),
                         expectedType, resourcePath);
-                rTlv = new Tlv(TlvType.RESOURCE_VALUE, null, this.encodeTlvValue(convertedValue, expectedType),
-                        resource.getId());
+                rTlv = new Tlv(TlvType.RESOURCE_VALUE, null,
+                        this.encodeTlvValue(convertedValue, expectedType, resourcePath), resource.getId());
             }
             return rTlv;
         }
 
-        private byte[] encodeTlvValue(Object value, Type type) {
+        private byte[] encodeTlvValue(Object value, Type type, LwM2mPath path) {
             LOG.trace("Encoding value {} in TLV", value);
             try {
                 switch (type) {
@@ -190,10 +191,10 @@ public class LwM2mNodeTlvEncoder {
                 case OBJLNK:
                     return TlvEncoder.encodeObjlnk((ObjectLink) value);
                 default:
-                    throw new CodecException(String.format("Invalid value %s for type %s", value, type));
+                    throw new CodecException("Invalid value %s for type %s of %s", value, type, path);
                 }
             } catch (IllegalArgumentException e) {
-                throw new CodecException(String.format("Invalid value %s for type %s", value, type), e);
+                throw new CodecException(e, "Invalid value %s for type %s of %s", value, type, path);
             }
         }
     }

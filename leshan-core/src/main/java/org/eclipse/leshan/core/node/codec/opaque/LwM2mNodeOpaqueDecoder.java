@@ -27,13 +27,13 @@ public class LwM2mNodeOpaqueDecoder {
 
     public static LwM2mNode decode(byte[] content, LwM2mPath path, LwM2mModel model) throws CodecException {
         if (!path.isResource())
-            throw new CodecException(String.format("Invalid path %s : OpaqueDecoder decodes resource only", path));
+            throw new CodecException("Invalid path %s : OpaqueDecoder decodes resource only", path);
 
         ResourceModel desc = model.getResourceModel(path.getObjectId(), path.getResourceId());
         if (desc != null && desc.type != Type.OPAQUE) {
-            throw new CodecException(String.format(
+            throw new CodecException(
                     "Invalid content format [%s] for path [%s], OPAQUE can only be used for single OPAQUE resource",
-                    desc.type, path));
+                    desc.type, path);
         }
         return LwM2mSingleResource.newBinaryResource(path.getResourceId(), content);
     }

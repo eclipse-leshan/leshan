@@ -60,18 +60,18 @@ public class LwM2mNodeTextEncoder {
 
         @Override
         public void visit(LwM2mObject object) {
-            throw new CodecException("Object cannot be encoded in text format");
+            throw new CodecException("Object %s cannot be encoded in text format", path);
         }
 
         @Override
         public void visit(LwM2mObjectInstance instance) {
-            throw new CodecException("Object instance cannot be encoded in text format");
+            throw new CodecException("Object instance %s cannot be encoded in text format", path);
         }
 
         @Override
         public void visit(LwM2mResource resource) {
             if (resource.isMultiInstances()) {
-                throw new CodecException("Multiple instances resource cannot be encoded in text format");
+                throw new CodecException("Multiple instances resource %s cannot be encoded in text format", path);
             }
             LOG.trace("Encoding resource {} into text", resource);
 
@@ -98,7 +98,7 @@ public class LwM2mNodeTextEncoder {
                 strValue = String.valueOf(objlnk.getObjectId() + ":" + objlnk.getObjectInstanceId());
                 break;
             default:
-                throw new CodecException("Cannot encode " + val + " in text format");
+                throw new CodecException("Cannot encode %s in text format for %s", val, path);
             }
 
             encoded = strValue.getBytes(StandardCharsets.UTF_8);

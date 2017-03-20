@@ -65,7 +65,7 @@ public class LwM2mNodeJsonDecoder {
                 return (T) timestampedNodes.get(0).getNode();
             }
         } catch (LwM2mJsonException e) {
-            throw new CodecException(String.format("Unable to deserialize json [path:%s]", path), e);
+            throw new CodecException(e, "Unable to deserialize json [path:%s]", path);
         }
     }
 
@@ -76,7 +76,7 @@ public class LwM2mNodeJsonDecoder {
             JsonRootObject json = LwM2mJson.fromJsonLwM2m(jsonStrValue);
             return parseJSON(json, path, model, nodeClass);
         } catch (LwM2mJsonException e) {
-            throw new CodecException(String.format("Unable to deserialize json [path:%s]", path), e);
+            throw new CodecException(e, "Unable to deserialize json [path:%s]", path);
         }
     }
 
@@ -116,7 +116,7 @@ public class LwM2mNodeJsonDecoder {
             } else if (nodeClass == LwM2mObjectInstance.class) {
                 // validate we have resources for only 1 instance
                 if (jsonEntryByInstanceId.size() != 1)
-                    throw new CodecException(String.format("One instance expected in the payload [path:%s]", path));
+                    throw new CodecException("One instance expected in the payload [path:%s]", path);
 
                 // Extract resources
                 Entry<Integer, Collection<JsonArrayEntry>> instanceEntry = jsonEntryByInstanceId.entrySet().iterator()
@@ -129,8 +129,7 @@ public class LwM2mNodeJsonDecoder {
             } else if (nodeClass == LwM2mResource.class) {
                 // validate we have resources for only 1 instance
                 if (jsonEntryByInstanceId.size() > 1)
-                    throw new CodecException(
-                            String.format("Only one instance expected in the payload [path:%s]", path));
+                    throw new CodecException("Only one instance expected in the payload [path:%s]", path);
 
                 // Extract resources
                 Map<Integer, LwM2mResource> resourcesMap = extractLwM2mResources(
@@ -138,8 +137,7 @@ public class LwM2mNodeJsonDecoder {
 
                 // validate there is only 1 resource
                 if (resourcesMap.size() != 1)
-                    throw new CodecException(
-                            String.format("One resource should be present in the payload [path:%s]", path));
+                    throw new CodecException("One resource should be present in the payload [path:%s]", path);
 
                 node = resourcesMap.values().iterator().next();
             } else {
@@ -233,9 +231,9 @@ public class LwM2mNodeJsonDecoder {
 
             // Validate path
             if (!nodePath.isResourceInstance() && !nodePath.isResource()) {
-                throw new CodecException(String.format(
+                throw new CodecException(
                         "Invalid path [%s] for resource, it should be a resource or a resource instance path",
-                        nodePath));
+                        nodePath);
             }
 
             // Get jsonArray for this instance
@@ -265,18 +263,18 @@ public class LwM2mNodeJsonDecoder {
             // check returned base name path is under requested path
             if (requestPath.getObjectId() != null && bnPath.getObjectId() != null) {
                 if (!bnPath.getObjectId().equals(requestPath.getObjectId())) {
-                    throw new CodecException(String.format("Basename path [%s] does not match requested path [%s].",
-                            bnPath, requestPath));
+                    throw new CodecException("Basename path [%s] does not match requested path [%s].", bnPath,
+                            requestPath);
                 }
                 if (requestPath.getObjectInstanceId() != null && bnPath.getObjectInstanceId() != null) {
                     if (!bnPath.getObjectInstanceId().equals(requestPath.getObjectInstanceId())) {
-                        throw new CodecException(String.format("Basename path [%s] does not match requested path [%s].",
-                                bnPath, requestPath));
+                        throw new CodecException("Basename path [%s] does not match requested path [%s].", bnPath,
+                                requestPath);
                     }
                     if (requestPath.getResourceId() != null && bnPath.getResourceId() != null) {
                         if (!bnPath.getResourceId().equals(requestPath.getResourceId())) {
-                            throw new CodecException(String.format(
-                                    "Basename path [%s] does not match requested path [%s].", bnPath, requestPath));
+                            throw new CodecException("Basename path [%s] does not match requested path [%s].", bnPath,
+                                    requestPath);
                         }
                     }
                 }
@@ -320,9 +318,9 @@ public class LwM2mNodeJsonDecoder {
                         parseJsonValue(resourceElt.getResourceValue(), expectedType, nodePath), expectedType);
                 lwM2mResourceMap.put(nodePath.getResourceId(), res);
             } else {
-                throw new CodecException(String.format(
+                throw new CodecException(
                         "Invalid path [%s] for resource, it should be a resource or a resource instance path",
-                        nodePath));
+                        nodePath);
             }
         }
 
@@ -348,7 +346,7 @@ public class LwM2mNodeJsonDecoder {
         // If we found nothing, we try to create an empty multi-instance resource
         if (lwM2mResourceMap.isEmpty() && baseName.isResource()) {
             ResourceModel resourceModel = model.getResourceModel(baseName.getObjectId(), baseName.getResourceId());
-            // We create it only if this respect the model 
+            // We create it only if this respect the model
             if (resourceModel == null || resourceModel.multiple) {
                 Type resourceType = getResourceType(baseName, model, null);
                 lwM2mResourceMap.put(baseName.getResourceId(), LwM2mMultipleResource
@@ -382,11 +380,10 @@ public class LwM2mNodeJsonDecoder {
             case STRING:
                 return value;
             default:
-                throw new CodecException(String.format("Unsupported type %s for path %s", expectedType, path));
+                throw new CodecException("Unsupported type %s for path %s", expectedType, path);
             }
         } catch (Exception e) {
-            throw new CodecException(
-                    String.format("Invalid content [%s] for type %s for path %s", value, expectedType, path), e);
+            throw new CodecException(e, "Invalid content [%s] for type %s for path %s", value, expectedType, path);
         }
     }
 

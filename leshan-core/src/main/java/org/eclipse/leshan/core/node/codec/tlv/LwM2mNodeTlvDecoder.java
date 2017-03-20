@@ -76,19 +76,18 @@ public class LwM2mNodeTlvDecoder {
                 } else if (!oModel.multiple) {
                     instances.add(parseObjectInstanceTlv(tlvs, path.getObjectId(), 0, model));
                 } else {
-                    throw new CodecException(String
-                            .format("Object instance TLV is mandatory for multiple instances object [path:%s]", path));
+                    throw new CodecException("Object instance TLV is mandatory for multiple instances object [path:%s]",
+                            path);
                 }
 
             } else {
                 for (Tlv tlv : tlvs) {
                     if (tlv.getType() != TlvType.OBJECT_INSTANCE)
-                        throw new CodecException(
-                                String.format("Expected TLV of type OBJECT_INSTANCE but was %s  [path:%s]",
-                                        tlv.getType().name(), path));
+                        throw new CodecException("Expected TLV of type OBJECT_INSTANCE but was %s  [path:%s]",
+                                tlv.getType().name(), path);
 
-                    instances.add(parseObjectInstanceTlv(tlv.getChildren(), path.getObjectId(),
-                            tlv.getIdentifier(), model));
+                    instances.add(
+                            parseObjectInstanceTlv(tlv.getChildren(), path.getObjectId(), tlv.getIdentifier(), model));
                 }
             }
             return (T) new LwM2mObject(path.getObjectId(), instances);
@@ -99,8 +98,8 @@ public class LwM2mNodeTlvDecoder {
 
             if (tlvs.length == 1 && tlvs[0].getType() == TlvType.OBJECT_INSTANCE) {
                 if (path.isObjectInstance() && tlvs[0].getIdentifier() != path.getObjectInstanceId()) {
-                    throw new CodecException(String.format("Id conflict between path [%s] and instance TLV [%d]", path,
-                            tlvs[0].getIdentifier()));
+                    throw new CodecException("Id conflict between path [%s] and instance TLV [%d]", path,
+                            tlvs[0].getIdentifier());
                 }
                 // object instance TLV
                 return (T) parseObjectInstanceTlv(tlvs[0].getChildren(), path.getObjectId(), tlvs[0].getIdentifier(),
@@ -128,12 +127,12 @@ public class LwM2mNodeTlvDecoder {
             if (tlvs.length == 0 && resourceModel != null && !resourceModel.multiple) {
                 // If there is no TlV value and we know that this resource is a single resource we raise an exception
                 // else we consider this is a multi-instance resource
-                throw new CodecException(String.format("TLV payload is mandatory for single resource %s", path));
+                throw new CodecException("TLV payload is mandatory for single resource %s", path);
 
             } else if (tlvs.length == 1 && tlvs[0].getType() != TlvType.RESOURCE_INSTANCE) {
                 if (path.isResource() && path.getResourceId() != tlvs[0].getIdentifier()) {
-                    throw new CodecException(String.format("Id conflict between path [%s] and resource TLV [%s]", path,
-                            tlvs[0].getIdentifier()));
+                    throw new CodecException("Id conflict between path [%s] and resource TLV [%s]", path,
+                            tlvs[0].getIdentifier());
                 }
                 return (T) parseResourceTlv(tlvs[0], path.getObjectId(), path.getObjectInstanceId(), model);
             } else {
@@ -170,7 +169,7 @@ public class LwM2mNodeTlvDecoder {
             return LwM2mSingleResource.newResource(resourceId,
                     parseTlvValue(tlv.getValue(), expectedType, resourcePath), expectedType);
         default:
-            throw new CodecException(String.format("Invalid TLV type %s for resource %s", tlv.getType(), resourcePath));
+            throw new CodecException("Invalid TLV type %s for resource %s", tlv.getType(), resourcePath);
         }
     }
 
@@ -179,8 +178,8 @@ public class LwM2mNodeTlvDecoder {
         Map<Integer, Object> values = new HashMap<>();
         for (Tlv tlvChild : tlvs) {
             if (tlvChild.getType() != TlvType.RESOURCE_INSTANCE)
-                throw new CodecException(String.format("Expected TLV of type RESOURCE_INSTANCE but was %s for path %s",
-                        tlvChild.getType().name(), path));
+                throw new CodecException("Expected TLV of type RESOURCE_INSTANCE but was %s for path %s",
+                        tlvChild.getType().name(), path);
 
             values.put(tlvChild.getIdentifier(), parseTlvValue(tlvChild.getValue(), expectedType, path));
         }
@@ -206,11 +205,11 @@ public class LwM2mNodeTlvDecoder {
             case OBJLNK:
                 return TlvDecoder.decodeObjlnk(value);
             default:
-                throw new CodecException(String.format("Unsupported type %s for path %s", expectedType, path));
+                throw new CodecException("Unsupported type %s for path %s", expectedType, path);
             }
         } catch (TlvException e) {
-            throw new CodecException(String.format("Invalid content [%s] for type %s for path %s",
-                    Hex.encodeHexString(value), expectedType, path), e);
+            throw new CodecException(e, "Invalid content [%s] for type %s for path %s", Hex.encodeHexString(value),
+                    expectedType, path);
         }
     }
 
