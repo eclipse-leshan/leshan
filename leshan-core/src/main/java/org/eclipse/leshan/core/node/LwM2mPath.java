@@ -131,6 +131,14 @@ public class LwM2mPath {
     }
 
     /**
+     * @param end the end of the new path
+     * @return a new path which is the concatenation of this path and the given one in parameter.
+     */
+    public LwM2mPath append(int end) {
+        return append(String.valueOf(end));
+    }
+
+    /**
      * Returns the object ID in the path.
      *
      * @return the object ID. Can be <code>null</code> when this is an root path.

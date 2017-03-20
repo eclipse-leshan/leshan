@@ -78,13 +78,14 @@ public class LwM2mNodeTlvEncoder {
             ObjectModel objectModel = model.getObjectModel(object.getId());
             if (objectModel != null && !objectModel.multiple) {
                 // single instance object, the instance is level is not needed
-                tlvs = encodeResources(object.getInstance(0).getResources().values());
+                tlvs = encodeResources(object.getInstance(0).getResources().values(), new LwM2mPath(object.getId(), 0));
             } else {
                 // encoded as an array of instances
                 tlvs = new Tlv[object.getInstances().size()];
                 int i = 0;
                 for (Entry<Integer, LwM2mObjectInstance> instance : object.getInstances().entrySet()) {
-                    Tlv[] resources = encodeResources(instance.getValue().getResources().values());
+                    Tlv[] resources = encodeResources(instance.getValue().getResources().values(),
+                            new LwM2mPath(object.getId(), instance.getKey()));
                     tlvs[i] = new Tlv(TlvType.OBJECT_INSTANCE, resources, null, instance.getKey());
                     i++;
                 }
@@ -106,10 +107,12 @@ public class LwM2mNodeTlvEncoder {
                 // the instanceId is part of the request path or is undefined
                 // so the instance TLV layer is not needed.
                 // encoded as an array of resource TLVs
-                tlvs = encodeResources(instance.getResources().values());
+                tlvs = encodeResources(instance.getResources().values(),
+                        new LwM2mPath(path.getObjectId(), instance.getId()));
             } else {
                 // encoded as an instance TLV
-                Tlv[] resources = encodeResources(instance.getResources().values());
+                Tlv[] resources = encodeResources(instance.getResources().values(),
+                        new LwM2mPath(path.getObjectId(), instance.getId()));
                 tlvs = new Tlv[] { new Tlv(TlvType.OBJECT_INSTANCE, resources, null, instance.getId()) };
             }
 
@@ -124,7 +127,7 @@ public class LwM2mNodeTlvEncoder {
         public void visit(LwM2mResource resource) {
             LOG.trace("Encoding resource {} into TLV", resource);
 
-            Tlv rTlv = encodeResource(resource);
+            Tlv rTlv = encodeResource(resource, path);
 
             try {
                 out.write(TlvEncoder.encode(new Tlv[] { rTlv }).array());
@@ -133,17 +136,17 @@ public class LwM2mNodeTlvEncoder {
             }
         }
 
-        private Tlv[] encodeResources(Collection<LwM2mResource> resources) {
+        private Tlv[] encodeResources(Collection<LwM2mResource> resources, LwM2mPath instancePath) {
             Tlv[] rTlvs = new Tlv[resources.size()];
             int i = 0;
             for (LwM2mResource resource : resources) {
-                rTlvs[i] = encodeResource(resource);
+                rTlvs[i] = encodeResource(resource, instancePath.append(resource.getId()));
                 i++;
             }
             return rTlvs;
         }
 
-        private Tlv encodeResource(LwM2mResource resource) {
+        private Tlv encodeResource(LwM2mResource resource, LwM2mPath resourcePath) {
             ResourceModel rSpec = model.getResourceModel(path.getObjectId(), resource.getId());
             Type expectedType = rSpec != null ? rSpec.type : resource.getType();
 
@@ -152,23 +155,24 @@ public class LwM2mNodeTlvEncoder {
                 Tlv[] instances = new Tlv[resource.getValues().size()];
                 int i = 0;
                 for (Entry<Integer, ?> entry : resource.getValues().entrySet()) {
+                    LwM2mPath resourceInstancePath = resourcePath.append(entry.getKey());
                     Object convertedValue = Lwm2mNodeEncoderUtil.convertValue(entry.getValue(), resource.getType(),
-                            expectedType);
-                    instances[i] = new Tlv(TlvType.RESOURCE_INSTANCE, null, this.encodeTlvValue(convertedValue,
-                            expectedType), entry.getKey());
+                            expectedType, resourceInstancePath);
+                    instances[i] = new Tlv(TlvType.RESOURCE_INSTANCE, null,
+                            this.encodeTlvValue(convertedValue, expectedType, resourceInstancePath), entry.getKey());
                     i++;
                 }
                 rTlv = new Tlv(TlvType.MULTIPLE_RESOURCE, instances, null, resource.getId());
             } else {
                 Object convertedValue = Lwm2mNodeEncoderUtil.convertValue(resource.getValue(), resource.getType(),
-                        expectedType);
-                rTlv = new Tlv(TlvType.RESOURCE_VALUE, null, this.encodeTlvValue(convertedValue, expectedType),
-                        resource.getId());
+                        expectedType, resourcePath);
+                rTlv = new Tlv(TlvType.RESOURCE_VALUE, null,
+                        this.encodeTlvValue(convertedValue, expectedType, resourcePath), resource.getId());
             }
             return rTlv;
         }
 
-        private byte[] encodeTlvValue(Object value, Type type) {
+        private byte[] encodeTlvValue(Object value, Type type, LwM2mPath path) {
             LOG.trace("Encoding value {} in TLV", value);
             try {
                 switch (type) {
@@ -187,10 +191,10 @@ public class LwM2mNodeTlvEncoder {
                 case OBJLNK:
                     return TlvEncoder.encodeObjlnk((ObjectLink) value);
                 default:
-                    throw new CodecException(String.format("Invalid value %s for type %s", value, type));
+                    throw new CodecException("Invalid value %s for type %s of %s", value, type, path);
                 }
             } catch (IllegalArgumentException e) {
-                throw new CodecException(String.format("Invalid value %s for type %s", value, type), e);
+                throw new CodecException(e, "Invalid value %s for type %s of %s", value, type, path);
             }
         }
     }

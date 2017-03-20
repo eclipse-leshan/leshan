@@ -26,6 +26,14 @@ public class CodecException extends RuntimeException {
         super(message);
     }
 
+    public CodecException(String message, Object... args) {
+        super(String.format(message, args));
+    }
+
+    public CodecException(Exception e, String message, Object... args) {
+        super(String.format(message, args), e);
+    }
+
     public CodecException(String message, Exception e) {
         super(message, e);
     }

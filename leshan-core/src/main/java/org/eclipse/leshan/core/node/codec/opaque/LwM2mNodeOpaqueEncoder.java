@@ -39,7 +39,7 @@ public class LwM2mNodeOpaqueEncoder {
         Validate.notNull(model);
 
         InternalEncoder internalEncoder = new InternalEncoder();
-        internalEncoder.objectId = path.getObjectId();
+        internalEncoder.path = path;
         internalEncoder.model = model;
         node.accept(internalEncoder);
         return internalEncoder.encoded;
@@ -47,32 +47,33 @@ public class LwM2mNodeOpaqueEncoder {
 
     private static class InternalEncoder implements LwM2mNodeVisitor {
 
-        int objectId;
+        LwM2mPath path;
         LwM2mModel model;
 
         byte[] encoded = null;
 
         @Override
         public void visit(LwM2mObject object) {
-            throw new CodecException("Object cannot be encoded in opaque format");
+            throw new CodecException("Object %s cannot be encoded in opaque format", path);
         }
 
         @Override
         public void visit(LwM2mObjectInstance instance) {
-            throw new CodecException("Object instance cannot be encoded in opaque format");
+            throw new CodecException("Object instance %s cannot be encoded in opaque format", path);
         }
 
         @Override
         public void visit(LwM2mResource resource) {
             if (resource.isMultiInstances()) {
-                throw new CodecException("Multiple instances resource cannot be encoded in opaque format");
+                throw new CodecException("Multiple instances resource %s cannot be encoded in opaque format", path);
             }
-            ResourceModel rSpec = model.getResourceModel(objectId, resource.getId());
+            ResourceModel rSpec = model.getResourceModel(path.getObjectId(), resource.getId());
             if (rSpec != null && rSpec.type != Type.OPAQUE) {
-                throw new CodecException("Only single opaque resource can be encoded in opaque format");
+                throw new CodecException("Only single opaque resource can be encoded in opaque format. [%s]", path);
             }
             LOG.trace("Encoding resource {} into text", resource);
-            Object value = Lwm2mNodeEncoderUtil.convertValue(resource.getValue(), resource.getType(), Type.OPAQUE);
+            Object value = Lwm2mNodeEncoderUtil.convertValue(resource.getValue(), resource.getType(), Type.OPAQUE,
+                    path);
             encoded = (byte[]) value;
         }
     }

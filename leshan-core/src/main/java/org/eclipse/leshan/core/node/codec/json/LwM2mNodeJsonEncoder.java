@@ -95,7 +95,7 @@ public class LwM2mNodeJsonEncoder {
             LOG.trace("Encoding Object {} into JSON", object);
             // Validate request path
             if (!requestPath.isObject()) {
-                throw new CodecException("Invalid request path for JSON object encoding");
+                throw new CodecException("Invalid request path %s for JSON object encoding", requestPath);
             }
 
             // Create resources
@@ -120,7 +120,7 @@ public class LwM2mNodeJsonEncoder {
                 } else if (requestPath.isObjectInstance()) {
                     prefixPath = Integer.toString(resource.getId());
                 } else {
-                    throw new CodecException("Invalid request path for JSON instance encoding");
+                    throw new CodecException("Invalid request path %s for JSON instance encoding", requestPath);
                 }
                 // Create resources
                 resourceList.addAll(lwM2mResourceToJsonArrayEntry(prefixPath, timestamp, resource));
@@ -131,7 +131,7 @@ public class LwM2mNodeJsonEncoder {
         public void visit(LwM2mResource resource) {
             LOG.trace("Encoding resource {} into JSON", resource);
             if (!requestPath.isResource()) {
-                throw new CodecException("Invalid request path for JSON resource encoding");
+                throw new CodecException("Invalid request path %s for JSON resource encoding", requestPath);
             }
 
             resourceList = lwM2mResourceToJsonArrayEntry("", timestamp, resource);
@@ -147,19 +147,24 @@ public class LwM2mNodeJsonEncoder {
             // create JSON resource element
             if (resource.isMultiInstances()) {
                 for (Entry<Integer, ?> entry : resource.getValues().entrySet()) {
+                    // compute resource instance path
+                    String resourceInstancePath;
+                    if (resourcePath == null || resourcePath.isEmpty()) {
+                        resourceInstancePath = Integer.toString(entry.getKey());
+                    } else {
+                        resourceInstancePath = resourcePath + "/" + entry.getKey();
+                    }
+
                     // Create resource element
                     JsonArrayEntry jsonResourceElt = new JsonArrayEntry();
-                    if (resourcePath == null || resourcePath.isEmpty()) {
-                        jsonResourceElt.setName(Integer.toString(entry.getKey()));
-                    } else {
-                        jsonResourceElt.setName(resourcePath + "/" + entry.getKey());
-                    }
+                    jsonResourceElt.setName(resourceInstancePath);
                     jsonResourceElt.setTime(timestamp);
 
                     // Convert value using expected type
+                    LwM2mPath lwM2mResourceInstancePath = new LwM2mPath(resourceInstancePath);
                     Object convertedValue = Lwm2mNodeEncoderUtil.convertValue(entry.getValue(), resource.getType(),
-                            expectedType);
-                    this.setResourceValue(convertedValue, expectedType, jsonResourceElt);
+                            expectedType, lwM2mResourceInstancePath);
+                    this.setResourceValue(convertedValue, expectedType, jsonResourceElt, lwM2mResourceInstancePath);
 
                     // Add it to the List
                     resourcesList.add(jsonResourceElt);
@@ -171,9 +176,9 @@ public class LwM2mNodeJsonEncoder {
                 jsonResourceElt.setTime(timestamp);
 
                 // Convert value using expected type
-                this.setResourceValue(
-                        Lwm2mNodeEncoderUtil.convertValue(resource.getValue(), resource.getType(), expectedType),
-                        expectedType, jsonResourceElt);
+                LwM2mPath lwM2mResourcePath = new LwM2mPath(resourcePath);
+                this.setResourceValue(Lwm2mNodeEncoderUtil.convertValue(resource.getValue(), resource.getType(),
+                        expectedType, lwM2mResourcePath), expectedType, jsonResourceElt, lwM2mResourcePath);
 
                 // Add it to the List
                 resourcesList.add(jsonResourceElt);
@@ -181,7 +186,7 @@ public class LwM2mNodeJsonEncoder {
             return resourcesList;
         }
 
-        private void setResourceValue(Object value, Type type, JsonArrayEntry jsonResource) {
+        private void setResourceValue(Object value, Type type, JsonArrayEntry jsonResource, LwM2mPath resourcePath) {
             LOG.trace("Encoding value {} in JSON", value);
             // Following table 20 in the Specs
             switch (type) {
@@ -204,7 +209,7 @@ public class LwM2mNodeJsonEncoder {
                 jsonResource.setStringValue(Base64.encodeBase64String((byte[]) value));
                 break;
             default:
-                throw new CodecException("Invalid value type: " + type);
+                throw new CodecException("Invalid value type %s for %s", type, resourcePath);
             }
         }
     }

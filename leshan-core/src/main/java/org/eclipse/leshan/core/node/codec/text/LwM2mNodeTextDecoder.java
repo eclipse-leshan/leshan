@@ -35,7 +35,7 @@ public class LwM2mNodeTextDecoder {
 
     public static LwM2mNode decode(byte[] content, LwM2mPath path, LwM2mModel model) throws CodecException {
         if (!path.isResource())
-            throw new CodecException(String.format("Invalid path %s : TextDecoder decodes resource only", path));
+            throw new CodecException("Invalid path %s : TextDecoder decodes resource only", path);
 
         ResourceModel rDesc = model.getResourceModel(path.getObjectId(), path.getResourceId());
 
@@ -60,7 +60,7 @@ public class LwM2mNodeTextDecoder {
             try {
                 return Long.valueOf(value);
             } catch (NumberFormatException e) {
-                throw new CodecException(String.format("Invalid value [%s] for integer resource [%s]", value, path));
+                throw new CodecException("Invalid value [%s] for integer resource [%s]", value, path);
             }
         case BOOLEAN:
             switch (value) {
@@ -69,37 +69,36 @@ public class LwM2mNodeTextDecoder {
             case "1":
                 return true;
             default:
-                throw new CodecException(String.format("Invalid value [%s] for boolean resource [%s]", value, path));
+                throw new CodecException("Invalid value [%s] for boolean resource [%s]", value, path);
             }
         case FLOAT:
             try {
                 return Double.valueOf(value);
             } catch (NumberFormatException e) {
-                throw new CodecException(String.format("Invalid value [%s] for float resource [%s]", value, path));
+                throw new CodecException("Invalid value [%s] for float resource [%s]", value, path);
             }
         case TIME:
             // number of seconds since 1970/1/1
             try {
                 return new Date(Long.valueOf(value) * 1000L);
             } catch (NumberFormatException e) {
-                throw new CodecException(String.format("Invalid value [%s] for date resource [%s]", value, path));
+                throw new CodecException("Invalid value [%s] for date resource [%s]", value, path);
             }
         case OBJLNK:
             String[] intArr = value.split(":");
             if (intArr.length != 2)
-                throw new CodecException(
-                        String.format("Invalid value %s for objectLink resource [%s]", Arrays.toString(intArr), path));
+                throw new CodecException("Invalid value %s for objectLink resource [%s]", Arrays.toString(intArr),
+                        path);
             try {
                 return new ObjectLink(Integer.parseInt(intArr[0]), Integer.parseInt(intArr[1]));
             } catch (NumberFormatException e) {
-                throw new CodecException(
-                        String.format("Invalid value %s for objectLink resource [%s] ", Arrays.toString(intArr), path));
+                throw new CodecException("Invalid value %s for objectLink resource [%s] ", Arrays.toString(intArr),
+                        path);
             }
         case OPAQUE:
             // not specified
         default:
-            throw new CodecException(
-                    String.format("Could not handle %s value with TEXT encoder for resource %s", type, path));
+            throw new CodecException("Could not handle %s value with TEXT encoder for resource %s", type, path);
         }
     }
 }

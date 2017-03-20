@@ -54,8 +54,8 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
         LOG.debug("Decoding value for path {} and format {}: {}", path, format, content);
         Validate.notNull(path);
 
-        if (format == null){
-            throw new CodecException("Content format is mandatory.");
+        if (format == null) {
+            throw new CodecException("Content format is mandatory. [%s]", path);
         }
 
         // Decode content.
@@ -71,9 +71,9 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
         case ContentFormat.OLD_JSON_CODE:
             return LwM2mNodeJsonDecoder.decode(content, path, model, nodeClass);
         case ContentFormat.LINK_CODE:
-            throw new CodecException("Content format " + format + " not yet implemented '" + path + "'");
+            throw new CodecException("Content format %s not yet implemented [%s]", format, path);
         default:
-            throw new CodecException("Content format " + format + " is not supported");
+            throw new CodecException("Content format %s is not supported [%s]", format, path);
         }
     }
 
@@ -84,7 +84,7 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
         Validate.notNull(path);
 
         if (format == null) {
-            throw new CodecException("Content format is mandatory.");
+            throw new CodecException("Content format is mandatory. [%s]", path);
         }
 
         // Decode content.
@@ -100,9 +100,9 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
         case ContentFormat.OLD_JSON_CODE:
             return LwM2mNodeJsonDecoder.decodeTimestamped(content, path, model, nodeClassFromPath(path));
         case ContentFormat.LINK_CODE:
-            throw new CodecException("Content format " + format + " not yet implemented '" + path + "'");
+            throw new CodecException("Content format %s not yet implemented [%s]", format, path);
         default:
-            throw new CodecException("Content format " + format + " is not supported");
+            throw new CodecException("Content format %s is not supported [%s]", format, path);
         }
     }
 
