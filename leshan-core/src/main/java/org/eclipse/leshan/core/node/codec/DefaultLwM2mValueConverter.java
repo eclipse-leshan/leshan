@@ -31,21 +31,12 @@ import org.eclipse.leshan.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Helper for all the LwM2mNode encoders.
- */
-public class Lwm2mNodeEncoderUtil {
-    private static final Logger LOG = LoggerFactory.getLogger(Lwm2mNodeEncoderUtil.class);
+public class DefaultLwM2mValueConverter implements LwM2mValueConverter {
 
-    private Lwm2mNodeEncoderUtil() {
-    }
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultLwM2mValueConverter.class);
 
-    /**
-     * Convert the given value to the expected type given in parameter.
-     * 
-     * @exception CodecException the value is not convertible.
-     */
-    public static Object convertValue(Object value, Type currentType, Type expectedType, LwM2mPath resourcePath)
+    @Override
+    public Object convertValue(Object value, Type currentType, Type expectedType, LwM2mPath resourcePath)
             throws CodecException {
         if (expectedType == null) {
             // unknown resource, trusted value

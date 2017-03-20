@@ -21,12 +21,12 @@ import static org.junit.Assert.*;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.junit.Test;
 
-public class Lwm2mNodeEncoderUtilTest {
+public class Lwm2mValueConverterTest {
 
     @Test
     public void testConvertValueParsesHexString() {
         String hexString = "10FF"; // 16 * 256 + 255 = 4351
-        Object opaqueValue = Lwm2mNodeEncoderUtil.convertValue(hexString, Type.STRING, Type.OPAQUE, null);
+        Object opaqueValue = new DefaultLwM2mValueConverter().convertValue(hexString, Type.STRING, Type.OPAQUE, null);
         assertThat(opaqueValue, instanceOf(byte[].class));
         assertThat((byte[]) opaqueValue, is(new byte[] { (byte) 0x10, (byte) 0xff }));
     }
@@ -34,58 +34,58 @@ public class Lwm2mNodeEncoderUtilTest {
     @Test(expected = CodecException.class)
     public void testConvertValueDetectsNonHexChars() {
         String hexString = "10R8";
-        Lwm2mNodeEncoderUtil.convertValue(hexString, Type.STRING, Type.OPAQUE, null);
+        new DefaultLwM2mValueConverter().convertValue(hexString, Type.STRING, Type.OPAQUE, null);
     }
 
     @Test(expected = CodecException.class)
     public void testConvertValueDetectsInvalidHexStringLength() {
         String hexString = "10F";
-        Lwm2mNodeEncoderUtil.convertValue(hexString, Type.STRING, Type.OPAQUE, null);
+        new DefaultLwM2mValueConverter().convertValue(hexString, Type.STRING, Type.OPAQUE, null);
     }
 
     @Test
     public void testConvertPositiveFloatToInteger() {
         double floatValue = 10.0d;
-        Object convertValue = Lwm2mNodeEncoderUtil.convertValue(floatValue, Type.FLOAT, Type.INTEGER, null);
+        Object convertValue = new DefaultLwM2mValueConverter().convertValue(floatValue, Type.FLOAT, Type.INTEGER, null);
         assertEquals(10l, convertValue);
     }
 
     @Test
     public void testConvertNegativeFloatToInteger() {
         double floatValue = -2015.0d;
-        Object convertValue = Lwm2mNodeEncoderUtil.convertValue(floatValue, Type.FLOAT, Type.INTEGER, null);
+        Object convertValue = new DefaultLwM2mValueConverter().convertValue(floatValue, Type.FLOAT, Type.INTEGER, null);
         assertEquals(-2015l, convertValue);
     }
 
     @Test(expected = CodecException.class)
     public void testConvertFloatToIntegerDetectsInvalidConvertion() {
         double floatValue = 10.5d;
-        Lwm2mNodeEncoderUtil.convertValue(floatValue, Type.FLOAT, Type.INTEGER, null);
+        new DefaultLwM2mValueConverter().convertValue(floatValue, Type.FLOAT, Type.INTEGER, null);
     }
 
     @Test(expected = CodecException.class)
     public void testConvertMaxFloatToIntegerDetectsInvalidConvertion() {
         double floatValue = Double.MAX_VALUE;
-        Lwm2mNodeEncoderUtil.convertValue(floatValue, Type.FLOAT, Type.INTEGER, null);
+        new DefaultLwM2mValueConverter().convertValue(floatValue, Type.FLOAT, Type.INTEGER, null);
     }
 
     @Test
     public void testConvertPositiveIntegerToFloat() {
         long longValue = 999l;
-        Object convertValue = Lwm2mNodeEncoderUtil.convertValue(longValue, Type.INTEGER, Type.FLOAT, null);
+        Object convertValue = new DefaultLwM2mValueConverter().convertValue(longValue, Type.INTEGER, Type.FLOAT, null);
         assertEquals(999.0d, convertValue);
     }
 
     @Test
     public void testConvertNegativeIntegerToFloat() {
         long longValue = -10l;
-        Object convertValue = Lwm2mNodeEncoderUtil.convertValue(longValue, Type.INTEGER, Type.FLOAT, null);
+        Object convertValue = new DefaultLwM2mValueConverter().convertValue(longValue, Type.INTEGER, Type.FLOAT, null);
         assertEquals(-10.0d, convertValue);
     }
 
     @Test(expected = CodecException.class)
     public void testConvertIntegerToFloatDetectsInvalidConvertion() {
         long longValue = 9223372036854775806l;
-        Lwm2mNodeEncoderUtil.convertValue(longValue, Type.INTEGER, Type.FLOAT, null);
+        new DefaultLwM2mValueConverter().convertValue(longValue, Type.INTEGER, Type.FLOAT, null);
     }
 }

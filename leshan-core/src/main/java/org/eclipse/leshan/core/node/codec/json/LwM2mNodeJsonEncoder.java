@@ -31,7 +31,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
-import org.eclipse.leshan.core.node.codec.Lwm2mNodeEncoderUtil;
+import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
 import org.eclipse.leshan.json.JsonArrayEntry;
 import org.eclipse.leshan.json.JsonRootObject;
 import org.eclipse.leshan.json.LwM2mJson;
@@ -44,7 +44,8 @@ public class LwM2mNodeJsonEncoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeJsonEncoder.class);
 
-    public static byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model) throws CodecException {
+    public static byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model, LwM2mValueConverter converter)
+            throws CodecException {
         Validate.notNull(node);
         Validate.notNull(path);
         Validate.notNull(model);
@@ -53,13 +54,14 @@ public class LwM2mNodeJsonEncoder {
         internalEncoder.objectId = path.getObjectId();
         internalEncoder.model = model;
         internalEncoder.requestPath = path;
+        internalEncoder.converter = converter;
         node.accept(internalEncoder);
         JsonRootObject jsonObject = new JsonRootObject(internalEncoder.resourceList);
         return LwM2mJson.toJsonLwM2m(jsonObject).getBytes();
     }
 
     public static byte[] encodeTimestampedData(List<TimestampedLwM2mNode> timestampedNodes, LwM2mPath path,
-            LwM2mModel model) {
+            LwM2mModel model, LwM2mValueConverter converter) {
         Validate.notNull(timestampedNodes);
         Validate.notNull(path);
         Validate.notNull(model);
@@ -70,6 +72,7 @@ public class LwM2mNodeJsonEncoder {
             internalEncoder.objectId = path.getObjectId();
             internalEncoder.model = model;
             internalEncoder.requestPath = path;
+            internalEncoder.converter = converter;
             internalEncoder.resourceList = null;
             internalEncoder.timestamp = timestampedLwM2mNode.getTimestamp();
             timestampedLwM2mNode.getNode().accept(internalEncoder);
@@ -86,6 +89,7 @@ public class LwM2mNodeJsonEncoder {
         private LwM2mModel model;
         private LwM2mPath requestPath;
         private Long timestamp;
+        private LwM2mValueConverter converter;
 
         // visitor output
         private ArrayList<JsonArrayEntry> resourceList = null;
@@ -162,8 +166,8 @@ public class LwM2mNodeJsonEncoder {
 
                     // Convert value using expected type
                     LwM2mPath lwM2mResourceInstancePath = new LwM2mPath(resourceInstancePath);
-                    Object convertedValue = Lwm2mNodeEncoderUtil.convertValue(entry.getValue(), resource.getType(),
-                            expectedType, lwM2mResourceInstancePath);
+                    Object convertedValue = converter.convertValue(entry.getValue(), resource.getType(), expectedType,
+                            lwM2mResourceInstancePath);
                     this.setResourceValue(convertedValue, expectedType, jsonResourceElt, lwM2mResourceInstancePath);
 
                     // Add it to the List
@@ -177,8 +181,8 @@ public class LwM2mNodeJsonEncoder {
 
                 // Convert value using expected type
                 LwM2mPath lwM2mResourcePath = new LwM2mPath(resourcePath);
-                this.setResourceValue(Lwm2mNodeEncoderUtil.convertValue(resource.getValue(), resource.getType(),
-                        expectedType, lwM2mResourcePath), expectedType, jsonResourceElt, lwM2mResourcePath);
+                this.setResourceValue(converter.convertValue(resource.getValue(), resource.getType(), expectedType,
+                        lwM2mResourcePath), expectedType, jsonResourceElt, lwM2mResourcePath);
 
                 // Add it to the List
                 resourcesList.add(jsonResourceElt);
