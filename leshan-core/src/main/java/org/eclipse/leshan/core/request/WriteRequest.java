@@ -288,54 +288,57 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
      * @param node the {@link LwM2mNode} to write.
      * @exception InvalidRequestException if parameters are invalid.
      */
-    public WriteRequest(Mode mode, ContentFormat contentFormat, String path, LwM2mNode node) throws InvalidRequestException {
+    public WriteRequest(Mode mode, ContentFormat contentFormat, String path, LwM2mNode node)
+            throws InvalidRequestException {
         this(mode, contentFormat, newPath(path), node);
     }
 
     private WriteRequest(Mode mode, ContentFormat format, LwM2mPath target, LwM2mNode node) {
         super(target);
         if (mode == null)
-            throw new InvalidRequestException("mode is mandatory");
+            throw new InvalidRequestException("mode is mandatory for %s", target);
         if (node == null)
-            throw new InvalidRequestException("new node value is mandatory");
+            throw new InvalidRequestException("new node value is mandatory for %s", target);
 
         // Validate Mode
         if (getPath().isResource() && mode == Mode.UPDATE)
-            throw new InvalidRequestException(
-                    String.format("Invalid mode for '%s': update is not allowed on resource", target.toString()));
+            throw new InvalidRequestException("Invalid mode for '%s': update is not allowed on resource", target);
 
         // Validate node and path coherence
         if (getPath().isResource()) {
             if (!(node instanceof LwM2mResource)) {
-                throw new InvalidRequestException(String.format("path '%s' and node type '%s' does not match",
-                        target.toString(), node.getClass().getSimpleName()));
+                throw new InvalidRequestException("path '%s' and node type '%s' do not match", target,
+                        node.getClass().getSimpleName());
             }
         } else if (getPath().isObjectInstance()) {
             if (!(node instanceof LwM2mObjectInstance)) {
-                throw new InvalidRequestException(String.format("path '%s' and node type '%s' does not match",
-                        target.toString(), node.getClass().getSimpleName()));
+                throw new InvalidRequestException("path '%s' and node type '%s' do not match", target,
+                        node.getClass().getSimpleName());
             }
         } else if (getPath().isObject()) {
-            throw new InvalidRequestException("write request cannot target an object: " + target.toString());
+            throw new InvalidRequestException("write request %s cannot target an object", target);
         }
 
         // Validate content format
         if (ContentFormat.TEXT == format || ContentFormat.OPAQUE == format) {
             if (!getPath().isResource()) {
                 throw new InvalidRequestException(
-                        String.format("%s format must be used only for single resources", format.toString()));
+                        "Invalid format for %s: %s format must be used only for single resources", target, format);
             } else {
                 LwM2mResource resource = (LwM2mResource) node;
                 if (resource.isMultiInstances()) {
                     throw new InvalidRequestException(
-                            String.format("%s format must be used only for single resources", format.toString()));
+                            "Invalid format for path %s: format must be used only for single resources", target,
+                            format);
                 } else {
                     if (resource.getType() == Type.OPAQUE && format == ContentFormat.TEXT) {
                         throw new InvalidRequestException(
-                                "TEXT format must not be used for byte array single resources");
+                                "Invalid format for %s: TEXT format must not be used for byte array single resources",
+                                target);
                     } else if (resource.getType() != Type.OPAQUE && format == ContentFormat.OPAQUE) {
                         throw new InvalidRequestException(
-                                "OPAQUE format must be used only for byte array single resources");
+                                "Invalid format for %s: OPAQUE format must be used only for byte array single resources",
+                                target);
                     }
                 }
             }
