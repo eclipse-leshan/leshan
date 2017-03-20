@@ -25,6 +25,7 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.util.Hex;
 import org.eclipse.leshan.util.StringUtils;
 import org.slf4j.Logger;
@@ -44,7 +45,8 @@ public class Lwm2mNodeEncoderUtil {
      * 
      * @exception CodecException the value is not convertible.
      */
-    public static Object convertValue(Object value, Type currentType, Type expectedType) throws CodecException {
+    public static Object convertValue(Object value, Type currentType, Type expectedType, LwM2mPath resourcePath)
+            throws CodecException {
         if (expectedType == null) {
             // unknown resource, trusted value
             return value;
@@ -121,7 +123,8 @@ public class Lwm2mNodeEncoderUtil {
                     return cal.toGregorianCalendar().getTime();
                 } catch (DatatypeConfigurationException | IllegalArgumentException e) {
                     LOG.debug("Unable to convert string to date", e);
-                    throw new CodecException(String.format("Unable to convert string (%s) to date", value));
+                    throw new CodecException("Unable to convert string (%s) to date for resource %s", value,
+                            resourcePath);
                 }
             default:
                 break;
@@ -145,13 +148,15 @@ public class Lwm2mNodeEncoderUtil {
                 try {
                     return Hex.decodeHex(((String) value).toCharArray());
                 } catch (IllegalArgumentException e) {
-                    throw new CodecException(String.format("Unable to convert hexastring [%s] to byte array", value));
+                    throw new CodecException("Unable to convert hexastring [%s] to byte array for resource %s", value,
+                            resourcePath);
                 }
             }
             break;
         default:
         }
 
-        throw new CodecException("Invalid value type, expected " + expectedType + ", got " + currentType);
+        throw new CodecException("Invalid value type for resource %s, expected %s, got %s", resourcePath, expectedType,
+                currentType);
     }
 }
