@@ -255,7 +255,8 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
         // // We handle CONTENT and CHANGED response only
         if (coapResponse.getCode() != CoAP.ResponseCode.CHANGED
                 && coapResponse.getCode() != CoAP.ResponseCode.CONTENT) {
-            throw new InvalidResponseException(String.format("Unexpected response code [%s]", coapResponse.getCode()));
+            throw new InvalidResponseException("Unexpected response code [%s] for %s", coapResponse.getCode(),
+                    observation);
         }
 
         // get content format
@@ -283,8 +284,8 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
                 LOG.debug(String.format("Unable to decode notification payload [%s] of observation [%s] ",
                         Hex.encodeHexString(payload), observation), e);
             }
-            throw new InvalidResponseException(
-                    String.format("Unable to decode notification payload  of observation [%s] ", observation), e);
+            throw new InvalidResponseException(e, "Unable to decode notification payload  of observation [%s] ",
+                    observation);
         }
     }
 }

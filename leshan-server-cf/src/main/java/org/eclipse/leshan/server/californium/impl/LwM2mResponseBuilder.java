@@ -336,8 +336,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                         String.format("Unable to decode response payload of request [%s] from client [%s] [payload:%s]",
                                 request, endpoint, Hex.encodeHexString(payload)));
             }
-            throw new InvalidResponseException(String.format(
-                    "Unable to decode response payload of request [%s] from client [%s]", request, endpoint), e);
+            throw new InvalidResponseException(e, "Unable to decode response payload of request [%s] from client [%s]",
+                    request, endpoint);
         }
     }
 
@@ -347,7 +347,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     }
 
     private void handleUnexpectedResponseCode(String clientEndpoint, LwM2mRequest<?> request, Response coapResponse) {
-        throw new InvalidResponseException(String.format("Client [%s] returned unexpected response code [%s] for [%s]",
-                clientEndpoint, coapResponse.getCode(), request));
+        throw new InvalidResponseException("Client [%s] returned unexpected response code [%s] for [%s]",
+                clientEndpoint, coapResponse.getCode(), request);
     }
 }

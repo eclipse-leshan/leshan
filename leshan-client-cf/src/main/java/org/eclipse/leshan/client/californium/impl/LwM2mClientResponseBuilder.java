@@ -114,7 +114,7 @@ public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements Upli
     }
 
     private void handleUnexpectedResponseCode(LwM2mRequest<?> request, Response coapResponse) {
-        throw new InvalidResponseException(String.format("Server returned unexpected response code [%s] for [%s]",
-                coapResponse.getCode(), request));
+        throw new InvalidResponseException("Server returned unexpected response code [%s] for [%s]",
+                coapResponse.getCode(), request);
     }
 }
