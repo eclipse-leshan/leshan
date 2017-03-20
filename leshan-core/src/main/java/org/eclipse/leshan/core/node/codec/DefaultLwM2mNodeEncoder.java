@@ -41,7 +41,7 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
         Validate.notNull(node);
 
         if (format == null) {
-            throw new CodecException("Content format is mandatory.");
+            throw new CodecException("Content format is mandatory. [%s]", path);
         }
 
         LOG.debug("Encoding node {} for path {} and format {}", node, path, format);
@@ -63,7 +63,7 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
             encoded = LwM2mNodeJsonEncoder.encode(node, path, model);
             break;
         default:
-            throw new CodecException("Cannot encode " + node + " with format " + format);
+            throw new CodecException("Cannot encode %s:%s with format %s.", path, node, format);
         }
 
         LOG.trace("Encoded node {}: {}", node, Arrays.toString(encoded));
@@ -75,7 +75,7 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
             LwM2mPath path, LwM2mModel model) throws CodecException {
         Validate.notEmpty(timestampedNodes);
         if (format == null) {
-            throw new CodecException("Content format is mandatory.");
+            throw new CodecException("Content format is mandatory. [%s]", path);
         }
 
         LOG.debug("Encoding time-stamped nodes for path {} and format {}", timestampedNodes, path, format);
@@ -86,7 +86,7 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
             encoded = LwM2mNodeJsonEncoder.encodeTimestampedData(timestampedNodes, path, model);
             break;
         default:
-            throw new CodecException("Cannot encode timestampedNode with format " + format);
+            throw new CodecException("Cannot encode timestampedNode with format %s. [%s]", format, path);
         }
 
         LOG.trace("Encoded node timestampedNode: {}", timestampedNodes, Arrays.toString(encoded));
