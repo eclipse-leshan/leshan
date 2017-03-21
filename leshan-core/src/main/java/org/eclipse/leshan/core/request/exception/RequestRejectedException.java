@@ -23,10 +23,7 @@ public class RequestRejectedException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * default constructor.
-     */
-    public RequestRejectedException() {
-        super();
+    public RequestRejectedException(String message, Object... args) {
+        super(String.format(message, args));
     }
 }

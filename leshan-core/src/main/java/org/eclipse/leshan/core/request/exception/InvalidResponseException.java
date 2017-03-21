@@ -22,12 +22,19 @@ public class InvalidResponseException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
-
     public InvalidResponseException(String message) {
         super(message);
     }
 
+    public InvalidResponseException(String m, Object... args) {
+        super(String.format(m, args));
+    }
+
     public InvalidResponseException(String message, Throwable cause) {
         super(message, cause);
+    }
+
+    public InvalidResponseException(Throwable e, String m, Object... args) {
+        super(String.format(m, args), e);
     }
 }

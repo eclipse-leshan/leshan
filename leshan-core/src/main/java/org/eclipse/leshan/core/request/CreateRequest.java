@@ -206,7 +206,8 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
 
         // accept only object and object instance path
         if (!target.isObject() && !target.isObjectInstance())
-            throw new InvalidRequestException("Create request must target an object or object instance");
+            throw new InvalidRequestException(
+                    "Invalid path %s: Create request must not target an object or object instance", target);
 
         // validate instance id
         if (instanceId != null && instanceId == LwM2mObjectInstance.UNDEFINED) {
@@ -217,12 +218,13 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
                 instanceId = target.getObjectInstanceId();
             } else {
                 if (instanceId != target.getObjectInstanceId()) {
-                    throw new InvalidRequestException("Conflict between path instance id and node instance id");
+                    throw new InvalidRequestException("Conflict between path instance id %s and node instance id %s",
+                            target, instanceId);
                 }
             }
         }
         if (instanceId != null && instanceId < 0)
-            throw new InvalidRequestException("Invalid instance id: " + instanceId);
+            throw new InvalidRequestException("Invalid instance id %s for path %s ", instanceId, target);
 
         // store attributes
         this.instanceId = instanceId;

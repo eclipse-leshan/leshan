@@ -181,7 +181,7 @@ public class ClientServlet extends HttpServlet {
     }
 
     private void handleException(Exception e, HttpServletResponse resp) throws IOException {
-        if (e instanceof InvalidRequestException || e instanceof CodecException ) {
+        if (e instanceof InvalidRequestException || e instanceof CodecException) {
             LOG.warn("Invalid request", e);
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             resp.getWriter().append("Invalid request:").append(e.getMessage()).flush();
@@ -391,7 +391,7 @@ public class ClientServlet extends HttpServlet {
             try {
                 node = gson.fromJson(content, LwM2mNode.class);
             } catch (JsonSyntaxException e) {
-                throw new InvalidRequestException("unable to parse json to tlv:" + e.getMessage(), e);
+                throw new InvalidRequestException(e, "unable to parse json to tlv:%s", e.getMessage());
             }
             return node;
         } else if ("text/plain".equals(contentType)) {
@@ -399,6 +399,6 @@ public class ClientServlet extends HttpServlet {
             int rscId = Integer.valueOf(target.substring(target.lastIndexOf("/") + 1));
             return LwM2mSingleResource.newStringResource(rscId, content);
         }
-        throw new InvalidRequestException("content type " + req.getContentType() + " not supported");
+        throw new InvalidRequestException("content type %s not supported", req.getContentType());
     }
 }
