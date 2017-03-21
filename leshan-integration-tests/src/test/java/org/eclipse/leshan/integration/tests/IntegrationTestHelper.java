@@ -157,7 +157,8 @@ public class IntegrationTestHelper {
         resetLatch();
         server.getRegistrationService().addListener(new RegistrationListener() {
             @Override
-            public void updated(RegistrationUpdate update, Registration updatedRegistration) {
+            public void updated(RegistrationUpdate update, Registration updatedRegistration,
+                    Registration previousRegistration) {
                 if (updatedRegistration.getEndpoint().equals(currentEndpointIdentifier)) {
                     updateLatch.countDown();
                 }

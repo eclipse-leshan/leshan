@@ -36,8 +36,9 @@ public interface RegistrationListener {
      *
      * @param update the registration properties to update
      * @param updatedRegistration the registration after the update
+     * @param previousRegistration the registration before the update
      */
-    void updated(RegistrationUpdate update, Registration updatedRegistration);
+    void updated(RegistrationUpdate update, Registration updatedRegistration, Registration previousRegistration);
 
     /**
      * Invoked when a client has been unregistered from the server.

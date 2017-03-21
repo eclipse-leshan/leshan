@@ -107,7 +107,8 @@ public class RegistrationHandler {
         } else {
             LOG.debug("Updated registration {} by {}", updatedRegistration, update);
             // notify registration update
-            registrationService.fireUpdated(update, updatedRegistration.getUpdatedRegistration());
+            registrationService.fireUpdated(update, updatedRegistration.getUpdatedRegistration(),
+                    updatedRegistration.getPreviousRegistration());
             return UpdateResponse.success();
         }
     }

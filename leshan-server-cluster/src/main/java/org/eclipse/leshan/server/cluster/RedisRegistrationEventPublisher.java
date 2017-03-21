@@ -52,7 +52,8 @@ public class RedisRegistrationEventPublisher implements RegistrationListener {
     }
 
     @Override
-    public void updated(RegistrationUpdate update, Registration updatedRegistration) {
+    public void updated(RegistrationUpdate update, Registration updatedRegistration,
+            Registration previousRegistration) {
         JsonObject value = new JsonObject();
         value.add("regUpdate", RegistrationUpdateSerDes.jSerialize(update));
         value.add("regUpdated", RegistrationSerDes.jSerialize(updatedRegistration));

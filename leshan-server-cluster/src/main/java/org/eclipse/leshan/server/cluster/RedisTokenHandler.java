@@ -56,7 +56,8 @@ public class RedisTokenHandler implements RegistrationListener {
     }
 
     @Override
-    public void updated(RegistrationUpdate update, Registration updatedRegistration) {
+    public void updated(RegistrationUpdate update, Registration updatedRegistration,
+            Registration previousRegistration) {
         try (Jedis j = pool.getResource()) {
             // create registration entry
             byte[] k = (EP_UID + updatedRegistration.getEndpoint()).getBytes();

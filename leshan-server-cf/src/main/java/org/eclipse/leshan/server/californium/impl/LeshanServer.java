@@ -144,7 +144,8 @@ public class LeshanServer implements LwM2mServer {
         this.registrationService.addListener(new RegistrationListener() {
 
             @Override
-            public void updated(RegistrationUpdate update, Registration updatedRegistration) {
+            public void updated(RegistrationUpdate update, Registration updatedRegistration,
+                    Registration previousRegistration) {
             }
 
             @Override
