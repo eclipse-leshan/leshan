@@ -46,6 +46,7 @@ import org.eclipse.leshan.server.registration.Deregistration;
 import org.eclipse.leshan.server.registration.ExpirationListener;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
+import org.eclipse.leshan.server.registration.UpdatedRegistration;
 import org.eclipse.leshan.util.NamedThreadFactory;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
@@ -148,7 +149,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     }
 
     @Override
-    public Registration updateRegistration(RegistrationUpdate update) {
+    public UpdatedRegistration updateRegistration(RegistrationUpdate update) {
         try (Jedis j = pool.getResource()) {
 
             // fetch the client ep by registration ID index
@@ -175,7 +176,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
                 // store the new client
                 j.set(toEndpointKey(updatedRegistration.getEndpoint()), serializeReg(updatedRegistration));
 
-                return updatedRegistration;
+                return new UpdatedRegistration(r, updatedRegistration);
 
             } finally {
                 RedisLock.release(j, lockKey, lockValue);
