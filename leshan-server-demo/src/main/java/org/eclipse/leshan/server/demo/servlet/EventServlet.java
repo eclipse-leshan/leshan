@@ -79,7 +79,8 @@ public class EventServlet extends EventSourceServlet {
         }
 
         @Override
-        public void updated(RegistrationUpdate update, Registration updatedRegistration) {
+        public void updated(RegistrationUpdate update, Registration updatedRegistration,
+                Registration previousRegistration) {
             String jReg = EventServlet.this.gson.toJson(updatedRegistration);
             sendEvent(EVENT_UPDATED, jReg, updatedRegistration.getEndpoint());
         }
@@ -107,8 +108,7 @@ public class EventServlet extends EventSourceServlet {
             if (registration != null) {
                 String data = new StringBuffer("{\"ep\":\"").append(registration.getEndpoint()).append("\",\"res\":\"")
                         .append(observation.getPath().toString()).append("\",\"val\":")
-                        .append(gson.toJson(response.getContent()))
-                        .append("}").toString();
+                        .append(gson.toJson(response.getContent())).append("}").toString();
 
                 sendEvent(EVENT_NOTIFICATION, data, registration.getEndpoint());
             }

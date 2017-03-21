@@ -86,9 +86,10 @@ public class RegistrationServiceImpl implements RegistrationService, ExpirationL
         }
     }
 
-    public void fireUpdated(RegistrationUpdate update, Registration registration) {
+    public void fireUpdated(RegistrationUpdate update, Registration updatedRegistration,
+            Registration previousRegistration) {
         for (RegistrationListener l : listeners) {
-            l.updated(update, registration);
+            l.updated(update, updatedRegistration, previousRegistration);
         }
     }
 
