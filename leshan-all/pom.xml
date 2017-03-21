@@ -61,7 +61,7 @@ Contributors:
                             <artifact>*:*</artifact>
                             <includes>
                                 <include>org/eclipse/leshan/**</include>
-                                <include>oma-objects-spec.json</include>
+                                <include>models/**</include>
                             </includes>
                         </filter>
                     </filters>

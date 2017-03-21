@@ -65,7 +65,7 @@ Contributors:
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <_exportcontents>!oma-objects-spec.json, !*.impl.*, !*.internal.*, *</_exportcontents>
+                        <_exportcontents>!models.*, !*.impl.*, !*.internal.*, *</_exportcontents>
                         <Import-Package>*</Import-Package>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                     </instructions>

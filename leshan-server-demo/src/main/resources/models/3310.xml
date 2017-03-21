@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LWM2M  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M.xsd">
+	<Object ObjectType="MODefinition">
+		<Name>Load Control</Name>
+		<Description1>Description: This Object is used for demand-response load control and other load control in automation application (not limited to power).</Description1>
+		<ObjectID>3310</ObjectID>
+		<ObjectURN>urn:oma:lwm2m:ext:3310</ObjectURN>
+		<MultipleInstances>Multiple</MultipleInstances>
+		<Mandatory>Optional</Mandatory>
+		<Resources>
+			<Item ID="5823">
+				<Name>Event Identifier</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Mandatory</Mandatory>
+				<Type>String</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description>The event identifier as a string.</Description>
+			</Item>
+			<Item ID="5824">
+				<Name>Start Time</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Mandatory</Mandatory>
+				<Type>String</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description>Time when the load control event will start started.</Description>
+			</Item>
+			<Item ID="5825">
+				<Name>Duration In Min</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Mandatory</Mandatory>
+				<Type>String</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units>Min</Units>
+				<Description>The duration of the load control event.</Description>
+			</Item>
+			<Item ID="5826">
+				<Name>Criticality Level</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>String</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description>The criticality of the event.  The device receiving the event will react in an appropriate fashion for the device.</Description>
+			</Item>
+			<Item ID="5827">
+				<Name>Avg Load Adj Pct</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>String</Type>
+				<RangeEnumeration>0-100</RangeEnumeration>
+				<Units>%</Units>
+				<Description>Defines the maximum energy usage of the receivng device, as a percentage of the device's normal maximum energy usage.</Description>
+			</Item>
+			<Item ID="5828">
+				<Name>Duty Cycle</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>String</Type>
+				<RangeEnumeration>0-100</RangeEnumeration>
+				<Units>%</Units>
+				<Description>Defines the duty cycle for the load control event, i.e, what percentage of time the receiving device is allowed to be on.</Description>
+			</Item>
+		</Resources>
+		<Description2></Description2>
+	</Object>
+</LWM2M>

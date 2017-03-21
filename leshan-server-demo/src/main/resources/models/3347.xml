@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LWM2M  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M.xsd">
+    <Object ObjectType="MODefinition">
+        <Name>Push button</Name>
+        <Description1>This IPSO object is used to report the state of a momentary action push button control and to count the number of times the control has been operated since the last observation.
+        </Description1>
+        <ObjectID>3347</ObjectID>
+        <ObjectURN>urn:oma:lwm2m:ext:3347</ObjectURN>
+        <MultipleInstances>Multiple</MultipleInstances>
+        <Mandatory>Optional</Mandatory>
+        <Resources>
+            <Item ID="5500">
+                <Name>Digital Input State</Name>
+                <Operations>R</Operations>
+                <MultipleInstances>Single</MultipleInstances>
+                <Mandatory>Mandatory</Mandatory>
+                <Type>Boolean</Type>
+                <RangeEnumeration></RangeEnumeration>
+                <Units></Units>
+                <Description>The current state of a digital input.</Description>
+            </Item>
+            <Item ID="5501">
+                <Name>Digital Input State</Name>
+                <Operations>R</Operations>
+                <MultipleInstances>Single</MultipleInstances>
+                <Mandatory>Optional</Mandatory>
+                <Type>Integer</Type>
+                <RangeEnumeration></RangeEnumeration>
+                <Units></Units>
+                <Description>The number of times the input transitions from 0 to 1.</Description>
+            </Item>
+            <Item ID="5750">
+                <Name>Application Type</Name>
+                <Operations>RW</Operations>
+                <MultipleInstances>Single</MultipleInstances>
+                <Mandatory>Optional</Mandatory>
+                <Type>String</Type>
+                <RangeEnumeration></RangeEnumeration>
+                <Units></Units>
+                <Description>The application type of the sensor or actuator as a string depending on the use case.</Description>
+            </Item>
+         </Resources>
+        <Description2></Description2>
+    </Object>
+</LWM2M>

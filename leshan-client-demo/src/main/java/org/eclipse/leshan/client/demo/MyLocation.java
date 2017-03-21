@@ -26,16 +26,16 @@ public class MyLocation extends BaseInstanceEnabler {
         if (latitude != null) {
             this.latitude = latitude + 90f;
         } else {
-            this.latitude = (float) random.nextInt(180);
+            this.latitude = random.nextInt(180);
         }
         if (longitude != null) {
             this.longitude = longitude + 180f;
         } else {
-            this.longitude = (float) random.nextInt(360);
+            this.longitude = random.nextInt(360);
         }
         this.scaleFactor = scaleFactor;
         timestamp = new Date();
-   }
+    }
 
     @Override
     public ReadResponse read(int resourceid) {
@@ -81,12 +81,12 @@ public class MyLocation extends BaseInstanceEnabler {
         fireResourcesChange(1, 5);
     }
 
-    public String getLatitude() {
-        return Float.toString(latitude - 90.0f);
+    public float getLatitude() {
+        return latitude - 90.0f;
     }
 
-    public String getLongitude() {
-        return Float.toString(longitude - 180.f);
+    public float getLongitude() {
+        return longitude - 180.f;
     }
 
     public Date getTimestamp() {
