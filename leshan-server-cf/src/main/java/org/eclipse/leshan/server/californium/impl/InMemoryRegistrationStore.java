@@ -48,6 +48,7 @@ import org.eclipse.leshan.server.registration.Deregistration;
 import org.eclipse.leshan.server.registration.ExpirationListener;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
+import org.eclipse.leshan.server.registration.UpdatedRegistration;
 import org.eclipse.leshan.util.Key;
 import org.eclipse.leshan.util.NamedThreadFactory;
 import org.slf4j.Logger;
@@ -109,7 +110,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     }
 
     @Override
-    public Registration updateRegistration(RegistrationUpdate update) {
+    public UpdatedRegistration updateRegistration(RegistrationUpdate update) {
         try {
             lock.writeLock().lock();
 
@@ -119,7 +120,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
             } else {
                 Registration updatedRegistration = update.update(registration);
                 regsByEp.put(updatedRegistration.getEndpoint(), updatedRegistration);
-                return updatedRegistration;
+                return new UpdatedRegistration(registration, updatedRegistration);
             }
         } finally {
             lock.writeLock().unlock();
