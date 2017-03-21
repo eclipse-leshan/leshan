@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LWM2M  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M.xsd">
+	<Object ObjectType="MODefinition">
+		<Name>Analog Output</Name>
+		<Description1>This IPSO object is a generic object that can be used with any kind of analog output interface.</Description1>
+		<ObjectID>3203</ObjectID>
+		<ObjectURN>urn:oma:lwm2m:ext:3203</ObjectURN>
+		<MultipleInstances>Multiple</MultipleInstances>
+		<Mandatory>Optional</Mandatory>
+		<Resources>
+			<Item ID="5650">
+				<Name>Analog Output Current Value</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Mandatory</Mandatory>
+				<Type>Float</Type>
+				<RangeEnumeration>0-1</RangeEnumeration>
+				<Units></Units>
+				<Description>The current state of the analogue output.</Description>
+			</Item>
+			<Item ID="5750">
+				<Name>Application Type</Name>
+				<Operations>R</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>String</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description>If present, the application type of the actuator as a string, for instance, “Thermostat”</Description>
+			</Item>
+			<Item ID="5603">
+				<Name>Min Range Value</Name>
+				<Operations>R</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Float</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description>The minimum value that can be measured by the sensor</Description>
+			</Item>
+			<Item ID="5604">
+				<Name>Max Range Value</Name>
+				<Operations>R</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Float</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description>The maximum value that can be measured by the sensor</Description>
+			</Item>
+		</Resources>
+		<Description2></Description2>
+	</Object>
+</LWM2M>

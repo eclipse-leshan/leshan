@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?><LWM2M xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M.xsd">
+	<Object ObjectType="MODefinition">
+		<Name>Communication Characteristics</Name>
+		<Description1><![CDATA[This object enables configuration of various generic communications parameters.
+]]></Description1>
+		<ObjectID>17</ObjectID>
+		<ObjectURN>urn:oma:lwm2m:oma:17</ObjectURN>
+		<MultipleInstances>Single</MultipleInstances>
+		<Mandatory>Optional</Mandatory>
+		<Resources>
+			<Item ID="0"><Name>Maximum uplink packet size</Name>
+				<Operations>R</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Integer</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units>octets</Units>
+				<Description><![CDATA[Maximum uplink packet size supported by the communications channel.
+
+In case of 3GPP NB-IoT this applies to the maximum uplink packet size supported via the Non Access Stratum (NAS). This information can be retrieved via the Protocol Configuration Options as defined in 3GPP TS 24.008. 
+]]></Description>
+			</Item>
+			<Item ID="1"><Name>Maximum downlink packet size</Name>
+				<Operations>R</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Integer</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units>octets</Units>
+				<Description><![CDATA[Maximum downlink packet size supported by the communications channel, and supported by the device buffer.]]></Description>
+			</Item>
+			<Item ID="2"><Name>CoAP ACK_TIMEOUT</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Integer</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[See [RFC 7252 CoAP]]]></Description>
+			</Item>
+			<Item ID="3"><Name>CoAP ACK_RANDOM_FACTOR</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Integer</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[See [RFC 7252 CoAP]]]></Description>
+			</Item>
+			<Item ID="4"><Name>CoAP MAX_RETRANSMIT</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Integer</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[See [RFC 7252 CoAP]]]></Description>
+			</Item>
+			<Item ID="5"><Name>CoAP NSTART</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Integer</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[See [RFC 7252 CoAP]]]></Description>
+			</Item>
+			<Item ID="6"><Name>CoAP DEFAULT_LEISURE</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Integer</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[See [RFC 7252 CoAP]]]></Description>
+			</Item>
+			<Item ID="7"><Name>CoAP PROBING_RATE</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Integer</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[See [RFC 7252 CoAP]]]></Description>
+			</Item></Resources>
+		<Description2 />
+	</Object>
+</LWM2M>

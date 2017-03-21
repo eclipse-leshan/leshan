@@ -149,7 +149,7 @@ public class DiscoverTest {
     @Test
     public void cant_discover_resource_of_non_existent_resource() throws InterruptedException {
         // read ACL object
-        DiscoverResponse response = helper.server.send(helper.getCurrentRegistration(), new DiscoverRequest(3, 0, 20));
+        DiscoverResponse response = helper.server.send(helper.getCurrentRegistration(), new DiscoverRequest(3, 0, 42));
 
         // verify result
         assertEquals(NOT_FOUND, response.getCode());
