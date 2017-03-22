@@ -18,8 +18,10 @@
 
 package org.eclipse.leshan.server.bootstrap.demo;
 
+import java.io.File;
 import java.net.BindException;
 import java.net.InetSocketAddress;
+import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
@@ -31,6 +33,9 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.leshan.LwM2m;
+import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.ObjectLoader;
+import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.BootstrapServlet;
 import org.eclipse.leshan.server.californium.impl.LeshanBootstrapServer;
@@ -44,7 +49,6 @@ public class LeshanBootstrapServerDemo {
     private static final Logger LOG = LoggerFactory.getLogger(LeshanBootstrapServerDemo.class);
 
     private final static String USAGE = "java -jar leshan-bsserver-demo.jar [OPTION]";
-    private final static String FOOTER = "All options could be passed using environment variables.(using long option name in uppercase)";
 
     public static void main(String[] args) {
         // Define options for command line tools
@@ -58,6 +62,7 @@ public class LeshanBootstrapServerDemo {
         options.addOption("slp", "coapsport", true,
                 String.format("Set the secure local CoAP port.\nDefault: %d.", LwM2m.DEFAULT_COAP_SECURE_PORT));
         options.addOption("wp", "webport", true, "Set the HTTP port for web server.\nDefault: 8080.");
+        options.addOption("m", "modelsfolder", true, "A folder which contains object models in OMA DDF(.xml) format.");
         options.addOption("cfg", "configfile", true,
                 "Set the filename for the configuration.\nDefault: " + BootstrapStoreImpl.DEFAULT_FILE + ".");
         HelpFormatter formatter = new HelpFormatter();
@@ -69,86 +74,78 @@ public class LeshanBootstrapServerDemo {
             cl = new DefaultParser().parse(options, args);
         } catch (ParseException e) {
             System.err.println("Parsing failed.  Reason: " + e.getMessage());
-            formatter.printHelp(USAGE, null, options, FOOTER);
+            formatter.printHelp(USAGE, options);
             return;
         }
 
         // Print help
         if (cl.hasOption("help")) {
-            formatter.printHelp(USAGE, null, options, FOOTER);
+            formatter.printHelp(USAGE, options);
             return;
         }
 
         // Abort if unexpected options
         if (cl.getArgs().length > 0) {
             System.err.println("Unexpected option or arguments : " + cl.getArgList());
-            formatter.printHelp(USAGE, null, options, FOOTER);
+            formatter.printHelp(USAGE, options);
             return;
         }
 
         // Get local address
-        String localAddress = System.getenv("COAPHOST");
-        if (cl.hasOption("lh")) {
-            localAddress = cl.getOptionValue("lh");
-        }
+        String localAddress = cl.getOptionValue("lh");
         if (localAddress == null)
             localAddress = "0.0.0.0";
-        String localPortOption = System.getenv("COAPPORT");
-        if (cl.hasOption("lp")) {
-            localPortOption = cl.getOptionValue("lp");
-        }
+        String localPortOption = cl.getOptionValue("lp");
         int localPort = LwM2m.DEFAULT_COAP_PORT;
         if (localPortOption != null) {
             localPort = Integer.parseInt(localPortOption);
         }
 
         // Get secure local address
-        String secureLocalAddress = System.getenv("COAPSHOST");
-        if (cl.hasOption("slh")) {
-            secureLocalAddress = cl.getOptionValue("slh");
-        }
+        String secureLocalAddress = cl.getOptionValue("slh");
         if (secureLocalAddress == null)
             secureLocalAddress = "0.0.0.0";
-        String secureLocalPortOption = System.getenv("COAPSPORT");
-        if (cl.hasOption("slp")) {
-            secureLocalPortOption = cl.getOptionValue("slp");
-        }
+        String secureLocalPortOption = cl.getOptionValue("slp");
         int secureLocalPort = LwM2m.DEFAULT_COAP_SECURE_PORT;
         if (secureLocalPortOption != null) {
             secureLocalPort = Integer.parseInt(secureLocalPortOption);
         }
 
         // Get http port
-        String webPortOption = System.getenv("WEBPORT");
-        if (cl.hasOption("wp")) {
-            webPortOption = cl.getOptionValue("wp");
-        }
+        String webPortOption = cl.getOptionValue("wp");
         int webPort = 8080;
         if (webPortOption != null) {
             webPort = Integer.parseInt(webPortOption);
         }
 
-        String configFilename = System.getenv("CONFIGFILE");
-        if (cl.hasOption("cfg")) {
-            configFilename = cl.getOptionValue("cfg");
-        }
+        // Get models folder
+        String modelsFolderPath = cl.getOptionValue("m");
+
+        // Get config file
+        String configFilename = cl.getOptionValue("cfg");
         if (configFilename == null) {
             configFilename = BootstrapStoreImpl.DEFAULT_FILE;
         }
 
         try {
-            createAndStartServer(webPort, localAddress, localPort, secureLocalAddress, secureLocalPort, configFilename);
+            createAndStartServer(webPort, localAddress, localPort, secureLocalAddress, secureLocalPort,
+                    modelsFolderPath, configFilename);
         } catch (BindException e) {
             System.err.println(String
                     .format("Web port %s is already in use, you can change it using the 'webport' option.", webPort));
-            formatter.printHelp(USAGE, null, options, FOOTER);
+            formatter.printHelp(USAGE, options);
         } catch (Exception e) {
             LOG.error("Jetty stopped with unexpected error ...", e);
         }
     }
 
     public static void createAndStartServer(int webPort, String localAddress, int localPort, String secureLocalAddress,
-            int secureLocalPort, String configFilename) throws Exception {
+            int secureLocalPort, String modelsFolderPath, String configFilename) throws Exception {
+        // Create Models
+        List<ObjectModel> models = ObjectLoader.loadDefault();
+        if (modelsFolderPath != null) {
+            models.addAll(ObjectLoader.loadObjectsFromDir(new File(modelsFolderPath)));
+        }
 
         // Prepare and start bootstrap server
         BootstrapStoreImpl bsStore = new BootstrapStoreImpl(configFilename);
@@ -157,7 +154,7 @@ public class LeshanBootstrapServerDemo {
 
         LeshanBootstrapServer bsServer = new LeshanBootstrapServer(new InetSocketAddress(localAddress, localPort),
                 new InetSocketAddress(secureLocalAddress, secureLocalPort), bsStore, securityStore, bsSessionManager,
-                new NetworkConfig());
+                new LwM2mModel(models), new NetworkConfig());
         bsServer.start();
 
         // Now prepare and start jetty

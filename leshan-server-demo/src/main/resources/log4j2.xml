@@ -32,6 +32,9 @@ Contributors:
     <logger name="org.eclipse.leshan.server.security.SecurityCheck" level="trace" additivity="false">
         <AppenderRef ref="STDOUT"/>
     </logger>
+    <logger name="org.eclipse.leshan.core.model.LwM2mModel" level="trace" additivity="false">
+        <AppenderRef ref="STDOUT"/>
+    </logger>
     <Root level="warn">
       <AppenderRef ref="STDOUT"/>
     </Root>

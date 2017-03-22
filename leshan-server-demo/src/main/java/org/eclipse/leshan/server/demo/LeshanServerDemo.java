@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.demo;
 
+import java.io.File;
 import java.math.BigInteger;
 import java.net.BindException;
 import java.net.URI;
@@ -87,7 +88,6 @@ public class LeshanServerDemo {
                             "VehicleControlUnit.xml", "Application-Data-Container.xml" };
 
     private final static String USAGE = "java -jar leshan-server-demo.jar [OPTION]";
-    private final static String FOOTER = "All options could be passed using environment variables.(using long option name in uppercase)";
 
     public static void main(String[] args) {
         // Define options for command line tools
@@ -101,6 +101,7 @@ public class LeshanServerDemo {
         options.addOption("slp", "coapsport", true,
                 String.format("Set the secure local CoAP port.\nDefault: %d.", LwM2m.DEFAULT_COAP_SECURE_PORT));
         options.addOption("wp", "webport", true, "Set the HTTP port for web server.\nDefault: 8080.");
+        options.addOption("m", "modelsfolder", true, "A folder which contains object models in OMA DDF(.xml) format.");
         options.addOption("r", "redis", true,
                 "Set the location of the Redis database for running in cluster mode. The URL is in the format of: 'redis://:password@hostname:port/db_number'\nExample without DB and password: 'redis://localhost:6379'\nDefault: none, no Redis connection.");
         HelpFormatter formatter = new HelpFormatter();
@@ -112,80 +113,66 @@ public class LeshanServerDemo {
             cl = new DefaultParser().parse(options, args);
         } catch (ParseException e) {
             System.err.println("Parsing failed.  Reason: " + e.getMessage());
-            formatter.printHelp(USAGE, null, options, FOOTER);
+            formatter.printHelp(USAGE, options);
             return;
         }
 
         // Print help
         if (cl.hasOption("help")) {
-            formatter.printHelp(USAGE, null, options, FOOTER);
+            formatter.printHelp(USAGE, options);
             return;
         }
 
         // Abort if unexpected options
         if (cl.getArgs().length > 0) {
             System.err.println("Unexpected option or arguments : " + cl.getArgList());
-            formatter.printHelp(USAGE, null, options, FOOTER);
+            formatter.printHelp(USAGE, options);
             return;
         }
 
         // get local address
-        String localAddress = System.getenv("COAPHOST");
-        if (cl.hasOption("lh")) {
-            localAddress = cl.getOptionValue("lh");
-        }
-        String localPortOption = System.getenv("COAPPORT");
-        if (cl.hasOption("lp")) {
-            localPortOption = cl.getOptionValue("lp");
-        }
+        String localAddress = cl.getOptionValue("lh");
+        String localPortOption = cl.getOptionValue("lp");
         int localPort = LwM2m.DEFAULT_COAP_PORT;
         if (localPortOption != null) {
             localPort = Integer.parseInt(localPortOption);
         }
 
         // get secure local address
-        String secureLocalAddress = System.getenv("COAPSHOST");
-        if (cl.hasOption("slh")) {
-            secureLocalAddress = cl.getOptionValue("slh");
-        }
-        String secureLocalPortOption = System.getenv("COAPSPORT");
-        if (cl.hasOption("slp")) {
-            secureLocalPortOption = cl.getOptionValue("slp");
-        }
+        String secureLocalAddress = cl.getOptionValue("slh");
+        String secureLocalPortOption = cl.getOptionValue("slp");
         int secureLocalPort = LwM2m.DEFAULT_COAP_SECURE_PORT;
         if (secureLocalPortOption != null) {
             secureLocalPort = Integer.parseInt(secureLocalPortOption);
         }
 
         // get http port
-        String webPortOption = System.getenv("WEBPORT");
-        if (cl.hasOption("wp")) {
-            webPortOption = cl.getOptionValue("wp");
-        }
+        String webPortOption = cl.getOptionValue("wp");
         int webPort = 8080;
         if (webPortOption != null) {
             webPort = Integer.parseInt(webPortOption);
         }
 
+        // Get models folder
+        String modelsFolderPath = cl.getOptionValue("m");
+
         // get the Redis hostname:port
-        String redisUrl = null;
-        if (cl.hasOption("r")) {
-            redisUrl = cl.getOptionValue("r");
-        }
+        String redisUrl = cl.getOptionValue("r");
 
         try {
-            createAndStartServer(webPort, localAddress, localPort, secureLocalAddress, secureLocalPort, redisUrl);
+            createAndStartServer(webPort, localAddress, localPort, secureLocalAddress, secureLocalPort,
+                    modelsFolderPath, redisUrl);
         } catch (BindException e) {
             System.err.println(
                     String.format("Web port %s is alreay used, you could change it using 'webport' option.", webPort));
-            formatter.printHelp(USAGE, null, options, FOOTER);
+            formatter.printHelp(USAGE, options);
         } catch (Exception e) {
             LOG.error("Jetty stopped with unexpected error ...", e);
         }
     }
 
     public static void createAndStartServer(int webPort, String localAddress, int localPort, String secureLocalAddress,
-            int secureLocalPort, String redisUrl) throws Exception {
+            int secureLocalPort, String modelsFolderPath, String redisUrl) throws Exception {
         // Prepare LWM2M server
         LeshanServerBuilder builder = new LeshanServerBuilder();
         builder.setLocalAddress(localAddress, localPort);
@@ -236,6 +223,9 @@ public class LeshanServerDemo {
         // Define model provider
         List<ObjectModel> models = ObjectLoader.loadDefault();
         models.addAll(ObjectLoader.loadDdfFiles("/models/", modelPaths));
+        if (modelsFolderPath != null) {
+            models.addAll(ObjectLoader.loadObjectsFromDir(new File(modelsFolderPath)));
+        }
         LwM2mModelProvider modelProvider = new StaticModelProvider(models);
         builder.setObjectModelProvider(modelProvider);
 

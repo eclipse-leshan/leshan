@@ -96,7 +96,7 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
 
         bootstrapServer = new LeshanBootstrapServer(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0),
                 new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), bsStore, securityStore, bsSessionManager,
-                new NetworkConfig());
+                null, new NetworkConfig());
     }
 
     @Override
