@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.demo;
 
+import java.io.File;
 import java.math.BigInteger;
 import java.net.BindException;
 import java.net.URI;
@@ -101,6 +102,7 @@ public class LeshanServerDemo {
         options.addOption("slp", "coapsport", true,
                 String.format("Set the secure local CoAP port.\nDefault: %d.", LwM2m.DEFAULT_COAP_SECURE_PORT));
         options.addOption("wp", "webport", true, "Set the HTTP port for web server.\nDefault: 8080.");
+        options.addOption("m", "modelsfolder", true, "A folder which contains object models in OMA DDF(.xml) format.");
         options.addOption("r", "redis", true,
                 "Set the location of the Redis database for running in cluster mode. The URL is in the format of: 'redis://:password@hostname:port/db_number'\nExample without DB and password: 'redis://localhost:6379'\nDefault: none, no Redis connection.");
         HelpFormatter formatter = new HelpFormatter();
@@ -167,6 +169,9 @@ public class LeshanServerDemo {
             webPort = Integer.parseInt(webPortOption);
         }
 
+        // Get models folder
+        String modelsFolderPath = cl.getOptionValue("m");
+
         // get the Redis hostname:port
         String redisUrl = null;
         if (cl.hasOption("r")) {
@@ -174,7 +179,8 @@ public class LeshanServerDemo {
         }
 
         try {
-            createAndStartServer(webPort, localAddress, localPort, secureLocalAddress, secureLocalPort, redisUrl);
+            createAndStartServer(webPort, localAddress, localPort, secureLocalAddress, secureLocalPort,
+                    modelsFolderPath, redisUrl);
         } catch (BindException e) {
             System.err.println(
                     String.format("Web port %s is alreay used, you could change it using 'webport' option.", webPort));
@@ -185,7 +191,7 @@ public class LeshanServerDemo {
     }
 
     public static void createAndStartServer(int webPort, String localAddress, int localPort, String secureLocalAddress,
-            int secureLocalPort, String redisUrl) throws Exception {
+            int secureLocalPort, String modelsFolderPath, String redisUrl) throws Exception {
         // Prepare LWM2M server
         LeshanServerBuilder builder = new LeshanServerBuilder();
         builder.setLocalAddress(localAddress, localPort);
@@ -236,6 +242,9 @@ public class LeshanServerDemo {
         // Define model provider
         List<ObjectModel> models = ObjectLoader.loadDefault();
         models.addAll(ObjectLoader.loadDdfFiles("/models/", modelPaths));
+        if (modelsFolderPath != null) {
+            models.addAll(ObjectLoader.loadObjectsFromDir(new File(modelsFolderPath)));
+        }
         LwM2mModelProvider modelProvider = new StaticModelProvider(models);
         builder.setObjectModelProvider(modelProvider);
 

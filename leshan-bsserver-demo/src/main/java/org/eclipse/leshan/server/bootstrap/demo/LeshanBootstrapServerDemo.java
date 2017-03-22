@@ -18,8 +18,10 @@
 
 package org.eclipse.leshan.server.bootstrap.demo;
 
+import java.io.File;
 import java.net.BindException;
 import java.net.InetSocketAddress;
+import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
@@ -31,6 +33,9 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.leshan.LwM2m;
+import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.ObjectLoader;
+import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.BootstrapServlet;
 import org.eclipse.leshan.server.californium.impl.LeshanBootstrapServer;
@@ -58,6 +63,7 @@ public class LeshanBootstrapServerDemo {
         options.addOption("slp", "coapsport", true,
                 String.format("Set the secure local CoAP port.\nDefault: %d.", LwM2m.DEFAULT_COAP_SECURE_PORT));
         options.addOption("wp", "webport", true, "Set the HTTP port for web server.\nDefault: 8080.");
+        options.addOption("m", "modelsfolder", true, "A folder which contains object models in OMA DDF(.xml) format.");
         options.addOption("cfg", "configfile", true,
                 "Set the filename for the configuration.\nDefault: " + BootstrapStoreImpl.DEFAULT_FILE + ".");
         HelpFormatter formatter = new HelpFormatter();
@@ -128,6 +134,10 @@ public class LeshanBootstrapServerDemo {
             webPort = Integer.parseInt(webPortOption);
         }
 
+        // Get models folder
+        String modelsFolderPath = cl.getOptionValue("m");
+
+        // Get config file
         String configFilename = System.getenv("CONFIGFILE");
         if (cl.hasOption("cfg")) {
             configFilename = cl.getOptionValue("cfg");
@@ -137,7 +147,8 @@ public class LeshanBootstrapServerDemo {
         }
 
         try {
-            createAndStartServer(webPort, localAddress, localPort, secureLocalAddress, secureLocalPort, configFilename);
+            createAndStartServer(webPort, localAddress, localPort, secureLocalAddress, secureLocalPort,
+                    modelsFolderPath, configFilename);
         } catch (BindException e) {
             System.err.println(String
                     .format("Web port %s is already in use, you can change it using the 'webport' option.", webPort));
@@ -148,7 +159,12 @@ public class LeshanBootstrapServerDemo {
     }
 
     public static void createAndStartServer(int webPort, String localAddress, int localPort, String secureLocalAddress,
-            int secureLocalPort, String configFilename) throws Exception {
+            int secureLocalPort, String modelsFolderPath, String configFilename) throws Exception {
+        // Create Models
+        List<ObjectModel> models = ObjectLoader.loadDefault();
+        if (modelsFolderPath != null) {
+            models.addAll(ObjectLoader.loadObjectsFromDir(new File(modelsFolderPath)));
+        }
 
         // Prepare and start bootstrap server
         BootstrapStoreImpl bsStore = new BootstrapStoreImpl(configFilename);
@@ -157,7 +173,7 @@ public class LeshanBootstrapServerDemo {
 
         LeshanBootstrapServer bsServer = new LeshanBootstrapServer(new InetSocketAddress(localAddress, localPort),
                 new InetSocketAddress(secureLocalAddress, secureLocalPort), bsStore, securityStore, bsSessionManager,
-                new NetworkConfig());
+                new LwM2mModel(models), new NetworkConfig());
         bsServer.start();
 
         // Now prepare and start jetty

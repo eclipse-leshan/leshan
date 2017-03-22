@@ -154,7 +154,7 @@ public class ObjectLoader {
     /*
      * Load object definitions from files
      */
-    private static List<ObjectModel> loadObjectsFromDir(File modelsDir) {
+    public static List<ObjectModel> loadObjectsFromDir(File modelsDir) {
         List<ObjectModel> models = new ArrayList<>();
 
         // check if the folder is usable
