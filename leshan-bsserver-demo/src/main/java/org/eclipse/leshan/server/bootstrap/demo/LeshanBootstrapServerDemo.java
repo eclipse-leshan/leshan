@@ -49,7 +49,6 @@ public class LeshanBootstrapServerDemo {
     private static final Logger LOG = LoggerFactory.getLogger(LeshanBootstrapServerDemo.class);
 
     private final static String USAGE = "java -jar leshan-bsserver-demo.jar [OPTION]";
-    private final static String FOOTER = "All options could be passed using environment variables.(using long option name in uppercase)";
 
     public static void main(String[] args) {
         // Define options for command line tools
@@ -75,60 +74,45 @@ public class LeshanBootstrapServerDemo {
             cl = new DefaultParser().parse(options, args);
         } catch (ParseException e) {
             System.err.println("Parsing failed.  Reason: " + e.getMessage());
-            formatter.printHelp(USAGE, null, options, FOOTER);
+            formatter.printHelp(USAGE, options);
             return;
         }
 
         // Print help
         if (cl.hasOption("help")) {
-            formatter.printHelp(USAGE, null, options, FOOTER);
+            formatter.printHelp(USAGE, options);
             return;
         }
 
         // Abort if unexpected options
         if (cl.getArgs().length > 0) {
             System.err.println("Unexpected option or arguments : " + cl.getArgList());
-            formatter.printHelp(USAGE, null, options, FOOTER);
+            formatter.printHelp(USAGE, options);
             return;
         }
 
         // Get local address
-        String localAddress = System.getenv("COAPHOST");
-        if (cl.hasOption("lh")) {
-            localAddress = cl.getOptionValue("lh");
-        }
+        String localAddress = cl.getOptionValue("lh");
         if (localAddress == null)
             localAddress = "0.0.0.0";
-        String localPortOption = System.getenv("COAPPORT");
-        if (cl.hasOption("lp")) {
-            localPortOption = cl.getOptionValue("lp");
-        }
+        String localPortOption = cl.getOptionValue("lp");
         int localPort = LwM2m.DEFAULT_COAP_PORT;
         if (localPortOption != null) {
             localPort = Integer.parseInt(localPortOption);
         }
 
         // Get secure local address
-        String secureLocalAddress = System.getenv("COAPSHOST");
-        if (cl.hasOption("slh")) {
-            secureLocalAddress = cl.getOptionValue("slh");
-        }
+        String secureLocalAddress = cl.getOptionValue("slh");
         if (secureLocalAddress == null)
             secureLocalAddress = "0.0.0.0";
-        String secureLocalPortOption = System.getenv("COAPSPORT");
-        if (cl.hasOption("slp")) {
-            secureLocalPortOption = cl.getOptionValue("slp");
-        }
+        String secureLocalPortOption = cl.getOptionValue("slp");
         int secureLocalPort = LwM2m.DEFAULT_COAP_SECURE_PORT;
         if (secureLocalPortOption != null) {
             secureLocalPort = Integer.parseInt(secureLocalPortOption);
         }
 
         // Get http port
-        String webPortOption = System.getenv("WEBPORT");
-        if (cl.hasOption("wp")) {
-            webPortOption = cl.getOptionValue("wp");
-        }
+        String webPortOption = cl.getOptionValue("wp");
         int webPort = 8080;
         if (webPortOption != null) {
             webPort = Integer.parseInt(webPortOption);
@@ -138,10 +122,7 @@ public class LeshanBootstrapServerDemo {
         String modelsFolderPath = cl.getOptionValue("m");
 
         // Get config file
-        String configFilename = System.getenv("CONFIGFILE");
-        if (cl.hasOption("cfg")) {
-            configFilename = cl.getOptionValue("cfg");
-        }
+        String configFilename = cl.getOptionValue("cfg");
         if (configFilename == null) {
             configFilename = BootstrapStoreImpl.DEFAULT_FILE;
         }
@@ -152,7 +133,7 @@ public class LeshanBootstrapServerDemo {
         } catch (BindException e) {
             System.err.println(String
                     .format("Web port %s is already in use, you can change it using the 'webport' option.", webPort));
-            formatter.printHelp(USAGE, null, options, FOOTER);
+            formatter.printHelp(USAGE, options);
         } catch (Exception e) {
             LOG.error("Jetty stopped with unexpected error ...", e);
         }
