@@ -61,12 +61,6 @@ public class ObjectLoader {
         LOG.debug("Loading OMA standard object models");
         models.addAll(loadDdfFiles("/models/", ddfpaths));
 
-        // custom objects (environment variable)
-        String modelsFolderEnvVar = System.getenv("MODELS_FOLDER");
-        if (modelsFolderEnvVar != null) {
-            models.addAll(loadObjectsFromDir(new File(modelsFolderEnvVar)));
-        }
-
         return models;
     }
 
