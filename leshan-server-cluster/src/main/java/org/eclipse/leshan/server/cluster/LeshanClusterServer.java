@@ -50,7 +50,6 @@ public class LeshanClusterServer {
     private static final Logger LOG = LoggerFactory.getLogger(LeshanClusterServer.class);
 
     private final static String USAGE = "java -jar leshan-server-cluster.jar [OPTION]";
-    private final static String FOOTER = "All options could be passed using environment variables.(using long option name in uppercase)";
 
     public static void main(String[] args) {
         // Define options for command line tools
@@ -76,57 +75,42 @@ public class LeshanClusterServer {
             cl = new DefaultParser().parse(options, args);
         } catch (ParseException e) {
             System.err.println("Parsing failed.  Reason: " + e.getMessage());
-            formatter.printHelp(USAGE, null, options, FOOTER);
+            formatter.printHelp(USAGE, options);
             return;
         }
 
         // Print help
         if (cl.hasOption("help")) {
-            formatter.printHelp(USAGE, null, options, FOOTER);
+            formatter.printHelp(USAGE, options);
             return;
         }
 
         // Abort if unexpected options
         if (cl.getArgs().length > 0) {
             System.err.println("Unexpected option or arguments : " + cl.getArgList());
-            formatter.printHelp(USAGE, null, options, FOOTER);
+            formatter.printHelp(USAGE, options);
             return;
         }
 
         // Get cluster instance Id
-        String clusterInstanceId = System.getenv("INSTANCEID");
-        if (cl.hasOption("n")) {
-            clusterInstanceId = cl.getOptionValue("n");
-        }
+        String clusterInstanceId = cl.getOptionValue("n");
         if (clusterInstanceId == null) {
             System.err.println("InstanceId is mandatory !");
-            formatter.printHelp(USAGE, null, options, FOOTER);
+            formatter.printHelp(USAGE, options);
             return;
         }
 
         // Get local address
-        String localAddress = System.getenv("COAPHOST");
-        if (cl.hasOption("lh")) {
-            localAddress = cl.getOptionValue("lh");
-        }
-        String localPortOption = System.getenv("COAPPORT");
-        if (cl.hasOption("lp")) {
-            localPortOption = cl.getOptionValue("lp");
-        }
+        String localAddress = cl.getOptionValue("lh");
+        String localPortOption = cl.getOptionValue("lp");
         int localPort = LwM2m.DEFAULT_COAP_PORT;
         if (localPortOption != null) {
             localPort = Integer.parseInt(localPortOption);
         }
 
         // get secure local address
-        String secureLocalAddress = System.getenv("COAPSHOST");
-        if (cl.hasOption("slh")) {
-            secureLocalAddress = cl.getOptionValue("slh");
-        }
-        String secureLocalPortOption = System.getenv("COAPSPORT");
-        if (cl.hasOption("slp")) {
-            secureLocalPortOption = cl.getOptionValue("slp");
-        }
+        String secureLocalAddress = cl.getOptionValue("slh");
+        String secureLocalPortOption = cl.getOptionValue("slp");
         int secureLocalPort = LwM2m.DEFAULT_COAP_SECURE_PORT;
         if (secureLocalPortOption != null) {
             secureLocalPort = Integer.parseInt(secureLocalPortOption);
