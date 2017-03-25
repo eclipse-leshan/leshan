@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.leshan.core.model.json.ObjectModelDeserializer;
@@ -98,12 +99,10 @@ public class ObjectLoader {
      * @param input An inputStream to a JSON stream.
      */
     public static List<ObjectModel> loadJsonStream(InputStream input) {
-        List<ObjectModel> models = new ArrayList<>();
         Reader reader = new InputStreamReader(input);
         ObjectModel[] objectModels = GSON.fromJson(reader, ObjectModel[].class);
-        for (ObjectModel objectModel : objectModels) {
-            models.add(objectModel);
-        }
+        List<ObjectModel> models = new ArrayList<>();
+        Collections.addAll(models, objectModels);
         return models;
     }
 
