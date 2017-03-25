@@ -165,6 +165,6 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
     }
 
     protected byte[] createDefaultOpaqueValue(ObjectModel objectModel, ResourceModel resourceModel) {
-        return new String("Default " + resourceModel.name).getBytes();
+        return ("Default " + resourceModel.name).getBytes();
     }
 }
