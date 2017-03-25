@@ -166,7 +166,7 @@ public class JsonArrayEntry {
     @Override
     public String toString() {
         return String.format(
-                "JsonArrayElement [name=%s, floatValue=%s, booleanValue=%s, objectLinkValue=%s, stringValue=%s, time=%s]",
+                "JsonArrayEntry [name=%s, floatValue=%s, booleanValue=%s, objectLinkValue=%s, stringValue=%s, time=%s]",
                 name, floatValue, booleanValue, objectLinkValue, stringValue, time);
     }
 
