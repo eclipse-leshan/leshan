@@ -155,7 +155,10 @@ public class JsonArrayEntry {
                 return false;
         } else if (!stringValue.equals(other.stringValue))
             return false;
-        if (time != other.time)
+        if (time == null) {
+            if (other.time != null)
+                return false;
+        } else if (!time.equals(other.time))
             return false;
         return true;
     }

@@ -216,7 +216,7 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
             if (instanceId == null) {
                 instanceId = target.getObjectInstanceId();
             } else {
-                if (instanceId != target.getObjectInstanceId()) {
+                if (!instanceId.equals(target.getObjectInstanceId())) {
                     throw new InvalidRequestException("Conflict between path instance id and node instance id");
                 }
             }
