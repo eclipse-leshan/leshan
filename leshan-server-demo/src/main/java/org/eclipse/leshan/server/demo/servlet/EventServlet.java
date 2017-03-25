@@ -105,7 +105,7 @@ public class EventServlet extends EventSourceServlet {
             }
 
             if (registration != null) {
-                String data = new StringBuffer("{\"ep\":\"").append(registration.getEndpoint()).append("\",\"res\":\"")
+                String data = new StringBuilder("{\"ep\":\"").append(registration.getEndpoint()).append("\",\"res\":\"")
                         .append(observation.getPath().toString()).append("\",\"val\":")
                         .append(gson.toJson(response.getContent()))
                         .append("}").toString();
