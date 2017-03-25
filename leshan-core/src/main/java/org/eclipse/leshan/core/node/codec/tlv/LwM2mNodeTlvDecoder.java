@@ -204,7 +204,7 @@ public class LwM2mNodeTlvDecoder {
                 throw new CodecException(String.format("Unsupported type %s for path %s", expectedType, path));
             }
         } catch (TlvException e) {
-            throw new CodecException(String.format("Invalid content [ ]for type %s for path %s",
+            throw new CodecException(String.format("Invalid content [%s] for type %s for path %s",
                     Hex.encodeHexString(value), expectedType, path), e);
         }
     }
