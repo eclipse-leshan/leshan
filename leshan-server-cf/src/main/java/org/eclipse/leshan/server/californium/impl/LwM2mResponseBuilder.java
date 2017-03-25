@@ -108,7 +108,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     public void visit(DiscoverRequest request) {
         switch (coapResponse.getCode()) {
         case CONTENT:
-            Link[] links = null;
+            Link[] links;
             if (MediaTypeRegistry.APPLICATION_LINK_FORMAT != coapResponse.getOptions().getContentFormat()) {
                 LOG.debug("Expected LWM2M Client [{}] to return application/link-format [{}] content but got [{}]",
                         registration.getEndpoint(), MediaTypeRegistry.APPLICATION_LINK_FORMAT,

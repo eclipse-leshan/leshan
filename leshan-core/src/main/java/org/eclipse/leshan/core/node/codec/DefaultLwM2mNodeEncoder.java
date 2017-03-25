@@ -46,7 +46,7 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
 
         LOG.debug("Encoding node {} for path {} and format {}", node, path, format);
 
-        byte[] encoded = null;
+        byte[] encoded;
         switch (format.getCode()) {
         case ContentFormat.TLV_CODE:
         case ContentFormat.OLD_TLV_CODE:
@@ -80,7 +80,7 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
 
         LOG.debug("Encoding time-stamped nodes for path {} and format {}", timestampedNodes, path, format);
 
-        byte[] encoded = null;
+        byte[] encoded;
         switch (format.getCode()) {
         case ContentFormat.JSON_CODE:
             encoded = LwM2mNodeJsonEncoder.encodeTimestampedData(timestampedNodes, path, model);

@@ -274,7 +274,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
             LwM2mObjectInstance newInstance = decoder.decode(exchange.getRequestPayload(), contentFormat,
                     new LwM2mPath(path.getObjectId()), model, LwM2mObjectInstance.class);
 
-            CreateRequest createRequest = null;
+            CreateRequest createRequest;
             if (newInstance.getId() != LwM2mObjectInstance.UNDEFINED) {
                 createRequest = new CreateRequest(contentFormat, path.getObjectId(), newInstance);
             } else {

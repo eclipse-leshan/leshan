@@ -59,7 +59,7 @@ public class TlvEncoder {
      * Encodes an integer value.
      */
     public static byte[] encodeInteger(Number number) {
-        ByteBuffer iBuf = null;
+        ByteBuffer iBuf;
         long lValue = number.longValue();
         if (lValue >= Byte.MIN_VALUE && lValue <= Byte.MAX_VALUE) {
             iBuf = ByteBuffer.allocate(1);
@@ -81,7 +81,7 @@ public class TlvEncoder {
      * Encodes a floating point value.
      */
     public static byte[] encodeFloat(Number number) {
-        ByteBuffer fBuf = null;
+        ByteBuffer fBuf;
         if (number instanceof Float) {
             fBuf = ByteBuffer.allocate(4);
             fBuf.putFloat(number.floatValue());

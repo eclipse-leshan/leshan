@@ -102,7 +102,7 @@ public class LwM2mNodeJsonDecoder {
                     entryByTimestamp.getValue(), baseName);
 
             // Create lwm2m node
-            LwM2mNode node = null;
+            LwM2mNode node;
             if (nodeClass == LwM2mObject.class) {
                 Collection<LwM2mObjectInstance> instances = new ArrayList<>();
                 for (Entry<Integer, Collection<JsonArrayEntry>> entryByInstanceId : jsonEntryByInstanceId.entrySet()) {

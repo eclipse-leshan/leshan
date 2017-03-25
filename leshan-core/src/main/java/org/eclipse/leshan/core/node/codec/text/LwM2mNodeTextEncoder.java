@@ -79,7 +79,7 @@ public class LwM2mNodeTextEncoder {
             Type expectedType = rSpec != null ? rSpec.type : resource.getType();
             Object val = Lwm2mNodeEncoderUtil.convertValue(resource.getValue(), resource.getType(), expectedType);
 
-            String strValue = null;
+            String strValue;
             switch (expectedType) {
             case INTEGER:
             case FLOAT:

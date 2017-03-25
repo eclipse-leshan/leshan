@@ -83,7 +83,7 @@ public class SecurityInfoSerDes {
     public static SecurityInfo deserialize(byte[] data) {
         JsonObject o = (JsonObject) Json.parse(new String(data));
 
-        SecurityInfo i = null;
+        SecurityInfo i;
         String ep = o.getString("ep", null);
         if (o.get("psk") != null) {
             i = SecurityInfo.newPreSharedKeyInfo(ep, o.getString("id", null),

@@ -44,7 +44,7 @@ public class LwM2mNodeDeserializer implements JsonDeserializer<LwM2mNode> {
             return null;
         }
 
-        LwM2mNode node = null;
+        LwM2mNode node;
 
         if (json.isJsonObject()) {
             JsonObject object = (JsonObject) json;

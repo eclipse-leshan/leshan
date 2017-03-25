@@ -370,13 +370,12 @@ public class ClientServlet extends HttpServlet {
 
     private void processDeviceResponse(HttpServletRequest req, HttpServletResponse resp, LwM2mResponse cResponse)
             throws IOException {
-        String response = null;
         if (cResponse == null) {
             LOG.warn(String.format("Request %s%s timed out.", req.getServletPath(), req.getPathInfo()));
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.getWriter().append("Request timeout").flush();
         } else {
-            response = this.gson.toJson(cResponse);
+            String response = this.gson.toJson(cResponse);
             resp.setContentType("application/json");
             resp.getOutputStream().write(response.getBytes());
             resp.setStatus(HttpServletResponse.SC_OK);

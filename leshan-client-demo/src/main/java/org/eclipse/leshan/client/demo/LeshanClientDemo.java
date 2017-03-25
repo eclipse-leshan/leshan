@@ -79,7 +79,7 @@ public class LeshanClientDemo {
         formatter.setOptionComparator(null);
 
         // Parse arguments
-        CommandLine cl = null;
+        CommandLine cl;
         try {
             cl = new DefaultParser().parse(options, args);
         } catch (ParseException e) {

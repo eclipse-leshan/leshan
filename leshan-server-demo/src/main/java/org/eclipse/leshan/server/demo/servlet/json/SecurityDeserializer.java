@@ -53,7 +53,7 @@ public class SecurityDeserializer implements JsonDeserializer<SecurityInfo> {
         if (json.isJsonObject()) {
             JsonObject object = (JsonObject) json;
 
-            String endpoint = null;
+            String endpoint;
             if (object.has("endpoint")) {
                 endpoint = object.get("endpoint").getAsString();
             } else {
@@ -64,7 +64,7 @@ public class SecurityDeserializer implements JsonDeserializer<SecurityInfo> {
             JsonObject rpk = (JsonObject) object.get("rpk");
             if (psk != null) {
                 // PSK Deserialization
-                String identity = null;
+                String identity;
                 if (psk.has("identity")) {
                     identity = psk.get("identity").getAsString();
                 } else {

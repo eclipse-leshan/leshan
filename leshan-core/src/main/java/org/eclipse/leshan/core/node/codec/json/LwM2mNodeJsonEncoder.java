@@ -114,7 +114,7 @@ public class LwM2mNodeJsonEncoder {
             resourceList = new ArrayList<>();
             for (LwM2mResource resource : instance.getResources().values()) {
                 // Validate request path & compute resource path
-                String prefixPath = null;
+                String prefixPath;
                 if (requestPath.isObject()) {
                     prefixPath = instance.getId() + "/" + resource.getId();
                 } else if (requestPath.isObjectInstance()) {

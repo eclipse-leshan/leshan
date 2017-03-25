@@ -73,7 +73,7 @@ public class LwM2mNodeTlvEncoder {
         public void visit(LwM2mObject object) {
             LOG.trace("Encoding object {} into TLV", object);
 
-            Tlv[] tlvs = null;
+            Tlv[] tlvs;
 
             ObjectModel objectModel = model.getObjectModel(object.getId());
             if (objectModel != null && !objectModel.multiple) {
@@ -147,7 +147,7 @@ public class LwM2mNodeTlvEncoder {
             ResourceModel rSpec = model.getResourceModel(path.getObjectId(), resource.getId());
             Type expectedType = rSpec != null ? rSpec.type : resource.getType();
 
-            Tlv rTlv = null;
+            Tlv rTlv;
             if (resource.isMultiInstances()) {
                 Tlv[] instances = new Tlv[resource.getValues().size()];
                 int i = 0;

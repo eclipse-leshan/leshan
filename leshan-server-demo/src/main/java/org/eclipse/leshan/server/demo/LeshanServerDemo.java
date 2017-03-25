@@ -90,7 +90,7 @@ public class LeshanServerDemo {
         formatter.setOptionComparator(null);
 
         // Parse arguments
-        CommandLine cl = null;
+        CommandLine cl;
         try {
             cl = new DefaultParser().parse(options, args);
         } catch (ParseException e) {
@@ -185,7 +185,6 @@ public class LeshanServerDemo {
         }
 
         // Get public and private server key
-        PrivateKey privateKey = null;
         PublicKey publicKey = null;
         try {
             // Get point values
@@ -208,7 +207,7 @@ public class LeshanServerDemo {
 
             // Get keys
             publicKey = KeyFactory.getInstance("EC").generatePublic(publicKeySpec);
-            privateKey = KeyFactory.getInstance("EC").generatePrivate(privateKeySpec);
+            PrivateKey privateKey = KeyFactory.getInstance("EC").generatePrivate(privateKeySpec);
             builder.setPublicKey(publicKey);
             builder.setPrivateKey(privateKey);
         } catch (InvalidKeySpecException | NoSuchAlgorithmException | InvalidParameterSpecException e) {
