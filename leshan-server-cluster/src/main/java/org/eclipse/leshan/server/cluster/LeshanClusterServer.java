@@ -22,6 +22,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
@@ -152,6 +153,7 @@ public class LeshanClusterServer {
         builder.setLocalSecureAddress(secureLocalAddress, secureLocalPort);
         DefaultLwM2mNodeDecoder decoder = new DefaultLwM2mNodeDecoder();
         builder.setDecoder(decoder);
+        builder.setNetworkConfig(NetworkConfig.getStandard());
 
         LwM2mModelProvider modelProvider = new StandardModelProvider();
         builder.setObjectModelProvider(modelProvider);

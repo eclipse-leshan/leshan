@@ -31,6 +31,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
@@ -230,6 +231,7 @@ public class LeshanClientDemo {
         builder.setLocalAddress(localAddress, localPort);
         builder.setLocalSecureAddress(secureLocalAddress, secureLocalPort);
         builder.setObjects(enablers);
+        builder.setNetworkConfig(NetworkConfig.getStandard());
         final LeshanClient client = builder.build();
 
         LOG.info("Press 'w','a','s','d' to change reported Location ({},{}).", locationInstance.getLatitude(),

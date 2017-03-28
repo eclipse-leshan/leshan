@@ -154,10 +154,11 @@ public class LeshanBootstrapServerDemo {
         BootstrapStoreImpl bsStore = new BootstrapStoreImpl(configFilename);
         BootstrapSecurityStore securityStore = new BootstrapSecurityStoreImpl(bsStore);
         BootstrapSessionManager bsSessionManager = new DefaultBootstrapSessionManager(securityStore);
+        NetworkConfig networkConfig = NetworkConfig.getStandard();
 
         LeshanBootstrapServer bsServer = new LeshanBootstrapServer(new InetSocketAddress(localAddress, localPort),
                 new InetSocketAddress(secureLocalAddress, secureLocalPort), bsStore, securityStore, bsSessionManager,
-                new NetworkConfig());
+                networkConfig);
         bsServer.start();
 
         // Now prepare and start jetty
