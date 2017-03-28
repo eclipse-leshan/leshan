@@ -25,6 +25,7 @@ import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
+import org.eclipse.leshan.server.registration.UpdatedRegistration;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,10 +55,12 @@ public class InMemoryRegistrationStoreTest {
         store.addRegistration(registration);
 
         RegistrationUpdate update = new RegistrationUpdate(registrationId, address, port, null, null, null, null);
-        Registration updatedRegistration = store.updateRegistration(update);
-        Assert.assertEquals(lifetime, updatedRegistration.getLifeTimeInSec());
-        Assert.assertSame(binding, updatedRegistration.getBindingMode());
-        Assert.assertEquals(sms, updatedRegistration.getSmsNumber());
+        UpdatedRegistration updatedRegistration = store.updateRegistration(update);
+        Assert.assertEquals(lifetime, updatedRegistration.getUpdatedRegistration().getLifeTimeInSec());
+        Assert.assertSame(binding, updatedRegistration.getUpdatedRegistration().getBindingMode());
+        Assert.assertEquals(sms, updatedRegistration.getUpdatedRegistration().getSmsNumber());
+
+        Assert.assertEquals(registration, updatedRegistration.getPreviousRegistration());
 
         Registration reg = store.getRegistrationByEndpoint(ep);
         Assert.assertEquals(lifetime, reg.getLifeTimeInSec());
@@ -79,8 +82,8 @@ public class InMemoryRegistrationStoreTest {
         Assert.assertFalse(registration.isAlive());
 
         RegistrationUpdate update = new RegistrationUpdate(registrationId, address, port, lifetime, null, null, null);
-        Registration updatedRegistration = store.updateRegistration(update);
-        Assert.assertTrue(updatedRegistration.isAlive());
+        UpdatedRegistration updatedRegistration = store.updateRegistration(update);
+        Assert.assertTrue(updatedRegistration.getUpdatedRegistration().isAlive());
 
         Registration reg = store.getRegistrationByEndpoint(ep);
         Assert.assertTrue(reg.isAlive());

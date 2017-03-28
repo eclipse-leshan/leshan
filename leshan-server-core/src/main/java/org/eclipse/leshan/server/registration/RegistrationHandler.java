@@ -51,8 +51,8 @@ public class RegistrationHandler {
             InetSocketAddress serverEndpoint) {
 
         Registration.Builder builder = new Registration.Builder(RegistrationHandler.createRegistrationId(),
-                registerRequest.getEndpointName(), sender.getPeerAddress().getAddress(), sender.getPeerAddress()
-                        .getPort(), serverEndpoint);
+                registerRequest.getEndpointName(), sender.getPeerAddress().getAddress(),
+                sender.getPeerAddress().getPort(), serverEndpoint);
 
         builder.lwM2mVersion(registerRequest.getLwVersion()).lifeTimeInSec(registerRequest.getLifetime())
                 .bindingMode(registerRequest.getBindingMode()).objectLinks(registerRequest.getObjectLinks())
@@ -75,7 +75,7 @@ public class RegistrationHandler {
             registrationService.fireUnregistered(deregistration.getRegistration(), deregistration.getObservations());
         }
         registrationService.fireRegistred(registration);
-            
+
         return RegisterResponse.success(registration.getId());
     }
 
@@ -94,19 +94,21 @@ public class RegistrationHandler {
         }
 
         // Create update
-        RegistrationUpdate update = new RegistrationUpdate(updateRequest.getRegistrationId(), sender
-                .getPeerAddress().getAddress(), sender.getPeerAddress().getPort(), updateRequest.getLifeTimeInSec(),
-                updateRequest.getSmsNumber(), updateRequest.getBindingMode(), updateRequest.getObjectLinks());
+        RegistrationUpdate update = new RegistrationUpdate(updateRequest.getRegistrationId(),
+                sender.getPeerAddress().getAddress(), sender.getPeerAddress().getPort(),
+                updateRequest.getLifeTimeInSec(), updateRequest.getSmsNumber(), updateRequest.getBindingMode(),
+                updateRequest.getObjectLinks());
 
         // update registration
-        Registration updatedRegistration = registrationService.getStore().updateRegistration(update);
+        UpdatedRegistration updatedRegistration = registrationService.getStore().updateRegistration(update);
         if (updatedRegistration == null) {
             LOG.debug("Invalid update:  registration {} not found", registration.getId());
             return UpdateResponse.notFound();
         } else {
             LOG.debug("Updated registration {} by {}", updatedRegistration, update);
             // notify registration update
-            registrationService.fireUpdated(update, updatedRegistration);
+            registrationService.fireUpdated(update, updatedRegistration.getUpdatedRegistration(),
+                    updatedRegistration.getPreviousRegistration());
             return UpdateResponse.success();
         }
     }

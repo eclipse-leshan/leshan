@@ -41,9 +41,9 @@ public interface RegistrationStore {
      * Update an existing registration
      * 
      * @param update data to update
-     * @return the registration updated
+     * @return return the previous and updated registration
      */
-    Registration updateRegistration(RegistrationUpdate update);
+    UpdatedRegistration updateRegistration(RegistrationUpdate update);
 
     /**
      * Get the registration by registration Id.
