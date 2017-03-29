@@ -74,7 +74,7 @@ public class RegistrationServiceImpl implements RegistrationService, ExpirationL
         }
     }
 
-    public void fireRegistred(Registration registration) {
+    public void fireRegistered(Registration registration) {
         for (RegistrationListener l : listeners) {
             l.registered(registration);
         }
