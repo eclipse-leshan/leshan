@@ -44,6 +44,8 @@ public interface RegistrationListener {
      *
      * @param registration
      * @param observations all the observations linked to this registration which has been passively cancelled
+     * @param expired <code>true</code> if the client has been unregistered because of its lifetime expiration and
+     *        <code>false</code> otherwise
      */
-    void unregistered(Registration registration, Collection<Observation> observations);
+    void unregistered(Registration registration, Collection<Observation> observations, boolean expired);
 }
