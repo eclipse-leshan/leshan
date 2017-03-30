@@ -14,6 +14,7 @@
  *     Zebra Technologies - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - add test for deleting a resource
  *     Achim Kraus (Bosch Software Innovations GmbH) - add test for delete security object
+ *     Achim Kraus (Bosch Software Innovations GmbH) - replace close() with destroy()
  *******************************************************************************/
 
 package org.eclipse.leshan.integration.tests;
@@ -52,8 +53,8 @@ public class DeleteTest {
 
     @After
     public void stop() {
-        helper.client.stop(false);
-        helper.server.stop();
+        helper.client.destroy(false);
+        helper.server.destroy();
         helper.dispose();
     }
 

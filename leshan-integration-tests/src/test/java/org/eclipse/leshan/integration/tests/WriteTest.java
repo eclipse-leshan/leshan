@@ -63,8 +63,8 @@ public class WriteTest {
 
     @After
     public void stop() {
-        helper.client.stop(false);
-        helper.server.stop();
+        helper.client.destroy(false);
+        helper.server.destroy();
         helper.dispose();
     }
 

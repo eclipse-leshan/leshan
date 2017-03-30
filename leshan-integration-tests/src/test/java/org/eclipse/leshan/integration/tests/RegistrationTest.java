@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Zebra Technologies - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - replace close() with destroy()
  *******************************************************************************/
 
 package org.eclipse.leshan.integration.tests;
@@ -73,8 +74,8 @@ public class RegistrationTest {
 
     @After
     public void stop() throws InterruptedException {
-        helper.client.stop(true);
-        helper.server.stop();
+        helper.client.destroy(true);
+        helper.server.destroy();
         helper.dispose();
     }
 
