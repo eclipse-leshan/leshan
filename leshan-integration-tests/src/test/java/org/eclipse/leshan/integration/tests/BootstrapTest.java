@@ -34,9 +34,9 @@ public class BootstrapTest {
 
     @After
     public void stop() {
-        helper.client.stop(true);
-        helper.bootstrapServer.stop();
-        helper.server.stop();
+        helper.client.destroy(true);
+        helper.bootstrapServer.destroy();
+        helper.server.destroy();
         helper.dispose();
     }
 

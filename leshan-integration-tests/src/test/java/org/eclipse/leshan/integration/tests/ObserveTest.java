@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Zebra Technologies - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - replace close() with destroy()
  *******************************************************************************/
 
 package org.eclipse.leshan.integration.tests;
@@ -72,8 +73,8 @@ public class ObserveTest {
 
     @After
     public void stop() {
-        helper.client.stop(false);
-        helper.server.stop();
+        helper.client.destroy(false);
+        helper.server.destroy();
         helper.dispose();
     }
 

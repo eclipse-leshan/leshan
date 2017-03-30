@@ -42,7 +42,7 @@ public class SecurityTest {
 
     @After
     public void stop() {
-        helper.client.stop(true);
+        helper.client.destroy(true);
         helper.server.destroy();
         helper.deregisterClient();
         helper.dispose();
