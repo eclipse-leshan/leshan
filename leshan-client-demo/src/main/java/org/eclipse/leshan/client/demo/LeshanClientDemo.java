@@ -38,6 +38,9 @@ import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.ObjectLoader;
+import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.util.Hex;
 import org.slf4j.Logger;
@@ -46,6 +49,9 @@ import org.slf4j.LoggerFactory;
 public class LeshanClientDemo {
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanClientDemo.class);
+
+    private final static String[] modelPaths = new String[] { "3303.xml" };
+
     private static final int OBJECT_ID_TEMPERATURE_SENSOR = 3303;
     private final static String DEFAULT_ENDPOINT = "LeshanClientDemo";
     private final static String USAGE = "java -jar leshan-client-demo.jar [OPTION]";
@@ -204,8 +210,12 @@ public class LeshanClientDemo {
 
         locationInstance = new MyLocation(latitude, longitude, scaleFactor);
 
+        // Initialize model
+        List<ObjectModel> models = ObjectLoader.loadDefault();
+        models.addAll(ObjectLoader.loadDdfFiles("/models/", modelPaths));
+
         // Initialize object list
-        ObjectsInitializer initializer = new ObjectsInitializer();
+        ObjectsInitializer initializer = new ObjectsInitializer(new LwM2mModel(models));
         if (needBootstrap) {
             if (pskIdentity == null)
                 initializer.setInstancesForObject(SECURITY, noSecBootstap(serverURI));

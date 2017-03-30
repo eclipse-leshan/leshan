@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LWM2M  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M.xsd">
+    <Object ObjectType="MODefinition">
+        <Name>Audio Clip</Name>
+        <Description1>This IPSO object should be used for a speaker that plays a pre-recorded audio clip or an audio output that is sent elsewhere. For example, an elevator which announces the floor of the building. A resource is provided to store the clip, a dimmer resource controls the relative sound level of the playback, and a duration resource limits the maximum playback time. After the duration time is reached, any remaining samples in the clip are ignored, and the clip player will be ready to play another clip.</Description1>
+        <ObjectID>3339</ObjectID>
+        <ObjectURN>urn:oma:lwm2m:ext:3339</ObjectURN>
+        <MultipleInstances>Multiple</MultipleInstances>
+        <Mandatory>Optional</Mandatory>
+        <Resources>
+            <Item ID="5522">
+                <Name>Clip</Name>
+                <Operations>RW</Operations>
+                <MultipleInstances>Single</MultipleInstances>
+                <Mandatory>Mandatory</Mandatory>
+                <Type>Opaque</Type>
+                <RangeEnumeration></RangeEnumeration>
+                <Units></Units>
+                <Description>Audio Clip that is playable (i.e. short audio recording indicating the floor in an elevator).</Description>
+            </Item>
+            <Item ID="5523">
+                <Name>Trigger</Name>
+                <Operations>E</Operations>
+                <MultipleInstances>Single</MultipleInstances>
+                <Mandatory>Optional</Mandatory>
+                <Type>Opaque</Type>
+                <RangeEnumeration></RangeEnumeration>
+                <Units></Units>
+                <Description>Trigger initiating actuation.</Description>
+            </Item>
+            <Item ID="5851">
+                <Name>Dimmer</Name>
+                <Operations>RW</Operations>
+                <MultipleInstances>Single</MultipleInstances>
+                <Mandatory>Optional</Mandatory>
+                <Type>Integer</Type>
+                <RangeEnumeration>0-100</RangeEnumeration>
+                <Units>%</Units>
+                <Description>Proportional control, integer value between 0 and 100 as a percentage.</Description>
+            </Item>
+            <Item ID="5524">
+                <Name>Duration</Name>
+                <Operations>RW</Operations>
+                <MultipleInstances>Single</MultipleInstances>
+                <Mandatory>Optional</Mandatory>
+                <Type>Float</Type>
+                <RangeEnumeration></RangeEnumeration>
+                <Units>seconds</Units>
+                <Description>The duration of the sound once trigger.</Description>
+            </Item>
+            <Item ID="5750">
+                <Name>Application Type</Name>
+                <Operations>RW</Operations>
+                <MultipleInstances>Single</MultipleInstances>
+                <Mandatory>Optional</Mandatory>
+                <Type>String</Type>
+                <RangeEnumeration></RangeEnumeration>
+                <Units></Units>
+                <Description>The application type of the sensor or actuator as a string depending on the use case.</Description>
+            </Item>
+        </Resources>
+        <Description2></Description2>
+    </Object>
+</LWM2M>

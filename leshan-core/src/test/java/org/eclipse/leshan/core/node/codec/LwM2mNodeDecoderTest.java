@@ -146,8 +146,8 @@ public class LwM2mNodeDecoderTest {
     @Test
     public void tlv_device_object_instance0_from_resources_tlv__instance_expected() throws CodecException {
 
-        LwM2mObjectInstance oInstance = decoder.decode(ENCODED_DEVICE, ContentFormat.TLV,
-                new LwM2mPath(3), model, LwM2mObjectInstance.class);
+        LwM2mObjectInstance oInstance = decoder.decode(ENCODED_DEVICE, ContentFormat.TLV, new LwM2mPath(3), model,
+                LwM2mObjectInstance.class);
         assertDeviceInstance(oInstance);
     }
 
@@ -195,11 +195,12 @@ public class LwM2mNodeDecoderTest {
     @Test(expected = CodecException.class)
     public void tlv_multi_instance_object__missing_instance_tlv() throws CodecException {
 
-        byte[] content = TlvEncoder.encode(new Tlv[] { new Tlv(TlvType.RESOURCE_VALUE, null, "value1".getBytes(), 1),
-                                new Tlv(TlvType.RESOURCE_VALUE, null, "value1".getBytes(), 2) })
+        byte[] content = TlvEncoder
+                .encode(new Tlv[] { new Tlv(TlvType.RESOURCE_VALUE, null, TlvEncoder.encodeInteger(11), 1),
+                                        new Tlv(TlvType.RESOURCE_VALUE, null, TlvEncoder.encodeInteger(10), 2) })
                 .array();
 
-        decoder.decode(content, ContentFormat.TLV, new LwM2mPath(9), model);
+        decoder.decode(content, ContentFormat.TLV, new LwM2mPath(2), model);
     }
 
     @Test

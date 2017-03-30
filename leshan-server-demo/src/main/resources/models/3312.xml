@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LWM2M  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M.xsd">
+	<Object ObjectType="MODefinition">
+		<Name>Power Control</Name>
+		<Description1>Description: This Object is used to control a power source, such as a Smart Plug.  It allows a power relay to be turned on or off and its dimmer setting to be control as a % between 0 and 100.</Description1>
+		<ObjectID>3312</ObjectID>
+		<ObjectURN>urn:oma:lwm2m:ext:3312</ObjectURN>
+		<MultipleInstances>Multiple</MultipleInstances>
+		<Mandatory>Optional</Mandatory>
+		<Resources>
+			<Item ID="5850">
+				<Name>On/Off</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Mandatory</Mandatory>
+				<Type>Boolean</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description>This resource represents a power relay, which can be controlled, the setting of which is a Boolean value (1,0) where 1 is on and 0 is off.</Description>
+			</Item>
+			<Item ID="5851">
+				<Name>Dimmer</Name>
+				<Operations>W</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Integer</Type>
+				<RangeEnumeration>0-100</RangeEnumeration>
+				<Units>%</Units>
+				<Description>This resource represents a power dimmer setting, which has an Integer value between 0 and 100 as a percentage.</Description>
+			</Item>
+			<Item ID="5852">
+				<Name>On Time</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Integer</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units>sec</Units>
+				<Description>The time in seconds that the power relay has been on. Writing a value of 0 resets the counter.</Description>
+			</Item>
+			<Item ID="5805">
+				<Name>Cumulative active power</Name>
+				<Operations>R</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Float</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units>Wh</Units>
+				<Description>The total power in Wh that has been used by the load.</Description>
+			</Item>
+			<Item ID="5820">
+				<Name>Power Factor</Name>
+				<Operations>R</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Float</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description>The power factor of the load.</Description>
+			</Item>
+		</Resources>
+		<Description2></Description2>
+	</Object>
+</LWM2M>

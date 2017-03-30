@@ -32,6 +32,7 @@ import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
+import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
@@ -43,6 +44,8 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.leshan.LwM2m;
+import org.eclipse.leshan.core.model.ObjectLoader;
+import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
@@ -56,7 +59,7 @@ import org.eclipse.leshan.server.demo.servlet.ObjectSpecServlet;
 import org.eclipse.leshan.server.demo.servlet.SecurityServlet;
 import org.eclipse.leshan.server.impl.FileSecurityStore;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
-import org.eclipse.leshan.server.model.StandardModelProvider;
+import org.eclipse.leshan.server.model.StaticModelProvider;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.util.Hex;
 import org.slf4j.Logger;
@@ -69,6 +72,20 @@ import redis.clients.util.Pool;
 public class LeshanServerDemo {
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanServerDemo.class);
+
+    private final static String[] modelPaths = new String[] { "LWM2M_Lock_and_Wipe-V1_0.xml",
+                            "LWM2M_Cellular_connectivity-V1_0.xml", "LWM2M_APN_connection_profile-V1_0.xml",
+                            "LWM2M_WLAN_connectivity4-v1_0.xml", "LWM2M_Bearer_selection-V1_0.xml",
+                            "LWM2M_Portfolio-v1_0.xml", "Communication_Characteristics-V1_0.xml",
+                            "Non-Access_Stratum_NAS_configuration-V1_0.xml", "3200.xml", "3201.xml", "3202.xml",
+                            "3203.xml", "3300.xml", "3301.xml", "3302.xml", "3303.xml", "3304.xml", "3305.xml",
+                            "3306.xml", "3308.xml", "3310.xml", "3311.xml", "3312.xml", "3313.xml", "3314.xml",
+                            "3315.xml", "3316.xml", "3317.xml", "3318.xml", "3319.xml", "3320.xml", "3321.xml",
+                            "3322.xml", "3323.xml", "3324.xml", "3325.xml", "3326.xml", "3327.xml", "3328.xml",
+                            "3329.xml", "3330.xml", "3331.xml", "3332.xml", "3333.xml", "3334.xml", "3335.xml",
+                            "3336.xml", "3337.xml", "3338.xml", "3339.xml", "3340.xml", "3341.xml", "3342.xml",
+                            "3343.xml", "3344.xml", "3345.xml", "3346.xml", "3347.xml", "3348.xml", "singlePhasePM.xml",
+                            "VehicleControlUnit.xml", "Application-Data-Container.xml" };
 
     private final static String USAGE = "java -jar leshan-server-demo.jar [OPTION]";
     private final static String FOOTER = "All options could be passed using environment variables.(using long option name in uppercase)";
@@ -218,7 +235,9 @@ public class LeshanServerDemo {
         }
 
         // Define model provider
-        LwM2mModelProvider modelProvider = new StandardModelProvider();
+        List<ObjectModel> models = ObjectLoader.loadDefault();
+        models.addAll(ObjectLoader.loadDdfFiles("/models/", modelPaths));
+        LwM2mModelProvider modelProvider = new StaticModelProvider(models);
         builder.setObjectModelProvider(modelProvider);
 
         // Set securityStore & registrationStore

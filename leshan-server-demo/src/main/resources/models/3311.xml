@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LWM2M  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M.xsd">
+	<Object ObjectType="MODefinition">
+		<Name>Light Control</Name>
+		<Description1>Description: This Object is used to control a light source, such as a LED or other light.  It allows a light to be turned on or off and its dimmer setting to be control as a % between 0 and 100. An optional colour setting enables a string to be used to indicate the desired colour.</Description1>
+		<ObjectID>3311</ObjectID>
+		<ObjectURN>urn:oma:lwm2m:ext:3311</ObjectURN>
+		<MultipleInstances>Multiple</MultipleInstances>
+		<Mandatory>Optional</Mandatory>
+		<Resources>
+			<Item ID="5850">
+				<Name>On/Off</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Mandatory</Mandatory>
+				<Type>Boolean</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description>This resource represents a light, which can be controlled, the setting of which is a Boolean value (1,0) where 1 is on and 0 is off.</Description>
+			</Item>
+			<Item ID="5851">
+				<Name>Dimmer</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Integer</Type>
+				<RangeEnumeration>0-100</RangeEnumeration>
+				<Units>%</Units>
+				<Description>This resource represents a light dimmer setting, which has an Integer value between 0 and 100 as a percentage.</Description>
+			</Item>
+			<Item ID="5852">
+				<Name>On Time</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Integer</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units>sec</Units>
+				<Description>The time in seconds that the light has been on. Writing a value of 0 resets the counter.</Description>
+			</Item>
+			<Item ID="5805">
+				<Name>Cumulative active power</Name>
+				<Operations>R</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Float</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units>Wh</Units>
+				<Description>The total power in Wh that the light has used.</Description>
+			</Item>
+			<Item ID="5820">
+				<Name>Power Factor</Name>
+				<Operations>R</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Float</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description>The power factor of the light.</Description>
+			</Item>
+			<Item ID="5706">
+				<Name>Colour</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>String</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description>A string representing a value in some color space</Description>
+			</Item>
+			<Item ID="5701">
+				<Name>Sensor Units</Name>
+				<Operations>R</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>String</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description>If present, the type of sensor defined as the UCUM Unit Definition e.g. “Cel” for Temperature in Celcius.</Description>
+			</Item>
+		</Resources>
+		<Description2></Description2>
+	</Object>
+</LWM2M>
