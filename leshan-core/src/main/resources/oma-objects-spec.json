@@ -715,7 +715,7 @@
         "operations": "R",
         "instancetype": "single",
         "mandatory": true,
-        "type": "string",
+        "type": "float",
         "range": "",
         "units": "Deg",
         "description": ""
@@ -726,7 +726,7 @@
         "operations": "R",
         "instancetype": "single",
         "mandatory": true,
-        "type": "string",
+        "type": "float",
         "range": "",
         "units": "Deg",
         "description": ""
@@ -737,18 +737,18 @@
         "operations": "R",
         "instancetype": "single",
         "mandatory": false,
-        "type": "string",
+        "type": "float",
         "range": "",
         "units": "m",
         "description": ""
       },
       {
         "id": 3,
-        "name": "Uncertainty",
+        "name": "Radius",
         "operations": "R",
         "instancetype": "single",
         "mandatory": false,
-        "type": "string",
+        "type": "float",
         "range": "",
         "units": "m",
         "description": ""
@@ -773,6 +773,17 @@
         "type": "time",
         "range": "0-6",
         "units": "",
+        "description": ""
+      },
+      {
+        "id": 6,
+        "name": "Speed",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "float",
+        "range": "",
+        "units": "m/s",
         "description": ""
       }
     ]

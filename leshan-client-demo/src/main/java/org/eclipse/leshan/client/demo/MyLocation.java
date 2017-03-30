@@ -81,12 +81,12 @@ public class MyLocation extends BaseInstanceEnabler {
         fireResourcesChange(1, 5);
     }
 
-    public String getLatitude() {
-        return Float.toString(latitude - 90.0f);
+    public float getLatitude() {
+        return latitude - 90f;
     }
 
-    public String getLongitude() {
-        return Float.toString(longitude - 180.f);
+    public float getLongitude() {
+        return longitude - 180f;
     }
 
     public Date getTimestamp() {
