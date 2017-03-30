@@ -66,11 +66,10 @@ public class RedisTokenHandler implements RegistrationListener {
     }
 
     @Override
-    public void unregistered(Registration registration, Collection<Observation> observations) {
+    public void unregistered(Registration registration, Collection<Observation> observations, boolean expired) {
         try (Jedis j = pool.getResource()) {
             // create registration entry
-            byte[] k = (EP_UID + registration.getEndpoint()).getBytes();
-            j.del(k);
+            j.del((EP_UID + registration.getEndpoint()).getBytes());
         }
     }
 

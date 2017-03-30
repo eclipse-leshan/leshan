@@ -74,7 +74,7 @@ public class RegistrationHandler {
         if (deregistration != null) {
             registrationService.fireUnregistered(deregistration.getRegistration(), deregistration.getObservations());
         }
-        registrationService.fireRegistred(registration);
+        registrationService.fireRegistered(registration);
             
         return RegisterResponse.success(registration.getId());
     }

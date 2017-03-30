@@ -85,7 +85,7 @@ public class EventServlet extends EventSourceServlet {
         }
 
         @Override
-        public void unregistered(Registration registration, Collection<Observation> observations) {
+        public void unregistered(Registration registration, Collection<Observation> observations, boolean expired) {
             String jReg = EventServlet.this.gson.toJson(registration);
             sendEvent(EVENT_DEREGISTRATION, jReg, registration.getEndpoint());
         }
@@ -107,8 +107,7 @@ public class EventServlet extends EventSourceServlet {
             if (registration != null) {
                 String data = new StringBuilder("{\"ep\":\"").append(registration.getEndpoint()).append("\",\"res\":\"")
                         .append(observation.getPath().toString()).append("\",\"val\":")
-                        .append(gson.toJson(response.getContent()))
-                        .append("}").toString();
+                        .append(gson.toJson(response.getContent())).append("}").toString();
 
                 sendEvent(EVENT_NOTIFICATION, data, registration.getEndpoint());
             }

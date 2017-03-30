@@ -63,7 +63,7 @@ public class RedisRegistrationEventPublisher implements RegistrationListener {
     }
 
     @Override
-    public void unregistered(Registration registration, Collection<Observation> observations) {
+    public void unregistered(Registration registration, Collection<Observation> observations, boolean expired) {
         String payload = RegistrationSerDes.sSerialize(registration);
         try (Jedis j = pool.getResource()) {
             j.publish(DEREGISTER_EVENT, payload);

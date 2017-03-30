@@ -66,7 +66,7 @@ public class RedisSecureIntegrationTestHelper extends SecureIntegrationTestHelpe
             }
 
             @Override
-            public void unregistered(Registration registration, Collection<Observation> observations) {
+            public void unregistered(Registration registration, Collection<Observation> observations, boolean expired) {
                 if (registration.getEndpoint().equals(getCurrentEndpoint())) {
                     deregisterLatch.countDown();
                 }

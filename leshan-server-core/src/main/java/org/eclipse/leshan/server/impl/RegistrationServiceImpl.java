@@ -70,11 +70,11 @@ public class RegistrationServiceImpl implements RegistrationService, ExpirationL
     @Override
     public void registrationExpired(Registration registration, Collection<Observation> observations) {
         for (RegistrationListener l : listeners) {
-            l.unregistered(registration, observations);
+            l.unregistered(registration, observations, true);
         }
     }
 
-    public void fireRegistred(Registration registration) {
+    public void fireRegistered(Registration registration) {
         for (RegistrationListener l : listeners) {
             l.registered(registration);
         }
@@ -82,7 +82,7 @@ public class RegistrationServiceImpl implements RegistrationService, ExpirationL
 
     public void fireUnregistered(Registration registration, Collection<Observation> observations) {
         for (RegistrationListener l : listeners) {
-            l.unregistered(registration, observations);
+            l.unregistered(registration, observations, false);
         }
     }
 
