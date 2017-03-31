@@ -12,7 +12,8 @@ public class MyLocation extends BaseInstanceEnabler {
 
     private static final Logger LOG = LoggerFactory.getLogger(MyLocation.class);
 
-    private Random random = new Random();
+    private static final Random RANDOM = new Random();
+
     private float latitude;
     private float longitude;
     private float scaleFactor;
@@ -26,12 +27,12 @@ public class MyLocation extends BaseInstanceEnabler {
         if (latitude != null) {
             this.latitude = latitude + 90f;
         } else {
-            this.latitude = random.nextInt(180);
+            this.latitude = RANDOM.nextInt(180);
         }
         if (longitude != null) {
             this.longitude = longitude + 180f;
         } else {
-            this.longitude = random.nextInt(360);
+            this.longitude = RANDOM.nextInt(360);
         }
         this.scaleFactor = scaleFactor;
         timestamp = new Date();
