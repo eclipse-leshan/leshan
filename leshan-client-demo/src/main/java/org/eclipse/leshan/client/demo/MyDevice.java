@@ -23,6 +23,8 @@ public class MyDevice extends BaseInstanceEnabler {
 
     private static final Logger LOG = LoggerFactory.getLogger(MyDevice.class);
 
+    private static final Random RANDOM = new Random();
+
     public MyDevice() {
         // notify new date each 5 second
         Timer timer = new Timer("Device-Current Time");
@@ -115,13 +117,11 @@ public class MyDevice extends BaseInstanceEnabler {
     }
 
     private int getBatteryLevel() {
-        Random rand = new Random();
-        return rand.nextInt(100);
+        return RANDOM.nextInt(100);
     }
 
     private int getMemoryFree() {
-        Random rand = new Random();
-        return rand.nextInt(50) + 114;
+        return RANDOM.nextInt(50) + 114;
     }
 
     private Date getCurrentTime() {
