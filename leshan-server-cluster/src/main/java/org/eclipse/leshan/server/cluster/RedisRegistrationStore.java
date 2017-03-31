@@ -137,7 +137,12 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
 
                 if (old != null) {
                     Registration oldRegistration = deserializeReg(old);
+                    // remove old secondary index
+                    if (registration.getId() != oldRegistration.getId())
+                        j.del(toRegIdKey(oldRegistration.getId()));
+                    // remove old observation
                     Collection<Observation> obsRemoved = unsafeRemoveAllObservations(j, oldRegistration.getId());
+
                     return new Deregistration(oldRegistration, obsRemoved);
                 }
 
