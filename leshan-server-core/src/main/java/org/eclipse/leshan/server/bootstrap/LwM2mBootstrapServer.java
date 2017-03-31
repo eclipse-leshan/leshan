@@ -31,7 +31,7 @@ public interface LwM2mBootstrapServer {
     BootstrapStore getBoostrapStore();
 
     /**
-     * security store used for DTLS authentication on the bootstrap ressource.
+     * security store used for DTLS authentication on the bootstrap resource.
      */
     BootstrapSecurityStore getBootstrapSecurityStore();
 
