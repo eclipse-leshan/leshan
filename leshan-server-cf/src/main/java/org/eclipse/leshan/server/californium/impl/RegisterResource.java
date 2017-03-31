@@ -83,16 +83,13 @@ public class RegisterResource extends CoapResource {
         try {
             super.handleRequest(exchange);
         } catch (InvalidRequestException e) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format("InvalidRequestException while handling request(%s) on the /rd resource",
-                        exchange.getRequest()), e);
-            }
+            LOG.debug("InvalidRequestException while handling request({}) on the /rd resource", exchange.getRequest(),
+                    e);
             Response response = new Response(ResponseCode.BAD_REQUEST);
             response.setPayload(e.getMessage());
             exchange.sendResponse(response);
-        } catch (Exception e) {
-            LOG.error(String.format("Exception while handling request(%s) on the /rd resource", exchange.getRequest()),
-                    e);
+        } catch (RuntimeException e) {
+            LOG.error("Exception while handling request({}) on the /rd resource", exchange.getRequest(), e);
             exchange.sendResponse(new Response(ResponseCode.INTERNAL_SERVER_ERROR));
         }
     }
