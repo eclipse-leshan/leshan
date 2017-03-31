@@ -120,8 +120,8 @@ public class MyDevice extends BaseInstanceEnabler {
         return RANDOM.nextInt(101);
     }
 
-    private int getMemoryFree() {
-        return RANDOM.nextInt(50) + 114;
+    private long getMemoryFree() {
+        return Runtime.getRuntime().freeMemory() / 1024;
     }
 
     private Date getCurrentTime() {
