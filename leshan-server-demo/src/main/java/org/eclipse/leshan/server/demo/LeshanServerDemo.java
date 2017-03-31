@@ -17,14 +17,21 @@
 package org.eclipse.leshan.server.demo;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.net.BindException;
 import java.net.URI;
 import java.security.AlgorithmParameters;
+import java.security.Key;
 import java.security.KeyFactory;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.security.spec.ECGenParameterSpec;
 import java.security.spec.ECParameterSpec;
 import java.security.spec.ECPoint;
@@ -33,6 +40,8 @@ import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
@@ -94,6 +103,10 @@ public class LeshanServerDemo {
 
     private final static String USAGE = "java -jar leshan-server-demo.jar [OPTION]";
 
+    private final static String DEFAULT_KEYSTORE_TYPE = KeyStore.getDefaultType();
+
+    private final static String DEFAULT_KEYSTORE_ALIAS = "leshan";
+
     public static void main(String[] args) {
         // Define options for command line tools
         Options options = new Options();
@@ -105,6 +118,14 @@ public class LeshanServerDemo {
         options.addOption("slh", "coapshost", true, "Set the secure local CoAP address.\nDefault: any local address.");
         options.addOption("slp", "coapsport", true,
                 String.format("Set the secure local CoAP port.\nDefault: %d.", LwM2m.DEFAULT_COAP_SECURE_PORT));
+        options.addOption("ks", "keystore", true,
+                "Set the key store file. If set, X.509 mode is enabled, otherwise built-in RPK credentials are used.");
+        options.addOption("ksp", "storepass", true, "Set the key store password.");
+        options.addOption("kst", "storetype", true,
+                String.format("Set the key store type.\nDefault: %s.", DEFAULT_KEYSTORE_TYPE));
+        options.addOption("ksa", "alias", true, String.format(
+                "Set the key store alias to use for server credentials.\nDefault: %s.", DEFAULT_KEYSTORE_ALIAS));
+        options.addOption("ksap", "keypass", true, "Set the key store alias password to use.");
         options.addOption("wp", "webport", true, "Set the HTTP port for web server.\nDefault: 8080.");
         options.addOption("m", "modelsfolder", true, "A folder which contains object models in OMA DDF(.xml) format.");
         options.addOption("r", "redis", true,
@@ -164,9 +185,17 @@ public class LeshanServerDemo {
         // get the Redis hostname:port
         String redisUrl = cl.getOptionValue("r");
 
+        // Get keystore parameters
+        String keyStorePath = cl.getOptionValue("ks");
+        String keyStoreType = cl.getOptionValue("kst", KeyStore.getDefaultType());
+        String keyStorePass = cl.getOptionValue("ksp");
+        String keyStoreAlias = cl.getOptionValue("ksa");
+        String keyStoreAliasPass = cl.getOptionValue("ksap");
+
         try {
             createAndStartServer(webPort, localAddress, localPort, secureLocalAddress, secureLocalPort,
-                    modelsFolderPath, redisUrl);
+                    modelsFolderPath, redisUrl, keyStorePath, keyStoreType, keyStorePass, keyStoreAlias,
+                    keyStoreAliasPass);
         } catch (BindException e) {
             System.err.println(
                     String.format("Web port %s is already used, you could change it using 'webport' option.", webPort));
@@ -177,7 +206,9 @@ public class LeshanServerDemo {
     }
 
     public static void createAndStartServer(int webPort, String localAddress, int localPort, String secureLocalAddress,
-            int secureLocalPort, String modelsFolderPath, String redisUrl) throws Exception {
+            int secureLocalPort, String modelsFolderPath, String redisUrl, String keyStorePath, String keyStoreType,
+            String keyStorePass, String keyStoreAlias, String keyStoreAliasPass)
+            throws Exception {
         // Prepare LWM2M server
         LeshanServerBuilder builder = new LeshanServerBuilder();
         builder.setLocalAddress(localAddress, localPort);
@@ -194,35 +225,86 @@ public class LeshanServerDemo {
             jedis = new JedisPool(new URI(redisUrl));
         }
 
-        // Get public and private server key
         PublicKey publicKey = null;
-        try {
-            // Get point values
-            byte[] publicX = Hex
-                    .decodeHex("fcc28728c123b155be410fc1c0651da374fc6ebe7f96606e90d927d188894a73".toCharArray());
-            byte[] publicY = Hex
-                    .decodeHex("d2ffaa73957d76984633fc1cc54d0b763ca0559a9dff9706e9f4557dacc3f52a".toCharArray());
-            byte[] privateS = Hex
-                    .decodeHex("1dae121ba406802ef07c193c1ee4df91115aabd79c1ed7f4c0ef7ef6a5449400".toCharArray());
 
-            // Get Elliptic Curve Parameter spec for secp256r1
-            AlgorithmParameters algoParameters = AlgorithmParameters.getInstance("EC");
-            algoParameters.init(new ECGenParameterSpec("secp256r1"));
-            ECParameterSpec parameterSpec = algoParameters.getParameterSpec(ECParameterSpec.class);
+        // Set up X.509 mode
+        if (keyStorePath != null) {
+            try {
+                KeyStore keyStore = KeyStore.getInstance(keyStoreType);
+                try (FileInputStream fis = new FileInputStream(keyStorePath)) {
+                    keyStore.load(fis, keyStorePass == null ? null : keyStorePass.toCharArray());
+                    List<Certificate> trustedCertificates = new ArrayList<>();
+                    for (Enumeration<String> aliases = keyStore.aliases(); aliases.hasMoreElements();) {
+                        String alias = aliases.nextElement();
+                        if (keyStore.isCertificateEntry(alias)) {
+                            trustedCertificates.add(keyStore.getCertificate(alias));
+                        } else if (keyStore.isKeyEntry(alias) && alias.equals(keyStoreAlias)) {
+                            List<X509Certificate> x509CertificateChain = new ArrayList<>();
+                            Certificate[] certificateChain = keyStore.getCertificateChain(alias);
+                            if (certificateChain == null || certificateChain.length == 0) {
+                                LOG.error("Keystore alias must have a non-empty chain of X509Certificates.");
+                                System.exit(-1);
+                            }
 
-            // Create key specs
-            KeySpec publicKeySpec = new ECPublicKeySpec(new ECPoint(new BigInteger(publicX), new BigInteger(publicY)),
-                    parameterSpec);
-            KeySpec privateKeySpec = new ECPrivateKeySpec(new BigInteger(privateS), parameterSpec);
+                            for (Certificate certificate : certificateChain) {
+                                if (!(certificate instanceof X509Certificate)) {
+                                    LOG.error("Non-X.509 certificate in alias chain is not supported: {}", certificate);
+                                    System.exit(-1);
+                                }
+                                x509CertificateChain.add((X509Certificate) certificate);
+                            }
 
-            // Get keys
-            publicKey = KeyFactory.getInstance("EC").generatePublic(publicKeySpec);
-            PrivateKey privateKey = KeyFactory.getInstance("EC").generatePrivate(privateKeySpec);
-            builder.setPublicKey(publicKey);
-            builder.setPrivateKey(privateKey);
-        } catch (InvalidKeySpecException | NoSuchAlgorithmException | InvalidParameterSpecException e) {
-            LOG.error("Unable to initialize RPK.", e);
-            System.exit(-1);
+                            Key key = keyStore.getKey(alias,
+                                    keyStoreAliasPass == null ? new char[0] : keyStoreAliasPass.toCharArray());
+                            if (!(key instanceof PrivateKey)) {
+                                LOG.error("Keystore alias must have a PrivateKey entry, was {}",
+                                        key == null ? null : key.getClass().getName());
+                                System.exit(-1);
+                            }
+                            builder.setPrivateKey((PrivateKey) key);
+                            publicKey = keyStore.getCertificate(alias).getPublicKey();
+                            builder.setCertificateChain(
+                                    x509CertificateChain.toArray(new X509Certificate[x509CertificateChain.size()]));
+                        }
+                    }
+                    builder.setTrustedCertificates(
+                            trustedCertificates.toArray(new Certificate[trustedCertificates.size()]));
+                }
+            } catch (KeyStoreException | IOException e) {
+                LOG.error("Unable to initialize X.509.", e);
+                System.exit(-1);
+            }
+        }
+        // Otherwise, set up RPK mode
+        else {
+            try {
+                // Get point values
+                byte[] publicX = Hex
+                        .decodeHex("fcc28728c123b155be410fc1c0651da374fc6ebe7f96606e90d927d188894a73".toCharArray());
+                byte[] publicY = Hex
+                        .decodeHex("d2ffaa73957d76984633fc1cc54d0b763ca0559a9dff9706e9f4557dacc3f52a".toCharArray());
+                byte[] privateS = Hex
+                        .decodeHex("1dae121ba406802ef07c193c1ee4df91115aabd79c1ed7f4c0ef7ef6a5449400".toCharArray());
+
+                // Get Elliptic Curve Parameter spec for secp256r1
+                AlgorithmParameters algoParameters = AlgorithmParameters.getInstance("EC");
+                algoParameters.init(new ECGenParameterSpec("secp256r1"));
+                ECParameterSpec parameterSpec = algoParameters.getParameterSpec(ECParameterSpec.class);
+
+                // Create key specs
+                KeySpec publicKeySpec = new ECPublicKeySpec(
+                        new ECPoint(new BigInteger(publicX), new BigInteger(publicY)), parameterSpec);
+                KeySpec privateKeySpec = new ECPrivateKeySpec(new BigInteger(privateS), parameterSpec);
+
+                // Get keys
+                publicKey = KeyFactory.getInstance("EC").generatePublic(publicKeySpec);
+                PrivateKey privateKey = KeyFactory.getInstance("EC").generatePrivate(privateKeySpec);
+                builder.setPublicKey(publicKey);
+                builder.setPrivateKey(privateKey);
+            } catch (InvalidKeySpecException | NoSuchAlgorithmException | InvalidParameterSpecException e) {
+                LOG.error("Unable to initialize RPK.", e);
+                System.exit(-1);
+            }
         }
 
         // Define model provider
