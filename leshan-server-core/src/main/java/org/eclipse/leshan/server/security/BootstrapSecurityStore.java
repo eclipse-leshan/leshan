@@ -28,10 +28,10 @@ public interface BootstrapSecurityStore {
     List<SecurityInfo> getAllByEndpoint(String endpoint);
 
     /**
-     * Returns the security information for an identity.
+     * Returns the security information for a PSK identity.
      * 
-     * @param identity of the client
+     * @param PSK identity of the client
      * @return the security information of <code>null</code> if not found.
      */
-    SecurityInfo getByIdentity(String identity);
+    SecurityInfo getByIdentity(String pskIdentity);
 }

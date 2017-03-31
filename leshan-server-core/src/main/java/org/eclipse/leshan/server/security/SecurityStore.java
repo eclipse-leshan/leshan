@@ -23,17 +23,17 @@ public interface SecurityStore {
     /**
      * Returns the security information for a given end-point.
      * 
-     * @param endpoint the client end-point
+     * @param endpoint the client LWM2M end-point
      * @return the security information of <code>null</code> if not found.
      */
     SecurityInfo getByEndpoint(String endpoint);
 
     /**
-     * Returns the security information for a identity.
+     * Returns the security information for a PSK identity.
      * 
-     * @param identity of the client
+     * @param the PSK identity of the client
      * @return the security information of <code>null</code> if not found.
      */
-    SecurityInfo getByIdentity(String identity);
+    SecurityInfo getByIdentity(String pskIdentity);
 
 }
