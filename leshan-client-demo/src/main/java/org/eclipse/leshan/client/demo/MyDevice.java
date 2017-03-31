@@ -64,6 +64,16 @@ public class MyDevice extends BaseInstanceEnabler {
             return ReadResponse.success(resourceid, getTimezone());
         case 16:
             return ReadResponse.success(resourceid, getSupportedBinding());
+        case 17:
+            return ReadResponse.success(resourceid, getDeviceType());
+        case 18:
+            return ReadResponse.success(resourceid, getHardwareVersion());
+        case 19:
+            return ReadResponse.success(resourceid, getSoftwareVersion());
+        case 20:
+            return ReadResponse.success(resourceid, getBatteryStatus());
+        case 21:
+            return ReadResponse.success(resourceid, getMemoryTotal());
         default:
             return super.read(resourceid);
         }
@@ -150,5 +160,25 @@ public class MyDevice extends BaseInstanceEnabler {
 
     private String getSupportedBinding() {
         return "U";
+    }
+
+    private String getDeviceType() {
+        return "Demo";
+    }
+
+    private String getHardwareVersion() {
+        return "1.0.1";
+    }
+
+    private String getSoftwareVersion() {
+        return "1.0.2";
+    }
+
+    private int getBatteryStatus() {
+        return RANDOM.nextInt(7);
+    }
+
+    private long getMemoryTotal() {
+        return Runtime.getRuntime().totalMemory() / 1024;
     }
 }
