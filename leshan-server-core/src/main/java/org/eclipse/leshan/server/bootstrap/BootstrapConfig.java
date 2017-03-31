@@ -63,7 +63,7 @@ public class BootstrapConfig implements Serializable {
         public SmsSecurityMode smsSecurityMode = SmsSecurityMode.NO_SEC;
         public byte[] smsBindingKeyParam = new byte[] {};
         public byte[] smsBindingKeySecret = new byte[] {};
-        public String serverSmsNumber = ""; // spec says integer WTF?
+        public String serverSmsNumber = "";
         public Integer serverId;
         public int clientOldOffTime = 1;
 
