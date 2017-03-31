@@ -117,7 +117,7 @@ public class MyDevice extends BaseInstanceEnabler {
     }
 
     private int getBatteryLevel() {
-        return RANDOM.nextInt(100);
+        return RANDOM.nextInt(101);
     }
 
     private int getMemoryFree() {
