@@ -274,8 +274,8 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
 
     @Override
     public void dispose() {
-        super.dispose();
         getSecurityStore().remove(getCurrentEndpoint());
         getSecurityStore().remove(BAD_ENDPOINT);
+        super.dispose();
     }
 }

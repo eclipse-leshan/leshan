@@ -44,7 +44,6 @@ public class SecurityTest {
     public void stop() {
         helper.client.destroy(true);
         helper.server.destroy();
-        helper.deregisterClient();
         helper.dispose();
     }
 

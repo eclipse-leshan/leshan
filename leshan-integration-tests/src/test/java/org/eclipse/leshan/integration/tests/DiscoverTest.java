@@ -47,6 +47,7 @@ public class DiscoverTest {
     public void stop() {
         helper.client.destroy(false);
         helper.server.destroy();
+        helper.dispose();
     }
 
     @Test
