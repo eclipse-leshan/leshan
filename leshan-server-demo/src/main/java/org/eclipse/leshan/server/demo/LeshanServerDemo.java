@@ -165,7 +165,7 @@ public class LeshanServerDemo {
                     modelsFolderPath, redisUrl);
         } catch (BindException e) {
             System.err.println(
-                    String.format("Web port %s is alreay used, you could change it using 'webport' option.", webPort));
+                    String.format("Web port %s is already used, you could change it using 'webport' option.", webPort));
             formatter.printHelp(USAGE, options);
         } catch (Exception e) {
             LOG.error("Jetty stopped with unexpected error ...", e);
