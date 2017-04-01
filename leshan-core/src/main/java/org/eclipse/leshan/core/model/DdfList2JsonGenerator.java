@@ -50,6 +50,13 @@ public class DdfList2JsonGenerator {
         factory = DocumentBuilderFactory.newInstance();
     }
 
+    private URLConnection openConnection(URL url) throws IOException {
+        URLConnection conn = url.openConnection();
+        // The default Java User-Agent gets 403 Forbidden from OMA website
+        conn.setRequestProperty("User-Agent", "Leshan " + getClass().getSimpleName());
+        return conn;
+    }
+
     private void processDdfList(String url, String ddfFilesPath) throws IOException {
 
         LOG.debug("Processing DDF list file {}", url);
@@ -58,7 +65,11 @@ public class DdfList2JsonGenerator {
 
         try {
             DocumentBuilder builder = factory.newDocumentBuilder();
-            Document document = builder.parse(url);
+            Document document;
+            // Downloading using URLConnection for ability to set User-Agent
+            try (InputStream is = openConnection(new URL(url)).getInputStream()) {
+                document = builder.parse(is, url);
+            }
 
             NodeList items = document.getDocumentElement().getElementsByTagName("Item");
             for (int i = 0; i < items.getLength(); i++) {
@@ -87,11 +98,7 @@ public class DdfList2JsonGenerator {
 
             LOG.debug("Downloading DDF file {} to {}", ddfUrl, outPath);
 
-            URLConnection conn = parsedUrl.openConnection();
-            // The default Java User-Agent gets 403 Forbidden from OMA website
-            conn.setRequestProperty("User-Agent", "Leshan " + getClass().getSimpleName());
-
-            try (InputStream in = conn.getInputStream()) {
+            try (InputStream in = openConnection(parsedUrl).getInputStream()) {
                 Files.copy(in, outPath);
             }
         }
@@ -101,7 +108,7 @@ public class DdfList2JsonGenerator {
         // default values
         String ddfFilesPath = Ddf2JsonGenerator.DEFAULT_DDF_FILES_PATH;
         String outputPath = Ddf2JsonGenerator.DEFAULT_OUTPUT_PATH;
-        String ddfListUrl = "https://raw.githubusercontent.com/OpenMobileAlliance/openmobilealliance.github.io/master/OMNA/LwM2M/DDF.xml";
+        String ddfListUrl = "http://www.openmobilealliance.org/wp/OMNA/LwM2M/DDF.xml";
 
         // use arguments if they exist
         if (args.length >= 1)
