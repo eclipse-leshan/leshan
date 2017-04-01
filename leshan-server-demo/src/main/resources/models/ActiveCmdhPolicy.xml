@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?><LWM2M xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M.xsd">
+	<Object ObjectType="MODefinition">
+		<Name>ActiveCmdhPolicy</Name>
+		<Description1><![CDATA[This Object provides a link to the currently active set of CMDH policies]]></Description1>
+		<ObjectID>2049</ObjectID>
+		<ObjectURN>urn:oma:lwm2m:ext:2049</ObjectURN><LWM2MVersion>1.0</LWM2MVersion>
+		<ObjectVersion>1.0</ObjectVersion><MultipleInstances>Single</MultipleInstances>
+		<Mandatory>Optional</Mandatory>
+		<Resources>
+			<Item ID="0"><Name>ActiveLink</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Mandatory</Mandatory>
+				<Type>Objlnk</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[Contains the reference to the CMDH policies (CmdhPolicy Object Instance) currently active for the associated CSE.]]></Description>
+			</Item>
+			
+			
+			
+			
+			</Resources>
+		<Description2 />
+	</Object>
+</LWM2M>

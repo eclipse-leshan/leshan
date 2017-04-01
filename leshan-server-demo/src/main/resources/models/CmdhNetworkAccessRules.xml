@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?><LWM2M xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M.xsd">
+	<Object ObjectType="MODefinition">
+		<Name>CmdhNetworkAccessRules</Name>
+		<Description1><![CDATA[This Object defines the usage of underlying networks for forwarding information to other CSEs during processing of CMDH-related requests in a CSE.]]></Description1>
+		<ObjectID>2054</ObjectID>
+		<ObjectURN>urn:oma:lwm2m:ext:2054</ObjectURN><LWM2MVersion>1.0</LWM2MVersion>
+		<ObjectVersion>1.0</ObjectVersion><MultipleInstances>Multiple</MultipleInstances>
+		<Mandatory>Optional</Mandatory>
+		<Resources>
+			<Item ID="0"><Name>ApplicableEventCategories</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Multiple</MultipleInstances>
+				<Mandatory>Mandatory</Mandatory>
+				<Type>Integer</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[Contains  a list of Event Category values]]></Description>
+			</Item>
+			<Item ID="1"><Name>NetworkAccessRule</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Multiple</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Objlnk</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[Contains 0 or more references to CmdhNwAccessRule Object Instances ]]></Description>
+			</Item>
+			
+			
+			
+			
+			
+			</Resources>
+		<Description2 />
+	</Object>
+</LWM2M>
