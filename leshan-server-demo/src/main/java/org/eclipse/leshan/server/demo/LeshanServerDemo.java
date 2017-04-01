@@ -75,8 +75,8 @@ public class LeshanServerDemo {
     private static final Logger LOG = LoggerFactory.getLogger(LeshanServerDemo.class);
 
     private final static String[] modelPaths = new String[] { "LWM2M_Lock_and_Wipe-V1_0.xml",
-                            "LWM2M_Cellular_connectivity-V1_0.xml", "LWM2M_APN_connection_profile-V1_0.xml",
-                            "LWM2M_WLAN_connectivity4-v1_0.xml", "LWM2M_Bearer_selection-V1_0.xml",
+                            "LWM2M_Cellular_connectivity-v1_0.xml", "LWM2M_APN_connection_profile-v1_0.xml",
+                            "LWM2M_WLAN_connectivity4-v1_0.xml", "LWM2M_Bearer_selection-v1_0.xml",
                             "LWM2M_Portfolio-v1_0.xml", "Communication_Characteristics-V1_0.xml",
                             "Non-Access_Stratum_NAS_configuration-V1_0.xml", "3200.xml", "3201.xml", "3202.xml",
                             "3203.xml", "3300.xml", "3301.xml", "3302.xml", "3303.xml", "3304.xml", "3305.xml",
@@ -86,7 +86,11 @@ public class LeshanServerDemo {
                             "3329.xml", "3330.xml", "3331.xml", "3332.xml", "3333.xml", "3334.xml", "3335.xml",
                             "3336.xml", "3337.xml", "3338.xml", "3339.xml", "3340.xml", "3341.xml", "3342.xml",
                             "3343.xml", "3344.xml", "3345.xml", "3346.xml", "3347.xml", "3348.xml", "singlePhasePM.xml",
-                            "VehicleControlUnit.xml", "Application-Data-Container.xml" };
+                            "VehicleControlUnit.xml", "Application-Data-Container.xml", "LWM2M_DevCapMgmt-v1_0.xml",
+                            "LWM2M_Software_Component-v1_0.xml", "LWM2M_Software_Management-v1_0.xml",
+                            "3-PhasePM.xml", "ActiveCmdhPolicy.xml", "CmdhBackOffParametersSet.xml", "CmdhBuffer.xml",
+                            "CmdhDefaults.xml", "CmdhDefEcValues.xml", "CmdhEcDefParamValues.xml", "CmdhLimits.xml",
+                            "CmdhNetworkAccessRules.xml", "CmdhNwAccessRule.xml", "CmdhPolicy.xml" };
 
     private final static String USAGE = "java -jar leshan-server-demo.jar [OPTION]";
 

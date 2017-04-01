@@ -1,21 +1,21 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <!--
 FILE INFORMATION
 
 OMA Permanent Document
-   File: OMA-SUP-XML_LWM2M_APN_connection_profile-V1_0-20170314-A
+   File: OMA-SUP-XML_LWM2M_Software_Component-V1_0-20170314-C
    Type: xml
 
 Public Reachable Information
    Path: http://www.openmobilealliance.org/tech/profiles
-   Name: LWM2M_APN_connection_profile-v1_0.xml
+   Name: LWM2M_Software_Component-v1_0.xml
 
 NORMATIVE INFORMATION
 
   Information about this file can be found in the latest revision of
 
-    OMA-TS-LWM2M_ConnMgmt-V1_0
+    OMA-TS-LightweightM2M-V1_0
 
   This is available at http://www.openmobilealliance.org/
 
@@ -23,8 +23,9 @@ NORMATIVE INFORMATION
 
 CHANGE HISTORY
 
-14032017 Status changed to Approved by TP, TP Ref # OMA-TP-2017-0019-INP_LWM2M_CONNMGMT-V1_0_RRP_for_Final_Approval
-	
+07022017 File created, see OMA-DM-LightweightM2M-2017-0046-CR_xml_files
+14032017 Status changed to Candidate by TP, TP Ref # OMA-TP-2017-0020-INP_LWM2M_SWMGMT-V1_0_RRP_for_Candidate_Re-Approval
+
 LEGAL DISCLAIMER
 
   Copyright 2017 Open Mobile Alliance All rights reserved.
@@ -62,88 +63,78 @@ LEGAL DISCLAIMER
 
 <LWM2M xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M.xsd">
 	<Object ObjectType="MODefinition">
-		<Name>Communication Characteristics</Name>
-		<Description1><![CDATA[This object enables configuration of various generic communications parameters.]]></Description1>
-		<ObjectID>17</ObjectID>
-		<ObjectURN>urn:oma:lwm2m:oma:17</ObjectURN>
-		<MultipleInstances>Single</MultipleInstances>
+		<Name>LWM2M Software Component</Name>
+		<Description1><![CDATA[If some Objects are not supported after software update, the LwM2M Client MUST delete all the Object Instances of the Objects that are not supported.]]></Description1>
+		<ObjectID>14</ObjectID>
+		<ObjectURN>urn:oma:lwm2m:oma:14</ObjectURN>
+		<MultipleInstances>Multiple</MultipleInstances>
 		<Mandatory>Optional</Mandatory>
 		<Resources>
-			<Item ID="0"><Name>Maximum uplink packet size</Name>
+			<Item ID="0">
+				<Name>Component Identity</Name>
+        <Operations>R</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>String</Type>
+				<RangeEnumeration>0-255 bytes</RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[Name or identifier of the software component]]></Description>
+			</Item>
+			<Item ID="1">
+				<Name>Component Pack</Name>
+        <Operations>R</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Opaque</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[Software components is stored in this resource]]></Description>
+			</Item>
+			<Item ID="2">
+				<Name>Component Version</Name>
+        <Operations>R</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>String</Type>
+				<RangeEnumeration>0-255 bytes</RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[Version of the software component.]]></Description>
+			</Item>
+			<Item ID="3">
+				<Name>Activate</Name>
+        <Operations>E</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type></Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[This action activates the software previously successfully installed (the SW Update Package Installation State Machine is currently in the INSTALLED state).]]></Description>
+			</Item>
+		
+			<Item ID="4"><Name>Deactivate</Name>
+				<Operations>E</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type></Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[This action deactivates software if the SW Update Package Installation State Machine is currently in the INSTALLED state.]]></Description>
+			</Item>
+			<Item ID="5"><Name>Activation State</Name>
 				<Operations>R</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
-				<Type>Integer</Type>
+				<Type>Boolean</Type>
 				<RangeEnumeration></RangeEnumeration>
-				<Units>octets</Units>
-				<Description><![CDATA[Maximum uplink packet size supported by the communications channel.
-
-In case of 3GPP NB-IoT this applies to the maximum uplink packet size supported via the Non Access Stratum (NAS). This information can be retrieved via the Protocol Configuration Options as defined in 3GPP TS 24.008. 
+				<Units></Units>
+				<Description><![CDATA[Indicates the current activation state of this software component:
+0: DISABLED
+Activation State is DISABLED if the Software Component Activation State Machine is in the INACTIVE state or not alive.
+1: ENABLED
+Activation State is ENABLED only if the Software Component Activation State Machine is in the ACTIVE state.
 ]]></Description>
 			</Item>
-			<Item ID="1"><Name>Maximum downlink packet size</Name>
-				<Operations>R</Operations>
-				<MultipleInstances>Single</MultipleInstances>
-				<Mandatory>Optional</Mandatory>
-				<Type>Integer</Type>
-				<RangeEnumeration></RangeEnumeration>
-				<Units>octets</Units>
-				<Description><![CDATA[Maximum downlink packet size supported by the communications channel, and supported by the device buffer.]]></Description>
-			</Item>
-			<Item ID="2"><Name>CoAP ACK_TIMEOUT</Name>
-				<Operations>RW</Operations>
-				<MultipleInstances>Single</MultipleInstances>
-				<Mandatory>Optional</Mandatory>
-				<Type>Integer</Type>
-				<RangeEnumeration></RangeEnumeration>
-				<Units></Units>
-				<Description><![CDATA[See [RFC 7252 CoAP]]]></Description>
-			</Item>
-			<Item ID="3"><Name>CoAP ACK_RANDOM_FACTOR</Name>
-				<Operations>RW</Operations>
-				<MultipleInstances>Single</MultipleInstances>
-				<Mandatory>Optional</Mandatory>
-				<Type>Integer</Type>
-				<RangeEnumeration></RangeEnumeration>
-				<Units></Units>
-				<Description><![CDATA[See [RFC 7252 CoAP]]]></Description>
-			</Item>
-			<Item ID="4"><Name>CoAP MAX_RETRANSMIT</Name>
-				<Operations>RW</Operations>
-				<MultipleInstances>Single</MultipleInstances>
-				<Mandatory>Optional</Mandatory>
-				<Type>Integer</Type>
-				<RangeEnumeration></RangeEnumeration>
-				<Units></Units>
-				<Description><![CDATA[See [RFC 7252 CoAP]]]></Description>
-			</Item>
-			<Item ID="5"><Name>CoAP NSTART</Name>
-				<Operations>RW</Operations>
-				<MultipleInstances>Single</MultipleInstances>
-				<Mandatory>Optional</Mandatory>
-				<Type>Integer</Type>
-				<RangeEnumeration></RangeEnumeration>
-				<Units></Units>
-				<Description><![CDATA[See [RFC 7252 CoAP]]]></Description>
-			</Item>
-			<Item ID="6"><Name>CoAP DEFAULT_LEISURE</Name>
-				<Operations>RW</Operations>
-				<MultipleInstances>Single</MultipleInstances>
-				<Mandatory>Optional</Mandatory>
-				<Type>Integer</Type>
-				<RangeEnumeration></RangeEnumeration>
-				<Units></Units>
-				<Description><![CDATA[See [RFC 7252 CoAP]]]></Description>
-			</Item>
-			<Item ID="7"><Name>CoAP PROBING_RATE</Name>
-				<Operations>RW</Operations>
-				<MultipleInstances>Single</MultipleInstances>
-				<Mandatory>Optional</Mandatory>
-				<Type>Integer</Type>
-				<RangeEnumeration></RangeEnumeration>
-				<Units></Units>
-				<Description><![CDATA[See [RFC 7252 CoAP]]]></Description>
-			</Item></Resources>
-		<Description2 />
+			</Resources>
+		<Description2><![CDATA[]]></Description2>
 	</Object>
 </LWM2M>
