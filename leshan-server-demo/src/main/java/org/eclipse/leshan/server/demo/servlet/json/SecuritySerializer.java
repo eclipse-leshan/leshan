@@ -69,6 +69,10 @@ public class SecuritySerializer implements JsonSerializer<SecurityInfo> {
             element.add("rpk", rpk);
         }
 
+        if (src.useX509Cert()) {
+            element.addProperty("x509", true);
+        }
+
         return element;
     }
 }

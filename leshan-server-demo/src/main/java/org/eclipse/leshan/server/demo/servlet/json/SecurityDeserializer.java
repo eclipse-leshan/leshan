@@ -37,6 +37,7 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
 
 public class SecurityDeserializer implements JsonDeserializer<SecurityInfo> {
 
@@ -62,6 +63,7 @@ public class SecurityDeserializer implements JsonDeserializer<SecurityInfo> {
 
             JsonObject psk = (JsonObject) object.get("psk");
             JsonObject rpk = (JsonObject) object.get("rpk");
+            JsonPrimitive x509 = object.getAsJsonPrimitive("x509");
             if (psk != null) {
                 // PSK Deserialization
                 String identity;
@@ -98,6 +100,8 @@ public class SecurityDeserializer implements JsonDeserializer<SecurityInfo> {
                     throw new JsonParseException("Invalid security info content", e);
                 }
                 info = SecurityInfo.newRawPublicKeyInfo(endpoint, key);
+            } else if (x509 != null && x509.getAsBoolean()) {
+                info = SecurityInfo.newX509CertInfo(endpoint);
             } else {
                 throw new JsonParseException("Invalid security info content");
             }
