@@ -30,6 +30,7 @@
                                     <option value="no_sec">No Security</option>
                                     <option value="psk">Pre-Shared Key</option>
                                     <!-- option value="rpk">Raw Public Key (Elliptic Curves)</option-->
+                                    <option value="x509">X.509 Certificate</option>
                                 </select>
                             </div>
                         </div>
@@ -54,6 +55,36 @@
                                 <p class="help-block" if={pskVal.toolong}>The pre-shared key is too long</p>
                             </div>
                         </div>
+
+                        <!-- X.509 inputs -->
+                        <div class={ form-group:true, has-error: x509Cert.error } if={ secMode.value == "x509"}>
+                            <label for="x509Cert" class="col-sm-4 control-label">Client certificate</label>
+                            <div class="col-sm-8">
+                                <textarea class="form-control" style="resize:none" rows="3" id="x509Cert" oninput={validate_x509Cert} onblur={validate_x509Cert}></textarea>
+                                <p class="text-right text-muted small" style="margin:0">Hexadecimal format</p>
+                                <p class="help-block" if={x509Cert.required}>The client certificate is required</p>
+                                <p class="help-block" if={x509Cert.nothexa}>Hexadecimal format is expected</p>
+                            </div>
+                        </div>
+                        <div class={ form-group:true, has-error: x509PrivateKey.error } if={ secMode.value == "x509"}>
+                            <label for="x509PrivateKey" class="col-sm-4 control-label">Client private key</label>
+                            <div class="col-sm-8">
+                                <textarea class="form-control" style="resize:none" rows="3" id="x509PrivateKey" oninput={validate_x509PrivateKey} onblur={validate_x509PrivateKey}></textarea>
+                                <p class="text-right text-muted small" style="margin:0">Hexadecimal format</p>
+                                <p class="help-block" if={x509PrivateKey.required}>The client private key is required</p>
+                                <p class="help-block" if={x509PrivateKey.nothexa}>Hexadecimal format is expected</p>
+                            </div>
+                        </div>
+                        <div class={ form-group:true, has-error: x509ServerCert.error } if={ secMode.value == "x509"}>
+                            <label for="x509ServerCert" class="col-sm-4 control-label">Server certificate</label>
+                            <div class="col-sm-8">
+                                <textarea class="form-control" style="resize:none" rows="3" id="x509ServerCert" oninput={validate_x509ServerCert} onblur={validate_x509ServerCert}></textarea>
+                                <p class="text-right text-muted small" style="margin:0">Hexadecimal format</p>
+                                <p class="help-block" if={x509ServerCert.required}>The server certificate is required</p>
+                                <p class="help-block" if={x509ServerCert.nothexa}>Hexadecimal format is expected</p>
+                            </div>
+                        </div>
+
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -80,8 +111,9 @@
 
         has_error(){
             var endpoint_has_error = (endpoint.error === undefined || endpoint.error);
-            var secMode_has_error = secMode.value === "psk" && (typeof pskId.error === "undefined" || pskId.error || typeof pskVal.error === "undefined" || pskVal.error);
-            return endpoint_has_error || secMode_has_error;
+            var psk_has_error = secMode.value === "psk" && (typeof pskId.error === "undefined" || pskId.error || typeof pskVal.error === "undefined" || pskVal.error);
+            var x509_has_error = secMode.value === "x509" && (typeof x509Cert.error === "undefined" || x509Cert.error || typeof x509PrivateKey.error === "undefined" || x509PrivateKey.error || typeof x509ServerCert.error === "undefined" || x509ServerCert.error);
+            return endpoint_has_error || psk_has_error || x509_has_error;
         }
 
         validate_endpoint(){
@@ -131,6 +163,54 @@
             }
         }
 
+        validate_x509Cert(){
+            var str = x509Cert.value;
+            x509Cert.error = false;
+            x509Cert.required = false;
+            x509Cert.nothexa = false;
+            if (secMode.value === "x509"){
+                if (!str || 0 === str.length){
+                    x509Cert.error = true;
+                    x509Cert.required = true;
+                }else if (! /^[0-9a-fA-F]+$/i.test(str)){
+                    x509Cert.error = true;
+                    x509Cert.nothexa = true;
+                }
+            }
+        }
+
+        validate_x509PrivateKey(){
+            var str = x509PrivateKey.value;
+            x509PrivateKey.error = false;
+            x509PrivateKey.required = false;
+            x509PrivateKey.nothexa = false;
+            if (secMode.value === "x509"){
+                if (!str || 0 === str.length){
+                    x509PrivateKey.error = true;
+                    x509PrivateKey.required = true;
+                }else if (! /^[0-9a-fA-F]+$/i.test(str)){
+                    x509PrivateKey.error = true;
+                    x509PrivateKey.nothexa = true;
+                }
+            }
+        }
+
+        validate_x509ServerCert(){
+            var str = x509ServerCert.value;
+            x509ServerCert.error = false;
+            x509ServerCert.required = false;
+            x509ServerCert.nothexa = false;
+            if (secMode.value === "x509"){
+                if (!str || 0 === str.length){
+                    x509ServerCert.error = true;
+                    x509ServerCert.required = true;
+                }else if (! /^[0-9a-fA-F]+$/i.test(str)){
+                    x509ServerCert.error = true;
+                    x509ServerCert.nothexa = true;
+                }
+            }
+        }
+
         fromAscii(ascii){
             var bytearray = [];
             for (var i in ascii){
@@ -150,10 +230,14 @@
         submit(){
             var id = [];
             var key = [];
+            var serverKey = [];
             if (secMode.value === "psk"){
                 id = self.fromAscii(pskId.value);
                 key = self.fromHex(pskVal.value);
-                console.log(key)
+            }else if(secMode.value === "x509"){
+                id = self.fromHex(x509Cert.value);
+                key = self.fromHex(x509PrivateKey.value);
+                serverKey = self.fromHex(x509ServerCert.value);
             }
             var uri
             if (!dmUrl.value || dmUrl.value.length == 0){
@@ -175,7 +259,7 @@
                         secretKey : key,
                         securityMode : secMode.value.toUpperCase(),
                         serverId : 123,
-                        serverPublicKeyOrId : [  ],
+                        serverPublicKeyOrId : serverKey,
                         serverSmsNumber : "",
                         smsBindingKeyParam : [  ],
                         smsBindingKeySecret : [  ],
