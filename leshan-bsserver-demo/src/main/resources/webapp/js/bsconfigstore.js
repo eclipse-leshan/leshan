@@ -62,7 +62,7 @@ function BsConfigStore() {
         }).fail(function(data, status, headers, config){
             var err = "Unable to get the bootstrap info list.";
             console.error(err, status, data);
-            alert(err + " see console log for mor details");
+            alert(err + " See console log for more details.");
         });
     };
 
@@ -81,7 +81,7 @@ function BsConfigStore() {
         .fail(function (response, status) {
           var err = "Unable to post the bootstrap config.";
           console.error(err,endpoint, status, response);
-          alert(err + "see console log for mor details");
+          alert(err + " See console log for more details.");
         });
     };
 
@@ -96,7 +96,7 @@ function BsConfigStore() {
         .fail(function (response, status) {
           var err = "Unable to delete the bootstrap config.";
           console.error(err,endpoint, status, response);
-          alert(err + "see console log for mor details");
+          alert(err + " See console log for more details.");
         });
     };
 }
