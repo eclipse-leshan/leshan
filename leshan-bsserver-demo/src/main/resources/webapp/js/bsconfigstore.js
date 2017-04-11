@@ -59,10 +59,10 @@ function BsConfigStore() {
         $.get('api/bootstrap', function(data) {
             self.bsconfigs = convertConfigs(data);
             self.trigger('changed', self.bsconfigs);
-        }).fail(function(data, status, headers, config){
-            var err = "Unable to get the bootstrap info list.";
-            console.error(err, status, data);
-            alert(err + " See console log for more details.");
+        }).fail(function(xhr, status, error){
+            var err = "Unable to get the bootstrap info list";
+            console.error(err, status, error, xhr.responseText);
+            alert(err + ": " + xhr.responseText);
         });
     };
 
@@ -77,11 +77,10 @@ function BsConfigStore() {
         }).done(function () {
             self.bsconfigs[endpoint] = convertConfig(data);
             self.trigger('changed', self.bsconfigs);
-        })
-        .fail(function (response, status) {
-          var err = "Unable to post the bootstrap config.";
-          console.error(err,endpoint, status, response);
-          alert(err + " See console log for more details.");
+        }).fail(function (xhr, status, error) {
+          var err = "Unable to post the bootstrap config";
+          console.error(err, endpoint, status, error, xhr.responseText);
+          alert(err + ": " + xhr.responseText);
         });
     };
 
@@ -92,11 +91,10 @@ function BsConfigStore() {
         }).done(function () {
             delete self.bsconfigs[endpoint];
             self.trigger('changed', self.bsconfigs);
-        })
-        .fail(function (response, status) {
-          var err = "Unable to delete the bootstrap config.";
-          console.error(err,endpoint, status, response);
-          alert(err + " See console log for more details.");
+        }).fail(function (xhr, status, error) {
+          var err = "Unable to delete the bootstrap config";
+          console.error(err,endpoint, status, xhr.responseText);
+          alert(err + ": " +xhr.responseText);
         });
     };
 }

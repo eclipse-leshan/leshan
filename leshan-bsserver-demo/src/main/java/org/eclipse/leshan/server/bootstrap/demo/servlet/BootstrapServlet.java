@@ -76,7 +76,7 @@ public class BootstrapServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if (req.getPathInfo() != null) {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            sendError(resp, HttpServletResponse.SC_NOT_FOUND, "bad URL");
             return;
         }
 
@@ -89,7 +89,7 @@ public class BootstrapServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if (req.getPathInfo() == null) {
             // we need the endpoint in the URL
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "endpoint name should be specified in the URL");
+            sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "endpoint name should be specified in the URL");
             return;
         }
 
@@ -97,7 +97,7 @@ public class BootstrapServlet extends HttpServlet {
 
         // endPoint
         if (path.length != 1) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST,
+            sendError(resp, HttpServletResponse.SC_BAD_REQUEST,
                     "endpoint name should be specified in the URL, nothing more");
             return;
         }
@@ -108,13 +108,13 @@ public class BootstrapServlet extends HttpServlet {
             BootstrapConfig cfg = gson.fromJson(new InputStreamReader(req.getInputStream()), BootstrapConfig.class);
 
             if (cfg == null) {
-                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "no content");
+                sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "no content");
             } else {
                 bsStore.addConfig(endpoint, cfg);
                 resp.setStatus(HttpServletResponse.SC_OK);
             }
         } catch (JsonSyntaxException | ConfigurationException e) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+            sendError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         }
     }
 
@@ -122,7 +122,7 @@ public class BootstrapServlet extends HttpServlet {
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if (req.getPathInfo() == null) {
             // we need the endpoint in the URL
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "endpoint name should be specified in the URL");
+            sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "endpoint name should be specified in the URL");
             return;
         }
 
@@ -130,7 +130,7 @@ public class BootstrapServlet extends HttpServlet {
 
         // endPoint
         if (path.length != 1) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST,
+            sendError(resp, HttpServletResponse.SC_BAD_REQUEST,
                     "endpoint name should be specified in the URL, nothing more");
             return;
         }
@@ -140,7 +140,14 @@ public class BootstrapServlet extends HttpServlet {
         if (bsStore.deleteConfig(endpoint)) {
             resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
         } else {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            sendError(resp, HttpServletResponse.SC_NOT_FOUND, "no config for " + endpoint);
         }
+    }
+
+    private void sendError(HttpServletResponse resp, int statusCode, String errorMessage) throws IOException {
+        resp.setStatus(statusCode);
+        resp.setContentType("text/plain; charset=UTF-8");
+        if (errorMessage != null)
+            resp.getOutputStream().write(errorMessage.getBytes(StandardCharsets.UTF_8));
     }
 }
