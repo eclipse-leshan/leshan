@@ -23,9 +23,14 @@
                         <p>
                             <strong>{ security.uri }</strong><br/>
                             security mode : {security.securityMode}<br/>
-                            <span if={security.securityMode !== 'NO_SEC'}>
+                            <span if={security.securityMode === 'PSK'}>
                                 Id : <code> {toAscii(security.publicKeyOrId)} </code> </br>
                                 secret : <code> {toHex(security.secretKey)} </code> </br>
+                            </span>
+                            <span if={security.securityMode === 'X509'}>
+                                Client certificate : <code> {toHex(security.publicKeyOrId)} </code> </br>
+                                Client private key : <code> {toHex(security.secretKey)} </code> </br>
+                                Server certificate : <code> {toHex(security.serverPublicKeyOrId)} </code> </br>
                             </span>
                         </p>
                     </div>
@@ -35,9 +40,14 @@
                         <p>
                             <strong>{security.uri}</strong><br/>
                             security mode : {security.securityMode}<br/>
-                            <span if={security.securityMode !== 'NO_SEC'}>
+                            <span if={security.securityMode === 'PSK'}>
                                 Id : <code> {toAscii(security.publicKeyOrId)} </code> </br>
                                 secret : <code> {toHex(security.secretKey)} </code> </br>
+                            </span>
+                            <span if={security.securityMode === 'X509'}>
+                                Client certificate : <code> {toHex(security.publicKeyOrId)} </code> </br>
+                                Client private key : <code> {toHex(security.secretKey)} </code> </br>
+                                Server certificate : <code> {toHex(security.serverPublicKeyOrId)} </code> </br>
                             </span>
                         </p>
                     </div>

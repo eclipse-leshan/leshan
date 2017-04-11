@@ -37,6 +37,8 @@
 				X : <code>{{ security.rpk.x }}</code><br/>
 				Y : <code>{{ security.rpk.y }}</code>
 			</td>
+			<td ng-if="security.x509">X.509</td>
+			<td ng-if="security.x509">Uses X.509 certificate</td>
 			<td><button type="button" class="btn btn-default btn-xs" ng-click="remove(endpoint)">
 					<span class="glyphicon glyphicon-remove"></button></td>
 		</tr>
@@ -71,6 +73,7 @@
 							<select class="form-control" id="securityMode" ng-model="securityMode">
 								<option value="psk">Pre-Shared Key</option>
 								<option value="rpk">Raw Public Key (Elliptic Curves)</option>
+								<option value="x509">X.509 Certificate</option>
 							</select>
 						</div>
 					</div>
@@ -128,8 +131,7 @@
 						</div>
 					</div>
 
-					<!-- Certificates input -->
-					<!-- TODO -->
+					<!-- Certificates input (nothing) -->
 
 				</form>
 			</div>
