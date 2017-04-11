@@ -73,9 +73,9 @@
 
         default_uri(){
             if (secMode.value === "no_sec")
-                return "coap://leshan.eclipse.org:5683";
+                return "coap://"+location.hostname+":5683";
             else
-                return "coaps://leshan.eclipse.org:5684";
+                return "coaps://"+location.hostname+":5684";
         }
 
         has_error(){
