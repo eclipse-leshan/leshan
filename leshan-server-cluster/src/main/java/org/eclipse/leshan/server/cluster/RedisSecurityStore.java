@@ -97,11 +97,15 @@ public class RedisSecurityStore implements EditableSecurityStore {
     public SecurityInfo add(SecurityInfo info) throws NonUniqueSecurityInfoException {
         byte[] data = serialize(info);
         try (Jedis j = pool.getResource()) {
-            j.set((SEC_EP + info.getEndpoint()).getBytes(), data);
             if (info.getIdentity() != null) {
                 // populate the secondary index (security info by PSK id)
+                String oldEndpoint = j.hget(PSKID_SEC, info.getIdentity());
+                if (oldEndpoint != null && !oldEndpoint.equals(info.getEndpoint())) {
+                    throw new NonUniqueSecurityInfoException("PSK Identity " + info.getIdentity() + " is already used");
+                }
                 j.hset(PSKID_SEC.getBytes(), info.getIdentity().getBytes(), info.getEndpoint().getBytes());
             }
+            j.set((SEC_EP + info.getEndpoint()).getBytes(), data);
             return null;
         }
     }
