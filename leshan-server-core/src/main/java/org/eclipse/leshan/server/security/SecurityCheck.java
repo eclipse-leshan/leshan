@@ -65,7 +65,7 @@ public class SecurityCheck {
      * @param endpoint
      * @param clientIdentity
      * @param securityInfo
-     * @return true if the security info are valid.
+     * @return true if the security info is valid.
      */
     public static boolean checkSecurityInfo(String endpoint, Identity clientIdentity, SecurityInfo securityInfo) {
 
