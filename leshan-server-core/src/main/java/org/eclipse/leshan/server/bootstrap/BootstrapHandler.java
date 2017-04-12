@@ -230,6 +230,7 @@ public class BootstrapHandler {
         resources.add(LwM2mSingleResource.newStringResource(9, securityConfig.serverSmsNumber));
         resources.add(LwM2mSingleResource.newIntegerResource(10, securityConfig.serverId));
         resources.add(LwM2mSingleResource.newIntegerResource(11, securityConfig.clientOldOffTime));
+        resources.add(LwM2mSingleResource.newIntegerResource(12, securityConfig.bootstrapServerAccountTimeout));
 
         return new LwM2mObjectInstance(instanceId, resources);
     }
