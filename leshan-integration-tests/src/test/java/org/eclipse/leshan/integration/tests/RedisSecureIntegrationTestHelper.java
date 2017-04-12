@@ -85,12 +85,12 @@ public class RedisSecureIntegrationTestHelper extends SecureIntegrationTestHelpe
 
     @Override
     public void createServerWithRPK() {
-        throw new UnsupportedOperationException("Not implemeneted");
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override
     public void createServerWithX509Cert(Certificate[] trustedCertificates) {
-        throw new UnsupportedOperationException("Not implemeneted");
+        throw new UnsupportedOperationException("Not implemented");
     }
 
 }
