@@ -24,6 +24,7 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 
 import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.junit.After;
@@ -42,7 +43,8 @@ public class SecurityTest {
 
     @After
     public void stop() {
-        helper.client.destroy(true);
+        if (helper.client != null)
+            helper.client.destroy(true);
         helper.server.destroy();
         helper.dispose();
     }
@@ -204,6 +206,21 @@ public class SecurityTest {
         helper.assertClientNotRegisterered();
         helper.client.start();
         helper.ensureNoRegistration(1);
+    }
+
+    @Test
+    public void nonunique_psk_identity() throws NonUniqueSecurityInfoException {
+        helper.createServer();
+        helper.server.start();
+
+        EditableSecurityStore ess = helper.getSecurityStore();
+
+        ess.add(SecurityInfo.newPreSharedKeyInfo(GOOD_ENDPOINT, GOOD_PSK_ID, GOOD_PSK_KEY));
+        try {
+            ess.add(SecurityInfo.newPreSharedKeyInfo(BAD_ENDPOINT, GOOD_PSK_ID, GOOD_PSK_KEY));
+            fail("Non-unique PSK identity should throw exception on add");
+        } catch (NonUniqueSecurityInfoException e) {
+        }
     }
 
     @Ignore
