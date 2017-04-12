@@ -105,7 +105,13 @@ public class RedisSecurityStore implements EditableSecurityStore {
                 }
                 j.hset(PSKID_SEC.getBytes(), info.getIdentity().getBytes(), info.getEndpoint().getBytes());
             }
-            j.set((SEC_EP + info.getEndpoint()).getBytes(), data);
+
+            byte[] previousData = j.getSet((SEC_EP + info.getEndpoint()).getBytes(), data);
+            SecurityInfo previous = previousData == null ? null : deserialize(previousData);
+            String previousIdentity = previous == null ? null : previous.getIdentity();
+            if (previousIdentity != null && !previousIdentity.equals(info.getIdentity())) {
+                j.hdel(PSKID_SEC, previousIdentity);
+            }
             return null;
         }
     }
