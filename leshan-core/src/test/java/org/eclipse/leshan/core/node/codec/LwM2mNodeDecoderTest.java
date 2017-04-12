@@ -25,6 +25,7 @@ import java.util.List;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -217,6 +218,49 @@ public class LwM2mNodeDecoderTest {
     }
 
     @Test
+    public void tlv_empty_object() {
+        byte[] content = TlvEncoder.encode(new Tlv[] {}).array();
+
+        LwM2mObject obj = (LwM2mObject) decoder.decode(content, ContentFormat.TLV, new LwM2mPath(9), model);
+
+        assertNotNull(obj);
+        assertEquals(9, obj.getId());
+        assertTrue(obj.getInstances().isEmpty());
+    }
+
+    @Test
+    public void tlv_empty_instance() {
+        byte[] content = TlvEncoder.encode(new Tlv[] {}).array();
+
+        LwM2mObjectInstance instance = (LwM2mObjectInstance) decoder.decode(content, ContentFormat.TLV,
+                new LwM2mPath(9, 0), model);
+
+        assertNotNull(instance);
+        assertEquals(0, instance.getId());
+        assertTrue(instance.getResources().isEmpty());
+    }
+
+    @Test(expected = CodecException.class)
+    public void tlv_empty_single_resource() {
+        byte[] content = TlvEncoder.encode(new Tlv[] {}).array();
+
+        decoder.decode(content, ContentFormat.TLV, new LwM2mPath(9, 0, 0), model);
+    }
+
+    @Test
+    public void tlv_empty_multi_resource() {
+        byte[] content = TlvEncoder.encode(new Tlv[] {}).array();
+
+        LwM2mResource resource = (LwM2mResource) decoder.decode(content, ContentFormat.TLV, new LwM2mPath(3, 0, 6),
+                model);
+
+        assertNotNull(resource);
+        assertTrue(resource instanceof LwM2mMultipleResource);
+        assertEquals(6, resource.getId());
+        assertTrue(resource.getValues().isEmpty());
+    }
+
+    @Test
     public void json_device_object_instance0() throws CodecException {
         // json content for instance 0 of device object
         StringBuilder b = new StringBuilder();
@@ -369,5 +413,104 @@ public class LwM2mNodeDecoderTest {
         assertEquals(Long.valueOf(25462634 - 50), timestampedResources.get(2).getTimestamp());
         assertEquals(24.1d,
                 ((LwM2mObject) timestampedResources.get(2).getNode()).getInstance(0).getResource(1).getValue());
+    }
+
+    @Test
+    public void json_empty_object() {
+        // Completely empty
+        StringBuilder b = new StringBuilder();
+        b.append("{}");
+        LwM2mObject obj = (LwM2mObject) decoder.decode(b.toString().getBytes(), ContentFormat.JSON, new LwM2mPath(9),
+                model);
+        assertNotNull(obj);
+        assertEquals(9, obj.getId());
+        assertTrue(obj.getInstances().isEmpty());
+
+        // with empty resource list
+        b = new StringBuilder();
+        b.append("{\"e\":[]}");
+        obj = (LwM2mObject) decoder.decode(b.toString().getBytes(), ContentFormat.JSON, new LwM2mPath(9), model);
+        assertNotNull(obj);
+        assertEquals(9, obj.getId());
+        assertTrue(obj.getInstances().isEmpty());
+
+        // with empty resources list and base name
+        b = new StringBuilder();
+        b.append("{\"bn\":\"9\", \"e\":[]}");
+        obj = (LwM2mObject) decoder.decode(b.toString().getBytes(), ContentFormat.JSON, new LwM2mPath(9), model);
+        assertNotNull(obj);
+        assertEquals(9, obj.getId());
+        assertTrue(obj.getInstances().isEmpty());
+    }
+
+    @Test
+    public void json_empty_instance() {
+        // Completely empty
+        StringBuilder b = new StringBuilder();
+        b.append("{}");
+        LwM2mObjectInstance instance = (LwM2mObjectInstance) decoder.decode(b.toString().getBytes(), ContentFormat.JSON,
+                new LwM2mPath(9, 0), model);
+        assertNotNull(instance);
+        assertEquals(0, instance.getId());
+        assertTrue(instance.getResources().isEmpty());
+
+        // with empty resource list
+        b = new StringBuilder();
+        b.append("{\"e\":[]}");
+        instance = (LwM2mObjectInstance) decoder.decode(b.toString().getBytes(), ContentFormat.JSON,
+                new LwM2mPath(9, 0), model);
+        assertNotNull(instance);
+        assertEquals(0, instance.getId());
+        assertTrue(instance.getResources().isEmpty());
+
+        // with empty resources list and base name
+        b = new StringBuilder();
+        b.append("{\"bn\":\"9/0\", \"e\":[]}");
+        instance = (LwM2mObjectInstance) decoder.decode(b.toString().getBytes(), ContentFormat.JSON,
+                new LwM2mPath(9, 0), model);
+        assertNotNull(instance);
+        assertEquals(0, instance.getId());
+        assertTrue(instance.getResources().isEmpty());
+    }
+
+    @Test(expected = CodecException.class)
+    public void json_empty_single_resource() {
+        StringBuilder b = new StringBuilder();
+        b.append("{}");
+
+        decoder.decode(b.toString().getBytes(), ContentFormat.JSON, new LwM2mPath(9, 0, 0), model);
+    }
+
+    @Test
+    public void json_empty_multi_resource() {
+        // Completely empty
+        StringBuilder b = new StringBuilder();
+        b.append("{}");
+        LwM2mResource resource = (LwM2mResource) decoder.decode(b.toString().getBytes(), ContentFormat.JSON,
+                new LwM2mPath(3, 0, 6), model);
+        assertNotNull(resource);
+        assertTrue(resource instanceof LwM2mMultipleResource);
+        assertEquals(6, resource.getId());
+        assertTrue(resource.getValues().isEmpty());
+
+        // with empty resource list
+        b = new StringBuilder();
+        b.append("{\"e\":[]}");
+        resource = (LwM2mResource) decoder.decode(b.toString().getBytes(), ContentFormat.JSON, new LwM2mPath(3, 0, 6),
+                model);
+        assertNotNull(resource);
+        assertTrue(resource instanceof LwM2mMultipleResource);
+        assertEquals(6, resource.getId());
+        assertTrue(resource.getValues().isEmpty());
+
+        // with empty resources list and base name
+        b = new StringBuilder();
+        b.append("{\"bn\":\"3/0/6\", \"e\":[]}");
+        resource = (LwM2mResource) decoder.decode(b.toString().getBytes(), ContentFormat.JSON, new LwM2mPath(3, 0, 6),
+                model);
+        assertNotNull(resource);
+        assertTrue(resource instanceof LwM2mMultipleResource);
+        assertEquals(6, resource.getId());
+        assertTrue(resource.getValues().isEmpty());
     }
 }
