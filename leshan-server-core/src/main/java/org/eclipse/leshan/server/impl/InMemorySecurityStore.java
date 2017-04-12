@@ -98,6 +98,10 @@ public class InMemorySecurityStore implements EditableSecurityStore {
             }
 
             SecurityInfo previous = securityByEp.put(info.getEndpoint(), info);
+            String previousIdentity = previous == null ? null : previous.getIdentity();
+            if (previousIdentity != null && !previousIdentity.equals(identity)) {
+                securityByIdentity.remove(previousIdentity);
+            }
 
             return previous;
         } finally {

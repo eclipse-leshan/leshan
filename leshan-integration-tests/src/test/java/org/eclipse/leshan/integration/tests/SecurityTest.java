@@ -223,6 +223,24 @@ public class SecurityTest {
         }
     }
 
+    @Test
+    public void change_psk_identity_cleanup() throws NonUniqueSecurityInfoException {
+        helper.createServer();
+        helper.server.start();
+
+        EditableSecurityStore ess = helper.getSecurityStore();
+
+        ess.add(SecurityInfo.newPreSharedKeyInfo(GOOD_ENDPOINT, BAD_PSK_ID, BAD_PSK_KEY));
+        // Change PSK id for endpoint
+        ess.add(SecurityInfo.newPreSharedKeyInfo(GOOD_ENDPOINT, GOOD_PSK_ID, GOOD_PSK_KEY));
+        // Original/old PSK id should not be reserved any more
+        try {
+            ess.add(SecurityInfo.newPreSharedKeyInfo(BAD_ENDPOINT, BAD_PSK_ID, BAD_PSK_KEY));
+        } catch (NonUniqueSecurityInfoException e) {
+            fail("PSK identity change for existing endpoint should have cleaned up old PSK identity");
+        }
+    }
+
     @Ignore
     // TODO implement RPK support for client
     @Test
