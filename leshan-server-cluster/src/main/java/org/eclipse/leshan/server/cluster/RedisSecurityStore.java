@@ -112,7 +112,8 @@ public class RedisSecurityStore implements EditableSecurityStore {
             if (previousIdentity != null && !previousIdentity.equals(info.getIdentity())) {
                 j.hdel(PSKID_SEC, previousIdentity);
             }
-            return null;
+
+            return previous;
         }
     }
 
