@@ -215,10 +215,9 @@ public class LwM2mNodeJsonDecoder {
     /**
      * Group all JsonArrayEntry by instanceId
      * 
-     * @param requestPath
-     * @param baseName
      * @param jsonEntries
-     * 
+     * @param baseName
+     *
      * @return a map (instanceId => collection of JsonArrayEntry)
      */
     private static Map<Integer, Collection<JsonArrayEntry>> groupJsonEntryByInstanceId(

@@ -130,7 +130,7 @@ public class ObjectLoader {
      * 
      * It should be used to load DDF embedded with your application bundle (e.g. jar, war, ...)
      * 
-     * @param path An array of path to DFF files.
+     * @param paths An array of paths to DDF files.
      */
     public static List<ObjectModel> loadDdfResources(String[] paths) {
         List<ObjectModel> models = new ArrayList<>();

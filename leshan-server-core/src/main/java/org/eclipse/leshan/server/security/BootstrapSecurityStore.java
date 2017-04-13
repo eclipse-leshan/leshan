@@ -30,7 +30,7 @@ public interface BootstrapSecurityStore {
     /**
      * Returns the security information for a PSK identity.
      * 
-     * @param PSK identity of the client
+     * @param pskIdentity the PSK identity of the client
      * @return the security information of <code>null</code> if not found.
      */
     SecurityInfo getByIdentity(String pskIdentity);

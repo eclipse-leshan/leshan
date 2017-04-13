@@ -16,7 +16,7 @@
 package org.eclipse.leshan.core.request.exception;
 
 /**
- * Throwns when a invalid response is received.
+ * Thrown when an invalid response is received.
  */
 public class InvalidResponseException extends RuntimeException {
 
