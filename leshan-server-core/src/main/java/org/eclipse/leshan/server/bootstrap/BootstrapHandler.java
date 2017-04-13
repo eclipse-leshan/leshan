@@ -222,7 +222,7 @@ public class BootstrapHandler {
         resources.add(LwM2mSingleResource.newBooleanResource(1, securityConfig.bootstrapServer));
         resources.add(LwM2mSingleResource.newIntegerResource(2, securityConfig.securityMode.code));
         resources.add(LwM2mSingleResource.newBinaryResource(3, securityConfig.publicKeyOrId));
-        resources.add(LwM2mSingleResource.newBinaryResource(4, securityConfig.serverPublicKeyOrId));
+        resources.add(LwM2mSingleResource.newBinaryResource(4, securityConfig.serverPublicKey));
         resources.add(LwM2mSingleResource.newBinaryResource(5, securityConfig.secretKey));
         resources.add(LwM2mSingleResource.newIntegerResource(6, securityConfig.smsSecurityMode.code));
         resources.add(LwM2mSingleResource.newBinaryResource(7, securityConfig.smsBindingKeyParam));
