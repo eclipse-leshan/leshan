@@ -30,8 +30,7 @@ public interface LwM2mValueConverter {
      * @param currentType the current type of the value
      * @param expectedType the type expected
      * @param resourcePath the path of the concerned resource
-     * @param the
-     * 
+     *
      * @exception CodecException the value is not convertible.
      */
     Object convertValue(Object value, Type currentType, Type expectedType, LwM2mPath resourcePath);

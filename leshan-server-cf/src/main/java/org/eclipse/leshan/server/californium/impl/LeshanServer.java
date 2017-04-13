@@ -114,7 +114,7 @@ public class LeshanServer implements LwM2mServer {
      * @param encoder encode used to encode request payload.
      * @param publicKey the server public key used for RPK DTLS authentication.
      * @param privateKey the server private key used to RPK or X509 DTLS authentication.
-     * @param certificateChain the server X509 certificate (will be used for RPK too, in this case no need to set public
+     * @param x509CertChain the server X509 certificate (will be used for RPK too, in this case no need to set public
      *        key).
      * @param trustedCertificates the trusted certificates used to authenticate client certificates.
      * @param networkConfig the CoAP {@link NetworkConfig}.
