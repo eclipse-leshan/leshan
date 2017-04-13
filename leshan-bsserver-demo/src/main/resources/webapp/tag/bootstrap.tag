@@ -30,7 +30,7 @@
                             <span if={security.securityMode === 'X509'}>
                                 Client certificate : <code> {toHex(security.publicKeyOrId)} </code> </br>
                                 Client private key : <code> {toHex(security.secretKey)} </code> </br>
-                                Server certificate : <code> {toHex(security.serverPublicKeyOrId)} </code> </br>
+                                Server certificate : <code> {toHex(security.serverPublicKey)} </code> </br>
                             </span>
                         </p>
                     </div>
@@ -47,7 +47,7 @@
                             <span if={security.securityMode === 'X509'}>
                                 Client certificate : <code> {toHex(security.publicKeyOrId)} </code> </br>
                                 Client private key : <code> {toHex(security.secretKey)} </code> </br>
-                                Server certificate : <code> {toHex(security.serverPublicKeyOrId)} </code> </br>
+                                Server certificate : <code> {toHex(security.serverPublicKey)} </code> </br>
                             </span>
                         </p>
                     </div>

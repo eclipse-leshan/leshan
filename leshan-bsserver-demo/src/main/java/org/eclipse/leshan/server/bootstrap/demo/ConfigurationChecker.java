@@ -52,8 +52,7 @@ public class ConfigurationChecker {
             case NO_SEC:
                 assertIf(!ArrayUtils.isEmpty(sec.secretKey), "NO-SEC mode, secret key must be empty");
                 assertIf(!ArrayUtils.isEmpty(sec.publicKeyOrId), "NO-SEC mode, public key or ID must be empty");
-                assertIf(!ArrayUtils.isEmpty(sec.serverPublicKeyOrId),
-                        "NO-SEC mode, server public key or ID must be empty");
+                assertIf(!ArrayUtils.isEmpty(sec.serverPublicKey), "NO-SEC mode, server public key must be empty");
                 break;
             case PSK:
                 assertIf(ArrayUtils.isEmpty(sec.secretKey), "pre-shared-key mode, secret key must not be empty");
@@ -68,10 +67,10 @@ public class ConfigurationChecker {
                         "raw-public-key mode, public key or id must not be empty");
                 assertIf(decodeRfc7250PublicKey(sec.publicKeyOrId) == null,
                         "raw-public-key mode, public key or id must be RFC7250 encoded public key");
-                assertIf(ArrayUtils.isEmpty(sec.serverPublicKeyOrId),
-                        "raw-public-key mode, server public key or ID must not be empty");
-                assertIf(decodeRfc7250PublicKey(sec.serverPublicKeyOrId) == null,
-                        "raw-public-key mode, server public key or id must be RFC7250 encoded public key");
+                assertIf(ArrayUtils.isEmpty(sec.serverPublicKey),
+                        "raw-public-key mode, server public key must not be empty");
+                assertIf(decodeRfc7250PublicKey(sec.serverPublicKey) == null,
+                        "raw-public-key mode, server public key must be RFC7250 encoded public key");
                 break;
             case X509:
                 assertIf(ArrayUtils.isEmpty(sec.secretKey), "x509 mode, secret key must not be empty");
@@ -80,10 +79,10 @@ public class ConfigurationChecker {
                 assertIf(ArrayUtils.isEmpty(sec.publicKeyOrId), "x509 mode, public key or id must not be empty");
                 assertIf(decodeCertificate(sec.publicKeyOrId) == null,
                         "x509 mode, public key or id must be DER encoded X.509 certificate");
-                assertIf(ArrayUtils.isEmpty(sec.serverPublicKeyOrId),
-                        "x509 mode, server public key or ID must not be empty");
-                assertIf(decodeCertificate(sec.serverPublicKeyOrId) == null,
-                        "x509 mode, server public key or id must be DER encoded X.509 certificate");
+                assertIf(ArrayUtils.isEmpty(sec.serverPublicKey),
+                        "x509 mode, server public key must not be empty");
+                assertIf(decodeCertificate(sec.serverPublicKey) == null,
+                        "x509 mode, server public key must be DER encoded X.509 certificate");
                 break;
             }
         }

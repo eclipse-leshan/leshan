@@ -58,7 +58,7 @@ public class BootstrapConfig implements Serializable {
         public boolean bootstrapServer = false;
         public SecurityMode securityMode;
         public byte[] publicKeyOrId = new byte[] {};
-        public byte[] serverPublicKeyOrId = new byte[] {};
+        public byte[] serverPublicKey = new byte[] {};
         public byte[] secretKey = new byte[] {};
         public SmsSecurityMode smsSecurityMode = SmsSecurityMode.NO_SEC;
         public byte[] smsBindingKeyParam = new byte[] {};
@@ -72,9 +72,9 @@ public class BootstrapConfig implements Serializable {
         public String toString() {
             // Note : secretKey and smsBindingKeySecret are explicitly excluded from the display for security purposes
             return String
-                    .format("ServerSecurity [uri=%s, bootstrapServer=%s, securityMode=%s, publicKeyOrId=%s, serverPublicKeyOrId=%s, smsSecurityMode=%s, smsBindingKeySecret=%s, serverSmsNumber=%s, serverId=%s, clientOldOffTime=%s, bootstrapServerAccountTimeout=%s]",
+                    .format("ServerSecurity [uri=%s, bootstrapServer=%s, securityMode=%s, publicKeyOrId=%s, serverPublicKey=%s, smsSecurityMode=%s, smsBindingKeySecret=%s, serverSmsNumber=%s, serverId=%s, clientOldOffTime=%s, bootstrapServerAccountTimeout=%s]",
                             uri, bootstrapServer, securityMode, Arrays.toString(publicKeyOrId),
-                            Arrays.toString(serverPublicKeyOrId), smsSecurityMode,
+                            Arrays.toString(serverPublicKey), smsSecurityMode,
                             Arrays.toString(smsBindingKeyParam), serverSmsNumber,
                             serverId, clientOldOffTime, bootstrapServerAccountTimeout);
         }
