@@ -173,6 +173,10 @@ public class LeshanClient implements LwM2mClient {
         LOG.info("Leshan client stopped.");
     }
 
+    public void destroy() {
+        clientSideServer.destroy();
+    }
+
     @Override
     public void destroy(boolean deregister) {
         LOG.info("Destroying Leshan client ...");
