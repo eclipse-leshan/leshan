@@ -115,7 +115,7 @@ public class ResponseSerDes {
             return new ReadResponse(code, content, errorMessage);
         }
         default:
-            throw new IllegalStateException("Invalid request missing kind attribute");
+            throw new IllegalStateException("Invalid response missing kind attribute");
         }
     }
 }
