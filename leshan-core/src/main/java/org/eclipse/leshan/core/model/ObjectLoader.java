@@ -78,7 +78,7 @@ public class ObjectLoader {
     /**
      * Load object definition from DDF file.
      * 
-     * @param input An inputStream to a DFF file.
+     * @param input An inputStream to a DDF file.
      * @param streamName A name for the stream used for logging only
      */
     public static ObjectModel loadDdfFile(InputStream input, String streamName) {

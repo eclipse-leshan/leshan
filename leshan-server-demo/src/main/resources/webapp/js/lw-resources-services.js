@@ -70,7 +70,7 @@ myModule.factory('lwResources',["$http", function($http) {
     };
 
     /**
-     * Search a instance in the given tree
+     * Search an instance in the given tree
      */
     var findInstance = function(tree, url) {
         var instancepath = url2array(url);
