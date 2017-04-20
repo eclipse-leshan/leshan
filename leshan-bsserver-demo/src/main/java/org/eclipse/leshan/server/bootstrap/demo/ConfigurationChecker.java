@@ -113,8 +113,8 @@ public class ConfigurationChecker {
             }
 
             if (security.bootstrapServer) {
-                throw new ConfigurationException("the security entry for server  " + e.getKey()
-                        + " should not be a bootstrap server");
+                throw new ConfigurationException(
+                        "the security entry for server  " + e.getKey() + " should not be a bootstrap server");
             }
         }
     }
@@ -174,7 +174,7 @@ public class ConfigurationChecker {
 
     private static BootstrapConfig.ServerSecurity getSecurityEntry(BootstrapConfig config, int shortId) {
         for (Map.Entry<Integer, BootstrapConfig.ServerSecurity> es : config.security.entrySet()) {
-            if (es.getValue().serverId == shortId) {
+            if (!es.getValue().bootstrapServer && es.getValue().serverId == shortId) {
                 return es.getValue();
             }
         }

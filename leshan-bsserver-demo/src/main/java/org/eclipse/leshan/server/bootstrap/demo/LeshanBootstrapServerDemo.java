@@ -19,8 +19,16 @@
 package org.eclipse.leshan.server.bootstrap.demo;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.net.BindException;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
@@ -32,12 +40,18 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.leshan.LwM2m;
+import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerConfig;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
+import org.eclipse.leshan.server.bootstrap.demo.ConfigurationChecker.ConfigurationException;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.BootstrapServlet;
 import org.eclipse.leshan.server.californium.LeshanBootstrapServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LeshanBootstrapServer;
+import org.eclipse.leshan.util.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,6 +76,8 @@ public class LeshanBootstrapServerDemo {
         options.addOption("m", "modelsfolder", true, "A folder which contains object models in OMA DDF(.xml) format.");
         options.addOption("cfg", "configfile", true,
                 "Set the filename for the configuration.\nDefault: " + BootstrapStoreImpl.DEFAULT_FILE + ".");
+        options.addOption("pkiks", "pkikspath", true,
+                "Set the keystore file to load the CA key/certificate for the PKI service mock");
         HelpFormatter formatter = new HelpFormatter();
         formatter.setOptionComparator(null);
 
@@ -124,9 +140,11 @@ public class LeshanBootstrapServerDemo {
             configFilename = BootstrapStoreImpl.DEFAULT_FILE;
         }
 
+        String pkiKeystorePath = cl.getOptionValue("pkiks");
+
         try {
             createAndStartServer(webPort, localAddress, localPort, secureLocalAddress, secureLocalPort,
-                    modelsFolderPath, configFilename);
+                    modelsFolderPath, configFilename, pkiKeystorePath);
         } catch (BindException e) {
             System.err.println(String
                     .format("Web port %s is already in use, you can change it using the 'webport' option.", webPort));
@@ -137,7 +155,8 @@ public class LeshanBootstrapServerDemo {
     }
 
     public static void createAndStartServer(int webPort, String localAddress, int localPort, String secureLocalAddress,
-            int secureLocalPort, String modelsFolderPath, String configFilename) throws Exception {
+            int secureLocalPort, String modelsFolderPath, String configFilename, String pkiKeystorePath)
+            throws Exception {
         // Create Models
         List<ObjectModel> models = ObjectLoader.loadDefault();
         if (modelsFolderPath != null) {
@@ -153,6 +172,22 @@ public class LeshanBootstrapServerDemo {
         builder.setLocalSecureAddress(secureLocalAddress, secureLocalPort);
         builder.setModel(new LwM2mModel(models));
         builder.setCoapConfig(NetworkConfig.getStandard());
+
+        if (pkiKeystorePath != null) {
+            // PKI service mock using a self-signed CA certificate (no chain) to sign the CSR
+            String caAlias = "leshan-demo-CA";
+            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            try (FileInputStream fis = new FileInputStream(pkiKeystorePath)) {
+                keyStore.load(fis, null);
+            }
+            builder.setPkiService(new PkiServiceMock((PrivateKey) keyStore.getKey(caAlias, "123456".toCharArray()),
+                    (X509Certificate) keyStore.getCertificate(caAlias)));
+
+            // preload a config for tests
+            // The CA public key is used as DM public key for testing purpose
+            BootstrapConfig bsConfig = getTestConfig((X509Certificate) keyStore.getCertificate(caAlias));
+            bsStore.addConfig("endpoint123", bsConfig);
+        }
 
         LeshanBootstrapServer bsServer = builder.build();
         bsServer.start();
@@ -173,4 +208,39 @@ public class LeshanBootstrapServerDemo {
         server.start();
         LOG.info("Web server started at {}.", server.getURI());
     }
+
+    private static BootstrapConfig getTestConfig(X509Certificate dmPublicKey)
+            throws ConfigurationException, CertificateEncodingException {
+        BootstrapConfig bsConfig = new BootstrapConfig();
+
+        // --- security object ---
+        Map<Integer, ServerSecurity> secs = new HashMap<>();
+
+        ServerSecurity bsSecurity = new ServerSecurity();
+        bsSecurity.bootstrapServer = true;
+        bsSecurity.securityMode = SecurityMode.PSK;
+        bsSecurity.uri = "coaps://localhost:5684";
+        bsSecurity.publicKeyOrId = "identity123".getBytes();
+        bsSecurity.secretKey = Hex.decodeHex("CAFEBABE".toCharArray());
+        bsSecurity.serverId = 0; // should not be needed
+        secs.put(0, bsSecurity);
+
+        ServerSecurity dmSecurity = new ServerSecurity();
+        dmSecurity.bootstrapServer = false;
+        dmSecurity.securityMode = SecurityMode.EST;
+        dmSecurity.uri = "coaps://localhost:5686";
+        dmSecurity.serverPublicKey = dmPublicKey.getEncoded();
+        dmSecurity.serverId = 1;
+        secs.put(1, dmSecurity);
+
+        bsConfig.security = secs;
+
+        // --- server object ---
+        ServerConfig dmServer = new ServerConfig();
+        dmServer.shortId = 1;
+        bsConfig.servers = Collections.singletonMap(0, dmServer);
+
+        return bsConfig;
+    }
+
 }
