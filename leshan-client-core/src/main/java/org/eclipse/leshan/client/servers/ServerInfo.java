@@ -31,6 +31,7 @@ public class ServerInfo {
     public long serverId;
     public URI serverUri;
     public SecurityMode secureMode;
+    public byte[] serverPublicKey;
 
     public InetSocketAddress getAddress() {
         return getAddress(serverUri);

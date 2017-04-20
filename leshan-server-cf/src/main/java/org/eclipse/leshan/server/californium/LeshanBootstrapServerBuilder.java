@@ -29,6 +29,7 @@ import org.eclipse.leshan.server.bootstrap.BootstrapStore;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapServer;
 import org.eclipse.leshan.server.californium.impl.LeshanBootstrapServer;
 import org.eclipse.leshan.server.californium.impl.LwM2mBootstrapPskStore;
+import org.eclipse.leshan.server.californium.impl.PkiService;
 import org.eclipse.leshan.server.impl.DefaultBootstrapSessionManager;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.slf4j.Logger;
@@ -51,6 +52,7 @@ public class LeshanBootstrapServerBuilder {
     private LwM2mModel model;
     private NetworkConfig coapConfig;
     private Builder dtlsConfigBuilder;
+    private PkiService pki = null;
 
     /**
      * <p>
@@ -146,6 +148,11 @@ public class LeshanBootstrapServerBuilder {
         return this;
     }
 
+    public LeshanBootstrapServerBuilder setPkiService(PkiService pki) {
+        this.pki = pki;
+        return this;
+    }
+
     public LeshanBootstrapServer build() {
         if (localAddress == null)
             localAddress = new InetSocketAddress(LwM2m.DEFAULT_COAP_PORT);
@@ -204,6 +211,6 @@ public class LeshanBootstrapServerBuilder {
         dtlsConfig = dtlsConfigBuilder.build();
 
         return new LeshanBootstrapServer(localAddress, configStore, securityStore, sessionManager, model, coapConfig,
-                dtlsConfig);
+                dtlsConfig, pki);
     }
 }

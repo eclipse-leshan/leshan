@@ -16,40 +16,39 @@
 package org.eclipse.leshan.server.bootstrap.demo;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.math.BigInteger;
-import java.security.InvalidKeyException;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
+import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.Security;
-import java.security.SignatureException;
-import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.security.auth.x500.X500Principal;
 
 import org.apache.commons.lang.math.RandomUtils;
-import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.pkcs.CertificationRequest;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.x509.X509V3CertificateGenerator;
+import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
+import org.bouncycastle.jcajce.provider.asymmetric.x509.CertificateFactory;
+import org.bouncycastle.jcajce.util.DefaultJcaJceHelper;
+import org.bouncycastle.jce.PrincipalUtil;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemWriter;
 import org.eclipse.leshan.server.californium.impl.PkiService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings("deprecation")
 public class PkiServiceMock implements PkiService {
 
     private static final Logger LOG = LoggerFactory.getLogger(PkiServiceMock.class);
@@ -59,79 +58,75 @@ public class PkiServiceMock implements PkiService {
 
     public PkiServiceMock(PrivateKey caKey, X509Certificate caCert) {
         this.caKey = caKey;
-        this.caCert = caCert; // caSelfSignedCert?
-
-        Security.addProvider(new BouncyCastleProvider());
+        this.caCert = caCert; // self-signed CA certificate
     }
 
     @Override
     public byte[] getCaCertificates() {
-        return null;
+        try {
+            return new CertificateFactory().engineGenerateCertPath(Arrays.asList(caCert)).getEncoded();
+        } catch (CertificateException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override
     public byte[] enroll(byte[] csr, String commonName, Map<String, Object> attributes) {
 
         // open the PCKS10 (Certificate Signing Request)
-        CertificationRequest cr = null;
+        JcaPKCS10CertificationRequest cr;
         try {
-            cr = new CertificationRequest(ASN1Sequence.getInstance(csr));
-        } catch (IllegalArgumentException e) {
-            LOG.error("Could not decode CSR", e);
-            throw new IllegalArgumentException("Corrupted CSR");
+            LOG.debug("Received CSR:\n{}", toPem("CERTIFICATE REQUEST", csr));
+            cr = new JcaPKCS10CertificationRequest(csr);
+        } catch (IOException e1) {
+            throw new IllegalArgumentException("Corrupted CSR", e1);
         }
 
         try {
-            // get public key from CSR
-            SubjectPublicKeyInfo publicKeyInfo = cr.getCertificationRequestInfo().getSubjectPublicKeyInfo();
             if (!X9ObjectIdentifiers.id_ecPublicKey.getId()
-                    .equals(publicKeyInfo.getAlgorithm().getAlgorithm().getId())) {
+                    .equals(cr.getSubjectPublicKeyInfo().getAlgorithm().getAlgorithm().getId())) {
                 throw new IllegalArgumentException("Only EC public key is supported");
             }
-            PublicKey publicKey = KeyFactory.getInstance("ECDSA", "BC")
-                    .generatePublic(new X509EncodedKeySpec(publicKeyInfo.getEncoded()));
 
-            // common name
-            String csrIdentity = cr.getCertificationRequestInfo().getSubject()
-                    .getRDNs(X509ObjectIdentifiers.commonName)[0].getFirst().getValue().toString();
+            // get public key
+            X509EncodedKeySpec xspec = new X509EncodedKeySpec(cr.getSubjectPublicKeyInfo().getEncoded());
+            PublicKey pub = new DefaultJcaJceHelper().createKeyFactory("EC").generatePublic(xspec);
+
+            // use the common name parameter instead?
+            String csrIdentity = cr.getSubject().getRDNs(X509ObjectIdentifiers.commonName)[0].getFirst().getValue()
+                    .toString();
 
             Calendar cal = Calendar.getInstance();
             Date startDate = cal.getTime();
-            cal.add(10, Calendar.YEAR);
+            cal.add(Calendar.YEAR, 10);
             Date expiryDate = cal.getTime();
             BigInteger serialNumber = BigInteger.valueOf(RandomUtils.nextLong());
 
-            X509V3CertificateGenerator certGen = new X509V3CertificateGenerator();
-            X500Principal subjectName = new X500Principal("CN=" + csrIdentity);
+            @SuppressWarnings("deprecation")
+            X500Name issuer = new X500Name(PrincipalUtil.getSubjectX509Principal(caCert).getName());
+            X500Name subject = new X500Name("CN=" + csrIdentity);
+            JcaX509v3CertificateBuilder builder = new JcaX509v3CertificateBuilder(issuer, serialNumber, startDate,
+                    expiryDate, subject, pub);
 
-            certGen.setSerialNumber(serialNumber);
-            certGen.setIssuerDN(caCert.getSubjectX500Principal());
-            certGen.setNotBefore(startDate);
-            certGen.setNotAfter(expiryDate);
-            certGen.setSubjectDN(subjectName);
-            certGen.setPublicKey(publicKey);
-            certGen.setSignatureAlgorithm("SHA256withECDSA");
+            builder.addExtension(Extension.keyUsage, false, new KeyUsage(KeyUsage.digitalSignature));
+            // TODO attributes/extensions
 
-            for (Entry<String, Object> a : attributes.entrySet()) {
-                // TODO fix cast
-                certGen.addExtension(a.getKey(), false, (ASN1Encodable) a.getValue());
-            }
+            ContentSigner signer = new JcaContentSignerBuilder("SHA256withECDSA").build(caKey);
 
-            // TODO
-            // certGen.addExtension(X509Extensions.AuthorityKeyIdentifier, false,
-            // new AuthorityKeyIdentifierStructure(caCert));
-            // certGen.addExtension(X509Extensions.SubjectKeyIdentifier, false,
-            // new SubjectKeyIdentifierStructure(keyPair.getPublic());
+            return builder.build(signer).getEncoded();
 
-            return certGen.generate(caKey, "BC").getEncoded();
-
-        } catch (InvalidKeySpecException | InvalidKeyException e) {
-            throw new IllegalArgumentException(e);
-        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+        } catch (IOException | OperatorCreationException | GeneralSecurityException e) {
             throw new IllegalStateException(e);
-        } catch (SignatureException | CertificateEncodingException | IOException e) {
-            // TODO proper exceptions
-            throw new RuntimeException(e);
+        }
+    }
+
+    private String toPem(String objecType, byte[] content) throws IOException {
+        try (StringWriter writer = new StringWriter()) {
+            PemWriter pemWriter = new PemWriter(writer);
+            pemWriter.writeObject(new PemObject(objecType, content));
+            pemWriter.flush();
+            pemWriter.close();
+            return writer.toString();
         }
     }
 

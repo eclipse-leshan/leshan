@@ -69,6 +69,9 @@ public class ServersInfoExtractor {
                     info.serverUri = new URI((String) security.getResource(SEC_SERVER_URI).getValue());
                     info.serverId = (long) security.getResource(SEC_SERVER_ID).getValue();
                     info.secureMode = SecurityMode.fromCode((long) security.getResource(SEC_SECURITY_MODE).getValue());
+                    if (info.secureMode == SecurityMode.X509 || info.secureMode == SecurityMode.EST) {
+                        info.serverPublicKey = (byte[]) security.getResource(SEC_SERVER_PUBKEY).getValue();
+                    }
 
                     // search corresponding device management server
                     for (LwM2mObjectInstance server : servers.getInstances().values()) {

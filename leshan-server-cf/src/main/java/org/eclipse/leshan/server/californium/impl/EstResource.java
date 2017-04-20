@@ -19,10 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.pkcs.CertificationRequest;
-import org.bouncycastle.asn1.x509.Attribute;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
@@ -103,7 +101,7 @@ public class EstResource extends CoapResource {
         try {
             csr = new CertificationRequest(ASN1Sequence.getInstance(request.getPayload()));
         } catch (IllegalArgumentException e) {
-            LOG.error("Could not decode CSR", e);
+            LOG.debug("Could not decode CSR", e);
             exchange.respond(ResponseCode.BAD_REQUEST, "Corrupted CSR");
             return;
         }
@@ -111,19 +109,6 @@ public class EstResource extends CoapResource {
         String csrIdentity = csr.getCertificationRequestInfo().getSubject().getRDNs(X509ObjectIdentifiers.commonName)[0]
                 .getFirst().getValue().toString();
 
-        Map<String, Object> attributes = new HashMap<>();
-
-        for (int i = 0; i < csr.getCertificationRequestInfo().getAttributes().size(); i++) {
-            ASN1Encodable asn1Att = csr.getCertificationRequestInfo().getAttributes().getObjectAt(i);
-            if (asn1Att instanceof Attribute) {
-                Attribute att = (Attribute) asn1Att;
-                // TODO do something
-                // attributes.put(att.getAttrType().getId(),
-                // att.getAttributeValues()[0].toASN1Primitive().getEncoded());
-            }
-        }
-
-        System.err.println(csrIdentity);
         // looks at the DTLS session
         Identity dtlsIdentity = ExchangeUtil.extractIdentity(exchange);
 
@@ -154,6 +139,9 @@ public class EstResource extends CoapResource {
             exchange.respond(ResponseCode.BAD_REQUEST, "Your CSR CN doesn't match your credentials");
             return;
         }
+
+        // TODO attributes?
+        Map<String, Object> attributes = new HashMap<>();
 
         // enroll
         byte[] x509 = pki.enroll(request.getPayload(), ep, attributes);

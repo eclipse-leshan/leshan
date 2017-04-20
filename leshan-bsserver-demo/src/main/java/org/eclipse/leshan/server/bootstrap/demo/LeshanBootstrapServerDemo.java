@@ -174,18 +174,17 @@ public class LeshanBootstrapServerDemo {
         builder.setCoapConfig(NetworkConfig.getStandard());
 
         if (pkiKeystorePath != null) {
-            // PKI service mock using a self-signed CA certificate (no chain) to sign the CSR
-            String caAlias = "leshan-demo-CA";
+            // PKI service mock using a self-signed certificate to sign the CSR
+            String caAlias = "cacert";
             KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
             try (FileInputStream fis = new FileInputStream(pkiKeystorePath)) {
-                keyStore.load(fis, null);
+                keyStore.load(fis, "123456".toCharArray());
             }
             builder.setPkiService(new PkiServiceMock((PrivateKey) keyStore.getKey(caAlias, "123456".toCharArray()),
                     (X509Certificate) keyStore.getCertificate(caAlias)));
 
             // preload a config for tests
-            // The CA public key is used as DM public key for testing purpose
-            BootstrapConfig bsConfig = getTestConfig((X509Certificate) keyStore.getCertificate(caAlias));
+            BootstrapConfig bsConfig = getTestConfig((X509Certificate) keyStore.getCertificate("dmcert"));
             bsStore.addConfig("endpoint123", bsConfig);
         }
 
@@ -209,6 +208,7 @@ public class LeshanBootstrapServerDemo {
         LOG.info("Web server started at {}.", server.getURI());
     }
 
+    // load a bootstrap configuration for test purpose
     private static BootstrapConfig getTestConfig(X509Certificate dmPublicKey)
             throws ConfigurationException, CertificateEncodingException {
         BootstrapConfig bsConfig = new BootstrapConfig();

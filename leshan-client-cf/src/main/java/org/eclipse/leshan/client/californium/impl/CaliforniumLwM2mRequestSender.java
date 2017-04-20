@@ -19,7 +19,6 @@ import java.net.InetSocketAddress;
 
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
-import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.client.request.LwM2mRequestSender;
 import org.eclipse.leshan.core.californium.AsyncRequestObserver;
 import org.eclipse.leshan.core.californium.SyncRequestObserver;
@@ -30,12 +29,10 @@ import org.eclipse.leshan.core.response.ResponseCallback;
 
 public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
-    private final Endpoint nonSecureEndpoint;
-    private final Endpoint secureEndpoint;
+    private final CoapEndpoints coapEndpoints;
 
-    public CaliforniumLwM2mRequestSender(Endpoint secureEndpoint, Endpoint nonSecureEndpoint) {
-        this.secureEndpoint = secureEndpoint;
-        this.nonSecureEndpoint = nonSecureEndpoint;
+    public CaliforniumLwM2mRequestSender(CoapEndpoints coapEndpoints) {
+        this.coapEndpoints = coapEndpoints;
     }
 
     @Override
@@ -60,9 +57,9 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
         // Send CoAP request asynchronously
         if (secure)
-            secureEndpoint.sendRequest(coapRequest);
+            coapEndpoints.getSecureEndpoint().sendRequest(coapRequest);
         else
-            nonSecureEndpoint.sendRequest(coapRequest);
+            coapEndpoints.getNonSecureEndpoint().sendRequest(coapRequest);
 
         // Wait for response, then return it
         return syncMessageObserver.waitForResponse();
@@ -90,8 +87,8 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
         // Send CoAP request asynchronously
         if (secure)
-            secureEndpoint.sendRequest(coapRequest);
+            coapEndpoints.getSecureEndpoint().sendRequest(coapRequest);
         else
-            nonSecureEndpoint.sendRequest(coapRequest);
+            coapEndpoints.getNonSecureEndpoint().sendRequest(coapRequest);
     }
 }

@@ -34,7 +34,6 @@ import org.eclipse.californium.core.coap.CoAP.Code;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.CoapEndpoint;
-import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.Link;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.californium.LeshanClient;
@@ -260,9 +259,7 @@ public class RegistrationTest {
         // HACK to be able to send a Registration request with additional attributes
         LeshanClient lclient = (LeshanClient) helper.client;
         lclient.getCoapServer().start();
-        Endpoint secureEndpoint = lclient.getCoapServer().getEndpoint(lclient.getSecureAddress());
-        Endpoint nonSecureEndpoint = lclient.getCoapServer().getEndpoint(lclient.getNonSecureAddress());
-        CaliforniumLwM2mRequestSender sender = new CaliforniumLwM2mRequestSender(secureEndpoint, nonSecureEndpoint);
+        CaliforniumLwM2mRequestSender sender = new CaliforniumLwM2mRequestSender(lclient.getCoapEndpoints());
 
         // Create Request with additional attributes
         Map<String, String> additionalAttributes = new HashMap<>();

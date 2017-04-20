@@ -23,24 +23,22 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.californium.core.CoapServer;
-import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.server.resources.Resource;
-import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
+import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.LwM2mClient;
+import org.eclipse.leshan.client.californium.est.BootstrapESTObserver;
 import org.eclipse.leshan.client.californium.impl.BootstrapResource;
 import org.eclipse.leshan.client.californium.impl.CaliforniumLwM2mRequestSender;
+import org.eclipse.leshan.client.californium.impl.CoapEndpoints;
 import org.eclipse.leshan.client.californium.impl.ObjectResource;
 import org.eclipse.leshan.client.californium.impl.RootResource;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
-import org.eclipse.leshan.client.observer.LwM2mClientObserverAdapter;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverDispatcher;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.servers.BootstrapHandler;
-import org.eclipse.leshan.client.servers.DmServerInfo;
 import org.eclipse.leshan.client.servers.RegistrationEngine;
-import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.util.Validate;
@@ -62,9 +60,7 @@ public class LeshanClient implements LwM2mClient {
     private final BootstrapHandler bootstrapHandler;
     private final LwM2mClientObserverDispatcher observers;
 
-    private CoapEndpoint secureEndpoint;
-
-    private CoapEndpoint nonSecureEndpoint;
+    private final CoapEndpoints coapEndpoints;
 
     public LeshanClient(String endpoint, InetSocketAddress localAddress,
             List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig,
@@ -86,43 +82,7 @@ public class LeshanClient implements LwM2mClient {
             this.objectEnablers.put(enabler.getId(), enabler);
         }
 
-        // Create CoAP non secure endpoint
-        nonSecureEndpoint = new CoapEndpoint(localAddress, coapConfig);
-
-        // Create CoAP secure endpoint
-        final DTLSConnector dtlsConnector = new DTLSConnector(dtlsConfig);
-        secureEndpoint = new CoapEndpoint(dtlsConnector, coapConfig);
-
-        // Create sender
-        requestSender = new CaliforniumLwM2mRequestSender(secureEndpoint, nonSecureEndpoint);
-
-        // Create Client Observers
-        observers = new LwM2mClientObserverDispatcher();
-        observers.addObserver(new LwM2mClientObserverAdapter() {
-            @Override
-            public void onBootstrapSuccess(ServerInfo bsserver) {
-                dtlsConnector.clearConnectionState();
-            }
-
-            @Override
-            public void onBootstrapTimeout(ServerInfo bsserver) {
-                dtlsConnector.clearConnectionState();
-            }
-
-            @Override
-            public void onRegistrationTimeout(DmServerInfo server) {
-                dtlsConnector.clearConnectionState();
-            }
-
-            @Override
-            public void onUpdateTimeout(DmServerInfo server) {
-                dtlsConnector.clearConnectionState();
-            }
-        });
-
-        // Create registration engine
         bootstrapHandler = new BootstrapHandler(this.objectEnablers);
-        engine = new RegistrationEngine(endpoint, this.objectEnablers, requestSender, bootstrapHandler, observers);
 
         // Create CoAP Server
         clientSideServer = new CoapServer(coapConfig) {
@@ -132,8 +92,24 @@ public class LeshanClient implements LwM2mClient {
                 return new RootResource(bootstrapHandler);
             }
         };
-        clientSideServer.addEndpoint(secureEndpoint);
-        clientSideServer.addEndpoint(nonSecureEndpoint);
+
+        // Create Client Observers
+        observers = new LwM2mClientObserverDispatcher();
+
+        // create secure and non secure CoAP end-points
+        LwM2mObjectEnabler securityEnabler = this.objectEnablers.get(LwM2mId.SECURITY);
+        if (securityEnabler == null) {
+            throw new IllegalArgumentException("Security object is mandatory");
+        }
+        coapEndpoints = new CoapEndpoints(clientSideServer, localAddress, dtlsConfig, coapConfig, observers);
+
+        // Create sender
+        requestSender = new CaliforniumLwM2mRequestSender(coapEndpoints);
+
+        observers.addObserver(new BootstrapESTObserver(endpoint, this.objectEnablers, coapEndpoints));
+
+        // Create registration engine
+        engine = new RegistrationEngine(endpoint, this.objectEnablers, requestSender, bootstrapHandler, observers);
 
         // Create CoAP resources for each lwm2m Objects.
         for (LwM2mObjectEnabler enabler : objectEnablers) {
@@ -175,16 +151,22 @@ public class LeshanClient implements LwM2mClient {
         return Collections.unmodifiableCollection(new ArrayList<>(objectEnablers.values()));
     }
 
+    // FIXME for tests only
+    public CoapEndpoints getCoapEndpoints() {
+        return coapEndpoints;
+    }
+
+    // FIXME for tests only
     public CoapServer getCoapServer() {
         return clientSideServer;
     }
 
     public InetSocketAddress getNonSecureAddress() {
-        return nonSecureEndpoint.getAddress();
+        return coapEndpoints.getNonSecureEndpoint().getAddress();
     }
 
     public InetSocketAddress getSecureAddress() {
-        return secureEndpoint.getAddress();
+        return coapEndpoints.getSecureEndpoint().getAddress();
     }
 
     public void addObserver(LwM2mClientObserver observer) {
