@@ -139,6 +139,17 @@ public class LeshanBsServerBuilder {
     }
 
     /**
+     * Set the implementation in charge of the handling the bootstrap session (start, end and failure).
+     * 
+     * If not set, the {@link DefaultBootstrapSessionManager} is used (its only role is to authorize an end-point when
+     * the session is started).
+     */
+    public LeshanBsServerBuilder setSessionManager(BootstrapSessionManager sessionManager) {
+        this.bsSessionManager = sessionManager;
+        return this;
+    }
+
+    /**
      * Set the Californium CoAP level configuration: {@link NetworkConfig}
      */
     public LeshanBsServerBuilder setNetworkConfig(NetworkConfig config) {

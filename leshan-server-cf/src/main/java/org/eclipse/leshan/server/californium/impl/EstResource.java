@@ -30,6 +30,7 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.server.resources.CoapExchange;
+import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.core.californium.ExchangeUtil;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
@@ -157,5 +158,14 @@ public class EstResource extends CoapResource {
         // enroll
         byte[] x509 = pki.enroll(request.getPayload(), ep, attributes);
         exchange.respond(ResponseCode.CONTENT, x509);
+    }
+
+    /*
+     * Override the default behavior so that requests to sub resources (typically /est/sen or /est/crts) are handled by
+     * /est resource.
+     */
+    @Override
+    public Resource getChild(String name) {
+        return this;
     }
 }
