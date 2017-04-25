@@ -16,7 +16,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -75,8 +74,7 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
         default:
             throw new CodecException("Cannot encode %s:%s with format %s.", path, node, format);
         }
-
-        LOG.trace("Encoded node {}: {}", node, Arrays.toString(encoded));
+        LOG.trace("Encoded node {}: {}", node, encoded);
         return encoded;
     }
 
@@ -99,7 +97,7 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
             throw new CodecException("Cannot encode timestampedNode with format %s. [%s]", format, path);
         }
 
-        LOG.trace("Encoded node timestampedNode: {}", timestampedNodes, Arrays.toString(encoded));
+        LOG.trace("Encoded node timestampedNode: {}", timestampedNodes, encoded);
         return encoded;
     }
 
