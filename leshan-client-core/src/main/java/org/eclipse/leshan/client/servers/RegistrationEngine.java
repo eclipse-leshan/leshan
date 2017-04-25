@@ -385,4 +385,11 @@ public class RegistrationEngine {
     public String getRegistrationId() {
         return registrationID;
     }
+
+    /**
+     * @return the LWM2M client endpoint identifier.
+     */
+    public String getEndpoint() {
+        return endpoint;
+    }
 }

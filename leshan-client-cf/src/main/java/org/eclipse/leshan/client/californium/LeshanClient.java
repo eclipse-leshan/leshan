@@ -162,7 +162,7 @@ public class LeshanClient implements LwM2mClient {
         LOG.info("Starting Leshan client ...");
         clientSideServer.start();
         engine.start();
-        LOG.info("Leshan client started.");
+        LOG.info("Leshan client started [endpoint:{}].", engine.getEndpoint());
     }
 
     @Override
