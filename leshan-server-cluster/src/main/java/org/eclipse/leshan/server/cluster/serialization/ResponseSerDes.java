@@ -18,8 +18,6 @@ package org.eclipse.leshan.server.cluster.serialization;
 import org.eclipse.leshan.Link;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mNode;
-import org.eclipse.leshan.core.request.DeleteRequest;
-import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.response.CreateResponse;
 import org.eclipse.leshan.core.response.DeleteResponse;
 import org.eclipse.leshan.core.response.DiscoverResponse;
@@ -56,9 +54,9 @@ public class ResponseSerDes {
         } else if (r instanceof DiscoverResponse) {
             o.add("kind", "discover");
             o.add("objectLinks", Link.serialize(((DiscoverResponse) r).getObjectLinks()));
-        } else if (r instanceof DeleteRequest) {
+        } else if (r instanceof DeleteResponse) {
             o.add("kind", "delete");
-        } else if (r instanceof ExecuteRequest) {
+        } else if (r instanceof ExecuteResponse) {
             o.add("kind", "execute");
         } else if (r instanceof WriteResponse) {
             o.add("kind", "write");
