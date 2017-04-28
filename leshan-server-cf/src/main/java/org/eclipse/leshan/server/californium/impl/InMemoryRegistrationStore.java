@@ -12,6 +12,11 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - replace serialize/parse in
+ *                                                     unsafeGetObservation() with
+ *                                                     ObservationUtil.shallowClone.
+ *                                                     Reuse already created Key in
+ *                                                     setContext().
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
@@ -32,13 +37,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.eclipse.californium.core.coap.Request;
-import org.eclipse.californium.core.network.serialization.DataParser;
-import org.eclipse.californium.core.network.serialization.DataSerializer;
-import org.eclipse.californium.core.network.serialization.UdpDataParser;
-import org.eclipse.californium.core.network.serialization.UdpDataSerializer;
+import org.eclipse.californium.core.observe.ObservationUtil;
 import org.eclipse.californium.elements.CorrelationContext;
-import org.eclipse.californium.elements.RawData;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.Startable;
@@ -64,9 +64,6 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     private final Map<String /* end-point */, Registration> regsByEp = new HashMap<>();
     private Map<Key, org.eclipse.californium.core.observe.Observation> obsByToken = new HashMap<>();
     private Map<String, List<Key>> tokensByRegId = new HashMap<>();
-
-    // Request serializer to persist observation
-    private static final DataSerializer serializer = new UdpDataSerializer();
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
@@ -314,10 +311,10 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     public void setContext(byte[] token, CorrelationContext ctx) {
         try {
             lock.writeLock().lock();
-
-            org.eclipse.californium.core.observe.Observation obs = obsByToken.get(new Key(token));
+            Key key = new Key(token);
+            org.eclipse.californium.core.observe.Observation obs = obsByToken.get(key);
             if (obs != null) {
-                obsByToken.put(new Key(token),
+                obsByToken.put(key,
                         new org.eclipse.californium.core.observe.Observation(obs.getRequest(), ctx));
             }
         } finally {
@@ -339,14 +336,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
 
     private org.eclipse.californium.core.observe.Observation unsafeGetObservation(Key token) {
         org.eclipse.californium.core.observe.Observation obs = obsByToken.get(token);
-        if (obs != null) {
-            RawData serialize = serializer.serializeRequest(obs.getRequest(), null);
-            DataParser parser = new UdpDataParser();
-            Request newRequest = (Request) parser.parseMessage(serialize);
-            newRequest.setUserContext(obs.getRequest().getUserContext());
-            return new org.eclipse.californium.core.observe.Observation(newRequest, obs.getContext());
-        }
-        return null;
+        return ObservationUtil.shallowClone(obs);
     }
 
     private void unsafeRemoveObservation(byte[] observationId) {
