@@ -15,7 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 import org.eclipse.californium.core.CoapServer;
@@ -54,10 +53,8 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
 
     public LeshanBootstrapServer(BootstrapStore bsStore, BootstrapSecurityStore securityStore,
             BootstrapSessionManager bsSessionManager) {
-        this(new InetSocketAddress((InetAddress) null, LwM2m.DEFAULT_COAP_PORT),
-                new InetSocketAddress((InetAddress) null, LwM2m.DEFAULT_COAP_SECURE_PORT), bsStore, securityStore,
-                bsSessionManager, null, new NetworkConfig());
-
+        this(new InetSocketAddress(LwM2m.DEFAULT_COAP_PORT), new InetSocketAddress(LwM2m.DEFAULT_COAP_SECURE_PORT),
+                bsStore, securityStore, bsSessionManager, null, new NetworkConfig());
     }
 
     public LeshanBootstrapServer(InetSocketAddress localAddress, InetSocketAddress localAddressSecure,
