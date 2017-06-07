@@ -80,7 +80,7 @@ public class ContentFormat {
     /**
      * Finds the {@link ContentFormat} for a given media type code.
      *
-     * @return the media type or <code>null</code> if the given code is unknown
+     * @return the media type or <i>unknown/unknown</i> if the given code is unknown
      */
     public static ContentFormat fromCode(int code) {
         for (ContentFormat t : knownContentFormat) {
