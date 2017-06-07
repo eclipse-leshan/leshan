@@ -16,11 +16,15 @@
 package org.eclipse.leshan.server.impl;
 
 import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A Response wrapper which can be notify when the response is sent
  */
 public class SendableResponse<T extends LwM2mResponse> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(SendableResponse.class);
 
     private T response;
     private Runnable sentCallback;
@@ -40,6 +44,10 @@ public class SendableResponse<T extends LwM2mResponse> {
 
     public void sent() {
         if (sentCallback != null)
-                     sentCallback.run(); 
+            try {
+                sentCallback.run();
+            } catch (RuntimeException e) {
+                LOG.error("Exception while calling the reponse sent callback", e);
+            }
     }
 }
