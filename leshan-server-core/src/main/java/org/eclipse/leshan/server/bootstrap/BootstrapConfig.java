@@ -37,7 +37,7 @@ public class BootstrapConfig implements Serializable {
     static public class ServerConfig implements Serializable {
         public int shortId;
         public int lifetime = 86400;
-        public int defaultMinPeriod = 1;
+        public Integer defaultMinPeriod = 1;
         public Integer defaultMaxPeriod = null;
         public Integer disableTimeout = null;
         public boolean notifIfDisabled = true;
@@ -65,8 +65,8 @@ public class BootstrapConfig implements Serializable {
         public byte[] smsBindingKeySecret = new byte[] {};
         public String serverSmsNumber = "";
         public Integer serverId;
-        public int clientOldOffTime = 1;
-        public int bootstrapServerAccountTimeout = 0;
+        public Integer clientOldOffTime = 1;
+        public Integer bootstrapServerAccountTimeout = 0;
 
         @Override
         public String toString() {

@@ -31,6 +31,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
+import org.eclipse.leshan.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +49,8 @@ public class ConfigurationChecker {
         // check security configurations
         for (Map.Entry<Integer, BootstrapConfig.ServerSecurity> e : config.security.entrySet()) {
             BootstrapConfig.ServerSecurity sec = e.getValue();
+
+            // checks security config
             switch (sec.securityMode) {
             case NO_SEC:
                 assertIf(!ArrayUtils.isEmpty(sec.secretKey), "NO-SEC mode, secret key must be empty");
@@ -85,6 +88,12 @@ public class ConfigurationChecker {
                         "x509 mode, server public key must be DER encoded X.509 certificate");
                 break;
             }
+
+            // checks mandatory fields
+            if (StringUtils.isEmpty(sec.uri))
+                throw new ConfigurationException("LwM2M Server URI is mandatory");
+            if (sec.securityMode == null)
+                throw new ConfigurationException("Security Mode is mandatory");
         }
 
         // does each server have a corresponding security entry?
