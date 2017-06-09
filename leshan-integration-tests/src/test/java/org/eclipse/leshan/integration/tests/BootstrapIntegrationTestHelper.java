@@ -22,7 +22,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
@@ -33,10 +32,9 @@ import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
-import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.BootstrapStore;
+import org.eclipse.leshan.server.californium.LeshanBootstrapServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LeshanBootstrapServer;
-import org.eclipse.leshan.server.impl.DefaultBootstrapSessionManager;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
@@ -92,11 +90,13 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
             securityStore = dummyBsSecurityStore();
         }
 
-        BootstrapSessionManager bsSessionManager = new DefaultBootstrapSessionManager(securityStore);
+        LeshanBootstrapServerBuilder builder = new LeshanBootstrapServerBuilder();
+        builder.setConfigStore(bsStore);
+        builder.setSecurityStore(securityStore);
+        builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
+        builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
 
-        bootstrapServer = new LeshanBootstrapServer(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0),
-                new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), bsStore, securityStore, bsSessionManager,
-                null, new NetworkConfig());
+        bootstrapServer = builder.build();
     }
 
     @Override

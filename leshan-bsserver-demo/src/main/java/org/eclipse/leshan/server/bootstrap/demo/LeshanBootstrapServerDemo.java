@@ -20,7 +20,6 @@ package org.eclipse.leshan.server.bootstrap.demo;
 
 import java.io.File;
 import java.net.BindException;
-import java.net.InetSocketAddress;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
@@ -36,11 +35,9 @@ import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
-import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.BootstrapServlet;
+import org.eclipse.leshan.server.californium.LeshanBootstrapServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LeshanBootstrapServer;
-import org.eclipse.leshan.server.impl.DefaultBootstrapSessionManager;
-import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -148,14 +145,16 @@ public class LeshanBootstrapServerDemo {
         }
 
         // Prepare and start bootstrap server
+        LeshanBootstrapServerBuilder builder = new LeshanBootstrapServerBuilder();
         BootstrapStoreImpl bsStore = new BootstrapStoreImpl(configFilename);
-        BootstrapSecurityStore securityStore = new BootstrapSecurityStoreImpl(bsStore);
-        BootstrapSessionManager bsSessionManager = new DefaultBootstrapSessionManager(securityStore);
-        NetworkConfig networkConfig = NetworkConfig.getStandard();
+        builder.setConfigStore(bsStore);
+        builder.setSecurityStore(new BootstrapSecurityStoreImpl(bsStore));
+        builder.setLocalAddress(localAddress, localPort);
+        builder.setLocalSecureAddress(secureLocalAddress, secureLocalPort);
+        builder.setModel(new LwM2mModel(models));
+        builder.setCoapConfig(NetworkConfig.getStandard());
 
-        LeshanBootstrapServer bsServer = new LeshanBootstrapServer(new InetSocketAddress(localAddress, localPort),
-                new InetSocketAddress(secureLocalAddress, secureLocalPort), bsStore, securityStore, bsSessionManager,
-                new LwM2mModel(models), networkConfig);
+        LeshanBootstrapServer bsServer = builder.build();
         bsServer.start();
 
         // Now prepare and start jetty
