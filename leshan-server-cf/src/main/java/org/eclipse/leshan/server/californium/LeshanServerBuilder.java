@@ -15,14 +15,16 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 
 import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
@@ -33,6 +35,7 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.californium.impl.InMemoryRegistrationStore;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
+import org.eclipse.leshan.server.californium.impl.LwM2mPskStore;
 import org.eclipse.leshan.server.impl.InMemorySecurityStore;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StandardModelProvider;
@@ -42,6 +45,8 @@ import org.eclipse.leshan.server.security.Authorizer;
 import org.eclipse.leshan.server.security.DefaultAuthorizer;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.SecurityStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class helping you to build and configure a Californium based Leshan Lightweight M2M server. Usage: create it, call
@@ -49,6 +54,8 @@ import org.eclipse.leshan.server.security.SecurityStore;
  * {@link LwM2mServer} ready to operate.
  */
 public class LeshanServerBuilder {
+
+    private static final Logger LOG = LoggerFactory.getLogger(LeshanServerBuilder.class);
 
     private CaliforniumRegistrationStore registrationStore;
     private SecurityStore securityStore;
@@ -67,6 +74,7 @@ public class LeshanServerBuilder {
     private Certificate[] trustedCertificates;
 
     private NetworkConfig coapConfig;
+    private DtlsConnectorConfig.Builder dtlsConfigBuilder;
 
     /**
      * <p>
@@ -252,11 +260,17 @@ public class LeshanServerBuilder {
         return this;
     }
 
+    /**
+     * Set the Scandium/DTLS Configuration : {@link DtlsConnectorConfig.Builder}.
+     */
+    public LeshanServerBuilder setDtlsConfig(DtlsConnectorConfig.Builder config) {
+        this.dtlsConfigBuilder = config;
+        return this;
+    }
+
     public LeshanServer build() {
         if (localAddress == null)
-            localAddress = new InetSocketAddress((InetAddress) null, LwM2m.DEFAULT_COAP_PORT);
-        if (localSecureAddress == null)
-            localSecureAddress = new InetSocketAddress((InetAddress) null, LwM2m.DEFAULT_COAP_SECURE_PORT);
+            localAddress = new InetSocketAddress(LwM2m.DEFAULT_COAP_PORT);
         if (registrationStore == null)
             registrationStore = new InMemoryRegistrationStore();
         if (authorizer == null)
@@ -272,8 +286,89 @@ public class LeshanServerBuilder {
             coapConfig.set(NetworkConfig.Keys.MID_TRACKER, "NULL");
         }
 
-        return new LeshanServer(localAddress, localSecureAddress, registrationStore, securityStore, authorizer,
-                modelProvider, encoder, decoder, publicKey, privateKey, certificateChain, trustedCertificates,
-                coapConfig);
+        // handle dtlsConfig
+        DtlsConnectorConfig dtlsConfig = null;
+        if (securityStore != null && dtlsConfigBuilder == null) {
+            dtlsConfigBuilder = new DtlsConnectorConfig.Builder();
+            // TODO remove 2 lines below when we will integrate the californium v2.0.0-M5/RC1
+            dtlsConfigBuilder.setMaxConnections(coapConfig.getInt(Keys.MAX_ACTIVE_PEERS));
+            dtlsConfigBuilder.setStaleConnectionThreshold(coapConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
+        }
+
+        if (dtlsConfigBuilder != null) {
+            DtlsConnectorConfig incompleteConfig = dtlsConfigBuilder.getIncompleteConfig();
+            // Handle PSK Store
+            if (incompleteConfig.getPskStore() == null) {
+                dtlsConfigBuilder.setPskStore(new LwM2mPskStore(this.securityStore, registrationStore));
+            } else {
+                LOG.warn(
+                        "PskStore should be automatically set by Leshan. Using a custom implementation is not advised.");
+            }
+
+            // Handle secure address
+            if (incompleteConfig.getAddress() == null) {
+                if (localSecureAddress == null) {
+                    localSecureAddress = new InetSocketAddress(LwM2m.DEFAULT_COAP_SECURE_PORT);
+                }
+                dtlsConfigBuilder.setAddress(localSecureAddress);
+            } else if (localSecureAddress != null && !localSecureAddress.equals(incompleteConfig.getAddress())) {
+                throw new IllegalStateException(String.format(
+                        "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for secure address: %s != %s",
+                        localSecureAddress, incompleteConfig.getAddress()));
+            }
+
+            // Handle active peers
+            if (incompleteConfig.getMaxConnections() == null)
+                dtlsConfigBuilder.setMaxConnections(coapConfig.getInt(Keys.MAX_ACTIVE_PEERS));
+            if (incompleteConfig.getStaleConnectionThreshold() == null)
+                dtlsConfigBuilder.setStaleConnectionThreshold(coapConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
+
+            // handle trusted certificates
+            if (trustedCertificates != null) {
+                if (incompleteConfig.getTrustStore() == null) {
+                    dtlsConfigBuilder.setTrustStore(trustedCertificates);
+                } else if (!Arrays.equals(trustedCertificates, incompleteConfig.getTrustStore())) {
+                    throw new IllegalStateException(String.format(
+                            "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for trusted Certificates (trustStore) : \n%s != \n%s",
+                            Arrays.toString(trustedCertificates), Arrays.toString(incompleteConfig.getTrustStore())));
+                }
+            }
+
+            // check conflict for private key
+            if (privateKey != null) {
+                if (incompleteConfig.getPrivateKey() != null && !incompleteConfig.getPrivateKey().equals(privateKey)) {
+                    throw new IllegalStateException(String.format(
+                            "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for private key: %s != %s",
+                            privateKey, incompleteConfig.getPrivateKey()));
+                }
+
+                // if in raw key mode and not in X.509 set the raw keys
+                if (certificateChain == null && publicKey != null) {
+                    if (incompleteConfig.getPublicKey() != null && !incompleteConfig.getPublicKey().equals(publicKey)) {
+                        throw new IllegalStateException(String.format(
+                                "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for public key: %s != %s",
+                                publicKey, incompleteConfig.getPublicKey()));
+                    }
+
+                    dtlsConfigBuilder.setIdentity(privateKey, publicKey);
+                }
+                // if in X.509 mode set the private key, certificate chain, public key is extracted from the certificate
+                if (certificateChain != null && certificateChain.length > 0) {
+                    if (incompleteConfig.getCertificateChain() != null
+                            && !Arrays.equals(incompleteConfig.getCertificateChain(), certificateChain)) {
+                        throw new IllegalStateException(String.format(
+                                "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for certificate chain: %s != %s",
+                                certificateChain, incompleteConfig.getCertificateChain()));
+                    }
+
+                    dtlsConfigBuilder.setIdentity(privateKey, certificateChain, false);
+                }
+
+            }
+            dtlsConfig = dtlsConfigBuilder.build();
+        }
+
+        return new LeshanServer(localAddress, registrationStore, securityStore, authorizer, modelProvider, encoder,
+                decoder, coapConfig, dtlsConfig);
     }
 }
