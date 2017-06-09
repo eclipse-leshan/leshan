@@ -26,7 +26,6 @@ import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.core.model.LwM2mModel;
-import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.BootstrapStore;
@@ -60,16 +59,17 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
     public LeshanBootstrapServer(InetSocketAddress localAddress, InetSocketAddress localAddressSecure,
             BootstrapStore bsStore, BootstrapSecurityStore bsSecurityStore, BootstrapSessionManager bsSessionManager,
             LwM2mModel model, NetworkConfig coapConfig) {
+
+        Validate.notNull(localAddress, "IP address cannot be null");
+        Validate.notNull(localAddressSecure, "Secure IP address cannot be null");
         Validate.notNull(bsStore, "bootstrap store must not be null");
+        Validate.notNull(bsSecurityStore, "security store must not be null");
+        Validate.notNull(bsSessionManager, "session manager must not be null");
+        Validate.notNull(model, "model must not be null");
         Validate.notNull(coapConfig, "coapConfig must not be null");
 
         this.bsStore = bsStore;
         this.bsSecurityStore = bsSecurityStore;
-
-        // init model
-        if (model == null) {
-            model = new LwM2mModel(ObjectLoader.loadDefault());
-        }
 
         // init CoAP server
         coapServer = new CoapServer(coapConfig);
