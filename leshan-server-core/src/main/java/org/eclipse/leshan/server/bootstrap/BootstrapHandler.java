@@ -218,19 +218,31 @@ public class BootstrapHandler {
     private LwM2mObjectInstance convertToSecurityInstance(int instanceId, ServerSecurity securityConfig) {
         Collection<LwM2mResource> resources = new ArrayList<>();
 
-        resources.add(LwM2mSingleResource.newStringResource(0, securityConfig.uri));
+        if (securityConfig.uri != null)
+            resources.add(LwM2mSingleResource.newStringResource(0, securityConfig.uri));
         resources.add(LwM2mSingleResource.newBooleanResource(1, securityConfig.bootstrapServer));
-        resources.add(LwM2mSingleResource.newIntegerResource(2, securityConfig.securityMode.code));
-        resources.add(LwM2mSingleResource.newBinaryResource(3, securityConfig.publicKeyOrId));
-        resources.add(LwM2mSingleResource.newBinaryResource(4, securityConfig.serverPublicKey));
-        resources.add(LwM2mSingleResource.newBinaryResource(5, securityConfig.secretKey));
-        resources.add(LwM2mSingleResource.newIntegerResource(6, securityConfig.smsSecurityMode.code));
-        resources.add(LwM2mSingleResource.newBinaryResource(7, securityConfig.smsBindingKeyParam));
-        resources.add(LwM2mSingleResource.newBinaryResource(8, securityConfig.smsBindingKeySecret));
-        resources.add(LwM2mSingleResource.newStringResource(9, securityConfig.serverSmsNumber));
-        resources.add(LwM2mSingleResource.newIntegerResource(10, securityConfig.serverId));
-        resources.add(LwM2mSingleResource.newIntegerResource(11, securityConfig.clientOldOffTime));
-        resources.add(LwM2mSingleResource.newIntegerResource(12, securityConfig.bootstrapServerAccountTimeout));
+        if (securityConfig.securityMode != null)
+            resources.add(LwM2mSingleResource.newIntegerResource(2, securityConfig.securityMode.code));
+        if (securityConfig.publicKeyOrId != null)
+            resources.add(LwM2mSingleResource.newBinaryResource(3, securityConfig.publicKeyOrId));
+        if (securityConfig.serverPublicKey != null)
+            resources.add(LwM2mSingleResource.newBinaryResource(4, securityConfig.serverPublicKey));
+        if (securityConfig.secretKey != null)
+            resources.add(LwM2mSingleResource.newBinaryResource(5, securityConfig.secretKey));
+        if (securityConfig.smsSecurityMode != null)
+            resources.add(LwM2mSingleResource.newIntegerResource(6, securityConfig.smsSecurityMode.code));
+        if (securityConfig.smsBindingKeyParam != null)
+            resources.add(LwM2mSingleResource.newBinaryResource(7, securityConfig.smsBindingKeyParam));
+        if (securityConfig.smsBindingKeySecret != null)
+            resources.add(LwM2mSingleResource.newBinaryResource(8, securityConfig.smsBindingKeySecret));
+        if (securityConfig.serverSmsNumber != null)
+            resources.add(LwM2mSingleResource.newStringResource(9, securityConfig.serverSmsNumber));
+        if (securityConfig.serverId != null)
+            resources.add(LwM2mSingleResource.newIntegerResource(10, securityConfig.serverId));
+        if (securityConfig.clientOldOffTime != null)
+            resources.add(LwM2mSingleResource.newIntegerResource(11, securityConfig.clientOldOffTime));
+        if (securityConfig.bootstrapServerAccountTimeout != null)
+            resources.add(LwM2mSingleResource.newIntegerResource(12, securityConfig.bootstrapServerAccountTimeout));
 
         return new LwM2mObjectInstance(instanceId, resources);
     }
@@ -240,13 +252,15 @@ public class BootstrapHandler {
 
         resources.add(LwM2mSingleResource.newIntegerResource(0, serverConfig.shortId));
         resources.add(LwM2mSingleResource.newIntegerResource(1, serverConfig.lifetime));
-        resources.add(LwM2mSingleResource.newIntegerResource(2, serverConfig.defaultMinPeriod));
+        if (serverConfig.defaultMinPeriod != null)
+            resources.add(LwM2mSingleResource.newIntegerResource(2, serverConfig.defaultMinPeriod));
         if (serverConfig.defaultMaxPeriod != null)
             resources.add(LwM2mSingleResource.newIntegerResource(3, serverConfig.defaultMaxPeriod));
         if (serverConfig.disableTimeout != null)
             resources.add(LwM2mSingleResource.newIntegerResource(5, serverConfig.disableTimeout));
         resources.add(LwM2mSingleResource.newBooleanResource(6, serverConfig.notifIfDisabled));
-        resources.add(LwM2mSingleResource.newStringResource(7, serverConfig.binding.name()));
+        if (serverConfig.binding != null)
+            resources.add(LwM2mSingleResource.newStringResource(7, serverConfig.binding.name()));
 
         return new LwM2mObjectInstance(instanceId, resources);
     }
