@@ -120,7 +120,7 @@ public class BootstrapHandler {
         }, new ErrorCallback() {
             @Override
             public void onError(Exception e) {
-                LOG.warn(String.format("Error pending bootstrap delete '/' on %s", session.getEndpoint()), e);
+                LOG.warn(String.format("Error during bootstrap delete '/' on %s", session.getEndpoint()), e);
                 sessionManager.failed(session, DELETE_FAILED, deleteRequest);
             }
         });
@@ -148,7 +148,7 @@ public class BootstrapHandler {
             }, new ErrorCallback() {
                 @Override
                 public void onError(Exception e) {
-                    LOG.warn(String.format("Error pending bootstrap write of security instance %s on %s",
+                    LOG.warn(String.format("Error during bootstrap write of security instance %s on %s",
                             securityInstance, session.getEndpoint()), e);
                     sessionManager.failed(session, WRITE_SECURITY_FAILED, writeBootstrapRequest);
                 }
@@ -182,7 +182,7 @@ public class BootstrapHandler {
             }, new ErrorCallback() {
                 @Override
                 public void onError(Exception e) {
-                    LOG.warn(String.format("Error pending bootstrap write of server instance %s on %s", serverInstance,
+                    LOG.warn(String.format("Error during bootstrap write of server instance %s on %s", serverInstance,
                             session.getEndpoint()), e);
                     sessionManager.failed(session, WRITE_SERVER_FAILED, writeServerRequest);
                 }
@@ -202,7 +202,7 @@ public class BootstrapHandler {
             }, new ErrorCallback() {
                 @Override
                 public void onError(Exception e) {
-                    LOG.warn(String.format("Error pending bootstrap finished on %s", session.getEndpoint()), e);
+                    LOG.warn(String.format("Error during bootstrap finished on %s", session.getEndpoint()), e);
                     sessionManager.failed(session, SEND_FINISH_FAILED, finishBootstrapRequest);
                 }
             });

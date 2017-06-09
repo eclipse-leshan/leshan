@@ -194,7 +194,7 @@ public class RedisRequestResponseHandler {
             jMessage = (JsonObject) Json.parse(message);
             ticket = jMessage.getString("ticket", null);
         } catch (RuntimeException t) {
-            LOG.error(String.format("Unexpected exception pending request message handling. (%s)", message), t);
+            LOG.error(String.format("Unexpected exception during request message handling. (%s)", message), t);
             return;
         }
 
@@ -230,7 +230,7 @@ public class RedisRequestResponseHandler {
                 }
             });
         } catch (RuntimeException t) {
-            String errorMessage = String.format("Unexpected exception pending request message handling.(%s:%s)",
+            String errorMessage = String.format("Unexpected exception during request message handling.(%s:%s)",
                     t.toString(), t.getMessage());
             LOG.error(errorMessage, t);
             sendError(ticket, errorMessage);
