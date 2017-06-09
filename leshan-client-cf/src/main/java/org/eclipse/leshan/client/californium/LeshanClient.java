@@ -71,13 +71,13 @@ public class LeshanClient implements LwM2mClient {
     private CoapEndpoint nonSecureEndpoint;
 
     public LeshanClient(String endpoint, InetSocketAddress localAddress, InetSocketAddress localSecureAddress,
-            List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig networkConfig) {
+            List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig) {
 
         Validate.notNull(endpoint);
         Validate.notNull(localAddress);
         Validate.notNull(localSecureAddress);
         Validate.notEmpty(objectEnablers);
-        Validate.notNull(networkConfig);
+        Validate.notNull(coapConfig);
 
         // Create Object enablers
         this.objectEnablers = new ConcurrentHashMap<>();
@@ -90,7 +90,7 @@ public class LeshanClient implements LwM2mClient {
         }
 
         // Create CoAP non secure endpoint
-        nonSecureEndpoint = new CoapEndpoint(localAddress, networkConfig);
+        nonSecureEndpoint = new CoapEndpoint(localAddress, coapConfig);
 
         // Create CoAP secure endpoint
         LwM2mObjectEnabler securityEnabler = this.objectEnablers.get(LwM2mId.SECURITY);
@@ -100,10 +100,10 @@ public class LeshanClient implements LwM2mClient {
 
         Builder builder = new DtlsConnectorConfig.Builder().setAddress(localSecureAddress);
         builder.setPskStore(new SecurityObjectPskStore(securityEnabler));
-        builder.setMaxConnections(networkConfig.getInt(Keys.MAX_ACTIVE_PEERS));
-        builder.setStaleConnectionThreshold(networkConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
+        builder.setMaxConnections(coapConfig.getInt(Keys.MAX_ACTIVE_PEERS));
+        builder.setStaleConnectionThreshold(coapConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
         final DTLSConnector dtlsConnector = new DTLSConnector(builder.build());
-        secureEndpoint = new CoapEndpoint(dtlsConnector, networkConfig);
+        secureEndpoint = new CoapEndpoint(dtlsConnector, coapConfig);
 
         // Create sender
         requestSender = new CaliforniumLwM2mRequestSender(secureEndpoint, nonSecureEndpoint);
@@ -137,7 +137,7 @@ public class LeshanClient implements LwM2mClient {
         engine = new RegistrationEngine(endpoint, this.objectEnablers, requestSender, bootstrapHandler, observers);
 
         // Create CoAP Server
-        clientSideServer = new CoapServer(networkConfig) {
+        clientSideServer = new CoapServer(coapConfig) {
             @Override
             protected Resource createRoot() {
                 // Use to handle Delete on "/"
