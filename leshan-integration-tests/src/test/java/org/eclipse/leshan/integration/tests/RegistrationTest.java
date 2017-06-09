@@ -23,7 +23,6 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,10 +35,10 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
-import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.leshan.Link;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.californium.LeshanClient;
+import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.californium.impl.CaliforniumLwM2mRequestSender;
 import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
@@ -250,8 +249,7 @@ public class RegistrationTest {
         ArrayList<LwM2mObjectEnabler> objects = new ArrayList<>();
         objects.add(objectEnabler);
         objects.add(objectEnabler2);
-        helper.client = new LeshanClient("test", new InetSocketAddress(InetAddress.getLoopbackAddress(), 0),
-                new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), objects, new NetworkConfig());
+        helper.client = new LeshanClientBuilder("test").setObjects(objects).build();
     }
 
     @Test

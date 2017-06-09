@@ -19,7 +19,11 @@ import java.net.InetSocketAddress;
 import java.util.List;
 
 import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.LwM2mId;
+import org.eclipse.leshan.client.californium.impl.SecurityObjectPskStore;
 import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.object.Server;
@@ -27,11 +31,15 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.util.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Helper class to build and configure a Californium based Leshan Lightweight M2M client.
  */
 public class LeshanClientBuilder {
+
+    private static final Logger LOG = LoggerFactory.getLogger(LeshanClientBuilder.class);
 
     private final String endpoint;
 
@@ -40,6 +48,8 @@ public class LeshanClientBuilder {
     private List<? extends LwM2mObjectEnabler> objectEnablers;
 
     private NetworkConfig coapConfig;
+
+    private Builder dtlsConfigBuilder;
 
     /**
      * Creates a new instance for setting the configuration options for a {@link LeshanClient} instance.
@@ -97,8 +107,19 @@ public class LeshanClientBuilder {
         return this;
     }
 
+    /**
+     * Set the Californium/CoAP {@link NetworkConfig}.
+     */
     public LeshanClientBuilder setCoapConfig(NetworkConfig config) {
         this.coapConfig = config;
+        return this;
+    }
+
+    /**
+     * Set the Scandium/DTLS Configuration : {@link DtlsConnectorConfig}.
+     */
+    public LeshanClientBuilder setDtlsConfig(DtlsConnectorConfig.Builder config) {
+        this.dtlsConfigBuilder = config;
         return this;
     }
 
@@ -108,9 +129,6 @@ public class LeshanClientBuilder {
     public LeshanClient build() {
         if (localAddress == null) {
             localAddress = new InetSocketAddress(0);
-        }
-        if (localSecureAddress == null) {
-            localSecureAddress = new InetSocketAddress(0);
         }
         if (objectEnablers == null) {
             ObjectsInitializer initializer = new ObjectsInitializer();
@@ -125,6 +143,47 @@ public class LeshanClientBuilder {
             coapConfig.set(NetworkConfig.Keys.MID_TRACKER, "NULL");
         }
 
-        return new LeshanClient(endpoint, localAddress, localSecureAddress, objectEnablers, coapConfig);
+        // handle dtlsConfig
+        DtlsConnectorConfig dtlsConfig = null;
+        if (dtlsConfigBuilder == null) {
+            dtlsConfigBuilder = new DtlsConnectorConfig.Builder();
+            // TODO remove 2 lines below when we will integrate the californium v2.0.0-M5/RC1
+            dtlsConfigBuilder.setMaxConnections(coapConfig.getInt(Keys.MAX_ACTIVE_PEERS));
+            dtlsConfigBuilder.setStaleConnectionThreshold(coapConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
+        }
+        DtlsConnectorConfig incompleteConfig = dtlsConfigBuilder.getIncompleteConfig();
+
+        // Handle PSK Store
+        LwM2mObjectEnabler securityEnabler = this.objectEnablers.get(LwM2mId.SECURITY);
+        if (securityEnabler == null) {
+            throw new IllegalArgumentException("Security object is mandatory");
+        }
+        if (incompleteConfig.getPskStore() == null) {
+            dtlsConfigBuilder.setPskStore(new SecurityObjectPskStore(securityEnabler));
+        } else {
+            LOG.warn("PskStore should be automatically set by Leshan. Using a custom implementation is not advised.");
+        }
+
+        // Handle secure address
+        if (incompleteConfig.getAddress() == null) {
+            if (localSecureAddress == null) {
+                localSecureAddress = new InetSocketAddress(0);
+            }
+            dtlsConfigBuilder.setAddress(localSecureAddress);
+        } else if (localSecureAddress != null && !localSecureAddress.equals(incompleteConfig.getAddress())) {
+            throw new IllegalStateException(String.format(
+                    "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for secure address: %s != %s",
+                    localSecureAddress, incompleteConfig.getAddress()));
+        }
+
+        // Handle active peers
+        if (incompleteConfig.getMaxConnections() == null)
+            dtlsConfigBuilder.setMaxConnections(coapConfig.getInt(Keys.MAX_ACTIVE_PEERS));
+        if (incompleteConfig.getStaleConnectionThreshold() == null)
+            dtlsConfigBuilder.setStaleConnectionThreshold(coapConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
+
+        dtlsConfig = dtlsConfigBuilder.build();
+
+        return new LeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfig);
     }
 }
