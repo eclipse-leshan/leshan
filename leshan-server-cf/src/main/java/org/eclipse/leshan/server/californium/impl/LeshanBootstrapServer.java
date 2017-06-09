@@ -59,9 +59,9 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
 
     public LeshanBootstrapServer(InetSocketAddress localAddress, InetSocketAddress localAddressSecure,
             BootstrapStore bsStore, BootstrapSecurityStore bsSecurityStore, BootstrapSessionManager bsSessionManager,
-            LwM2mModel model, NetworkConfig networkConfig) {
+            LwM2mModel model, NetworkConfig coapConfig) {
         Validate.notNull(bsStore, "bootstrap store must not be null");
-        Validate.notNull(networkConfig, "networkConfig must not be null");
+        Validate.notNull(coapConfig, "coapConfig must not be null");
 
         this.bsStore = bsStore;
         this.bsSecurityStore = bsSecurityStore;
@@ -72,17 +72,17 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
         }
 
         // init CoAP server
-        coapServer = new CoapServer(networkConfig);
-        nonSecureEndpoint = new CoapEndpoint(localAddress, networkConfig);
+        coapServer = new CoapServer(coapConfig);
+        nonSecureEndpoint = new CoapEndpoint(localAddress, coapConfig);
         coapServer.addEndpoint(nonSecureEndpoint);
 
         // init DTLS server
         Builder builder = new DtlsConnectorConfig.Builder().setAddress(localAddressSecure);
         builder.setPskStore(new LwM2mBootstrapPskStore(this.bsSecurityStore));
-        builder.setMaxConnections(networkConfig.getInt(Keys.MAX_ACTIVE_PEERS));
-        builder.setStaleConnectionThreshold(networkConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
+        builder.setMaxConnections(coapConfig.getInt(Keys.MAX_ACTIVE_PEERS));
+        builder.setStaleConnectionThreshold(coapConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
 
-        secureEndpoint = new CoapEndpoint(new DTLSConnector(builder.build()), networkConfig);
+        secureEndpoint = new CoapEndpoint(new DTLSConnector(builder.build()), coapConfig);
         coapServer.addEndpoint(secureEndpoint);
 
         // create request sender

@@ -241,7 +241,7 @@ public class LeshanClientDemo {
         builder.setLocalAddress(localAddress, localPort);
         builder.setLocalSecureAddress(secureLocalAddress, secureLocalPort);
         builder.setObjects(enablers);
-        builder.setNetworkConfig(NetworkConfig.getStandard());
+        builder.setCoapConfig(NetworkConfig.getStandard());
         final LeshanClient client = builder.build();
 
         LOG.info("Press 'w','a','s','d' to change reported Location ({},{}).", locationInstance.getLatitude(),

@@ -66,7 +66,7 @@ public class LeshanServerBuilder {
     private X509Certificate[] certificateChain;
     private Certificate[] trustedCertificates;
 
-    private NetworkConfig networkConfig;
+    private NetworkConfig coapConfig;
 
     /**
      * <p>
@@ -247,8 +247,8 @@ public class LeshanServerBuilder {
     /**
      * Set the Californium/CoAP {@link NetworkConfig}.
      */
-    public LeshanServerBuilder setNetworkConfig(NetworkConfig config) {
-        this.networkConfig = config;
+    public LeshanServerBuilder setCoapConfig(NetworkConfig config) {
+        this.coapConfig = config;
         return this;
     }
 
@@ -267,13 +267,13 @@ public class LeshanServerBuilder {
             encoder = new DefaultLwM2mNodeEncoder();
         if (decoder == null)
             decoder = new DefaultLwM2mNodeDecoder();
-        if (networkConfig == null) {
-            networkConfig = new NetworkConfig();
-            networkConfig.set(NetworkConfig.Keys.MID_TRACKER, "NULL");
+        if (coapConfig == null) {
+            coapConfig = new NetworkConfig();
+            coapConfig.set(NetworkConfig.Keys.MID_TRACKER, "NULL");
         }
 
         return new LeshanServer(localAddress, localSecureAddress, registrationStore, securityStore, authorizer,
                 modelProvider, encoder, decoder, publicKey, privateKey, certificateChain, trustedCertificates,
-                networkConfig);
+                coapConfig);
     }
 }
