@@ -39,7 +39,7 @@ public class LeshanClientBuilder {
     private InetSocketAddress localSecureAddress;
     private List<? extends LwM2mObjectEnabler> objectEnablers;
 
-    private NetworkConfig networkConfig;
+    private NetworkConfig coapConfig;
 
     /**
      * Creates a new instance for setting the configuration options for a {@link LeshanClient} instance.
@@ -97,8 +97,8 @@ public class LeshanClientBuilder {
         return this;
     }
 
-    public LeshanClientBuilder setNetworkConfig(NetworkConfig config) {
-        this.networkConfig = config;
+    public LeshanClientBuilder setCoapConfig(NetworkConfig config) {
+        this.coapConfig = config;
         return this;
     }
 
@@ -120,10 +120,10 @@ public class LeshanClientBuilder {
             initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", "model12345", "12345", "U"));
             objectEnablers = initializer.createMandatory();
         }
-        if (networkConfig == null) {
-            networkConfig = new NetworkConfig();
+        if (coapConfig == null) {
+            coapConfig = new NetworkConfig();
         }
 
-        return new LeshanClient(endpoint, localAddress, localSecureAddress, objectEnablers, networkConfig);
+        return new LeshanClient(endpoint, localAddress, localSecureAddress, objectEnablers, coapConfig);
     }
 }

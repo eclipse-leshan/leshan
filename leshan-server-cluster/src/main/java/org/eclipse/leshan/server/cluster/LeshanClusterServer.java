@@ -145,7 +145,7 @@ public class LeshanClusterServer {
         builder.setLocalSecureAddress(secureLocalAddress, secureLocalPort);
         DefaultLwM2mNodeDecoder decoder = new DefaultLwM2mNodeDecoder();
         builder.setDecoder(decoder);
-        builder.setNetworkConfig(NetworkConfig.getStandard());
+        builder.setCoapConfig(NetworkConfig.getStandard());
 
         List<ObjectModel> models = ObjectLoader.loadDefault();
         if (modelsFolderPath != null) {
