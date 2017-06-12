@@ -16,10 +16,6 @@
 package org.eclipse.leshan.server.californium.impl;
 
 import java.net.InetSocketAddress;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -31,12 +27,10 @@ import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
-import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
-import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.observation.Observation;
@@ -105,33 +99,27 @@ public class LeshanServer implements LwM2mServer {
      * Initialize a server which will bind to the specified address and port.
      *
      * @param localAddress the address to bind the CoAP server.
-     * @param localSecureAddress the address to bind the CoAP server for DTLS connection.
      * @param registrationStore the {@link Registration} store.
      * @param securityStore the {@link SecurityInfo} store.
      * @param authorizer define which devices is allow to register on this server.
      * @param modelProvider provides the objects description for each client.
      * @param decoder decoder used to decode response payload.
      * @param encoder encode used to encode request payload.
-     * @param publicKey the server public key used for RPK DTLS authentication.
-     * @param privateKey the server private key used to RPK or X509 DTLS authentication.
-     * @param x509CertChain the server X509 certificate (will be used for RPK too, in this case no need to set public
-     *        key).
-     * @param trustedCertificates the trusted certificates used to authenticate client certificates.
-     * @param networkConfig the CoAP {@link NetworkConfig}.
+     * @param coapConfig the CoAP {@link NetworkConfig}.
+     * @param dtlsConfig the DTLS configuration : {@link DtlsConnectorConfig}.
      */
-    public LeshanServer(InetSocketAddress localAddress, InetSocketAddress localSecureAddress,
-            CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
-            LwM2mModelProvider modelProvider, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder, PublicKey publicKey,
-            PrivateKey privateKey, X509Certificate[] x509CertChain, Certificate[] trustedCertificates,
-            NetworkConfig networkConfig) {
+    public LeshanServer(InetSocketAddress localAddress, CaliforniumRegistrationStore registrationStore,
+            SecurityStore securityStore, Authorizer authorizer, LwM2mModelProvider modelProvider,
+            LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder, NetworkConfig coapConfig,
+            DtlsConnectorConfig dtlsConfig) {
         Validate.notNull(localAddress, "IP address cannot be null");
-        Validate.notNull(localSecureAddress, "Secure IP address cannot be null");
         Validate.notNull(registrationStore, "registration store cannot be null");
         Validate.notNull(authorizer, "authorizer cannot be null");
         Validate.notNull(modelProvider, "modelProvider cannot be null");
         Validate.notNull(encoder, "encoder cannot be null");
         Validate.notNull(decoder, "decoder cannot be null");
-        Validate.notNull(networkConfig, "networkConfig cannot be null");
+        Validate.notNull(coapConfig, "coapConfig cannot be null");
+        Validate.notNull(dtlsConfig, "coapConfig cannot be null");
 
         // Init services and stores
         this.registrationStore = registrationStore;
@@ -162,14 +150,13 @@ public class LeshanServer implements LwM2mServer {
         Set<Endpoint> endpoints = new HashSet<>();
 
         // default endpoint
-        coapServer = new CoapServer(networkConfig) {
+        coapServer = new CoapServer(coapConfig) {
             @Override
             protected Resource createRoot() {
                 return new RootResource();
             }
         };
-        nonSecureEndpoint = new CoapEndpoint(localAddress, networkConfig,
-                this.observationService.getObservationStore());
+        nonSecureEndpoint = new CoapEndpoint(localAddress, coapConfig, this.observationService.getObservationStore());
         nonSecureEndpoint.addNotificationListener(observationService);
         observationService.setNonSecureEndpoint(nonSecureEndpoint);
         coapServer.addEndpoint(nonSecureEndpoint);
@@ -177,27 +164,7 @@ public class LeshanServer implements LwM2mServer {
 
         // secure endpoint
         if (securityStore != null) {
-            Builder builder = new DtlsConnectorConfig.Builder(localSecureAddress);
-            builder.setPskStore(new LwM2mPskStore(this.securityStore, this.registrationService.getStore()));
-
-            // synchronize network configuration and DTLS configuration
-            builder.setMaxConnections(networkConfig.getInt(Keys.MAX_ACTIVE_PEERS));
-            builder.setStaleConnectionThreshold(networkConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
-
-            // if in raw key mode and not in X.509 set the raw keys
-            if (x509CertChain == null && privateKey != null && publicKey != null) {
-                builder.setIdentity(privateKey, publicKey);
-            }
-            // if in X.509 mode set the private key, certificate chain, public key is extracted from the certificate
-            if (privateKey != null && x509CertChain != null && x509CertChain.length > 0) {
-                builder.setIdentity(privateKey, x509CertChain, false);
-            }
-
-            if (trustedCertificates != null && trustedCertificates.length > 0) {
-                builder.setTrustStore(trustedCertificates);
-            }
-
-            secureEndpoint = new CoapEndpoint(new DTLSConnector(builder.build()), networkConfig,
+            secureEndpoint = new CoapEndpoint(new DTLSConnector(dtlsConfig), coapConfig,
                     this.observationService.getObservationStore(), null);
             secureEndpoint.addNotificationListener(observationService);
             observationService.setSecureEndpoint(secureEndpoint);

@@ -20,13 +20,9 @@ import java.net.InetSocketAddress;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
-import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
-import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
-import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.core.model.LwM2mModel;
-import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.BootstrapStore;
@@ -51,38 +47,29 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
     private final BootstrapStore bsStore;
     private final BootstrapSecurityStore bsSecurityStore;
 
-    public LeshanBootstrapServer(BootstrapStore bsStore, BootstrapSecurityStore securityStore,
-            BootstrapSessionManager bsSessionManager) {
-        this(new InetSocketAddress(LwM2m.DEFAULT_COAP_PORT), new InetSocketAddress(LwM2m.DEFAULT_COAP_SECURE_PORT),
-                bsStore, securityStore, bsSessionManager, null, new NetworkConfig());
-    }
+    public LeshanBootstrapServer(InetSocketAddress localAddress, BootstrapStore bsStore,
+            BootstrapSecurityStore bsSecurityStore, BootstrapSessionManager bsSessionManager, LwM2mModel model,
+            NetworkConfig coapConfig, DtlsConnectorConfig dtlsConfig) {
 
-    public LeshanBootstrapServer(InetSocketAddress localAddress, InetSocketAddress localAddressSecure,
-            BootstrapStore bsStore, BootstrapSecurityStore bsSecurityStore, BootstrapSessionManager bsSessionManager,
-            LwM2mModel model, NetworkConfig networkConfig) {
+        Validate.notNull(localAddress, "IP address cannot be null");
         Validate.notNull(bsStore, "bootstrap store must not be null");
-        Validate.notNull(networkConfig, "networkConfig must not be null");
+        Validate.notNull(bsSecurityStore, "security store must not be null");
+        Validate.notNull(bsSessionManager, "session manager must not be null");
+        Validate.notNull(model, "model must not be null");
+        Validate.notNull(coapConfig, "coapConfig must not be null");
+        Validate.notNull(dtlsConfig, "dtlsConfig must not be null");
 
         this.bsStore = bsStore;
         this.bsSecurityStore = bsSecurityStore;
 
-        // init model
-        if (model == null) {
-            model = new LwM2mModel(ObjectLoader.loadDefault());
-        }
-
         // init CoAP server
-        coapServer = new CoapServer(networkConfig);
-        nonSecureEndpoint = new CoapEndpoint(localAddress, networkConfig);
+        coapServer = new CoapServer(coapConfig);
+        nonSecureEndpoint = new CoapEndpoint(localAddress, coapConfig);
         coapServer.addEndpoint(nonSecureEndpoint);
 
         // init DTLS server
-        Builder builder = new DtlsConnectorConfig.Builder(localAddressSecure);
-        builder.setPskStore(new LwM2mBootstrapPskStore(this.bsSecurityStore));
-        builder.setMaxConnections(networkConfig.getInt(Keys.MAX_ACTIVE_PEERS));
-        builder.setStaleConnectionThreshold(networkConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
 
-        secureEndpoint = new CoapEndpoint(new DTLSConnector(builder.build()), networkConfig);
+        secureEndpoint = new CoapEndpoint(new DTLSConnector(dtlsConfig), coapConfig);
         coapServer.addEndpoint(secureEndpoint);
 
         // create request sender

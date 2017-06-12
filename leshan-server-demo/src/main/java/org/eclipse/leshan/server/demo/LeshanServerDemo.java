@@ -221,7 +221,7 @@ public class LeshanServerDemo {
         builder.setEncoder(new DefaultLwM2mNodeEncoder());
         LwM2mNodeDecoder decoder = new DefaultLwM2mNodeDecoder();
         builder.setDecoder(decoder);
-        builder.setNetworkConfig(NetworkConfig.getStandard());
+        builder.setCoapConfig(NetworkConfig.getStandard());
 
         // connect to redis if needed
         Pool<Jedis> jedis = null;

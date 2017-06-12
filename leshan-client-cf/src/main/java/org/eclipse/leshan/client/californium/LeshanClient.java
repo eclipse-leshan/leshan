@@ -24,18 +24,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
-import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
-import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
-import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.californium.impl.BootstrapResource;
 import org.eclipse.leshan.client.californium.impl.CaliforniumLwM2mRequestSender;
 import org.eclipse.leshan.client.californium.impl.ObjectResource;
 import org.eclipse.leshan.client.californium.impl.RootResource;
-import org.eclipse.leshan.client.californium.impl.SecurityObjectPskStore;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverAdapter;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverDispatcher;
@@ -69,14 +65,15 @@ public class LeshanClient implements LwM2mClient {
 
     private CoapEndpoint nonSecureEndpoint;
 
-    public LeshanClient(String endpoint, InetSocketAddress localAddress, InetSocketAddress localSecureAddress,
-            List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig networkConfig) {
+    public LeshanClient(String endpoint, InetSocketAddress localAddress,
+            List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig,
+            DtlsConnectorConfig dtlsConfig) {
 
         Validate.notNull(endpoint);
         Validate.notNull(localAddress);
-        Validate.notNull(localSecureAddress);
         Validate.notEmpty(objectEnablers);
-        Validate.notNull(networkConfig);
+        Validate.notNull(coapConfig);
+        Validate.notNull(dtlsConfig);
 
         // Create Object enablers
         this.objectEnablers = new ConcurrentHashMap<>();
@@ -89,20 +86,11 @@ public class LeshanClient implements LwM2mClient {
         }
 
         // Create CoAP non secure endpoint
-        nonSecureEndpoint = new CoapEndpoint(localAddress, networkConfig);
+        nonSecureEndpoint = new CoapEndpoint(localAddress, coapConfig);
 
         // Create CoAP secure endpoint
-        LwM2mObjectEnabler securityEnabler = this.objectEnablers.get(LwM2mId.SECURITY);
-        if (securityEnabler == null) {
-            throw new IllegalArgumentException("Security object is mandatory");
-        }
-
-        Builder builder = new DtlsConnectorConfig.Builder(localSecureAddress);
-        builder.setPskStore(new SecurityObjectPskStore(securityEnabler));
-        builder.setMaxConnections(networkConfig.getInt(Keys.MAX_ACTIVE_PEERS));
-        builder.setStaleConnectionThreshold(networkConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
-        final DTLSConnector dtlsConnector = new DTLSConnector(builder.build());
-        secureEndpoint = new CoapEndpoint(dtlsConnector, networkConfig);
+        final DTLSConnector dtlsConnector = new DTLSConnector(dtlsConfig);
+        secureEndpoint = new CoapEndpoint(dtlsConnector, coapConfig);
 
         // Create sender
         requestSender = new CaliforniumLwM2mRequestSender(secureEndpoint, nonSecureEndpoint);
@@ -136,7 +124,7 @@ public class LeshanClient implements LwM2mClient {
         engine = new RegistrationEngine(endpoint, this.objectEnablers, requestSender, bootstrapHandler, observers);
 
         // Create CoAP Server
-        clientSideServer = new CoapServer(networkConfig) {
+        clientSideServer = new CoapServer(coapConfig) {
             @Override
             protected Resource createRoot() {
                 // Use to handle Delete on "/"

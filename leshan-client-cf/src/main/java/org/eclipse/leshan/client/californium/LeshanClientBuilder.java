@@ -19,7 +19,11 @@ import java.net.InetSocketAddress;
 import java.util.List;
 
 import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.LwM2mId;
+import org.eclipse.leshan.client.californium.impl.SecurityObjectPskStore;
 import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.object.Server;
@@ -39,7 +43,9 @@ public class LeshanClientBuilder {
     private InetSocketAddress localSecureAddress;
     private List<? extends LwM2mObjectEnabler> objectEnablers;
 
-    private NetworkConfig networkConfig;
+    private NetworkConfig coapConfig;
+
+    private DtlsConnectorConfig dtlsConfig;
 
     /**
      * Creates a new instance for setting the configuration options for a {@link LeshanClient} instance.
@@ -97,8 +103,19 @@ public class LeshanClientBuilder {
         return this;
     }
 
-    public LeshanClientBuilder setNetworkConfig(NetworkConfig config) {
-        this.networkConfig = config;
+    /**
+     * Set the Californium/CoAP {@link NetworkConfig}.
+     */
+    public LeshanClientBuilder setCoapConfig(NetworkConfig config) {
+        this.coapConfig = config;
+        return this;
+    }
+
+    /**
+     * Set the Scandium/DTLS Configuration : {@link DtlsConnectorConfig}.
+     */
+    public LeshanClientBuilder setDtlsConfig(DtlsConnectorConfig config) {
+        this.dtlsConfig = config;
         return this;
     }
 
@@ -109,9 +126,6 @@ public class LeshanClientBuilder {
         if (localAddress == null) {
             localAddress = new InetSocketAddress(0);
         }
-        if (localSecureAddress == null) {
-            localSecureAddress = new InetSocketAddress(0);
-        }
         if (objectEnablers == null) {
             ObjectsInitializer initializer = new ObjectsInitializer();
             initializer.setInstancesForObject(LwM2mId.SECURITY,
@@ -120,10 +134,28 @@ public class LeshanClientBuilder {
             initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", "model12345", "12345", "U"));
             objectEnablers = initializer.createMandatory();
         }
-        if (networkConfig == null) {
-            networkConfig = new NetworkConfig();
+        if (coapConfig == null) {
+            coapConfig = new NetworkConfig();
         }
 
-        return new LeshanClient(endpoint, localAddress, localSecureAddress, objectEnablers, networkConfig);
+        if (dtlsConfig == null) {
+            if (localSecureAddress == null) {
+                localSecureAddress = new InetSocketAddress(0);
+            }
+
+            LwM2mObjectEnabler securityEnabler = this.objectEnablers.get(LwM2mId.SECURITY);
+            if (securityEnabler == null) {
+                throw new IllegalArgumentException("Security object is mandatory");
+            }
+
+            Builder builder = new DtlsConnectorConfig.Builder(localSecureAddress);
+            builder.setPskStore(new SecurityObjectPskStore(securityEnabler));
+            builder.setMaxConnections(coapConfig.getInt(Keys.MAX_ACTIVE_PEERS));
+            builder.setStaleConnectionThreshold(coapConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
+
+            dtlsConfig = builder.build();
+        }
+
+        return new LeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfig);
     }
 }
