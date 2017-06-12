@@ -24,7 +24,7 @@ Specific object for a given range of sensors is described later in the document,
 				<Operations>R</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
-				<Type>Float</Type>
+				<Type>String</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
 				<Description>Measurement Units Definition e.g. “Cel” for Temperature in Celsius.</Description>
