@@ -1,0 +1,43 @@
+<LWM2M>
+    <Object ObjectType="MODefinition">
+        <Name>Connected UE Measurements</Name>
+        <ObjectID>10248</ObjectID>
+        <ObjectURN>urn:oma:lwm2m:x:10248</ObjectURN>
+        <MultipleInstances>Single</MultipleInstances>
+        <Mandatory>Mandatory</Mandatory>
+        <Description1>This LWM2M Object provides a range of measurements of connected UEs and provides an Object link to the Connected UE report.</Description1>
+        <Description2></Description2>
+        <Resources>
+            <Item ID="0">
+                <Name>Number of Connected Users</Name>
+                <Operations>R</Operations>
+                <MultipleInstances>Single</MultipleInstances>
+                <Mandatory>Mandatory</Mandatory>
+                <Type>Integer</Type>
+                <RangeEnumeration>0..255</RangeEnumeration>
+                <Units></Units>
+                <Description>The number of different UEs currently connected to the eNB (i.e. in RRC_CONNECTED state).</Description>
+            </Item>
+            <Item ID="1">
+                <Name>Cumulative Number of Unique Users</Name>
+                <Operations>R</Operations>
+                <MultipleInstances>Single</MultipleInstances>
+                <Mandatory>Mandatory</Mandatory>
+                <Type>Integer</Type>
+                <RangeEnumeration>0..65535</RangeEnumeration>
+                <Units></Units>
+                <Description>The number of different UEs that have connected to the eNB over the immediately preceding period specified by the "Cumulative Measurement Window" field.</Description>
+            </Item>
+            <Item ID="2">
+                <Name>Connected UE Report</Name>
+                <Operations>R</Operations>
+                <MultipleInstances>Multiple</MultipleInstances>
+                <Mandatory>Mandatory</Mandatory>
+                <Type>Objlnk</Type>
+                <RangeEnumeration></RangeEnumeration>
+                <Units></Units>
+                <Description>Provides an Object link to the Connected UE Report which provides a range of information related to the connected UEs.</Description>
+            </Item>
+        </Resources>
+    </Object>
+</LWM2M>
