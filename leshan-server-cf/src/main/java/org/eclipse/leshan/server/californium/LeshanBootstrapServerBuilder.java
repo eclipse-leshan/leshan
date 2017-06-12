@@ -18,6 +18,9 @@ package org.eclipse.leshan.server.californium;
 import java.net.InetSocketAddress;
 
 import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
@@ -25,8 +28,11 @@ import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.BootstrapStore;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapServer;
 import org.eclipse.leshan.server.californium.impl.LeshanBootstrapServer;
+import org.eclipse.leshan.server.californium.impl.LwM2mBootstrapPskStore;
 import org.eclipse.leshan.server.impl.DefaultBootstrapSessionManager;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class helping you to build and configure a Californium based Leshan Bootstrap Lightweight M2M server. Usage: create
@@ -35,6 +41,8 @@ import org.eclipse.leshan.server.security.BootstrapSecurityStore;
  */
 public class LeshanBootstrapServerBuilder {
 
+    private static final Logger LOG = LoggerFactory.getLogger(LeshanBootstrapServerBuilder.class);
+
     private InetSocketAddress localAddress;
     private InetSocketAddress localAddressSecure;
     private BootstrapStore configStore;
@@ -42,6 +50,7 @@ public class LeshanBootstrapServerBuilder {
     private BootstrapSessionManager sessionManager;
     private LwM2mModel model;
     private NetworkConfig coapConfig;
+    private Builder dtlsConfigBuilder;
 
     /**
      * <p>
@@ -132,11 +141,14 @@ public class LeshanBootstrapServerBuilder {
         return this;
     }
 
+    public LeshanBootstrapServerBuilder setDtlsConfig(DtlsConnectorConfig.Builder dtlsConfig) {
+        this.dtlsConfigBuilder = dtlsConfig;
+        return this;
+    }
+
     public LeshanBootstrapServer build() {
         if (localAddress == null)
             localAddress = new InetSocketAddress(LwM2m.DEFAULT_COAP_PORT);
-        if (localAddressSecure == null)
-            localAddressSecure = new InetSocketAddress(LwM2m.DEFAULT_COAP_SECURE_PORT);
 
         // TODO we should have default implementation for BootstrapStore, BootstrapSecurityStore in leshan.server
         // project.
@@ -154,7 +166,44 @@ public class LeshanBootstrapServerBuilder {
             coapConfig.set(NetworkConfig.Keys.MID_TRACKER, "NULL");
         }
 
-        return new LeshanBootstrapServer(localAddress, localAddressSecure, configStore, securityStore, sessionManager,
-                model, coapConfig);
+        // handle dtlsConfig
+        DtlsConnectorConfig dtlsConfig = null;
+        if (dtlsConfigBuilder == null) {
+            dtlsConfigBuilder = new DtlsConnectorConfig.Builder();
+            // TODO remove 2 lines below when we will integrate the californium v2.0.0-M5/RC1
+            dtlsConfigBuilder.setMaxConnections(coapConfig.getInt(Keys.MAX_ACTIVE_PEERS));
+            dtlsConfigBuilder.setStaleConnectionThreshold(coapConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
+        }
+        DtlsConnectorConfig incompleteConfig = dtlsConfigBuilder.getIncompleteConfig();
+
+        // Handle PSK Store
+        if (incompleteConfig.getPskStore() == null) {
+            dtlsConfigBuilder.setPskStore(new LwM2mBootstrapPskStore(securityStore));
+        } else {
+            LOG.warn("PskStore should be automatically set by Leshan. Using a custom implementation is not advised.");
+        }
+
+        // Handle secure address
+        if (incompleteConfig.getAddress() == null) {
+            if (localAddressSecure == null) {
+                localAddressSecure = new InetSocketAddress(0);
+            }
+            dtlsConfigBuilder.setAddress(localAddressSecure);
+        } else if (localAddressSecure != null && !localAddressSecure.equals(incompleteConfig.getAddress())) {
+            throw new IllegalStateException(String.format(
+                    "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for secure address: %s != %s",
+                    localAddressSecure, incompleteConfig.getAddress()));
+        }
+
+        // Handle active peers
+        if (incompleteConfig.getMaxConnections() == null)
+            dtlsConfigBuilder.setMaxConnections(coapConfig.getInt(Keys.MAX_ACTIVE_PEERS));
+        if (incompleteConfig.getStaleConnectionThreshold() == null)
+            dtlsConfigBuilder.setStaleConnectionThreshold(coapConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
+
+        dtlsConfig = dtlsConfigBuilder.build();
+
+        return new LeshanBootstrapServer(localAddress, configStore, securityStore, sessionManager, model, coapConfig,
+                dtlsConfig);
     }
 }
