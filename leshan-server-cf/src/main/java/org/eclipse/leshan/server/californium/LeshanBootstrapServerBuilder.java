@@ -18,6 +18,9 @@ package org.eclipse.leshan.server.californium;
 import java.net.InetSocketAddress;
 
 import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
@@ -25,6 +28,7 @@ import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.BootstrapStore;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapServer;
 import org.eclipse.leshan.server.californium.impl.LeshanBootstrapServer;
+import org.eclipse.leshan.server.californium.impl.LwM2mBootstrapPskStore;
 import org.eclipse.leshan.server.impl.DefaultBootstrapSessionManager;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 
@@ -42,6 +46,7 @@ public class LeshanBootstrapServerBuilder {
     private BootstrapSessionManager sessionManager;
     private LwM2mModel model;
     private NetworkConfig coapConfig;
+    private DtlsConnectorConfig dtlsConfig;
 
     /**
      * <p>
@@ -132,11 +137,14 @@ public class LeshanBootstrapServerBuilder {
         return this;
     }
 
+    public LeshanBootstrapServerBuilder setCoapConfig(DtlsConnectorConfig dtlsConfig) {
+        this.dtlsConfig = dtlsConfig;
+        return this;
+    }
+
     public LeshanBootstrapServer build() {
         if (localAddress == null)
             localAddress = new InetSocketAddress(LwM2m.DEFAULT_COAP_PORT);
-        if (localAddressSecure == null)
-            localAddressSecure = new InetSocketAddress(LwM2m.DEFAULT_COAP_SECURE_PORT);
 
         // TODO we should have default implementation for BootstrapStore, BootstrapSecurityStore in leshan.server
         // project.
@@ -152,7 +160,19 @@ public class LeshanBootstrapServerBuilder {
         if (coapConfig == null)
             coapConfig = new NetworkConfig();
 
-        return new LeshanBootstrapServer(localAddress, localAddressSecure, configStore, securityStore, sessionManager,
-                model, coapConfig);
+        if (dtlsConfig == null) {
+            if (localAddressSecure == null)
+                localAddressSecure = new InetSocketAddress(LwM2m.DEFAULT_COAP_SECURE_PORT);
+
+            Builder builder = new DtlsConnectorConfig.Builder(localAddressSecure);
+            builder.setPskStore(new LwM2mBootstrapPskStore(securityStore));
+            builder.setMaxConnections(coapConfig.getInt(Keys.MAX_ACTIVE_PEERS));
+            builder.setStaleConnectionThreshold(coapConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
+
+            dtlsConfig = builder.build();
+        }
+
+        return new LeshanBootstrapServer(localAddress, configStore, securityStore, sessionManager, model, coapConfig,
+                dtlsConfig);
     }
 }
