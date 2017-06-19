@@ -12,6 +12,9 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - reuse map of
+ *                                                     additionalRegistrationAttributes
+ *                                                     if already unmodifiable.
  *******************************************************************************/
 package org.eclipse.leshan.server.registration;
 
@@ -22,7 +25,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.leshan.Link;
@@ -39,6 +41,8 @@ public class Registration implements Serializable {
     private static final long DEFAULT_LIFETIME_IN_SEC = 86400L;
 
     private static final String DEFAULT_LWM2M_VERSION = "1.0";
+    
+    private static final Map<String,String> EMPTY = Collections.emptyMap();
 
     private final Date registrationDate;
 
@@ -112,10 +116,20 @@ public class Registration implements Serializable {
         this.bindingMode = bindingMode == null ? BindingMode.U : bindingMode;
         this.registrationDate = registrationDate == null ? new Date() : registrationDate;
         this.lastUpdate = lastUpdate == null ? new Date() : lastUpdate;
-        this.additionalRegistrationAttributes = additionalRegistrationAttributes == null
-                ? Collections.unmodifiableMap(new HashMap<String, String>())
-                : Collections.unmodifiableMap(additionalRegistrationAttributes);
-
+        
+        Map<String, String> unmodifiable = EMPTY;
+        if (null != additionalRegistrationAttributes) {
+            try {
+                additionalRegistrationAttributes.putAll(EMPTY);
+                // modifiable, so create a unmodifiable map 
+                unmodifiable = Collections.unmodifiableMap(additionalRegistrationAttributes);
+            }
+            catch(UnsupportedOperationException ex) {
+                // already unmodifiable, so reuse that 
+                unmodifiable = additionalRegistrationAttributes;
+            }
+        }
+        this.additionalRegistrationAttributes = unmodifiable;
     }
 
     public String getId() {
