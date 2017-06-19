@@ -56,7 +56,7 @@ public class Link implements Serializable {
         if (attributes != null) {
             this.attributes = Collections.unmodifiableMap(new HashMap<>(attributes));
         } else {
-            this.attributes = Collections.unmodifiableMap(new HashMap<String, Object>());
+            this.attributes = Collections.emptyMap();
         }
     }
 
