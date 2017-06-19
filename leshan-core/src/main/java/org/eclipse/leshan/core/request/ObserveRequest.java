@@ -16,6 +16,7 @@
 package org.eclipse.leshan.core.request;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -29,10 +30,10 @@ import org.eclipse.leshan.core.response.ObserveResponse;
  */
 public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
 
-    private ContentFormat format;
+    private final ContentFormat format;
 
     /* Additional information relative to this observe request */
-    private Map<String, String> context;
+    private final Map<String, String> context;
 
     /**
      * Creates a request for observing future changes of all instances of a particular object of a client.
@@ -135,7 +136,10 @@ public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
     private ObserveRequest(ContentFormat format, LwM2mPath target, Map<String, String> context) {
         super(target);
         this.format = format;
-        this.context = context;
+        if (context == null || context.isEmpty())
+            this.context = Collections.emptyMap();
+        else
+            this.context = Collections.unmodifiableMap(new HashMap<>(context));
     }
 
     /**
@@ -149,10 +153,7 @@ public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
      * @return an unmodifiable map containing the additional information relative to this observe request.
      */
     public Map<String, String> getContext() {
-        if (context == null) {
-            return Collections.emptyMap();
-        }
-        return Collections.unmodifiableMap(context);
+        return context;
     }
 
     @Override

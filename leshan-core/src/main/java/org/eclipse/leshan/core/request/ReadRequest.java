@@ -26,7 +26,7 @@ import org.eclipse.leshan.core.response.ReadResponse;
  */
 public class ReadRequest extends AbstractDownlinkRequest<ReadResponse> {
 
-    private ContentFormat format;
+    private final ContentFormat format;
 
     /**
      * Creates a request for reading all instances of a particular object from a client.
