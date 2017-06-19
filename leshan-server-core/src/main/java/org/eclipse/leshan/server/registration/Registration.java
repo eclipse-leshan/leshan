@@ -112,9 +112,13 @@ public class Registration implements Serializable {
         this.bindingMode = bindingMode == null ? BindingMode.U : bindingMode;
         this.registrationDate = registrationDate == null ? new Date() : registrationDate;
         this.lastUpdate = lastUpdate == null ? new Date() : lastUpdate;
-        this.additionalRegistrationAttributes = additionalRegistrationAttributes == null
-                ? Collections.unmodifiableMap(new HashMap<String, String>())
-                : Collections.unmodifiableMap(additionalRegistrationAttributes);
+        if (additionalRegistrationAttributes == null || additionalRegistrationAttributes.isEmpty()) {
+            this.additionalRegistrationAttributes = Collections.emptyMap();
+        } else {
+            // We create a new HashMap to have a real immutable map and to avoid "unmodifiableMap" encapsulation.
+            this.additionalRegistrationAttributes = Collections
+                    .unmodifiableMap(new HashMap<>(additionalRegistrationAttributes));
+        }
 
     }
 
