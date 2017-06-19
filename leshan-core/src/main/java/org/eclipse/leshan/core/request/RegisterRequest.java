@@ -68,9 +68,9 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
         this.smsNumber = smsNumber;
         this.objectLinks = objectLinks;
         if (additionalAttributes == null)
-            this.additionalAttributes = Collections.unmodifiableMap(new HashMap<String, String>());
+            this.additionalAttributes = Collections.emptyMap();
         else
-            this.additionalAttributes = Collections.unmodifiableMap(additionalAttributes);
+            this.additionalAttributes = Collections.unmodifiableMap(new HashMap<>(additionalAttributes));
     }
 
     public String getEndpointName() {

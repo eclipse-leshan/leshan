@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -77,7 +78,7 @@ public class InMemorySecurityStore implements EditableSecurityStore {
     public Collection<SecurityInfo> getAll() {
         readLock.lock();
         try {
-            return Collections.unmodifiableCollection(securityByEp.values());
+            return Collections.unmodifiableCollection(new ArrayList<>(securityByEp.values()));
         } finally {
             readLock.unlock();
         }
