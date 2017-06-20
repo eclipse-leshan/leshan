@@ -30,10 +30,13 @@ import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
+import org.eclipse.californium.core.network.InMemoryMessageExchangeStore;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
+import org.eclipse.californium.elements.Connector;
+import org.eclipse.californium.elements.UDPConnector;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
@@ -168,8 +171,13 @@ public class LeshanServer implements LwM2mServer {
                 return new RootResource();
             }
         };
-        nonSecureEndpoint = new CoapEndpoint(localAddress, networkConfig,
-                this.observationService.getObservationStore());
+
+        // exchange store for non-secure endpoint
+        InMemoryMessageExchangeStore nsExchangeStore = new InMemoryMessageExchangeStore(networkConfig);
+        nsExchangeStore.setMessageIdProvider(new SimpleMessageIdProvider(networkConfig));
+
+        nonSecureEndpoint = new CoapEndpoint(createUDPConnector(localAddress, networkConfig), networkConfig,
+                this.observationService.getObservationStore(), nsExchangeStore);
         nonSecureEndpoint.addNotificationListener(observationService);
         observationService.setNonSecureEndpoint(nonSecureEndpoint);
         coapServer.addEndpoint(nonSecureEndpoint);
@@ -197,8 +205,12 @@ public class LeshanServer implements LwM2mServer {
                 builder.setTrustStore(trustedCertificates);
             }
 
+            // exchange store for secure endpoint
+            InMemoryMessageExchangeStore sExchangeStore = new InMemoryMessageExchangeStore(networkConfig);
+            sExchangeStore.setMessageIdProvider(new SimpleMessageIdProvider(networkConfig));
+
             secureEndpoint = new CoapEndpoint(new DTLSConnector(builder.build()), networkConfig,
-                    this.observationService.getObservationStore(), null);
+                    this.observationService.getObservationStore(), sExchangeStore);
             secureEndpoint.addNotificationListener(observationService);
             observationService.setSecureEndpoint(secureEndpoint);
             coapServer.addEndpoint(secureEndpoint);
@@ -215,6 +227,22 @@ public class LeshanServer implements LwM2mServer {
         // create sender
         requestSender = new CaliforniumLwM2mRequestSender(endpoints, this.observationService, modelProvider, encoder,
                 decoder);
+    }
+
+    /**
+     * Copied from {@link CoapEndpoint#createUDPConnector}
+     */
+    private static Connector createUDPConnector(final InetSocketAddress address, final NetworkConfig config) {
+        UDPConnector c = new UDPConnector(address);
+
+        c.setReceiverThreadCount(config.getInt(NetworkConfig.Keys.NETWORK_STAGE_RECEIVER_THREAD_COUNT));
+        c.setSenderThreadCount(config.getInt(NetworkConfig.Keys.NETWORK_STAGE_SENDER_THREAD_COUNT));
+
+        c.setReceiveBufferSize(config.getInt(NetworkConfig.Keys.UDP_CONNECTOR_RECEIVE_BUFFER));
+        c.setSendBufferSize(config.getInt(NetworkConfig.Keys.UDP_CONNECTOR_SEND_BUFFER));
+        c.setReceiverPacketSize(config.getInt(NetworkConfig.Keys.UDP_CONNECTOR_DATAGRAM_SIZE));
+
+        return c;
     }
 
     @Override
