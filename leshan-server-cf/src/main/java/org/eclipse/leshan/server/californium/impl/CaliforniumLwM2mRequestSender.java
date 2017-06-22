@@ -21,7 +21,7 @@ import java.util.SortedMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-import org.eclipse.californium.core.coap.MessageObserver;
+import org.eclipse.californium.core.coap.MessageObserverAdapter;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
@@ -176,7 +176,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         pendingRequests.remove(key, coapRequest);
     }
 
-    private class CleanerMessageObserver implements MessageObserver {
+    private class CleanerMessageObserver extends MessageObserverAdapter {
 
         private final String requestKey;
         private final Request coapRequest;
@@ -207,12 +207,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         }
 
         @Override
-        public void onReject() {
-            removePendingRequest(requestKey, coapRequest);
-        }
-
-        @Override
-        public void onTimeout() {
+        protected void failed() {
             removePendingRequest(requestKey, coapRequest);
         }
 
