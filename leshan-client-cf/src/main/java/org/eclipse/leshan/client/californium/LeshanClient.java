@@ -98,7 +98,7 @@ public class LeshanClient implements LwM2mClient {
             throw new IllegalArgumentException("Security object is mandatory");
         }
 
-        Builder builder = new DtlsConnectorConfig.Builder(localSecureAddress);
+        Builder builder = new DtlsConnectorConfig.Builder().setAddress(localSecureAddress);
         builder.setPskStore(new SecurityObjectPskStore(securityEnabler));
         builder.setMaxConnections(networkConfig.getInt(Keys.MAX_ACTIVE_PEERS));
         builder.setStaleConnectionThreshold(networkConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));

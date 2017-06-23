@@ -185,7 +185,7 @@ public class LeshanServer implements LwM2mServer {
 
         // secure endpoint
         if (securityStore != null) {
-            Builder builder = new DtlsConnectorConfig.Builder(localSecureAddress);
+            Builder builder = new DtlsConnectorConfig.Builder().setAddress(localSecureAddress);
             builder.setPskStore(new LwM2mPskStore(this.securityStore, this.registrationService.getStore()));
 
             // synchronize network configuration and DTLS configuration

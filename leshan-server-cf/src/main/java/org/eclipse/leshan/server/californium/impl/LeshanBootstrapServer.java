@@ -77,7 +77,7 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
         coapServer.addEndpoint(nonSecureEndpoint);
 
         // init DTLS server
-        Builder builder = new DtlsConnectorConfig.Builder(localAddressSecure);
+        Builder builder = new DtlsConnectorConfig.Builder().setAddress(localAddressSecure);
         builder.setPskStore(new LwM2mBootstrapPskStore(this.bsSecurityStore));
         builder.setMaxConnections(networkConfig.getInt(Keys.MAX_ACTIVE_PEERS));
         builder.setStaleConnectionThreshold(networkConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));

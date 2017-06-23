@@ -196,7 +196,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         objects.add(initializer.create(2));
 
         InetSocketAddress clientAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
-        DtlsConnectorConfig.Builder config = new DtlsConnectorConfig.Builder(clientAddress);
+        DtlsConnectorConfig.Builder config = new DtlsConnectorConfig.Builder().setAddress(clientAddress);
         // TODO we should read the config from the security object
         // TODO no way to provide a dynamic config with the current scandium API
         config.setIdentity(clientPrivateKey, clientPublicKey);
@@ -223,7 +223,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         objects.add(initializer.create(2));
 
         InetSocketAddress clientAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
-        DtlsConnectorConfig.Builder config = new DtlsConnectorConfig.Builder(clientAddress);
+        DtlsConnectorConfig.Builder config = new DtlsConnectorConfig.Builder().setAddress(clientAddress);
         // TODO we should read the config from the security object
         config.setIdentity(privatekey, clientX509CertChain, false);
         config.setTrustStore(trustedCertificates);
