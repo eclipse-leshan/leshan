@@ -79,6 +79,11 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.util.Pool;
 
+import java.net.InetAddress;
+
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceInfo;
+
 public class LeshanServerDemo {
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanServerDemo.class);
@@ -358,6 +363,17 @@ public class LeshanServerDemo {
 
         ServletHolder objectSpecServletHolder = new ServletHolder(new ObjectSpecServlet(lwServer.getModelProvider()));
         root.addServlet(objectSpecServletHolder, "/api/objectspecs/*");
+
+        // Create a JmDNS instance
+        JmDNS jmdns = JmDNS.create(InetAddress.getLocalHost());
+
+        // Register a service
+        ServiceInfo httpServiceInfo = ServiceInfo.create("_http._tcp.local.", "leshan", webPort, "");
+        ServiceInfo coapServiceInfo = ServiceInfo.create("_coap._udp.local.", "leshan", localPort, "");
+        ServiceInfo coapSecureServiceInfo = ServiceInfo.create("_coaps._udp.local.", "leshan", secureLocalPort, "");
+        jmdns.registerService(httpServiceInfo);
+        jmdns.registerService(coapServiceInfo);
+        jmdns.registerService(coapSecureServiceInfo);
 
         // Start Jetty & Leshan
         lwServer.start();
