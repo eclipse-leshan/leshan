@@ -152,12 +152,14 @@ public class LeshanServer implements LwM2mServer {
             }
 
             @Override
-            public void unregistered(Registration registration, Collection<Observation> observations, boolean expired) {
+            public void unregistered(Registration registration, Collection<Observation> observations, boolean expired,
+                    Registration newReg) {
                 requestSender.cancelPendingRequests(registration);
             }
 
             @Override
-            public void registered(Registration registration) {
+            public void registered(Registration registration, Registration previousReg,
+                    Collection<Observation> previousObsersations) {
             }
         });
 

@@ -25,28 +25,35 @@ import org.eclipse.leshan.core.observation.Observation;
 public interface RegistrationListener {
 
     /**
-     * Invoked when a new client has been registered on the server.
+     * Invoked when a new registration is created.
      *
-     * @param registration
+     * @param registration the new registration
+     * @param previousReg the previous registration if the client was already registered (same endpoint).
+     *        <code>null</code> for a brand-new registration.
+     * @param previousObsersations all the observations linked to the previous registration which have been passively
+     *        cancelled. <code>null</code> for a brand-new registration.
      */
-    void registered(Registration registration);
+    void registered(Registration reg, Registration previousReg, Collection<Observation> previousObsersations);
 
     /**
-     * Invoked when a client updated its registration.
+     * Invoked when a client updates its registration.
      *
      * @param update the registration properties to update
-     * @param updatedRegistration the registration after the update
-     * @param previousRegistration the registration before the update
+     * @param updatedReg the registration after the update
+     * @param previousReg the registration before the update
      */
-    void updated(RegistrationUpdate update, Registration updatedRegistration, Registration previousRegistration);
+    void updated(RegistrationUpdate update, Registration updatedReg, Registration previousReg);
 
     /**
-     * Invoked when a client has been unregistered from the server.
+     * Invoked when a registration is removed from the server.
      *
-     * @param registration
-     * @param observations all the observations linked to this registration which has been passively cancelled
+     * @param reg the deleted registration
+     * @param observations all the observations linked to the deleted registration which has been passively cancelled
      * @param expired <code>true</code> if the client has been unregistered because of its lifetime expiration and
      *        <code>false</code> otherwise
+     * @param newReg the new registration when the registration is deleted because the client was already registered
+     *        (same endpoint). <code>null</code> if the registration is deleted because of a Deregister request or an
+     *        expiration.
      */
-    void unregistered(Registration registration, Collection<Observation> observations, boolean expired);
+    void unregistered(Registration reg, Collection<Observation> observations, boolean expired, Registration newReg);
 }
