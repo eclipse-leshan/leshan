@@ -55,7 +55,7 @@ public abstract class AsyncRequestObserver<T extends LwM2mResponse> extends Abst
 
     @Override
     public void onTimeout() {
-        errorCallback.onError(new org.eclipse.leshan.core.request.exception.TimeoutException("Request %s timeouted",
+        errorCallback.onError(new org.eclipse.leshan.core.request.exception.TimeoutException("Request %s timed out",
                 coapRequest.getURI()));
     }
 
