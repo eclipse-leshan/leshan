@@ -44,7 +44,8 @@ public class RedisRegistrationEventPublisher implements RegistrationListener {
     }
 
     @Override
-    public void registered(Registration registration) {
+    public void registered(Registration registration, Registration previousReg,
+            Collection<Observation> previousObsersations) {
         String payload = RegistrationSerDes.sSerialize(registration);
         try (Jedis j = pool.getResource()) {
             j.publish(REGISTER_EVENT, payload);
@@ -64,7 +65,8 @@ public class RedisRegistrationEventPublisher implements RegistrationListener {
     }
 
     @Override
-    public void unregistered(Registration registration, Collection<Observation> observations, boolean expired) {
+    public void unregistered(Registration registration, Collection<Observation> observations, boolean expired,
+            Registration newReg) {
         String payload = RegistrationSerDes.sSerialize(registration);
         try (Jedis j = pool.getResource()) {
             j.publish(DEREGISTER_EVENT, payload);

@@ -165,14 +165,16 @@ public class IntegrationTestHelper {
             }
 
             @Override
-            public void unregistered(Registration registration, Collection<Observation> observations, boolean expired) {
+            public void unregistered(Registration registration, Collection<Observation> observations, boolean expired,
+                    Registration newReg) {
                 if (registration.getEndpoint().equals(currentEndpointIdentifier)) {
                     deregisterLatch.countDown();
                 }
             }
 
             @Override
-            public void registered(Registration registration) {
+            public void registered(Registration registration, Registration previousReg,
+                    Collection<Observation> previousObsersations) {
                 if (registration.getEndpoint().equals(currentEndpointIdentifier)) {
                     last_registration = registration;
                     registerLatch.countDown();

@@ -77,9 +77,12 @@ public class RegistrationHandler {
             public void run() {
                 if (deregistration != null) {
                     registrationService.fireUnregistered(deregistration.getRegistration(),
-                            deregistration.getObservations());
+                            deregistration.getObservations(), registration);
+                    registrationService.fireRegistered(registration, deregistration.registration,
+                            deregistration.observations);
+                } else {
+                    registrationService.fireRegistered(registration, null, null);
                 }
-                registrationService.fireRegistered(registration);
             }
         };
 
@@ -148,7 +151,7 @@ public class RegistrationHandler {
                 @Override
                 public void run() {
                     registrationService.fireUnregistered(deregistration.getRegistration(),
-                            deregistration.getObservations());
+                            deregistration.getObservations(), null);
                 };
             };
             return new SendableResponse<>(DeregisterResponse.success(), whenSent);
