@@ -26,19 +26,12 @@ Contributors:
     <name>leshan - server demo</name>
     <description>A LWM2M demonstration server running an embedded Jetty server</description>
 
-    <repositories>
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
-    </repositories>
-
     <dependencies>
 
         <dependency>
-            <groupId>com.github.jmdns</groupId>
+            <groupId>org.jmdns</groupId>
             <artifactId>jmdns</artifactId>
-            <version>jmdns-3.5.1</version>
+            <version>3.5.2</version>
         </dependency>
 
         <dependency>
