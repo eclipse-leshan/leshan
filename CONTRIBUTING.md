@@ -7,17 +7,15 @@ Please read this if you intend to contribute to the project.
 Apologies in advance for the extra work required here - this is necessary to comply with the Eclipse Foundation's
 strict IP policy.
 
-Please also read [this](http://wiki.eclipse.org/Development_Resources/Contributing_via_Git)
-
 In order for any contributions to be accepted you MUST do the following things.
 
-* Sign the [Eclipse Foundation Contributor License Agreement](http://www.eclipse.org/legal/CLA.php).
-To sign the Eclipse CLA you need to:
+* Sign the [Eclipse Contributor Agreement](https://www.eclipse.org/legal/ECA.php).
+To sign the Eclipse ECA you need to:
 
-  * Obtain an Eclipse Foundation userid. Anyone who currently uses Eclipse Bugzilla or Gerrit systems already has one of those.
-If you don’t, you need to [register](https://dev.eclipse.org/site_login/createaccount.php).
+  * Create an eclipse account if you don't already have one. Anyone who currently uses Eclipse Bugzilla or Gerrit systems already has one of those.
+If you don’t, you need to [register](https://accounts.eclipse.org/user/register).
 
-  * Login into the [projects portal](https://projects.eclipse.org/), select “My Account”, and then the “Contributor License Agreement” tab.
+  * [Login to sign ECA](https://accounts.eclipse.org/user/login?destination=user/eca), select the “Contributor License Agreement” tab.
 
 * Add your github username in your Eclipse Foundation account settings. Log in it to Eclipse and go to account settings.
 
@@ -28,6 +26,8 @@ Every commit you make in your patch or pull request MUST be "signed off".
 You do this by adding the `-s` flag when you make the commit(s), e.g.
 
     git commit -s -m "Shave the yak some more"
+    
+For more details, you can read the [eclipse contribution guide](https://wiki.eclipse.org/Development_Resources/Contributing_via_Git).
 
 ## Making your changes
 
