@@ -368,17 +368,21 @@ public class LeshanServerDemo {
         ServletHolder objectSpecServletHolder = new ServletHolder(new ObjectSpecServlet(lwServer.getModelProvider()));
         root.addServlet(objectSpecServletHolder, "/api/objectspecs/*");
 
-        // Create a JmDNS instance
-        JmDNS jmdns = JmDNS.create(InetAddress.getLocalHost());
-
         // Register a service to DNS-SD
         if (publishDNSSdServices) {
+
+            // Create a JmDNS instance
+            JmDNS jmdns = JmDNS.create(InetAddress.getLocalHost());
+            
+            // Publish Leshan HTTP Service
             ServiceInfo httpServiceInfo = ServiceInfo.create("_http._tcp.local.", "leshan", webPort, "");
             jmdns.registerService(httpServiceInfo);
 
+            // Publish Leshan CoAP Service
             ServiceInfo coapServiceInfo = ServiceInfo.create("_coap._udp.local.", "leshan", localPort, "");
             jmdns.registerService(coapServiceInfo);
 
+            // Publish Leshan Secure CoAP Service
             ServiceInfo coapSecureServiceInfo = ServiceInfo.create("_coaps._udp.local.", "leshan", secureLocalPort, "");
             jmdns.registerService(coapSecureServiceInfo);
         }
