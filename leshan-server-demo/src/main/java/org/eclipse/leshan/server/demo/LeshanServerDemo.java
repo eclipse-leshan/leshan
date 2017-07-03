@@ -222,7 +222,7 @@ public class LeshanServerDemo {
 
     public static void createAndStartServer(int webPort, String localAddress, int localPort, String secureLocalAddress,
             int secureLocalPort, String modelsFolderPath, String redisUrl, String keyStorePath, String keyStoreType,
-            String keyStorePass, String keyStoreAlias, String keyStoreAliasPassn, Boolean publishDNSSdServices) throws Exception {
+            String keyStorePass, String keyStoreAlias, String keyStoreAliasPass, Boolean publishDNSSdServices) throws Exception {
         // Prepare LWM2M server
         LeshanServerBuilder builder = new LeshanServerBuilder();
         builder.setLocalAddress(localAddress, localPort);
