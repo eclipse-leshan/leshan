@@ -141,6 +141,7 @@ public class LeshanServerDemo {
         options.addOption("m", "modelsfolder", true, "A folder which contains object models in OMA DDF(.xml) format.");
         options.addOption("r", "redis", true,
                 "Set the location of the Redis database for running in cluster mode. The URL is in the format of: 'redis://:password@hostname:port/db_number'\nExample without DB and password: 'redis://localhost:6379'\nDefault: none, no Redis connection.");
+        options.addOption("mdns", "publishDNSSdServices", false, "Publish leshan's services to DNS Service discovery");
         HelpFormatter formatter = new HelpFormatter();
         formatter.setOptionComparator(null);
 
@@ -203,10 +204,13 @@ public class LeshanServerDemo {
         String keyStoreAlias = cl.getOptionValue("ksa");
         String keyStoreAliasPass = cl.getOptionValue("ksap");
 
+        // Get mDNS publish switch
+        Boolean publishDNSSdServices  = cl.hasOption("mdns");
+
         try {
             createAndStartServer(webPort, localAddress, localPort, secureLocalAddress, secureLocalPort,
                     modelsFolderPath, redisUrl, keyStorePath, keyStoreType, keyStorePass, keyStoreAlias,
-                    keyStoreAliasPass);
+                    keyStoreAliasPass, publishDNSSdServices);
         } catch (BindException e) {
             System.err.println(
                     String.format("Web port %s is already used, you could change it using 'webport' option.", webPort));
@@ -218,7 +222,7 @@ public class LeshanServerDemo {
 
     public static void createAndStartServer(int webPort, String localAddress, int localPort, String secureLocalAddress,
             int secureLocalPort, String modelsFolderPath, String redisUrl, String keyStorePath, String keyStoreType,
-            String keyStorePass, String keyStoreAlias, String keyStoreAliasPass) throws Exception {
+            String keyStorePass, String keyStoreAlias, String keyStoreAliasPassn, Boolean publishDNSSdServices) throws Exception {
         // Prepare LWM2M server
         LeshanServerBuilder builder = new LeshanServerBuilder();
         builder.setLocalAddress(localAddress, localPort);
@@ -367,13 +371,17 @@ public class LeshanServerDemo {
         // Create a JmDNS instance
         JmDNS jmdns = JmDNS.create(InetAddress.getLocalHost());
 
-        // Register a service
-        ServiceInfo httpServiceInfo = ServiceInfo.create("_http._tcp.local.", "leshan", webPort, "");
-        ServiceInfo coapServiceInfo = ServiceInfo.create("_coap._udp.local.", "leshan", localPort, "");
-        ServiceInfo coapSecureServiceInfo = ServiceInfo.create("_coaps._udp.local.", "leshan", secureLocalPort, "");
-        jmdns.registerService(httpServiceInfo);
-        jmdns.registerService(coapServiceInfo);
-        jmdns.registerService(coapSecureServiceInfo);
+        // Register a service to DNS-SD
+        if (publishDNSSdServices) {
+            ServiceInfo httpServiceInfo = ServiceInfo.create("_http._tcp.local.", "leshan", webPort, "");
+            jmdns.registerService(httpServiceInfo);
+
+            ServiceInfo coapServiceInfo = ServiceInfo.create("_coap._udp.local.", "leshan", localPort, "");
+            jmdns.registerService(coapServiceInfo);
+
+            ServiceInfo coapSecureServiceInfo = ServiceInfo.create("_coaps._udp.local.", "leshan", secureLocalPort, "");
+            jmdns.registerService(coapSecureServiceInfo);
+        }
 
         // Start Jetty & Leshan
         lwServer.start();
