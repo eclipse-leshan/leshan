@@ -122,6 +122,7 @@ public class LeshanClientBuilder {
         }
         if (networkConfig == null) {
             networkConfig = new NetworkConfig();
+            networkConfig.set(NetworkConfig.Keys.MID_TRACKER, "NULL");
         }
 
         return new LeshanClient(endpoint, localAddress, localSecureAddress, objectEnablers, networkConfig);
