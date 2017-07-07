@@ -269,6 +269,7 @@ public class LeshanServerBuilder {
             decoder = new DefaultLwM2mNodeDecoder();
         if (networkConfig == null) {
             networkConfig = new NetworkConfig();
+            networkConfig.set(NetworkConfig.Keys.MID_TRACKER, "NULL");
         }
 
         return new LeshanServer(localAddress, localSecureAddress, registrationStore, securityStore, authorizer,
