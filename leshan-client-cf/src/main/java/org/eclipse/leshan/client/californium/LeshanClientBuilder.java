@@ -123,6 +123,16 @@ public class LeshanClientBuilder {
         return this;
     }
 
+    public static NetworkConfig createDefaultNetworkConfig() {
+        NetworkConfig networkConfig = new NetworkConfig();
+        networkConfig.set(Keys.MID_TRACKER, "NULL");
+        networkConfig.set(Keys.MAX_ACTIVE_PEERS, 10);
+        networkConfig.set(Keys.MAX_MESSAGE_SIZE, 4096);
+        networkConfig.set(Keys.PROTOCOL_STAGE_THREAD_COUNT, 1);
+
+        return networkConfig;
+    }
+
     /**
      * Creates an instance of {@link LeshanClient} based on the properties set on this builder.
      */
@@ -139,8 +149,7 @@ public class LeshanClientBuilder {
             objectEnablers = initializer.createMandatory();
         }
         if (coapConfig == null) {
-            coapConfig = new NetworkConfig();
-            coapConfig.set(NetworkConfig.Keys.MID_TRACKER, "NULL");
+            coapConfig = createDefaultNetworkConfig();
         }
 
         // handle dtlsConfig
