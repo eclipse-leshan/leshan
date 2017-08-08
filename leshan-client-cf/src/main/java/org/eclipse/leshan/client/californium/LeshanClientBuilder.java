@@ -51,6 +51,10 @@ public class LeshanClientBuilder {
 
     private Builder dtlsConfigBuilder;
 
+    private boolean noSecureEndpoint;
+
+    private boolean noUnsecureEndpoint;
+
     /**
      * Creates a new instance for setting the configuration options for a {@link LeshanClient} instance.
      * 
@@ -120,6 +124,16 @@ public class LeshanClientBuilder {
      */
     public LeshanClientBuilder setDtlsConfig(DtlsConnectorConfig.Builder config) {
         this.dtlsConfigBuilder = config;
+        return this;
+    }
+
+    public LeshanClientBuilder noUnsecureEndpoint() {
+        this.noUnsecureEndpoint = true;
+        return this;
+    }
+
+    public LeshanClientBuilder noSecureEndpoint() {
+        this.noSecureEndpoint = true;
         return this;
     }
 
@@ -193,6 +207,7 @@ public class LeshanClientBuilder {
 
         dtlsConfig = dtlsConfigBuilder.build();
 
-        return new LeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfig);
+        return new LeshanClient(endpoint, noUnsecureEndpoint ? null : localAddress, objectEnablers, coapConfig,
+                noSecureEndpoint ? null : dtlsConfig);
     }
 }
