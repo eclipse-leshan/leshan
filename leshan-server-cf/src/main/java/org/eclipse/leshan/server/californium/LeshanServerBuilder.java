@@ -22,10 +22,13 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 
+import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
+import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.leshan.LwM2m;
+import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
@@ -75,6 +78,8 @@ public class LeshanServerBuilder {
 
     private NetworkConfig coapConfig;
     private DtlsConnectorConfig.Builder dtlsConfigBuilder;
+
+    private EndpointFactory endpointFactory;
 
     /**
      * <p>
@@ -269,6 +274,15 @@ public class LeshanServerBuilder {
     }
 
     /**
+     * Used to create custom CoAP endpoint, this is only for advanced users. <br>
+     * DTLSConnector is expected for secured endpoint.
+     */
+    public LeshanServerBuilder setEndpointFactory(EndpointFactory endpointFactory) {
+        this.endpointFactory = endpointFactory;
+        return this;
+    }
+
+    /**
      * The default Californium/CoAP {@link NetworkConfig} used by the builder.
      */
     public static NetworkConfig createDefaultNetworkConfig() {
@@ -376,7 +390,18 @@ public class LeshanServerBuilder {
             dtlsConfig = dtlsConfigBuilder.build();
         }
 
-        return new LeshanServer(localAddress, registrationStore, securityStore, authorizer, modelProvider, encoder,
-                decoder, coapConfig, dtlsConfig);
+        // create endpoints
+        CoapEndpoint unsecuredEndpoint;
+        CoapEndpoint securedEndpoint;
+        if (endpointFactory != null) {
+            unsecuredEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, registrationStore);
+            securedEndpoint = endpointFactory.createSecuredEndpoint(dtlsConfig, coapConfig, registrationStore);
+        } else {
+            unsecuredEndpoint = new CoapEndpoint(localAddress, coapConfig, registrationStore);
+            securedEndpoint = new CoapEndpoint(new DTLSConnector(dtlsConfig), coapConfig, registrationStore, null);
+        }
+
+        return new LeshanServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer,
+                modelProvider, encoder, decoder, coapConfig);
     }
 }

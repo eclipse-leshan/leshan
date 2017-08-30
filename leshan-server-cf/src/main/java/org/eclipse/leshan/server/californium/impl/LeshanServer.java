@@ -29,8 +29,6 @@ import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
-import org.eclipse.californium.scandium.DTLSConnector;
-import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.observation.Observation;
@@ -98,7 +96,8 @@ public class LeshanServer implements LwM2mServer {
     /**
      * Initialize a server which will bind to the specified address and port.
      *
-     * @param localAddress the address to bind the CoAP server.
+     * @param unsecuredEndpoint the unsecure coap endpoint.
+     * @param securedEndpoint the secure coap endpoint.
      * @param registrationStore the {@link Registration} store.
      * @param securityStore the {@link SecurityInfo} store.
      * @param authorizer define which devices is allow to register on this server.
@@ -106,13 +105,13 @@ public class LeshanServer implements LwM2mServer {
      * @param decoder decoder used to decode response payload.
      * @param encoder encode used to encode request payload.
      * @param coapConfig the CoAP {@link NetworkConfig}.
-     * @param dtlsConfig the DTLS configuration : {@link DtlsConnectorConfig}.
      */
-    public LeshanServer(InetSocketAddress localAddress, CaliforniumRegistrationStore registrationStore,
-            SecurityStore securityStore, Authorizer authorizer, LwM2mModelProvider modelProvider,
-            LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder, NetworkConfig coapConfig,
-            DtlsConnectorConfig dtlsConfig) {
-        Validate.notNull(localAddress, "IP address cannot be null");
+    public LeshanServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
+            CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
+            LwM2mModelProvider modelProvider, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
+            NetworkConfig coapConfig) {
+        Validate.notNull(unsecuredEndpoint, "endpoint cannot be null");
+        Validate.notNull(securedEndpoint, "endpoint cannot be null");
         Validate.notNull(registrationStore, "registration store cannot be null");
         Validate.notNull(authorizer, "authorizer cannot be null");
         Validate.notNull(modelProvider, "modelProvider cannot be null");
@@ -157,7 +156,7 @@ public class LeshanServer implements LwM2mServer {
                 return new RootResource();
             }
         };
-        nonSecureEndpoint = new CoapEndpoint(localAddress, coapConfig, this.observationService.getObservationStore());
+        nonSecureEndpoint = unsecuredEndpoint;
         nonSecureEndpoint.addNotificationListener(observationService);
         observationService.setNonSecureEndpoint(nonSecureEndpoint);
         coapServer.addEndpoint(nonSecureEndpoint);
@@ -166,8 +165,7 @@ public class LeshanServer implements LwM2mServer {
         // secure endpoint
         if (securityStore != null) {
             // exchange store for secure endpoint
-            secureEndpoint = new CoapEndpoint(new DTLSConnector(dtlsConfig), coapConfig,
-                    this.observationService.getObservationStore(), null);
+            secureEndpoint = securedEndpoint;
             secureEndpoint.addNotificationListener(observationService);
             observationService.setSecureEndpoint(secureEndpoint);
             coapServer.addEndpoint(secureEndpoint);
