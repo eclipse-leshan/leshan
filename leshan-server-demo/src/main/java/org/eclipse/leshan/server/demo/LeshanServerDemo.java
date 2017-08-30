@@ -233,7 +233,17 @@ public class LeshanServerDemo {
         builder.setEncoder(new DefaultLwM2mNodeEncoder());
         LwM2mNodeDecoder decoder = new DefaultLwM2mNodeDecoder();
         builder.setDecoder(decoder);
-        builder.setCoapConfig(NetworkConfig.getStandard());
+
+        // Create CoAP Config
+        NetworkConfig coapConfig;
+        File configFile = new File(NetworkConfig.DEFAULT_FILE_NAME);
+        if (configFile.isFile()) {
+            coapConfig = new NetworkConfig();
+            coapConfig.load(configFile);
+        } else {
+            coapConfig = LeshanServerBuilder.createDefaultNetworkConfig();
+            coapConfig.store(configFile);
+        }
 
         // connect to redis if needed
         Pool<Jedis> jedis = null;
