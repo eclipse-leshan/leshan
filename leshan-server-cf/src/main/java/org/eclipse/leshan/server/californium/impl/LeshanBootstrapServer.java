@@ -52,7 +52,6 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
         Validate.notNull(unsecuredEndpoint, "endpoint cannot be null");
         Validate.notNull(securedEndpoint, "endpoint cannot be null");
         Validate.notNull(bsStore, "bootstrap store must not be null");
-        Validate.notNull(bsSecurityStore, "security store must not be null");
         Validate.notNull(bsSessionManager, "session manager must not be null");
         Validate.notNull(model, "model must not be null");
         Validate.notNull(coapConfig, "coapConfig must not be null");
@@ -63,11 +62,13 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
         // init CoAP server
         coapServer = new CoapServer(coapConfig);
         nonSecureEndpoint = unsecuredEndpoint;
-        coapServer.addEndpoint(nonSecureEndpoint);
+        if (nonSecureEndpoint != null)
+            coapServer.addEndpoint(nonSecureEndpoint);
 
         // init DTLS server
         secureEndpoint = securedEndpoint;
-        coapServer.addEndpoint(secureEndpoint);
+        if (securedEndpoint != null)
+            coapServer.addEndpoint(secureEndpoint);
 
         // create request sender
         LwM2mBootstrapRequestSender requestSender = new CaliforniumLwM2mBootstrapRequestSender(secureEndpoint,
@@ -94,7 +95,12 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
     @Override
     public void start() {
         coapServer.start();
-        LOG.info("Bootstrap server started at coap://{}, coaps://{}.", getNonSecureAddress(), getSecureAddress());
+
+        if (LOG.isInfoEnabled()) {
+            LOG.info("Bootstrap server started at {} {}",
+                    getNonSecureAddress() == null ? "" : "coap://" + getNonSecureAddress(),
+                    getSecureAddress() == null ? "" : "coaps://" + getSecureAddress());
+        }
     }
 
     /**
@@ -115,10 +121,18 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
     }
 
     public InetSocketAddress getNonSecureAddress() {
-        return nonSecureEndpoint.getAddress();
+        if (nonSecureEndpoint != null) {
+            return nonSecureEndpoint.getAddress();
+        } else {
+            return null;
+        }
     }
 
     public InetSocketAddress getSecureAddress() {
-        return secureEndpoint.getAddress();
+        if (secureEndpoint != null) {
+            return secureEndpoint.getAddress();
+        } else {
+            return null;
+        }
     }
 }
