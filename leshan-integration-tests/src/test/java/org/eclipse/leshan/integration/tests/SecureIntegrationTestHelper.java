@@ -166,8 +166,8 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         ObjectsInitializer initializer = new ObjectsInitializer();
         initializer.setInstancesForObject(LwM2mId.SECURITY,
                 Security.psk(
-                        "coaps://" + server.getSecureAddress().getHostString() + ":"
-                                + server.getSecureAddress().getPort(),
+                        "coaps://" + server.getSecuredAddress().getHostString() + ":"
+                                + server.getSecuredAddress().getPort(),
                         12345, GOOD_PSK_ID.getBytes(StandardCharsets.UTF_8), GOOD_PSK_KEY));
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.U, false));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345", "U"));
@@ -186,8 +186,8 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         ObjectsInitializer initializer = new ObjectsInitializer();
         initializer.setInstancesForObject(LwM2mId.SECURITY,
                 Security.rpk(
-                        "coaps://" + server.getSecureAddress().getHostString() + ":"
-                                + server.getSecureAddress().getPort(),
+                        "coaps://" + server.getSecuredAddress().getHostString() + ":"
+                                + server.getSecuredAddress().getPort(),
                         12345, clientPublicKey.getEncoded(), clientPrivateKey.getEncoded(),
                         serverPublicKey.getEncoded()));
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.U, false));
@@ -215,7 +215,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         ObjectsInitializer initializer = new ObjectsInitializer();
         // TODO security instance with certificate info
         initializer.setInstancesForObject(LwM2mId.SECURITY, Security.noSec(
-                "coaps://" + server.getSecureAddress().getHostString() + ":" + server.getSecureAddress().getPort(),
+                "coaps://" + server.getSecuredAddress().getHostString() + ":" + server.getSecuredAddress().getPort(),
                 12345));
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.U, false));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345", "U"));

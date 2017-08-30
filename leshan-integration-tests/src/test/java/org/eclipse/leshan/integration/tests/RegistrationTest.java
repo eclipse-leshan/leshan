@@ -273,7 +273,7 @@ public class RegistrationTest {
                 objectLinks, additionalAttributes);
 
         // Send request
-        RegisterResponse resp = sender.send(helper.server.getNonSecureAddress(), false, registerRequest, 5000l);
+        RegisterResponse resp = sender.send(helper.server.getUnsecuredAddress(), false, registerRequest, 5000l);
         helper.waitForRegistration(1);
 
         // Check we are registered with the expected attributes
@@ -283,7 +283,7 @@ public class RegistrationTest {
         assertArrayEquals(Link.parse("</>;rt=\"oma.lwm2m\",</1/0>,</2>,</3/0>".getBytes()),
                 helper.getCurrentRegistration().getObjectLinks());
 
-        sender.send(helper.server.getNonSecureAddress(), false, new DeregisterRequest(resp.getRegistrationID()), 5000l);
+        sender.send(helper.server.getUnsecuredAddress(), false, new DeregisterRequest(resp.getRegistrationID()), 5000l);
         lclient.getCoapServer().stop();
     }
 
@@ -294,8 +294,8 @@ public class RegistrationTest {
 
         // create a register request without the list of supported object
         Request coapRequest = new Request(Code.POST);
-        coapRequest.setDestination(helper.server.getNonSecureAddress().getAddress());
-        coapRequest.setDestinationPort(helper.server.getNonSecureAddress().getPort());
+        coapRequest.setDestination(helper.server.getUnsecuredAddress().getAddress());
+        coapRequest.setDestinationPort(helper.server.getUnsecuredAddress().getPort());
         coapRequest.getOptions().setContentFormat(ContentFormat.LINK.getCode());
         coapRequest.getOptions().addUriPath("rd");
         coapRequest.getOptions().addUriQuery("ep=" + helper.currentEndpointIdentifier);

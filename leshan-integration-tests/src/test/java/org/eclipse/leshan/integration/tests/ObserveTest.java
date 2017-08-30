@@ -348,7 +348,7 @@ public class ObserveTest {
 
             // send it
             clientSocket.send(new DatagramPacket(data.bytes, data.bytes.length,
-                    helper.server.getNonSecureAddress().getAddress(), helper.server.getNonSecureAddress().getPort()));
+                    helper.server.getUnsecuredAddress().getAddress(), helper.server.getUnsecuredAddress().getPort()));
         } catch (IOException e) {
             throw new AssertionError("Error while timestamped notification", e);
         }
