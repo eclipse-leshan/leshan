@@ -87,9 +87,9 @@ public class LeshanServer implements LwM2mServer {
 
     private final LwM2mModelProvider modelProvider;
 
-    private final CoapEndpoint nonSecureEndpoint;
+    private final CoapEndpoint unsecuredEndpoint;
 
-    private final CoapEndpoint secureEndpoint;
+    private final CoapEndpoint securedEndpoint;
 
     private final CaliforniumRegistrationStore registrationStore;
 
@@ -155,21 +155,21 @@ public class LeshanServer implements LwM2mServer {
         };
 
         // default endpoint
-        nonSecureEndpoint = unsecuredEndpoint;
-        if (nonSecureEndpoint != null) {
-            nonSecureEndpoint.addNotificationListener(observationService);
-            observationService.setNonSecureEndpoint(nonSecureEndpoint);
-            coapServer.addEndpoint(nonSecureEndpoint);
-            endpoints.add(nonSecureEndpoint);
+        this.unsecuredEndpoint = unsecuredEndpoint;
+        if (unsecuredEndpoint != null) {
+            unsecuredEndpoint.addNotificationListener(observationService);
+            observationService.setNonSecureEndpoint(unsecuredEndpoint);
+            coapServer.addEndpoint(unsecuredEndpoint);
+            endpoints.add(unsecuredEndpoint);
         }
 
         // secure endpoint
-        secureEndpoint = securedEndpoint;
-        if (secureEndpoint != null) {
-            secureEndpoint.addNotificationListener(observationService);
-            observationService.setSecureEndpoint(secureEndpoint);
-            coapServer.addEndpoint(secureEndpoint);
-            endpoints.add(secureEndpoint);
+        this.securedEndpoint = securedEndpoint;
+        if (securedEndpoint != null) {
+            securedEndpoint.addNotificationListener(observationService);
+            observationService.setSecureEndpoint(securedEndpoint);
+            coapServer.addEndpoint(securedEndpoint);
+            endpoints.add(securedEndpoint);
         }
 
         // define /rd resource
@@ -198,10 +198,9 @@ public class LeshanServer implements LwM2mServer {
 
         if (LOG.isInfoEnabled()) {
             LOG.info("LWM2M server started at {} {}",
-                    getNonSecureAddress() == null ? "" : "coap://" + getNonSecureAddress(),
-                    getSecureAddress() == null ? "" : "coaps://" + getSecureAddress());
+                    getUnsecuredAddress() == null ? "" : "coap://" + getUnsecuredAddress(),
+                    getSecuredAddress() == null ? "" : "coaps://" + getSecuredAddress());
         }
-
     }
 
     @Override
@@ -286,17 +285,17 @@ public class LeshanServer implements LwM2mServer {
         return coapServer;
     }
 
-    public InetSocketAddress getNonSecureAddress() {
-        if (nonSecureEndpoint != null) {
-            return nonSecureEndpoint.getAddress();
+    public InetSocketAddress getUnsecuredAddress() {
+        if (unsecuredEndpoint != null) {
+            return unsecuredEndpoint.getAddress();
         } else {
             return null;
         }
     }
 
-    public InetSocketAddress getSecureAddress() {
-        if (secureEndpoint != null) {
-            return secureEndpoint.getAddress();
+    public InetSocketAddress getSecuredAddress() {
+        if (securedEndpoint != null) {
+            return securedEndpoint.getAddress();
         } else {
             return null;
         }

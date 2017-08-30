@@ -71,8 +71,8 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
 
                 // security for DM server
                 ServerSecurity dmSecurity = new ServerSecurity();
-                dmSecurity.uri = "coap://" + server.getNonSecureAddress().getHostString() + ":"
-                        + server.getNonSecureAddress().getPort();
+                dmSecurity.uri = "coap://" + server.getUnsecuredAddress().getHostString() + ":"
+                        + server.getUnsecuredAddress().getPort();
                 dmSecurity.serverId = 2222;
                 dmSecurity.securityMode = SecurityMode.NO_SEC;
                 bsConfig.security.put(1, dmSecurity);
