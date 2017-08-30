@@ -110,8 +110,7 @@ public class LeshanServer implements LwM2mServer {
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
             LwM2mModelProvider modelProvider, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
             NetworkConfig coapConfig) {
-        Validate.notNull(unsecuredEndpoint, "endpoint cannot be null");
-        Validate.notNull(securedEndpoint, "endpoint cannot be null");
+
         Validate.notNull(registrationStore, "registration store cannot be null");
         Validate.notNull(authorizer, "authorizer cannot be null");
         Validate.notNull(modelProvider, "modelProvider cannot be null");
@@ -148,30 +147,29 @@ public class LeshanServer implements LwM2mServer {
 
         // define a set of endpoints
         Set<Endpoint> endpoints = new HashSet<>();
-
-        // default endpoint
         coapServer = new CoapServer(coapConfig) {
             @Override
             protected Resource createRoot() {
                 return new RootResource();
             }
         };
+
+        // default endpoint
         nonSecureEndpoint = unsecuredEndpoint;
-        nonSecureEndpoint.addNotificationListener(observationService);
-        observationService.setNonSecureEndpoint(nonSecureEndpoint);
-        coapServer.addEndpoint(nonSecureEndpoint);
-        endpoints.add(nonSecureEndpoint);
+        if (nonSecureEndpoint != null) {
+            nonSecureEndpoint.addNotificationListener(observationService);
+            observationService.setNonSecureEndpoint(nonSecureEndpoint);
+            coapServer.addEndpoint(nonSecureEndpoint);
+            endpoints.add(nonSecureEndpoint);
+        }
 
         // secure endpoint
-        if (securityStore != null) {
-            // exchange store for secure endpoint
-            secureEndpoint = securedEndpoint;
+        secureEndpoint = securedEndpoint;
+        if (secureEndpoint != null) {
             secureEndpoint.addNotificationListener(observationService);
             observationService.setSecureEndpoint(secureEndpoint);
             coapServer.addEndpoint(secureEndpoint);
             endpoints.add(secureEndpoint);
-        } else {
-            secureEndpoint = null;
         }
 
         // define /rd resource
@@ -198,7 +196,12 @@ public class LeshanServer implements LwM2mServer {
         // Start server
         coapServer.start();
 
-        LOG.info("LWM2M server started at coap://{}, coaps://{}.", getNonSecureAddress(), getSecureAddress());
+        if (LOG.isInfoEnabled()) {
+            LOG.info("LWM2M server started at {} {}",
+                    getNonSecureAddress() == null ? "" : "coap://" + getNonSecureAddress(),
+                    getSecureAddress() == null ? "" : "coaps://" + getSecureAddress());
+        }
+
     }
 
     @Override
@@ -284,7 +287,11 @@ public class LeshanServer implements LwM2mServer {
     }
 
     public InetSocketAddress getNonSecureAddress() {
-        return nonSecureEndpoint.getAddress();
+        if (nonSecureEndpoint != null) {
+            return nonSecureEndpoint.getAddress();
+        } else {
+            return null;
+        }
     }
 
     public InetSocketAddress getSecureAddress() {
