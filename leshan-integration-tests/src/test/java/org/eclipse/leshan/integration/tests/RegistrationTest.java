@@ -260,8 +260,8 @@ public class RegistrationTest {
         // HACK to be able to send a Registration request with additional attributes
         LeshanClient lclient = (LeshanClient) helper.client;
         lclient.getCoapServer().start();
-        Endpoint secureEndpoint = lclient.getCoapServer().getEndpoint(lclient.getSecureAddress());
-        Endpoint nonSecureEndpoint = lclient.getCoapServer().getEndpoint(lclient.getNonSecureAddress());
+        Endpoint secureEndpoint = lclient.getCoapServer().getEndpoint(lclient.getSecuredAddress());
+        Endpoint nonSecureEndpoint = lclient.getCoapServer().getEndpoint(lclient.getUnsecuredAddress());
         CaliforniumLwM2mRequestSender sender = new CaliforniumLwM2mRequestSender(secureEndpoint, nonSecureEndpoint);
 
         // Create Request with additional attributes
