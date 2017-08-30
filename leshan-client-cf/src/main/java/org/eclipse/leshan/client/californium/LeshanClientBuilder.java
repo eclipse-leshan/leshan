@@ -48,12 +48,10 @@ public class LeshanClientBuilder {
     private List<? extends LwM2mObjectEnabler> objectEnablers;
 
     private NetworkConfig coapConfig;
-
     private Builder dtlsConfigBuilder;
 
-    private boolean noSecureEndpoint;
-
-    private boolean noUnsecureEndpoint;
+    private boolean noSecuredEndpoint;
+    private boolean noUnsecuredEndpoint;
 
     /**
      * Creates a new instance for setting the configuration options for a {@link LeshanClient} instance.
@@ -130,16 +128,16 @@ public class LeshanClientBuilder {
     /**
      * deactivate unsecured CoAP endpoint
      */
-    public LeshanClientBuilder disableUnsecureEndpoint() {
-        this.noUnsecureEndpoint = true;
+    public LeshanClientBuilder disableUnsecuredEndpoint() {
+        this.noUnsecuredEndpoint = true;
         return this;
     }
 
     /**
      * deactivate secured CoAP endpoint (DTLS)
      */
-    public LeshanClientBuilder disableSecureEndpoint() {
-        this.noSecureEndpoint = true;
+    public LeshanClientBuilder disableSecuredEndpoint() {
+        this.noSecuredEndpoint = true;
         return this;
     }
 
@@ -212,7 +210,7 @@ public class LeshanClientBuilder {
 
         dtlsConfig = dtlsConfigBuilder.build();
 
-        return new LeshanClient(endpoint, noUnsecureEndpoint ? null : localAddress, objectEnablers, coapConfig,
-                noSecureEndpoint ? null : dtlsConfig);
+        return new LeshanClient(endpoint, noUnsecuredEndpoint ? null : localAddress, objectEnablers, coapConfig,
+                noSecuredEndpoint ? null : dtlsConfig);
     }
 }

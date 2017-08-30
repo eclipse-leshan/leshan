@@ -62,8 +62,8 @@ public class LeshanClient implements LwM2mClient {
     private final BootstrapHandler bootstrapHandler;
     private final LwM2mClientObserverDispatcher observers;
 
-    private CoapEndpoint secureEndpoint;
-    private CoapEndpoint nonSecureEndpoint;
+    private CoapEndpoint securedEndpoint;
+    private CoapEndpoint unsecuredEndpoint;
 
     public LeshanClient(String endpoint, InetSocketAddress localAddress,
             List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig,
@@ -88,13 +88,13 @@ public class LeshanClient implements LwM2mClient {
 
         // Create CoAP non secure endpoint
         if (localAddress != null) {
-            nonSecureEndpoint = new CoapEndpoint(localAddress, coapConfig);
+            unsecuredEndpoint = new CoapEndpoint(localAddress, coapConfig);
         }
 
         // Create CoAP secure endpoint
         if (dtlsConfig != null) {
             final DTLSConnector dtlsConnector = new DTLSConnector(dtlsConfig);
-            secureEndpoint = new CoapEndpoint(dtlsConnector, coapConfig);
+            securedEndpoint = new CoapEndpoint(dtlsConnector, coapConfig);
             observers.addObserver(new LwM2mClientObserverAdapter() {
                 @Override
                 public void onBootstrapSuccess(ServerInfo bsserver) {
@@ -119,7 +119,7 @@ public class LeshanClient implements LwM2mClient {
         }
 
         // Create sender
-        requestSender = new CaliforniumLwM2mRequestSender(secureEndpoint, nonSecureEndpoint);
+        requestSender = new CaliforniumLwM2mRequestSender(securedEndpoint, unsecuredEndpoint);
 
         // Create registration engine
         bootstrapHandler = new BootstrapHandler(this.objectEnablers);
@@ -133,10 +133,10 @@ public class LeshanClient implements LwM2mClient {
                 return new RootResource(bootstrapHandler);
             }
         };
-        if (secureEndpoint != null)
-            clientSideServer.addEndpoint(secureEndpoint);
-        if (nonSecureEndpoint != null)
-            clientSideServer.addEndpoint(nonSecureEndpoint);
+        if (securedEndpoint != null)
+            clientSideServer.addEndpoint(securedEndpoint);
+        if (unsecuredEndpoint != null)
+            clientSideServer.addEndpoint(unsecuredEndpoint);
 
         // Create CoAP resources for each lwm2m Objects.
         for (LwM2mObjectEnabler enabler : objectEnablers) {
@@ -157,8 +157,8 @@ public class LeshanClient implements LwM2mClient {
 
         if (LOG.isInfoEnabled()) {
             LOG.info("Leshan client[endpoint:{}] started at {} {}", engine.getEndpoint(),
-                    getNonSecureAddress() == null ? "" : "coap://" + getNonSecureAddress(),
-                    getSecureAddress() == null ? "" : "coaps://" + getSecureAddress());
+                    getUnsecuredAddress() == null ? "" : "coap://" + getUnsecuredAddress(),
+                    getSecuredAddress() == null ? "" : "coaps://" + getSecuredAddress());
         }
     }
 
@@ -187,16 +187,16 @@ public class LeshanClient implements LwM2mClient {
         return clientSideServer;
     }
 
-    public InetSocketAddress getNonSecureAddress() {
-        if (nonSecureEndpoint == null)
+    public InetSocketAddress getUnsecuredAddress() {
+        if (unsecuredEndpoint == null)
             return null;
-        return nonSecureEndpoint.getAddress();
+        return unsecuredEndpoint.getAddress();
     }
 
-    public InetSocketAddress getSecureAddress() {
-        if (secureEndpoint == null)
+    public InetSocketAddress getSecuredAddress() {
+        if (securedEndpoint == null)
             return null;
-        return secureEndpoint.getAddress();
+        return securedEndpoint.getAddress();
     }
 
     public void addObserver(LwM2mClientObserver observer) {

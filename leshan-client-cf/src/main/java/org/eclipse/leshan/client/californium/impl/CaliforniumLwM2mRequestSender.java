@@ -30,12 +30,12 @@ import org.eclipse.leshan.core.response.ResponseCallback;
 
 public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
-    private final Endpoint nonSecureEndpoint;
-    private final Endpoint secureEndpoint;
+    private final Endpoint unsecuredEndpoint;
+    private final Endpoint securedEndpoint;
 
-    public CaliforniumLwM2mRequestSender(Endpoint secureEndpoint, Endpoint nonSecureEndpoint) {
-        this.secureEndpoint = secureEndpoint;
-        this.nonSecureEndpoint = nonSecureEndpoint;
+    public CaliforniumLwM2mRequestSender(Endpoint securedEndpoint, Endpoint unsecuredEndpoint) {
+        this.securedEndpoint = securedEndpoint;
+        this.unsecuredEndpoint = unsecuredEndpoint;
     }
 
     @Override
@@ -60,9 +60,9 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
         // Send CoAP request asynchronously
         if (secure)
-            secureEndpoint.sendRequest(coapRequest);
+            securedEndpoint.sendRequest(coapRequest);
         else
-            nonSecureEndpoint.sendRequest(coapRequest);
+            unsecuredEndpoint.sendRequest(coapRequest);
 
         // Wait for response, then return it
         return syncMessageObserver.waitForResponse();
@@ -90,8 +90,8 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
         // Send CoAP request asynchronously
         if (secure)
-            secureEndpoint.sendRequest(coapRequest);
+            securedEndpoint.sendRequest(coapRequest);
         else
-            nonSecureEndpoint.sendRequest(coapRequest);
+            unsecuredEndpoint.sendRequest(coapRequest);
     }
 }
