@@ -39,8 +39,8 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
     private final static Logger LOG = LoggerFactory.getLogger(LeshanBootstrapServer.class);
 
     private final CoapServer coapServer;
-    private final CoapEndpoint nonSecureEndpoint;
-    private final CoapEndpoint secureEndpoint;
+    private final CoapEndpoint unsecuredEndpoint;
+    private final CoapEndpoint securedEndpoint;
 
     private final BootstrapStore bsStore;
     private final BootstrapSecurityStore bsSecurityStore;
@@ -61,18 +61,18 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
 
         // init CoAP server
         coapServer = new CoapServer(coapConfig);
-        nonSecureEndpoint = unsecuredEndpoint;
-        if (nonSecureEndpoint != null)
-            coapServer.addEndpoint(nonSecureEndpoint);
+        this.unsecuredEndpoint = unsecuredEndpoint;
+        if (unsecuredEndpoint != null)
+            coapServer.addEndpoint(unsecuredEndpoint);
 
         // init DTLS server
-        secureEndpoint = securedEndpoint;
+        this.securedEndpoint = securedEndpoint;
         if (securedEndpoint != null)
-            coapServer.addEndpoint(secureEndpoint);
+            coapServer.addEndpoint(securedEndpoint);
 
         // create request sender
-        LwM2mBootstrapRequestSender requestSender = new CaliforniumLwM2mBootstrapRequestSender(secureEndpoint,
-                nonSecureEndpoint, model);
+        LwM2mBootstrapRequestSender requestSender = new CaliforniumLwM2mBootstrapRequestSender(securedEndpoint,
+                unsecuredEndpoint, model);
 
         BootstrapResource bsResource = new BootstrapResource(
                 new BootstrapHandler(bsStore, requestSender, bsSessionManager));
@@ -98,8 +98,8 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
 
         if (LOG.isInfoEnabled()) {
             LOG.info("Bootstrap server started at {} {}",
-                    getNonSecureAddress() == null ? "" : "coap://" + getNonSecureAddress(),
-                    getSecureAddress() == null ? "" : "coaps://" + getSecureAddress());
+                    getUnsecuredAddress() == null ? "" : "coap://" + getUnsecuredAddress(),
+                    getSecuredAddress() == null ? "" : "coaps://" + getSecuredAddress());
         }
     }
 
@@ -120,17 +120,17 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
         LOG.info("Bootstrap server destroyed.");
     }
 
-    public InetSocketAddress getNonSecureAddress() {
-        if (nonSecureEndpoint != null) {
-            return nonSecureEndpoint.getAddress();
+    public InetSocketAddress getUnsecuredAddress() {
+        if (unsecuredEndpoint != null) {
+            return unsecuredEndpoint.getAddress();
         } else {
             return null;
         }
     }
 
-    public InetSocketAddress getSecureAddress() {
-        if (secureEndpoint != null) {
-            return secureEndpoint.getAddress();
+    public InetSocketAddress getSecuredAddress() {
+        if (securedEndpoint != null) {
+            return securedEndpoint.getAddress();
         } else {
             return null;
         }
