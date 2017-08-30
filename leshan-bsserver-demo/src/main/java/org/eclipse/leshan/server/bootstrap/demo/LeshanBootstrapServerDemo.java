@@ -37,6 +37,7 @@ import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.BootstrapServlet;
 import org.eclipse.leshan.server.californium.LeshanBootstrapServerBuilder;
+import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LeshanBootstrapServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -152,7 +153,18 @@ public class LeshanBootstrapServerDemo {
         builder.setLocalAddress(localAddress, localPort);
         builder.setLocalSecureAddress(secureLocalAddress, secureLocalPort);
         builder.setModel(new LwM2mModel(models));
-        builder.setCoapConfig(NetworkConfig.getStandard());
+
+        // Create CoAP Config
+        NetworkConfig coapConfig;
+        File configFile = new File(NetworkConfig.DEFAULT_FILE_NAME);
+        if (configFile.isFile()) {
+            coapConfig = new NetworkConfig();
+            coapConfig.load(configFile);
+        } else {
+            coapConfig = LeshanServerBuilder.createDefaultNetworkConfig();
+            coapConfig.store(configFile);
+        }
+        builder.setCoapConfig(coapConfig);
 
         LeshanBootstrapServer bsServer = builder.build();
         bsServer.start();

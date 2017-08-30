@@ -146,6 +146,15 @@ public class LeshanBootstrapServerBuilder {
         return this;
     }
 
+    /**
+     * The default Californium/CoAP {@link NetworkConfig} used by the builder.
+     */
+    public static NetworkConfig createDefaultNetworkConfig() {
+        NetworkConfig networkConfig = new NetworkConfig();
+        networkConfig.set(Keys.MID_TRACKER, "NULL");
+        return networkConfig;
+    }
+
     public LeshanBootstrapServer build() {
         if (localAddress == null)
             localAddress = new InetSocketAddress(LwM2m.DEFAULT_COAP_PORT);
@@ -162,8 +171,7 @@ public class LeshanBootstrapServerBuilder {
         if (model == null)
             model = new LwM2mModel(ObjectLoader.loadDefault());
         if (coapConfig == null) {
-            coapConfig = new NetworkConfig();
-            coapConfig.set(NetworkConfig.Keys.MID_TRACKER, "NULL");
+            coapConfig = createDefaultNetworkConfig();
         }
 
         // handle dtlsConfig
