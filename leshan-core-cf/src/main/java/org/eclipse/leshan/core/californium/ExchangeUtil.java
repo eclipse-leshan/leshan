@@ -26,6 +26,7 @@ import javax.security.auth.x500.X500Principal;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.scandium.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.scandium.auth.RawPublicKeyIdentity;
+import org.eclipse.californium.scandium.auth.X509CertPath;
 import org.eclipse.leshan.core.request.Identity;
 
 public class ExchangeUtil {
@@ -40,7 +41,7 @@ public class ExchangeUtil {
             } else if (senderIdentity instanceof RawPublicKeyIdentity) {
                 PublicKey publicKey = ((RawPublicKeyIdentity) senderIdentity).getKey();
                 return Identity.rpk(peerAddress, publicKey);
-            } else if (senderIdentity instanceof X500Principal) {
+            } else if (senderIdentity instanceof X500Principal || senderIdentity instanceof X509CertPath) {
                 // Extract common name
                 Matcher endpointMatcher = Pattern.compile("CN=(.*?)(,|$)").matcher(senderIdentity.getName());
                 if (endpointMatcher.find()) {
