@@ -57,6 +57,10 @@ public class LeshanBootstrapServerBuilder {
 
     private EndpointFactory endpointFactory;
 
+    private boolean noSecuredEndpoint;
+
+    private boolean noUnsecuredEndpoint;
+
     /**
      * <p>
      * Set the address/port for unsecured CoAP Server.
@@ -161,6 +165,22 @@ public class LeshanBootstrapServerBuilder {
     }
 
     /**
+     * deactivate unsecured CoAP endpoint
+     */
+    public LeshanBootstrapServerBuilder noUnsecuredEndpoint() {
+        this.noUnsecuredEndpoint = true;
+        return this;
+    }
+
+    /**
+     * deactivate secured CoAP endpoint (DTLS)
+     */
+    public LeshanBootstrapServerBuilder noSecuredEndpoint() {
+        this.noSecuredEndpoint = true;
+        return this;
+    }
+
+    /**
      * The default Californium/CoAP {@link NetworkConfig} used by the builder.
      */
     public static NetworkConfig createDefaultNetworkConfig() {
@@ -174,12 +194,9 @@ public class LeshanBootstrapServerBuilder {
         if (localAddress == null)
             localAddress = new InetSocketAddress(LwM2m.DEFAULT_COAP_PORT);
 
-        // TODO we should have default implementation for BootstrapStore, BootstrapSecurityStore in leshan.server
-        // project.
+        // TODO we should have default implementation for BootstrapStore in leshan.server project.
         if (configStore == null)
             throw new IllegalStateException("BootstrapStore is mandatory");
-        if (securityStore == null)
-            throw new IllegalStateException("BootstrapSecurityStore is mandatory");
 
         if (sessionManager == null)
             sessionManager = new DefaultBootstrapSessionManager(securityStore);
@@ -226,14 +243,27 @@ public class LeshanBootstrapServerBuilder {
 
         dtlsConfig = dtlsConfigBuilder.build();
 
-        CoapEndpoint unsecuredEndpoint;
-        CoapEndpoint securedEndpoint;
-        if (endpointFactory != null) {
-            unsecuredEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null);
-            securedEndpoint = endpointFactory.createSecuredEndpoint(dtlsConfig, coapConfig, null);
-        } else {
-            unsecuredEndpoint = new CoapEndpoint(localAddress, coapConfig);
-            securedEndpoint = new CoapEndpoint(new DTLSConnector(dtlsConfig), coapConfig);
+        CoapEndpoint unsecuredEndpoint = null;
+        if (!noUnsecuredEndpoint) {
+            if (endpointFactory != null) {
+                unsecuredEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null);
+            } else {
+                unsecuredEndpoint = new CoapEndpoint(localAddress, coapConfig);
+            }
+        }
+
+        CoapEndpoint securedEndpoint = null;
+        if (!noSecuredEndpoint && securityStore != null) {
+            if (endpointFactory != null) {
+                securedEndpoint = endpointFactory.createSecuredEndpoint(dtlsConfig, coapConfig, null);
+            } else {
+                securedEndpoint = new CoapEndpoint(new DTLSConnector(dtlsConfig), coapConfig);
+            }
+        }
+
+        if (securedEndpoint == null && unsecuredEndpoint == null) {
+            throw new IllegalStateException(
+                    "All CoAP enpoints are deactivated, at least one endpoint should be activated");
         }
 
         return new LeshanBootstrapServer(unsecuredEndpoint, securedEndpoint, configStore, securityStore, sessionManager,

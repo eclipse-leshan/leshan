@@ -120,7 +120,7 @@ public class IntegrationTestHelper {
         // Create objects Enabler
         ObjectsInitializer initializer = new ObjectsInitializer(new LwM2mModel(createObjectModels()));
         initializer.setInstancesForObject(LwM2mId.SECURITY, Security.noSec(
-                "coap://" + server.getNonSecureAddress().getHostString() + ":" + server.getNonSecureAddress().getPort(),
+                "coap://" + server.getUnsecuredAddress().getHostString() + ":" + server.getUnsecuredAddress().getPort(),
                 12345));
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.U, false));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345", "U") {

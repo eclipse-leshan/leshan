@@ -87,9 +87,9 @@ public class LeshanServer implements LwM2mServer {
 
     private final LwM2mModelProvider modelProvider;
 
-    private final CoapEndpoint nonSecureEndpoint;
+    private final CoapEndpoint unsecuredEndpoint;
 
-    private final CoapEndpoint secureEndpoint;
+    private final CoapEndpoint securedEndpoint;
 
     private final CaliforniumRegistrationStore registrationStore;
 
@@ -110,8 +110,7 @@ public class LeshanServer implements LwM2mServer {
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
             LwM2mModelProvider modelProvider, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
             NetworkConfig coapConfig) {
-        Validate.notNull(unsecuredEndpoint, "endpoint cannot be null");
-        Validate.notNull(securedEndpoint, "endpoint cannot be null");
+
         Validate.notNull(registrationStore, "registration store cannot be null");
         Validate.notNull(authorizer, "authorizer cannot be null");
         Validate.notNull(modelProvider, "modelProvider cannot be null");
@@ -148,30 +147,29 @@ public class LeshanServer implements LwM2mServer {
 
         // define a set of endpoints
         Set<Endpoint> endpoints = new HashSet<>();
-
-        // default endpoint
         coapServer = new CoapServer(coapConfig) {
             @Override
             protected Resource createRoot() {
                 return new RootResource();
             }
         };
-        nonSecureEndpoint = unsecuredEndpoint;
-        nonSecureEndpoint.addNotificationListener(observationService);
-        observationService.setNonSecureEndpoint(nonSecureEndpoint);
-        coapServer.addEndpoint(nonSecureEndpoint);
-        endpoints.add(nonSecureEndpoint);
+
+        // default endpoint
+        this.unsecuredEndpoint = unsecuredEndpoint;
+        if (unsecuredEndpoint != null) {
+            unsecuredEndpoint.addNotificationListener(observationService);
+            observationService.setNonSecureEndpoint(unsecuredEndpoint);
+            coapServer.addEndpoint(unsecuredEndpoint);
+            endpoints.add(unsecuredEndpoint);
+        }
 
         // secure endpoint
-        if (securityStore != null) {
-            // exchange store for secure endpoint
-            secureEndpoint = securedEndpoint;
-            secureEndpoint.addNotificationListener(observationService);
-            observationService.setSecureEndpoint(secureEndpoint);
-            coapServer.addEndpoint(secureEndpoint);
-            endpoints.add(secureEndpoint);
-        } else {
-            secureEndpoint = null;
+        this.securedEndpoint = securedEndpoint;
+        if (securedEndpoint != null) {
+            securedEndpoint.addNotificationListener(observationService);
+            observationService.setSecureEndpoint(securedEndpoint);
+            coapServer.addEndpoint(securedEndpoint);
+            endpoints.add(securedEndpoint);
         }
 
         // define /rd resource
@@ -198,7 +196,11 @@ public class LeshanServer implements LwM2mServer {
         // Start server
         coapServer.start();
 
-        LOG.info("LWM2M server started at coap://{}, coaps://{}.", getNonSecureAddress(), getSecureAddress());
+        if (LOG.isInfoEnabled()) {
+            LOG.info("LWM2M server started at {} {}",
+                    getUnsecuredAddress() == null ? "" : "coap://" + getUnsecuredAddress(),
+                    getSecuredAddress() == null ? "" : "coaps://" + getSecuredAddress());
+        }
     }
 
     @Override
@@ -283,13 +285,17 @@ public class LeshanServer implements LwM2mServer {
         return coapServer;
     }
 
-    public InetSocketAddress getNonSecureAddress() {
-        return nonSecureEndpoint.getAddress();
+    public InetSocketAddress getUnsecuredAddress() {
+        if (unsecuredEndpoint != null) {
+            return unsecuredEndpoint.getAddress();
+        } else {
+            return null;
+        }
     }
 
-    public InetSocketAddress getSecureAddress() {
-        if (secureEndpoint != null) {
-            return secureEndpoint.getAddress();
+    public InetSocketAddress getSecuredAddress() {
+        if (securedEndpoint != null) {
+            return securedEndpoint.getAddress();
         } else {
             return null;
         }

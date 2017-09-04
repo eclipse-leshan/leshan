@@ -64,15 +64,15 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
                 ServerSecurity bsSecurity = new ServerSecurity();
                 bsSecurity.serverId = 1111;
                 bsSecurity.bootstrapServer = true;
-                bsSecurity.uri = "coap://" + bootstrapServer.getNonSecureAddress().getHostString() + ":"
-                        + bootstrapServer.getNonSecureAddress().getPort();
+                bsSecurity.uri = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
+                        + bootstrapServer.getUnsecuredAddress().getPort();
                 bsSecurity.securityMode = SecurityMode.NO_SEC;
                 bsConfig.security.put(0, bsSecurity);
 
                 // security for DM server
                 ServerSecurity dmSecurity = new ServerSecurity();
-                dmSecurity.uri = "coap://" + server.getNonSecureAddress().getHostString() + ":"
-                        + server.getNonSecureAddress().getPort();
+                dmSecurity.uri = "coap://" + server.getUnsecuredAddress().getHostString() + ":"
+                        + server.getUnsecuredAddress().getPort();
                 dmSecurity.serverId = 2222;
                 dmSecurity.securityMode = SecurityMode.NO_SEC;
                 bsConfig.security.put(1, dmSecurity);
@@ -102,8 +102,8 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
     @Override
     public void createClient() {
         // Create Security Object (with bootstrap server only)
-        String bsUrl = "coap://" + bootstrapServer.getNonSecureAddress().getHostString() + ":"
-                + bootstrapServer.getNonSecureAddress().getPort();
+        String bsUrl = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
+                + bootstrapServer.getUnsecuredAddress().getPort();
         Security security = new Security(bsUrl, true, 3, new byte[0], new byte[0], new byte[0], 12345);
 
         createClient(security);
@@ -112,8 +112,8 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
     public void createPSKClient(String pskIdentity, byte[] pskKey) {
 
         // Create Security Object (with bootstrap server only)
-        String bsUrl = "coaps://" + bootstrapServer.getSecureAddress().getHostString() + ":"
-                + bootstrapServer.getSecureAddress().getPort();
+        String bsUrl = "coaps://" + bootstrapServer.getSecuredAddress().getHostString() + ":"
+                + bootstrapServer.getSecuredAddress().getPort();
         byte[] pskId = pskIdentity.getBytes(StandardCharsets.UTF_8);
         Security security = Security.pskBootstrap(bsUrl, pskId, pskKey);
 
