@@ -20,8 +20,6 @@ import java.net.InetSocketAddress;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
-import org.eclipse.californium.scandium.DTLSConnector;
-import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
@@ -47,28 +45,28 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
     private final BootstrapStore bsStore;
     private final BootstrapSecurityStore bsSecurityStore;
 
-    public LeshanBootstrapServer(InetSocketAddress localAddress, BootstrapStore bsStore,
+    public LeshanBootstrapServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint, BootstrapStore bsStore,
             BootstrapSecurityStore bsSecurityStore, BootstrapSessionManager bsSessionManager, LwM2mModel model,
-            NetworkConfig coapConfig, DtlsConnectorConfig dtlsConfig) {
+            NetworkConfig coapConfig) {
 
-        Validate.notNull(localAddress, "IP address cannot be null");
+        Validate.notNull(unsecuredEndpoint, "endpoint cannot be null");
+        Validate.notNull(securedEndpoint, "endpoint cannot be null");
         Validate.notNull(bsStore, "bootstrap store must not be null");
         Validate.notNull(bsSecurityStore, "security store must not be null");
         Validate.notNull(bsSessionManager, "session manager must not be null");
         Validate.notNull(model, "model must not be null");
         Validate.notNull(coapConfig, "coapConfig must not be null");
-        Validate.notNull(dtlsConfig, "dtlsConfig must not be null");
 
         this.bsStore = bsStore;
         this.bsSecurityStore = bsSecurityStore;
 
         // init CoAP server
         coapServer = new CoapServer(coapConfig);
-        nonSecureEndpoint = new CoapEndpoint(localAddress, coapConfig);
+        nonSecureEndpoint = unsecuredEndpoint;
         coapServer.addEndpoint(nonSecureEndpoint);
 
         // init DTLS server
-        secureEndpoint = new CoapEndpoint(new DTLSConnector(dtlsConfig), coapConfig);
+        secureEndpoint = securedEndpoint;
         coapServer.addEndpoint(secureEndpoint);
 
         // create request sender
