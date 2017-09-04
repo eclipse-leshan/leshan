@@ -21,7 +21,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.ResponseCode;
@@ -66,14 +65,14 @@ public class RegistrationEngine {
     private final Map<Integer, LwM2mObjectEnabler> objectEnablers;
     private final BootstrapHandler bootstrapHandler;
     private final LwM2mClientObserver observer;
-    private final AtomicBoolean started = new AtomicBoolean(false);
+    private boolean started = false;
 
     // registration update
     private String registrationID;
     private Future<?> registerFuture;
     private ScheduledFuture<?> updateFuture;
-    private final ScheduledExecutorService schedExecutor = Executors.newScheduledThreadPool(2,
-            new NamedThreadFactory("RegistrationEngine#%d"));
+    private final ScheduledExecutorService schedExecutor = Executors
+            .newSingleThreadScheduledExecutor(new NamedThreadFactory("RegistrationEngine#%d"));
 
     public RegistrationEngine(String endpoint, Map<Integer, LwM2mObjectEnabler> objectEnablers,
             LwM2mRequestSender requestSender, BootstrapHandler bootstrapState, LwM2mClientObserver observer) {
@@ -87,8 +86,10 @@ public class RegistrationEngine {
 
     public void start() {
         stop(false); // stop without de-register
-        started.set(true);
-        registerFuture = schedExecutor.submit(new RegistrationTask());
+        synchronized (this) {
+            started = true;
+            registerFuture = schedExecutor.submit(new RegistrationTask());
+        }
     }
 
     private boolean bootstrap() throws InterruptedException {
@@ -157,11 +158,10 @@ public class RegistrationEngine {
 
         // send register request
         LOG.info("Trying to register to {} ...", dmInfo.getFullUri());
-        RegisterResponse response = sender
-                .send(dmInfo.getAddress(),
-                        dmInfo.isSecure(), new RegisterRequest(endpoint, dmInfo.lifetime, LwM2m.VERSION, dmInfo.binding,
-                                null, LinkFormatHelper.getClientDescription(objectEnablers.values(), null), null),
-                        null);
+        RegisterResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(),
+                new RegisterRequest(endpoint, dmInfo.lifetime, LwM2m.VERSION, dmInfo.binding, null,
+                        LinkFormatHelper.getClientDescription(objectEnablers.values(), null), null),
+                null);
         if (response == null) {
             registrationID = null;
             LOG.error("Registration failed: Timeout.");
@@ -170,11 +170,11 @@ public class RegistrationEngine {
             }
         } else if (response.isSuccess()) {
             registrationID = response.getRegistrationID();
+            LOG.info("Registered with location '{}'.", response.getRegistrationID());
 
             // update every lifetime period
             scheduleUpdate(dmInfo);
 
-            LOG.info("Registered with location '{}'.", response.getRegistrationID());
             if (observer != null) {
                 observer.onRegistrationSuccess(dmInfo, response.getRegistrationID());
             }
@@ -233,8 +233,6 @@ public class RegistrationEngine {
     }
 
     private boolean update() throws InterruptedException {
-        cancelUpdateTask(false);
-
         ServersInfo serversInfo = ServersInfoExtractor.getInfo(objectEnablers);
         DmServerInfo dmInfo = serversInfo.deviceMangements.values().iterator().next();
         if (dmInfo == null) {
@@ -255,8 +253,8 @@ public class RegistrationEngine {
             return false;
         } else if (response.getCode() == ResponseCode.CHANGED) {
             // Update successful, so we reschedule new update
-            scheduleUpdate(dmInfo);
             LOG.info("Registration update succeed.");
+            scheduleUpdate(dmInfo);
             if (observer != null) {
                 observer.onUpdateSuccess(dmInfo, registrationID);
             }
@@ -296,22 +294,22 @@ public class RegistrationEngine {
                     }
                 }
             } catch (InterruptedException e) {
-                LOG.info("Registration task interrupted.");
+                LOG.info("Registration task interrupted. ");
             } catch (RuntimeException e) {
                 LOG.error("Unexpected exception during update registration task", e);
             }
         }
     }
 
-    private void scheduleRegistration() {
-        if (started.get()) {
+    private synchronized void scheduleRegistration() {
+        if (started) {
             LOG.info("Unable to connect to any server, next retry in {}s...", BS_RETRY);
             registerFuture = schedExecutor.schedule(new RegistrationTask(), BS_RETRY, TimeUnit.SECONDS);
         }
     }
 
-    private void scheduleUpdate(DmServerInfo dmInfo) {
-        if (started.get()) {
+    private synchronized void scheduleUpdate(DmServerInfo dmInfo) {
+        if (started) {
             // calculate next update : lifetime - 10%
             // dmInfo.lifetime is in seconds
             long nextUpdate = dmInfo.lifetime * 900l;
@@ -356,10 +354,14 @@ public class RegistrationEngine {
     }
 
     public void stop(boolean deregister) {
-        started.set(false);
-        cancelUpdateTask(true);
-        // TODO we should manage the case where we stop in the middle of a bootstrap session ...
-        cancelRegistrationTask();
+        synchronized (this) {
+            if (!started)
+                return;
+            started = false;
+            cancelUpdateTask(true);
+            // TODO we should manage the case where we stop in the middle of a bootstrap session ...
+            cancelRegistrationTask();
+        }
         try {
             if (deregister)
                 deregister();
@@ -368,7 +370,9 @@ public class RegistrationEngine {
     }
 
     public void destroy(boolean deregister) {
-        started.set(false);
+        synchronized (this) {
+            started = false;
+        }
         // TODO we should manage the case where we stop in the middle of a bootstrap session ...
         schedExecutor.shutdownNow();
         try {

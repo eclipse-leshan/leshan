@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.LwM2mClient;
@@ -75,7 +76,7 @@ public class IntegrationTestHelper {
     LeshanServer server;
 
     LwM2mClient client;
-    String currentEndpointIdentifier;
+    AtomicReference<String> currentEndpointIdentifier = new AtomicReference<String>();
 
     CountDownLatch registerLatch;
     Registration last_registration;
@@ -109,11 +110,11 @@ public class IntegrationTestHelper {
     }
 
     public void initialize() {
-        currentEndpointIdentifier = "leshan_integration_test_" + r.nextInt();
+        currentEndpointIdentifier.set("leshan_integration_test_" + r.nextInt());
     }
 
     public String getCurrentEndpoint() {
-        return currentEndpointIdentifier;
+        return currentEndpointIdentifier.get();
     }
 
     public void createClient() {
@@ -137,7 +138,7 @@ public class IntegrationTestHelper {
         objects.addAll(initializer.create(2, 2000));
 
         // Build Client
-        LeshanClientBuilder builder = new LeshanClientBuilder(currentEndpointIdentifier);
+        LeshanClientBuilder builder = new LeshanClientBuilder(currentEndpointIdentifier.get());
         builder.setObjects(objects);
         client = builder.build();
     }
@@ -159,7 +160,7 @@ public class IntegrationTestHelper {
             @Override
             public void updated(RegistrationUpdate update, Registration updatedRegistration,
                     Registration previousRegistration) {
-                if (updatedRegistration.getEndpoint().equals(currentEndpointIdentifier)) {
+                if (updatedRegistration.getEndpoint().equals(currentEndpointIdentifier.get())) {
                     updateLatch.countDown();
                 }
             }
@@ -167,7 +168,7 @@ public class IntegrationTestHelper {
             @Override
             public void unregistered(Registration registration, Collection<Observation> observations, boolean expired,
                     Registration newReg) {
-                if (registration.getEndpoint().equals(currentEndpointIdentifier)) {
+                if (registration.getEndpoint().equals(currentEndpointIdentifier.get())) {
                     deregisterLatch.countDown();
                 }
             }
@@ -175,7 +176,7 @@ public class IntegrationTestHelper {
             @Override
             public void registered(Registration registration, Registration previousReg,
                     Collection<Observation> previousObsersations) {
-                if (registration.getEndpoint().equals(currentEndpointIdentifier)) {
+                if (registration.getEndpoint().equals(currentEndpointIdentifier.get())) {
                     last_registration = registration;
                     registerLatch.countDown();
                 }
@@ -238,7 +239,7 @@ public class IntegrationTestHelper {
     }
 
     public Registration getCurrentRegistration() {
-        return server.getRegistrationService().getByEndpoint(currentEndpointIdentifier);
+        return server.getRegistrationService().getByEndpoint(currentEndpointIdentifier.get());
     }
 
     public void deregisterClient() {
@@ -249,7 +250,7 @@ public class IntegrationTestHelper {
 
     public void dispose() {
         deregisterClient();
-        currentEndpointIdentifier = null;
+        currentEndpointIdentifier.set(null);
     }
 
     public void assertClientRegisterered() {
