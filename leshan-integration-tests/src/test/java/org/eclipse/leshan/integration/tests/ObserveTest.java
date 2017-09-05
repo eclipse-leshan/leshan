@@ -21,9 +21,6 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.*;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -33,9 +30,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.OptionSet;
 import org.eclipse.californium.core.coap.Response;
+import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.serialization.UdpDataSerializer;
+import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.elements.RawData;
 import org.eclipse.leshan.ResponseCode;
+import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
@@ -199,7 +199,8 @@ public class ObserveTest {
                 new LwM2mPath("/3/0/15"), new LwM2mModel(helper.createObjectModels()),
                 new DefaultLwM2mValueConverter());
         Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
-        sendNotification(payload, firstCoapResponse, 666); // 666 is not a supported contentFormat.
+        sendNotification(getConnector(helper.client), payload, firstCoapResponse, 666); // 666 is not a supported //
+                                                                                        // contentFormat.
         // *** Hack End *** //
 
         // verify result
@@ -236,7 +237,7 @@ public class ObserveTest {
         byte[] payload = LwM2mNodeJsonEncoder.encodeTimestampedData(timestampedNodes, new LwM2mPath("/3/0/15"),
                 new LwM2mModel(helper.createObjectModels()), new DefaultLwM2mValueConverter());
         Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
-        sendNotification(payload, firstCoapResponse, ContentFormat.JSON_CODE);
+        sendNotification(getConnector(helper.client), payload, firstCoapResponse, ContentFormat.JSON_CODE);
         // *** Hack End *** //
 
         // verify result
@@ -275,7 +276,7 @@ public class ObserveTest {
         byte[] payload = LwM2mNodeJsonEncoder.encodeTimestampedData(timestampedNodes, new LwM2mPath("/3/0"),
                 new LwM2mModel(helper.createObjectModels()), new DefaultLwM2mValueConverter());
         Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
-        sendNotification(payload, firstCoapResponse, ContentFormat.JSON_CODE);
+        sendNotification(getConnector(helper.client), payload, firstCoapResponse, ContentFormat.JSON_CODE);
         // *** Hack End *** //
 
         // verify result
@@ -315,7 +316,7 @@ public class ObserveTest {
                 new LwM2mModel(helper.createObjectModels()), new DefaultLwM2mValueConverter());
 
         Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
-        sendNotification(payload, firstCoapResponse, ContentFormat.JSON_CODE);
+        sendNotification(getConnector(helper.client), payload, firstCoapResponse, ContentFormat.JSON_CODE);
         // *** Hack End *** //
 
         // verify result
@@ -327,31 +328,32 @@ public class ObserveTest {
         assertThat(listener.getResponse().getCoapResponse(), is(instanceOf(Response.class)));
     }
 
-    private void sendNotification(byte[] payload, Response firstCoapResponse, int contentFormat) {
+    private void sendNotification(Connector connector, byte[] payload, Response firstCoapResponse, int contentFormat) {
 
-        // encode and send it
-        try (DatagramSocket clientSocket = new DatagramSocket()) {
+        // create observe response
+        Response response = new Response(org.eclipse.californium.core.coap.CoAP.ResponseCode.CONTENT);
+        response.setType(Type.NON);
+        response.setPayload(payload);
+        response.setMID(firstCoapResponse.getMID() + 1);
+        response.setToken(firstCoapResponse.getToken());
+        OptionSet options = new OptionSet().setContentFormat(contentFormat)
+                .setObserve(firstCoapResponse.getOptions().getObserve() + 1);
+        response.setOptions(options);
+        response.setDestination(helper.server.getUnsecuredAddress().getAddress());
+        response.setDestinationPort(helper.server.getUnsecuredAddress().getPort());
 
-            // create observe response
-            Response response = new Response(org.eclipse.californium.core.coap.CoAP.ResponseCode.CONTENT);
-            response.setType(Type.NON);
-            response.setPayload(payload);
-            response.setMID(firstCoapResponse.getMID() + 1);
-            response.setToken(firstCoapResponse.getToken());
-            OptionSet options = new OptionSet().setContentFormat(contentFormat)
-                    .setObserve(firstCoapResponse.getOptions().getObserve() + 1);
-            response.setOptions(options);
+        // serialize response
+        UdpDataSerializer serializer = new UdpDataSerializer();
+        RawData data = serializer.serializeResponse(response);
 
-            // serialize response
-            UdpDataSerializer serializer = new UdpDataSerializer();
-            RawData data = serializer.serializeResponse(response);
+        // send it
+        connector.send(data);
+    }
 
-            // send it
-            clientSocket.send(new DatagramPacket(data.bytes, data.bytes.length,
-                    helper.server.getUnsecuredAddress().getAddress(), helper.server.getUnsecuredAddress().getPort()));
-        } catch (IOException e) {
-            throw new AssertionError("Error while timestamped notification", e);
-        }
+    private Connector getConnector(LeshanClient client) {
+        CoapEndpoint endpoint = (CoapEndpoint) helper.client.getCoapServer()
+                .getEndpoint(helper.client.getUnsecuredAddress());
+        return endpoint.getConnector();
     }
 
     private final class TestObservationListener implements ObservationListener {
