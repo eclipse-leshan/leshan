@@ -48,9 +48,11 @@ public class ExchangeUtil {
                     String x509CommonName = endpointMatcher.group(1);
                     return Identity.x509(peerAddress, x509CommonName);
                 } else {
-                    return null;
+                    throw new IllegalStateException(
+                            "Unable to extract sender identity : can not get common name in certificate");
                 }
             }
+            throw new IllegalStateException("Unable to extract sender identity : unexpected type of Principal");
         }
         return Identity.unsecure(peerAddress);
     }
