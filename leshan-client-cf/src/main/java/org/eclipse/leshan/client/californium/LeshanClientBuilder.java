@@ -205,6 +205,11 @@ public class LeshanClientBuilder {
         if (incompleteConfig.getStaleConnectionThreshold() == null)
             dtlsConfigBuilder.setStaleConnectionThreshold(coapConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
 
+        // Use only 1 thread to handle DTLS connection by default
+        if (incompleteConfig.getConnectionThreadCount() == null) {
+            dtlsConfigBuilder.setConnectionThreadCount(1);
+        }
+
         dtlsConfig = dtlsConfigBuilder.build();
 
         return new LeshanClient(endpoint, noUnsecuredEndpoint ? null : localAddress, objectEnablers, coapConfig,
