@@ -173,9 +173,6 @@ public class LeshanClientBuilder {
         DtlsConnectorConfig dtlsConfig = null;
         if (dtlsConfigBuilder == null) {
             dtlsConfigBuilder = new DtlsConnectorConfig.Builder();
-            // TODO remove 2 lines below when we will integrate the californium v2.0.0-M5/RC1
-            dtlsConfigBuilder.setMaxConnections(coapConfig.getInt(Keys.MAX_ACTIVE_PEERS));
-            dtlsConfigBuilder.setStaleConnectionThreshold(coapConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
         }
         DtlsConnectorConfig incompleteConfig = dtlsConfigBuilder.getIncompleteConfig();
 
