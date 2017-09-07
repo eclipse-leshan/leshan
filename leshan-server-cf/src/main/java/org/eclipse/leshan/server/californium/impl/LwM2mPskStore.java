@@ -41,6 +41,9 @@ public class LwM2mPskStore implements PskStore {
 
     @Override
     public byte[] getKey(String identity) {
+        if (securityStore == null)
+            return null;
+
         SecurityInfo info = securityStore.getByIdentity(identity);
         if (info == null || info.getPreSharedKey() == null) {
             return null;
