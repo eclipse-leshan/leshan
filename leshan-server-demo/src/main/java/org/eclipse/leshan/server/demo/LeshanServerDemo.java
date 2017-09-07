@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.BindException;
+import java.net.InetAddress;
 import java.net.URI;
 import java.security.AlgorithmParameters;
 import java.security.Key;
@@ -44,6 +45,9 @@ import java.security.spec.KeySpec;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceInfo;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
@@ -79,11 +83,6 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.util.Pool;
-
-import java.net.InetAddress;
-
-import javax.jmdns.JmDNS;
-import javax.jmdns.ServiceInfo;
 
 public class LeshanServerDemo {
 
@@ -208,7 +207,7 @@ public class LeshanServerDemo {
         String keyStoreAliasPass = cl.getOptionValue("ksap");
 
         // Get mDNS publish switch
-        Boolean publishDNSSdServices  = cl.hasOption("mdns");
+        Boolean publishDNSSdServices = cl.hasOption("mdns");
 
         try {
             createAndStartServer(webPort, localAddress, localPort, secureLocalAddress, secureLocalPort,
@@ -225,7 +224,8 @@ public class LeshanServerDemo {
 
     public static void createAndStartServer(int webPort, String localAddress, int localPort, String secureLocalAddress,
             int secureLocalPort, String modelsFolderPath, String redisUrl, String keyStorePath, String keyStoreType,
-            String keyStorePass, String keyStoreAlias, String keyStoreAliasPass, Boolean publishDNSSdServices) throws Exception {
+            String keyStorePass, String keyStoreAlias, String keyStoreAliasPass, Boolean publishDNSSdServices)
+            throws Exception {
         // Prepare LWM2M server
         LeshanServerBuilder builder = new LeshanServerBuilder();
         builder.setLocalAddress(localAddress, localPort);
@@ -233,7 +233,17 @@ public class LeshanServerDemo {
         builder.setEncoder(new DefaultLwM2mNodeEncoder());
         LwM2mNodeDecoder decoder = new DefaultLwM2mNodeDecoder();
         builder.setDecoder(decoder);
-        builder.setCoapConfig(NetworkConfig.getStandard());
+
+        // Create CoAP Config
+        NetworkConfig coapConfig;
+        File configFile = new File(NetworkConfig.DEFAULT_FILE_NAME);
+        if (configFile.isFile()) {
+            coapConfig = new NetworkConfig();
+            coapConfig.load(configFile);
+        } else {
+            coapConfig = LeshanServerBuilder.createDefaultNetworkConfig();
+            coapConfig.store(configFile);
+        }
 
         // connect to redis if needed
         Pool<Jedis> jedis = null;
@@ -376,7 +386,7 @@ public class LeshanServerDemo {
 
             // Create a JmDNS instance
             JmDNS jmdns = JmDNS.create(InetAddress.getLocalHost());
-            
+
             // Publish Leshan HTTP Service
             ServiceInfo httpServiceInfo = ServiceInfo.create("_http._tcp.local.", "leshan", webPort, "");
             jmdns.registerService(httpServiceInfo);
