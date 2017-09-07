@@ -51,6 +51,10 @@ public class LeshanClientBuilder {
 
     private Builder dtlsConfigBuilder;
 
+    private boolean noSecureEndpoint;
+
+    private boolean noUnsecureEndpoint;
+
     /**
      * Creates a new instance for setting the configuration options for a {@link LeshanClient} instance.
      * 
@@ -123,6 +127,26 @@ public class LeshanClientBuilder {
         return this;
     }
 
+    public LeshanClientBuilder noUnsecureEndpoint() {
+        this.noUnsecureEndpoint = true;
+        return this;
+    }
+
+    public LeshanClientBuilder noSecureEndpoint() {
+        this.noSecureEndpoint = true;
+        return this;
+    }
+
+    public static NetworkConfig createDefaultNetworkConfig() {
+        NetworkConfig networkConfig = new NetworkConfig();
+        networkConfig.set(Keys.MID_TRACKER, "NULL");
+        networkConfig.set(Keys.MAX_ACTIVE_PEERS, 10);
+        networkConfig.set(Keys.MAX_MESSAGE_SIZE, 4096);
+        networkConfig.set(Keys.PROTOCOL_STAGE_THREAD_COUNT, 1);
+
+        return networkConfig;
+    }
+
     /**
      * Creates an instance of {@link LeshanClient} based on the properties set on this builder.
      */
@@ -139,8 +163,7 @@ public class LeshanClientBuilder {
             objectEnablers = initializer.createMandatory();
         }
         if (coapConfig == null) {
-            coapConfig = new NetworkConfig();
-            coapConfig.set(NetworkConfig.Keys.MID_TRACKER, "NULL");
+            coapConfig = createDefaultNetworkConfig();
         }
 
         // handle dtlsConfig
@@ -184,6 +207,7 @@ public class LeshanClientBuilder {
 
         dtlsConfig = dtlsConfigBuilder.build();
 
-        return new LeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfig);
+        return new LeshanClient(endpoint, noUnsecureEndpoint ? null : localAddress, objectEnablers, coapConfig,
+                noSecureEndpoint ? null : dtlsConfig);
     }
 }

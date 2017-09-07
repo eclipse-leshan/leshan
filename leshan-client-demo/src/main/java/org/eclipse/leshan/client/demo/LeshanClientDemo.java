@@ -21,6 +21,7 @@ package org.eclipse.leshan.client.demo;
 import static org.eclipse.leshan.LwM2mId.*;
 import static org.eclipse.leshan.client.object.Security.*;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
@@ -235,6 +236,17 @@ public class LeshanClientDemo {
         initializer.setInstancesForObject(OBJECT_ID_TEMPERATURE_SENSOR, new RandomTemperatureSensor());
         List<LwM2mObjectEnabler> enablers = initializer.create(SECURITY, SERVER, DEVICE, LOCATION,
                 OBJECT_ID_TEMPERATURE_SENSOR);
+
+        // Create CoAP Config
+        NetworkConfig coapConfig;
+        File configFile = new File(NetworkConfig.DEFAULT_FILE_NAME);
+        if (configFile.isFile()) {
+            coapConfig = new NetworkConfig();
+            coapConfig.load(configFile);
+        } else {
+            coapConfig = LeshanClientBuilder.createDefaultNetworkConfig();
+            coapConfig.store(configFile);
+        }
 
         // Create client
         LeshanClientBuilder builder = new LeshanClientBuilder(endpoint);
