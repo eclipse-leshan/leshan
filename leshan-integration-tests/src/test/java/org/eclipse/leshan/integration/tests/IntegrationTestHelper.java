@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.leshan.LwM2mId;
-import org.eclipse.leshan.client.LwM2mClient;
+import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Security;
@@ -75,7 +75,7 @@ public class IntegrationTestHelper {
 
     LeshanServer server;
 
-    LwM2mClient client;
+    LeshanClient client;
     AtomicReference<String> currentEndpointIdentifier = new AtomicReference<String>();
 
     CountDownLatch registerLatch;
