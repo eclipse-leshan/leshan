@@ -18,8 +18,10 @@ package org.eclipse.leshan.client.californium;
 import java.net.InetSocketAddress;
 import java.util.List;
 
+import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
+import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.LwM2mId;
@@ -29,6 +31,7 @@ import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
@@ -52,6 +55,8 @@ public class LeshanClientBuilder {
 
     private boolean noSecuredEndpoint;
     private boolean noUnsecuredEndpoint;
+
+    private EndpointFactory endpointFactory;
 
     /**
      * Creates a new instance for setting the configuration options for a {@link LeshanClient} instance.
@@ -122,6 +127,15 @@ public class LeshanClientBuilder {
      */
     public LeshanClientBuilder setDtlsConfig(DtlsConnectorConfig.Builder config) {
         this.dtlsConfigBuilder = config;
+        return this;
+    }
+
+    /**
+     * Used to create custom CoAP endpoint, this is only for advanced users. <br>
+     * DTLSConnector is expected for secured endpoint.
+     */
+    public LeshanClientBuilder setEndpointFactory(EndpointFactory endpointFactory) {
+        this.endpointFactory = endpointFactory;
         return this;
     }
 
@@ -212,7 +226,30 @@ public class LeshanClientBuilder {
 
         dtlsConfig = dtlsConfigBuilder.build();
 
-        return new LeshanClient(endpoint, noUnsecuredEndpoint ? null : localAddress, objectEnablers, coapConfig,
-                noSecuredEndpoint ? null : dtlsConfig);
+        // create endpoints
+        CoapEndpoint unsecuredEndpoint = null;
+        if (!noUnsecuredEndpoint) {
+            if (endpointFactory != null) {
+                unsecuredEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null);
+            } else {
+                unsecuredEndpoint = new CoapEndpoint(localAddress, coapConfig);
+            }
+        }
+
+        CoapEndpoint securedEndpoint = null;
+        if (!noSecuredEndpoint) {
+            if (endpointFactory != null) {
+                securedEndpoint = endpointFactory.createSecuredEndpoint(dtlsConfig, coapConfig, null);
+            } else {
+                securedEndpoint = new CoapEndpoint(new DTLSConnector(dtlsConfig), coapConfig, null, null);
+            }
+        }
+
+        if (securedEndpoint == null && unsecuredEndpoint == null) {
+            throw new IllegalStateException(
+                    "All CoAP enpoints are deactivated, at least one endpoint should be activated");
+        }
+
+        return new LeshanClient(endpoint, unsecuredEndpoint, securedEndpoint, objectEnablers, coapConfig);
     }
 }

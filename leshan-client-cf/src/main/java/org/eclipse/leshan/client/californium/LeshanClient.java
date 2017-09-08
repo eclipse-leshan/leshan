@@ -27,7 +27,6 @@ import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.scandium.DTLSConnector;
-import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.californium.impl.BootstrapResource;
 import org.eclipse.leshan.client.californium.impl.CaliforniumLwM2mRequestSender;
@@ -65,9 +64,8 @@ public class LeshanClient implements LwM2mClient {
     private CoapEndpoint securedEndpoint;
     private CoapEndpoint unsecuredEndpoint;
 
-    public LeshanClient(String endpoint, InetSocketAddress localAddress,
-            List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig,
-            DtlsConnectorConfig dtlsConfig) {
+    public LeshanClient(String endpoint, CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
+            List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig) {
 
         Validate.notNull(endpoint);
         Validate.notEmpty(objectEnablers);
@@ -86,36 +84,36 @@ public class LeshanClient implements LwM2mClient {
         // Create Client Observers
         observers = new LwM2mClientObserverDispatcher();
 
-        // Create CoAP non secure endpoint
-        if (localAddress != null) {
-            unsecuredEndpoint = new CoapEndpoint(localAddress, coapConfig);
-        }
+        // Set unsecured CoAP endpoint
+        this.unsecuredEndpoint = unsecuredEndpoint;
 
-        // Create CoAP secure endpoint
-        if (dtlsConfig != null) {
-            final DTLSConnector dtlsConnector = new DTLSConnector(dtlsConfig);
-            securedEndpoint = new CoapEndpoint(dtlsConnector, coapConfig);
-            observers.addObserver(new LwM2mClientObserverAdapter() {
-                @Override
-                public void onBootstrapSuccess(ServerInfo bsserver) {
-                    dtlsConnector.clearConnectionState();
-                }
+        // Set secured CoAP endpoint
+        this.securedEndpoint = securedEndpoint;
+        if (securedEndpoint != null) {
+            if (securedEndpoint.getConnector() instanceof DTLSConnector) {
+                final DTLSConnector dtlsConnector = (DTLSConnector) securedEndpoint.getConnector();
+                observers.addObserver(new LwM2mClientObserverAdapter() {
+                    @Override
+                    public void onBootstrapSuccess(ServerInfo bsserver) {
+                        dtlsConnector.clearConnectionState();
+                    }
 
-                @Override
-                public void onBootstrapTimeout(ServerInfo bsserver) {
-                    dtlsConnector.clearConnectionState();
-                }
+                    @Override
+                    public void onBootstrapTimeout(ServerInfo bsserver) {
+                        dtlsConnector.clearConnectionState();
+                    }
 
-                @Override
-                public void onRegistrationTimeout(DmServerInfo server) {
-                    dtlsConnector.clearConnectionState();
-                }
+                    @Override
+                    public void onRegistrationTimeout(DmServerInfo server) {
+                        dtlsConnector.clearConnectionState();
+                    }
 
-                @Override
-                public void onUpdateTimeout(DmServerInfo server) {
-                    dtlsConnector.clearConnectionState();
-                }
-            });
+                    @Override
+                    public void onUpdateTimeout(DmServerInfo server) {
+                        dtlsConnector.clearConnectionState();
+                    }
+                });
+            }
         }
 
         // Create sender
