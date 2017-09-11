@@ -258,7 +258,7 @@ public class RegistrationTest {
         helper.assertClientNotRegisterered();
 
         // HACK to be able to send a Registration request with additional attributes
-        LeshanClient lclient = (LeshanClient) helper.client;
+        LeshanClient lclient = helper.client;
         lclient.getCoapServer().start();
         Endpoint secureEndpoint = lclient.getCoapServer().getEndpoint(lclient.getSecuredAddress());
         Endpoint nonSecureEndpoint = lclient.getCoapServer().getEndpoint(lclient.getUnsecuredAddress());
