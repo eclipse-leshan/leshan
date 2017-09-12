@@ -38,6 +38,10 @@ Contributors:
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.eclipsesource.minimal-json</groupId>
+            <artifactId>minimal-json</artifactId>
+        </dependency>
 
         <!-- test dependencies -->
         <dependency>

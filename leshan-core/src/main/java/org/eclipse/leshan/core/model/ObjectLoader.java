@@ -23,35 +23,24 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.leshan.core.model.json.ObjectModelDeserializer;
-import org.eclipse.leshan.core.model.json.ResourceModelDeserializer;
+import org.eclipse.leshan.core.model.json.ObjectModelSerDes;
 import org.eclipse.leshan.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonValue;
 
 public class ObjectLoader {
 
     private static final Logger LOG = LoggerFactory.getLogger(ObjectLoader.class);
 
-    private static final Gson GSON;
-
     private static String[] ddfpaths = new String[] { "LWM2M_Security-v1_0.xml", "LWM2M_Server-v1_0.xml",
                             "LWM2M_Access_Control-v1_0.xml", "LWM2M_Device-v1_0.xml",
                             "LWM2M_Connectivity_Monitoring-v1_0.xml", "LWM2M_Firmware_Update-v1_0.xml",
                             "LWM2M_Location-v1_0.xml", "LWM2M_Connectivity_Statistics-v1_0.xml" };
-
-    static {
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(ObjectModel.class, new ObjectModelDeserializer());
-        gsonBuilder.registerTypeAdapter(ResourceModel.class, new ResourceModelDeserializer());
-        GSON = gsonBuilder.create();
-    }
 
     /**
      * Load the default LWM2M objects
@@ -92,11 +81,14 @@ public class ObjectLoader {
      * @param input An inputStream to a JSON stream.
      */
     public static List<ObjectModel> loadJsonStream(InputStream input) {
-        Reader reader = new InputStreamReader(input);
-        ObjectModel[] objectModels = GSON.fromJson(reader, ObjectModel[].class);
-        List<ObjectModel> models = new ArrayList<>();
-        Collections.addAll(models, objectModels);
-        return models;
+        try {
+            Reader reader = new InputStreamReader(input);
+            JsonValue json = Json.parse(reader);
+            return new ObjectModelSerDes().deserialize(json.asArray());
+        } catch (IOException e) {
+            LOG.error("Cannot load json model from inputstream");
+        }
+        return null;
     }
 
     /**

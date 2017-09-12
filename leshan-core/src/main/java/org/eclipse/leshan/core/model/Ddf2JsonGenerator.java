@@ -27,30 +27,16 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.eclipse.leshan.core.model.json.ObjectModelSerializer;
-import org.eclipse.leshan.core.model.json.ResourceModelSerializer;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import org.eclipse.leshan.core.model.json.ObjectModelSerDes;
 
 public class Ddf2JsonGenerator {
-
-    private Gson gson;
 
     static final String DEFAULT_DDF_FILES_PATH = "ddffiles";
     static final String DEFAULT_OUTPUT_PATH = "src/main/resources/objectspec.json";
 
-    public Ddf2JsonGenerator() {
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(ObjectModel.class, new ObjectModelSerializer());
-        gsonBuilder.registerTypeAdapter(ResourceModel.class, new ResourceModelSerializer());
-        gsonBuilder.setPrettyPrinting();
-        gson = gsonBuilder.create();
-    }
-
     private void generate(Collection<ObjectModel> objectModels, OutputStream output) throws IOException {
         try (OutputStreamWriter outputStreamWriter = new OutputStreamWriter(output)) {
-            gson.toJson(objectModels, outputStreamWriter);
+            outputStreamWriter.write(new ObjectModelSerDes().sSerialize(objectModels));
         }
     }
 

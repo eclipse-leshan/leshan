@@ -1,0 +1,1018 @@
+[
+  {
+    "name": "LWM2M Security",
+    "id": 0,
+    "instancetype": "multiple",
+    "mandatory": true,
+    "description": "",
+    "resourcedefs": [
+      {
+        "id": 0,
+        "name": "LWM2M  Server URI",
+        "operations": "NONE",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "0-255 bytes",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 1,
+        "name": "Bootstrap Server",
+        "operations": "NONE",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "boolean",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 2,
+        "name": "Security Mode",
+        "operations": "NONE",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "integer",
+        "range": "0-3",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 3,
+        "name": "Public Key or Identity",
+        "operations": "NONE",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "opaque",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 4,
+        "name": "Server Public Key or Identity",
+        "operations": "NONE",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "opaque",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 5,
+        "name": "Secret Key",
+        "operations": "NONE",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "opaque",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 6,
+        "name": "SMS Security Mode",
+        "operations": "NONE",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "integer",
+        "range": "0-255",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 7,
+        "name": "SMS Binding Key Parameters",
+        "operations": "NONE",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "opaque",
+        "range": "6 bytes",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 8,
+        "name": "SMS Binding Secret Keys",
+        "operations": "NONE",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "opaque",
+        "range": "32-48 bytes",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 9,
+        "name": "LWM2M Server SMS Number",
+        "operations": "NONE",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "integer",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 10,
+        "name": "Short Server ID",
+        "operations": "NONE",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "integer",
+        "range": "1-65535",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 11,
+        "name": "Client Hold Off Time",
+        "operations": "NONE",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "integer",
+        "range": "",
+        "units": "s",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "name": "LWM2M Server",
+    "id": 1,
+    "instancetype": "multiple",
+    "mandatory": true,
+    "description": "",
+    "resourcedefs": [
+      {
+        "id": 0,
+        "name": "Short Server ID",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "integer",
+        "range": "1-65535",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 1,
+        "name": "Lifetime",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "integer",
+        "range": "",
+        "units": "s",
+        "description": ""
+      },
+      {
+        "id": 2,
+        "name": "Default Minimum Period",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "integer",
+        "range": "",
+        "units": "s",
+        "description": ""
+      },
+      {
+        "id": 3,
+        "name": "Default Maximum Period",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "integer",
+        "range": "",
+        "units": "s",
+        "description": ""
+      },
+      {
+        "id": 4,
+        "name": "Disable",
+        "operations": "E",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 5,
+        "name": "Disable Timeout",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "integer",
+        "range": "",
+        "units": "s",
+        "description": ""
+      },
+      {
+        "id": 6,
+        "name": "Notification Storing When Disabled or Offline",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "boolean",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 7,
+        "name": "Binding",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "The possible values of Resource are listed in 5.2.1.1",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 8,
+        "name": "Registration Update Trigger",
+        "operations": "E",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "name": "LWM2M Access Control",
+    "id": 2,
+    "instancetype": "multiple",
+    "mandatory": false,
+    "description": "",
+    "resourcedefs": [
+      {
+        "id": 0,
+        "name": "Object ID",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "integer",
+        "range": "1-65534",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 1,
+        "name": "Object Instance ID",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "integer",
+        "range": "0-65535",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 2,
+        "name": "ACL",
+        "operations": "RW",
+        "instancetype": "multiple",
+        "mandatory": false,
+        "type": "integer",
+        "range": "16-bit",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 3,
+        "name": "Access Control Owner",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "integer",
+        "range": "0-65535",
+        "units": "",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "name": "Device",
+    "id": 3,
+    "instancetype": "single",
+    "mandatory": true,
+    "description": "",
+    "resourcedefs": [
+      {
+        "id": 0,
+        "name": "Manufacturer",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 1,
+        "name": "Model Number",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 2,
+        "name": "Serial Number",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 3,
+        "name": "Firmware Version",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 4,
+        "name": "Reboot",
+        "operations": "E",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 5,
+        "name": "Factory Reset",
+        "operations": "E",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 6,
+        "name": "Available Power Sources",
+        "operations": "R",
+        "instancetype": "multiple",
+        "mandatory": false,
+        "type": "integer",
+        "range": "0-7",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 7,
+        "name": "Power Source Voltage",
+        "operations": "R",
+        "instancetype": "multiple",
+        "mandatory": false,
+        "type": "integer",
+        "range": "",
+        "units": "mV",
+        "description": ""
+      },
+      {
+        "id": 8,
+        "name": "Power Source Current",
+        "operations": "R",
+        "instancetype": "multiple",
+        "mandatory": false,
+        "type": "integer",
+        "range": "",
+        "units": "mA",
+        "description": ""
+      },
+      {
+        "id": 9,
+        "name": "Battery Level",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "integer",
+        "range": "0-100",
+        "units": "%",
+        "description": ""
+      },
+      {
+        "id": 10,
+        "name": "Memory Free",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "integer",
+        "range": "",
+        "units": "KB",
+        "description": ""
+      },
+      {
+        "id": 11,
+        "name": "Error Code",
+        "operations": "R",
+        "instancetype": "multiple",
+        "mandatory": true,
+        "type": "integer",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 12,
+        "name": "Reset Error Code",
+        "operations": "E",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 13,
+        "name": "Current Time",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "time",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 14,
+        "name": "UTC Offset",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 15,
+        "name": "Timezone",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 16,
+        "name": "Supported Binding and Modes",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "name": "Connectivity Monitoring",
+    "id": 4,
+    "instancetype": "single",
+    "mandatory": false,
+    "description": "",
+    "resourcedefs": [
+      {
+        "id": 0,
+        "name": "Network Bearer",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "integer",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 1,
+        "name": "Available Network Bearer",
+        "operations": "R",
+        "instancetype": "multiple",
+        "mandatory": true,
+        "type": "integer",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 2,
+        "name": "Radio Signal Strength",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "integer",
+        "range": "",
+        "units": "dBm",
+        "description": ""
+      },
+      {
+        "id": 3,
+        "name": "Link Quality",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "integer",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 4,
+        "name": "IP Addresses",
+        "operations": "R",
+        "instancetype": "multiple",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 5,
+        "name": "Router IP Addresse",
+        "operations": "R",
+        "instancetype": "multiple",
+        "mandatory": false,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 6,
+        "name": "Link Utilization",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "integer",
+        "range": "0-100",
+        "units": "%",
+        "description": ""
+      },
+      {
+        "id": 7,
+        "name": "APN",
+        "operations": "R",
+        "instancetype": "multiple",
+        "mandatory": false,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 8,
+        "name": "Cell ID",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "integer",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 9,
+        "name": "SMNC",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "integer",
+        "range": "",
+        "units": "%",
+        "description": ""
+      },
+      {
+        "id": 10,
+        "name": "SMCC",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "integer",
+        "range": "",
+        "units": "",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "name": "Firmware Update",
+    "id": 5,
+    "instancetype": "single",
+    "mandatory": false,
+    "description": "",
+    "resourcedefs": [
+      {
+        "id": 0,
+        "name": "Package",
+        "operations": "W",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "opaque",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 1,
+        "name": "Package URI",
+        "operations": "W",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "0-255 bytes",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 2,
+        "name": "Update",
+        "operations": "E",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 3,
+        "name": "State",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "integer",
+        "range": "1-3",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 4,
+        "name": "Update Supported Objects",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "boolean",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 5,
+        "name": "Update Result",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "integer",
+        "range": "0-6",
+        "units": "",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "name": "Location",
+    "id": 6,
+    "instancetype": "single",
+    "mandatory": false,
+    "description": "",
+    "resourcedefs": [
+      {
+        "id": 0,
+        "name": "Latitude",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "Deg",
+        "description": ""
+      },
+      {
+        "id": 1,
+        "name": "Longitude",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "Deg",
+        "description": ""
+      },
+      {
+        "id": 2,
+        "name": "Altitude",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "string",
+        "range": "",
+        "units": "m",
+        "description": ""
+      },
+      {
+        "id": 3,
+        "name": "Uncertainty",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "string",
+        "range": "",
+        "units": "m",
+        "description": ""
+      },
+      {
+        "id": 4,
+        "name": "Velocity",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "opaque",
+        "range": "",
+        "units": "Refers to 3GPP GAD specs",
+        "description": ""
+      },
+      {
+        "id": 5,
+        "name": "Timestamp",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "time",
+        "range": "0-6",
+        "units": "",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "name": "Connectivity Statistics",
+    "id": 7,
+    "instancetype": "single",
+    "mandatory": false,
+    "description": "",
+    "resourcedefs": [
+      {
+        "id": 0,
+        "name": "SMS Tx Counter",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "integer",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 1,
+        "name": "SMS Rx Counter",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "integer",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 2,
+        "name": "Tx Data",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "integer",
+        "range": "",
+        "units": "Kilo-Bytes",
+        "description": ""
+      },
+      {
+        "id": 3,
+        "name": "Rx Data",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "integer",
+        "range": "",
+        "units": "Kilo-Bytes",
+        "description": ""
+      },
+      {
+        "id": 4,
+        "name": "Max Message Size",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "integer",
+        "range": "",
+        "units": "Byte",
+        "description": ""
+      },
+      {
+        "id": 5,
+        "name": "Average Message Size",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "integer",
+        "range": "",
+        "units": "Byte",
+        "description": ""
+      },
+      {
+        "id": 6,
+        "name": "StartOrReset",
+        "operations": "E",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "name": "Software Management",
+    "id": 9,
+    "instancetype": "multiple",
+    "mandatory": false,
+    "description": "",
+    "resourcedefs": [
+      {
+        "id": 0,
+        "name": "PkgName",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 1,
+        "name": "PkgVersion",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 2,
+        "name": "Package",
+        "operations": "W",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "opaque",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 3,
+        "name": "Package URI",
+        "operations": "W",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "0-255 bytes",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 4,
+        "name": "Install/Update",
+        "operations": "E",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 5,
+        "name": "Installation Options",
+        "operations": "W",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 6,
+        "name": "Uninstall",
+        "operations": "E",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 7,
+        "name": "Update State",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "integer",
+        "range": "1-3",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 8,
+        "name": "Update Supported Objects",
+        "operations": "RW",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "boolean",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 9,
+        "name": "Update Result",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "integer",
+        "range": "0-8",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 10,
+        "name": "Activate",
+        "operations": "E",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 11,
+        "name": "Deactivate",
+        "operations": "E",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      },
+      {
+        "id": 12,
+        "name": "Activation Result",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "boolean",
+        "range": "",
+        "units": "",
+        "description": ""
+      }
+    ]
+  }
+]
