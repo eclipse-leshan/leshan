@@ -21,11 +21,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.JsonDeserializer;
-
-/**
- * Unit test for {@link JsonDeserializer}
- */
 public class JsonDeserializerTest {
 
     private Logger log = LoggerFactory.getLogger(getClass());
@@ -48,7 +43,7 @@ public class JsonDeserializerTest {
         b.append("{\"n\":\"9\",\"v\":100},");
         b.append("{\"n\":\"10\",\"v\":15},");
         b.append("{\"n\":\"11/0\",\"v\":0},");
-        b.append("{\"n\":\"13\",\"v\":1367491215},");
+        b.append("{\"n\":\"13\",\"v\":1.367491215E9},");
         b.append("{\"n\":\"14\",\"sv\":\"+02:00\"},");
         b.append("{\"n\":\"15\",\"sv\":\"U\"}]}");
 
@@ -57,7 +52,7 @@ public class JsonDeserializerTest {
         JsonRootObject element = LwM2mJson.fromJsonLwM2m(dataString);
         log.debug(element.toString());
         String outString = LwM2mJson.toJsonLwM2m(element);
-        Assert.assertTrue(dataString.trim().equals(outString));
+        Assert.assertEquals(dataString.trim(), outString);
     }
 
     @Test
@@ -76,7 +71,7 @@ public class JsonDeserializerTest {
         JsonRootObject element = LwM2mJson.fromJsonLwM2m(dataString);
         log.debug(element.toString());
         String outString = LwM2mJson.toJsonLwM2m(element);
-        Assert.assertTrue(dataString.trim().equals(outString));
+        Assert.assertEquals(dataString.trim(), outString);
     }
 
     @Test
@@ -107,7 +102,7 @@ public class JsonDeserializerTest {
         JsonRootObject element = LwM2mJson.fromJsonLwM2m(dataString);
         log.debug(element.toString());
         String outString = LwM2mJson.toJsonLwM2m(element);
-        Assert.assertTrue(dataString.trim().equals(outString));
+        Assert.assertEquals(dataString.trim(), outString);
     }
 
 }

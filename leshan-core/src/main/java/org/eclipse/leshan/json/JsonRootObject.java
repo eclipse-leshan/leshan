@@ -20,24 +20,18 @@ package org.eclipse.leshan.json;
 import java.util.Collections;
 import java.util.List;
 
-import com.google.gson.annotations.SerializedName;
-
 /**
  * The class representing the JSON format of LWM2M
  */
 public class JsonRootObject {
 
-    @SerializedName("bn")
     private String baseName = null;
 
-    @SerializedName("e")
-    private final List<JsonArrayEntry> jsonArray;
+    private List<JsonArrayEntry> jsonArray;
 
-    @SerializedName("bt")
     private Long baseTime;
 
-    public JsonRootObject(List<JsonArrayEntry> jsonArray) {
-        this.jsonArray = jsonArray;
+    public JsonRootObject() {
     }
 
     public String getBaseName() {
@@ -54,6 +48,10 @@ public class JsonRootObject {
 
     public void setBaseTime(Long baseTime) {
         this.baseTime = baseTime;
+    }
+
+    public void setResourceList(List<JsonArrayEntry> jsonArray) {
+        this.jsonArray = jsonArray;
     }
 
     public List<JsonArrayEntry> getResourceList() {

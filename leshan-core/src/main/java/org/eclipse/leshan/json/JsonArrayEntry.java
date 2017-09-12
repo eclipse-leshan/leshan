@@ -20,26 +20,18 @@ package org.eclipse.leshan.json;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 
-import com.google.gson.annotations.SerializedName;
-
 public class JsonArrayEntry {
 
-    @SerializedName("n")
     private String name;
 
-    @SerializedName("v")
     private Number floatValue;
 
-    @SerializedName("bv")
     private Boolean booleanValue;
 
-    @SerializedName("ov")
     private String objectLinkValue;
 
-    @SerializedName("sv")
     private String stringValue;
 
-    @SerializedName("t")
     private Long time;
 
     public ResourceModel.Type getType() {
@@ -50,8 +42,7 @@ public class JsonArrayEntry {
             return Type.FLOAT;
         }
         if (objectLinkValue != null) {
-            // TODO handle object link or not ..
-            return null;
+            return Type.OBJLNK;
         }
         if (stringValue != null) {
             return Type.STRING;
@@ -75,16 +66,32 @@ public class JsonArrayEntry {
         this.time = time;
     }
 
+    public Number getFloatValue() {
+        return floatValue;
+    }
+
     public void setFloatValue(Number floatValue) {
         this.floatValue = floatValue;
+    }
+
+    public Boolean getBooleanValue() {
+        return booleanValue;
     }
 
     public void setBooleanValue(Boolean booleanValue) {
         this.booleanValue = booleanValue;
     }
 
+    public String getObjectLinkValue() {
+        return objectLinkValue;
+    }
+
     public void setObjectLinkValue(String objectLinkValue) {
         this.objectLinkValue = objectLinkValue;
+    }
+
+    public String getStringValue() {
+        return stringValue;
     }
 
     public void setStringValue(String stringValue) {

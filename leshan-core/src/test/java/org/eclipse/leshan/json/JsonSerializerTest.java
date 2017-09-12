@@ -92,7 +92,8 @@ public class JsonSerializerTest {
         elt15.setStringValue("U");
         elements.add(elt15);
 
-        JsonRootObject element = new JsonRootObject(elements);
+        JsonRootObject element = new JsonRootObject();
+        element.setResourceList(elements);
         String json = LwM2mJson.toJsonLwM2m(element);
         LOG.debug(" JSON String: " + json);
 

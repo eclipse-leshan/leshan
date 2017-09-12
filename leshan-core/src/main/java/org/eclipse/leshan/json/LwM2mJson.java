@@ -17,29 +17,20 @@
 
 package org.eclipse.leshan.json;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonSyntaxException;
+import com.eclipsesource.json.Json;
 
 /**
  * Helper for encoding/decoding LWM2M JSON format
  */
 public class LwM2mJson {
 
-    private static final Gson gson = new GsonBuilder().create();
+    private static final JsonRootObjectSerDes serDes = new JsonRootObjectSerDes();
 
-    public static String toJsonLwM2m(JsonRootObject lwM2mJsonElement) {
-        String json = gson.toJson(lwM2mJsonElement);
-        return json;
+    public static String toJsonLwM2m(JsonRootObject jro) {
+        return serDes.sSerialize(jro);
     }
 
     public static JsonRootObject fromJsonLwM2m(String jsonString) throws LwM2mJsonException {
-        try {
-            JsonRootObject element = gson.fromJson(jsonString, JsonRootObject.class);
-            return element;
-        } catch (JsonSyntaxException e) {
-            throw new LwM2mJsonException("Unable to deserialize JSON String to JsonRootObject ", e);
-        }
+        return serDes.deserialize(Json.parse(jsonString).asObject());
     }
-
 }
