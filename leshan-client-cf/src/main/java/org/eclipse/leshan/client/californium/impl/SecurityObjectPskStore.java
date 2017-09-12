@@ -43,6 +43,10 @@ public class SecurityObjectPskStore implements PskStore {
 
     private final LwM2mObjectEnabler securityEnabler;
 
+    /**
+     * Warning : The securityEnabler should not contains 2 or more entries with the same identity. This is not a LWM2M
+     * specification constraint but an implementation limitation.
+     */
     public SecurityObjectPskStore(LwM2mObjectEnabler securityEnabler) {
         this.securityEnabler = securityEnabler;
     }
@@ -52,17 +56,28 @@ public class SecurityObjectPskStore implements PskStore {
         if (identity == null)
             return null;
 
+        byte[] res = null;
+
         LwM2mObject securities = (LwM2mObject) securityEnabler.read(SYSTEM, new ReadRequest(SECURITY)).getContent();
         for (LwM2mObjectInstance security : securities.getInstances().values()) {
             long securityMode = (long) security.getResource(SEC_SECURITY_MODE).getValue();
             if (securityMode == SecurityMode.PSK.code) // psk
             {
                 byte[] pskIdentity = (byte[]) security.getResource(SEC_PUBKEY_IDENTITY).getValue();
-                if (Arrays.equals(identity.getBytes(), pskIdentity))
-                    return (byte[]) security.getResource(SEC_SECRET_KEY).getValue();
+                if (Arrays.equals(identity.getBytes(), pskIdentity)) {
+                    if (res == null) {
+                        // we continue to check if the is duplication
+                        res = (byte[]) security.getResource(SEC_SECRET_KEY).getValue();
+                    } else {
+                        LOG.warn("There is several security object instance with the same psk identity : '{}'",
+                                identity);
+                        // we find 1 duplication and warn for it no need to continue.
+                        return res;
+                    }
+                }
             }
         }
-        return null;
+        return res;
     }
 
     @Override
