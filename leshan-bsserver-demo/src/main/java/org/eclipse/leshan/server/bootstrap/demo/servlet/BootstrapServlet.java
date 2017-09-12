@@ -45,8 +45,9 @@ import com.google.gson.JsonSyntaxException;
 /**
  * Servlet for REST API in charge of adding bootstrap information to the bootstrap server.
  */
-@SuppressWarnings("serial")
 public class BootstrapServlet extends HttpServlet {
+
+    private static final long serialVersionUID = 1L;
 
     private static class SignedByteUnsignedByteAdapter implements JsonSerializer<Byte>, JsonDeserializer<Byte> {
 

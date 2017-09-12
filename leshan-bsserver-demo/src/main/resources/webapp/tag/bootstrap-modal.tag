@@ -97,9 +97,17 @@
 
     <script>
         var self = this;
+        
         this.on('mount', function() {
-            $('#bootstrap-modal').modal('show');
-            this.update();
+	        $.get('api/server', function(data) {
+	            self.server = data;
+	            $('#bootstrap-modal').modal('show');
+            	this.update();
+	        }).fail(function(xhr, status, error){
+	            var err = "Unable to get the server info";
+	            console.error(err, status, error, xhr.responseText);
+	            alert(err + ": " + xhr.responseText);
+	        });
         });
 
         default_uri(){
@@ -280,7 +288,7 @@
                         smsBindingKeyParam : [  ],
                         smsBindingKeySecret : [  ],
                         smsSecurityMode : "NO_SEC",
-                        uri : "coap://"+location.hostname+":5683",
+                        uri : "coap://"+location.hostname+":"+self.server.unsecuredEndpointPort,
                       }
                 }]
             });

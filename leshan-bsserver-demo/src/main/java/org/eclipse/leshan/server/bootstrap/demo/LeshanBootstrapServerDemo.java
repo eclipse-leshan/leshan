@@ -36,6 +36,7 @@ import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.BootstrapServlet;
+import org.eclipse.leshan.server.bootstrap.demo.servlet.ServerServlet;
 import org.eclipse.leshan.server.californium.LeshanBootstrapServerBuilder;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LeshanBootstrapServer;
@@ -179,6 +180,9 @@ public class LeshanBootstrapServerDemo {
 
         ServletHolder bsServletHolder = new ServletHolder(new BootstrapServlet(bsStore));
         root.addServlet(bsServletHolder, "/api/bootstrap/*");
+
+        ServletHolder serverServletHolder = new ServletHolder(new ServerServlet(bsServer));
+        root.addServlet(serverServletHolder, "/api/server/*");
 
         server.setHandler(root);
 
