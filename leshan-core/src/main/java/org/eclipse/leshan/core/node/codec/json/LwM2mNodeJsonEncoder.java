@@ -57,6 +57,7 @@ public class LwM2mNodeJsonEncoder {
         internalEncoder.converter = converter;
         node.accept(internalEncoder);
         JsonRootObject jsonObject = new JsonRootObject(internalEncoder.resourceList);
+        jsonObject.setBaseName(path.toString());
         return LwM2mJson.toJsonLwM2m(jsonObject).getBytes();
     }
 
@@ -79,7 +80,8 @@ public class LwM2mNodeJsonEncoder {
             entries.addAll(internalEncoder.resourceList);
         }
         JsonRootObject jsonObject = new JsonRootObject(entries);
-
+        jsonObject.setBaseName(path.toString());
+        jsonObject.setBaseTime(internalEncoder.timestamp);
         return LwM2mJson.toJsonLwM2m(jsonObject).getBytes();
     }
 
