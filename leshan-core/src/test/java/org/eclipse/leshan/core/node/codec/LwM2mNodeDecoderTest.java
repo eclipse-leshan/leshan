@@ -264,7 +264,7 @@ public class LwM2mNodeDecoderTest {
     public void json_device_object_instance0() throws CodecException {
         // json content for instance 0 of device object
         StringBuilder b = new StringBuilder();
-        b.append("{\"e\":[");
+        b.append("{\"bn\":\"/3/0\",\"e\":[");
         b.append("{\"n\":\"0\",\"sv\":\"Open Mobile Alliance\"},");
         b.append("{\"n\":\"1\",\"sv\":\"Lightweight M2M Client\"},");
         b.append("{\"n\":\"2\",\"sv\":\"345000123\"},");
@@ -388,7 +388,7 @@ public class LwM2mNodeDecoderTest {
     public void json_timestamped_Object() throws CodecException {
         // json content for instance 0 of device object
         StringBuilder b = new StringBuilder();
-        b.append("{\"e\":[");
+        b.append("{\"bn\":\"/1024\",\"e\":[");
         b.append("{\"n\":\"0/1\",\"v\":22.9,\"t\":-30},");
         b.append("{\"n\":\"0/1\",\"v\":22.4,\"t\":-5},");
         b.append("{\"n\":\"0/0\",\"sv\":\"a string\",\"t\":-5},");
