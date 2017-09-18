@@ -34,7 +34,7 @@ public class JsonDeserializerTest {
     public void deserialize_device_object() throws LwM2mJsonException {
 
         StringBuilder b = new StringBuilder();
-        b.append("{\"e\":[");
+        b.append("{\"bn\":\"/3/0\",\"e\":[");
         b.append("{\"n\":\"0\",\"sv\":\"Open Mobile Alliance\"},");
         b.append("{\"n\":\"1\",\"sv\":\"Lightweight M2M Client\"},");
         b.append("{\"n\":\"2\",\"sv\":\"345000123\"},");
@@ -65,7 +65,7 @@ public class JsonDeserializerTest {
         // Resource containing multiple historical representations
         // Currently Leshan does not handle the is case???
         StringBuilder b = new StringBuilder();
-        b.append("{\"e\":[");
+        b.append("{\"bn\":\"/3\",\"e\":[");
         b.append("{\"n\":\"1/2\",\"v\":22.4,\"t\":-5},");
         b.append("{\"n\":\"1/2\",\"v\":22.9,\"t\":-30},");
         b.append("{\"n\":\"1/2\",\"v\":24.1,\"t\":-50}],");
