@@ -81,7 +81,6 @@ public class LwM2mNodeJsonEncoder {
         }
         JsonRootObject jsonObject = new JsonRootObject(entries);
         jsonObject.setBaseName(path.toString());
-        jsonObject.setBaseTime(internalEncoder.timestamp);
         return LwM2mJson.toJsonLwM2m(jsonObject).getBytes();
     }
 
