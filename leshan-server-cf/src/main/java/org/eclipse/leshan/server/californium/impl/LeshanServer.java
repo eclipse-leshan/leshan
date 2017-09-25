@@ -35,6 +35,7 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.server.Destroyable;
 import org.eclipse.leshan.server.LwM2mServer;
@@ -178,8 +179,7 @@ public class LeshanServer implements LwM2mServer {
         coapServer.add(rdResource);
 
         // create sender
-        requestSender = new CaliforniumLwM2mRequestSender(endpoints, this.observationService, modelProvider, encoder,
-                decoder);
+        requestSender = new CaliforniumLwM2mRequestSender(endpoints, modelProvider, encoder, decoder);
     }
 
     @Override
@@ -263,19 +263,35 @@ public class LeshanServer implements LwM2mServer {
     @Override
     public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request)
             throws InterruptedException {
-        return requestSender.send(destination, request, null);
+        T response = requestSender.send(destination, request, null);
+        if (response instanceof ObserveResponse) {
+            observationService.addObservation(destination, ((ObserveResponse) response).getObservation());
+        }
+        return response;
     }
 
     @Override
     public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request, long timeout)
             throws InterruptedException {
-        return requestSender.send(destination, request, timeout);
+        T response = requestSender.send(destination, request, timeout);
+        if (response instanceof ObserveResponse) {
+            observationService.addObservation(destination, ((ObserveResponse) response).getObservation());
+        }
+        return response;
     }
 
     @Override
-    public <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request,
-            ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
-        requestSender.send(destination, request, responseCallback, errorCallback);
+    public <T extends LwM2mResponse> void send(final Registration destination, DownlinkRequest<T> request,
+            final ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
+        requestSender.send(destination, request, new ResponseCallback<T>() {
+            @Override
+            public void onResponse(T response) {
+                if (response instanceof ObserveResponse) {
+                    observationService.addObservation(destination, ((ObserveResponse) response).getObservation());
+                }
+                responseCallback.onResponse(response);
+            }
+        }, errorCallback);
     }
 
     /**
