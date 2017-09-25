@@ -17,9 +17,7 @@ package org.eclipse.leshan.server.californium.impl;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
@@ -106,11 +104,12 @@ public class LeshanServer implements LwM2mServer {
      * @param decoder decoder used to decode response payload.
      * @param encoder encode used to encode request payload.
      * @param coapConfig the CoAP {@link NetworkConfig}.
+     * @param sender responsible to send request
      */
     public LeshanServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
             LwM2mModelProvider modelProvider, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
-            NetworkConfig coapConfig) {
+            NetworkConfig coapConfig, LwM2mRequestSender sender) {
 
         Validate.notNull(registrationStore, "registration store cannot be null");
         Validate.notNull(authorizer, "authorizer cannot be null");
@@ -118,6 +117,7 @@ public class LeshanServer implements LwM2mServer {
         Validate.notNull(encoder, "encoder cannot be null");
         Validate.notNull(decoder, "decoder cannot be null");
         Validate.notNull(coapConfig, "coapConfig cannot be null");
+        Validate.notNull(sender, "sender cannot be null");
 
         // Init services and stores
         this.registrationStore = registrationStore;
@@ -125,6 +125,7 @@ public class LeshanServer implements LwM2mServer {
         this.securityStore = securityStore;
         this.observationService = new ObservationServiceImpl(registrationStore, modelProvider, decoder);
         this.modelProvider = modelProvider;
+        this.requestSender = sender;
 
         // Cancel observations on client unregistering
         this.registrationService.addListener(new RegistrationListener() {
@@ -147,7 +148,6 @@ public class LeshanServer implements LwM2mServer {
         });
 
         // define a set of endpoints
-        Set<Endpoint> endpoints = new HashSet<>();
         coapServer = new CoapServer(coapConfig) {
             @Override
             protected Resource createRoot() {
@@ -161,7 +161,6 @@ public class LeshanServer implements LwM2mServer {
             unsecuredEndpoint.addNotificationListener(observationService);
             observationService.setNonSecureEndpoint(unsecuredEndpoint);
             coapServer.addEndpoint(unsecuredEndpoint);
-            endpoints.add(unsecuredEndpoint);
         }
 
         // secure endpoint
@@ -170,16 +169,12 @@ public class LeshanServer implements LwM2mServer {
             securedEndpoint.addNotificationListener(observationService);
             observationService.setSecureEndpoint(securedEndpoint);
             coapServer.addEndpoint(securedEndpoint);
-            endpoints.add(securedEndpoint);
         }
 
         // define /rd resource
         RegisterResource rdResource = new RegisterResource(
                 new RegistrationHandler(this.registrationService, authorizer));
         coapServer.add(rdResource);
-
-        // create sender
-        requestSender = new CaliforniumLwM2mRequestSender(endpoints, modelProvider, encoder, decoder);
     }
 
     @Override
