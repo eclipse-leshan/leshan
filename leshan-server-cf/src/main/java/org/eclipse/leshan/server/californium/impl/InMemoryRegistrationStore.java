@@ -128,7 +128,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     public Registration getRegistration(String registrationId) {
         try {
             lock.readLock().lock();
-
+            // TODO we should create an index instead of iterate all over the collection
             if (registrationId != null) {
                 for (Registration registration : regsByEp.values()) {
                     if (registrationId.equals(registration.getId())) {
@@ -154,13 +154,20 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
 
     @Override
     public Registration getRegistrationByAdress(InetSocketAddress address) {
-        // TODO we should create an index instead of iterate all over the collection
-        for (Registration r : regsByEp.values()) {
-            if (address.getPort() == r.getPort() && address.getAddress().equals(r.getAddress())) {
-                return r;
+        try {
+            lock.readLock().lock();
+            // TODO we should create an index instead of iterate all over the collection
+            if (address != null) {
+                for (Registration r : regsByEp.values()) {
+                    if (address.getPort() == r.getPort() && address.getAddress().equals(r.getAddress())) {
+                        return r;
+                    }
+                }
             }
+            return null;
+        } finally {
+            lock.readLock().unlock();
         }
-        return null;
     }
 
     @Override
@@ -314,8 +321,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
             Key key = new Key(token);
             org.eclipse.californium.core.observe.Observation obs = obsByToken.get(key);
             if (obs != null) {
-                obsByToken.put(key,
-                        new org.eclipse.californium.core.observe.Observation(obs.getRequest(), ctx));
+                obsByToken.put(key, new org.eclipse.californium.core.observe.Observation(obs.getRequest(), ctx));
             }
         } finally {
             lock.writeLock().unlock();
