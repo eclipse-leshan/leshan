@@ -21,7 +21,7 @@ import org.eclipse.leshan.util.Validate;
 
 public class ResponseCodeUtil {
 
-    public static ResponseCode fromCoapCode(final int code) {
+    public static ResponseCode fromCoapCode(int code) {
         Validate.notNull(code);
 
         if (code == CoAP.ResponseCode.CREATED.value) {
@@ -55,34 +55,34 @@ public class ResponseCodeUtil {
         }
     }
 
-    public static org.eclipse.californium.core.coap.CoAP.ResponseCode fromLwM2mCode(final ResponseCode code) {
+    public static org.eclipse.californium.core.coap.CoAP.ResponseCode fromLwM2mCode(ResponseCode code) {
         Validate.notNull(code);
 
         switch (code) {
-            case CREATED:
-                return org.eclipse.californium.core.coap.CoAP.ResponseCode.CREATED;
-            case DELETED:
-                return org.eclipse.californium.core.coap.CoAP.ResponseCode.DELETED;
-            case CHANGED:
-                return org.eclipse.californium.core.coap.CoAP.ResponseCode.CHANGED;
-            case CONTENT:
-                return org.eclipse.californium.core.coap.CoAP.ResponseCode.CONTENT;
-            case BAD_REQUEST:
-                return org.eclipse.californium.core.coap.CoAP.ResponseCode.BAD_REQUEST;
-            case UNAUTHORIZED:
-                return org.eclipse.californium.core.coap.CoAP.ResponseCode.UNAUTHORIZED;
-            case NOT_FOUND:
-                return org.eclipse.californium.core.coap.CoAP.ResponseCode.NOT_FOUND;
-            case METHOD_NOT_ALLOWED:
-                return org.eclipse.californium.core.coap.CoAP.ResponseCode.METHOD_NOT_ALLOWED;
-            case FORBIDDEN:
-                return org.eclipse.californium.core.coap.CoAP.ResponseCode.FORBIDDEN;
-            case INTERNAL_SERVER_ERROR:
-                return org.eclipse.californium.core.coap.CoAP.ResponseCode.INTERNAL_SERVER_ERROR;
-            case SERVICE_UNAVAILABLE:
-                return org.eclipse.californium.core.coap.CoAP.ResponseCode.SERVICE_UNAVAILABLE;
-            default:
-                throw new IllegalArgumentException("Invalid CoAP code for LWM2M response: " + code);
+        case CREATED:
+            return org.eclipse.californium.core.coap.CoAP.ResponseCode.CREATED;
+        case DELETED:
+            return org.eclipse.californium.core.coap.CoAP.ResponseCode.DELETED;
+        case CHANGED:
+            return org.eclipse.californium.core.coap.CoAP.ResponseCode.CHANGED;
+        case CONTENT:
+            return org.eclipse.californium.core.coap.CoAP.ResponseCode.CONTENT;
+        case BAD_REQUEST:
+            return org.eclipse.californium.core.coap.CoAP.ResponseCode.BAD_REQUEST;
+        case UNAUTHORIZED:
+            return org.eclipse.californium.core.coap.CoAP.ResponseCode.UNAUTHORIZED;
+        case NOT_FOUND:
+            return org.eclipse.californium.core.coap.CoAP.ResponseCode.NOT_FOUND;
+        case METHOD_NOT_ALLOWED:
+            return org.eclipse.californium.core.coap.CoAP.ResponseCode.METHOD_NOT_ALLOWED;
+        case FORBIDDEN:
+            return org.eclipse.californium.core.coap.CoAP.ResponseCode.FORBIDDEN;
+        case INTERNAL_SERVER_ERROR:
+            return org.eclipse.californium.core.coap.CoAP.ResponseCode.INTERNAL_SERVER_ERROR;
+        case SERVICE_UNAVAILABLE:
+            return org.eclipse.californium.core.coap.CoAP.ResponseCode.SERVICE_UNAVAILABLE;
+        default:
+            throw new IllegalArgumentException("Invalid CoAP code for LWM2M response: " + code);
         }
     }
 }

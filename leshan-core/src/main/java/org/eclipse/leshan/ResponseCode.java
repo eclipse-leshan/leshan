@@ -41,25 +41,24 @@ public enum ResponseCode {
     NOT_ACCEPTABLE,
     /** The specified format is not supported */
     UNSUPPORTED_CONTENT_FORMAT,
-    /** The requested service is unavailable */
-    SERVICE_UNAVAILABLE,
     /** generic response code for unexpected error */
-    INTERNAL_SERVER_ERROR;
+    INTERNAL_SERVER_ERROR,
+    /** The requested service is unavailable */
+    SERVICE_UNAVAILABLE;
 
     public boolean isError() {
         switch (this) {
-            case UNAUTHORIZED:
-            case BAD_REQUEST:
-            case METHOD_NOT_ALLOWED:
-            case FORBIDDEN:
-            case NOT_FOUND:
-            case INTERNAL_SERVER_ERROR:
-            case UNSUPPORTED_CONTENT_FORMAT:
-            case NOT_ACCEPTABLE:
-            case SERVICE_UNAVAILABLE:
-                return true;
-            default:
-                return false;
+        case UNAUTHORIZED:
+        case BAD_REQUEST:
+        case METHOD_NOT_ALLOWED:
+        case FORBIDDEN:
+        case NOT_FOUND:
+        case INTERNAL_SERVER_ERROR:
+        case UNSUPPORTED_CONTENT_FORMAT:
+        case NOT_ACCEPTABLE:
+            return true;
+        default:
+            return false;
         }
     }
 }
