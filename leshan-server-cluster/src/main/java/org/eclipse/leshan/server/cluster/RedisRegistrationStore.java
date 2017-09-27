@@ -252,16 +252,20 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
 
         private void scanNext(String cursor) {
             try (Jedis j = pool.getResource()) {
-                ScanResult<byte[]> sr = j.scan(cursor.getBytes(), scanParams);
+                do {
+                    ScanResult<byte[]> sr = j.scan(cursor.getBytes(), scanParams);
 
-                this.scanResult = new ArrayList<>();
-                if (sr.getResult() != null && !sr.getResult().isEmpty()) {
-                    for (byte[] value : j.mget(sr.getResult().toArray(new byte[][] {}))) {
-                        this.scanResult.add(deserializeReg(value));
+                    this.scanResult = new ArrayList<>();
+                    if (sr.getResult() != null && !sr.getResult().isEmpty()) {
+                        for (byte[] value : j.mget(sr.getResult().toArray(new byte[][] {}))) {
+                            this.scanResult.add(deserializeReg(value));
+                        }
                     }
-                }
 
-                this.cursor = sr.getStringCursor();
+                    cursor = sr.getStringCursor();
+                } while (!"0".equals(cursor) && scanResult.isEmpty());
+
+                this.cursor = cursor;
             }
         }
 
