@@ -48,6 +48,8 @@ public class ResponseCodeUtil {
             return ResponseCode.NOT_ACCEPTABLE;
         } else if (code == CoAP.ResponseCode.INTERNAL_SERVER_ERROR.value) {
             return ResponseCode.INTERNAL_SERVER_ERROR;
+        } else if (code == CoAP.ResponseCode.SERVICE_UNAVAILABLE.value) {
+            return ResponseCode.SERVICE_UNAVAILABLE;
         } else {
             throw new IllegalArgumentException("Invalid CoAP code for LWM2M response: " + code);
         }
@@ -77,6 +79,8 @@ public class ResponseCodeUtil {
             return org.eclipse.californium.core.coap.CoAP.ResponseCode.FORBIDDEN;
         case INTERNAL_SERVER_ERROR:
             return org.eclipse.californium.core.coap.CoAP.ResponseCode.INTERNAL_SERVER_ERROR;
+        case SERVICE_UNAVAILABLE:
+            return org.eclipse.californium.core.coap.CoAP.ResponseCode.SERVICE_UNAVAILABLE;
         default:
             throw new IllegalArgumentException("Invalid CoAP code for LWM2M response: " + code);
         }

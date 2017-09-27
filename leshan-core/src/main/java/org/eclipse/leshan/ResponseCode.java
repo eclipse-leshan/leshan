@@ -41,6 +41,8 @@ public enum ResponseCode {
     NOT_ACCEPTABLE,
     /** The specified format is not supported */
     UNSUPPORTED_CONTENT_FORMAT,
+    /** The requested service is unavailable */
+    SERVICE_UNAVAILABLE,
     /** generic response code for unexpected error */
     INTERNAL_SERVER_ERROR;
 
