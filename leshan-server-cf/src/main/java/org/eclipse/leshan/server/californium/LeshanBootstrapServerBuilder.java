@@ -207,37 +207,44 @@ public class LeshanBootstrapServerBuilder {
 
         // handle dtlsConfig
         DtlsConnectorConfig dtlsConfig = null;
-        if (dtlsConfigBuilder == null) {
-            dtlsConfigBuilder = new DtlsConnectorConfig.Builder();
-        }
-        DtlsConnectorConfig incompleteConfig = dtlsConfigBuilder.getIncompleteConfig();
-
-        // Handle PSK Store
-        if (incompleteConfig.getPskStore() == null) {
-            dtlsConfigBuilder.setPskStore(new LwM2mBootstrapPskStore(securityStore));
-        } else {
-            LOG.warn("PskStore should be automatically set by Leshan. Using a custom implementation is not advised.");
-        }
-
-        // Handle secure address
-        if (incompleteConfig.getAddress() == null) {
-            if (localAddressSecure == null) {
-                localAddressSecure = new InetSocketAddress(0);
+        if (!noSecuredEndpoint) {
+            if (dtlsConfigBuilder == null) {
+                dtlsConfigBuilder = new DtlsConnectorConfig.Builder();
             }
-            dtlsConfigBuilder.setAddress(localAddressSecure);
-        } else if (localAddressSecure != null && !localAddressSecure.equals(incompleteConfig.getAddress())) {
-            throw new IllegalStateException(String.format(
-                    "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for secure address: %s != %s",
-                    localAddressSecure, incompleteConfig.getAddress()));
+            DtlsConnectorConfig incompleteConfig = dtlsConfigBuilder.getIncompleteConfig();
+
+            // Handle PSK Store
+            if (incompleteConfig.getPskStore() == null && securityStore != null) {
+                dtlsConfigBuilder.setPskStore(new LwM2mBootstrapPskStore(securityStore));
+            } else {
+                LOG.warn(
+                        "PskStore should be automatically set by Leshan. Using a custom implementation is not advised.");
+            }
+
+            // Handle secure address
+            if (incompleteConfig.getAddress() == null) {
+                if (localAddressSecure == null) {
+                    localAddressSecure = new InetSocketAddress(0);
+                }
+                dtlsConfigBuilder.setAddress(localAddressSecure);
+            } else if (localAddressSecure != null && !localAddressSecure.equals(incompleteConfig.getAddress())) {
+                throw new IllegalStateException(String.format(
+                        "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for secure address: %s != %s",
+                        localAddressSecure, incompleteConfig.getAddress()));
+            }
+
+            // Handle active peers
+            if (incompleteConfig.getMaxConnections() == null)
+                dtlsConfigBuilder.setMaxConnections(coapConfig.getInt(Keys.MAX_ACTIVE_PEERS));
+            if (incompleteConfig.getStaleConnectionThreshold() == null)
+                dtlsConfigBuilder.setStaleConnectionThreshold(coapConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
+
+            // we try to build the dtlsConfig, if it fail we will just not create the secured endpoint
+            try {
+                dtlsConfig = dtlsConfigBuilder.build();
+            } catch (IllegalStateException e) {
+            }
         }
-
-        // Handle active peers
-        if (incompleteConfig.getMaxConnections() == null)
-            dtlsConfigBuilder.setMaxConnections(coapConfig.getInt(Keys.MAX_ACTIVE_PEERS));
-        if (incompleteConfig.getStaleConnectionThreshold() == null)
-            dtlsConfigBuilder.setStaleConnectionThreshold(coapConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
-
-        dtlsConfig = dtlsConfigBuilder.build();
 
         CoapEndpoint unsecuredEndpoint = null;
         if (!noUnsecuredEndpoint) {
@@ -249,7 +256,7 @@ public class LeshanBootstrapServerBuilder {
         }
 
         CoapEndpoint securedEndpoint = null;
-        if (!noSecuredEndpoint && securityStore != null) {
+        if (!noSecuredEndpoint && dtlsConfig != null) {
             if (endpointFactory != null) {
                 securedEndpoint = endpointFactory.createSecuredEndpoint(dtlsConfig, coapConfig, null);
             } else {

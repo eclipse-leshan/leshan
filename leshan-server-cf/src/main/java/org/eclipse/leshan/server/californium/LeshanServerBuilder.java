@@ -330,78 +330,86 @@ public class LeshanServerBuilder {
 
         // handle dtlsConfig
         DtlsConnectorConfig dtlsConfig = null;
-        if (dtlsConfigBuilder == null) {
-            dtlsConfigBuilder = new DtlsConnectorConfig.Builder();
-        }
-        // set default DTLS setting for Leshan unless user change it.
-        DtlsConnectorConfig incompleteConfig = dtlsConfigBuilder.getIncompleteConfig();
-        // Handle PSK Store
-        if (incompleteConfig.getPskStore() == null && securityStore != null) {
-            dtlsConfigBuilder.setPskStore(new LwM2mPskStore(this.securityStore, registrationStore));
-        } else {
-            LOG.warn("PskStore should be automatically set by Leshan. Using a custom implementation is not advised.");
-        }
-
-        // Handle secure address
-        if (incompleteConfig.getAddress() == null) {
-            if (localSecureAddress == null) {
-                localSecureAddress = new InetSocketAddress(LwM2m.DEFAULT_COAP_SECURE_PORT);
+        if (!noSecuredEndpoint) {
+            if (dtlsConfigBuilder == null) {
+                dtlsConfigBuilder = new DtlsConnectorConfig.Builder();
             }
-            dtlsConfigBuilder.setAddress(localSecureAddress);
-        } else if (localSecureAddress != null && !localSecureAddress.equals(incompleteConfig.getAddress())) {
-            throw new IllegalStateException(String.format(
-                    "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for secure address: %s != %s",
-                    localSecureAddress, incompleteConfig.getAddress()));
-        }
+            // set default DTLS setting for Leshan unless user change it.
+            DtlsConnectorConfig incompleteConfig = dtlsConfigBuilder.getIncompleteConfig();
+            // Handle PSK Store
+            if (incompleteConfig.getPskStore() == null && securityStore != null) {
+                dtlsConfigBuilder.setPskStore(new LwM2mPskStore(this.securityStore, registrationStore));
+            } else {
+                LOG.warn(
+                        "PskStore should be automatically set by Leshan. Using a custom implementation is not advised.");
+            }
 
-        // Handle active peers
-        if (incompleteConfig.getMaxConnections() == null)
-            dtlsConfigBuilder.setMaxConnections(coapConfig.getInt(Keys.MAX_ACTIVE_PEERS));
-        if (incompleteConfig.getStaleConnectionThreshold() == null)
-            dtlsConfigBuilder.setStaleConnectionThreshold(coapConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
-
-        // handle trusted certificates
-        if (trustedCertificates != null) {
-            if (incompleteConfig.getTrustStore() == null) {
-                dtlsConfigBuilder.setTrustStore(trustedCertificates);
-            } else if (!Arrays.equals(trustedCertificates, incompleteConfig.getTrustStore())) {
+            // Handle secure address
+            if (incompleteConfig.getAddress() == null) {
+                if (localSecureAddress == null) {
+                    localSecureAddress = new InetSocketAddress(LwM2m.DEFAULT_COAP_SECURE_PORT);
+                }
+                dtlsConfigBuilder.setAddress(localSecureAddress);
+            } else if (localSecureAddress != null && !localSecureAddress.equals(incompleteConfig.getAddress())) {
                 throw new IllegalStateException(String.format(
-                        "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for trusted Certificates (trustStore) : \n%s != \n%s",
-                        Arrays.toString(trustedCertificates), Arrays.toString(incompleteConfig.getTrustStore())));
-            }
-        }
-
-        // check conflict for private key
-        if (privateKey != null) {
-            if (incompleteConfig.getPrivateKey() != null && !incompleteConfig.getPrivateKey().equals(privateKey)) {
-                throw new IllegalStateException(String.format(
-                        "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for private key: %s != %s",
-                        privateKey, incompleteConfig.getPrivateKey()));
+                        "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for secure address: %s != %s",
+                        localSecureAddress, incompleteConfig.getAddress()));
             }
 
-            // if in raw key mode and not in X.509 set the raw keys
-            if (certificateChain == null && publicKey != null) {
-                if (incompleteConfig.getPublicKey() != null && !incompleteConfig.getPublicKey().equals(publicKey)) {
+            // Handle active peers
+            if (incompleteConfig.getMaxConnections() == null)
+                dtlsConfigBuilder.setMaxConnections(coapConfig.getInt(Keys.MAX_ACTIVE_PEERS));
+            if (incompleteConfig.getStaleConnectionThreshold() == null)
+                dtlsConfigBuilder.setStaleConnectionThreshold(coapConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
+
+            // handle trusted certificates
+            if (trustedCertificates != null) {
+                if (incompleteConfig.getTrustStore() == null) {
+                    dtlsConfigBuilder.setTrustStore(trustedCertificates);
+                } else if (!Arrays.equals(trustedCertificates, incompleteConfig.getTrustStore())) {
                     throw new IllegalStateException(String.format(
-                            "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for public key: %s != %s",
-                            publicKey, incompleteConfig.getPublicKey()));
+                            "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for trusted Certificates (trustStore) : \n%s != \n%s",
+                            Arrays.toString(trustedCertificates), Arrays.toString(incompleteConfig.getTrustStore())));
+                }
+            }
+
+            // check conflict for private key
+            if (privateKey != null) {
+                if (incompleteConfig.getPrivateKey() != null && !incompleteConfig.getPrivateKey().equals(privateKey)) {
+                    throw new IllegalStateException(String.format(
+                            "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for private key: %s != %s",
+                            privateKey, incompleteConfig.getPrivateKey()));
                 }
 
-                dtlsConfigBuilder.setIdentity(privateKey, publicKey);
-            }
-            // if in X.509 mode set the private key, certificate chain, public key is extracted from the certificate
-            if (certificateChain != null && certificateChain.length > 0) {
-                if (incompleteConfig.getCertificateChain() != null
-                        && !Arrays.equals(incompleteConfig.getCertificateChain(), certificateChain)) {
-                    throw new IllegalStateException(String.format(
-                            "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for certificate chain: %s != %s",
-                            certificateChain, incompleteConfig.getCertificateChain()));
-                }
+                // if in raw key mode and not in X.509 set the raw keys
+                if (certificateChain == null && publicKey != null) {
+                    if (incompleteConfig.getPublicKey() != null && !incompleteConfig.getPublicKey().equals(publicKey)) {
+                        throw new IllegalStateException(String.format(
+                                "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for public key: %s != %s",
+                                publicKey, incompleteConfig.getPublicKey()));
+                    }
 
-                dtlsConfigBuilder.setIdentity(privateKey, certificateChain, false);
+                    dtlsConfigBuilder.setIdentity(privateKey, publicKey);
+                }
+                // if in X.509 mode set the private key, certificate chain, public key is extracted from the certificate
+                if (certificateChain != null && certificateChain.length > 0) {
+                    if (incompleteConfig.getCertificateChain() != null
+                            && !Arrays.equals(incompleteConfig.getCertificateChain(), certificateChain)) {
+                        throw new IllegalStateException(String.format(
+                                "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for certificate chain: %s != %s",
+                                certificateChain, incompleteConfig.getCertificateChain()));
+                    }
+
+                    dtlsConfigBuilder.setIdentity(privateKey, certificateChain, false);
+                }
+            }
+
+            // we try to build the dtlsConfig, if it fail we will just not create the secured endpoint
+            try {
+                dtlsConfig = dtlsConfigBuilder.build();
+            } catch (IllegalStateException e) {
             }
         }
-        dtlsConfig = dtlsConfigBuilder.build();
 
         // create endpoints
         CoapEndpoint unsecuredEndpoint = null;
@@ -415,7 +423,7 @@ public class LeshanServerBuilder {
         }
 
         CoapEndpoint securedEndpoint = null;
-        if (!noSecuredEndpoint && dtlsConfig.getSupportedCipherSuites().length > 0) {
+        if (!noSecuredEndpoint && dtlsConfig != null) {
             if (endpointFactory != null) {
                 securedEndpoint = endpointFactory.createSecuredEndpoint(dtlsConfig, coapConfig, registrationStore);
             } else {

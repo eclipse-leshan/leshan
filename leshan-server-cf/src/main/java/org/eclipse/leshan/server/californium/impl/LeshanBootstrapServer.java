@@ -49,8 +49,6 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
             BootstrapSecurityStore bsSecurityStore, BootstrapSessionManager bsSessionManager, LwM2mModel model,
             NetworkConfig coapConfig) {
 
-        Validate.notNull(unsecuredEndpoint, "endpoint cannot be null");
-        Validate.notNull(securedEndpoint, "endpoint cannot be null");
         Validate.notNull(bsStore, "bootstrap store must not be null");
         Validate.notNull(bsSessionManager, "session manager must not be null");
         Validate.notNull(model, "model must not be null");
