@@ -515,8 +515,13 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
             org.eclipse.californium.core.observe.Observation obs = deserializeObs(serializedObs);
             String registrationId = obs.getRequest().getUserContext().get(CoapRequestBuilder.CTX_REGID);
             Registration registration = getRegistration(j, registrationId);
-            String endpoint = registration.getEndpoint();
+            if (registration == null) {
+                LOG.warn("Unable to remove observation {}, registration {} does not exist anymore", obs.getRequest(),
+                        registrationId);
+                return;
+            }
 
+            String endpoint = registration.getEndpoint();
             byte[] lockValue = null;
             byte[] lockKey = toKey(LOCK_EP, endpoint);
             try {
