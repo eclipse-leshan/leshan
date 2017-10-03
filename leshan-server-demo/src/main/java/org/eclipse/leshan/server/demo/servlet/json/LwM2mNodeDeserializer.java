@@ -18,6 +18,7 @@ package org.eclipse.leshan.server.demo.servlet.json;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -81,14 +82,11 @@ public class LwM2mNodeDeserializer implements JsonDeserializer<LwM2mNode> {
             } else if (object.has("values")) {
                 // multi-instances resource
                 Map<Integer, Object> values = new HashMap<>();
-                // TODO handle id for multiple resource
-                int i = 0;
                 org.eclipse.leshan.core.model.ResourceModel.Type expectedType = null;
-                for (JsonElement val : object.get("values").getAsJsonArray()) {
-                    JsonPrimitive pval = val.getAsJsonPrimitive();
+                for (Entry<String, JsonElement> entry : object.get("values").getAsJsonObject().entrySet()) {
+                    JsonPrimitive pval = entry.getValue().getAsJsonPrimitive();
                     expectedType = getTypeFor(pval);
-                    values.put(i, deserializeValue(pval, expectedType));
-                    i++;
+                    values.put(Integer.valueOf(entry.getKey()), deserializeValue(pval, expectedType));
                 }
                 // use string by default;
                 if (expectedType == null)
