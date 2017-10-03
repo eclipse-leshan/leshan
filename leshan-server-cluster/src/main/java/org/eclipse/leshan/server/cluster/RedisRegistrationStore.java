@@ -192,16 +192,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     @Override
     public Registration getRegistration(String registrationId) {
         try (Jedis j = pool.getResource()) {
-            byte[] ep = j.get(toRegIdKey(registrationId));
-            if (ep == null) {
-                return null;
-            }
-            byte[] data = j.get(toEndpointKey(ep));
-            if (data == null) {
-                return null;
-            }
-
-            return deserializeReg(data);
+            return getRegistration(j, registrationId);
         }
     }
 
@@ -458,7 +449,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     public Collection<Observation> removeObservations(String registrationId) {
         try (Jedis j = pool.getResource()) {
             // check registration exists
-            Registration registration = getRegistration(registrationId);
+            Registration registration = getRegistration(j, registrationId);
             if (registration == null)
                 return Collections.emptyList();
 
@@ -523,7 +514,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
 
             org.eclipse.californium.core.observe.Observation obs = deserializeObs(serializedObs);
             String registrationId = obs.getRequest().getUserContext().get(CoapRequestBuilder.CTX_REGID);
-            Registration registration = getRegistration(registrationId);
+            Registration registration = getRegistration(j, registrationId);
             String endpoint = registration.getEndpoint();
 
             byte[] lockValue = null;
@@ -552,6 +543,19 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     }
 
     /* *************** Observation utility functions **************** */
+
+    private Registration getRegistration(Jedis j, String registrationId) {
+        byte[] ep = j.get(toRegIdKey(registrationId));
+        if (ep == null) {
+            return null;
+        }
+        byte[] data = j.get(toEndpointKey(ep));
+        if (data == null) {
+            return null;
+        }
+
+        return deserializeReg(data);
+    }
 
     private void unsafeRemoveObservation(Jedis j, String registrationId, byte[] observationId) {
         if (j.del(toKey(OBS_TKN, observationId)) > 0L) {
