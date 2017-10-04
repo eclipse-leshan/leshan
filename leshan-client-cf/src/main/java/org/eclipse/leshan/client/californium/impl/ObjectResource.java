@@ -20,7 +20,7 @@
 package org.eclipse.leshan.client.californium.impl;
 
 import static org.eclipse.leshan.client.californium.impl.ResourceUtil.extractServerIdentity;
-import static org.eclipse.leshan.core.californium.ResponseCodeUtil.fromLwM2mCode;
+import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toCoapResponseCode;
 
 import java.util.List;
 
@@ -119,9 +119,9 @@ public class ObjectResource extends CoapResource implements NotifySender {
         if (exchange.getRequestOptions().getAccept() == MediaTypeRegistry.APPLICATION_LINK_FORMAT) {
             DiscoverResponse response = nodeEnabler.discover(identity, new DiscoverRequest(URI));
             if (response.getCode().isError()) {
-                exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
+                exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
             } else {
-                exchange.respond(fromLwM2mCode(response.getCode()), Link.serialize(response.getObjectLinks()),
+                exchange.respond(toCoapResponseCode(response.getCode()), Link.serialize(response.getObjectLinks()),
                         MediaTypeRegistry.APPLICATION_LINK_FORMAT);
             }
         } else {
@@ -146,7 +146,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
                             format.getCode());
                     return;
                 } else {
-                    exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
+                    exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
                     return;
                 }
             }
@@ -161,7 +161,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
                             format.getCode());
                     return;
                 } else {
-                    exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
+                    exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
                     return;
                 }
             }
@@ -184,7 +184,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
         if (spec != null) {
             WriteAttributesResponse response = nodeEnabler.writeAttributes(identity,
                     new WriteAttributesRequest(URI, spec));
-            coapExchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
+            coapExchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
             return;
         }
         // Manage Write and Bootstrap Write Request (replace)
@@ -208,11 +208,11 @@ public class ObjectResource extends CoapResource implements NotifySender {
                 if (identity.isLwm2mBootstrapServer()) {
                     BootstrapWriteResponse response = nodeEnabler.write(identity,
                             new BootstrapWriteRequest(path, lwM2mNode, contentFormat));
-                    coapExchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
+                    coapExchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
                 } else {
                     WriteResponse response = nodeEnabler.write(identity,
                             new WriteRequest(Mode.REPLACE, contentFormat, URI, lwM2mNode));
-                    coapExchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
+                    coapExchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
                 }
 
                 return;
@@ -237,7 +237,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
             byte[] payload = exchange.getRequestPayload();
             ExecuteResponse response = nodeEnabler.execute(identity,
                     new ExecuteRequest(URI, payload != null ? new String(payload) : null));
-            exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
+            exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
             return;
         }
 
@@ -260,7 +260,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
                 LwM2mNode lwM2mNode = decoder.decode(exchange.getRequestPayload(), contentFormat, path, model);
                 WriteResponse response = nodeEnabler.write(identity,
                         new WriteRequest(Mode.UPDATE, contentFormat, URI, lwM2mNode));
-                exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
+                exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
             } catch (CodecException e) {
                 LOG.warn("Unable to decode payload to write", e);
                 exchange.respond(ResponseCode.BAD_REQUEST);
@@ -287,10 +287,10 @@ public class ObjectResource extends CoapResource implements NotifySender {
             CreateResponse response = nodeEnabler.create(identity, createRequest);
             if (response.getCode() == org.eclipse.leshan.ResponseCode.CREATED) {
                 exchange.setLocationPath(response.getLocation());
-                exchange.respond(fromLwM2mCode(response.getCode()));
+                exchange.respond(toCoapResponseCode(response.getCode()));
                 return;
             } else {
-                exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
+                exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
                 return;
             }
         } catch (CodecException e) {
@@ -307,7 +307,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
         ServerIdentity identity = extractServerIdentity(coapExchange, bootstrapHandler);
 
         DeleteResponse response = nodeEnabler.delete(identity, new DeleteRequest(URI));
-        coapExchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
+        coapExchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
     }
 
     @Override

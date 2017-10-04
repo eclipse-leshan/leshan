@@ -16,7 +16,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.impl;
 
-import static org.eclipse.leshan.core.californium.ResponseCodeUtil.fromLwM2mCode;
+import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toCoapResponseCode;
 
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.server.resources.CoapExchange;
@@ -41,7 +41,7 @@ public class BootstrapResource extends CoapResource {
     public void handlePOST(CoapExchange exchange) {
         ServerIdentity identity = ResourceUtil.extractServerIdentity(exchange, bootstrapHandler);
         BootstrapFinishResponse response = bootstrapHandler.finished(identity, new BootstrapFinishRequest());
-        exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
+        exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
     }
 
 }

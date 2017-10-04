@@ -32,10 +32,10 @@ public class ResponseCodeUtil {
         return codeClass * 100 + codeDetail;
     }
 
-    public static ResponseCode fromCoapCode(int code) {
-        ResponseCode lwm2mResponseCode = ResponseCode.fromCode(toLwM2mCode(code));
+    public static ResponseCode toLwM2mResponseCode(int coapCode) {
+        ResponseCode lwm2mResponseCode = ResponseCode.fromCode(toLwM2mCode(coapCode));
         if (lwm2mResponseCode == null)
-            throw new IllegalArgumentException("Invalid CoAP code for LWM2M response: " + code);
+            throw new IllegalArgumentException("Invalid CoAP code for LWM2M response: " + coapCode);
 
         return lwm2mResponseCode;
     }
@@ -49,12 +49,13 @@ public class ResponseCodeUtil {
         return codeClass << 5 | codeDetail;
     }
 
-    public static org.eclipse.californium.core.coap.CoAP.ResponseCode fromLwM2mCode(ResponseCode code) {
-        Validate.notNull(code);
+    public static org.eclipse.californium.core.coap.CoAP.ResponseCode toCoapResponseCode(
+            ResponseCode Lwm2mResponseCode) {
+        Validate.notNull(Lwm2mResponseCode);
         try {
-            return org.eclipse.californium.core.coap.CoAP.ResponseCode.valueOf(toCoapCode(code.getCode()));
+            return org.eclipse.californium.core.coap.CoAP.ResponseCode.valueOf(toCoapCode(Lwm2mResponseCode.getCode()));
         } catch (MessageFormatException e) {
-            throw new IllegalArgumentException("Invalid CoAP code for LWM2M response: " + code);
+            throw new IllegalArgumentException("Invalid CoAP code for LWM2M response: " + Lwm2mResponseCode);
         }
     }
 }

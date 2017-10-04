@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
-import static org.eclipse.leshan.core.californium.ResponseCodeUtil.fromCoapCode;
+import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toLwM2mResponseCode;
 
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
@@ -96,7 +96,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         case METHOD_NOT_ALLOWED:
         case NOT_ACCEPTABLE:
         case INTERNAL_SERVER_ERROR:
-            lwM2mresponse = new ReadResponse(fromCoapCode(coapResponse.getCode().value), null,
+            lwM2mresponse = new ReadResponse(toLwM2mResponseCode(coapResponse.getCode().value), null,
                     coapResponse.getPayloadString(), coapResponse);
             break;
         default:
@@ -124,7 +124,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         case UNAUTHORIZED:
         case METHOD_NOT_ALLOWED:
         case INTERNAL_SERVER_ERROR:
-            lwM2mresponse = new DiscoverResponse(fromCoapCode(coapResponse.getCode().value), null,
+            lwM2mresponse = new DiscoverResponse(toLwM2mResponseCode(coapResponse.getCode().value), null,
                     coapResponse.getPayloadString(), coapResponse);
             break;
         default:
@@ -144,7 +144,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         case METHOD_NOT_ALLOWED:
         case UNSUPPORTED_CONTENT_FORMAT:
         case INTERNAL_SERVER_ERROR:
-            lwM2mresponse = new WriteResponse(fromCoapCode(coapResponse.getCode().value),
+            lwM2mresponse = new WriteResponse(toLwM2mResponseCode(coapResponse.getCode().value),
                     coapResponse.getPayloadString(), coapResponse);
             break;
         default:
@@ -163,7 +163,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         case UNAUTHORIZED:
         case METHOD_NOT_ALLOWED:
         case INTERNAL_SERVER_ERROR:
-            lwM2mresponse = new WriteAttributesResponse(fromCoapCode(coapResponse.getCode().value),
+            lwM2mresponse = new WriteAttributesResponse(toLwM2mResponseCode(coapResponse.getCode().value),
                     coapResponse.getPayloadString(), coapResponse);
             break;
         default:
@@ -182,7 +182,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         case NOT_FOUND:
         case METHOD_NOT_ALLOWED:
         case INTERNAL_SERVER_ERROR:
-            lwM2mresponse = new ExecuteResponse(fromCoapCode(coapResponse.getCode().value),
+            lwM2mresponse = new ExecuteResponse(toLwM2mResponseCode(coapResponse.getCode().value),
                     coapResponse.getPayloadString(), coapResponse);
             break;
         default:
@@ -204,7 +204,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         case METHOD_NOT_ALLOWED:
         case UNSUPPORTED_CONTENT_FORMAT:
         case INTERNAL_SERVER_ERROR:
-            lwM2mresponse = new CreateResponse(fromCoapCode(coapResponse.getCode().value), null,
+            lwM2mresponse = new CreateResponse(toLwM2mResponseCode(coapResponse.getCode().value), null,
                     coapResponse.getPayloadString(), coapResponse);
             break;
         default:
@@ -223,7 +223,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         case METHOD_NOT_ALLOWED:
         case BAD_REQUEST:
         case INTERNAL_SERVER_ERROR:
-            lwM2mresponse = new DeleteResponse(fromCoapCode(coapResponse.getCode().value),
+            lwM2mresponse = new DeleteResponse(toLwM2mResponseCode(coapResponse.getCode().value),
                     coapResponse.getPayloadString(), coapResponse);
             break;
         default:
@@ -260,7 +260,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         case METHOD_NOT_ALLOWED:
         case NOT_ACCEPTABLE:
         case INTERNAL_SERVER_ERROR:
-            lwM2mresponse = new ObserveResponse(fromCoapCode(coapResponse.getCode().value), null, null, null,
+            lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode().value), null, null, null,
                     coapResponse.getPayloadString(), coapResponse);
             break;
         default:
@@ -277,7 +277,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         case UNSUPPORTED_CONTENT_FORMAT:
         case BAD_REQUEST:
         case INTERNAL_SERVER_ERROR:
-            lwM2mresponse = new BootstrapWriteResponse(fromCoapCode(coapResponse.getCode().value),
+            lwM2mresponse = new BootstrapWriteResponse(toLwM2mResponseCode(coapResponse.getCode().value),
                     coapResponse.getPayloadString(), coapResponse);
             break;
         default:
@@ -293,7 +293,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             break;
         case BAD_REQUEST:
         case INTERNAL_SERVER_ERROR:
-            lwM2mresponse = new BootstrapDeleteResponse(fromCoapCode(coapResponse.getCode().value),
+            lwM2mresponse = new BootstrapDeleteResponse(toLwM2mResponseCode(coapResponse.getCode().value),
                     coapResponse.getPayloadString(), coapResponse);
             break;
         default:
@@ -309,7 +309,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             break;
         case BAD_REQUEST:
         case INTERNAL_SERVER_ERROR:
-            lwM2mresponse = new BootstrapFinishResponse(fromCoapCode(coapResponse.getCode().value),
+            lwM2mresponse = new BootstrapFinishResponse(toLwM2mResponseCode(coapResponse.getCode().value),
                     coapResponse.getPayloadString(), coapResponse);
             break;
         default:

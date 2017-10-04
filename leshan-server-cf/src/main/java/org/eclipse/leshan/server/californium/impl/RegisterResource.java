@@ -16,7 +16,7 @@
 package org.eclipse.leshan.server.californium.impl;
 
 import static org.eclipse.leshan.core.californium.ExchangeUtil.extractIdentity;
-import static org.eclipse.leshan.core.californium.ResponseCodeUtil.fromLwM2mCode;
+import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toCoapResponseCode;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
@@ -195,7 +195,7 @@ public class RegisterResource extends CoapResource {
             exchange.setLocationPath(RESOURCE_NAME + "/" + response.getRegistrationID());
             exchange.respond(ResponseCode.CREATED);
         } else {
-            exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
+            exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
         }
         sendableResponse.sent();
     }
@@ -228,7 +228,7 @@ public class RegisterResource extends CoapResource {
         UpdateResponse updateResponse = sendableResponse.getResponse();
 
         // Create CoAP Response from LwM2m request
-        exchange.respond(fromLwM2mCode(updateResponse.getCode()), updateResponse.getErrorMessage());
+        exchange.respond(toCoapResponseCode(updateResponse.getCode()), updateResponse.getErrorMessage());
         sendableResponse.sent();
     }
 
@@ -245,7 +245,7 @@ public class RegisterResource extends CoapResource {
         DeregisterResponse deregisterResponse = sendableResponse.getResponse();
 
         // Create CoAP Response from LwM2m request
-        exchange.respond(fromLwM2mCode(deregisterResponse.getCode()), deregisterResponse.getErrorMessage());
+        exchange.respond(toCoapResponseCode(deregisterResponse.getCode()), deregisterResponse.getErrorMessage());
         sendableResponse.sent();
     }
 

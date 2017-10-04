@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.impl;
 
-import static org.eclipse.leshan.core.californium.ResponseCodeUtil.fromCoapCode;
+import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toLwM2mResponseCode;
 
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.request.BootstrapRequest;
@@ -50,7 +50,7 @@ public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements Upli
         case BAD_REQUEST:
         case FORBIDDEN:
         case INTERNAL_SERVER_ERROR:
-            lwM2mresponse = new RegisterResponse(fromCoapCode(coapResponse.getCode().value), null,
+            lwM2mresponse = new RegisterResponse(toLwM2mResponseCode(coapResponse.getCode().value), null,
                     coapResponse.getPayloadString());
             break;
         default:
@@ -67,7 +67,7 @@ public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements Upli
         case BAD_REQUEST:
         case NOT_FOUND:
         case INTERNAL_SERVER_ERROR:
-            lwM2mresponse = new DeregisterResponse(fromCoapCode(coapResponse.getCode().value),
+            lwM2mresponse = new DeregisterResponse(toLwM2mResponseCode(coapResponse.getCode().value),
                     coapResponse.getPayloadString());
             break;
         default:
@@ -84,7 +84,7 @@ public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements Upli
         case BAD_REQUEST:
         case NOT_FOUND:
         case INTERNAL_SERVER_ERROR:
-            lwM2mresponse = new UpdateResponse(fromCoapCode(coapResponse.getCode().value),
+            lwM2mresponse = new UpdateResponse(toLwM2mResponseCode(coapResponse.getCode().value),
                     coapResponse.getPayloadString());
             break;
         default:
@@ -100,7 +100,7 @@ public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements Upli
             break;
         case BAD_REQUEST:
         case INTERNAL_SERVER_ERROR:
-            lwM2mresponse = new BootstrapResponse(fromCoapCode(coapResponse.getCode().value),
+            lwM2mresponse = new BootstrapResponse(toLwM2mResponseCode(coapResponse.getCode().value),
                     coapResponse.getPayloadString());
             break;
         default:

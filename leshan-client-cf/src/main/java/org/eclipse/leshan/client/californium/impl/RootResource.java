@@ -16,7 +16,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.impl;
 
-import static org.eclipse.leshan.core.californium.ResponseCodeUtil.fromLwM2mCode;
+import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toCoapResponseCode;
 
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
@@ -47,6 +47,6 @@ public class RootResource extends CoapResource {
 
         ServerIdentity identity = ResourceUtil.extractServerIdentity(exchange, bootstrapHandler);
         BootstrapDeleteResponse response = bootstrapHandler.delete(identity, new BootstrapDeleteRequest());
-        exchange.respond(fromLwM2mCode(response.getCode()), response.getErrorMessage());
+        exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
     }
 }
