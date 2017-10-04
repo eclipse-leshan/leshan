@@ -43,67 +43,60 @@ public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements Upli
 
     @Override
     public void visit(RegisterRequest request) {
-        switch (coapResponse.getCode()) {
-        case CREATED:
-            lwM2mresponse = RegisterResponse.success(coapResponse.getOptions().getLocationString());
-            break;
-        case BAD_REQUEST:
-        case FORBIDDEN:
-        case INTERNAL_SERVER_ERROR:
+        if (coapResponse.isError()) {
+            // handle error response:
             lwM2mresponse = new RegisterResponse(toLwM2mResponseCode(coapResponse.getCode()), null,
                     coapResponse.getPayloadString());
-            break;
-        default:
+        } else if (coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.CREATED) {
+            // handle success response:
+            lwM2mresponse = RegisterResponse.success(coapResponse.getOptions().getLocationString());
+        } else {
+            // handle unexpected response:
             handleUnexpectedResponseCode(request, coapResponse);
         }
     }
 
     @Override
     public void visit(DeregisterRequest request) {
-        switch (coapResponse.getCode()) {
-        case DELETED:
-            lwM2mresponse = DeregisterResponse.success();
-            break;
-        case BAD_REQUEST:
-        case NOT_FOUND:
-        case INTERNAL_SERVER_ERROR:
+        if (coapResponse.isError()) {
+            // handle error response:
             lwM2mresponse = new DeregisterResponse(toLwM2mResponseCode(coapResponse.getCode()),
                     coapResponse.getPayloadString());
-            break;
-        default:
+        } else if (coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.DELETED) {
+            // handle success response:
+            lwM2mresponse = DeregisterResponse.success();
+        } else {
+            // handle unexpected response:
             handleUnexpectedResponseCode(request, coapResponse);
         }
     }
 
     @Override
     public void visit(UpdateRequest request) {
-        switch (coapResponse.getCode()) {
-        case CHANGED:
-            lwM2mresponse = UpdateResponse.success();
-            break;
-        case BAD_REQUEST:
-        case NOT_FOUND:
-        case INTERNAL_SERVER_ERROR:
+        if (coapResponse.isError()) {
+            // handle error response:
             lwM2mresponse = new UpdateResponse(toLwM2mResponseCode(coapResponse.getCode()),
                     coapResponse.getPayloadString());
-            break;
-        default:
+        } else if (coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.CHANGED) {
+            // handle success response:
+            lwM2mresponse = UpdateResponse.success();
+        } else {
+            // handle unexpected response:
             handleUnexpectedResponseCode(request, coapResponse);
         }
     }
 
     @Override
     public void visit(BootstrapRequest request) {
-        switch (coapResponse.getCode()) {
-        case CHANGED:
-            lwM2mresponse = BootstrapResponse.success();
-            break;
-        case BAD_REQUEST:
-        case INTERNAL_SERVER_ERROR:
+        if (coapResponse.isError()) {
+            // handle error response:
             lwM2mresponse = new BootstrapResponse(toLwM2mResponseCode(coapResponse.getCode()),
                     coapResponse.getPayloadString());
-            break;
-        default:
+        } else if (coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.CHANGED) {
+            // handle success response:
+            lwM2mresponse = BootstrapResponse.success();
+        } else {
+            // handle unexpected response:
             handleUnexpectedResponseCode(request, coapResponse);
         }
     }

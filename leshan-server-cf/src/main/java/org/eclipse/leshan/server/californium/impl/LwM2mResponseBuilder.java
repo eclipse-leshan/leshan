@@ -84,30 +84,29 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
 
     @Override
     public void visit(ReadRequest request) {
-        switch (coapResponse.getCode()) {
-        case CONTENT:
+        if (coapResponse.isError()) {
+            // handle error response:
+            lwM2mresponse = new ReadResponse(toLwM2mResponseCode(coapResponse.getCode()), null,
+                    coapResponse.getPayloadString(), coapResponse);
+        } else if (coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.CONTENT) {
+            // handle success response:
             LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse, request,
                     registration.getEndpoint());
             lwM2mresponse = new ReadResponse(ResponseCode.CONTENT, content, null, coapResponse);
-            break;
-        case BAD_REQUEST:
-        case UNAUTHORIZED:
-        case NOT_FOUND:
-        case METHOD_NOT_ALLOWED:
-        case NOT_ACCEPTABLE:
-        case INTERNAL_SERVER_ERROR:
-            lwM2mresponse = new ReadResponse(toLwM2mResponseCode(coapResponse.getCode()), null,
-                    coapResponse.getPayloadString(), coapResponse);
-            break;
-        default:
+        } else {
+            // handle unexpected response:
             handleUnexpectedResponseCode(registration.getEndpoint(), request, coapResponse);
         }
     }
 
     @Override
     public void visit(DiscoverRequest request) {
-        switch (coapResponse.getCode()) {
-        case CONTENT:
+        if (coapResponse.isError()) {
+            // handle error response:
+            lwM2mresponse = new DiscoverResponse(toLwM2mResponseCode(coapResponse.getCode()), null,
+                    coapResponse.getPayloadString(), coapResponse);
+        } else if (coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.CONTENT) {
+            // handle success response:
             Link[] links;
             if (MediaTypeRegistry.APPLICATION_LINK_FORMAT != coapResponse.getOptions().getContentFormat()) {
                 LOG.debug("Expected LWM2M Client [{}] to return application/link-format [{}] content but got [{}]",
@@ -118,128 +117,98 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                 links = Link.parse(coapResponse.getPayload());
             }
             lwM2mresponse = new DiscoverResponse(ResponseCode.CONTENT, links, null, coapResponse);
-            break;
-        case BAD_REQUEST:
-        case NOT_FOUND:
-        case UNAUTHORIZED:
-        case METHOD_NOT_ALLOWED:
-        case INTERNAL_SERVER_ERROR:
-            lwM2mresponse = new DiscoverResponse(toLwM2mResponseCode(coapResponse.getCode()), null,
-                    coapResponse.getPayloadString(), coapResponse);
-            break;
-        default:
+        } else {
+            // handle unexpected response:
             handleUnexpectedResponseCode(registration.getEndpoint(), request, coapResponse);
         }
     }
 
     @Override
     public void visit(WriteRequest request) {
-        switch (coapResponse.getCode()) {
-        case CHANGED:
-            lwM2mresponse = new WriteResponse(ResponseCode.CHANGED, null, coapResponse);
-            break;
-        case BAD_REQUEST:
-        case NOT_FOUND:
-        case UNAUTHORIZED:
-        case METHOD_NOT_ALLOWED:
-        case UNSUPPORTED_CONTENT_FORMAT:
-        case INTERNAL_SERVER_ERROR:
+        if (coapResponse.isError()) {
+            // handle error response:
             lwM2mresponse = new WriteResponse(toLwM2mResponseCode(coapResponse.getCode()),
                     coapResponse.getPayloadString(), coapResponse);
-            break;
-        default:
+        } else if (coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.CHANGED) {
+            // handle success response:
+            lwM2mresponse = new WriteResponse(ResponseCode.CHANGED, null, coapResponse);
+        } else {
+            // handle unexpected response:
             handleUnexpectedResponseCode(registration.getEndpoint(), request, coapResponse);
         }
     }
 
     @Override
     public void visit(WriteAttributesRequest request) {
-        switch (coapResponse.getCode()) {
-        case CHANGED:
-            lwM2mresponse = new WriteAttributesResponse(ResponseCode.CHANGED, null, coapResponse);
-            break;
-        case BAD_REQUEST:
-        case NOT_FOUND:
-        case UNAUTHORIZED:
-        case METHOD_NOT_ALLOWED:
-        case INTERNAL_SERVER_ERROR:
+        if (coapResponse.isError()) {
+            // handle error response:
             lwM2mresponse = new WriteAttributesResponse(toLwM2mResponseCode(coapResponse.getCode()),
                     coapResponse.getPayloadString(), coapResponse);
-            break;
-        default:
+        } else if (coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.CHANGED) {
+            // handle success response:
+            lwM2mresponse = new WriteAttributesResponse(ResponseCode.CHANGED, null, coapResponse);
+        } else {
+            // handle unexpected response:
             handleUnexpectedResponseCode(registration.getEndpoint(), request, coapResponse);
         }
     }
 
     @Override
     public void visit(ExecuteRequest request) {
-        switch (coapResponse.getCode()) {
-        case CHANGED:
-            lwM2mresponse = new ExecuteResponse(ResponseCode.CHANGED, null, coapResponse);
-            break;
-        case BAD_REQUEST:
-        case UNAUTHORIZED:
-        case NOT_FOUND:
-        case METHOD_NOT_ALLOWED:
-        case INTERNAL_SERVER_ERROR:
+        if (coapResponse.isError()) {
+            // handle error response:
             lwM2mresponse = new ExecuteResponse(toLwM2mResponseCode(coapResponse.getCode()),
                     coapResponse.getPayloadString(), coapResponse);
-            break;
-        default:
+        } else if (coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.CHANGED) {
+            // handle success response:
+            lwM2mresponse = new ExecuteResponse(ResponseCode.CHANGED, null, coapResponse);
+        } else {
+            // handle unexpected response:
             handleUnexpectedResponseCode(registration.getEndpoint(), request, coapResponse);
         }
-
     }
 
     @Override
     public void visit(CreateRequest request) {
-        switch (coapResponse.getCode()) {
-        case CREATED:
-            lwM2mresponse = new CreateResponse(ResponseCode.CREATED, coapResponse.getOptions().getLocationPathString(),
-                    null, coapResponse);
-            break;
-        case BAD_REQUEST:
-        case UNAUTHORIZED:
-        case NOT_FOUND:
-        case METHOD_NOT_ALLOWED:
-        case UNSUPPORTED_CONTENT_FORMAT:
-        case INTERNAL_SERVER_ERROR:
+        if (coapResponse.isError()) {
+            // handle error response:
             lwM2mresponse = new CreateResponse(toLwM2mResponseCode(coapResponse.getCode()), null,
                     coapResponse.getPayloadString(), coapResponse);
-            break;
-        default:
+        } else if (coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.CREATED) {
+            // handle success response:
+            lwM2mresponse = new CreateResponse(ResponseCode.CREATED, coapResponse.getOptions().getLocationPathString(),
+                    null, coapResponse);
+        } else {
+            // handle unexpected response:
             handleUnexpectedResponseCode(registration.getEndpoint(), request, coapResponse);
         }
     }
 
     @Override
     public void visit(DeleteRequest request) {
-        switch (coapResponse.getCode()) {
-        case DELETED:
-            lwM2mresponse = new DeleteResponse(ResponseCode.DELETED, null, coapResponse);
-            break;
-        case UNAUTHORIZED:
-        case NOT_FOUND:
-        case METHOD_NOT_ALLOWED:
-        case BAD_REQUEST:
-        case INTERNAL_SERVER_ERROR:
+        if (coapResponse.isError()) {
+            // handle error response:
             lwM2mresponse = new DeleteResponse(toLwM2mResponseCode(coapResponse.getCode()),
                     coapResponse.getPayloadString(), coapResponse);
-            break;
-        default:
+        } else if (coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.DELETED) {
+            // handle success response:
+            lwM2mresponse = new DeleteResponse(ResponseCode.DELETED, null, coapResponse);
+        } else {
+            // handle unexpected response:
             handleUnexpectedResponseCode(registration.getEndpoint(), request, coapResponse);
         }
     }
 
     @Override
     public void visit(ObserveRequest request) {
-        switch (coapResponse.getCode()) {
-        case CHANGED:
-            // TODO now the spec say that NOTIFY should use 2.05 content so we should remove this.
-            // ignore changed response (this is probably a NOTIFY)
-            lwM2mresponse = null;
-            break;
-        case CONTENT:
+        if (coapResponse.isError()) {
+            // handle error response:
+            lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), null, null, null,
+                    coapResponse.getPayloadString(), coapResponse);
+        } else if (coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.CONTENT
+                // This is for backward compatibility, when the spec say notification used CHANGED code
+                || coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.CHANGED) {
+            // handle success response:
             LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse, request,
                     registration.getEndpoint());
             if (coapResponse.getOptions().hasObserve()) {
@@ -253,66 +222,53 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             } else {
                 lwM2mresponse = new ObserveResponse(ResponseCode.CONTENT, content, null, null, null, coapResponse);
             }
-            break;
-        case BAD_REQUEST:
-        case UNAUTHORIZED:
-        case NOT_FOUND:
-        case METHOD_NOT_ALLOWED:
-        case NOT_ACCEPTABLE:
-        case INTERNAL_SERVER_ERROR:
-            lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), null, null, null,
-                    coapResponse.getPayloadString(), coapResponse);
-            break;
-        default:
+        } else {
+            // handle unexpected response:
             handleUnexpectedResponseCode(registration.getEndpoint(), request, coapResponse);
         }
     }
 
     @Override
     public void visit(BootstrapWriteRequest request) {
-        switch (coapResponse.getCode()) {
-        case CHANGED:
-            lwM2mresponse = new BootstrapWriteResponse(ResponseCode.CHANGED, null, coapResponse);
-            break;
-        case UNSUPPORTED_CONTENT_FORMAT:
-        case BAD_REQUEST:
-        case INTERNAL_SERVER_ERROR:
+        if (coapResponse.isError()) {
+            // handle error response:
             lwM2mresponse = new BootstrapWriteResponse(toLwM2mResponseCode(coapResponse.getCode()),
                     coapResponse.getPayloadString(), coapResponse);
-            break;
-        default:
+        } else if (coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.CHANGED) {
+            // handle success response:
+            lwM2mresponse = new BootstrapWriteResponse(ResponseCode.CHANGED, null, coapResponse);
+        } else {
+            // handle unexpected response:
             handleUnexpectedResponseCode(registration.getEndpoint(), request, coapResponse);
         }
     }
 
     @Override
     public void visit(BootstrapDeleteRequest request) {
-        switch (coapResponse.getCode()) {
-        case DELETED:
-            lwM2mresponse = new BootstrapDeleteResponse(ResponseCode.DELETED, null, coapResponse);
-            break;
-        case BAD_REQUEST:
-        case INTERNAL_SERVER_ERROR:
+        if (coapResponse.isError()) {
+            // handle error response:
             lwM2mresponse = new BootstrapDeleteResponse(toLwM2mResponseCode(coapResponse.getCode()),
                     coapResponse.getPayloadString(), coapResponse);
-            break;
-        default:
+        } else if (coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.DELETED) {
+            // handle success response:
+            lwM2mresponse = new BootstrapDeleteResponse(ResponseCode.DELETED, null, coapResponse);
+        } else {
+            // handle unexpected response:
             handleUnexpectedResponseCode(registration.getEndpoint(), request, coapResponse);
         }
     }
 
     @Override
     public void visit(BootstrapFinishRequest request) {
-        switch (coapResponse.getCode()) {
-        case CHANGED:
-            lwM2mresponse = new BootstrapFinishResponse(ResponseCode.CHANGED, null, coapResponse);
-            break;
-        case BAD_REQUEST:
-        case INTERNAL_SERVER_ERROR:
+        if (coapResponse.isError()) {
+            // handle error response:
             lwM2mresponse = new BootstrapFinishResponse(toLwM2mResponseCode(coapResponse.getCode()),
                     coapResponse.getPayloadString(), coapResponse);
-            break;
-        default:
+        } else if (coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.CHANGED) {
+            // handle success response:
+            lwM2mresponse = new BootstrapFinishResponse(ResponseCode.CHANGED, null, coapResponse);
+        } else {
+            // handle unexpected response:
             handleUnexpectedResponseCode(registration.getEndpoint(), request, coapResponse);
         }
     }
