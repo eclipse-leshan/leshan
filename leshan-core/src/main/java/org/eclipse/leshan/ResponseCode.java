@@ -92,7 +92,19 @@ public class ResponseCode {
     }
 
     public boolean isError() {
-        return code >= 400;
+        return isClientError() || isServerError();
+    }
+
+    public boolean isSuccess() {
+        return (code / 100) == 2;
+    }
+
+    public boolean isClientError() {
+        return (code / 100) == 4;
+    }
+
+    public boolean isServerError() {
+        return (code / 100) == 5;
     }
 
     public static ResponseCode fromName(String name) {
@@ -119,5 +131,27 @@ public class ResponseCode {
             return String.format("%s(%d)", name, code);
         else
             return name;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + code;
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ResponseCode other = (ResponseCode) obj;
+        if (code != other.code)
+            return false;
+        return true;
     }
 }
