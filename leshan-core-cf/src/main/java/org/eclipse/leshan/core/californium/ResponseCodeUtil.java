@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.californium;
 
+import static org.eclipse.leshan.ResponseCode.*;
+
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.util.Validate;
@@ -56,26 +58,26 @@ public class ResponseCodeUtil {
     public static org.eclipse.californium.core.coap.CoAP.ResponseCode fromLwM2mCode(ResponseCode code) {
         Validate.notNull(code);
 
-        switch (code) {
-        case CREATED:
+        switch (code.getCode()) {
+        case CREATED_CODE:
             return org.eclipse.californium.core.coap.CoAP.ResponseCode.CREATED;
-        case DELETED:
+        case DELETED_CODE:
             return org.eclipse.californium.core.coap.CoAP.ResponseCode.DELETED;
-        case CHANGED:
+        case CHANGED_CODE:
             return org.eclipse.californium.core.coap.CoAP.ResponseCode.CHANGED;
-        case CONTENT:
+        case CONTENT_CODE:
             return org.eclipse.californium.core.coap.CoAP.ResponseCode.CONTENT;
-        case BAD_REQUEST:
+        case BAD_REQUEST_CODE:
             return org.eclipse.californium.core.coap.CoAP.ResponseCode.BAD_REQUEST;
-        case UNAUTHORIZED:
+        case UNAUTHORIZED_CODE:
             return org.eclipse.californium.core.coap.CoAP.ResponseCode.UNAUTHORIZED;
-        case NOT_FOUND:
+        case NOT_FOUND_CODE:
             return org.eclipse.californium.core.coap.CoAP.ResponseCode.NOT_FOUND;
-        case METHOD_NOT_ALLOWED:
+        case METHOD_NOT_ALLOWED_CODE:
             return org.eclipse.californium.core.coap.CoAP.ResponseCode.METHOD_NOT_ALLOWED;
-        case FORBIDDEN:
+        case FORBIDDEN_CODE:
             return org.eclipse.californium.core.coap.CoAP.ResponseCode.FORBIDDEN;
-        case INTERNAL_SERVER_ERROR:
+        case INTERNAL_SERVER_ERROR_CODE:
             return org.eclipse.californium.core.coap.CoAP.ResponseCode.INTERNAL_SERVER_ERROR;
         default:
             throw new IllegalArgumentException("Invalid CoAP code for LWM2M response: " + code);

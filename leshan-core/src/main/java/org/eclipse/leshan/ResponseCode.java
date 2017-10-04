@@ -18,45 +18,83 @@ package org.eclipse.leshan;
 /**
  * Response codes defined for LWM2M enabler
  */
-public enum ResponseCode {
+public class ResponseCode {
     /** Resource correctly created */
-    CREATED,
+    public final static int CREATED_CODE = 201;
     /** Resource correctly deleted */
-    DELETED,
+    public final static int DELETED_CODE = 202;
     /** Resource correctly changed */
-    CHANGED,
+    public final static int CHANGED_CODE = 204;
     /** Content correctly delivered */
-    CONTENT,
+    public final static int CONTENT_CODE = 205;
     /** Access Right Permission Denied */
-    UNAUTHORIZED,
+    public final static int UNAUTHORIZED_CODE = 401;
     /** Bad request format (missing parameters, bad encoding ...) */
-    BAD_REQUEST,
+    public final static int BAD_REQUEST_CODE = 400;
     /** This method (GET/PUT/POST/DELETE) is not allowed on this resource */
-    METHOD_NOT_ALLOWED,
+    public final static int METHOD_NOT_ALLOWED_CODE = 405;
     /** The Endpoint Client Name registration in the LWM2M Server is not allowed */
-    FORBIDDEN,
+    public final static int FORBIDDEN_CODE = 403;
     /** Resource not found */
-    NOT_FOUND,
+    public final static int NOT_FOUND_CODE = 404;
     /** None of the preferred Content-Formats can be returned */
-    NOT_ACCEPTABLE,
+    public final static int NOT_ACCEPTABLE_CODE = 406;
     /** The specified format is not supported */
-    UNSUPPORTED_CONTENT_FORMAT,
+    public final static int UNSUPPORTED_CONTENT_FORMAT_CODE = 415;
     /** generic response code for unexpected error */
-    INTERNAL_SERVER_ERROR;
+    public final static int INTERNAL_SERVER_ERROR_CODE = 500;
+
+    // LwM2m Response codes
+    public final static ResponseCode CREATED = new ResponseCode(CREATED_CODE, "CREATED");
+    public final static ResponseCode DELETED = new ResponseCode(DELETED_CODE, "DELETED");
+    public final static ResponseCode CHANGED = new ResponseCode(CHANGED_CODE, "CHANGED");
+    public final static ResponseCode CONTENT = new ResponseCode(CONTENT_CODE, "CONTENT");
+    public final static ResponseCode UNAUTHORIZED = new ResponseCode(UNAUTHORIZED_CODE, "UNAUTHORIZED");
+    public final static ResponseCode BAD_REQUEST = new ResponseCode(BAD_REQUEST_CODE, "BAD_REQUEST");
+    public final static ResponseCode METHOD_NOT_ALLOWED = new ResponseCode(METHOD_NOT_ALLOWED_CODE,
+            "METHOD_NOT_ALLOWED");
+    public final static ResponseCode FORBIDDEN = new ResponseCode(FORBIDDEN_CODE, "FORBIDDEN");
+    public final static ResponseCode NOT_FOUND = new ResponseCode(NOT_FOUND_CODE, "NOT_FOUND");
+    public final static ResponseCode NOT_ACCEPTABLE = new ResponseCode(NOT_ACCEPTABLE_CODE, "NOT_ACCEPTABLE");
+    public final static ResponseCode UNSUPPORTED_CONTENT_FORMAT = new ResponseCode(UNSUPPORTED_CONTENT_FORMAT_CODE,
+            "UNSUPPORTED_CONTENT_FORMAT");
+    public final static ResponseCode INTERNAL_SERVER_ERROR = new ResponseCode(INTERNAL_SERVER_ERROR_CODE, "CREATED");
+
+    private static final ResponseCode knownResponseCode[] = new ResponseCode[] { CREATED, DELETED, CHANGED, CONTENT,
+                            UNAUTHORIZED, BAD_REQUEST, METHOD_NOT_ALLOWED, FORBIDDEN, NOT_FOUND, NOT_ACCEPTABLE,
+                            UNSUPPORTED_CONTENT_FORMAT, INTERNAL_SERVER_ERROR };
+
+    private int code;
+    private String name;
+
+    public ResponseCode(int code, String name) {
+        this.code = code;
+        this.name = name;
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public String getName() {
+        return name;
+    }
 
     public boolean isError() {
-        switch (this) {
-        case UNAUTHORIZED:
-        case BAD_REQUEST:
-        case METHOD_NOT_ALLOWED:
-        case FORBIDDEN:
-        case NOT_FOUND:
-        case INTERNAL_SERVER_ERROR:
-        case UNSUPPORTED_CONTENT_FORMAT:
-        case NOT_ACCEPTABLE:
-            return true;
-        default:
-            return false;
+        return code >= 400;
+    }
+
+    public static ResponseCode fromName(String name) {
+        for (ResponseCode c : knownResponseCode) {
+            if (c.getName().equals(name)) {
+                return c;
+            }
         }
+        return null;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

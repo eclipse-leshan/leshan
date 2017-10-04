@@ -82,7 +82,7 @@ public class ResponseSerDes {
         String sCode = o.getString("code", null);
         if (sCode == null)
             throw new IllegalStateException("Invalid response missing code attribute");
-        ResponseCode code = Enum.valueOf(ResponseCode.class, sCode);
+        ResponseCode code = ResponseCode.fromName(sCode);
 
         String errorMessage = o.getString("errorMessage", null);
 
