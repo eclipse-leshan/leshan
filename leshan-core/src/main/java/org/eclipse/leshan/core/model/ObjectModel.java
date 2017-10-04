@@ -31,23 +31,41 @@ public class ObjectModel {
 
     private static final Logger LOG = LoggerFactory.getLogger(ObjectModel.class);
 
+	private static final String DEFAULT_VERSION = "1.0";
+
     public final int id;
     public final String name;
+    public final String version;
+    public final String urn;
     public final String description;
     public final boolean multiple;
     public final boolean mandatory;
 
     public final Map<Integer, ResourceModel> resources; // resources by ID
 
+    @Deprecated
     public ObjectModel(int id, String name, String description, boolean multiple, boolean mandatory,
             ResourceModel... resources) {
         this(id, name, description, multiple, mandatory, Arrays.asList(resources));
     }
 
+    @Deprecated
     public ObjectModel(int id, String name, String description, boolean multiple, boolean mandatory,
+            Collection<ResourceModel> resources) {
+    	this(id, name, DEFAULT_VERSION, null, description, multiple, mandatory, resources);
+    }
+
+    public ObjectModel(int id, String name, String version, String urn, String description, boolean multiple, boolean mandatory,
+            ResourceModel... resources) {
+    	this(id, name, version, urn, description, multiple, mandatory, Arrays.asList(resources));
+    }
+    
+    public ObjectModel(int id, String name, String version, String urn, String description, boolean multiple, boolean mandatory,
             Collection<ResourceModel> resources) {
         this.id = id;
         this.name = name;
+        this.version = version;
+        this.urn = urn;
         this.description = description;
         this.multiple = multiple;
         this.mandatory = mandatory;
