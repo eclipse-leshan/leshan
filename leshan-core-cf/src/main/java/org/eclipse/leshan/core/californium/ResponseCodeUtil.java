@@ -28,11 +28,7 @@ public class ResponseCodeUtil {
 
     public static ResponseCode toLwM2mResponseCode(
             org.eclipse.californium.core.coap.CoAP.ResponseCode coapResponseCode) {
-        ResponseCode lwm2mResponseCode = ResponseCode.fromCode(toLwM2mCode(coapResponseCode));
-        if (lwm2mResponseCode == null)
-            throw new IllegalArgumentException("Invalid CoAP code for LWM2M response: " + coapResponseCode);
-
-        return lwm2mResponseCode;
+        return ResponseCode.fromCode(toLwM2mCode(coapResponseCode));
     }
 
     public static int toLwM2mCode(int coapCode) {
@@ -42,11 +38,7 @@ public class ResponseCodeUtil {
     }
 
     public static ResponseCode toLwM2mResponseCode(int coapCode) {
-        ResponseCode lwm2mResponseCode = ResponseCode.fromCode(toLwM2mCode(coapCode));
-        if (lwm2mResponseCode == null)
-            throw new IllegalArgumentException("Invalid CoAP code for LWM2M response: " + coapCode);
-
-        return lwm2mResponseCode;
+        return ResponseCode.fromCode(toLwM2mCode(coapCode));
     }
 
     public static int toCoapCode(int lwm2mCode) {

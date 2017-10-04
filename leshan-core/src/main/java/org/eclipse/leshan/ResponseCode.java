@@ -15,10 +15,16 @@
  *******************************************************************************/
 package org.eclipse.leshan;
 
+import org.eclipse.leshan.util.Validate;
+
 /**
  * Response codes defined for LWM2M enabler
  */
 public class ResponseCode {
+
+    /** Common name for unknown response code. That means "not explicitly" defined in the LWM2M specification */
+    public final static String UNKNOWN = "UNKNOWN";
+
     /** Resource correctly created */
     public final static int CREATED_CODE = 201;
     /** Resource correctly deleted */
@@ -68,8 +74,13 @@ public class ResponseCode {
     private String name;
 
     public ResponseCode(int code, String name) {
+        Validate.notNull(name);
         this.code = code;
         this.name = name;
+    }
+
+    public ResponseCode(int code) {
+        this(code, UNKNOWN);
     }
 
     public int getCode() {
@@ -99,11 +110,14 @@ public class ResponseCode {
                 return c;
             }
         }
-        return null;
+        return new ResponseCode(code);
     }
 
     @Override
     public String toString() {
-        return name;
+        if (UNKNOWN.equals(name))
+            return String.format("%s(%d)", name, code);
+        else
+            return name;
     }
 }

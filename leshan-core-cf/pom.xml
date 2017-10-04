@@ -40,6 +40,12 @@ Contributors:
             <groupId>org.eclipse.californium</groupId>
             <artifactId>scandium</artifactId>
         </dependency>
+        <!-- test dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
