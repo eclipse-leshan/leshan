@@ -93,6 +93,15 @@ public class ResponseCode {
         return null;
     }
 
+    public static ResponseCode fromCode(int code) {
+        for (ResponseCode c : knownResponseCode) {
+            if (c.getCode() == code) {
+                return c;
+            }
+        }
+        return null;
+    }
+
     @Override
     public String toString() {
         return name;

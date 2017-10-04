@@ -15,71 +15,45 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.californium;
 
-import static org.eclipse.leshan.ResponseCode.*;
-
 import org.eclipse.californium.core.coap.CoAP;
+import org.eclipse.californium.core.coap.MessageFormatException;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.util.Validate;
 
 public class ResponseCodeUtil {
 
-    public static ResponseCode fromCoapCode(int code) {
-        Validate.notNull(code);
+    public static int toLwM2mCode(org.eclipse.californium.core.coap.CoAP.ResponseCode coapResponseCode) {
+        return coapResponseCode.codeClass * 100 + coapResponseCode.codeDetail;
+    }
 
-        if (code == CoAP.ResponseCode.CREATED.value) {
-            return ResponseCode.CREATED;
-        } else if (code == CoAP.ResponseCode.DELETED.value) {
-            return ResponseCode.DELETED;
-        } else if (code == CoAP.ResponseCode.CHANGED.value) {
-            return ResponseCode.CHANGED;
-        } else if (code == CoAP.ResponseCode.CONTENT.value) {
-            return ResponseCode.CONTENT;
-        } else if (code == CoAP.ResponseCode.BAD_REQUEST.value) {
-            return ResponseCode.BAD_REQUEST;
-        } else if (code == CoAP.ResponseCode.UNAUTHORIZED.value) {
-            return ResponseCode.UNAUTHORIZED;
-        } else if (code == CoAP.ResponseCode.NOT_FOUND.value) {
-            return ResponseCode.NOT_FOUND;
-        } else if (code == CoAP.ResponseCode.METHOD_NOT_ALLOWED.value) {
-            return ResponseCode.METHOD_NOT_ALLOWED;
-        } else if (code == CoAP.ResponseCode.FORBIDDEN.value) {
-            return ResponseCode.FORBIDDEN;
-        } else if (code == CoAP.ResponseCode.UNSUPPORTED_CONTENT_FORMAT.value) {
-            return ResponseCode.UNSUPPORTED_CONTENT_FORMAT;
-        } else if (code == CoAP.ResponseCode.NOT_ACCEPTABLE.value) {
-            return ResponseCode.NOT_ACCEPTABLE;
-        } else if (code == CoAP.ResponseCode.INTERNAL_SERVER_ERROR.value) {
-            return ResponseCode.INTERNAL_SERVER_ERROR;
-        } else {
+    public static int toLwM2mCode(int coapCode) {
+        int codeClass = CoAP.getCodeClass(coapCode);
+        int codeDetail = CoAP.getCodeDetail(coapCode);
+        return codeClass * 100 + codeDetail;
+    }
+
+    public static ResponseCode fromCoapCode(int code) {
+        ResponseCode lwm2mResponseCode = ResponseCode.fromCode(toLwM2mCode(code));
+        if (lwm2mResponseCode == null)
             throw new IllegalArgumentException("Invalid CoAP code for LWM2M response: " + code);
-        }
+
+        return lwm2mResponseCode;
+    }
+
+    public static int toCoapCode(int lwm2mCode) {
+        int codeClass = lwm2mCode / 100;
+        int codeDetail = lwm2mCode % 100;
+        if (codeClass > 7 || codeDetail > 31)
+            throw new IllegalArgumentException("Could not be translated into a valid COAP code");
+
+        return codeClass << 5 | codeDetail;
     }
 
     public static org.eclipse.californium.core.coap.CoAP.ResponseCode fromLwM2mCode(ResponseCode code) {
         Validate.notNull(code);
-
-        switch (code.getCode()) {
-        case CREATED_CODE:
-            return org.eclipse.californium.core.coap.CoAP.ResponseCode.CREATED;
-        case DELETED_CODE:
-            return org.eclipse.californium.core.coap.CoAP.ResponseCode.DELETED;
-        case CHANGED_CODE:
-            return org.eclipse.californium.core.coap.CoAP.ResponseCode.CHANGED;
-        case CONTENT_CODE:
-            return org.eclipse.californium.core.coap.CoAP.ResponseCode.CONTENT;
-        case BAD_REQUEST_CODE:
-            return org.eclipse.californium.core.coap.CoAP.ResponseCode.BAD_REQUEST;
-        case UNAUTHORIZED_CODE:
-            return org.eclipse.californium.core.coap.CoAP.ResponseCode.UNAUTHORIZED;
-        case NOT_FOUND_CODE:
-            return org.eclipse.californium.core.coap.CoAP.ResponseCode.NOT_FOUND;
-        case METHOD_NOT_ALLOWED_CODE:
-            return org.eclipse.californium.core.coap.CoAP.ResponseCode.METHOD_NOT_ALLOWED;
-        case FORBIDDEN_CODE:
-            return org.eclipse.californium.core.coap.CoAP.ResponseCode.FORBIDDEN;
-        case INTERNAL_SERVER_ERROR_CODE:
-            return org.eclipse.californium.core.coap.CoAP.ResponseCode.INTERNAL_SERVER_ERROR;
-        default:
+        try {
+            return org.eclipse.californium.core.coap.CoAP.ResponseCode.valueOf(toCoapCode(code.getCode()));
+        } catch (MessageFormatException e) {
             throw new IllegalArgumentException("Invalid CoAP code for LWM2M response: " + code);
         }
     }
