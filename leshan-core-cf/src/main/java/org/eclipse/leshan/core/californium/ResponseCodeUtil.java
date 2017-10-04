@@ -26,6 +26,15 @@ public class ResponseCodeUtil {
         return coapResponseCode.codeClass * 100 + coapResponseCode.codeDetail;
     }
 
+    public static ResponseCode toLwM2mResponseCode(
+            org.eclipse.californium.core.coap.CoAP.ResponseCode coapResponseCode) {
+        ResponseCode lwm2mResponseCode = ResponseCode.fromCode(toLwM2mCode(coapResponseCode));
+        if (lwm2mResponseCode == null)
+            throw new IllegalArgumentException("Invalid CoAP code for LWM2M response: " + coapResponseCode);
+
+        return lwm2mResponseCode;
+    }
+
     public static int toLwM2mCode(int coapCode) {
         int codeClass = CoAP.getCodeClass(coapCode);
         int codeDetail = CoAP.getCodeDetail(coapCode);
