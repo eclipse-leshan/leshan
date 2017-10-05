@@ -16,7 +16,7 @@
 
 angular.module('objectDirectives', [])
 
-.directive('object', function ($compile, $routeParams, $http, dialog,$filter,$modal,lwResources) {
+.directive('object', function ($compile, $routeParams, $http, dialog, $filter, $modal, lwResources, helper) {
     return {
         restrict: "E",
         replace: true,
@@ -63,22 +63,18 @@ angular.module('objectDirectives', [])
                     var instancepath  = scope.object.path;
                     $http({method: 'POST', url: "api/clients/" + $routeParams.clientId + instancepath, data: payload, headers:{'Content-Type': 'application/json'}, params:{format:format}})
                     .success(function(data, status, headers, config) {
-                        create = scope.object.create;
-                        create.date = new Date();
-                        var formattedDate = $filter('date')(create.date, 'HH:mm:ss.sss');
-                        create.status = data.status;
-                        create.tooltip = formattedDate + "<br/>" + create.status;
-                        
-                        if (data.status == "CREATED") {
-                            var newinstance = lwResources.addInstance(scope.object, instance.id, null);
-                            for (var i in payload.resources) {
-                                var tlvresource = payload.resources[i];
-                                resource = lwResources.addResource(scope.object, newinstance, tlvresource.id, null);
-                                resource.value = tlvresource.value;
-                                resource.valuesupposed = true;
-                                resource.tooltip = formattedDate;
-                            }
-                        }
+                    	helper.handleResponse(data, scope.object.create, function (formattedDate) {
+	                        if (data.status == "CREATED") {
+	                            var newinstance = lwResources.addInstance(scope.object, instance.id, null);
+	                            for (var i in payload.resources) {
+	                                var tlvresource = payload.resources[i];
+	                                resource = lwResources.addResource(scope.object, newinstance, tlvresource.id, null);
+	                                resource.value = tlvresource.value;
+	                                resource.valuesupposed = true;
+	                                resource.tooltip = formattedDate;
+	                            }
+	                        }
+                    	});
                     }).error(function(data, status, headers, config) {
                         errormessage = "Unable to create instance " + instancepath + " for "+ $routeParams.clientId + " : " + status +" "+ data;
                         dialog.open(errormessage);

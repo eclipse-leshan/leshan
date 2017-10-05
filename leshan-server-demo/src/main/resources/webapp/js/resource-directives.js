@@ -16,7 +16,7 @@
 
 angular.module('resourceDirectives', [])
 
-.directive('resource', function ($compile, $routeParams, $http, dialog, $filter, lwResources) {
+.directive('resource', function ($compile, $routeParams, $http, dialog, $filter, lwResources, helper) {
     return {
         restrict: "E",
         replace: true,
@@ -64,29 +64,25 @@ angular.module('resourceDirectives', [])
                 var uri = "api/clients/" + $routeParams.clientId + scope.resource.path+"/observe";
                 $http.post(uri, null,{params:{format:format}})
                 .success(function(data, status, headers, config) {
-                    var observe = scope.resource.observe;
-                    observe.date = new Date();
-                    var formattedDate = $filter('date')(observe.date, 'HH:mm:ss.sss');
-                    observe.status = data.status;
-                    observe.tooltip = formattedDate + "<br/>" + observe.status;
-                    
-                    if (data.status == "CONTENT") {
-                        scope.resource.observed = true;
-                        if("value" in data.content) {
-                            // single value
-                            scope.resource.value = data.content.value;
-                        }
-                        else if("values" in data.content) {
-                            // multiple instances
-                            var tab = new Array();
-                            for (var i in data.content.values) {
-                                tab.push(i+"="+data.content.values[i]);
+                	helper.handleResponse(data, scope.resource.observe, function (formattedDate){
+                		if (data.status == "CONTENT") {
+                            scope.resource.observed = true;
+                            if("value" in data.content) {
+                                // single value
+                                scope.resource.value = data.content.value;
                             }
-                            scope.resource.value = tab.join(", ");
-                        }
-                        scope.resource.valuesupposed = false;
-                        scope.resource.tooltip = formattedDate;
-                    }
+                            else if("values" in data.content) {
+                                // multiple instances
+                                var tab = new Array();
+                                for (var i in data.content.values) {
+                                    tab.push(i+"="+data.content.values[i]);
+                                }
+                                scope.resource.value = tab.join(", ");
+                            }
+                            scope.resource.valuesupposed = false;
+                            scope.resource.tooltip = formattedDate;
+                        }	
+                	});
                 }).error(function(data, status, headers, config) {
                     errormessage = "Unable to start observation on resource " + scope.resource.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
                     dialog.open(errormessage);
@@ -114,29 +110,24 @@ angular.module('resourceDirectives', [])
                 $http.get(uri, {params:{format:format}})
                 .success(function(data, status, headers, config) {
                     // manage request information
-                    var read = scope.resource.read;
-                    read.date = new Date();
-                    var formattedDate = $filter('date')(read.date, 'HH:mm:ss.sss');
-                    read.status = data.status;
-                    read.tooltip = formattedDate + "<br/>" + read.status;
-                    
-                    // manage read data
-                    if (data.status == "CONTENT" && data.content) {
-                        if("value" in data.content) {
-                            // single value
-                            scope.resource.value = data.content.value;
-                        }
-                    else if("values" in data.content) {
-                            // multiple instances
-                            var tab = new Array();
-                            for (var i in data.content.values) {
-                                tab.push(i+"="+data.content.values[i]);
+                	helper.handleResponse(data, scope.resource.read, function (formattedDate){
+                		if (data.status == "CONTENT" && data.content) {
+                            if("value" in data.content) {
+                                // single value
+                                scope.resource.value = data.content.value;
                             }
-                            scope.resource.value = tab.join(", ");
-                        }
-                        scope.resource.valuesupposed = false;
-                        scope.resource.tooltip = formattedDate;
-                    }
+                            else if("values" in data.content) {
+                                // multiple instances
+                                var tab = new Array();
+                                for (var i in data.content.values) {
+                                    tab.push(i+"="+data.content.values[i]);
+                                }
+                                scope.resource.value = tab.join(", ");
+                            }
+                            scope.resource.valuesupposed = false;
+                            scope.resource.tooltip = formattedDate;
+                        }                		
+                	});
                 }).error(function(data, status, headers, config) {
                     errormessage = "Unable to read resource " + scope.resource.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
                     dialog.open(errormessage);
@@ -163,17 +154,13 @@ angular.module('resourceDirectives', [])
                         var format = scope.settings.single.format;
                         $http({method: 'PUT', url: "api/clients/" + $routeParams.clientId + scope.resource.path, data: rsc, headers:{'Content-Type': 'application/json'},params:{format:format}})
                         .success(function(data, status, headers, config) {
-                            write = scope.resource.write;
-                            write.date = new Date();
-                            var formattedDate = $filter('date')(write.date, 'HH:mm:ss.sss');
-                            write.status = data.status;
-                            write.tooltip = formattedDate + "<br/>" + write.status;
-                            
-                            if (data.status == "CHANGED") {
-                                scope.resource.value = value;
-                                scope.resource.valuesupposed = true;
-                                scope.resource.tooltip = formattedDate;
-                            }
+                        	helper.handleResponse(data, scope.resource.write, function (formattedDate){
+                        		if (data.status == "CHANGED") {
+                                    scope.resource.value = value;
+                                    scope.resource.valuesupposed = true;
+                                    scope.resource.tooltip = formattedDate;
+                                }
+                        	});
                         }).error(function(data, status, headers, config) {
                             errormessage = "Unable to write resource " + scope.resource.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
                             dialog.open(errormessage);
@@ -188,12 +175,7 @@ angular.module('resourceDirectives', [])
             scope.exec = function() {
                 $http.post("api/clients/" + $routeParams.clientId+ scope.resource.path)
                 .success(function(data, status, headers, config) {
-                    var exec = scope.resource.exec;
-                    exec.date = new Date();
-                    var formattedDate = $filter('date')(exec.date, 'HH:mm:ss.sss');
-                    exec.status = data.status;
-                    exec.tooltip = formattedDate + "<br/>" + exec.status;
-                    scope.resource.execwithparams.tooltip = exec.tooltip;
+                	helper.handleResponse(data, scope.resource.exec);
                 }).error(function(data, status, headers, config) {
                     errormessage = "Unable to execute resource " + scope.resource.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
                     dialog.open(errormessage);
@@ -214,12 +196,7 @@ angular.module('resourceDirectives', [])
 
                         $http({method: 'POST', url: "api/clients/" + $routeParams.clientId + scope.resource.path, data: value})
                         .success(function(data, status, headers, config) {
-                            exec = scope.resource.exec;
-                            exec.date = new Date();
-                            var formattedDate = $filter('date')(exec.date, 'HH:mm:ss.sss');
-                            exec.status = data.status;
-                            exec.tooltip = formattedDate + "<br/>" + exec.status;
-                            scope.resource.execwithparams.tooltip = exec.tooltip;
+                        	helper.handleResponse(data, scope.resource.exec);                            
                         }).error(function(data, status, headers, config) {
                             errormessage = "Unable to execute resource " + scope.resource.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
                             dialog.open(errormessage);
