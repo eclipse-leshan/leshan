@@ -12,8 +12,9 @@
 								'btn': true,
 								'btn-xs': true,
 								'btn-default': instance.observe.status == null,
-								'btn-danger': instance.observe.status != null && instance.observe.status != 'CONTENT',
-								'btn-success': instance.observe.status == 'CONTENT' }">Observe <span class="glyphicon glyphicon-play"></span></button>
+								'btn-danger': instance.observe.status == 'ERROR',
+								'btn-warning': instance.observe.status == 'INVALID',
+								'btn-success': instance.observe.status == 'SUCCESS'}">Observe <span class="glyphicon glyphicon-play"></span></button>
 					<button type="button" ng-click="stopObserve()"
 							ng-class="{
 								'btn': true,
@@ -28,8 +29,9 @@
 								'btn': true,
 								'btn-xs': true,
 								'btn-default': instance.read.status == null,
-								'btn-danger': instance.read.status != null && instance.read.status != 'CONTENT',
-								'btn-success': instance.read.status == 'CONTENT' }">Read</button>
+								'btn-danger': instance.read.status == 'ERROR',
+								'btn-warning': instance.read.status == 'INVALID',
+								'btn-success': instance.read.status == 'SUCCESS'}">Read</button>
 				</div>
 				<div class="btn-group">
 					<button type="button" ng-click="instance.write.status = null; write()"
@@ -38,8 +40,9 @@
 								'btn': true,
 								'btn-xs': true,
 								'btn-default': instance.write.status == null,
-								'btn-danger': instance.write.status != null && instance.write.status != 'CHANGED',
-								'btn-success': instance.write.status == 'CHANGED' }">Write</button>
+								'btn-danger': instance.write.status == 'ERROR',
+								'btn-warning': instance.write.status == 'INVALID',
+								'btn-success': instance.write.status == 'SUCCESS'}">Write</button>
 				</div>
 				<div class="btn-group">
 					<button type="button" ng-click="instance.del.status = null; del()"
@@ -48,8 +51,9 @@
 								'btn': true,
 								'btn-xs': true,
 								'btn-default': instance.del.status == null,
-								'btn-danger': instance.del.status != null && instance.del.status != 'DELETED',
-								'btn-success': instance.del.status == 'DELETED' }">Delete</button>
+								'btn-danger': instance.del.status == 'ERROR',
+								'btn-warning': instance.del.status == 'INVALID',
+								'btn-success': instance.del.status == 'SUCCESS'}">Delete</button>
 				</div>
 			</div>
 		</div>

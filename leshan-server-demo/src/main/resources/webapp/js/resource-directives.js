@@ -65,7 +65,7 @@ angular.module('resourceDirectives', [])
                 $http.post(uri, null,{params:{format:format}})
                 .success(function(data, status, headers, config) {
                 	helper.handleResponse(data, scope.resource.observe, function (formattedDate){
-                		if (data.status == "CONTENT") {
+                		if (data.success) {
                             scope.resource.observed = true;
                             if("value" in data.content) {
                                 // single value
@@ -111,7 +111,7 @@ angular.module('resourceDirectives', [])
                 .success(function(data, status, headers, config) {
                     // manage request information
                 	helper.handleResponse(data, scope.resource.read, function (formattedDate){
-                		if (data.status == "CONTENT" && data.content) {
+                		if (data.success && data.content) {
                             if("value" in data.content) {
                                 // single value
                                 scope.resource.value = data.content.value;
@@ -155,7 +155,7 @@ angular.module('resourceDirectives', [])
                         $http({method: 'PUT', url: "api/clients/" + $routeParams.clientId + scope.resource.path, data: rsc, headers:{'Content-Type': 'application/json'},params:{format:format}})
                         .success(function(data, status, headers, config) {
                         	helper.handleResponse(data, scope.resource.write, function (formattedDate){
-                        		if (data.status == "CHANGED") {
+                        		if (data.success) {
                                     scope.resource.value = value;
                                     scope.resource.valuesupposed = true;
                                     scope.resource.tooltip = formattedDate;

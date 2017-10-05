@@ -19,8 +19,9 @@
 								'btn': true,
 								'btn-xs': true,
 								'btn-default': object.create.status == null,
-								'btn-danger': object.create.status != null && object.create.status != 'CREATED',
-								'btn-success': object.create.status == 'CREATED' }">Create New Instance</button>
+								'btn-danger': object.create.status == 'ERROR',
+								'btn-warning': object.create.status == 'INVALID',
+								'btn-success': object.create.status == 'SUCCESS' }">Create New Instance</button>
 				</div>
 			</div>
 		</div>

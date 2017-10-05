@@ -33,12 +33,14 @@ public class ResponseSerializer implements JsonSerializer<LwM2mResponse> {
         JsonObject element = new JsonObject();
 
         element.addProperty("status", src.getCode().toString());
+        element.addProperty("valid", src.isValid());
+        element.addProperty("success", src.isSuccess());
+        element.addProperty("failure", src.isFailure());
 
         if (typeOfSrc instanceof Class<?>) {
             if (ReadResponse.class.isAssignableFrom((Class<?>) typeOfSrc)) {
                 element.add("content", context.serialize(((ReadResponse) src).getContent()));
-            }
-            else if (DiscoverResponse.class.isAssignableFrom((Class<?>) typeOfSrc)) {
+            } else if (DiscoverResponse.class.isAssignableFrom((Class<?>) typeOfSrc)) {
                 element.add("objectLinks", context.serialize(((DiscoverResponse) src).getObjectLinks()));
             }
         }

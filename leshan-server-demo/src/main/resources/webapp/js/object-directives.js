@@ -64,7 +64,7 @@ angular.module('objectDirectives', [])
                     $http({method: 'POST', url: "api/clients/" + $routeParams.clientId + instancepath, data: payload, headers:{'Content-Type': 'application/json'}, params:{format:format}})
                     .success(function(data, status, headers, config) {
                     	helper.handleResponse(data, scope.object.create, function (formattedDate) {
-	                        if (data.status == "CREATED") {
+	                        if (data.success) {
 	                            var newinstance = lwResources.addInstance(scope.object, instance.id, null);
 	                            for (var i in payload.resources) {
 	                                var tlvresource = payload.resources[i];

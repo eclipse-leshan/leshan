@@ -22,8 +22,18 @@ myModule.factory('helper', ["$filter", function($filter) {
   serviceInstance.handleResponse = function (response, lwm2mNode, successCallback) {
 	  lwm2mNode.date = new Date();
       var formattedDate = $filter('date')(lwm2mNode.date, 'HH:mm:ss.sss');
-      lwm2mNode.status = response.status;
-      lwm2mNode.tooltip = formattedDate + "<br/>" + lwm2mNode.status;
+      if (!response.valid){
+    	  lwm2mNode.status = "INVALID";  
+      }else if (response.success){
+    	  lwm2mNode.status = "SUCCESS";
+      }else {
+    	  lwm2mNode.status = "ERROR";
+      }
+      
+      if (response.valid)
+    	  lwm2mNode.tooltip = formattedDate + "<br/>" + response.status ;
+      else
+    	  lwm2mNode.tooltip = formattedDate + "<br/> Not LWM2M Code <br/>" + response.status;
       
       if (successCallback && response.success) {
     	  successCallback(formattedDate);

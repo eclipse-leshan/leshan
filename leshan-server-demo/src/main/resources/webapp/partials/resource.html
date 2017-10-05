@@ -12,8 +12,9 @@
 								'btn': true,
 								'btn-xs': true,
 								'btn-default': resource.observe.status == null,
-								'btn-danger': resource.observe.status != null && resource.observe.status != 'CONTENT',
-								'btn-success': resource.observe.status == 'CONTENT' }">Observe <span class="glyphicon glyphicon-play"></span></button>
+								'btn-danger': resource.observe.status == 'ERROR',
+								'btn-warning': resource.observe.status == 'INVALID',
+								'btn-success': resource.observe.status == 'SUCCESS' }">Observe <span class="glyphicon glyphicon-play"></span></button>
 					<button type="button" ng-click="stopObserve()"
 							ng-class="{
 								'btn': true,
@@ -28,8 +29,9 @@
 								'btn': true,
 								'btn-xs': true,
 								'btn-default': resource.read.status == null,
-								'btn-danger': resource.read.status != null && resource.read.status != 'CONTENT',
-								'btn-success': resource.read.status == 'CONTENT' }">Read</button>
+								'btn-danger': resource.read.status == 'ERROR',
+								'btn-warning': resource.read.status == 'INVALID',
+								'btn-success': resource.read.status == 'SUCCESS' }">Read</button>
 				</div>
 				<div ng-show="writable()" class="btn-group">
 					<button type="button" ng-click="resource.write.status = null; write()"
@@ -38,8 +40,9 @@
 								'btn': true,
 								'btn-xs': true,
 								'btn-default': resource.write.status == null,
-								'btn-danger': resource.write.status != null && resource.write.status != 'CHANGED',
-								'btn-success': resource.write.status == 'CHANGED' }">Write</button>
+								'btn-danger': resource.write.status == 'ERROR',
+								'btn-warning': resource.write.status == 'INVALID',
+								'btn-success': resource.write.status == 'SUCCESS' }">Write</button>
 				</div>
 				<div ng-show="executable()" class="btn-group">
 					<button type="button" ng-click="resource.exec.status = null; exec();"
@@ -48,16 +51,18 @@
 								'btn': true,
 								'btn-xs': true,
 								'btn-default': resource.exec.status == null,
-								'btn-danger':  resource.exec.status != null && resource.exec.status != 'CHANGED',
-								'btn-success': resource.exec.status == 'CHANGED' }">Exec</button>
+								'btn-danger': resource.exec.status == 'ERROR',
+								'btn-warning': resource.exec.status == 'INVALID',
+								'btn-success': resource.exec.status == 'SUCCESS' }">Exec</button>
 					<button type="button" ng-click="resource.exec.status = null; execWithParams();"
 							tooltip-html-unsafe={{resource.execwithparams.tooltip}} tooltip-placement="right" tooltip-animation="false" tooltip-append-to-body="true"
 							ng-class="{
 								'btn': true,
 								'btn-xs': true,
 								'btn-default': resource.exec.status == null,
-								'btn-danger':  resource.exec.status != null && resource.exec.status != 'CHANGED',
-								'btn-success': resource.exec.status == 'CHANGED' }"><span class="glyphicon glyphicon-cog"></span></button>
+								'btn-danger': resource.exec.status == 'ERROR',
+								'btn-warning': resource.exec.status == 'INVALID',
+								'btn-success': resource.exec.status == 'SUCCESS' }"><span class="glyphicon glyphicon-cog"></span></button>
 				</div>
 			</div>
 		</div>

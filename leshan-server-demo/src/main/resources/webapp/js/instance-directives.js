@@ -41,7 +41,7 @@ angular.module('instanceDirectives', [])
                 $http.get(uri, {params:{format:format}})
                 .success(function(data, status, headers, config) {
                 	helper.handleResponse(data, scope.instance.read, function (formattedDate){
-	                    if (data.status == "CONTENT" && data.content) {
+	                    if (data.success && data.content) {
 	                        for(var i in data.content.resources) {
 	                            var tlvresource = data.content.resources[i];
 	                            resource = lwResources.addResource(scope.parent, scope.instance, tlvresource.id, null);
@@ -76,7 +76,7 @@ angular.module('instanceDirectives', [])
                 .success(function(data, status, headers, config) {
                 	helper.handleResponse(data, scope.instance.del, function (formattedDate){
 	                    // manage delete instance in resource tree.
-	                    if (data.status == "DELETED") {
+	                    if (data.success) {
 	                        scope.parent.instances.splice(scope.instance,1);
 	                    }
                 	});
@@ -117,7 +117,7 @@ angular.module('instanceDirectives', [])
                     $http({method: 'PUT', url: "api/clients/" + $routeParams.clientId + scope.instance.path, data: payload, headers:{'Content-Type': 'application/json'}, params:{format:format}})
                     .success(function(data, status, headers, config) {
                     	helper.handleResponse(data, scope.instance.write, function (formattedDate) {
-	                        if (data.status == "CHANGED") {
+	                        if (data.success) {
 	                            for (var i in payload.resources) {
 	                                var tlvresource = payload.resources[i];
 	                                resource = lwResources.addResource(scope.parent, scope.instance, tlvresource.id, null);
@@ -142,7 +142,7 @@ angular.module('instanceDirectives', [])
                 $http.post(uri, null, {params:{format:format}})
                 .success(function(data, status, headers, config) {
                 	helper.handleResponse(data, scope.instance.observe, function (formattedDate) {
-	                    if (data.status == "CONTENT") {
+	                    if (data.success) {
 	                        scope.instance.observed = true;
 	
 	                        for(var i in data.content.resources) {
