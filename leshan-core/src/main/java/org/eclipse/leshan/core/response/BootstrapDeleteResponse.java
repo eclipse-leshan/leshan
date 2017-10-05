@@ -36,6 +36,18 @@ public class BootstrapDeleteResponse extends AbstractLwM2mResponse {
     }
 
     @Override
+    public boolean isValid() {
+        switch (code.getCode()) {
+        case ResponseCode.DELETED_CODE:
+        case ResponseCode.BAD_REQUEST_CODE:
+        case ResponseCode.INTERNAL_SERVER_ERROR_CODE:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    @Override
     public String toString() {
         if (errorMessage != null)
             return String.format("BootstrapDeleteResponse [code=%s, errormessage=%s]", code, errorMessage);

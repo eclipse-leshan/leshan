@@ -49,6 +49,22 @@ public class ReadResponse extends AbstractLwM2mResponse {
         return getCode() == ResponseCode.CONTENT;
     }
 
+    @Override
+    public boolean isValid() {
+        switch (code.getCode()) {
+        case ResponseCode.CONTENT_CODE:
+        case ResponseCode.BAD_REQUEST_CODE:
+        case ResponseCode.UNAUTHORIZED_CODE:
+        case ResponseCode.NOT_FOUND_CODE:
+        case ResponseCode.METHOD_NOT_ALLOWED_CODE:
+        case ResponseCode.NOT_ACCEPTABLE_CODE:
+        case ResponseCode.INTERNAL_SERVER_ERROR_CODE:
+            return true;
+        default:
+            return false;
+        }
+    }
+
     /**
      * Get the {@link LwM2mNode} value returned as response payload.
      *

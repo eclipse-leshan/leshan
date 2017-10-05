@@ -43,6 +43,20 @@ public class RegisterResponse extends AbstractLwM2mResponse {
     }
 
     @Override
+    public boolean isValid() {
+        switch (code.getCode()) {
+        case ResponseCode.CREATED_CODE:
+        case ResponseCode.BAD_REQUEST_CODE:
+        case ResponseCode.FORBIDDEN_CODE:
+        case ResponseCode.PRECONDITION_FAILED_CODE:
+        case ResponseCode.INTERNAL_SERVER_ERROR_CODE:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    @Override
     public String toString() {
         if (errorMessage != null)
             return String.format("RegisterResponse [code=%s, errormessage=%s]", code, errorMessage);
@@ -62,6 +76,10 @@ public class RegisterResponse extends AbstractLwM2mResponse {
 
     public static RegisterResponse forbidden(String errorMessage) {
         return new RegisterResponse(ResponseCode.FORBIDDEN, null, errorMessage);
+    }
+
+    public static RegisterResponse preconditionFailed(String errorMessage) {
+        return new RegisterResponse(ResponseCode.PRECONDITION_FAILED, null, errorMessage);
     }
 
     public static RegisterResponse internalServerError(String errorMessage) {

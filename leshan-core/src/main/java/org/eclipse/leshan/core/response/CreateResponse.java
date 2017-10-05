@@ -40,6 +40,22 @@ public class CreateResponse extends AbstractLwM2mResponse {
     }
 
     @Override
+    public boolean isValid() {
+        switch (code.getCode()) {
+        case ResponseCode.CREATED_CODE:
+        case ResponseCode.BAD_REQUEST_CODE:
+        case ResponseCode.UNAUTHORIZED_CODE:
+        case ResponseCode.NOT_FOUND_CODE:
+        case ResponseCode.METHOD_NOT_ALLOWED_CODE:
+        case ResponseCode.UNSUPPORTED_CONTENT_FORMAT_CODE:
+        case ResponseCode.INTERNAL_SERVER_ERROR_CODE:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    @Override
     public String toString() {
         if (errorMessage != null)
             return String.format("CreateResponse [code=%s, errormessage=%s]", code, errorMessage);

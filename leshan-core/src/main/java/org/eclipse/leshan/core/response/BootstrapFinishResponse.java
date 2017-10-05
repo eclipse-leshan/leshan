@@ -36,6 +36,19 @@ public class BootstrapFinishResponse extends AbstractLwM2mResponse {
     }
 
     @Override
+    public boolean isValid() {
+        switch (code.getCode()) {
+        case ResponseCode.CHANGED_CODE:
+        case ResponseCode.BAD_REQUEST_CODE:
+        case ResponseCode.NOT_ACCEPTABLE_CODE:
+        case ResponseCode.INTERNAL_SERVER_ERROR_CODE:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    @Override
     public String toString() {
         if (errorMessage != null)
             return String.format("BootstrapFinishResponse [code=%s, errormessage=%s]", code, errorMessage);
@@ -51,6 +64,10 @@ public class BootstrapFinishResponse extends AbstractLwM2mResponse {
 
     public static BootstrapFinishResponse badRequest(String errorMessage) {
         return new BootstrapFinishResponse(ResponseCode.BAD_REQUEST, errorMessage);
+    }
+
+    public static BootstrapFinishResponse notAcceptable(String errorMessage) {
+        return new BootstrapFinishResponse(ResponseCode.NOT_ACCEPTABLE, errorMessage);
     }
 
     public static BootstrapFinishResponse internalServerError(String errorMessage) {

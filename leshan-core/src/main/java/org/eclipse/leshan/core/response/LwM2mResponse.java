@@ -55,4 +55,9 @@ public interface LwM2mResponse {
      * @return true if we get an error or unexpected code.
      */
     boolean isFailure();
+
+    /**
+     * @return true if we get a valid response code, a code expected by the LWM2M spec.
+     */
+    boolean isValid();
 }

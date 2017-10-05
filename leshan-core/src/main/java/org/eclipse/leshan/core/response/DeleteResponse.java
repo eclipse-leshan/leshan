@@ -19,7 +19,7 @@ import org.eclipse.leshan.ResponseCode;
 
 public class DeleteResponse extends AbstractLwM2mResponse {
 
-    public DeleteResponse(ResponseCode code, String errorMessage){
+    public DeleteResponse(ResponseCode code, String errorMessage) {
         this(code, errorMessage, null);
     }
 
@@ -30,6 +30,21 @@ public class DeleteResponse extends AbstractLwM2mResponse {
     @Override
     public boolean isSuccess() {
         return getCode() == ResponseCode.DELETED;
+    }
+
+    @Override
+    public boolean isValid() {
+        switch (code.getCode()) {
+        case ResponseCode.DELETED_CODE:
+        case ResponseCode.BAD_REQUEST_CODE:
+        case ResponseCode.UNAUTHORIZED_CODE:
+        case ResponseCode.NOT_FOUND_CODE:
+        case ResponseCode.METHOD_NOT_ALLOWED_CODE:
+        case ResponseCode.INTERNAL_SERVER_ERROR_CODE:
+            return true;
+        default:
+            return false;
+        }
     }
 
     @Override
