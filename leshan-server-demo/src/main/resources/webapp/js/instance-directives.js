@@ -77,7 +77,10 @@ angular.module('instanceDirectives', [])
                 	helper.handleResponse(data, scope.instance.del, function (formattedDate){
 	                    // manage delete instance in resource tree.
 	                    if (data.success) {
-	                        scope.parent.instances.splice(scope.instance,1);
+	                    	var i = scope.parent.instances.indexOf(scope.instance);
+	                    	if(i != -1) {
+	                    		scope.parent.instances.splice(i, 1);
+	                    	}
 	                    }
                 	});
                 }).error(function(data, status, headers, config) {
