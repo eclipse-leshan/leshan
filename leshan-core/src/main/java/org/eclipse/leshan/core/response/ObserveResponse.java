@@ -21,6 +21,7 @@ import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 
 /**
  * Specialized ReadResponse to a Observe request, with the corresponding Observation.
@@ -42,6 +43,12 @@ public class ObserveResponse extends ReadResponse {
         super(code, timestampedValues != null && !timestampedValues.isEmpty() ? timestampedValues.get(0).getNode()
                 : content, errorMessage, coapResponse);
 
+        // CHANGED is out of spec but is supported for backward compatibility. (previous draft version)
+        if (ResponseCode.CHANGED.equals(code)) {
+            if (content == null)
+                throw new InvalidResponseException("Content is mandatory for successful response");
+        }
+
         this.observation = observation;
         this.timestampedValues = timestampedValues;
     }
@@ -52,7 +59,8 @@ public class ObserveResponse extends ReadResponse {
 
     @Override
     public boolean isSuccess() {
-        return getCode() == ResponseCode.CONTENT;
+        // CHANGED is out of spec but is supported for backward compatibility. (previous draft version)
+        return getCode().equals(ResponseCode.CONTENT) || getCode().equals(ResponseCode.CHANGED);
     }
 
     @Override

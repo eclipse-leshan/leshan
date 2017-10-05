@@ -217,10 +217,11 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                         request.getPath(), request.getContext());
                 observationService.addObservation(registration, observation);
                 // add the observation to an ObserveResponse instance
-                lwM2mresponse = new ObserveResponse(ResponseCode.CONTENT, content, null, observation, null,
-                        coapResponse);
+                lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), content, null,
+                        observation, null, coapResponse);
             } else {
-                lwM2mresponse = new ObserveResponse(ResponseCode.CONTENT, content, null, null, null, coapResponse);
+                lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), content, null, null,
+                        null, coapResponse);
             }
         } else {
             // handle unexpected response:

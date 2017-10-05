@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
+import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toLwM2mResponseCode;
 import static org.eclipse.leshan.server.californium.impl.CoapRequestBuilder.CTX_REGID;
 
 import java.util.Collection;
@@ -30,7 +31,6 @@ import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.observe.NotificationListener;
 import org.eclipse.californium.core.observe.ObservationStore;
-import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
@@ -252,7 +252,7 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
     }
 
     private ObserveResponse createObserveResponse(Observation observation, LwM2mModel model, Response coapResponse) {
-        // // We handle CONTENT and CHANGED response only
+        // CHANGED response is supported for backward compatibility with old spec.
         if (coapResponse.getCode() != CoAP.ResponseCode.CHANGED
                 && coapResponse.getCode() != CoAP.ResponseCode.CONTENT) {
             throw new InvalidResponseException("Unexpected response code [%s] for %s", coapResponse.getCode(),
@@ -272,11 +272,11 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
 
             // create lwm2m response
             if (timestampedNodes.size() == 1 && !timestampedNodes.get(0).isTimestamped()) {
-                return new ObserveResponse(ResponseCode.CONTENT, timestampedNodes.get(0).getNode(), null, observation,
-                        null, coapResponse);
+                return new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()),
+                        timestampedNodes.get(0).getNode(), null, observation, null, coapResponse);
             } else {
-                return new ObserveResponse(ResponseCode.CONTENT, null, timestampedNodes, observation, null,
-                        coapResponse);
+                return new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), null, timestampedNodes,
+                        observation, null, coapResponse);
             }
         } catch (CodecException e) {
             if (LOG.isDebugEnabled()) {
