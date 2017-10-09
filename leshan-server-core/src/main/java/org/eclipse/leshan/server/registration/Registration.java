@@ -261,8 +261,20 @@ public class Registration implements Serializable {
         return lastUpdate;
     }
 
+    /**
+     * @return true if the last registration update was done less than lifetime seconds ago.
+     */
     public boolean isAlive() {
-        return lastUpdate.getTime() + lifeTimeInSec * 1000 > System.currentTimeMillis();
+        return isAlive(0);
+    }
+
+    /**
+     * This is the same idea than {@link Registration#isAlive()} but with a grace period. <br/>
+     * 
+     * @return true if the last registration update was done less than lifetime+gracePeriod seconds ago.
+     */
+    public boolean isAlive(long gracePeriodInSec) {
+        return lastUpdate.getTime() + lifeTimeInSec * 1000 + gracePeriodInSec * 1000 > System.currentTimeMillis();
     }
 
     public Map<String, String> getAdditionalRegistrationAttributes() {

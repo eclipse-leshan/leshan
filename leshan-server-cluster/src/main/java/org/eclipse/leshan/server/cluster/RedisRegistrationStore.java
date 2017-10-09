@@ -62,6 +62,11 @@ import redis.clients.util.Pool;
  */
 public class RedisRegistrationStore implements CaliforniumRegistrationStore, Startable, Stoppable {
 
+    /** Default time in seconds between 2 cleaning tasks (used to remove expired registration). */
+    public static final long DEFAULT_CLEAN_PERIOD = 60;
+    /** Defaut Extra time for registration lifetime in seconds */
+    public static final long DEFAULT_GRACE_PERIOD = 0;
+
     private static final Logger LOG = LoggerFactory.getLogger(RedisRegistrationStore.class);
 
     // Redis key prefixes
@@ -78,21 +83,24 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
 
     private final ScheduledExecutorService schedExecutor;
     private final long cleanPeriod; // in seconds
+    private final long gracePeriod; // in seconds
 
     public RedisRegistrationStore(Pool<Jedis> p) {
-        this(p, 60); // default clean period 60s
+        this(p, DEFAULT_CLEAN_PERIOD, DEFAULT_GRACE_PERIOD); // default clean period 60s
     }
 
-    public RedisRegistrationStore(Pool<Jedis> p, long cleanPeriodInSec) {
+    public RedisRegistrationStore(Pool<Jedis> p, long cleanPeriodInSec, long lifetimeGracePeriodInSec) {
         this(p, Executors.newScheduledThreadPool(1,
                 new NamedThreadFactory(String.format("RedisRegistrationStore Cleaner (%ds)", cleanPeriodInSec))),
-                cleanPeriodInSec);
+                cleanPeriodInSec, lifetimeGracePeriodInSec);
     }
 
-    public RedisRegistrationStore(Pool<Jedis> p, ScheduledExecutorService schedExecutor, long cleanPeriodInSec) {
+    public RedisRegistrationStore(Pool<Jedis> p, ScheduledExecutorService schedExecutor, long cleanPeriodInSec,
+            long lifetimeGracePeriodInSec) {
         this.pool = p;
         this.schedExecutor = schedExecutor;
         this.cleanPeriod = cleanPeriodInSec;
+        this.gracePeriod = lifetimeGracePeriodInSec;
     }
 
     /* *************** Redis Key utility function **************** */
@@ -205,7 +213,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
                 return null;
             }
             Registration r = deserializeReg(data);
-            return r.isAlive() ? r : null;
+            return r.isAlive(gracePeriod) ? r : null;
         }
     }
 
@@ -315,7 +323,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
             }
             Registration r = deserializeReg(data);
 
-            if (!removeOnlyIfNotAlive || !r.isAlive()) {
+            if (!removeOnlyIfNotAlive || !r.isAlive(gracePeriod)) {
                 long nbRemoved = j.del(toRegIdKey(r.getId()));
                 if (nbRemoved > 0) {
                     j.del(toEndpointKey(r.getEndpoint()));
@@ -673,7 +681,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
                     ScanResult<byte[]> res = j.scan(cursor.getBytes(), params);
                     for (byte[] key : res.getResult()) {
                         Registration r = deserializeReg(j.get(key));
-                        if (!r.isAlive()) {
+                        if (!r.isAlive(gracePeriod)) {
                             Deregistration dereg = removeRegistration(j, r.getId(), true);
                             if (dereg != null)
                                 expirationListener.registrationExpired(dereg.getRegistration(),
