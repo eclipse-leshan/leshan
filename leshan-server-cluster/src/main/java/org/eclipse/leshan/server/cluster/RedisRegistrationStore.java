@@ -163,18 +163,18 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
                 return null;
             }
 
-            // fetch the client
-            byte[] data = j.get(toEndpointKey(ep));
-            if (data == null) {
-                return null;
-            }
-
-            Registration r = deserializeReg(data);
-
             byte[] lockValue = null;
-            byte[] lockKey = toLockKey(r.getEndpoint());
+            byte[] lockKey = toLockKey(ep);
             try {
                 lockValue = RedisLock.acquire(j, lockKey);
+
+                // fetch the client
+                byte[] data = j.get(toEndpointKey(ep));
+                if (data == null) {
+                    return null;
+                }
+
+                Registration r = deserializeReg(data);
 
                 Registration updatedRegistration = update.update(r);
 
@@ -303,18 +303,17 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
             return null;
         }
 
-        // fetch the client
-        byte[] data = j.get(toEndpointKey(ep));
-        if (data == null) {
-            return null;
-        }
-
-        Registration r = deserializeReg(data);
-
         byte[] lockValue = null;
-        byte[] lockKey = toLockKey(r.getEndpoint());
+        byte[] lockKey = toLockKey(ep);
         try {
             lockValue = RedisLock.acquire(j, lockKey);
+
+            // fetch the client
+            byte[] data = j.get(toEndpointKey(ep));
+            if (data == null) {
+                return null;
+            }
+            Registration r = deserializeReg(data);
 
             if (!removeOnlyIfNotAlive || !r.isAlive()) {
                 long nbRemoved = j.del(toRegIdKey(r.getId()));
