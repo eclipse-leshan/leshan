@@ -12,6 +12,8 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - use Lwm2mEndpointContextMatcher
+ *                                                     for secure endpoint.
  *******************************************************************************/
 package org.eclipse.leshan.server.californium;
 
@@ -29,6 +31,7 @@ import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.core.californium.EndpointFactory;
+import org.eclipse.leshan.core.californium.Lwm2mEndpointContextMatcher;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
@@ -427,7 +430,7 @@ public class LeshanServerBuilder {
             if (endpointFactory != null) {
                 securedEndpoint = endpointFactory.createSecuredEndpoint(dtlsConfig, coapConfig, registrationStore);
             } else {
-                securedEndpoint = new CoapEndpoint(new DTLSConnector(dtlsConfig), coapConfig, registrationStore, null);
+                securedEndpoint = new CoapEndpoint(new DTLSConnector(dtlsConfig), coapConfig, registrationStore, null, new Lwm2mEndpointContextMatcher());
             }
         }
 
