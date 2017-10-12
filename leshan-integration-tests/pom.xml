@@ -47,6 +47,13 @@ Contributors:
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.californium</groupId>
+            <artifactId>californium-core</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+            <version>${californium.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
