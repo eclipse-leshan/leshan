@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - use Identity as destination
  *******************************************************************************/
 package org.eclipse.leshan.server.registration;
 
@@ -52,8 +53,7 @@ public class RegistrationHandler {
             InetSocketAddress serverEndpoint) {
 
         Registration.Builder builder = new Registration.Builder(RegistrationHandler.createRegistrationId(),
-                registerRequest.getEndpointName(), sender.getPeerAddress().getAddress(),
-                sender.getPeerAddress().getPort(), serverEndpoint);
+                registerRequest.getEndpointName(), sender, serverEndpoint);
 
         builder.lwM2mVersion(registerRequest.getLwVersion()).lifeTimeInSec(registerRequest.getLifetime())
                 .bindingMode(registerRequest.getBindingMode()).objectLinks(registerRequest.getObjectLinks())
@@ -104,8 +104,7 @@ public class RegistrationHandler {
         }
 
         // Create update
-        final RegistrationUpdate update = new RegistrationUpdate(updateRequest.getRegistrationId(),
-                sender.getPeerAddress().getAddress(), sender.getPeerAddress().getPort(),
+        final RegistrationUpdate update = new RegistrationUpdate(updateRequest.getRegistrationId(), sender,
                 updateRequest.getLifeTimeInSec(), updateRequest.getSmsNumber(), updateRequest.getBindingMode(),
                 updateRequest.getObjectLinks());
 

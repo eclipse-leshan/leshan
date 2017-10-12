@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - use Identity as destination
  *******************************************************************************/
 package org.eclipse.leshan.server.registration;
 
@@ -27,6 +28,7 @@ import java.util.Map;
 
 import org.eclipse.leshan.Link;
 import org.eclipse.leshan.core.request.BindingMode;
+import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.util.Validate;
 
 /**
@@ -42,9 +44,7 @@ public class Registration implements Serializable {
 
     private final Date registrationDate;
 
-    private final InetAddress address;
-
-    private final int port;
+    private final Identity identity;
 
     /*
      * The address of the LWM2M Server's CoAP end point the client used to register.
@@ -75,7 +75,7 @@ public class Registration implements Serializable {
 
     private final Date lastUpdate;
 
-    protected Registration(String id, String endpoint, InetAddress address, int port, String lwM2mVersion,
+    protected Registration(String id, String endpoint, Identity identity, String lwM2mVersion,
             Long lifetimeInSec, String smsNumber, BindingMode bindingMode, Link[] objectLinks,
             InetSocketAddress registrationEndpointAddress,
 
@@ -83,14 +83,12 @@ public class Registration implements Serializable {
 
         Validate.notNull(id);
         Validate.notEmpty(endpoint);
-        Validate.notNull(address);
-        Validate.notNull(port);
+        Validate.notNull(identity);
         Validate.notNull(registrationEndpointAddress);
 
         this.id = id;
+        this.identity = identity;
         this.endpoint = endpoint;
-        this.address = address;
-        this.port = port;
         this.smsNumber = smsNumber;
         this.registrationEndpointAddress = registrationEndpointAddress;
 
@@ -131,12 +129,21 @@ public class Registration implements Serializable {
     }
 
     /**
+     * Gets the clients identity.
+     * 
+     * @return identity from client's most recent registration or registration update. 
+     */
+    public Identity getIdentity() {
+        return identity;
+    }
+
+    /**
      * Gets the client's network address.
      * 
      * @return the source address from the client's most recent CoAP message.
      */
     public InetAddress getAddress() {
-        return address;
+        return identity.getPeerAddress().getAddress();
     }
 
     /**
@@ -145,7 +152,7 @@ public class Registration implements Serializable {
      * @return the source port from the client's most recent CoAP message.
      */
     public int getPort() {
-        return port;
+        return identity.getPeerAddress().getPort();
     }
 
     /**
@@ -288,8 +295,8 @@ public class Registration implements Serializable {
     @Override
     public String toString() {
         return String.format(
-                "Registration [registrationDate=%s, address=%s, port=%s, registrationEndpoint=%s, lifeTimeInSec=%s, smsNumber=%s, lwM2mVersion=%s, bindingMode=%s, endpoint=%s, registrationId=%s, objectLinks=%s, lastUpdate=%s]",
-                registrationDate, address, port, registrationEndpointAddress, lifeTimeInSec, smsNumber, lwM2mVersion,
+                "Registration [registrationDate=%s, identity=%s, registrationEndpoint=%s, lifeTimeInSec=%s, smsNumber=%s, lwM2mVersion=%s, bindingMode=%s, endpoint=%s, registrationId=%s, objectLinks=%s, lastUpdate=%s]",
+                registrationDate, identity, registrationEndpointAddress, lifeTimeInSec, smsNumber, lwM2mVersion,
                 bindingMode, endpoint, id, Arrays.toString(objectLinks), lastUpdate);
     }
 
@@ -322,8 +329,7 @@ public class Registration implements Serializable {
     public static class Builder {
         private final String registrationId;
         private final String endpoint;
-        private final InetAddress address;
-        private final int port;
+        private final Identity identity;
         private final InetSocketAddress registrationEndpointAddress;
 
         private Date registrationDate;
@@ -335,18 +341,16 @@ public class Registration implements Serializable {
         private Link[] objectLinks;
         private Map<String, String> additionalRegistrationAttributes;
 
-        public Builder(String registrationId, String endpoint, InetAddress address, int port,
+        public Builder(String registrationId, String endpoint, Identity identity,
                 InetSocketAddress registrationEndpointAddress) {
 
             Validate.notNull(registrationId);
             Validate.notEmpty(endpoint);
-            Validate.notNull(address);
-            Validate.notNull(port);
+            Validate.notNull(identity);
             Validate.notNull(registrationEndpointAddress);
             this.registrationId = registrationId;
             this.endpoint = endpoint;
-            this.address = address;
-            this.port = port;
+            this.identity = identity;
             this.registrationEndpointAddress = registrationEndpointAddress;
 
         }
@@ -392,8 +396,8 @@ public class Registration implements Serializable {
         }
 
         public Registration build() {
-            return new Registration(Builder.this.registrationId, Builder.this.endpoint, Builder.this.address,
-                    Builder.this.port, Builder.this.lwM2mVersion, Builder.this.lifeTimeInSec, Builder.this.smsNumber,
+            return new Registration(Builder.this.registrationId, Builder.this.endpoint, Builder.this.identity,
+                    Builder.this.lwM2mVersion, Builder.this.lifeTimeInSec, Builder.this.smsNumber,
                     this.bindingMode, this.objectLinks, this.registrationEndpointAddress, this.registrationDate,
                     this.lastUpdate, this.additionalRegistrationAttributes);
         }

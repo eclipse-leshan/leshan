@@ -37,8 +37,7 @@ public class RegistrationSerDes {
     public static JsonObject jSerialize(Registration r) {
         JsonObject o = Json.object();
         o.add("regDate", r.getRegistrationDate().getTime());
-        o.add("address", r.getAddress().getHostAddress());
-        o.add("port", r.getPort());
+        o.add("identity", IdentitySerDes.serialize(r.getIdentity()));
         o.add("regAddr", r.getRegistrationEndpointAddress().getHostString());
         o.add("regPort", r.getRegistrationEndpointAddress().getPort());
         o.add("lt", r.getLifeTimeInSec());
@@ -86,8 +85,7 @@ public class RegistrationSerDes {
 
     public static Registration deserialize(JsonObject jObj) {
         Registration.Builder b = new Registration.Builder(jObj.getString("regId", null), jObj.getString("ep", null),
-                new InetSocketAddress(jObj.getString("address", null), jObj.getInt("port", 0)).getAddress(),
-                jObj.getInt("port", 0),
+                IdentitySerDes.deserialize(jObj.get("identity").asObject()),
                 new InetSocketAddress(jObj.getString("regAddr", null), jObj.getInt("regPort", 0)));
         b.bindingMode(BindingMode.valueOf(jObj.getString("bnd", null)));
         b.lastUpdate(new Date(jObj.getLong("lastUp", 0)));

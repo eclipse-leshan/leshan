@@ -15,13 +15,13 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.cluster.serialization;
 
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.leshan.Link;
 import org.eclipse.leshan.core.request.BindingMode;
+import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
 
 import com.eclipsesource.json.Json;
@@ -39,8 +39,7 @@ public class RegistrationUpdateSerDes {
 
         // mandatory fields
         o.add("regId", u.getRegistrationId());
-        o.add("address", u.getAddress().getHostAddress());
-        o.add("port", u.getPort());
+        o.add("identity", IdentitySerDes.serialize(u.getIdentity()));
 
         // optional fields
         if (u.getLifeTimeInSec() != null)
@@ -84,8 +83,7 @@ public class RegistrationUpdateSerDes {
 
         // mandatory fields
         String regId = v.getString("regId", null);
-        InetAddress addr = InetAddress.getByName(v.getString("address", null));
-        int port = v.getInt("port", -1);
+        Identity identity = IdentitySerDes.deserialize(v.get("identity").asObject());
 
         // optional fields
         BindingMode b = null;
@@ -124,6 +122,6 @@ public class RegistrationUpdateSerDes {
             }
         }
 
-        return new RegistrationUpdate(regId, addr, port, lifetime, sms, b, linkObjs);
+        return new RegistrationUpdate(regId, identity, lifetime, sms, b, linkObjs);
     }
 }

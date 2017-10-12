@@ -21,6 +21,7 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
 import org.eclipse.leshan.Link;
+import org.eclipse.leshan.core.request.Identity;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -33,8 +34,8 @@ public class RegistrationSortObjectLinksTest {
         objs[1] = new Link("/0/2");
         objs[2] = null;
 
-        Registration.Builder builder = new Registration.Builder("registrationId", "endpoint", Inet4Address.getByName("127.0.0.1"),
-                1, new InetSocketAddress(212)).objectLinks(objs);
+        Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
+                Identity.unsecure(Inet4Address.getLocalHost(), 1), new InetSocketAddress(212)).objectLinks(objs);
 
         Registration r = builder.build();
 

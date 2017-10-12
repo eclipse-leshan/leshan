@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -22,6 +23,7 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.eclipse.leshan.LwM2m;
+import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.registration.Registration;
 
 public class CaliforniumTestSupport {
@@ -34,8 +36,8 @@ public class CaliforniumTestSupport {
     public void givenASimpleClient() throws UnknownHostException {
         registrationAddress = InetSocketAddress.createUnresolved("localhost", LwM2m.DEFAULT_COAP_PORT);
 
-        Registration.Builder builder = new Registration.Builder("ID", "urn:client", InetAddress.getLocalHost(), 10000,
-                registrationAddress);
+        Registration.Builder builder = new Registration.Builder("ID", "urn:client",
+                Identity.unsecure(Inet4Address.getLoopbackAddress(), 1000), registrationAddress);
 
         registration = builder.build();
     }

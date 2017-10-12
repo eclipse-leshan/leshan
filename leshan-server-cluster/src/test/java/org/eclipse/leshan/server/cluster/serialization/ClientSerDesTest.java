@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.leshan.Link;
-import org.eclipse.leshan.server.cluster.serialization.RegistrationSerDes;
+import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.registration.Registration;
 import org.junit.Test;
 
@@ -39,8 +39,8 @@ public class ClientSerDesTest {
         objs[0] = new Link("/0/1024/2", att);
         objs[1] = new Link("/0/2");
 
-        Registration.Builder builder = new Registration.Builder("registrationId", "endpoint", Inet4Address.getByName("127.0.0.1"),
-                1, new InetSocketAddress(212)).objectLinks(objs);
+        Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
+                Identity.unsecure(Inet4Address.getLoopbackAddress(), 1), new InetSocketAddress(212)).objectLinks(objs);
 
         builder.registrationDate(new Date(100L));
         builder.lastUpdate(new Date(101L));

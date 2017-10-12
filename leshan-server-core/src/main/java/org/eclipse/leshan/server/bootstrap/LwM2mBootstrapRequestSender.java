@@ -15,9 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
-import java.net.InetSocketAddress;
-
 import org.eclipse.leshan.core.request.DownlinkRequest;
+import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
@@ -29,13 +28,12 @@ public interface LwM2mBootstrapRequestSender {
      * @return the LWM2M response. The response can be <code>null</code> if the timeout (given parameter or CoAP
      *         timeout) expires.
      */
-    <T extends LwM2mResponse> T send(String clientEndpoint, InetSocketAddress client, boolean secure,
-            DownlinkRequest<T> request, long timeout) throws InterruptedException;
+    <T extends LwM2mResponse> T send(String clientEndpoint, Identity client, DownlinkRequest<T> request, long timeout)
+            throws InterruptedException;
 
     /**
      * Send a Lightweight M2M request asynchronously.
      */
-    <T extends LwM2mResponse> void send(String clientEndpoint, InetSocketAddress client, boolean secure,
-            DownlinkRequest<T> request, long timeout, ResponseCallback<T> responseCallback,
-            ErrorCallback errorCallback);
+    <T extends LwM2mResponse> void send(String clientEndpoint, Identity client, DownlinkRequest<T> request,
+            long timeout, ResponseCallback<T> responseCallback, ErrorCallback errorCallback);
 }

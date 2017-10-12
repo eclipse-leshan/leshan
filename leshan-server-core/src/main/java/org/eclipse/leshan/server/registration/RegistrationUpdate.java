@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add Identity as destination
  *******************************************************************************/
 package org.eclipse.leshan.server.registration;
 
@@ -21,6 +22,7 @@ import java.util.Date;
 
 import org.eclipse.leshan.Link;
 import org.eclipse.leshan.core.request.BindingMode;
+import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.util.Validate;
 
 /**
@@ -30,23 +32,18 @@ public class RegistrationUpdate {
 
     private final String registrationId;
 
-    private final InetAddress address;
-    private final Integer port;
-
+    private final Identity identity;
     private final Long lifeTimeInSec;
     private final String smsNumber;
     private final BindingMode bindingMode;
     private final Link[] objectLinks;
 
-    public RegistrationUpdate(String registrationId, InetAddress address, Integer port, Long lifeTimeInSec, String smsNumber,
+    public RegistrationUpdate(String registrationId, Identity identity, Long lifeTimeInSec, String smsNumber,
             BindingMode bindingMode, Link[] objectLinks) {
         Validate.notNull(registrationId);
-        Validate.notNull(address);
-        Validate.notNull(port);
+        Validate.notNull(identity);
         this.registrationId = registrationId;
-        this.address = address;
-        this.port = port;
-
+        this.identity = identity;
         this.lifeTimeInSec = lifeTimeInSec;
         this.smsNumber = smsNumber;
         this.bindingMode = bindingMode;
@@ -60,8 +57,7 @@ public class RegistrationUpdate {
      * @return the updated registration
      */
     public Registration update(Registration registration) {
-        InetAddress address = this.address != null ? this.address : registration.getAddress();
-        int port = this.port != null ? this.port : registration.getPort();
+        Identity identity = this.identity != null ? this.identity : registration.getIdentity();
         Link[] linkObject = this.objectLinks != null ? this.objectLinks : registration.getObjectLinks();
         long lifeTimeInSec = this.lifeTimeInSec != null ? this.lifeTimeInSec : registration.getLifeTimeInSec();
         BindingMode bindingMode = this.bindingMode != null ? this.bindingMode : registration.getBindingMode();
@@ -72,7 +68,7 @@ public class RegistrationUpdate {
         Date lastUpdate = new Date();
 
         Registration.Builder builder = new Registration.Builder(registration.getId(), registration.getEndpoint(),
-                address, port, registration.getRegistrationEndpointAddress());
+                identity, registration.getRegistrationEndpointAddress());
 
         builder.lwM2mVersion(registration.getLwM2mVersion()).lifeTimeInSec(lifeTimeInSec).smsNumber(smsNumber)
                 .bindingMode(bindingMode).objectLinks(linkObject).registrationDate(registration.getRegistrationDate())
@@ -87,12 +83,16 @@ public class RegistrationUpdate {
         return registrationId;
     }
 
+    public Identity getIdentity() {
+        return identity;
+    }
+
     public InetAddress getAddress() {
-        return address;
+        return identity.getPeerAddress().getAddress();
     }
 
     public Integer getPort() {
-        return port;
+        return identity.getPeerAddress().getPort();
     }
 
     public Long getLifeTimeInSec() {
@@ -114,19 +114,18 @@ public class RegistrationUpdate {
     @Override
     public String toString() {
         return String.format(
-                "RegistrationUpdate [registrationId=%s, address=%s, port=%s, lifeTimeInSec=%s, smsNumber=%s, bindingMode=%s, objectLinks=%s]",
-                registrationId, address, port, lifeTimeInSec, smsNumber, bindingMode, Arrays.toString(objectLinks));
+                "RegistrationUpdate [registrationId=%s, identity=%s, lifeTimeInSec=%s, smsNumber=%s, bindingMode=%s, objectLinks=%s]",
+                registrationId, identity, lifeTimeInSec, smsNumber, bindingMode, Arrays.toString(objectLinks));
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((address == null) ? 0 : address.hashCode());
         result = prime * result + ((bindingMode == null) ? 0 : bindingMode.hashCode());
+        result = prime * result + ((identity == null) ? 0 : identity.hashCode());
         result = prime * result + ((lifeTimeInSec == null) ? 0 : lifeTimeInSec.hashCode());
         result = prime * result + Arrays.hashCode(objectLinks);
-        result = prime * result + ((port == null) ? 0 : port.hashCode());
         result = prime * result + ((registrationId == null) ? 0 : registrationId.hashCode());
         result = prime * result + ((smsNumber == null) ? 0 : smsNumber.hashCode());
         return result;
@@ -141,12 +140,12 @@ public class RegistrationUpdate {
         if (getClass() != obj.getClass())
             return false;
         RegistrationUpdate other = (RegistrationUpdate) obj;
-        if (address == null) {
-            if (other.address != null)
-                return false;
-        } else if (!address.equals(other.address))
-            return false;
         if (bindingMode != other.bindingMode)
+            return false;
+        if (identity == null) {
+            if (other.identity != null)
+                return false;
+        } else if (!identity.equals(other.identity))
             return false;
         if (lifeTimeInSec == null) {
             if (other.lifeTimeInSec != null)
@@ -154,11 +153,6 @@ public class RegistrationUpdate {
         } else if (!lifeTimeInSec.equals(other.lifeTimeInSec))
             return false;
         if (!Arrays.equals(objectLinks, other.objectLinks))
-            return false;
-        if (port == null) {
-            if (other.port != null)
-                return false;
-        } else if (!port.equals(other.port))
             return false;
         if (registrationId == null) {
             if (other.registrationId != null)

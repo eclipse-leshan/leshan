@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import org.eclipse.leshan.Link;
 import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.core.request.BindingMode;
+import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
@@ -54,7 +55,8 @@ public class InMemoryRegistrationStoreTest {
         givenASimpleRegistration(lifetime);
         store.addRegistration(registration);
 
-        RegistrationUpdate update = new RegistrationUpdate(registrationId, address, port, null, null, null, null);
+        RegistrationUpdate update = new RegistrationUpdate(registrationId, Identity.unsecure(address, port), null, null,
+                null, null);
         UpdatedRegistration updatedRegistration = store.updateRegistration(update);
         Assert.assertEquals(lifetime, updatedRegistration.getUpdatedRegistration().getLifeTimeInSec());
         Assert.assertSame(binding, updatedRegistration.getUpdatedRegistration().getBindingMode());
@@ -81,7 +83,8 @@ public class InMemoryRegistrationStoreTest {
         store.addRegistration(registration);
         Assert.assertFalse(registration.isAlive());
 
-        RegistrationUpdate update = new RegistrationUpdate(registrationId, address, port, lifetime, null, null, null);
+        RegistrationUpdate update = new RegistrationUpdate(registrationId, Identity.unsecure(address, port), lifetime,
+                null, null, null);
         UpdatedRegistration updatedRegistration = store.updateRegistration(update);
         Assert.assertTrue(updatedRegistration.getUpdatedRegistration().isAlive());
 
@@ -91,7 +94,7 @@ public class InMemoryRegistrationStoreTest {
 
     private void givenASimpleRegistration(Long lifetime) {
 
-        Registration.Builder builder = new Registration.Builder(registrationId, ep, address, port,
+        Registration.Builder builder = new Registration.Builder(registrationId, ep, Identity.unsecure(address, port),
                 InetSocketAddress.createUnresolved("localhost", LwM2m.DEFAULT_COAP_PORT));
 
         registration = builder.lifeTimeInSec(lifetime).smsNumber(sms).bindingMode(binding).objectLinks(objectLinks)
