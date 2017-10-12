@@ -12,6 +12,8 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add support for californium
+ *                                                     endpoint context
  *******************************************************************************/
 package org.eclipse.leshan.server.cluster.serialization;
 
@@ -25,6 +27,7 @@ import org.eclipse.californium.core.network.serialization.DataSerializer;
 import org.eclipse.californium.core.network.serialization.UdpDataParser;
 import org.eclipse.californium.core.network.serialization.UdpDataSerializer;
 import org.eclipse.californium.core.observe.Observation;
+import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.RawData;
 import org.eclipse.leshan.util.Hex;
 
@@ -47,6 +50,7 @@ public class ObservationSerDes {
         JsonObject o = Json.object();
 
         o.set("request", Hex.encodeHexString(serializer.serializeRequest(obs.getRequest()).bytes));
+        o.set("peer", EndpointContextSerDes.serialize(obs.getContext()));
 
         if (obs.getRequest().getUserContext() != null) {
             JsonObject ctxObject = Json.object();
@@ -61,8 +65,15 @@ public class ObservationSerDes {
     public static Observation deserialize(byte[] data) {
         JsonObject v = (JsonObject) Json.parse(new String(data));
 
+        JsonObject peer = v.get("peer").asObject();
+        EndpointContext endpointContext = EndpointContextSerDes.deserialize(peer);
         byte[] req = Hex.decodeHex(v.getString("request", null).toCharArray());
-        Request request = (Request) parser.parseMessage(new RawData(req, null, 0));
+        
+        /**
+         * Don't care about the original destination address.
+         */
+        RawData rawData = RawData.outbound(req, endpointContext, null, false);
+        Request request = (Request) parser.parseMessage(rawData);
 
         JsonValue ctxValue = v.get("context");
         if (ctxValue != null) {

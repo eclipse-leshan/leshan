@@ -105,7 +105,7 @@ Contributors:
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <californium.version>2.0.0-M5</californium.version>
+        <californium.version>2.0.0-SNAPSHOT</californium.version>
         <log4j.version>2.1</log4j.version>
         <slf4j.api.version>1.7.10</slf4j.api.version>
         <jetty.version>9.1.4.v20140401</jetty.version>
@@ -367,6 +367,11 @@ Contributors:
             <dependency>
                 <groupId>org.eclipse.californium</groupId>
                 <artifactId>californium-core</artifactId>
+                <version>${californium.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.californium</groupId>
+                <artifactId>element-connector</artifactId>
                 <version>${californium.version}</version>
             </dependency>
             <dependency>
