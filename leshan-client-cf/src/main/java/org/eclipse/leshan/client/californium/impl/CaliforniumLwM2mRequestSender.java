@@ -12,6 +12,10 @@
  * 
  * Contributors:
  *     Zebra Technologies - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add SecureSessionManager
+ *                                                     when using the secure endpoint,
+ *                                                     resend request once, 
+ *                                                     if response is missing
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.impl;
 
@@ -20,6 +24,7 @@ import java.net.InetSocketAddress;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
+import org.eclipse.leshan.client.californium.SecureSessionManager;
 import org.eclipse.leshan.client.request.LwM2mRequestSender;
 import org.eclipse.leshan.core.californium.AsyncRequestObserver;
 import org.eclipse.leshan.core.californium.SyncRequestObserver;
@@ -32,14 +37,40 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
     private final Endpoint unsecuredEndpoint;
     private final Endpoint securedEndpoint;
+    private final SecureSessionManager sessionManager;
 
     public CaliforniumLwM2mRequestSender(Endpoint securedEndpoint, Endpoint unsecuredEndpoint) {
         this.securedEndpoint = securedEndpoint;
         this.unsecuredEndpoint = unsecuredEndpoint;
+        this.sessionManager = null;
+    }
+
+    public CaliforniumLwM2mRequestSender(Endpoint securedEndpoint, Endpoint unsecuredEndpoint,
+            SecureSessionManager sessionManager) {
+        this.securedEndpoint = securedEndpoint;
+        this.unsecuredEndpoint = unsecuredEndpoint;
+        this.sessionManager = sessionManager;
     }
 
     @Override
     public <T extends LwM2mResponse> T send(InetSocketAddress serverAddress, boolean secure,
+            final UplinkRequest<T> request, Long timeout) throws InterruptedException {
+
+        if (secure && null != sessionManager) {
+            String session = sessionManager.getSessionIdFor(serverAddress);
+            T response = internalSend(serverAddress, secure, request, timeout);
+            if (null == response && null != session) {
+                // retry with new secure session
+                sessionManager.forceResumeSessionFor(serverAddress);
+                response = internalSend(serverAddress, secure, request, timeout);
+            }
+            return response;
+        } else {
+            return internalSend(serverAddress, secure, request, timeout);
+        }
+    }
+
+    private <T extends LwM2mResponse> T internalSend(InetSocketAddress serverAddress, boolean secure,
             final UplinkRequest<T> request, Long timeout) throws InterruptedException {
         // Create the CoAP request from LwM2m request
         CoapRequestBuilder coapClientRequestBuilder = new CoapRequestBuilder(serverAddress);

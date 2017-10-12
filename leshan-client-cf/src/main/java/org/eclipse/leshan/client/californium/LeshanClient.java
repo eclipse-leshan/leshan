@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Zebra Technologies - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add SecureSessionManager
  *******************************************************************************/
 package org.eclipse.leshan.client.californium;
 
@@ -32,6 +33,7 @@ import org.eclipse.leshan.client.californium.impl.BootstrapResource;
 import org.eclipse.leshan.client.californium.impl.CaliforniumLwM2mRequestSender;
 import org.eclipse.leshan.client.californium.impl.ObjectResource;
 import org.eclipse.leshan.client.californium.impl.RootResource;
+import org.eclipse.leshan.client.californium.impl.SecureEndpointSessionManager;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverAdapter;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverDispatcher;
@@ -117,7 +119,7 @@ public class LeshanClient implements LwM2mClient {
         }
 
         // Create sender
-        requestSender = new CaliforniumLwM2mRequestSender(securedEndpoint, unsecuredEndpoint);
+        requestSender = new CaliforniumLwM2mRequestSender(securedEndpoint, unsecuredEndpoint, new SecureEndpointSessionManager(securedEndpoint));
 
         // Create registration engine
         bootstrapHandler = new BootstrapHandler(this.objectEnablers);
