@@ -12,6 +12,14 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - introduce lifetime scale.
+ *                                                     testing address changes would
+ *                                                     currently require a timeout of a
+ *                                                     registration update request.
+ *                                                     With small lifetime values, this would
+ *                                                     also expire the registration as well.
+ *                                                     Therefore chose a larger lifetime, but
+ *                                                     update more frequently.
  *******************************************************************************/
 package org.eclipse.leshan.client.servers;
 
@@ -65,6 +73,7 @@ public class RegistrationEngine {
     private final Map<Integer, LwM2mObjectEnabler> objectEnablers;
     private final BootstrapHandler bootstrapHandler;
     private final LwM2mClientObserver observer;
+    private final int lifetimeScale = 300; // scale lifetime, 1000 := 1
     private boolean started = false;
 
     // registration update
@@ -312,7 +321,7 @@ public class RegistrationEngine {
         if (started) {
             // calculate next update : lifetime - 10%
             // dmInfo.lifetime is in seconds
-            long nextUpdate = dmInfo.lifetime * 900l;
+            long nextUpdate = dmInfo.lifetime * lifetimeScale;
             LOG.info("Next registration update in {}s...", nextUpdate / 1000.0);
             updateFuture = schedExecutor.schedule(new UpdateRegistrationTask(), nextUpdate, TimeUnit.MILLISECONDS);
         }

@@ -14,6 +14,9 @@
  *     Zebra Technologies - initial API and implementation
  *     Sierra Wireless, - initial API and implementation
  *     Bosch Software Innovations GmbH, - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - increase lifetime
+ *                                                     from 30s to 120s
+ *                                                     to test changed addresses
  *******************************************************************************/
 
 package org.eclipse.leshan.client.demo;
@@ -56,6 +59,7 @@ public class LeshanClientDemo {
     private static final int OBJECT_ID_TEMPERATURE_SENSOR = 3303;
     private final static String DEFAULT_ENDPOINT = "LeshanClientDemo";
     private final static String USAGE = "java -jar leshan-client-demo.jar [OPTION]";
+    private final static int DEFAULT_LIFETIME = 120;
 
     private static MyLocation locationInstance;
 
@@ -225,10 +229,10 @@ public class LeshanClientDemo {
         } else {
             if (pskIdentity == null) {
                 initializer.setInstancesForObject(SECURITY, noSec(serverURI, 123));
-                initializer.setInstancesForObject(SERVER, new Server(123, 30, BindingMode.U, false));
+                initializer.setInstancesForObject(SERVER, new Server(123, DEFAULT_LIFETIME, BindingMode.U, false));
             } else {
                 initializer.setInstancesForObject(SECURITY, psk(serverURI, 123, pskIdentity, pskKey));
-                initializer.setInstancesForObject(SERVER, new Server(123, 30, BindingMode.U, false));
+                initializer.setInstancesForObject(SERVER, new Server(123, DEFAULT_LIFETIME, BindingMode.U, false));
             }
         }
         initializer.setClassForObject(DEVICE, MyDevice.class);
