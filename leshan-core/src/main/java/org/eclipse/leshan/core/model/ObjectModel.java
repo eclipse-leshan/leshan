@@ -31,7 +31,7 @@ public class ObjectModel {
 
     private static final Logger LOG = LoggerFactory.getLogger(ObjectModel.class);
 
-    private static final String DEFAULT_VERSION = "1.0";
+    public static final String DEFAULT_VERSION = "1.0";
 
     public final int id;
     public final String name;
