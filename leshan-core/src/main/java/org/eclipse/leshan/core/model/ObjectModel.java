@@ -33,6 +33,9 @@ public class ObjectModel {
 
     public static final String DEFAULT_VERSION = "1.0";
 
+    private static final int OMA_OBJECT_MIN_ID = 0;
+    private static final int OMA_OBJECT_MAX_ID = 1023;
+
     public final int id;
     public final String name;
     public final String description;
@@ -42,25 +45,25 @@ public class ObjectModel {
 
     public final Map<Integer, ResourceModel> resources; // resources by ID
 
-    public ObjectModel(final int id, final String name, final String description, final boolean multiple, final boolean mandatory,
-            final ResourceModel... resources) {
+    public ObjectModel(int id, String name, String description, boolean multiple, boolean mandatory,
+            ResourceModel... resources) {
         this(id, name, description, DEFAULT_VERSION, multiple, mandatory, Arrays.asList(resources));
     }
 
-    public ObjectModel(final int id, final String name, final String description, final boolean multiple, final boolean mandatory,
-            final Collection<ResourceModel> resources) {
+    public ObjectModel(int id, String name, String description, boolean multiple, boolean mandatory,
+            Collection<ResourceModel> resources) {
         this(id, name, description, DEFAULT_VERSION, multiple, mandatory, resources);
     }
 
-    public ObjectModel(final int id, final String name, final String description, final String version, final boolean multiple,
-            final boolean mandatory,
-            final ResourceModel... resources) {
+    public ObjectModel(int id, String name, String description, String version, boolean multiple,
+            boolean mandatory,
+            ResourceModel... resources) {
         this(id, name, description, version, multiple, mandatory, Arrays.asList(resources));
     }
 
-    public ObjectModel(final int id, final String name, final String description, final String version, final boolean multiple,
-            final boolean mandatory,
-            final Collection<ResourceModel> resources) {
+    public ObjectModel(int id, String name, String description, String version, boolean multiple,
+            boolean mandatory,
+            Collection<ResourceModel> resources) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -68,9 +71,9 @@ public class ObjectModel {
         this.multiple = multiple;
         this.mandatory = mandatory;
 
-        final Map<Integer, ResourceModel> resourcesMap = new HashMap<>(resources.size());
-        for (final ResourceModel resource : resources) {
-            final ResourceModel old = resourcesMap.put(resource.id, resource);
+        Map<Integer, ResourceModel> resourcesMap = new HashMap<>(resources.size());
+        for (ResourceModel resource : resources) {
+            ResourceModel old = resourcesMap.put(resource.id, resource);
             if (old != null) {
                 LOG.debug("Model already exists for resource {} of object {}. Overriding it.", resource.id, id);
             }
@@ -79,9 +82,13 @@ public class ObjectModel {
         this.resources = Collections.unmodifiableMap(resourcesMap);
     }
 
+    public boolean isOmaObject() {
+        return id >= OMA_OBJECT_MIN_ID && id <= OMA_OBJECT_MAX_ID;
+    }
+
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder();
         builder.append("ObjectModel [id=").append(id).append(", name=").append(name).append(", description=")
                 .append(description).append(", version=").append(version).append(", multiple=").append(multiple)
                 .append(", mandatory=").append(mandatory)
