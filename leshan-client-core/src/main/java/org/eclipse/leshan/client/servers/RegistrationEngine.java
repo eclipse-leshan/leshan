@@ -383,6 +383,16 @@ public class RegistrationEngine {
         }
     }
 
+    public void triggerRegistrationUpdate() {
+        synchronized (this) {
+            if (started) {
+                cancelUpdateTask(true);
+                LOG.info("Triggering registration update...");
+                schedExecutor.submit(new UpdateRegistrationTask());
+            }
+        }
+    }
+
     /**
      * @return the current registration Id or <code>null</code> if the client is not registered.
      */
