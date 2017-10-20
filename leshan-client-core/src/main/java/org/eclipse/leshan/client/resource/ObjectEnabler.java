@@ -36,6 +36,7 @@ import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.ExecuteRequest;
+import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
@@ -43,6 +44,7 @@ import org.eclipse.leshan.core.response.BootstrapWriteResponse;
 import org.eclipse.leshan.core.response.CreateResponse;
 import org.eclipse.leshan.core.response.DeleteResponse;
 import org.eclipse.leshan.core.response.ExecuteResponse;
+import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 
@@ -128,6 +130,30 @@ public class ObjectEnabler extends BaseObjectEnabler {
 
         // Manage Resource case
         return instance.read(path.getResourceId());
+    }
+
+    @Override
+    protected ObserveResponse doObserve(final ServerIdentity identity, final ObserveRequest request) {
+        final LwM2mPath path = request.getPath();
+
+        // Manage Object case
+        if (path.isObject()) {
+            // TODO Enable object level observe support (if ever necessary)
+            return ObserveResponse.internalServerError("not implemented");
+        }
+
+        // Manage Instance case
+        final LwM2mInstanceEnabler instance = instances.get(path.getObjectInstanceId());
+        if (instance == null)
+            return ObserveResponse.notFound();
+
+        if (path.getResourceId() == null) {
+            // TODO Enable instance level observe support
+            return ObserveResponse.internalServerError("not implemented");
+        }
+
+        // Manage Resource case
+        return instance.observe(path.getResourceId());
     }
 
     LwM2mObjectInstance getLwM2mObjectInstance(int instanceid, LwM2mInstanceEnabler instance, ServerIdentity identity) {
@@ -243,6 +269,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
 
     private void listenInstance(LwM2mInstanceEnabler instance, final int instanceId) {
         instance.addResourceChangedListener(new ResourceChangedListener() {
+
             @Override
             public void resourcesChanged(int... resourceIds) {
                 NotifySender sender = getNotifySender();

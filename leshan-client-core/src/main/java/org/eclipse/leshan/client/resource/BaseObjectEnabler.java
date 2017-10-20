@@ -326,9 +326,31 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
     @Override
     public synchronized ObserveResponse observe(ServerIdentity identity, ObserveRequest request) {
+        LwM2mPath path = request.getPath();
+
+        // observe is not supported for bootstrap
+        if (identity.isLwm2mBootstrapServer())
+            return ObserveResponse.methodNotAllowed();
+
+        if (!identity.isSystem()) {
+            // observe or read of the security object is forbidden
+            if (id == LwM2mId.SECURITY)
+                return ObserveResponse.notFound();
+
+            // check if the resource is readable.
+            if (path.isResource()) {
+                ResourceModel resourceModel = objectModel.resources.get(path.getResourceId());
+                if (resourceModel != null && !resourceModel.operations.isReadable())
+                    return ObserveResponse.methodNotAllowed();
+            }
+        }
+        return doObserve(identity, request);
+    }
+
+    protected ObserveResponse doObserve(ServerIdentity identity, ObserveRequest request) {
         ReadResponse readResponse = this.read(identity, new ReadRequest(request.getPath().toString()));
         return new ObserveResponse(readResponse.getCode(), readResponse.getContent(), null, null,
-                readResponse.getErrorMessage());
+                   readResponse.getErrorMessage());
     }
 
     @Override
