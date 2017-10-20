@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.response.ExecuteResponse;
+import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 
@@ -61,7 +62,11 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     }
 
     @Override
-    public void reset(int resourceid) {
+    public ObserveResponse observe(int resourceid) {
+        return ObserveResponse.notFound();
     }
 
+    @Override
+    public void reset(int resourceid) {
+    }
 }

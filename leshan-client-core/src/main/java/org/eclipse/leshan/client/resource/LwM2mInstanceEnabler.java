@@ -20,6 +20,7 @@ package org.eclipse.leshan.client.resource;
 
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.response.ExecuteResponse;
+import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 
@@ -88,6 +89,15 @@ public interface LwM2mInstanceEnabler {
      *         execute the operation.
      */
     ExecuteResponse execute(int resourceid, String params);
+
+    /**
+     * Performs an observe register or deregister on one of this LWM2M object
+     * instance's resources.
+     *
+     * @param resourceid
+     *            the ID of the resource to set the value for
+     */
+    ObserveResponse observe(int resourceid);
 
     /**
      * Reset the current value of one of this LWM2M object instance's resources. Only used for implementation of REPLACE
