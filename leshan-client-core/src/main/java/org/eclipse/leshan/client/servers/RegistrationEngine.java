@@ -383,6 +383,12 @@ public class RegistrationEngine {
         }
     }
 
+    public void forceUpdate() {
+        cancelUpdateTask(false);
+        LOG.info("Forcing update of registration...");
+        updateFuture = schedExecutor.schedule(new UpdateRegistrationTask(), 100, TimeUnit.MILLISECONDS);
+    }
+    
     /**
      * @return the current registration Id or <code>null</code> if the client is not registered.
      */

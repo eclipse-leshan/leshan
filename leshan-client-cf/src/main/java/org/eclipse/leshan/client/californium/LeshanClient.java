@@ -214,4 +214,8 @@ public class LeshanClient implements LwM2mClient {
     public String getRegistrationId() {
         return engine.getRegistrationId();
     }
+    
+    public RegistrationEngine getRegistrationEngine() {
+        return engine;
+    }
 }
