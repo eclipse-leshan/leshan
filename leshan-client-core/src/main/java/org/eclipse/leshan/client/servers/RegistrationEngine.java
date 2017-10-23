@@ -383,10 +383,14 @@ public class RegistrationEngine {
         }
     }
 
-    public void forceUpdate() {
-        cancelUpdateTask(false);
-        LOG.info("Forcing update of registration...");
-        updateFuture = schedExecutor.schedule(new UpdateRegistrationTask(), 100, TimeUnit.MILLISECONDS);
+    public void triggerRegistrationUpdate() {
+        synchronized (this) {
+            if (started) {
+                cancelUpdateTask(true);
+                LOG.info("Triggering registration update...");
+                schedExecutor.submit(new UpdateRegistrationTask());
+            }
+        }
     }
     
     /**

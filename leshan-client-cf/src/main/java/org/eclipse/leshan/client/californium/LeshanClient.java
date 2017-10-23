@@ -176,6 +176,10 @@ public class LeshanClient implements LwM2mClient {
         LOG.info("Leshan client destroyed.");
     }
 
+    public void triggerRegistrationUpdate() {
+        engine.triggerRegistrationUpdate();
+    }
+    
     @Override
     public Collection<LwM2mObjectEnabler> getObjectEnablers() {
         return Collections.unmodifiableCollection(new ArrayList<>(objectEnablers.values()));
@@ -213,9 +217,5 @@ public class LeshanClient implements LwM2mClient {
      */
     public String getRegistrationId() {
         return engine.getRegistrationId();
-    }
-    
-    public RegistrationEngine getRegistrationEngine() {
-        return engine;
     }
 }
