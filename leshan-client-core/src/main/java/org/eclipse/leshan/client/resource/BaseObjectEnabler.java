@@ -348,8 +348,9 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     protected ObserveResponse doObserve(ServerIdentity identity, ObserveRequest request) {
-        // This should be a not implemented error, but this is not defined in the spec.
-        return ObserveResponse.internalServerError("not implemented");
+        ReadResponse readResponse = this.read(identity, new ReadRequest(request.getPath().toString()));
+        return new ObserveResponse(readResponse.getCode(), readResponse.getContent(), null, null,
+                   readResponse.getErrorMessage());
     }
 
     @Override

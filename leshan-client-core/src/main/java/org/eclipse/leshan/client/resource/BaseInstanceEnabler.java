@@ -63,10 +63,13 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
 
     @Override
     public ObserveResponse observe(int resourceid) {
-        return ObserveResponse.notFound();
+        // Perform a read by default
+        ReadResponse readResponse = this.read(resourceid);
+        return ObserveResponse.success(readResponse.getContent());
     }
 
     @Override
     public void reset(int resourceid) {
+        // No default behavior
     }
 }
