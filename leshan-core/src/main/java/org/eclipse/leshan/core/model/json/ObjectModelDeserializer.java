@@ -46,8 +46,9 @@ public class ObjectModelDeserializer implements JsonDeserializer<ObjectModel> {
         String instancetype = jsonObject.get("instancetype").getAsString();
         boolean mandatory = jsonObject.get("mandatory").getAsBoolean();
         String description = jsonObject.get("description").getAsString();
+        String version = jsonObject.has("version") ? jsonObject.get("version").getAsString() : ObjectModel.DEFAULT_VERSION;
         ResourceModel[] resourceSpecs = context.deserialize(jsonObject.get("resourcedefs"), ResourceModel[].class);
 
-        return new ObjectModel(id, name, description, "multiple".equals(instancetype), mandatory, resourceSpecs);
+        return new ObjectModel(id, name, description, version, "multiple".equals(instancetype), mandatory, resourceSpecs);
     }
 }

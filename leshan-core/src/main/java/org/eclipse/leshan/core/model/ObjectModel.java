@@ -31,9 +31,15 @@ public class ObjectModel {
 
     private static final Logger LOG = LoggerFactory.getLogger(ObjectModel.class);
 
+    public static final String DEFAULT_VERSION = "1.0";
+
+    private static final int OMA_OBJECT_MIN_ID = 0;
+    private static final int OMA_OBJECT_MAX_ID = 1023;
+
     public final int id;
     public final String name;
     public final String description;
+    public final String version;
     public final boolean multiple;
     public final boolean mandatory;
 
@@ -41,14 +47,27 @@ public class ObjectModel {
 
     public ObjectModel(int id, String name, String description, boolean multiple, boolean mandatory,
             ResourceModel... resources) {
-        this(id, name, description, multiple, mandatory, Arrays.asList(resources));
+        this(id, name, description, DEFAULT_VERSION, multiple, mandatory, Arrays.asList(resources));
     }
 
     public ObjectModel(int id, String name, String description, boolean multiple, boolean mandatory,
             Collection<ResourceModel> resources) {
+        this(id, name, description, DEFAULT_VERSION, multiple, mandatory, resources);
+    }
+
+    public ObjectModel(int id, String name, String description, String version, boolean multiple,
+            boolean mandatory,
+            ResourceModel... resources) {
+        this(id, name, description, version, multiple, mandatory, Arrays.asList(resources));
+    }
+
+    public ObjectModel(int id, String name, String description, String version, boolean multiple,
+            boolean mandatory,
+            Collection<ResourceModel> resources) {
         this.id = id;
         this.name = name;
         this.description = description;
+        this.version = version;
         this.multiple = multiple;
         this.mandatory = mandatory;
 
@@ -63,11 +82,16 @@ public class ObjectModel {
         this.resources = Collections.unmodifiableMap(resourcesMap);
     }
 
+    public boolean isOmaObject() {
+        return id >= OMA_OBJECT_MIN_ID && id <= OMA_OBJECT_MAX_ID;
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("ObjectModel [id=").append(id).append(", name=").append(name).append(", description=")
-                .append(description).append(", multiple=").append(multiple).append(", mandatory=").append(mandatory)
+                .append(description).append(", version=").append(version).append(", multiple=").append(multiple)
+                .append(", mandatory=").append(mandatory)
                 .append(", resources=").append(resources).append("]");
         return builder.toString();
     }

@@ -29,6 +29,7 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
+import org.eclipse.leshan.util.StringUtils;
 
 /**
  * An Utility class which help to generate @{link Link} from {@link LwM2mObjectEnabler} and {@link LwM2mModel}.<br>
@@ -65,15 +66,16 @@ public final class LinkFormatHelper {
                 continue;
 
             List<Integer> availableInstance = objectEnabler.getAvailableInstanceIds();
-            if (availableInstance.isEmpty()) {
+            // Include an object link if there are no instances or there are object attributes (e.g. "ver")
+            Map<String, ?> objectAttributes = getObjectAttributes(objectEnabler.getObjectModel());
+            if (availableInstance.isEmpty() || (objectAttributes != null)) {
                 String objectInstanceUrl = getPath("/", root, Integer.toString(objectEnabler.getId()));
+                links.add(new Link(objectInstanceUrl, objectAttributes));
+            }
+            for (Integer instanceId : objectEnabler.getAvailableInstanceIds()) {
+                String objectInstanceUrl = getPath("/", root, Integer.toString(objectEnabler.getId()),
+                        instanceId.toString());
                 links.add(new Link(objectInstanceUrl));
-            } else {
-                for (Integer instanceId : objectEnabler.getAvailableInstanceIds()) {
-                    String objectInstanceUrl = getPath("/", root, Integer.toString(objectEnabler.getId()),
-                            instanceId.toString());
-                    links.add(new Link(objectInstanceUrl));
-                }
             }
         }
 
@@ -87,8 +89,9 @@ public final class LinkFormatHelper {
         String rootPath = root == null ? "" : root;
 
         // create link for "object"
+        Map<String, ?> objectAttributes = getObjectAttributes(objectModel);
         String objectURL = getPath("/", rootPath, Integer.toString(objectModel.id));
-        links.add(new Link(objectURL));
+        links.add(new Link(objectURL, objectAttributes));
 
         // sort resources
         List<ResourceModel> resources = new ArrayList<>(objectModel.resources.values());
@@ -188,5 +191,14 @@ public final class LinkFormatHelper {
             prevChar = c;
         }
         return sb.toString();
+    }
+
+    private static Map<String, ?> getObjectAttributes(ObjectModel objectModel) {
+        if (StringUtils.isEmpty(objectModel.version) || objectModel.version.equals(ObjectModel.DEFAULT_VERSION)) {
+            return null;
+        }
+        Map<String, String> attributes = new HashMap<>();
+        attributes.put("ver", objectModel.version);
+        return attributes;
     }
 }

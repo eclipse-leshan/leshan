@@ -50,6 +50,7 @@ public class ObjectModelSerializer implements JsonSerializer<ObjectModel> {
         element.addProperty("instancetype", object.multiple ? "multiple" : "single");
         element.addProperty("mandatory", object.mandatory);
         element.addProperty("description", object.description);
+        element.addProperty("version", object.version);
         element.add("resourcedefs", context.serialize(resourceSpecs));
 
         return element;

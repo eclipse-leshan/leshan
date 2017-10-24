@@ -103,8 +103,8 @@ public class IntegrationTestHelper {
                 false, Type.OBJLNK, null, null, null);
         ResourceModel objlnkSinglefield = new ResourceModel(OBJLNK_SINGLE_INSTANCE_RESOURCE_ID, "objlnk", Operations.RW,
                 false, false, Type.OBJLNK, null, null, null);
-        objectModels.add(new ObjectModel(TEST_OBJECT_ID, "testobject", null, false, false, stringfield, booleanfield,
-                integerfield, floatfield, timefield, opaquefield, objlnkfield, objlnkSinglefield));
+        objectModels.add(new ObjectModel(TEST_OBJECT_ID, "testobject", null, ObjectModel.DEFAULT_VERSION, false, false,
+                stringfield, booleanfield, integerfield, floatfield, timefield, opaquefield, objlnkfield, objlnkSinglefield));
 
         return objectModels;
     }

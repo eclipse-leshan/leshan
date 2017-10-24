@@ -81,6 +81,7 @@ public class DDFFileParser {
         Integer id = null;
         String name = null;
         String description = null;
+        String version = ObjectModel.DEFAULT_VERSION;
         boolean multiple = false;
         boolean mandatory = false;
         List<ResourceModel> resources = new ArrayList<>();
@@ -96,6 +97,9 @@ public class DDFFileParser {
                 break;
             case "Description1":
                 description = field.getTextContent();
+                break;
+            case "ObjectVersion":
+                version = field.getTextContent();
                 break;
             case "MultipleInstances":
                 multiple = "Multiple".equals(field.getTextContent());
@@ -114,7 +118,7 @@ public class DDFFileParser {
             }
         }
 
-        return new ObjectModel(id, name, description, multiple, mandatory, resources);
+        return new ObjectModel(id, name, description, version, multiple, mandatory, resources);
 
     }
 
