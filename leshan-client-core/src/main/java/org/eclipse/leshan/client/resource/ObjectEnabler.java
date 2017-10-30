@@ -114,7 +114,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
         if (path.isObject()) {
             List<LwM2mObjectInstance> lwM2mObjectInstances = new ArrayList<>();
             for (Entry<Integer, LwM2mInstanceEnabler> entry : instances.entrySet()) {
-                lwM2mObjectInstances.add(getLwM2mObjectInstance(entry.getKey(), entry.getValue(), identity));
+                lwM2mObjectInstances.add(getLwM2mObjectInstance(entry.getKey(), entry.getValue(), identity, false));
             }
             return ReadResponse.success(new LwM2mObject(getId(), lwM2mObjectInstances));
         }
@@ -125,7 +125,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
             return ReadResponse.notFound();
 
         if (path.getResourceId() == null) {
-            return ReadResponse.success(getLwM2mObjectInstance(path.getObjectInstanceId(), instance, identity));
+            return ReadResponse.success(getLwM2mObjectInstance(path.getObjectInstanceId(), instance, identity, false));
         }
 
         // Manage Resource case
@@ -138,8 +138,11 @@ public class ObjectEnabler extends BaseObjectEnabler {
 
         // Manage Object case
         if (path.isObject()) {
-            // TODO Enable object level observe support (if ever necessary)
-            return ObserveResponse.internalServerError("not implemented");
+            List<LwM2mObjectInstance> lwM2mObjectInstances = new ArrayList<>();
+            for (Entry<Integer, LwM2mInstanceEnabler> entry : instances.entrySet()) {
+                lwM2mObjectInstances.add(getLwM2mObjectInstance(entry.getKey(), entry.getValue(), identity, true));
+            }
+            return ObserveResponse.success(new LwM2mObject(getId(), lwM2mObjectInstances));
         }
 
         // Manage Instance case
@@ -148,22 +151,29 @@ public class ObjectEnabler extends BaseObjectEnabler {
             return ObserveResponse.notFound();
 
         if (path.getResourceId() == null) {
-            // TODO Enable instance level observe support
-            return ObserveResponse.internalServerError("not implemented");
+            return ObserveResponse
+                    .success(getLwM2mObjectInstance(path.getObjectInstanceId(), instance, identity, true));
         }
 
         // Manage Resource case
         return instance.observe(path.getResourceId());
     }
 
-    LwM2mObjectInstance getLwM2mObjectInstance(int instanceid, LwM2mInstanceEnabler instance, ServerIdentity identity) {
+    LwM2mObjectInstance getLwM2mObjectInstance(int instanceid, LwM2mInstanceEnabler instance, ServerIdentity identity,
+            boolean observe) {
         List<LwM2mResource> resources = new ArrayList<>();
         for (ResourceModel resourceModel : getObjectModel().resources.values()) {
             // check, if internal request (SYSTEM) or readable
             if (identity.isSystem() || resourceModel.operations.isReadable()) {
-                ReadResponse response = instance.read(resourceModel.id);
-                if (response.getCode() == ResponseCode.CONTENT && response.getContent() instanceof LwM2mResource)
-                    resources.add((LwM2mResource) response.getContent());
+                if (observe) {
+                    ObserveResponse response = instance.observe(resourceModel.id);
+                    if (response.getCode() == ResponseCode.CONTENT && response.getContent() instanceof LwM2mResource)
+                        resources.add((LwM2mResource) response.getContent());
+                } else {
+                    ReadResponse response = instance.read(resourceModel.id);
+                    if (response.getCode() == ResponseCode.CONTENT && response.getContent() instanceof LwM2mResource)
+                        resources.add((LwM2mResource) response.getContent());
+                }
             }
         }
         return new LwM2mObjectInstance(instanceid, resources);
