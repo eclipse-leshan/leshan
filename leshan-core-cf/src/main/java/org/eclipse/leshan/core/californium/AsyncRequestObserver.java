@@ -15,6 +15,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.californium;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
@@ -22,26 +28,40 @@ import org.eclipse.leshan.core.request.exception.RequestRejectedException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
+import org.eclipse.leshan.util.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class AsyncRequestObserver<T extends LwM2mResponse> extends AbstractRequestObserver<T> {
-    private static final Logger LOG = LoggerFactory.getLogger(AsyncRequestObserver.class);
 
-    private ResponseCallback<T> responseCallback;
-    private ErrorCallback errorCallback;
+    private static final Logger LOG = LoggerFactory.getLogger(AsyncRequestObserver.class);
+    private static volatile ScheduledExecutorService executor;
+
+    private final ResponseCallback<T> responseCallback;
+    private final ErrorCallback errorCallback;
+    private final long timeoutInMs;
+    private ScheduledFuture<?> cleaningTask;
+
+    private final AtomicBoolean responseTimedOut = new AtomicBoolean(false);
 
     public AsyncRequestObserver(Request coapRequest, ResponseCallback<T> responseCallback,
             ErrorCallback errorCallback) {
+        this(coapRequest, responseCallback, errorCallback, 10000l);
+    }
+
+    public AsyncRequestObserver(Request coapRequest, ResponseCallback<T> responseCallback, ErrorCallback errorCallback,
+            long timeoutInMs) {
         super(coapRequest);
         this.responseCallback = responseCallback;
         this.errorCallback = errorCallback;
+        this.timeoutInMs = timeoutInMs;
     }
 
     @Override
     public void onResponse(Response coapResponse) {
         LOG.debug("Received coap response: {}", coapResponse);
         try {
+            cleaningTask.cancel(false);
             T lwM2mResponseT = buildResponse(coapResponse);
             if (lwM2mResponseT != null) {
                 responseCallback.onResponse(lwM2mResponseT);
@@ -54,19 +74,54 @@ public abstract class AsyncRequestObserver<T extends LwM2mResponse> extends Abst
     }
 
     @Override
+    public void onReadyToSend() {
+        cleaningTask = getExecutor().schedule(new Runnable() {
+            @Override
+            public void run() {
+                responseTimedOut.set(true);
+                coapRequest.cancel();
+            }
+        }, timeoutInMs, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
     public void onTimeout() {
+        cleaningTask.cancel(false);
         errorCallback.onError(new org.eclipse.leshan.core.request.exception.TimeoutException("Request %s timed out",
                 coapRequest.getURI()));
     }
 
     @Override
     public void onCancel() {
-        errorCallback.onError(new RequestCanceledException("Request %s cancelled", coapRequest.getURI()));
+        cleaningTask.cancel(false);
+        if (responseTimedOut.get())
+            errorCallback.onError(new org.eclipse.leshan.core.request.exception.TimeoutException("Request %s timed out",
+                    coapRequest.getURI()));
+        else
+            errorCallback.onError(new RequestCanceledException("Request %s cancelled", coapRequest.getURI()));
     }
 
     @Override
     public void onReject() {
+        cleaningTask.cancel(false);
         errorCallback.onError(new RequestRejectedException("Request %s rejected", coapRequest.getURI()));
     }
 
+    @Override
+    public void onSendError(Throwable error) {
+        cleaningTask.cancel(false);
+        errorCallback.onError(new Exception(String.format("Unable to send request %s", coapRequest.getURI()), error));
+    }
+
+    private ScheduledExecutorService getExecutor() {
+        if (executor == null) {
+            synchronized (this.getClass()) {
+                if (executor == null) {
+                    executor = Executors.newScheduledThreadPool(1,
+                            new NamedThreadFactory("Leshan Async Request timeout"));
+                }
+            }
+        }
+        return executor;
+    }
 }
