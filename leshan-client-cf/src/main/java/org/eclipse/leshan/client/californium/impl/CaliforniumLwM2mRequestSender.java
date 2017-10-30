@@ -17,6 +17,7 @@ package org.eclipse.leshan.client.californium.impl;
 
 import java.net.InetSocketAddress;
 
+import org.eclipse.californium.core.coap.MessageObserver;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
@@ -40,7 +41,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
     @Override
     public <T extends LwM2mResponse> T send(InetSocketAddress serverAddress, boolean secure,
-            final UplinkRequest<T> request, Long timeout) throws InterruptedException {
+            final UplinkRequest<T> request, long timeout) throws InterruptedException {
         // Create the CoAP request from LwM2m request
         CoapRequestBuilder coapClientRequestBuilder = new CoapRequestBuilder(serverAddress);
         request.accept(coapClientRequestBuilder);
@@ -70,15 +71,15 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
     @Override
     public <T extends LwM2mResponse> void send(InetSocketAddress serverAddress, boolean secure,
-            final UplinkRequest<T> request, ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
+            final UplinkRequest<T> request, long timeout, ResponseCallback<T> responseCallback,
+            ErrorCallback errorCallback) {
         // Create the CoAP request from LwM2m request
         CoapRequestBuilder coapClientRequestBuilder = new CoapRequestBuilder(serverAddress);
         request.accept(coapClientRequestBuilder);
         Request coapRequest = coapClientRequestBuilder.getRequest();
 
         // Add CoAP request callback
-        coapRequest.addMessageObserver(new AsyncRequestObserver<T>(coapRequest, responseCallback, errorCallback) {
-
+        MessageObserver obs = new AsyncRequestObserver<T>(coapRequest, responseCallback, errorCallback, timeout) {
             @Override
             public T buildResponse(Response coapResponse) {
                 // Build LwM2m response
@@ -86,7 +87,8 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }
-        });
+        };
+        coapRequest.addMessageObserver(obs);
 
         // Send CoAP request asynchronously
         if (secure)

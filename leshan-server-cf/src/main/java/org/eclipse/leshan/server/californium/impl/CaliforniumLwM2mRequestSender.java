@@ -21,6 +21,7 @@ import java.util.SortedMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
+import org.eclipse.californium.core.coap.MessageObserver;
 import org.eclipse.californium.core.coap.MessageObserverAdapter;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
@@ -69,7 +70,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
     @Override
     public <T extends LwM2mResponse> T send(final Registration destination, final DownlinkRequest<T> request,
-            Long timeout) throws InterruptedException {
+            long timeout) throws InterruptedException {
 
         // Retrieve the objects definition
         final LwM2mModel model = modelProvider.getObjectModel(destination);
@@ -107,7 +108,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
     @Override
     public <T extends LwM2mResponse> void send(final Registration destination, final DownlinkRequest<T> request,
-            ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
+            long timeout, ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         // Retrieve the objects definition
         final LwM2mModel model = modelProvider.getObjectModel(destination);
 
@@ -119,7 +120,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         final Request coapRequest = coapRequestBuilder.getRequest();
 
         // Add CoAP request callback
-        coapRequest.addMessageObserver(new AsyncRequestObserver<T>(coapRequest, responseCallback, errorCallback) {
+        MessageObserver obs = new AsyncRequestObserver<T>(coapRequest, responseCallback, errorCallback, timeout) {
             @Override
             public T buildResponse(Response coapResponse) {
                 // Build LwM2m response
@@ -128,7 +129,8 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }
-        });
+        };
+        coapRequest.addMessageObserver(obs);
 
         // Store pending request to cancel it on de-registration
         addPendingRequest(destination.getId(), coapRequest);

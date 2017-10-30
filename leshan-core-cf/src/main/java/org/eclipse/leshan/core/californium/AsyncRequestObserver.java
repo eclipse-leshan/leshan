@@ -44,11 +44,6 @@ public abstract class AsyncRequestObserver<T extends LwM2mResponse> extends Abst
 
     private final AtomicBoolean responseTimedOut = new AtomicBoolean(false);
 
-    public AsyncRequestObserver(Request coapRequest, ResponseCallback<T> responseCallback,
-            ErrorCallback errorCallback) {
-        this(coapRequest, responseCallback, errorCallback, 10000l);
-    }
-
     public AsyncRequestObserver(Request coapRequest, ResponseCallback<T> responseCallback, ErrorCallback errorCallback,
             long timeoutInMs) {
         super(coapRequest);

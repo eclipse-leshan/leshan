@@ -55,6 +55,10 @@ public class BootstrapHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(BootstrapHandler.class);
 
+    // We choose a default timeout a bit higher to the MAX_TRANSMIT_WAIT(62-93s) which is the time from starting to
+    // send a Confirmable message to the time when an acknowledgement is no longer expected.
+    private static final long DEFAULT_TIMEOUT = 2 * 60 * 1000l; // 2min in ms
+
     private final Executor e;
 
     private final BootstrapStore store;
@@ -212,7 +216,7 @@ public class BootstrapHandler {
     private <T extends LwM2mResponse> void send(BootstrapSession session, DownlinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         sender.send(session.getEndpoint(), session.getIdentity().getPeerAddress(), session.getIdentity().isSecure(),
-                request, responseCallback, errorCallback);
+                request, DEFAULT_TIMEOUT, responseCallback, errorCallback);
     }
 
     private LwM2mObjectInstance convertToSecurityInstance(int instanceId, ServerSecurity securityConfig) {

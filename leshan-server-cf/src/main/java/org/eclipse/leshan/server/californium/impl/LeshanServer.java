@@ -77,6 +77,10 @@ public class LeshanServer implements LwM2mServer {
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanServer.class);
 
+    // We choose a default timeout a bit higher to the MAX_TRANSMIT_WAIT(62-93s) which is the time from starting to
+    // send a Confirmable message to the time when an acknowledgement is no longer expected.
+    private static final long DEFAULT_TIMEOUT = 2 * 60 * 1000l; // 2min in ms
+
     private final LwM2mRequestSender requestSender;
 
     private final RegistrationServiceImpl registrationService;
@@ -263,7 +267,7 @@ public class LeshanServer implements LwM2mServer {
     @Override
     public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request)
             throws InterruptedException {
-        return requestSender.send(destination, request, null);
+        return requestSender.send(destination, request, DEFAULT_TIMEOUT);
     }
 
     @Override
@@ -275,7 +279,13 @@ public class LeshanServer implements LwM2mServer {
     @Override
     public <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
-        requestSender.send(destination, request, responseCallback, errorCallback);
+        requestSender.send(destination, request, DEFAULT_TIMEOUT, responseCallback, errorCallback);
+    }
+
+    @Override
+    public <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request, long timeout,
+            ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
+        requestSender.send(destination, request, timeout, responseCallback, errorCallback);
     }
 
     /**

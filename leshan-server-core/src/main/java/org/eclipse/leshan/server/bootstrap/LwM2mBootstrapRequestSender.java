@@ -30,11 +30,12 @@ public interface LwM2mBootstrapRequestSender {
      *         timeout) expires.
      */
     <T extends LwM2mResponse> T send(String clientEndpoint, InetSocketAddress client, boolean secure,
-            DownlinkRequest<T> request, Long timeout) throws InterruptedException;
+            DownlinkRequest<T> request, long timeout) throws InterruptedException;
 
     /**
      * Send a Lightweight M2M request asynchronously.
      */
     <T extends LwM2mResponse> void send(String clientEndpoint, InetSocketAddress client, boolean secure,
-            DownlinkRequest<T> request, ResponseCallback<T> responseCallback, ErrorCallback errorCallback);
+            DownlinkRequest<T> request, long timeout, ResponseCallback<T> responseCallback,
+            ErrorCallback errorCallback);
 }

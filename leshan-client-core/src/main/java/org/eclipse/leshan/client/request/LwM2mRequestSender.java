@@ -30,12 +30,12 @@ public interface LwM2mRequestSender {
      * @return the LWM2M response. The response can be <code>null</code> if the timeout (given parameter or CoAP
      *         timeout) expires.
      */
-    <T extends LwM2mResponse> T send(InetSocketAddress server, boolean secure, UplinkRequest<T> request, Long timeout)
+    <T extends LwM2mResponse> T send(InetSocketAddress server, boolean secure, UplinkRequest<T> request, long timeout)
             throws InterruptedException;
 
     /**
      * Send a Lightweight M2M request asynchronously.
      */
     <T extends LwM2mResponse> void send(InetSocketAddress server, boolean secure, UplinkRequest<T> request,
-            ResponseCallback<T> responseCallback, ErrorCallback errorCallback);
+            long timeout, ResponseCallback<T> responseCallback, ErrorCallback errorCallback);
 }

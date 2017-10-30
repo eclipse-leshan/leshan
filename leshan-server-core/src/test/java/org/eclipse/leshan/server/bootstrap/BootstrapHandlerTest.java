@@ -109,14 +109,15 @@ public class BootstrapHandlerTest {
 
         @Override
         public <T extends LwM2mResponse> T send(String clientEndpoint, InetSocketAddress client, boolean secure,
-                DownlinkRequest<T> request, Long timeout) throws InterruptedException {
+                DownlinkRequest<T> request, long timeout) throws InterruptedException {
             return null;
         }
 
         @SuppressWarnings("unchecked")
         @Override
         public <T extends LwM2mResponse> void send(String clientEndpoint, InetSocketAddress client, boolean secure,
-                DownlinkRequest<T> request, ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
+                DownlinkRequest<T> request, long timeout, ResponseCallback<T> responseCallback,
+                ErrorCallback errorCallback) {
             if (request instanceof BootstrapDeleteRequest) {
                 ((ResponseCallback<BootstrapDeleteResponse>) responseCallback)
                         .onResponse(BootstrapDeleteResponse.success());

@@ -112,6 +112,27 @@ public interface LwM2mServer {
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) throws CodecException;
 
     /**
+     * Sends a Lightweight M2M request asynchronously.
+     * 
+     * @param destination the remote client
+     * @param request the request to send to the client
+     * @param timeout the request timeout in millisecond
+     * @param responseCallback a callback called when a response is received (successful or error response)
+     * @param errorCallback a callback called when an error or exception occurred when response is received. It can be :
+     *        <ul>
+     *        <li>{@link RequestRejectedException} if the request is rejected by foreign peer.</li>
+     *        <li>{@link RequestCanceledException} if the request is cancelled.</li>
+     *        <li>{@link InvalidResponseException} if the response received is malformed.</li>
+     *        <li>{@link TimeoutException} if the CoAP timeout expires ( see
+     *        http://tools.ietf.org/html/rfc7252#section-4.2 ).</li>
+     *        <li>or any other RuntimeException for unexpected issue.
+     *        </ul>
+     * @throws CodecException if request payload can not be encoded.
+     */
+    <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request, long timeout,
+            ResponseCallback<T> responseCallback, ErrorCallback errorCallback) throws CodecException;
+
+    /**
      * Get the registration service to access to registered clients. You can use this object for listening client
      * registration lifecycle.
      */

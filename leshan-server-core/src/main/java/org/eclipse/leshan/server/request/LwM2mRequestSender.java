@@ -37,20 +37,21 @@ public interface LwM2mRequestSender {
      * @throws CodecException if request payload can not be encoded.
      * @throws InterruptedException if the thread was interrupted.
      */
-    <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request, Long timeout)
+    <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request, long timeout)
             throws InterruptedException;
-    
+
     /**
      * Sends a Lightweight M2M request asynchronously.
      * 
      * @param destination the remote client
      * @param request the request to send to the client
+     * @param timeout the request timeout in millisecond
      * @param responseCallback a callback called when a response is received (successful or error response)
      * @param errorCallback a callback called when an error or exception occurred when response is received
      * 
      * @throws CodecException if request payload can not be encoded.
      */
-    <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request,
+    <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request, long timeout,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback);
 
     /**

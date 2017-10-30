@@ -54,6 +54,11 @@ import org.slf4j.LoggerFactory;
 public class RegistrationEngine {
 
     private static final Logger LOG = LoggerFactory.getLogger(RegistrationEngine.class);
+
+    // We choose a default timeout a bit higher to the MAX_TRANSMIT_WAIT(62-93s) which is the time from starting to
+    // send a Confirmable message to the time when an acknowledgement is no longer expected.
+    private static final long DEFAULT_TIMEOUT = 2 * 60 * 1000l; // 2min in ms
+
     // TODO bootstrap timeout should be configurable
     private static final int BS_TIMEOUT = 93; // in seconds (93s is the COAP MAX_TRANSMIT_WAIT with default config)
     private static final long DEREGISTRATION_TIMEOUT = 1000; // in ms, de-registration is only used on stop for now.
@@ -109,7 +114,7 @@ public class RegistrationEngine {
                 // Send bootstrap request
                 ServerInfo bootstrapServer = serversInfo.bootstrap;
                 BootstrapResponse response = sender.send(bootstrapServer.getAddress(), bootstrapServer.isSecure(),
-                        new BootstrapRequest(endpoint), null);
+                        new BootstrapRequest(endpoint), DEFAULT_TIMEOUT);
                 if (response == null) {
                     LOG.error("Unable to start bootstrap session: Timeout.");
                     if (observer != null) {
@@ -161,10 +166,9 @@ public class RegistrationEngine {
 
         // send register request
         LOG.info("Trying to register to {} ...", dmInfo.getFullUri());
-        RegisterResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(),
-                new RegisterRequest(endpoint, dmInfo.lifetime, LwM2m.VERSION, dmInfo.binding, null,
-                        LinkFormatHelper.getClientDescription(objectEnablers.values(), null), additionalAttributes),
-                null);
+        RegisterRequest regRequest = new RegisterRequest(endpoint, dmInfo.lifetime, LwM2m.VERSION, dmInfo.binding, null,
+                LinkFormatHelper.getClientDescription(objectEnablers.values(), null), additionalAttributes);
+        RegisterResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(), regRequest, DEFAULT_TIMEOUT);
         if (response == null) {
             registrationID = null;
             LOG.error("Registration failed: Timeout.");
@@ -246,7 +250,7 @@ public class RegistrationEngine {
         // Send update
         LOG.info("Trying to update registration to {} ...", dmInfo.getFullUri());
         UpdateResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(),
-                new UpdateRequest(registrationID, null, null, null, null), null);
+                new UpdateRequest(registrationID, null, null, null, null), DEFAULT_TIMEOUT);
         if (response == null) {
             registrationID = null;
             LOG.error("Registration update failed: Timeout.");

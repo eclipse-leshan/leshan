@@ -35,9 +35,9 @@ public abstract class SyncRequestObserver<T extends LwM2mResponse> extends Abstr
     private AtomicReference<T> ref = new AtomicReference<>(null);
     private AtomicBoolean coapTimeout = new AtomicBoolean(false);
     private AtomicReference<RuntimeException> exception = new AtomicReference<>();
-    private Long timeout;
+    private long timeout;
 
-    public SyncRequestObserver(Request coapRequest, Long timeout) {
+    public SyncRequestObserver(Request coapRequest, long timeout) {
         super(coapRequest);
         this.timeout = timeout;
     }
@@ -78,11 +78,7 @@ public abstract class SyncRequestObserver<T extends LwM2mResponse> extends Abstr
     public T waitForResponse() throws InterruptedException {
         try {
             boolean timeElapsed = false;
-            if (timeout != null) {
-                timeElapsed = !latch.await(timeout, TimeUnit.MILLISECONDS);
-            } else {
-                latch.await();
-            }
+            timeElapsed = !latch.await(timeout, TimeUnit.MILLISECONDS);
             if (timeElapsed || coapTimeout.get()) {
                 coapRequest.cancel();
             }
