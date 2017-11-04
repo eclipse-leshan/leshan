@@ -226,7 +226,7 @@ public class LeshanServerBuilder {
      * For RPK the public key will be extract from the first X509 certificate of the certificate chain. If you only need
      * RPK support, use {@link LeshanServerBuilder#setPublicKey(PublicKey)} instead.
      */
-    public LeshanServerBuilder setCertificateChain(X509Certificate[] certificateChain) {
+    public <T extends X509Certificate> LeshanServerBuilder setCertificateChain(T[] certificateChain) {
         this.certificateChain = certificateChain;
         return this;
     }
@@ -234,7 +234,7 @@ public class LeshanServerBuilder {
     /**
      * The list of trusted certificates used to authenticate devices.
      */
-    public LeshanServerBuilder setTrustedCertificates(Certificate[] trustedCertificates) {
+    public <T extends Certificate> LeshanServerBuilder setTrustedCertificates(T[] trustedCertificates) {
         this.trustedCertificates = trustedCertificates;
         return this;
     }
