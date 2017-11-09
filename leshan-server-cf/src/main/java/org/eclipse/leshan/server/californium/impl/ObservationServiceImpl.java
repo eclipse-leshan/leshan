@@ -207,8 +207,8 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
         // get observation for this request
         Observation observation = registrationStore.getObservation(regid, coapResponse.getToken());
         if (observation == null) {
-            LOG.error("Unexpected error: Unable to find observation with token {} for registration {}", observation,
-                    coapResponse.getToken());
+            LOG.error("Unexpected error: Unable to find observation with token {} for registration {}",
+                    Hex.encodeHexString(coapResponse.getToken()), regid);
             return;
         }
 
