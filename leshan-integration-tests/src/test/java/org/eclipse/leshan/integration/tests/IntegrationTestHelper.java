@@ -144,14 +144,18 @@ public class IntegrationTestHelper {
     }
 
     public void createServer() {
+        server = createServerBuilder().build();
+        // monitor client registration
+        setupRegistrationMonitoring();
+    }
+
+    protected LeshanServerBuilder createServerBuilder() {
         LeshanServerBuilder builder = new LeshanServerBuilder();
         builder.setObjectModelProvider(new StaticModelProvider(createObjectModels()));
         builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         builder.setSecurityStore(new InMemorySecurityStore());
-        server = builder.build();
-        // monitor client registration
-        setupRegistrationMonitoring();
+        return builder;
     }
 
     protected void setupRegistrationMonitoring() {
