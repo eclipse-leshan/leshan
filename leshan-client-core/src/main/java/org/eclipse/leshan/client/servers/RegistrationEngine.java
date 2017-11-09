@@ -69,17 +69,26 @@ public class RegistrationEngine {
 
     // registration update
     private String registrationID;
+    private Map<String, String> additionalAttributes;
     private Future<?> registerFuture;
     private ScheduledFuture<?> updateFuture;
     private final ScheduledExecutorService schedExecutor = Executors
             .newSingleThreadScheduledExecutor(new NamedThreadFactory("RegistrationEngine#%d"));
 
     public RegistrationEngine(String endpoint, Map<Integer, LwM2mObjectEnabler> objectEnablers,
-            LwM2mRequestSender requestSender, BootstrapHandler bootstrapState, LwM2mClientObserver observer) {
+                              LwM2mRequestSender requestSender, BootstrapHandler bootstrapState, LwM2mClientObserver observer) {
+
+        this(endpoint, objectEnablers, requestSender, bootstrapState, observer, null);
+    }
+
+    public RegistrationEngine(String endpoint, Map<Integer, LwM2mObjectEnabler> objectEnablers,
+                              LwM2mRequestSender requestSender, BootstrapHandler bootstrapState,
+                              LwM2mClientObserver observer, Map<String, String> additionalAttributes) {
         this.endpoint = endpoint;
         this.objectEnablers = objectEnablers;
         this.bootstrapHandler = bootstrapState;
         this.observer = observer;
+        this.additionalAttributes = additionalAttributes;
 
         sender = requestSender;
     }
@@ -160,7 +169,7 @@ public class RegistrationEngine {
         LOG.info("Trying to register to {} ...", dmInfo.getFullUri());
         RegisterResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(),
                 new RegisterRequest(endpoint, dmInfo.lifetime, LwM2m.VERSION, dmInfo.binding, null,
-                        LinkFormatHelper.getClientDescription(objectEnablers.values(), null), null),
+                        LinkFormatHelper.getClientDescription(objectEnablers.values(), null), additionalAttributes),
                 null);
         if (response == null) {
             registrationID = null;
