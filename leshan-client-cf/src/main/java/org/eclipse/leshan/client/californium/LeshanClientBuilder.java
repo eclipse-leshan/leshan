@@ -17,6 +17,7 @@ package org.eclipse.leshan.client.californium;
 
 import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
@@ -57,6 +58,7 @@ public class LeshanClientBuilder {
     private boolean noUnsecuredEndpoint;
 
     private EndpointFactory endpointFactory;
+    private Map<String, String> additionalAttributes;
 
     /**
      * Creates a new instance for setting the configuration options for a {@link LeshanClient} instance.
@@ -159,6 +161,14 @@ public class LeshanClientBuilder {
         return this;
     }
 
+    /**
+     * Set the additionalAttributes for {@link org.eclipse.leshan.core.request.RegisterRequest}.
+     */
+    public LeshanClientBuilder setAdditionalAttributes(Map<String, String> additionalAttributes) {
+        this.additionalAttributes = additionalAttributes;
+        return this;
+    }
+
     public static NetworkConfig createDefaultNetworkConfig() {
         NetworkConfig networkConfig = new NetworkConfig();
         networkConfig.set(Keys.MID_TRACKER, "NULL");
@@ -254,6 +264,6 @@ public class LeshanClientBuilder {
                     "All CoAP enpoints are deactivated, at least one endpoint should be activated");
         }
 
-        return new LeshanClient(endpoint, unsecuredEndpoint, securedEndpoint, objectEnablers, coapConfig);
+        return new LeshanClient(endpoint, unsecuredEndpoint, securedEndpoint, objectEnablers, coapConfig, additionalAttributes);
     }
 }
