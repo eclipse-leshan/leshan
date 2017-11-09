@@ -31,6 +31,7 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.tlv.Tlv;
@@ -258,6 +259,16 @@ public class LwM2mNodeDecoderTest {
         assertTrue(resource instanceof LwM2mMultipleResource);
         assertEquals(6, resource.getId());
         assertTrue(resource.getValues().isEmpty());
+    }
+
+    @Test(expected = CodecException.class)
+    public void tlv_invalid_multi_resource_2_instance_with_the_same_id() {
+        Tlv resInstance1 = new Tlv(TlvType.RESOURCE_INSTANCE, null, TlvEncoder.encodeObjlnk(new ObjectLink(100, 1)), 0);
+        Tlv resInstance2 = new Tlv(TlvType.RESOURCE_INSTANCE, null, TlvEncoder.encodeObjlnk(new ObjectLink(101, 2)), 0);
+        Tlv multiResource = new Tlv(TlvType.MULTIPLE_RESOURCE, new Tlv[] { resInstance1, resInstance2 }, null, 22);
+        byte[] content = TlvEncoder.encode(new Tlv[] { multiResource }).array();
+
+        decoder.decode(content, ContentFormat.TLV, new LwM2mPath(3, 0, 22), model);
     }
 
     @Test

@@ -181,7 +181,12 @@ public class LwM2mNodeTlvDecoder {
                 throw new CodecException("Expected TLV of type RESOURCE_INSTANCE but was %s for path %s",
                         tlvChild.getType().name(), path);
 
-            values.put(tlvChild.getIdentifier(), parseTlvValue(tlvChild.getValue(), expectedType, path));
+            Object resourceInstance = parseTlvValue(tlvChild.getValue(), expectedType, path);
+            Object previousResourceInstance = values.put(tlvChild.getIdentifier(), resourceInstance);
+            if (previousResourceInstance != null) {
+                throw new CodecException("2 RESOURCE_INSTANCE (%s,%s) with the same identifier %d for path %s",
+                        previousResourceInstance, resourceInstance, tlvChild.getIdentifier(), path);
+            }
         }
         return values;
     }
