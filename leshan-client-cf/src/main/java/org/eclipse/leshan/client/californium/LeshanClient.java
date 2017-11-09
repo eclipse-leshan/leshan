@@ -16,10 +16,7 @@
 package org.eclipse.leshan.client.californium;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.californium.core.CoapServer;
@@ -65,7 +62,13 @@ public class LeshanClient implements LwM2mClient {
     private CoapEndpoint unsecuredEndpoint;
 
     public LeshanClient(String endpoint, CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
-            List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig) {
+                        List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig) {
+        this(endpoint, unsecuredEndpoint, securedEndpoint, objectEnablers, coapConfig, null);
+    }
+    
+    public LeshanClient(String endpoint, CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
+            List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig,
+            Map<String, String> additionalAttributes) {
 
         Validate.notNull(endpoint);
         Validate.notEmpty(objectEnablers);
@@ -121,7 +124,8 @@ public class LeshanClient implements LwM2mClient {
 
         // Create registration engine
         bootstrapHandler = new BootstrapHandler(this.objectEnablers);
-        engine = new RegistrationEngine(endpoint, this.objectEnablers, requestSender, bootstrapHandler, observers);
+        engine = new RegistrationEngine(endpoint, this.objectEnablers, requestSender, bootstrapHandler, observers,
+                additionalAttributes);
 
         // Create CoAP Server
         clientSideServer = new CoapServer(coapConfig) {
