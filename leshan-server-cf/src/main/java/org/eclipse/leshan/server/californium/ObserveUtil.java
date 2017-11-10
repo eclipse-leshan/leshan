@@ -51,6 +51,8 @@ public class ObserveUtil {
             case CTX_LWM2M_PATH:
                 lwm2mPath = ctx.getValue();
                 break;
+            case CTX_ENDPOINT:
+                break;
             default:
                 if (context == null) {
                     context = new HashMap<>();
