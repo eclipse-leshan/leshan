@@ -23,6 +23,7 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -95,6 +96,10 @@ public class ObserveTest {
         Observation observation = observeResponse.getObservation();
         assertEquals("/3/0/15", observation.getPath().toString());
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
+        Set<Observation> observations = helper.server.getObservationService()
+                .getObservations(helper.getCurrentRegistration());
+        assertTrue("We should have only on observation", observations.size() == 1);
+        assertTrue("New observation is not there", observations.contains(observation));
 
         // write device timezone
         LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
@@ -124,6 +129,10 @@ public class ObserveTest {
         Observation observation = observeResponse.getObservation();
         assertEquals("/3/0", observation.getPath().toString());
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
+        Set<Observation> observations = helper.server.getObservationService()
+                .getObservations(helper.getCurrentRegistration());
+        assertTrue("We should have only on observation", observations.size() == 1);
+        assertTrue("New observation is not there", observations.contains(observation));
 
         // write device timezone
         LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
@@ -158,6 +167,10 @@ public class ObserveTest {
         Observation observation = observeResponse.getObservation();
         assertEquals("/3", observation.getPath().toString());
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
+        Set<Observation> observations = helper.server.getObservationService()
+                .getObservations(helper.getCurrentRegistration());
+        assertTrue("We should have only on observation", observations.size() == 1);
+        assertTrue("New observation is not there", observations.contains(observation));
 
         // write device timezone
         LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
@@ -193,6 +206,10 @@ public class ObserveTest {
         Observation observation = observeResponse.getObservation();
         assertEquals("/3/0/15", observation.getPath().toString());
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
+        Set<Observation> observations = helper.server.getObservationService()
+                .getObservations(helper.getCurrentRegistration());
+        assertTrue("We should have only on observation", observations.size() == 1);
+        assertTrue("New observation is not there", observations.contains(observation));
 
         // *** HACK send a notification with unsupported content format *** //
         byte[] payload = LwM2mNodeJsonEncoder.encode(LwM2mSingleResource.newStringResource(15, "Paris"),
@@ -225,6 +242,10 @@ public class ObserveTest {
         Observation observation = observeResponse.getObservation();
         assertEquals("/3/0/15", observation.getPath().toString());
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
+        Set<Observation> observations = helper.server.getObservationService()
+                .getObservations(helper.getCurrentRegistration());
+        assertTrue("We should have only on observation", observations.size() == 1);
+        assertTrue("New observation is not there", observations.contains(observation));
 
         // *** HACK send time-stamped notification as Leshan client does not support it *** //
         // create time-stamped nodes
@@ -264,6 +285,10 @@ public class ObserveTest {
         Observation observation = observeResponse.getObservation();
         assertEquals("/3/0", observation.getPath().toString());
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
+        Set<Observation> observations = helper.server.getObservationService()
+                .getObservations(helper.getCurrentRegistration());
+        assertTrue("We should have only on observation", observations.size() == 1);
+        assertTrue("New observation is not there", observations.contains(observation));
 
         // *** HACK send time-stamped notification as Leshan client does not support it *** //
         // create time-stamped nodes
@@ -303,6 +328,10 @@ public class ObserveTest {
         Observation observation = observeResponse.getObservation();
         assertEquals("/3", observation.getPath().toString());
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
+        Set<Observation> observations = helper.server.getObservationService()
+                .getObservations(helper.getCurrentRegistration());
+        assertTrue("We should have only on observation", observations.size() == 1);
+        assertTrue("New observation is not there", observations.contains(observation));
 
         // *** HACK send time-stamped notification as Leshan client does not support it *** //
         // create time-stamped nodes
