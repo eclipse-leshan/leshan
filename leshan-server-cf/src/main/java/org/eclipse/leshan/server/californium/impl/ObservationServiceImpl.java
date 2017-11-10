@@ -16,7 +16,6 @@
 package org.eclipse.leshan.server.californium.impl;
 
 import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toLwM2mResponseCode;
-import static org.eclipse.leshan.server.californium.impl.CoapRequestBuilder.CTX_REGID;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -41,6 +40,7 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
+import org.eclipse.leshan.server.californium.ObserveUtil;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationListener;
 import org.eclipse.leshan.server.observation.ObservationService;
@@ -202,7 +202,7 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
             return;
 
         // get registration Id
-        String regid = coapRequest.getUserContext().get(CTX_REGID);
+        String regid = coapRequest.getUserContext().get(ObserveUtil.CTX_REGID);
 
         // get observation for this request
         Observation observation = registrationStore.getObservation(regid, coapResponse.getToken());

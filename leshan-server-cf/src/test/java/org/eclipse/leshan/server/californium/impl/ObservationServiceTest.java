@@ -18,7 +18,6 @@ package org.eclipse.leshan.server.californium.impl;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -27,7 +26,9 @@ import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
+import org.eclipse.leshan.server.californium.ObserveUtil;
 import org.eclipse.leshan.server.model.StandardModelProvider;
 import org.eclipse.leshan.server.registration.Registration;
 import org.junit.Assert;
@@ -140,9 +141,8 @@ public class ObservationServiceTest {
         coapRequest.setObserve();
         coapRequest.setDestination(support.registration.getAddress());
         coapRequest.setDestinationPort(support.registration.getPort());
-        Map<String, String> context = new HashMap<>();
-        context.put(CoapRequestBuilder.CTX_REGID, registrationId);
-        context.put(CoapRequestBuilder.CTX_LWM2M_PATH, target.toString());
+        Map<String, String> context = ObserveUtil.createCoapObserveRequestContext(registration.getEndpoint(),
+                registrationId, new ObserveRequest(target.toString()));
         coapRequest.setUserContext(context);
 
         store.add(new org.eclipse.californium.core.observe.Observation(coapRequest, null));

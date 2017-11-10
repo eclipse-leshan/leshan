@@ -16,9 +16,6 @@
 package org.eclipse.leshan.server.californium.impl;
 
 import java.net.InetSocketAddress;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
@@ -39,6 +36,7 @@ import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
+import org.eclipse.leshan.server.californium.ObserveUtil;
 import org.eclipse.leshan.util.StringUtils;
 
 public class CoapRequestBuilder implements DownlinkRequestVisitor {
@@ -53,11 +51,6 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
 
     private final LwM2mModel model;
     private final LwM2mNodeEncoder encoder;
-
-    /* keys used to populate the request context */
-    public static final String CTX_ENDPOINT = "leshan-endpoint";
-    public static final String CTX_REGID = "leshan-regId";
-    public static final String CTX_LWM2M_PATH = "leshan-path";
 
     public CoapRequestBuilder(InetSocketAddress destination, LwM2mModel model, LwM2mNodeEncoder encoder) {
         this.destination = destination;
@@ -145,14 +138,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         setTarget(coapRequest, request.getPath());
 
         // add context info to the observe request
-        Map<String, String> context = new HashMap<>();
-        context.put(CTX_ENDPOINT, endpoint);
-        context.put(CTX_REGID, registrationId);
-        context.put(CTX_LWM2M_PATH, request.getPath().toString());
-        for (Entry<String, String> ctx : request.getContext().entrySet()) {
-            context.put(ctx.getKey(), ctx.getValue());
-        }
-        coapRequest.setUserContext(context);
+        coapRequest.setUserContext(ObserveUtil.createCoapObserveRequestContext(endpoint, registrationId, request));
     }
 
     @Override

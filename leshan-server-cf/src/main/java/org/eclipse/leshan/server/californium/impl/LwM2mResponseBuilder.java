@@ -55,6 +55,7 @@ import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteAttributesResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
+import org.eclipse.leshan.server.californium.ObserveUtil;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.util.Hex;
 import org.slf4j.Logger;
@@ -213,8 +214,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                     registration.getEndpoint());
             if (coapResponse.getOptions().hasObserve()) {
                 // observe request successful
-                Observation observation = new Observation(coapRequest.getToken(), registration.getId(),
-                        request.getPath(), request.getContext());
+                Observation observation = ObserveUtil.createLwM2mObservation(coapRequest);
                 observationService.addObservation(registration, observation);
                 // add the observation to an ObserveResponse instance
                 lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), content, null,

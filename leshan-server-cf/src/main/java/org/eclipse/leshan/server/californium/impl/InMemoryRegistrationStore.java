@@ -20,8 +20,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
-import static org.eclipse.leshan.server.californium.impl.CoapRequestBuilder.*;
-
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,7 +28,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -39,11 +36,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.eclipse.californium.core.observe.ObservationUtil;
 import org.eclipse.californium.elements.CorrelationContext;
-import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.Startable;
 import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
+import org.eclipse.leshan.server.californium.ObserveUtil;
 import org.eclipse.leshan.server.registration.Deregistration;
 import org.eclipse.leshan.server.registration.ExpirationListener;
 import org.eclipse.leshan.server.registration.Registration;
@@ -284,7 +281,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
 
                 validateObservation(obs);
 
-                String registrationId = extractRegistrationId(obs);
+                String registrationId = ObserveUtil.extractRegistrationId(obs);
                 Key token = new Key(obs.getRequest().getToken());
                 org.eclipse.californium.core.observe.Observation previousObservation = obsByToken.put(token, obs);
                 if (!tokensByRegId.containsKey(registrationId)) {
@@ -350,7 +347,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
         org.eclipse.californium.core.observe.Observation removed = obsByToken.remove(kToken);
 
         if (removed != null) {
-            String registrationId = extractRegistrationId(removed);
+            String registrationId = ObserveUtil.extractRegistrationId(removed);
             List<Key> tokens = tokensByRegId.get(registrationId);
             tokens.remove(kToken);
             if (tokens.isEmpty()) {
@@ -388,45 +385,20 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
         return result;
     }
 
-    /* Retrieve the registrationId from the request context */
-    private String extractRegistrationId(org.eclipse.californium.core.observe.Observation observation) {
-        return observation.getRequest().getUserContext().get(CoapRequestBuilder.CTX_REGID);
-    }
-
     private Observation build(org.eclipse.californium.core.observe.Observation cfObs) {
         if (cfObs == null)
             return null;
 
-        String regId = null;
-        String lwm2mPath = null;
-        Map<String, String> context = null;
-
-        for (Entry<String, String> ctx : cfObs.getRequest().getUserContext().entrySet()) {
-            switch (ctx.getKey()) {
-            case CTX_REGID:
-                regId = ctx.getValue();
-                break;
-            case CTX_LWM2M_PATH:
-                lwm2mPath = ctx.getValue();
-                break;
-            default:
-                if (context == null) {
-                    context = new HashMap<>();
-                }
-                context.put(ctx.getKey(), ctx.getValue());
-            }
-        }
-        return new Observation(cfObs.getRequest().getToken(), regId, new LwM2mPath(lwm2mPath), context);
+        return ObserveUtil.createLwM2mObservation(cfObs.getRequest());
     }
 
-    private void validateObservation(org.eclipse.californium.core.observe.Observation observation) {
-        if (!observation.getRequest().getUserContext().containsKey(CoapRequestBuilder.CTX_REGID))
-            throw new IllegalStateException("missing registrationId info in the request context");
-        if (!observation.getRequest().getUserContext().containsKey(CoapRequestBuilder.CTX_LWM2M_PATH))
-            throw new IllegalStateException("missing lwm2m path info in the request context");
-        if (getRegistration(observation.getRequest().getUserContext().get(CoapRequestBuilder.CTX_REGID)) == null) {
+    private String validateObservation(org.eclipse.californium.core.observe.Observation observation) {
+        String endpoint = ObserveUtil.validateCoapObservation(observation);
+        if (getRegistration(ObserveUtil.extractRegistrationId(observation)) == null) {
             throw new IllegalStateException("no registration for this Id");
         }
+
+        return endpoint;
     }
 
     /* *************** Expiration handling **************** */
