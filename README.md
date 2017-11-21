@@ -13,6 +13,8 @@ The project also provides a client, a server and a bootstrap server demonstratio
 
 [Here](https://github.com/eclipse/leshan/wiki/LWM2M-Supported-features) you can see which part of the specification is currently covered by Leshan.
 
+The Leshan Documentation  is available in our [wiki :blue_book:](https://github.com/eclipse/leshan/wiki).
+
 Contact
 -------
 
@@ -31,6 +33,8 @@ You can try live our servers demos instances:
    _(coap://leshan.eclipse.org:5783  and coaps://leshan.eclipse.org:5784)_  
 
 (Automatic deployment of master branch)
+
+![Leshan](https://eclipse.org/leshan/img/capture_for_github.png)
 
 Test Leshan Demos locally
 -----------------------
@@ -56,6 +60,9 @@ Get sources :
 ```bash
 #using ssh
 git clone git@github.com:eclipse/leshan.git
+```
+or
+```
 #using https
 git clone https://github.com/eclipse/leshan.git
 
@@ -86,36 +93,6 @@ You can also try our **bootstrap** demo server:
 java -jar leshan-bsserver-demo/target/leshan-bsserver-demo-*-SNAPSHOT-jar-with-dependencies.jar 
 ```
 
-![Leshan](https://eclipse.org/leshan/img/capture_for_github.png)
-
-Code with eclipse
------------------
-You need to add the M2_REPO to your java classpath variables. To do that you can execute the following command:
-
-```
-mvn -Declipse.workspace=<path-to-eclipse-workspace> eclipse:add-maven-repo
-```
-An eclipse restart is needed (if you already have it open).
-
-You can also do that inside eclipse: From the menu bar, select Window > Preferences. Select the *Java > Build Path > Classpath Variables* page.
-
-Now, you need to eclipsify leshan java projects,so run:
-
-```
-mvn eclipse:eclipse
-```
-
-Modules
------------------
-`leshan-core` : commons elements.  
-`leshan-core-cf` : commons elements which depend on [californium](https://github.com/eclipse/californium).  
-`leshan-server-core` : server lwm2m logic.  
-`leshan-server-cf` : server implementation based on [californium](https://github.com/eclipse/californium).  
-`leshan-client-core` : client lwm2m logic.  
-`leshan-client-cf` : client implementation based on [californium](https://github.com/eclipse/californium).  
-`leshan-all` : all previous modules in 1 jar.  
-`leshan-client-demo` : a simple demo client.  
-`leshan-server-demo` : a lwm2m demo server with a web UI.  
-`leshan-bsserver-demo` : a bootstrap demo server with a web UI.  
-`leshan-integration-tests` : integration automatic tests.  
-
+Let's start to code !
+---------------------
+Now you played a bit with our demo, you should start to code your own server or client using our [Getting-started](https://github.com/eclipse/leshan/wiki/Getting-started) guide.
