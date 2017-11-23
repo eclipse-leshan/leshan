@@ -21,18 +21,18 @@ package org.eclipse.leshan.core.model;
 public class ResourceModel {
 
     public enum Operations {
-        NONE, R, W, RW, E, RE, WE, RWE;
+        NONE, R, W, RW, E;
 
         public boolean isReadable() {
-            return this == R || this == RW || this == RE || this == RWE;
+            return this == R || this == RW;
         }
 
         public boolean isWritable() {
-            return this == W || this == RW || this == WE || this == RWE;
+            return this == W || this == RW;
         }
 
         public boolean isExecutable() {
-            return this == E || this == RE || this == WE || this == RWE;
+            return this == E;
         }
     }
 
