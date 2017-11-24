@@ -53,6 +53,7 @@ Get and run the last binary of our **bootstrap** demo server :
 wget https://hudson.eclipse.org/leshan/job/leshan/lastSuccessfulBuild/artifact/leshan-bsserver-demo.jar
 java -jar ./leshan-bsserver-demo.jar
 ```
+:information_source: : _All the demos have a `--help` option._
 
 Compile Leshan & Run Demos
 -------------
