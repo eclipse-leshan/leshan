@@ -96,8 +96,8 @@ public class CoapRequestBuilderTest {
         // verify
         Request coapRequest = builder.getRequest();
         assertEquals(CoAP.Code.GET, coapRequest.getCode());
-        assertEquals("127.0.0.1", coapRequest.getDestination().getHostAddress());
-        assertEquals(12354, coapRequest.getDestinationPort());
+        assertEquals("127.0.0.1", coapRequest.getDestinationContext().getPeerAddress().getAddress().getHostAddress());
+        assertEquals(12354, coapRequest.getDestinationContext().getPeerAddress().getPort());
         assertEquals("coap://127.0.0.1:12354/3/0", coapRequest.getURI());
     }
 
@@ -144,8 +144,8 @@ public class CoapRequestBuilderTest {
         // verify
         Request coapRequest = builder.getRequest();
         assertEquals(CoAP.Code.GET, coapRequest.getCode());
-        assertEquals("127.0.0.1", coapRequest.getDestination().getHostAddress());
-        assertEquals(12354, coapRequest.getDestinationPort());
+        assertEquals("127.0.0.1", coapRequest.getDestinationContext().getPeerAddress().getAddress().getHostAddress());
+        assertEquals(12354, coapRequest.getDestinationContext().getPeerAddress().getPort());
         assertEquals(MediaTypeRegistry.APPLICATION_LINK_FORMAT, coapRequest.getOptions().getAccept());
         assertEquals("coap://127.0.0.1:12354/3/0", coapRequest.getURI());
     }
@@ -163,8 +163,8 @@ public class CoapRequestBuilderTest {
         // verify
         Request coapRequest = builder.getRequest();
         assertEquals(CoAP.Code.POST, coapRequest.getCode());
-        assertEquals("127.0.0.1", coapRequest.getDestination().getHostAddress());
-        assertEquals(12354, coapRequest.getDestinationPort());
+        assertEquals("127.0.0.1", coapRequest.getDestinationContext().getPeerAddress().getAddress().getHostAddress());
+        assertEquals(12354, coapRequest.getDestinationContext().getPeerAddress().getPort());
         assertEquals(ContentFormat.TLV.getCode(), coapRequest.getOptions().getContentFormat());
         assertNotNull(coapRequest.getPayload());
         // assert it is encoded as array of resources TLV
@@ -203,8 +203,8 @@ public class CoapRequestBuilderTest {
         // verify
         Request coapRequest = builder.getRequest();
         assertEquals(CoAP.Code.PUT, coapRequest.getCode());
-        assertEquals("127.0.0.1", coapRequest.getDestination().getHostAddress());
-        assertEquals(12354, coapRequest.getDestinationPort());
+        assertEquals("127.0.0.1", coapRequest.getDestinationContext().getPeerAddress().getAddress().getHostAddress());
+        assertEquals(12354, coapRequest.getDestinationContext().getPeerAddress().getPort());
         assertEquals("coap://127.0.0.1:12354/3/0/14?pmin=10&pmax=100", coapRequest.getURI());
     }
 
@@ -221,8 +221,8 @@ public class CoapRequestBuilderTest {
         // verify
         Request coapRequest = builder.getRequest();
         assertEquals(CoAP.Code.POST, coapRequest.getCode());
-        assertEquals("127.0.0.1", coapRequest.getDestination().getHostAddress());
-        assertEquals(12354, coapRequest.getDestinationPort());
+        assertEquals("127.0.0.1", coapRequest.getDestinationContext().getPeerAddress().getAddress().getHostAddress());
+        assertEquals(12354, coapRequest.getDestinationContext().getPeerAddress().getPort());
         assertEquals("coap://127.0.0.1:12354/3/0/12", coapRequest.getURI());
         assertEquals("params", coapRequest.getPayloadString());
     }
@@ -240,8 +240,8 @@ public class CoapRequestBuilderTest {
         // verify
         Request coapRequest = builder.getRequest();
         assertEquals(CoAP.Code.POST, coapRequest.getCode());
-        assertEquals("127.0.0.1", coapRequest.getDestination().getHostAddress());
-        assertEquals(12354, coapRequest.getDestinationPort());
+        assertEquals("127.0.0.1", coapRequest.getDestinationContext().getPeerAddress().getAddress().getHostAddress());
+        assertEquals(12354, coapRequest.getDestinationContext().getPeerAddress().getPort());
         assertEquals("coap://127.0.0.1:12354/12", coapRequest.getURI());
         assertEquals(ContentFormat.TLV.getCode(), coapRequest.getOptions().getContentFormat());
         assertNotNull(coapRequest.getPayload());
@@ -264,8 +264,8 @@ public class CoapRequestBuilderTest {
         // verify
         Request coapRequest = builder.getRequest();
         assertEquals(CoAP.Code.POST, coapRequest.getCode());
-        assertEquals("127.0.0.1", coapRequest.getDestination().getHostAddress());
-        assertEquals(12354, coapRequest.getDestinationPort());
+        assertEquals("127.0.0.1", coapRequest.getDestinationContext().getPeerAddress().getAddress().getHostAddress());
+        assertEquals(12354, coapRequest.getDestinationContext().getPeerAddress().getPort());
         assertEquals("coap://127.0.0.1:12354/12", coapRequest.getURI());
         assertEquals(ContentFormat.TLV.getCode(), coapRequest.getOptions().getContentFormat());
         assertNotNull(coapRequest.getPayload());
@@ -288,8 +288,8 @@ public class CoapRequestBuilderTest {
         // verify
         Request coapRequest = builder.getRequest();
         assertEquals(CoAP.Code.DELETE, coapRequest.getCode());
-        assertEquals("127.0.0.1", coapRequest.getDestination().getHostAddress());
-        assertEquals(12354, coapRequest.getDestinationPort());
+        assertEquals("127.0.0.1", coapRequest.getDestinationContext().getPeerAddress().getAddress().getHostAddress());
+        assertEquals(12354, coapRequest.getDestinationContext().getPeerAddress().getPort());
         assertEquals("coap://127.0.0.1:12354/12/0", coapRequest.getURI());
     }
 
@@ -307,8 +307,8 @@ public class CoapRequestBuilderTest {
         Request coapRequest = builder.getRequest();
         assertEquals(CoAP.Code.GET, coapRequest.getCode());
         assertEquals(0, coapRequest.getOptions().getObserve().intValue());
-        assertEquals("127.0.0.1", coapRequest.getDestination().getHostAddress());
-        assertEquals(12354, coapRequest.getDestinationPort());
+        assertEquals("127.0.0.1", coapRequest.getDestinationContext().getPeerAddress().getAddress().getHostAddress());
+        assertEquals(12354, coapRequest.getDestinationContext().getPeerAddress().getPort());
         assertEquals("coap://127.0.0.1:12354/12/0", coapRequest.getURI());
     }
 }

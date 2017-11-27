@@ -35,6 +35,7 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
+import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.leshan.Link;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.californium.LeshanClient;
@@ -294,8 +295,7 @@ public class RegistrationTest {
 
         // create a register request without the list of supported object
         Request coapRequest = new Request(Code.POST);
-        coapRequest.setDestination(helper.server.getUnsecuredAddress().getAddress());
-        coapRequest.setDestinationPort(helper.server.getUnsecuredAddress().getPort());
+        coapRequest.setDestinationContext(new AddressEndpointContext(helper.server.getUnsecuredAddress()));
         coapRequest.getOptions().setContentFormat(ContentFormat.LINK.getCode());
         coapRequest.getOptions().addUriPath("rd");
         coapRequest.getOptions().addUriQuery("ep=" + helper.currentEndpointIdentifier);
