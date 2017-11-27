@@ -19,10 +19,23 @@ import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.LIFETIM
 import static org.eclipse.leshan.integration.tests.SecureIntegrationTestHelper.*;
 import static org.junit.Assert.*;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 
+import org.eclipse.californium.elements.AddressEndpointContext;
+import org.eclipse.californium.elements.EndpointContext;
+import org.eclipse.californium.elements.EndpointMismatchException;
+import org.eclipse.californium.elements.RawData;
+import org.eclipse.californium.elements.util.SimpleMessageCallback;
+import org.eclipse.californium.scandium.DTLSConnector;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
+import org.eclipse.californium.scandium.dtls.pskstore.StaticPskStore;
+import org.eclipse.leshan.core.request.ReadRequest;
+import org.eclipse.leshan.core.request.exception.SendFailedException;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
@@ -71,6 +84,66 @@ public class SecurityTest {
 
         // Check client is well registered
         helper.assertClientRegisterered();
+    }
+
+    @Test
+    public void dont_sent_request_if_identity_change()
+            throws NonUniqueSecurityInfoException, InterruptedException, IOException {
+        // Create PSK server & start it
+        helper.createServer(); // default server support PSK
+        helper.server.start();
+
+        // Create PSK Client
+        helper.createPSKClient();
+
+        // Add client credentials to the server
+        helper.getSecurityStore()
+                .add(SecurityInfo.newPreSharedKeyInfo(helper.getCurrentEndpoint(), GOOD_PSK_ID, GOOD_PSK_KEY));
+
+        // Check client is not registered
+        helper.assertClientNotRegisterered();
+
+        // Start it and wait for registration
+        helper.client.start();
+        helper.waitForRegistration(1);
+
+        // Check client is well registered
+        helper.assertClientRegisterered();
+
+        // Ensure we can send a read request
+        helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1));
+
+        // Get the previous address and stop client silently (no deregistration)
+        InetSocketAddress securedAddress = helper.client.getSecuredAddress();
+        helper.client.destroy(false);
+        helper.client = null;
+
+        // add new credential to the server
+        helper.getSecurityStore().add(SecurityInfo.newPreSharedKeyInfo(GOOD_ENDPOINT, "anotherPSK", GOOD_PSK_KEY));
+
+        // Create a new connector for the same address/port and start a new DTLS handshake
+        Builder builder = new DtlsConnectorConfig.Builder();
+        builder.setAddress(securedAddress);
+        builder.setPskStore(new StaticPskStore("anotherPSK", GOOD_PSK_KEY));
+        DTLSConnector dtlsConnector = new DTLSConnector(builder.build());
+        dtlsConnector.start();
+        SimpleMessageCallback callback = new SimpleMessageCallback();
+        dtlsConnector.send(RawData.outbound(new byte[0], new AddressEndpointContext(helper.server.getSecuredAddress()),
+                callback, false));
+
+        // Wait until new handshake DTLS is done
+        EndpointContext endpointContext = callback.getEndpointContext(1000);
+        assertEquals(endpointContext.getPeerIdentity().getName(), "anotherPSK");
+
+        // Try to send a read request this should failed with an SendFailedException.
+        try {
+            helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1));
+        } catch (SendFailedException e) {
+            assertTrue("must be caused by an EndpointMismatchException",
+                    e.getCause() instanceof EndpointMismatchException);
+        } finally {
+            dtlsConnector.destroy();
+        }
     }
 
     @Test
