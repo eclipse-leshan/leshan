@@ -397,7 +397,8 @@ public class LeshanServerBuilder {
                             && !Arrays.equals(incompleteConfig.getCertificateChain(), certificateChain)) {
                         throw new IllegalStateException(String.format(
                                 "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for certificate chain: %s != %s",
-                                certificateChain, incompleteConfig.getCertificateChain()));
+                                Arrays.toString(certificateChain),
+                                Arrays.toString(incompleteConfig.getCertificateChain())));
                     }
 
                     dtlsConfigBuilder.setIdentity(privateKey, certificateChain, false);
