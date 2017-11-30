@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
-import static org.eclipse.leshan.core.californium.ExchangeUtil.extractIdentity;
+import static org.eclipse.leshan.core.californium.EndpointContextUtil.extractIdentity;
 import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toCoapResponseCode;
 
 import java.net.InetSocketAddress;
@@ -142,7 +142,7 @@ public class RegisterResource extends CoapResource {
     private void handleRegister(CoapExchange exchange, Request request) {
         // Get identity
         // --------------------------------
-        Identity sender = extractIdentity(exchange);
+        Identity sender = extractIdentity(request.getSourceContext());
 
         // Create LwM2m request from CoAP request
         // --------------------------------
@@ -202,7 +202,7 @@ public class RegisterResource extends CoapResource {
 
     private void handleUpdate(CoapExchange exchange, Request request, String registrationId) {
         // Get identity
-        Identity sender = extractIdentity(exchange);
+        Identity sender = extractIdentity(request.getSourceContext());
 
         // Create LwM2m request from CoAP request
         Long lifetime = null;
@@ -234,7 +234,7 @@ public class RegisterResource extends CoapResource {
 
     private void handleDeregister(CoapExchange exchange, String registrationId) {
         // Get identity
-        Identity sender = extractIdentity(exchange);
+        Identity sender = extractIdentity(exchange.advanced().getRequest().getSourceContext());
 
         // Create request
         DeregisterRequest deregisterRequest = new DeregisterRequest(registrationId);

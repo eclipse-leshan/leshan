@@ -24,7 +24,7 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.server.resources.CoapExchange;
-import org.eclipse.leshan.core.californium.ExchangeUtil;
+import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.BootstrapResponse;
@@ -76,7 +76,7 @@ public class BootstrapResource extends CoapResource {
         }
 
         // Extract client identity
-        Identity clientIdentity = ExchangeUtil.extractIdentity(exchange);
+        Identity clientIdentity = EndpointContextUtil.extractIdentity(request.getSourceContext());
 
         // handle bootstrap request
         BootstrapResponse response = bootstrapHandler.bootstrap(clientIdentity, new BootstrapRequest(endpoint));

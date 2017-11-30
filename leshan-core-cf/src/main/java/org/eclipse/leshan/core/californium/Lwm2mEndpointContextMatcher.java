@@ -48,8 +48,8 @@ public class Lwm2mEndpointContextMatcher extends PrincipalEndpointContextMatcher
     protected boolean matchPrincipals(Principal requestedPrincipal, Principal availablePrincipal) {
         if (requestedPrincipal instanceof X500Principal || availablePrincipal instanceof X500Principal) {
             try {
-                String requestedCommonName = ExchangeUtil.extractCN(requestedPrincipal.getName());
-                String availableCommonName = ExchangeUtil.extractCN(availablePrincipal.getName());
+                String requestedCommonName = EndpointContextUtil.extractCN(requestedPrincipal.getName());
+                String availableCommonName = EndpointContextUtil.extractCN(availablePrincipal.getName());
                 return requestedCommonName.equals(availableCommonName);
             } catch (IllegalStateException e) {
                 return false;

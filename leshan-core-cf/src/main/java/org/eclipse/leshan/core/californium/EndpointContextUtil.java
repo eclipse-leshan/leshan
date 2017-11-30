@@ -25,7 +25,6 @@ import java.util.regex.Pattern;
 
 import javax.security.auth.x500.X500Principal;
 
-import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.scandium.auth.PreSharedKeyIdentity;
@@ -33,10 +32,9 @@ import org.eclipse.californium.scandium.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.scandium.auth.X509CertPath;
 import org.eclipse.leshan.core.request.Identity;
 
-public class ExchangeUtil {
+public class EndpointContextUtil {
 
-    public static Identity extractIdentity(CoapExchange exchange) {
-        EndpointContext context = exchange.advanced().getRequest().getSourceContext();
+    public static Identity extractIdentity(EndpointContext context) {
         InetSocketAddress peerAddress = context.getPeerAddress();
         Principal senderIdentity = context.getPeerIdentity();
         if (senderIdentity != null) {
@@ -58,8 +56,7 @@ public class ExchangeUtil {
     /**
      * Create californium endpoint context from leshan identity.
      * 
-     * @param identity
-     *            leshan identity received on last registration.
+     * @param identity leshan identity received on last registration.
      * @return californium endpoint context for leshan identity
      */
     public static EndpointContext extractContext(Identity identity) {
@@ -80,11 +77,9 @@ public class ExchangeUtil {
     /**
      * Extract "common name" from "distinguished name".
      * 
-     * @param dn
-     *            distinguished name
+     * @param dn distinguished name
      * @return common name
-     * @throws IllegalStateException
-     *             if no CN is contained in DN.
+     * @throws IllegalStateException if no CN is contained in DN.
      */
     public static String extractCN(String dn) {
         // Extract common name

@@ -19,7 +19,7 @@ package org.eclipse.leshan.client.californium.impl;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.servers.BootstrapHandler;
-import org.eclipse.leshan.core.californium.ExchangeUtil;
+import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.request.Identity;
 
 public class ResourceUtil {
@@ -28,7 +28,7 @@ public class ResourceUtil {
     // using BootstrapHandler may be not the right choice, because it
     // handles the current bootstrap server.
     public static ServerIdentity extractServerIdentity(CoapExchange exchange, BootstrapHandler bootstrapHandler) {
-        Identity identity = ExchangeUtil.extractIdentity(exchange);
+        Identity identity = EndpointContextUtil.extractIdentity(exchange.advanced().getRequest().getSourceContext());
 
         if (bootstrapHandler.isBootstrapServer(identity)) {
             return ServerIdentity.createLwm2mBootstrapServerIdentity(identity);
