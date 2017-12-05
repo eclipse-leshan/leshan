@@ -236,6 +236,14 @@ Contributors:
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>2.19</version>
                     <configuration>
+                        <systemPropertyVariables>
+                            <!-- WORKAROUND because of eclipse classpath issue: https://bugs.eclipse.org/bugs/show_bug.cgi?id=414645
+                            	This allow to have a logback-test config file for maven which is not seen by eclipse ...
+                            -->
+                        	<logback.configurationFile>
+                            src/test/resources/logback-test-${project.artifactId}.xml
+                        	</logback.configurationFile>
+                    	</systemPropertyVariables>
                         <parallel>classes</parallel>
                         <threadCount>4</threadCount>
                         <excludes>
