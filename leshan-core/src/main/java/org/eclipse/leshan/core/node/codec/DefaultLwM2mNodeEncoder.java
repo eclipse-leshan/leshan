@@ -35,7 +35,7 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultLwM2mNodeEncoder.class);
 
-    private LwM2mValueConverter converter;
+    private final LwM2mValueConverter converter;
 
     public DefaultLwM2mNodeEncoder() {
         this(new DefaultLwM2mValueConverter());

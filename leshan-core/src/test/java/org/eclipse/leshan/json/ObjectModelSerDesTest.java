@@ -45,12 +45,12 @@ public class ObjectModelSerDesTest {
         String smodel = result.toString("UTF-8");
 
         // deserialize
-        ObjectModelSerDes SerDes = new ObjectModelSerDes();
+        ObjectModelSerDes serDes = new ObjectModelSerDes();
         JsonValue json = Json.parse(smodel);
-        List<ObjectModel> models = new ObjectModelSerDes().deserialize(json.asArray());
+        List<ObjectModel> models = serDes.deserialize(json.asArray());
 
         // serialize
-        JsonArray arr = SerDes.jSerialize(models);
+        JsonArray arr = serDes.jSerialize(models);
         String res = arr.toString(WriterConfig.PRETTY_PRINT);
 
         Assert.assertEquals("value should be equals", smodel, res);
