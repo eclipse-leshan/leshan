@@ -236,10 +236,8 @@ Contributors:
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>2.19</version>
                     <configuration>
-                        <!-- We deactivate parallel test because of https://github.com/ralfstx/minimal-json/issues/77
-                             TODO: Remove this workaround when we will integrate a fixed version of minimal-json-->
-                        <!-- parallel>classes</parallel>
-                        <threadCount>4</threadCount-->
+                        <parallel>classes</parallel>
+                        <threadCount>4</threadCount>
                         <excludes>
                             <exclude>**/*$*</exclude>
                         </excludes>
@@ -384,7 +382,7 @@ Contributors:
             <dependency>
                 <groupId>com.eclipsesource.minimal-json</groupId>
                 <artifactId>minimal-json</artifactId>
-                <version>0.9.4</version>
+                <version>0.9.5</version>
             </dependency>
             <dependency>
                 <groupId>commons-lang</groupId>
