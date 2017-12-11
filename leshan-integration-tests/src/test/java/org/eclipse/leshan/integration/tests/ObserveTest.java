@@ -385,8 +385,7 @@ public class ObserveTest {
     }
 
     private Connector getConnector(LeshanClient client) {
-        CoapEndpoint endpoint = (CoapEndpoint) helper.client.getCoapServer()
-                .getEndpoint(helper.client.getUnsecuredAddress());
+        CoapEndpoint endpoint = (CoapEndpoint) helper.client.getCoapServer().getEndpoint(helper.client.getAddress());
         return endpoint.getConnector();
     }
 

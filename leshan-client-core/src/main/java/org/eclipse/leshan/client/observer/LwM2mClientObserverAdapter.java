@@ -16,61 +16,60 @@
 package org.eclipse.leshan.client.observer;
 
 import org.eclipse.leshan.ResponseCode;
-import org.eclipse.leshan.client.servers.DmServerInfo;
-import org.eclipse.leshan.client.servers.ServerInfo;
+import org.eclipse.leshan.client.servers.Server;
+import org.eclipse.leshan.core.request.Identity;
 
 /**
- * An abstract adapter class for observing registration life cycle. The methods in this
- * class are empty. This class exists as convenience for creating client
- * observer objects.
+ * An abstract adapter class for observing registration life cycle. The methods in this class are empty. This class
+ * exists as convenience for creating client observer objects.
  */
 public class LwM2mClientObserverAdapter implements LwM2mClientObserver {
 
     @Override
-    public void onBootstrapSuccess(ServerInfo bsserver) {
+    public void onBootstrapSuccess(Identity bsserver) {
     }
 
     @Override
-    public void onBootstrapFailure(ServerInfo bsserver, ResponseCode responseCode, String errorMessage) {
+    public void onBootstrapFailure(Identity bsserver, ResponseCode responseCode, String errorMessage) {
     }
 
     @Override
-    public void onBootstrapTimeout(ServerInfo bsserver) {
+    public void onBootstrapTimeout(Identity bsserver) {
     }
 
     @Override
-    public void onRegistrationSuccess(DmServerInfo server, String registrationID) {
+    public void onRegistrationSuccess(Server server, String registrationID) {
     }
 
     @Override
-    public void onRegistrationFailure(DmServerInfo server, ResponseCode responseCode, String errorMessage) {
+    public void onRegistrationFailure(Server server, ResponseCode responseCode, String errorMessage) {
     }
 
     @Override
-    public void onRegistrationTimeout(DmServerInfo server) {
+    public void onRegistrationTimeout(Server server) {
     }
 
     @Override
-    public void onUpdateSuccess(DmServerInfo server, String registrationID) {
+    public void onUpdateSuccess(Server server, String registrationID) {
     }
 
     @Override
-    public void onUpdateFailure(DmServerInfo server, ResponseCode responseCode, String errorMessage) {
+    public void onUpdateFailure(Server server, ResponseCode responseCode, String errorMessage) {
     }
 
     @Override
-    public void onUpdateTimeout(DmServerInfo server) {
+    public void onUpdateTimeout(Server server) {
     }
 
     @Override
-    public void onDeregistrationSuccess(DmServerInfo server, String registrationID) {
+    public void onDeregistrationSuccess(Server server, String registrationID) {
     }
 
     @Override
-    public void onDeregistrationFailure(DmServerInfo server, ResponseCode responseCode, String errorMessage) {
+    public void onDeregistrationFailure(Server server, ResponseCode responseCode, String errorMessage) {
     }
 
     @Override
-    public void onDeregistrationTimeout(DmServerInfo server) {
+    public void onDeregistrationTimeout(Server server) {
     }
 }

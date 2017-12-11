@@ -19,14 +19,11 @@ import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
-import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.LwM2mId;
-import org.eclipse.leshan.client.californium.impl.SecurityObjectPskStore;
 import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.object.Server;
@@ -35,27 +32,19 @@ import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.util.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Helper class to build and configure a Californium based Leshan Lightweight M2M client.
  */
 public class LeshanClientBuilder {
 
-    private static final Logger LOG = LoggerFactory.getLogger(LeshanClientBuilder.class);
-
     private final String endpoint;
 
     private InetSocketAddress localAddress;
-    private InetSocketAddress localSecureAddress;
     private List<? extends LwM2mObjectEnabler> objectEnablers;
 
     private NetworkConfig coapConfig;
     private Builder dtlsConfigBuilder;
-
-    private boolean noSecuredEndpoint;
-    private boolean noUnsecuredEndpoint;
 
     private EndpointFactory endpointFactory;
     private Map<String, String> additionalAttributes;
@@ -66,7 +55,6 @@ public class LeshanClientBuilder {
      * The builder is initialized with the following default values:
      * <ul>
      * <li><em>local address</em>: a local address and an ephemeral port (picked up during binding)</li>
-     * <li><em>local secure address</em>: a local address and an ephemeral port (picked up during binding)</li>
      * <li><em>object enablers</em>:
      * <ul>
      * <li>Security(0) with one instance (DM server security): uri=<em>coap://leshan.eclipse.org:5683</em>, mode=NoSec
@@ -92,18 +80,6 @@ public class LeshanClientBuilder {
             this.localAddress = new InetSocketAddress(port);
         } else {
             this.localAddress = new InetSocketAddress(hostname, port);
-        }
-        return this;
-    }
-
-    /**
-     * Sets the local secure end-point address
-     */
-    public LeshanClientBuilder setLocalSecureAddress(String hostname, int port) {
-        if (hostname == null) {
-            this.localSecureAddress = new InetSocketAddress(port);
-        } else {
-            this.localSecureAddress = new InetSocketAddress(hostname, port);
         }
         return this;
     }
@@ -142,22 +118,6 @@ public class LeshanClientBuilder {
      */
     public LeshanClientBuilder setEndpointFactory(EndpointFactory endpointFactory) {
         this.endpointFactory = endpointFactory;
-        return this;
-    }
-
-    /**
-     * deactivate unsecured CoAP endpoint
-     */
-    public LeshanClientBuilder disableUnsecuredEndpoint() {
-        this.noUnsecuredEndpoint = true;
-        return this;
-    }
-
-    /**
-     * deactivate secured CoAP endpoint (DTLS)
-     */
-    public LeshanClientBuilder disableSecuredEndpoint() {
-        this.noSecuredEndpoint = true;
         return this;
     }
 
@@ -201,33 +161,21 @@ public class LeshanClientBuilder {
         }
 
         // handle dtlsConfig
-        DtlsConnectorConfig dtlsConfig = null;
         if (dtlsConfigBuilder == null) {
             dtlsConfigBuilder = new DtlsConnectorConfig.Builder();
         }
         DtlsConnectorConfig incompleteConfig = dtlsConfigBuilder.getIncompleteConfig();
 
-        // Handle PSK Store
-        LwM2mObjectEnabler securityEnabler = this.objectEnablers.get(LwM2mId.SECURITY);
-        if (securityEnabler == null) {
-            throw new IllegalArgumentException("Security object is mandatory");
-        }
-        if (incompleteConfig.getPskStore() == null) {
-            dtlsConfigBuilder.setPskStore(new SecurityObjectPskStore(securityEnabler));
-        } else {
-            LOG.warn("PskStore should be automatically set by Leshan. Using a custom implementation is not advised.");
-        }
-
         // Handle secure address
         if (incompleteConfig.getAddress() == null) {
-            if (localSecureAddress == null) {
-                localSecureAddress = new InetSocketAddress(0);
+            if (localAddress == null) {
+                localAddress = new InetSocketAddress(0);
             }
-            dtlsConfigBuilder.setAddress(localSecureAddress);
-        } else if (localSecureAddress != null && !localSecureAddress.equals(incompleteConfig.getAddress())) {
+            dtlsConfigBuilder.setAddress(localAddress);
+        } else if (localAddress != null && !localAddress.equals(incompleteConfig.getAddress())) {
             throw new IllegalStateException(String.format(
-                    "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for secure address: %s != %s",
-                    localSecureAddress, incompleteConfig.getAddress()));
+                    "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for address: %s != %s",
+                    localAddress, incompleteConfig.getAddress()));
         }
 
         // Handle active peers
@@ -247,39 +195,7 @@ public class LeshanClientBuilder {
             dtlsConfigBuilder.setSniEnabled(false);
         }
 
-        dtlsConfig = dtlsConfigBuilder.build();
-
-        // create endpoints
-        CoapEndpoint unsecuredEndpoint = null;
-        if (!noUnsecuredEndpoint) {
-            if (endpointFactory != null) {
-                unsecuredEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null);
-            } else {
-                CoapEndpoint.CoapEndpointBuilder builder = new CoapEndpoint.CoapEndpointBuilder();
-                builder.setInetSocketAddress(localAddress);
-                builder.setNetworkConfig(coapConfig);
-                unsecuredEndpoint = builder.build();
-            }
-        }
-
-        CoapEndpoint securedEndpoint = null;
-        if (!noSecuredEndpoint) {
-            if (endpointFactory != null) {
-                securedEndpoint = endpointFactory.createSecuredEndpoint(dtlsConfig, coapConfig, null);
-            } else {
-                CoapEndpoint.CoapEndpointBuilder builder = new CoapEndpoint.CoapEndpointBuilder();
-                builder.setConnector(new DTLSConnector(dtlsConfig));
-                builder.setNetworkConfig(coapConfig);
-                securedEndpoint = builder.build();
-            }
-        }
-
-        if (securedEndpoint == null && unsecuredEndpoint == null) {
-            throw new IllegalStateException(
-                    "All CoAP enpoints are deactivated, at least one endpoint should be activated");
-        }
-
-        return new LeshanClient(endpoint, unsecuredEndpoint, securedEndpoint, objectEnablers, coapConfig,
+        return new LeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder, endpointFactory,
                 additionalAttributes);
     }
 }

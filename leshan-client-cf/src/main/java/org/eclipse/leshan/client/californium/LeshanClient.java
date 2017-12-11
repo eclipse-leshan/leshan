@@ -22,23 +22,20 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.californium.core.CoapServer;
-import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.server.resources.Resource;
-import org.eclipse.californium.scandium.DTLSConnector;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.californium.impl.BootstrapResource;
+import org.eclipse.leshan.client.californium.impl.CaliforniumEndpointsManager;
 import org.eclipse.leshan.client.californium.impl.CaliforniumLwM2mRequestSender;
 import org.eclipse.leshan.client.californium.impl.ObjectResource;
-import org.eclipse.leshan.client.californium.impl.RootResource;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
-import org.eclipse.leshan.client.observer.LwM2mClientObserverAdapter;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverDispatcher;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.servers.BootstrapHandler;
-import org.eclipse.leshan.client.servers.DmServerInfo;
 import org.eclipse.leshan.client.servers.RegistrationEngine;
-import org.eclipse.leshan.client.servers.ServerInfo;
+import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.util.Validate;
@@ -60,12 +57,11 @@ public class LeshanClient implements LwM2mClient {
     private final BootstrapHandler bootstrapHandler;
     private final LwM2mClientObserverDispatcher observers;
 
-    private CoapEndpoint securedEndpoint;
-    private CoapEndpoint unsecuredEndpoint;
+    private final CaliforniumEndpointsManager endpointsManager;
 
-    public LeshanClient(String endpoint, CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
-            List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig,
-            Map<String, String> additionalAttributes) {
+    public LeshanClient(String endpoint, InetSocketAddress localAddress,
+            List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig, Builder dtlsConfigBuilder,
+            EndpointFactory endpointFactory, Map<String, String> additionalAttributes) {
 
         Validate.notNull(endpoint);
         Validate.notEmpty(objectEnablers);
@@ -84,58 +80,16 @@ public class LeshanClient implements LwM2mClient {
         // Create Client Observers
         observers = new LwM2mClientObserverDispatcher();
 
-        // Set unsecured CoAP endpoint
-        this.unsecuredEndpoint = unsecuredEndpoint;
-
-        // Set secured CoAP endpoint
-        this.securedEndpoint = securedEndpoint;
-        if (securedEndpoint != null) {
-            if (securedEndpoint.getConnector() instanceof DTLSConnector) {
-                final DTLSConnector dtlsConnector = (DTLSConnector) securedEndpoint.getConnector();
-                observers.addObserver(new LwM2mClientObserverAdapter() {
-                    @Override
-                    public void onBootstrapSuccess(ServerInfo bsserver) {
-                        dtlsConnector.clearConnectionState();
-                    }
-
-                    @Override
-                    public void onBootstrapTimeout(ServerInfo bsserver) {
-                        dtlsConnector.clearConnectionState();
-                    }
-
-                    @Override
-                    public void onRegistrationTimeout(DmServerInfo server) {
-                        dtlsConnector.clearConnectionState();
-                    }
-
-                    @Override
-                    public void onUpdateTimeout(DmServerInfo server) {
-                        dtlsConnector.clearConnectionState();
-                    }
-                });
-            }
-        }
-
-        // Create sender
-        requestSender = new CaliforniumLwM2mRequestSender(securedEndpoint, unsecuredEndpoint);
-
-        // Create registration engine
         bootstrapHandler = new BootstrapHandler(this.objectEnablers);
-        engine = new RegistrationEngine(endpoint, this.objectEnablers, requestSender, bootstrapHandler, observers,
-                additionalAttributes);
 
         // Create CoAP Server
         clientSideServer = new CoapServer(coapConfig) {
             @Override
             protected Resource createRoot() {
                 // Use to handle Delete on "/"
-                return new RootResource(bootstrapHandler);
+                return new org.eclipse.leshan.client.californium.impl.RootResource(bootstrapHandler);
             }
         };
-        if (securedEndpoint != null)
-            clientSideServer.addEndpoint(securedEndpoint);
-        if (unsecuredEndpoint != null)
-            clientSideServer.addEndpoint(unsecuredEndpoint);
 
         // Create CoAP resources for each lwm2m Objects.
         for (LwM2mObjectEnabler enabler : objectEnablers) {
@@ -146,18 +100,27 @@ public class LeshanClient implements LwM2mClient {
 
         // Create CoAP resources needed for the bootstrap sequence
         clientSideServer.add(new BootstrapResource(bootstrapHandler));
+
+        // Create EndpointHandler
+        endpointsManager = new CaliforniumEndpointsManager(clientSideServer, localAddress, coapConfig,
+                dtlsConfigBuilder, endpointFactory);
+
+        // Create sender
+        requestSender = new CaliforniumLwM2mRequestSender(endpointsManager);
+
+        // Create registration engine
+        engine = new RegistrationEngine(endpoint, this.objectEnablers, endpointsManager, requestSender,
+                bootstrapHandler, observers, additionalAttributes);
+
     }
 
     @Override
     public void start() {
         LOG.info("Starting Leshan client ...");
-        clientSideServer.start();
+        endpointsManager.start();
         engine.start();
-
         if (LOG.isInfoEnabled()) {
-            LOG.info("Leshan client[endpoint:{}] started at {} {}", engine.getEndpoint(),
-                    getUnsecuredAddress() == null ? "" : "coap://" + getUnsecuredAddress(),
-                    getSecuredAddress() == null ? "" : "coaps://" + getSecuredAddress());
+            LOG.info("Leshan client[endpoint:{}] started.", engine.getEndpoint());
         }
     }
 
@@ -165,7 +128,7 @@ public class LeshanClient implements LwM2mClient {
     public void stop(boolean deregister) {
         LOG.info("Stopping Leshan Client ...");
         engine.stop(deregister);
-        clientSideServer.stop();
+        endpointsManager.stop();
         LOG.info("Leshan client stopped.");
     }
 
@@ -173,7 +136,7 @@ public class LeshanClient implements LwM2mClient {
     public void destroy(boolean deregister) {
         LOG.info("Destroying Leshan client ...");
         engine.destroy(deregister);
-        clientSideServer.destroy();
+        endpointsManager.destroy();
         LOG.info("Leshan client destroyed.");
     }
 
@@ -190,16 +153,8 @@ public class LeshanClient implements LwM2mClient {
         return clientSideServer;
     }
 
-    public InetSocketAddress getUnsecuredAddress() {
-        if (unsecuredEndpoint == null)
-            return null;
-        return unsecuredEndpoint.getAddress();
-    }
-
-    public InetSocketAddress getSecuredAddress() {
-        if (securedEndpoint == null)
-            return null;
-        return securedEndpoint.getAddress();
+    public InetSocketAddress getAddress() {
+        return endpointsManager.getEndpoint(null).getAddress();
     }
 
     public void addObserver(LwM2mClientObserver observer) {

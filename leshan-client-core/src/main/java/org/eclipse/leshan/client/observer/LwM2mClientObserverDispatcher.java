@@ -14,8 +14,8 @@ package org.eclipse.leshan.client.observer;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.leshan.ResponseCode;
-import org.eclipse.leshan.client.servers.DmServerInfo;
-import org.eclipse.leshan.client.servers.ServerInfo;
+import org.eclipse.leshan.client.servers.Server;
+import org.eclipse.leshan.core.request.Identity;
 
 /**
  * A dispatcher for LwM2mClientObserver. It allow several observers on a LwM2mClient.
@@ -33,84 +33,84 @@ public class LwM2mClientObserverDispatcher implements LwM2mClientObserver {
     }
 
     @Override
-    public void onBootstrapSuccess(ServerInfo bsserver) {
+    public void onBootstrapSuccess(Identity bsserver) {
         for (LwM2mClientObserver observer : observers) {
             observer.onBootstrapSuccess(bsserver);
         }
     }
 
     @Override
-    public void onBootstrapFailure(ServerInfo bsserver, ResponseCode responseCode, String errorMessage) {
+    public void onBootstrapFailure(Identity bsserver, ResponseCode responseCode, String errorMessage) {
         for (LwM2mClientObserver observer : observers) {
             observer.onBootstrapFailure(bsserver, responseCode, errorMessage);
         }
     }
 
     @Override
-    public void onBootstrapTimeout(ServerInfo bsserver) {
+    public void onBootstrapTimeout(Identity bsserver) {
         for (LwM2mClientObserver observer : observers) {
             observer.onBootstrapTimeout(bsserver);
         }
     }
 
     @Override
-    public void onRegistrationSuccess(DmServerInfo server, String registrationID) {
+    public void onRegistrationSuccess(Server server, String registrationID) {
         for (LwM2mClientObserver observer : observers) {
             observer.onRegistrationSuccess(server, registrationID);
         }
     }
 
     @Override
-    public void onRegistrationFailure(DmServerInfo server, ResponseCode responseCode, String errorMessage) {
+    public void onRegistrationFailure(Server server, ResponseCode responseCode, String errorMessage) {
         for (LwM2mClientObserver observer : observers) {
             observer.onRegistrationFailure(server, responseCode, errorMessage);
         }
     }
 
     @Override
-    public void onRegistrationTimeout(DmServerInfo server) {
+    public void onRegistrationTimeout(Server server) {
         for (LwM2mClientObserver observer : observers) {
             observer.onRegistrationTimeout(server);
         }
     }
 
     @Override
-    public void onUpdateSuccess(DmServerInfo server, String registrationID) {
+    public void onUpdateSuccess(Server server, String registrationID) {
         for (LwM2mClientObserver observer : observers) {
             observer.onUpdateSuccess(server, registrationID);
         }
     }
 
     @Override
-    public void onUpdateFailure(DmServerInfo server, ResponseCode responseCode, String errorMessage) {
+    public void onUpdateFailure(Server server, ResponseCode responseCode, String errorMessage) {
         for (LwM2mClientObserver observer : observers) {
             observer.onUpdateFailure(server, responseCode, errorMessage);
         }
     }
 
     @Override
-    public void onUpdateTimeout(DmServerInfo server) {
+    public void onUpdateTimeout(Server server) {
         for (LwM2mClientObserver observer : observers) {
             observer.onUpdateTimeout(server);
         }
     }
 
     @Override
-    public void onDeregistrationSuccess(DmServerInfo server, String registrationID) {
+    public void onDeregistrationSuccess(Server server, String registrationID) {
         for (LwM2mClientObserver observer : observers) {
             observer.onDeregistrationSuccess(server, registrationID);
         }
     }
 
     @Override
-    public void onDeregistrationFailure(DmServerInfo server, ResponseCode responseCode, String errorMessage) {
+    public void onDeregistrationFailure(Server server, ResponseCode responseCode, String errorMessage) {
         for (LwM2mClientObserver observer : observers) {
             observer.onDeregistrationFailure(server, responseCode, errorMessage);
         }
     }
 
     @Override
-    public void onDeregistrationTimeout(DmServerInfo server) {
+    public void onDeregistrationTimeout(Server server) {
         for (LwM2mClientObserver observer : observers) {
             observer.onDeregistrationTimeout(server);
         }

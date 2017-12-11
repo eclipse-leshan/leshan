@@ -16,36 +16,35 @@
 package org.eclipse.leshan.client.observer;
 
 import org.eclipse.leshan.ResponseCode;
-import org.eclipse.leshan.client.servers.DmServerInfo;
-import org.eclipse.leshan.client.servers.ServerInfo;
-
+import org.eclipse.leshan.client.servers.Server;
+import org.eclipse.leshan.core.request.Identity;
 
 /**
  * Allow to observer the registration life cycle of a LwM2m client.
  */
 public interface LwM2mClientObserver {
 
-    void onBootstrapSuccess(ServerInfo bsserver);
+    void onBootstrapSuccess(Identity bsserver);
 
-    void onBootstrapFailure(ServerInfo bsserver, ResponseCode responseCode, String errorMessage);
+    void onBootstrapFailure(Identity bsserver, ResponseCode responseCode, String errorMessage);
 
-    void onBootstrapTimeout(ServerInfo bsserver);
+    void onBootstrapTimeout(Identity bsserver);
 
-    void onRegistrationSuccess(DmServerInfo server, String registrationID);
+    void onRegistrationSuccess(Server server, String registrationID);
 
-    void onRegistrationFailure(DmServerInfo server, ResponseCode responseCode, String errorMessage);
+    void onRegistrationFailure(Server server, ResponseCode responseCode, String errorMessage);
 
-    void onRegistrationTimeout(DmServerInfo server);
+    void onRegistrationTimeout(Server server);
 
-    void onUpdateSuccess(DmServerInfo server, String registrationID);
+    void onUpdateSuccess(Server server, String registrationID);
 
-    void onUpdateFailure(DmServerInfo server, ResponseCode responseCode, String errorMessage);
+    void onUpdateFailure(Server server, ResponseCode responseCode, String errorMessage);
 
-    void onUpdateTimeout(DmServerInfo server);
+    void onUpdateTimeout(Server server);
 
-    void onDeregistrationSuccess(DmServerInfo server, String registrationID);
+    void onDeregistrationSuccess(Server server, String registrationID);
 
-    void onDeregistrationFailure(DmServerInfo server, ResponseCode responseCode, String errorMessage);
+    void onDeregistrationFailure(Server server, ResponseCode responseCode, String errorMessage);
 
-    void onDeregistrationTimeout(DmServerInfo server);
+    void onDeregistrationTimeout(Server server);
 }

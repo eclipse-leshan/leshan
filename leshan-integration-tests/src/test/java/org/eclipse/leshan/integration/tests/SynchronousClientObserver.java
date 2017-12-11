@@ -22,8 +22,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
-import org.eclipse.leshan.client.servers.DmServerInfo;
-import org.eclipse.leshan.client.servers.ServerInfo;
+import org.eclipse.leshan.client.servers.Server;
+import org.eclipse.leshan.core.request.Identity;
 
 public class SynchronousClientObserver implements LwM2mClientObserver {
 
@@ -44,70 +44,70 @@ public class SynchronousClientObserver implements LwM2mClientObserver {
     private AtomicBoolean bootstrapFailed = new AtomicBoolean(false);
 
     @Override
-    public void onBootstrapSuccess(ServerInfo bsserver) {
+    public void onBootstrapSuccess(Identity bsserver) {
         bootstrapSucceed.set(true);
         bootstrapLatch.countDown();
     }
 
     @Override
-    public void onBootstrapFailure(ServerInfo bsserver, ResponseCode responseCode, String errorMessage) {
+    public void onBootstrapFailure(Identity bsserver, ResponseCode responseCode, String errorMessage) {
         bootstrapFailed.set(true);
         bootstrapLatch.countDown();
     }
 
     @Override
-    public void onBootstrapTimeout(ServerInfo bsserver) {
+    public void onBootstrapTimeout(Identity bsserver) {
         bootstrapLatch.countDown();
     }
 
     @Override
-    public void onRegistrationSuccess(DmServerInfo server, String registrationID) {
+    public void onRegistrationSuccess(Server server, String registrationID) {
         registerSucceed.set(true);
         registerLatch.countDown();
     }
 
     @Override
-    public void onRegistrationFailure(DmServerInfo server, ResponseCode responseCode, String errorMessage) {
+    public void onRegistrationFailure(Server server, ResponseCode responseCode, String errorMessage) {
         registerFailed.set(true);
         registerLatch.countDown();
     }
 
     @Override
-    public void onRegistrationTimeout(DmServerInfo server) {
+    public void onRegistrationTimeout(Server server) {
         registerLatch.countDown();
     }
 
     @Override
-    public void onUpdateSuccess(DmServerInfo server, String registrationID) {
+    public void onUpdateSuccess(Server server, String registrationID) {
         updateSucceed.set(true);
         updateLatch.countDown();
     }
 
     @Override
-    public void onUpdateFailure(DmServerInfo server, ResponseCode responseCode, String errorMessage) {
+    public void onUpdateFailure(Server server, ResponseCode responseCode, String errorMessage) {
         updateFailed.set(true);
         updateLatch.countDown();
     }
 
     @Override
-    public void onUpdateTimeout(DmServerInfo server) {
+    public void onUpdateTimeout(Server server) {
         updateLatch.countDown();
     }
 
     @Override
-    public void onDeregistrationSuccess(DmServerInfo server, String registrationID) {
+    public void onDeregistrationSuccess(Server server, String registrationID) {
         deregisterSucceed.set(true);
         deregisterLatch.countDown();
     }
 
     @Override
-    public void onDeregistrationFailure(DmServerInfo server, ResponseCode responseCode, String errorMessage) {
+    public void onDeregistrationFailure(Server server, ResponseCode responseCode, String errorMessage) {
         deregisterFailed.set(true);
         deregisterLatch.countDown();
     }
 
     @Override
-    public void onDeregistrationTimeout(DmServerInfo server) {
+    public void onDeregistrationTimeout(Server server) {
         deregisterLatch.countDown();
     }
 

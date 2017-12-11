@@ -66,6 +66,10 @@ public class ServersInfoExtractor {
                         info.serverUri = new URI((String) security.getResource(SEC_SERVER_URI).getValue());
                         info.secureMode = SecurityMode
                                 .fromCode((long) security.getResource(SEC_SECURITY_MODE).getValue());
+                        if (info.secureMode == SecurityMode.PSK) {
+                            info.pskId = new String((byte[]) security.getResource(SEC_PUBKEY_IDENTITY).getValue());
+                            info.pskKey = (byte[]) security.getResource(SEC_SECRET_KEY).getValue();
+                        }
                         infos.bootstrap = info;
                     }
                 } else {
@@ -74,7 +78,10 @@ public class ServersInfoExtractor {
                     info.serverUri = new URI((String) security.getResource(SEC_SERVER_URI).getValue());
                     info.serverId = (long) security.getResource(SEC_SERVER_ID).getValue();
                     info.secureMode = SecurityMode.fromCode((long) security.getResource(SEC_SECURITY_MODE).getValue());
-
+                    if (info.secureMode == SecurityMode.PSK) {
+                        info.pskId = new String((byte[]) security.getResource(SEC_PUBKEY_IDENTITY).getValue());
+                        info.pskKey = (byte[]) security.getResource(SEC_SECRET_KEY).getValue();
+                    }
                     // search corresponding device management server
                     for (LwM2mObjectInstance server : servers.getInstances().values()) {
                         if (info.serverId == (Long) server.getResource(SRV_SERVER_ID).getValue()) {
@@ -85,12 +92,27 @@ public class ServersInfoExtractor {
                             break;
                         }
                     }
-
                 }
             } catch (URISyntaxException e) {
                 LOG.error(String.format("Invalid URI %s", (String) security.getResource(SEC_SERVER_URI).getValue()), e);
             }
         }
         return infos;
+    }
+
+    public static DmServerInfo getDMServerInfo(Map<Integer, LwM2mObjectEnabler> objectEnablers, Long shortID) {
+        ServersInfo info = getInfo(objectEnablers);
+        if (info == null)
+            return null;
+
+        return info.deviceMangements.get(shortID);
+    }
+
+    public static ServerInfo getBootstrapServerInfo(Map<Integer, LwM2mObjectEnabler> objectEnablers) {
+        ServersInfo info = getInfo(objectEnablers);
+        if (info == null)
+            return null;
+
+        return info.bootstrap;
     }
 }

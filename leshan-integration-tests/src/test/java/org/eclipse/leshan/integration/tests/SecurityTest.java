@@ -112,26 +112,23 @@ public class SecurityTest {
         // Ensure we can send a read request
         helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1));
 
-        // Pause the client
-        // helper.client.stop(false);
-
         // Add new credential to the server
         helper.getSecurityStore().add(SecurityInfo.newPreSharedKeyInfo(GOOD_ENDPOINT, "anotherPSK", GOOD_PSK_KEY));
 
+        // Create new session with new credentials at client side.
         // Get connector
-        Endpoint endpoint = helper.client.getCoapServer().getEndpoint(helper.client.getSecuredAddress());
+        Endpoint endpoint = helper.client.getCoapServer().getEndpoint(helper.client.getAddress());
         DTLSConnector connector = (DTLSConnector) ((CoapEndpoint) endpoint).getConnector();
         // Clear DTLS session to force new handshake
         connector.clearConnectionState();
-        // Change PSK idea
-        helper.setNewPsk(helper.client, "anotherPSK");
+        // Change PSK id
+        helper.setNewPsk("anotherPSK", GOOD_PSK_KEY);
         // restart connector
         connector.start();
         // send and empty message to force a new handshake with new credentials
         SimpleMessageCallback callback = new SimpleMessageCallback();
         connector.send(RawData.outbound(new byte[0], new AddressEndpointContext(helper.server.getSecuredAddress()),
                 callback, false));
-
         // Wait until new handshake DTLS is done
         EndpointContext endpointContext = callback.getEndpointContext(1000);
         assertEquals(((PreSharedKeyIdentity) endpointContext.getPeerIdentity()).getIdentity(), "anotherPSK");

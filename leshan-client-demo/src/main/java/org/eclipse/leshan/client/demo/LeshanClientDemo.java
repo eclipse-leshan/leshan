@@ -71,9 +71,6 @@ public class LeshanClientDemo {
         options.addOption("lh", true, "Set the local CoAP address of the Client.\n  Default: any local address.");
         options.addOption("lp", true,
                 "Set the local CoAP port of the Client.\n  Default: A valid port value is between 0 and 65535.");
-        options.addOption("slh", true, "Set the secure local CoAP address of the Client.\nDefault: any local address.");
-        options.addOption("slp", true,
-                "Set the secure local CoAP port of the Client.\nDefault: A valid port value is between 0 and 65535.");
         options.addOption("u", true, String.format("Set the LWM2M or Bootstrap server URL.\nDefault: localhost:%d.",
                 LwM2m.DEFAULT_COAP_PORT));
         options.addOption("i", true,
@@ -160,16 +157,6 @@ public class LeshanClientDemo {
             localPort = Integer.parseInt(cl.getOptionValue("lp"));
         }
 
-        // get secure local address
-        String secureLocalAddress = null;
-        int secureLocalPort = 0;
-        if (cl.hasOption("slh")) {
-            secureLocalAddress = cl.getOptionValue("slh");
-        }
-        if (cl.hasOption("slp")) {
-            secureLocalPort = Integer.parseInt(cl.getOptionValue("slp"));
-        }
-
         Float latitude = null;
         Float longitude = null;
         Float scaleFactor = 1.0f;
@@ -201,13 +188,12 @@ public class LeshanClientDemo {
             }
         }
 
-        createAndStartClient(endpoint, localAddress, localPort, secureLocalAddress, secureLocalPort, cl.hasOption("b"),
-                serverURI, pskIdentity, pskKey, latitude, longitude, scaleFactor);
+        createAndStartClient(endpoint, localAddress, localPort, cl.hasOption("b"), serverURI, pskIdentity, pskKey,
+                latitude, longitude, scaleFactor);
     }
 
-    public static void createAndStartClient(String endpoint, String localAddress, int localPort,
-            String secureLocalAddress, int secureLocalPort, boolean needBootstrap, String serverURI, byte[] pskIdentity,
-            byte[] pskKey, Float latitude, Float longitude, float scaleFactor) {
+    public static void createAndStartClient(String endpoint, String localAddress, int localPort, boolean needBootstrap,
+            String serverURI, byte[] pskIdentity, byte[] pskKey, Float latitude, Float longitude, float scaleFactor) {
 
         locationInstance = new MyLocation(latitude, longitude, scaleFactor);
 
@@ -254,17 +240,8 @@ public class LeshanClientDemo {
         // Create client
         LeshanClientBuilder builder = new LeshanClientBuilder(endpoint);
         builder.setLocalAddress(localAddress, localPort);
-        builder.setLocalSecureAddress(secureLocalAddress, secureLocalPort);
         builder.setObjects(enablers);
         builder.setCoapConfig(coapConfig);
-        // if we don't use bootstrap, client will always use the same unique endpoint
-        // so we can disable the other one.
-        if (!needBootstrap) {
-            if (pskIdentity == null)
-                builder.disableSecuredEndpoint();
-            else
-                builder.disableUnsecuredEndpoint();
-        }
         final LeshanClient client = builder.build();
 
         LOG.info("Press 'w','a','s','d' to change reported Location ({},{}).", locationInstance.getLatitude(),

@@ -20,7 +20,6 @@ import java.net.InetSocketAddress;
 import org.eclipse.californium.core.coap.MessageObserver;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
-import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.client.request.LwM2mRequestSender;
 import org.eclipse.leshan.core.californium.AsyncRequestObserver;
 import org.eclipse.leshan.core.californium.SyncRequestObserver;
@@ -31,12 +30,10 @@ import org.eclipse.leshan.core.response.ResponseCallback;
 
 public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
-    private final Endpoint unsecuredEndpoint;
-    private final Endpoint securedEndpoint;
+    private final CaliforniumEndpointsManager endpointsManager;
 
-    public CaliforniumLwM2mRequestSender(Endpoint securedEndpoint, Endpoint unsecuredEndpoint) {
-        this.securedEndpoint = securedEndpoint;
-        this.unsecuredEndpoint = unsecuredEndpoint;
+    public CaliforniumLwM2mRequestSender(CaliforniumEndpointsManager endpointsManager) {
+        this.endpointsManager = endpointsManager;
     }
 
     @Override
@@ -60,10 +57,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         coapRequest.addMessageObserver(syncMessageObserver);
 
         // Send CoAP request asynchronously
-        if (secure)
-            securedEndpoint.sendRequest(coapRequest);
-        else
-            unsecuredEndpoint.sendRequest(coapRequest);
+        endpointsManager.getEndpoint(null).sendRequest(coapRequest);
 
         // Wait for response, then return it
         return syncMessageObserver.waitForResponse();
@@ -91,9 +85,6 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         coapRequest.addMessageObserver(obs);
 
         // Send CoAP request asynchronously
-        if (secure)
-            securedEndpoint.sendRequest(coapRequest);
-        else
-            unsecuredEndpoint.sendRequest(coapRequest);
+        endpointsManager.getEndpoint(null).sendRequest(coapRequest);
     }
 }
