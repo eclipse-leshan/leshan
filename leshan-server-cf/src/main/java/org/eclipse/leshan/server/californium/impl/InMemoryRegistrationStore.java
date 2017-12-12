@@ -17,6 +17,8 @@
  *                                                     ObservationUtil.shallowClone.
  *                                                     Reuse already created Key in
  *                                                     setContext().
+ *     Achim Kraus (Bosch Software Innovations GmbH) - rename CorrelationContext to
+ *                                                     EndpointContext
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
@@ -38,7 +40,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.eclipse.californium.core.observe.ObservationUtil;
-import org.eclipse.californium.elements.CorrelationContext;
+import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.Startable;
@@ -315,7 +317,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     }
 
     @Override
-    public void setContext(byte[] token, CorrelationContext ctx) {
+    public void setContext(byte[] token, EndpointContext ctx) {
         try {
             lock.writeLock().lock();
             Key key = new Key(token);

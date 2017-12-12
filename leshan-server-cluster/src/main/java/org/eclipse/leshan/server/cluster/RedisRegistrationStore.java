@@ -12,6 +12,8 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - rename CorrelationContext to
+ *                                                     EndpointContext
  *******************************************************************************/
 package org.eclipse.leshan.server.cluster;
 
@@ -33,7 +35,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.californium.elements.CorrelationContext;
+import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.Startable;
@@ -594,7 +596,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     }
 
     @Override
-    public void setContext(byte[] token, CorrelationContext correlationContext) {
+    public void setContext(byte[] token, EndpointContext correlationContext) {
         // TODO should be implemented
     }
 

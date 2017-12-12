@@ -12,6 +12,8 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add support for californium
+ *                                                     endpoint context
  *******************************************************************************/
 package org.eclipse.leshan.core.californium;
 
@@ -24,6 +26,8 @@ import java.util.regex.Pattern;
 import javax.security.auth.x500.X500Principal;
 
 import org.eclipse.californium.core.server.resources.CoapExchange;
+import org.eclipse.californium.elements.AddressEndpointContext;
+import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.scandium.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.scandium.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.scandium.auth.X509CertPath;
@@ -32,9 +36,9 @@ import org.eclipse.leshan.core.request.Identity;
 public class ExchangeUtil {
 
     public static Identity extractIdentity(CoapExchange exchange) {
-        InetSocketAddress peerAddress = new InetSocketAddress(exchange.getSourceAddress(), exchange.getSourcePort());
-
-        Principal senderIdentity = exchange.advanced().getRequest().getSenderIdentity();
+        EndpointContext context = exchange.advanced().getRequest().getSourceContext();
+        InetSocketAddress peerAddress = context.getPeerAddress();
+        Principal senderIdentity = context.getPeerIdentity();
         if (senderIdentity != null) {
             if (senderIdentity instanceof PreSharedKeyIdentity) {
                 return Identity.psk(peerAddress, senderIdentity.getName());
@@ -43,17 +47,53 @@ public class ExchangeUtil {
                 return Identity.rpk(peerAddress, publicKey);
             } else if (senderIdentity instanceof X500Principal || senderIdentity instanceof X509CertPath) {
                 // Extract common name
-                Matcher endpointMatcher = Pattern.compile("CN=(.*?)(,|$)").matcher(senderIdentity.getName());
-                if (endpointMatcher.find()) {
-                    String x509CommonName = endpointMatcher.group(1);
-                    return Identity.x509(peerAddress, x509CommonName);
-                } else {
-                    throw new IllegalStateException(
-                            "Unable to extract sender identity : can not get common name in certificate");
-                }
+                String x509CommonName = extractCN(senderIdentity.getName());
+                return Identity.x509(peerAddress, x509CommonName);
             }
             throw new IllegalStateException("Unable to extract sender identity : unexpected type of Principal");
         }
         return Identity.unsecure(peerAddress);
+    }
+
+    /**
+     * Create californium endpoint context from leshan identity.
+     * 
+     * @param identity
+     *            leshan identity received on last registration.
+     * @return californium endpoint context for leshan identity
+     */
+    public static EndpointContext extractContext(Identity identity) {
+        Principal peerIdentity = null;
+        if (identity != null) {
+            if (identity.isPSK()) {
+                peerIdentity = new PreSharedKeyIdentity(identity.getPskIdentity());
+            } else if (identity.isRPK()) {
+                peerIdentity = new RawPublicKeyIdentity(identity.getRawPublicKey());
+            } else if (identity.isX509()) {
+                /* simplify distinguished name to CN= part */
+                peerIdentity = new X500Principal("CN=" + identity.getX509CommonName());
+            }
+        }
+        return new AddressEndpointContext(identity.getPeerAddress(), peerIdentity);
+    }
+
+    /**
+     * Extract "common name" from "distinguished name".
+     * 
+     * @param dn
+     *            distinguished name
+     * @return common name
+     * @throws IllegalStateException
+     *             if no CN is contained in DN.
+     */
+    public static String extractCN(String dn) {
+        // Extract common name
+        Matcher endpointMatcher = Pattern.compile("CN=(.*?)(,|$)").matcher(dn);
+        if (endpointMatcher.find()) {
+            return endpointMatcher.group(1);
+        } else {
+            throw new IllegalStateException(
+                    "Unable to extract sender identity : can not get common name in certificate");
+        }
     }
 }

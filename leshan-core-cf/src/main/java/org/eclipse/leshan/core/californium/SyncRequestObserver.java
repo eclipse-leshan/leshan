@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - set exception in onSendError
  *******************************************************************************/
 package org.eclipse.leshan.core.californium;
 
@@ -22,6 +23,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
+import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.request.exception.RequestRejectedException;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.slf4j.Logger;
@@ -72,6 +74,12 @@ public abstract class SyncRequestObserver<T extends LwM2mResponse> extends Abstr
     @Override
     public void onReject() {
         exception.set(new RequestRejectedException("Request %s rejected", coapRequest.getURI()));
+        latch.countDown();
+    }
+
+    @Override
+    public void onSendError(Throwable error) {
+        exception.set(new InvalidRequestException("Request %s failed with '%s'", coapRequest, error.getMessage()));
         latch.countDown();
     }
 

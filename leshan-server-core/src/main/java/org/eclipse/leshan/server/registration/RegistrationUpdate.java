@@ -12,15 +12,18 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add Identity as destination
  *******************************************************************************/
 package org.eclipse.leshan.server.registration;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Date;
 
 import org.eclipse.leshan.Link;
 import org.eclipse.leshan.core.request.BindingMode;
+import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.util.Validate;
 
 /**
@@ -30,6 +33,7 @@ public class RegistrationUpdate {
 
     private final String registrationId;
 
+    private final Identity identity;
     private final InetAddress address;
     private final Integer port;
 
@@ -40,13 +44,17 @@ public class RegistrationUpdate {
 
     public RegistrationUpdate(String registrationId, InetAddress address, Integer port, Long lifeTimeInSec, String smsNumber,
             BindingMode bindingMode, Link[] objectLinks) {
-        Validate.notNull(registrationId);
-        Validate.notNull(address);
-        Validate.notNull(port);
-        this.registrationId = registrationId;
-        this.address = address;
-        this.port = port;
+        this(registrationId, Identity.unsecure(new InetSocketAddress(address, port)), lifeTimeInSec, smsNumber, bindingMode, objectLinks);
+    }
 
+    public RegistrationUpdate(String registrationId, Identity identity, Long lifeTimeInSec, String smsNumber,
+            BindingMode bindingMode, Link[] objectLinks) {
+        Validate.notNull(registrationId);
+        Validate.notNull(identity);
+        this.registrationId = registrationId;
+        this.identity = identity;
+        this.address = identity.getPeerAddress().getAddress();
+        this.port = identity.getPeerAddress().getPort();
         this.lifeTimeInSec = lifeTimeInSec;
         this.smsNumber = smsNumber;
         this.bindingMode = bindingMode;
@@ -60,8 +68,7 @@ public class RegistrationUpdate {
      * @return the updated registration
      */
     public Registration update(Registration registration) {
-        InetAddress address = this.address != null ? this.address : registration.getAddress();
-        int port = this.port != null ? this.port : registration.getPort();
+        Identity identity = this.identity != null ? this.identity : registration.getIdentity();
         Link[] linkObject = this.objectLinks != null ? this.objectLinks : registration.getObjectLinks();
         long lifeTimeInSec = this.lifeTimeInSec != null ? this.lifeTimeInSec : registration.getLifeTimeInSec();
         BindingMode bindingMode = this.bindingMode != null ? this.bindingMode : registration.getBindingMode();
@@ -72,7 +79,7 @@ public class RegistrationUpdate {
         Date lastUpdate = new Date();
 
         Registration.Builder builder = new Registration.Builder(registration.getId(), registration.getEndpoint(),
-                address, port, registration.getRegistrationEndpointAddress());
+                identity, registration.getRegistrationEndpointAddress());
 
         builder.lwM2mVersion(registration.getLwM2mVersion()).lifeTimeInSec(lifeTimeInSec).smsNumber(smsNumber)
                 .bindingMode(bindingMode).objectLinks(linkObject).registrationDate(registration.getRegistrationDate())

@@ -13,6 +13,8 @@
  * Contributors:
  *     Zebra Technologies - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - replace close() with destroy()
+ *     Achim Kraus (Bosch Software Innovations GmbH) - use destination context
+ *                                                     instead of address for response
  *******************************************************************************/
 
 package org.eclipse.leshan.integration.tests;
@@ -33,6 +35,8 @@ import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.serialization.UdpDataSerializer;
 import org.eclipse.californium.elements.Connector;
+import org.eclipse.californium.elements.AddressEndpointContext;
+import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.RawData;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.californium.LeshanClient;
@@ -339,8 +343,8 @@ public class ObserveTest {
         OptionSet options = new OptionSet().setContentFormat(contentFormat)
                 .setObserve(firstCoapResponse.getOptions().getObserve() + 1);
         response.setOptions(options);
-        response.setDestination(helper.server.getUnsecuredAddress().getAddress());
-        response.setDestinationPort(helper.server.getUnsecuredAddress().getPort());
+        EndpointContext context = new AddressEndpointContext(helper.server.getUnsecuredAddress().getAddress(), helper.server.getUnsecuredAddress().getPort());
+        response.setDestinationContext(context);
 
         // serialize response
         UdpDataSerializer serializer = new UdpDataSerializer();
