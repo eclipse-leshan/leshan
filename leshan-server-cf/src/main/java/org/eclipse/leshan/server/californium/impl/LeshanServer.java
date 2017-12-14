@@ -45,6 +45,8 @@ import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationService;
+import org.eclipse.leshan.server.queue.QueueModeService;
+import org.eclipse.leshan.server.queue.QueueModeServiceImpl;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
 import org.eclipse.leshan.server.registration.RegistrationListener;
@@ -78,10 +80,14 @@ public class LeshanServer implements LwM2mServer {
     private static final Logger LOG = LoggerFactory.getLogger(LeshanServer.class);
 
     private final LwM2mRequestSender requestSender;
+    
+    private final LwM2mRequestSender qModeRequestSender;
 
     private final RegistrationServiceImpl registrationService;
 
     private final ObservationServiceImpl observationService;
+    
+    private final QueueModeServiceImpl queueModeService;
 
     private final SecurityStore securityStore;
 
@@ -124,6 +130,7 @@ public class LeshanServer implements LwM2mServer {
         this.securityStore = securityStore;
         this.observationService = new ObservationServiceImpl(registrationStore, modelProvider, decoder);
         this.modelProvider = modelProvider;
+        this.queueModeService = new QueueModeServiceImpl();
 
         // Cancel observations on client unregistering
         this.registrationService.addListener(new RegistrationListener() {
@@ -177,9 +184,13 @@ public class LeshanServer implements LwM2mServer {
                 new RegistrationHandler(this.registrationService, authorizer));
         coapServer.add(rdResource);
 
-        // create sender
+        // create senders
         requestSender = new CaliforniumLwM2mRequestSender(endpoints, this.observationService, modelProvider, encoder,
                 decoder);
+        
+        qModeRequestSender = new LwM2mQueueModeRequestSender(endpoints, this.observationService, modelProvider, encoder,
+                decoder);
+
     }
 
     @Override
@@ -249,6 +260,12 @@ public class LeshanServer implements LwM2mServer {
     public ObservationService getObservationService() {
         return this.observationService;
     }
+    
+    @Override
+    public QueueModeService getQueueModeService() {
+        return this.queueModeService;
+    }
+
 
     @Override
     public SecurityStore getSecurityStore() {
@@ -263,19 +280,34 @@ public class LeshanServer implements LwM2mServer {
     @Override
     public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request)
             throws InterruptedException {
-        return requestSender.send(destination, request, null);
+    	if (destination.usesQueueMode()) {
+            return qModeRequestSender.send(destination, request, null);
+        } else {
+            return requestSender.send(destination, request, null);
+        }
+
     }
 
     @Override
     public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request, long timeout)
             throws InterruptedException {
-        return requestSender.send(destination, request, timeout);
+    	if (destination.usesQueueMode()) {
+            return qModeRequestSender.send(destination, request, timeout);
+        } else {
+            return requestSender.send(destination, request, timeout);
+        }
+
     }
 
     @Override
     public <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
-        requestSender.send(destination, request, responseCallback, errorCallback);
+    	 if (destination.usesQueueMode()) {
+    		 qModeRequestSender.send(destination, request, responseCallback, errorCallback);
+         } else {
+             requestSender.send(destination, request, responseCallback, errorCallback);
+         }
+
     }
 
     /**

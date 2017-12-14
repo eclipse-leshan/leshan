@@ -26,6 +26,7 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationService;
+import org.eclipse.leshan.server.queue.QueueModeService;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationService;
 import org.eclipse.leshan.server.security.SecurityStore;
@@ -122,6 +123,12 @@ public interface LwM2mServer {
      * observation or cancel it.
      */
     ObservationService getObservationService();
+
+    /**
+     * Get the queue mode service to access to the queue mode listeners. You can use this object for listening the
+     * client state.
+     */
+    QueueModeService getQueueModeService();
 
     /**
      * Get the SecurityStore containing of security information.

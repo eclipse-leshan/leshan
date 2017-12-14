@@ -75,9 +75,9 @@ public class RegistrationUpdate {
                 address, port, registration.getRegistrationEndpointAddress());
 
         builder.lwM2mVersion(registration.getLwM2mVersion()).lifeTimeInSec(lifeTimeInSec).smsNumber(smsNumber)
-                .bindingMode(bindingMode).objectLinks(linkObject).registrationDate(registration.getRegistrationDate())
-                .lastUpdate(lastUpdate)
-                .additionalRegistrationAttributes(registration.getAdditionalRegistrationAttributes());
+        .bindingMode(bindingMode).objectLinks(linkObject).registrationDate(registration.getRegistrationDate())
+        .lastUpdate(lastUpdate)
+        .additionalRegistrationAttributes(registration.getAdditionalRegistrationAttributes()).lwM2mQueue(registration.getLwM2mQueue());
 
         return builder.build();
 

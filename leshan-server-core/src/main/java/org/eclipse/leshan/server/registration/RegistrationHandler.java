@@ -18,6 +18,7 @@ package org.eclipse.leshan.server.registration;
 import java.net.InetSocketAddress;
 import java.util.Date;
 
+import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.RegisterRequest;
@@ -27,6 +28,7 @@ import org.eclipse.leshan.core.response.RegisterResponse;
 import org.eclipse.leshan.core.response.UpdateResponse;
 import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
 import org.eclipse.leshan.server.impl.SendableResponse;
+import org.eclipse.leshan.server.queue.LwM2mQueue;
 import org.eclipse.leshan.server.security.Authorizer;
 import org.eclipse.leshan.util.RandomStringUtils;
 import org.slf4j.Logger;
@@ -61,6 +63,11 @@ public class RegistrationHandler {
                 .additionalRegistrationAttributes(registerRequest.getAdditionalAttributes());
 
         final Registration registration = builder.build();
+        
+        if(registerRequest.getBindingMode() == BindingMode.UQ) {
+        	registration.setLwM2mQueue(new LwM2mQueue(registration));
+        }
+
 
         // We must check if the client is using the right identity.
         if (!authorizer.isAuthorized(registerRequest, registration, sender)) {
