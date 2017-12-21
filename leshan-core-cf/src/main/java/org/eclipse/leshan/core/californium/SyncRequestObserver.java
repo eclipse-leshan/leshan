@@ -34,6 +34,7 @@ public abstract class SyncRequestObserver<T extends LwM2mResponse> extends Abstr
     private CountDownLatch latch = new CountDownLatch(1);
     private AtomicReference<T> ref = new AtomicReference<>(null);
     private AtomicBoolean coapTimeout = new AtomicBoolean(false);
+    private AtomicBoolean acknowledged = new AtomicBoolean(false);
     private AtomicReference<RuntimeException> exception = new AtomicReference<>();
     private Long timeout;
 
@@ -75,15 +76,25 @@ public abstract class SyncRequestObserver<T extends LwM2mResponse> extends Abstr
         latch.countDown();
     }
 
+    @Override
+    public void onAcknowledgement() {
+        acknowledged.set(true);
+        super.onAcknowledgement();
+    }
+    
     public T waitForResponse() throws InterruptedException {
         try {
-            boolean timeElapsed = false;
+            boolean timedOut = false;
             if (timeout != null) {
-                timeElapsed = !latch.await(timeout, TimeUnit.MILLISECONDS);
+                do {
+                    acknowledged.set(false);
+                    boolean latchResult = latch.await(timeout, TimeUnit.MILLISECONDS);
+                    timedOut = !latchResult && !acknowledged.get();
+                } while (!timedOut && acknowledged.get());
             } else {
                 latch.await();
             }
-            if (timeElapsed || coapTimeout.get()) {
+            if (timedOut || coapTimeout.get()) {
                 coapRequest.cancel();
             }
         } finally {
