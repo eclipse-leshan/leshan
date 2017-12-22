@@ -21,8 +21,11 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.eclipse.californium.core.network.CoapEndpoint;
+import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
 import org.eclipse.californium.scandium.DTLSConnector;
@@ -36,6 +39,7 @@ import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.LwM2mServer;
+import org.eclipse.leshan.server.californium.impl.CaliforniumLwM2mRequestSender;
 import org.eclipse.leshan.server.californium.impl.InMemoryRegistrationStore;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.californium.impl.LwM2mPskStore;
@@ -44,6 +48,7 @@ import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StandardModelProvider;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
+import org.eclipse.leshan.server.request.LwM2mRequestSender;
 import org.eclipse.leshan.server.security.Authorizer;
 import org.eclipse.leshan.server.security.DefaultAuthorizer;
 import org.eclipse.leshan.server.security.SecurityInfo;
@@ -80,6 +85,7 @@ public class LeshanServerBuilder {
     private DtlsConnectorConfig.Builder dtlsConfigBuilder;
 
     private EndpointFactory endpointFactory;
+    private LwM2mRequestSenderFactory senderFactory;
 
     private boolean noSecuredEndpoint;
     private boolean noUnsecuredEndpoint;
@@ -287,6 +293,14 @@ public class LeshanServerBuilder {
     }
 
     /**
+     * Used to create custom CoAP Request sender, this is only for advanced users. <br>
+     */
+    public LeshanServerBuilder setRequestSender(LwM2mRequestSenderFactory senderFactory) {
+        this.senderFactory = senderFactory;
+        return this;
+    }
+
+    /**
      * deactivate unsecured CoAP endpoint
      */
     public LeshanServerBuilder disableUnsecuredEndpoint() {
@@ -414,6 +428,7 @@ public class LeshanServerBuilder {
 
         // create endpoints
         CoapEndpoint unsecuredEndpoint = null;
+        Set<Endpoint> endpoints = new HashSet<>();
         if (!noUnsecuredEndpoint) {
             if (endpointFactory != null) {
                 unsecuredEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig,
@@ -421,6 +436,7 @@ public class LeshanServerBuilder {
             } else {
                 unsecuredEndpoint = new CoapEndpoint(localAddress, coapConfig, registrationStore);
             }
+            endpoints.add(unsecuredEndpoint);
         }
 
         CoapEndpoint securedEndpoint = null;
@@ -430,6 +446,7 @@ public class LeshanServerBuilder {
             } else {
                 securedEndpoint = new CoapEndpoint(new DTLSConnector(dtlsConfig), coapConfig, registrationStore, null);
             }
+            endpoints.add(securedEndpoint);
         }
 
         if (securedEndpoint == null && unsecuredEndpoint == null) {
@@ -437,7 +454,14 @@ public class LeshanServerBuilder {
                     "All CoAP enpoints are deactivated, at least one endpoint should be activated");
         }
 
+        LwM2mRequestSender sender;
+        if (senderFactory != null) {
+            sender = senderFactory.create(endpoints, modelProvider, encoder, decoder);
+        } else {
+            sender = new CaliforniumLwM2mRequestSender(endpoints, modelProvider, encoder, decoder);
+        }
+
         return new LeshanServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer,
-                modelProvider, encoder, decoder, coapConfig);
+                modelProvider, encoder, decoder, coapConfig, sender);
     }
 }

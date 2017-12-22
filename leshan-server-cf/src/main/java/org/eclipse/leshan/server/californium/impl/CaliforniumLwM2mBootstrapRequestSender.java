@@ -72,7 +72,7 @@ public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapReq
                         secure ? secureEndpoint.getAddress() : nonSecureEndpoint.getAddress()).build();
                 // Build LwM2m response
                 LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<>(coapRequest, coapResponse,
-                        registration, model, null, decoder);
+                        registration, model, decoder);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }
@@ -111,7 +111,7 @@ public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapReq
 
                 // Build LwM2m response
                 LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<>(coapRequest, coapResponse,
-                        registration, model, null, decoder);
+                        registration, model, decoder);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }

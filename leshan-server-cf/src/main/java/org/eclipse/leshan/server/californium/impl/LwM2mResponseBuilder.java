@@ -67,16 +67,14 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     private LwM2mResponse lwM2mresponse;
     private final Request coapRequest;
     private final Response coapResponse;
-    private final ObservationServiceImpl observationService;
     private final Registration registration;
     private final LwM2mModel model;
     private final LwM2mNodeDecoder decoder;
 
     public LwM2mResponseBuilder(Request coapRequest, Response coapResponse, Registration registration, LwM2mModel model,
-            ObservationServiceImpl observationService, LwM2mNodeDecoder decoder) {
+            LwM2mNodeDecoder decoder) {
         this.coapRequest = coapRequest;
         this.coapResponse = coapResponse;
-        this.observationService = observationService;
         this.registration = registration;
         this.model = model;
         this.decoder = decoder;
@@ -215,7 +213,6 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                 // observe request successful
                 Observation observation = new Observation(coapRequest.getToken(), registration.getId(),
                         request.getPath(), request.getContext());
-                observationService.addObservation(registration, observation);
                 // add the observation to an ObserveResponse instance
                 lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), content, null,
                         observation, null, coapResponse);
