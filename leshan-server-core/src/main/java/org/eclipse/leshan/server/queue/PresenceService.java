@@ -18,19 +18,28 @@ package org.eclipse.leshan.server.queue;
 
 import org.eclipse.leshan.server.registration.Registration;
 
-public interface QueueModeListener {
-    
-		/**
-	     * This method is invoked when the LWM2M client with the given endpoint state changes from sleeping to awake. 
+public interface PresenceService {
+	 /**
+	     * Add the listener to get notified when the LWM2M client state goes to sleeping or awake.
 	     * 
-	     * @param registration data of the lwm2m client.
+	     * @param listener target to notify
 	     */
-	    void onAwake(Registration registration);
+	    void addListener(PresenceListener listener);
 	
 	    /**
-	     * This method is invoked when the LWM2M client with the given endpoint state changes from awake to sleeping. 
+	     * Remove the listener previously added. This method has no effect if the given listener is not previously added.
 	     * 
-	     * @param registration data of the lwm2m client.
+	     * @param listener target to be removed.
 	     */
-	    void onSleeping(Registration registration);
+	    void removeListener(PresenceListener listener);
+	    
+	   /**
+	    * Notify all the queue mode listeners that the state of the client has changed from awake to sleeping.
+	    */
+	    void notifySleeping(Registration registration);
+	    
+	    /**
+	    * Notify all the queue mode listeners that the state of the client has changed from sleeping to awake.
+	    */
+	    void notifyAwake(Registration registration);
 }

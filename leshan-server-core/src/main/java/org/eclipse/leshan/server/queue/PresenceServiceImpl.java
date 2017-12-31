@@ -20,38 +20,36 @@ import java.util.List;
 
 import org.eclipse.leshan.server.registration.Registration;
 
-public class QueueModeServiceImpl implements QueueModeService {
-    
-    private final List<QueueModeListener> listeners;
-	
-	public QueueModeServiceImpl() {
-		listeners = new ArrayList<>();
-	}
+public class PresenceServiceImpl implements PresenceService {
 
-	@Override
-	public void addListener(QueueModeListener listener) {
-			listeners.add(listener);
-	}
+    private final List<PresenceListener> listeners;
 
-	@Override
-	public void removeListener(QueueModeListener listener) {
-		listeners.remove(listener);
-	}
+    public PresenceServiceImpl() {
+        listeners = new ArrayList<>();
+    }
 
-	@Override
-	public void notifySleeping(Registration registration) {
-		for (QueueModeListener listener : listeners) {
-			listener.onSleeping(registration);
-		}
-	}
+    @Override
+    public void addListener(PresenceListener listener) {
+        listeners.add(listener);
+    }
 
-	@Override
-	public void notifyAwake(Registration registration) {
-		for (QueueModeListener listener : listeners) {
-			listener.onAwake(registration);
-		}
-	}
+    @Override
+    public void removeListener(PresenceListener listener) {
+        listeners.remove(listener);
+    }
 
-	
+    @Override
+    public void notifySleeping(Registration registration) {
+        for (PresenceListener listener : listeners) {
+            listener.onSleeping(registration);
+        }
+    }
+
+    @Override
+    public void notifyAwake(Registration registration) {
+        for (PresenceListener listener : listeners) {
+            listener.onAwake(registration);
+        }
+    }
 
 }

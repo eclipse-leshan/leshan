@@ -25,6 +25,8 @@ import java.util.concurrent.Semaphore;
 
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.util.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class that contains all the necessary elements to handle the queue mode. Every registration object that uses Queue
@@ -32,6 +34,8 @@ import org.eclipse.leshan.util.Validate;
  */
 
 public class LwM2mQueue {
+
+    private static final Logger LOG = LoggerFactory.getLogger(LwM2mQueue.class);
 
     /* The state of the client: Awake or Sleeping */
     private ClientState state;
@@ -48,7 +52,7 @@ public class LwM2mQueue {
     /* Elements for notifying the listeners */
     private Registration registration;
 
-    private QueueModeService queueModeServ;
+    private PresenceService presenceServ;
 
     public LwM2mQueue(Registration registration) {
         Validate.notNull(registration);
@@ -77,7 +81,7 @@ public class LwM2mQueue {
         if (state == ClientState.SLEEPING) {
             state = ClientState.AWAKE;
         }
-        queueModeServ.notifyAwake(registration);
+        presenceServ.notifyAwake(registration);
     }
 
     /**
@@ -87,7 +91,7 @@ public class LwM2mQueue {
     public void setSleeping() {
         if (state == ClientState.AWAKE) {
             state = ClientState.SLEEPING;
-            queueModeServ.notifySleeping(registration);
+            presenceServ.notifySleeping(registration);
         }
     }
 
@@ -102,12 +106,12 @@ public class LwM2mQueue {
 
     /* Getter and setter for the Queue Mode Service */
 
-    public QueueModeService getQueueModeServ() {
-        return queueModeServ;
+    public PresenceService getPresenceServ() {
+        return presenceServ;
     }
 
-    public void setQueueModeServ(QueueModeService queueModeServ) {
-        this.queueModeServ = queueModeServ;
+    public void setPresenceServ(PresenceService presenceServ) {
+        this.presenceServ = presenceServ;
     }
 
     /* Control of the time the client waits before going to sleep */
@@ -126,27 +130,30 @@ public class LwM2mQueue {
     public void startClientAwakeTimer() {
         try {
             timerSemaphore.acquire();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        if (clientAwakeTime != 0) {
-            if (clientAwakeTimer != null) {
-                clientAwakeTimer.cancel();
-                clientAwakeTimer.purge();
-            }
-            clientAwakeTimer = new Timer();
-            clientAwakeTask = new TimerTask() {
-
-                @Override
-                public void run() {
-                    if (!isClientSleeping()) {
-                        setSleeping();
+            try {
+                if (clientAwakeTime != 0) {
+                    if (clientAwakeTimer != null) {
+                        clientAwakeTimer.cancel();
+                        clientAwakeTimer.purge();
                     }
+                    clientAwakeTimer = new Timer();
+                    clientAwakeTask = new TimerTask() {
+
+                        @Override
+                        public void run() {
+                            if (!isClientSleeping()) {
+                                setSleeping();
+                            }
+                        }
+                    };
+                    clientAwakeTimer.schedule(clientAwakeTask, clientAwakeTime);
                 }
-            };
-            clientAwakeTimer.schedule(clientAwakeTask, clientAwakeTime);
+            } finally {
+                timerSemaphore.release();
+            }
+        } catch (InterruptedException e) {
+            LOG.warn("Unable to restart the client timer due to semaphore exception", e);
         }
-        timerSemaphore.release();
     }
 
     /**
@@ -154,15 +161,19 @@ public class LwM2mQueue {
      */
     private void stopClientAwakeTimer() {
         try {
-            timerSemaphore.acquire();
+            try {
+                timerSemaphore.acquire();
+
+                if (clientAwakeTimer != null) {
+                    clientAwakeTimer.cancel();
+                    clientAwakeTimer.purge();
+                }
+            } finally {
+                timerSemaphore.release();
+            }
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            LOG.warn("Unable to stop the client timer due to semaphore exception", e);
         }
-        if (clientAwakeTimer != null) {
-            clientAwakeTimer.cancel();
-            clientAwakeTimer.purge();
-        }
-        timerSemaphore.release();
     }
 
     /**

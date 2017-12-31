@@ -39,8 +39,12 @@ import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
 import org.eclipse.leshan.util.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LwM2mQueueModeRequestSender implements LwM2mRequestSender {
+
+    private static final Logger LOG = LoggerFactory.getLogger(LwM2mQueueModeRequestSender.class);
 
     private final Set<Endpoint> endpoints;
     private final ObservationServiceImpl observationService;
@@ -66,13 +70,16 @@ public class LwM2mQueueModeRequestSender implements LwM2mRequestSender {
         this.modelProvider = modelProvider;
         this.encoder = encoder;
         this.decoder = decoder;
+
     }
 
     @Override
     public <T extends LwM2mResponse> T send(final Registration destination, final DownlinkRequest<T> request,
             Long timeout) throws InterruptedException {
 
+        // If the client is sleeping, the method returns immediately before sending the request.
         if (destination.getLwM2mQueue().isClientSleeping()) {
+            LOG.info("The destination client is sleeping, request couldn't been sent.");
             return null;
         }
 
@@ -105,6 +112,8 @@ public class LwM2mQueueModeRequestSender implements LwM2mRequestSender {
         // Send CoAP request asynchronously
         Endpoint endpoint = getEndpointForClient(destination);
         endpoint.sendRequest(coapRequest);
+
+        // Restart the client awake time timer every time a new request is sent
         if (destination.usesQueueMode() && !destination.getLwM2mQueue().isClientSleeping()) {
             destination.getLwM2mQueue().startClientAwakeTimer();
         }
@@ -117,7 +126,9 @@ public class LwM2mQueueModeRequestSender implements LwM2mRequestSender {
     public <T extends LwM2mResponse> void send(final Registration destination, final DownlinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
 
+        // If the client is sleeping, the method returns immediately before sending the request.
         if (destination.getLwM2mQueue().isClientSleeping()) {
+            LOG.info("The destination client is sleeping, request couldn't been sent.");
             return;
         }
         // Retrieve the objects definition
@@ -148,6 +159,8 @@ public class LwM2mQueueModeRequestSender implements LwM2mRequestSender {
         // Send CoAP request asynchronously
         Endpoint endpoint = getEndpointForClient(destination);
         endpoint.sendRequest(coapRequest);
+
+        // Restart the client awake time timer every time a new request is sent
         if (destination.usesQueueMode() && !destination.getLwM2mQueue().isClientSleeping()) {
             destination.getLwM2mQueue().startClientAwakeTimer();
         }

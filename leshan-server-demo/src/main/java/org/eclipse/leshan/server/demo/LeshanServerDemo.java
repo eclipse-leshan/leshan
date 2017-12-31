@@ -402,14 +402,14 @@ public class LeshanServerDemo {
             ServiceInfo coapSecureServiceInfo = ServiceInfo.create("_coaps._udp.local.", "leshan", secureLocalPort, "");
             jmdns.registerService(coapSecureServiceInfo);
         }
-        
+
         /* Add the different listeners to handle the Queue Mode */
-                        
-                /* Keep track of the state of the client. Mandatory for Queue Mode handling */
-                lwServer.getRegistrationService().addListener(new LwM2mClientStateListener(lwServer));
-                
-                /* Example of a listener that is notified every time the state of the client changes */
-                lwServer.getQueueModeService().addListener(new TestQueueModeObservationListener());
+
+        /* Keep track of the state of the client. Mandatory for Queue Mode handling */
+        lwServer.getRegistrationService().addListener(new LwM2mClientStateListener(lwServer));
+
+        /* Example of a listener that is notified every time the state of the client changes */
+        lwServer.getPresenceService().addListener(new TestQueueModeObservationListener());
 
         // Start Jetty & Leshan
         lwServer.start();

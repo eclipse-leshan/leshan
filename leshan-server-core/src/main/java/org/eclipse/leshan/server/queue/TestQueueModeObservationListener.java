@@ -26,24 +26,26 @@ import org.eclipse.leshan.server.registration.Registration;
  *
  */
 
-public class TestQueueModeObservationListener implements QueueModeListener {
+public class TestQueueModeObservationListener implements PresenceListener {
 
-	public TestQueueModeObservationListener() {
-		
-	}
+    public TestQueueModeObservationListener() {
 
-	@Override
-	public void onAwake(Registration registration) {
-		DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-		System.out.println("Queue Mode Listener: client: " + registration.getEndpoint() + " is awake at " + dateFormat.format(new Date()));
+    }
 
-	}
+    @Override
+    public void onAwake(Registration registration) {
+        DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+        System.out.println("Queue Mode Listener: client: " + registration.getEndpoint() + " is awake at "
+                + dateFormat.format(new Date()));
 
-	@Override
-	public void onSleeping(Registration registration) {
-		DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-		System.out.println("Queue Mode Listener: client: " + registration.getEndpoint() + " is sleeping at " + dateFormat.format(new Date()));
+    }
 
-	}
+    @Override
+    public void onSleeping(Registration registration) {
+        DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+        System.out.println("Queue Mode Listener: client: " + registration.getEndpoint() + " is sleeping at "
+                + dateFormat.format(new Date()));
+
+    }
 
 }
