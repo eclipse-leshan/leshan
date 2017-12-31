@@ -75,6 +75,8 @@ import org.eclipse.leshan.server.demo.servlet.SecurityServlet;
 import org.eclipse.leshan.server.impl.FileSecurityStore;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StaticModelProvider;
+import org.eclipse.leshan.server.queue.LwM2mClientStateListener;
+import org.eclipse.leshan.server.queue.TestQueueModeObservationListener;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.util.Hex;
 import org.slf4j.Logger;
@@ -400,6 +402,14 @@ public class LeshanServerDemo {
             ServiceInfo coapSecureServiceInfo = ServiceInfo.create("_coaps._udp.local.", "leshan", secureLocalPort, "");
             jmdns.registerService(coapSecureServiceInfo);
         }
+
+        /* Add the different listeners to handle the Queue Mode */
+
+        /* Keep track of the state of the client. Mandatory for Queue Mode handling */
+        lwServer.getRegistrationService().addListener(new LwM2mClientStateListener(lwServer));
+
+        /* Example of a listener that is notified every time the state of the client changes */
+        lwServer.getPresenceService().addListener(new TestQueueModeObservationListener());
 
         // Start Jetty & Leshan
         lwServer.start();

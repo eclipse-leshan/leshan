@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.eclipse.leshan.Link;
 import org.eclipse.leshan.core.request.BindingMode;
+import org.eclipse.leshan.server.queue.LwM2mQueue;
 import org.eclipse.leshan.util.Validate;
 
 /**
@@ -74,7 +75,58 @@ public class Registration implements Serializable {
     private final String rootPath;
 
     private final Date lastUpdate;
+    
+    /** The LwM2m Queue Mode management object */
+    private LwM2mQueue queue;
 
+    protected Registration(String id, String endpoint, InetAddress address, int port, String lwM2mVersion,
+            Long lifetimeInSec, String smsNumber, BindingMode bindingMode, Link[] objectLinks,
+            InetSocketAddress registrationEndpointAddress,
+
+            Date registrationDate, Date lastUpdate, Map<String, String> additionalRegistrationAttributes, LwM2mQueue queue) {
+
+        Validate.notNull(id);
+        Validate.notEmpty(endpoint);
+        Validate.notNull(address);
+        Validate.notNull(port);
+        Validate.notNull(registrationEndpointAddress);
+
+        this.id = id;
+        this.endpoint = endpoint;
+        this.address = address;
+        this.port = port;
+        this.smsNumber = smsNumber;
+        this.registrationEndpointAddress = registrationEndpointAddress;
+
+        this.objectLinks = objectLinks;
+        // extract the root objects path from the object links
+        String rootPath = "/";
+        if (objectLinks != null) {
+            for (Link link : objectLinks) {
+                if (link != null && "oma.lwm2m".equals(link.getAttributes().get("rt"))) {
+                    rootPath = link.getUrl();
+                    break;
+                }
+            }
+        }
+        this.rootPath = rootPath;
+
+        this.lifeTimeInSec = lifetimeInSec == null ? DEFAULT_LIFETIME_IN_SEC : lifetimeInSec;
+        this.lwM2mVersion = lwM2mVersion == null ? DEFAULT_LWM2M_VERSION : lwM2mVersion;
+        this.bindingMode = bindingMode == null ? BindingMode.U : bindingMode;
+        this.registrationDate = registrationDate == null ? new Date() : registrationDate;
+        this.lastUpdate = lastUpdate == null ? new Date() : lastUpdate;
+        if (additionalRegistrationAttributes == null || additionalRegistrationAttributes.isEmpty()) {
+            this.additionalRegistrationAttributes = Collections.emptyMap();
+        } else {
+            // We create a new HashMap to have a real immutable map and to avoid "unmodifiableMap" encapsulation.
+            this.additionalRegistrationAttributes = Collections
+                    .unmodifiableMap(new HashMap<>(additionalRegistrationAttributes));
+        }
+        this.queue = queue;
+
+    }
+    
     protected Registration(String id, String endpoint, InetAddress address, int port, String lwM2mVersion,
             Long lifetimeInSec, String smsNumber, BindingMode bindingMode, Link[] objectLinks,
             InetSocketAddress registrationEndpointAddress,
@@ -119,6 +171,7 @@ public class Registration implements Serializable {
             this.additionalRegistrationAttributes = Collections
                     .unmodifiableMap(new HashMap<>(additionalRegistrationAttributes));
         }
+        this.queue = null;
 
     }
 
@@ -240,7 +293,16 @@ public class Registration implements Serializable {
     public BindingMode getBindingMode() {
         return bindingMode;
     }
-
+    
+    public LwM2mQueue getLwM2mQueue() {
+        return queue;
+    }
+    
+    public void setLwM2mQueue(LwM2mQueue lwM2mQueue) {
+		this.queue = lwM2mQueue;
+		
+	}
+    
     /**
      * @return the path where the objects are hosted on the device
      */
@@ -282,7 +344,7 @@ public class Registration implements Serializable {
     }
 
     public boolean usesQueueMode() {
-        return bindingMode.equals(BindingMode.UQ);
+    	return ((bindingMode == BindingMode.UQ) || (bindingMode == BindingMode.SQ) || (bindingMode == BindingMode.UQS));
     }
 
     @Override
@@ -334,6 +396,7 @@ public class Registration implements Serializable {
         private String lwM2mVersion;
         private Link[] objectLinks;
         private Map<String, String> additionalRegistrationAttributes;
+        private LwM2mQueue queue;
 
         public Builder(String registrationId, String endpoint, InetAddress address, int port,
                 InetSocketAddress registrationEndpointAddress) {
@@ -390,14 +453,20 @@ public class Registration implements Serializable {
             this.additionalRegistrationAttributes = additionalRegistrationAttributes;
             return this;
         }
+        
+        public Builder lwM2mQueue(LwM2mQueue queue) {
+            this.queue = queue;
+            return this;
+        }
+
 
         public Registration build() {
             return new Registration(Builder.this.registrationId, Builder.this.endpoint, Builder.this.address,
                     Builder.this.port, Builder.this.lwM2mVersion, Builder.this.lifeTimeInSec, Builder.this.smsNumber,
                     this.bindingMode, this.objectLinks, this.registrationEndpointAddress, this.registrationDate,
-                    this.lastUpdate, this.additionalRegistrationAttributes);
+                    this.lastUpdate, this.additionalRegistrationAttributes, this.queue);
         }
-
+                
     }
 
 }
