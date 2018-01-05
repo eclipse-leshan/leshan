@@ -75,12 +75,21 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
 
     private static final Logger LOG = LoggerFactory.getLogger(RedisRegistrationStore.class);
 
+    // This prefix to handle compatibility break in the way we serialize registration/observation in store
+    private static final String NAMESPACE = "LSNRS"; // a namespace to easily identify Leshan Registration Store Key.
+    private static final String VERSION = "1"; // a version to increment when, compatibility is broken.
+    private static final String PREFIX = NAMESPACE + VERSION + ":";
+    // If version is incremented meaning there is a compatibility break, old registrations/observations will not be
+    // available in Leshan anymore. This will be like if there was removed. So device will need to register again.
+    // Old keys will stay in redis. You should remove it manually or wait until their expiration if you're using it.
+
     // Redis key prefixes
-    private static final String REG_EP = "REG:EP:";
-    private static final String REG_EP_REGID_IDX = "EP:REGID:"; // secondary index key (registration)
-    private static final String LOCK_EP = "LOCK:EP:";
-    private static final byte[] OBS_TKN = "OBS:TKN:".getBytes(UTF_8);
-    private static final String OBS_TKNS_REGID_IDX = "TKNS:REGID:"; // secondary index (token list by registration)
+    private static final String REG_EP = PREFIX + "REG:EP:";
+    private static final String REG_EP_REGID_IDX = PREFIX + "EP:REGID:"; // secondary index key (registration)
+    private static final String LOCK_EP = PREFIX + "LOCK:EP:";
+    private static final byte[] OBS_TKN = (PREFIX + "OBS:TKN:").getBytes(UTF_8);
+    private static final String OBS_TKNS_REGID_IDX = PREFIX + "TKNS:REGID:"; // secondary index
+                                                                             // (token list by registration)
 
     private final Pool<Jedis> pool;
 
