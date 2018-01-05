@@ -61,8 +61,17 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
 
     /** Default time in seconds between 2 cleaning tasks (used to remove expired registration). */
     public static final long DEFAULT_CLEAN_PERIOD = 60;
-    /** Defaut Extra time for registration lifetime in seconds */
+    /** Default Extra time for registration lifetime in seconds */
     public static final long DEFAULT_GRACE_PERIOD = 0;
+
+    /**
+     * Default expiration time for all redis keys, if a key is not "touch" in this delay it will be removed. <br>
+     * This aims to avoid unexpected leak in redis store.<br>
+     * So it should be higher than the maximum registration lifetime expected and the maximum delay expected between 2
+     * notifications. <br>
+     * Using value <= 0 means "no expiration".
+     */
+    public static final int DEFAULT_KEYS_EXPIRATION = 90 * 24 * 3600; // 90 days
 
     private static final Logger LOG = LoggerFactory.getLogger(RedisRegistrationStore.class);
 
@@ -81,23 +90,26 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     private final ScheduledExecutorService schedExecutor;
     private final long cleanPeriod; // in seconds
     private final long gracePeriod; // in seconds
+    private final int keysExpiration; // in seconds
 
     public RedisRegistrationStore(Pool<Jedis> p) {
-        this(p, DEFAULT_CLEAN_PERIOD, DEFAULT_GRACE_PERIOD); // default clean period 60s
+        this(p, DEFAULT_CLEAN_PERIOD, DEFAULT_GRACE_PERIOD, DEFAULT_KEYS_EXPIRATION); // default clean period 60s
     }
 
-    public RedisRegistrationStore(Pool<Jedis> p, long cleanPeriodInSec, long lifetimeGracePeriodInSec) {
+    public RedisRegistrationStore(Pool<Jedis> p, long cleanPeriodInSec, long lifetimeGracePeriodInSec,
+            int keysExpiration) {
         this(p, Executors.newScheduledThreadPool(1,
                 new NamedThreadFactory(String.format("RedisRegistrationStore Cleaner (%ds)", cleanPeriodInSec))),
-                cleanPeriodInSec, lifetimeGracePeriodInSec);
+                cleanPeriodInSec, lifetimeGracePeriodInSec, keysExpiration);
     }
 
     public RedisRegistrationStore(Pool<Jedis> p, ScheduledExecutorService schedExecutor, long cleanPeriodInSec,
-            long lifetimeGracePeriodInSec) {
+            long lifetimeGracePeriodInSec, int keysExpiration) {
         this.pool = p;
         this.schedExecutor = schedExecutor;
         this.cleanPeriod = cleanPeriodInSec;
         this.gracePeriod = lifetimeGracePeriodInSec;
+        this.keysExpiration = keysExpiration;
     }
 
     /* *************** Redis Key utility function **************** */
@@ -135,10 +147,11 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
                 // add registration
                 byte[] k = toEndpointKey(registration.getEndpoint());
                 byte[] old = j.getSet(k, serializeReg(registration));
+                expire(j, k);
 
                 // add registration: secondary index
                 byte[] idx = toRegIdKey(registration.getId());
-                j.set(idx, registration.getEndpoint().getBytes(UTF_8));
+                set(j, idx, registration.getEndpoint().getBytes(UTF_8));
 
                 if (old != null) {
                     Registration oldRegistration = deserializeReg(old);
@@ -184,7 +197,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
                 Registration updatedRegistration = update.update(r);
 
                 // store the new client
-                j.set(toEndpointKey(updatedRegistration.getEndpoint()), serializeReg(updatedRegistration));
+                set(j, toEndpointKey(updatedRegistration.getEndpoint()), serializeReg(updatedRegistration));
 
                 return new UpdatedRegistration(r, updatedRegistration);
 
@@ -345,6 +358,20 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
         return toKey(REG_EP.getBytes(UTF_8), endpoint);
     }
 
+    private void expire(Jedis j, byte[] key) {
+        if (keysExpiration > 0) {
+            j.expire(key, keysExpiration);
+        }
+    }
+
+    private void set(Jedis j, byte[] key, byte[] value) {
+        if (keysExpiration > 0) {
+            j.setex(key, keysExpiration, value);
+        } else {
+            j.set(key, value);
+        }
+    }
+
     private byte[] serializeReg(Registration registration) {
         return RegistrationSerDes.bSerialize(registration);
     }
@@ -488,10 +515,14 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
                 if (!j.exists(toRegIdKey(registrationId)))
                     throw new IllegalStateException("no registration for this Id");
 
-                byte[] previousValue = j.getSet(toKey(OBS_TKN, obs.getRequest().getToken()), serializeObs(obs));
+                byte[] tokenKey = toKey(OBS_TKN, obs.getRequest().getToken());
+                byte[] previousValue = j.getSet(tokenKey, serializeObs(obs));
+                expire(j, tokenKey);
 
                 // secondary index to get the list by registrationId
-                j.lpush(toKey(OBS_TKNS_REGID_IDX, registrationId), obs.getRequest().getToken());
+                byte[] regIdKey = toKey(OBS_TKNS_REGID_IDX, registrationId);
+                j.lpush(regIdKey, obs.getRequest().getToken());
+                expire(j, regIdKey);
 
                 // log any collisions
                 if (previousValue != null && previousValue.length != 0) {
@@ -543,11 +574,18 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     @Override
     public org.eclipse.californium.core.observe.Observation get(byte[] token) {
         try (Jedis j = pool.getResource()) {
-            byte[] obs = j.get(toKey(OBS_TKN, token));
+            byte[] tokenKey = toKey(OBS_TKN, token);
+            byte[] obs = j.get(tokenKey);
             if (obs == null) {
                 return null;
             } else {
-                return deserializeObs(obs);
+                org.eclipse.californium.core.observe.Observation cfObs = deserializeObs(obs);
+
+                // refresh expiration;
+                expire(j, tokenKey);
+                expire(j, toKey(OBS_TKNS_REGID_IDX, ObserveUtil.extractRegistrationId(cfObs)));
+
+                return cfObs;
             }
         }
     }
@@ -555,14 +593,21 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     /* *************** Observation utility functions **************** */
 
     private Registration getRegistration(Jedis j, String registrationId) {
-        byte[] ep = j.get(toRegIdKey(registrationId));
+        byte[] regIdKey = toRegIdKey(registrationId);
+        byte[] ep = j.get(regIdKey);
         if (ep == null) {
             return null;
         }
+
+        byte[] endpointKey = toEndpointKey(ep);
         byte[] data = j.get(toEndpointKey(ep));
         if (data == null) {
             return null;
         }
+
+        // refresh keys
+        expire(j, regIdKey);
+        expire(j, endpointKey);
 
         return deserializeReg(data);
     }
