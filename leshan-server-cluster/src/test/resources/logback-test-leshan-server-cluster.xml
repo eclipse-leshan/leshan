@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
-
 Copyright (c) 2013-2015 Sierra Wireless and others.
 
 All rights reserved. This program and the accompanying materials
@@ -15,22 +13,20 @@ and the Eclipse Distribution License is available at
 
 Contributors:
     Sierra Wireless - initial API and implementation
-
 -->
+<configuration>
+    
+    <!-- WARNING !! This file will be only used by maven !
+     if you want to use it in eclipse(or any orther IDE) use -Dlogback.configurationFile=logback-test-leshan-server-cluster.xml -->
 
-<Configuration status="warn" strict="true" name="unit test execution"
-               packages="org.apache.logging.log4j.test">
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d %p %C{1.} [%t] %m%n</pattern>
+		</encoder>
+	</appender>
 
-  <Appenders>
-    <Appender type="Console" name="STDOUT">
-      <Layout type="PatternLayout" pattern="%d %p %C{1.} [%t] %m%n"/>
-    </Appender>
-  </Appenders>
- 
-  <Loggers>
-    <Root level="error">
-      <AppenderRef ref="STDOUT"/>
-    </Root>
-  </Loggers>
- 
-</Configuration>
+	<root level="ERROR">
+		<appender-ref ref="STDOUT" />
+	</root>
+</configuration>
+
