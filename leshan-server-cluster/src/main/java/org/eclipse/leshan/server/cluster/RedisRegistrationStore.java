@@ -363,39 +363,34 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     public Collection<Observation> addObservation(String registrationId, Observation observation) {
 
         List<Observation> removed = new ArrayList<>();
+        try (Jedis j = pool.getResource()) {
 
-        if (!removed.isEmpty()) {
-            try (Jedis j = pool.getResource()) {
+            // fetch the client ep by registration ID index
+            byte[] ep = j.get(toRegIdKey(registrationId));
+            if (ep == null) {
+                return null;
+            }
 
-                // fetch the client ep by registration ID index
-                byte[] ep = j.get(toRegIdKey(registrationId));
-                if (ep == null) {
-                    return null;
-                }
+            byte[] lockValue = null;
+            byte[] lockKey = toLockKey(ep);
 
-                byte[] lockValue = null;
-                byte[] lockKey = toLockKey(ep);
+            try {
+                lockValue = RedisLock.acquire(j, lockKey);
 
-                try {
-                    lockValue = RedisLock.acquire(j, lockKey);
-
-                    // cancel existing observations for the same path and registration id.
-                    for (Observation obs : getObservations(j, registrationId)) {
-                        if (observation.getPath().equals(obs.getPath())
-                                && !Arrays.equals(observation.getId(), obs.getId())) {
-                            removed.add(obs);
-                            unsafeRemoveObservation(j, registrationId, obs.getId());
-                        }
+                // cancel existing observations for the same path and registration id.
+                for (Observation obs : getObservations(j, registrationId)) {
+                    if (observation.getPath().equals(obs.getPath())
+                            && !Arrays.equals(observation.getId(), obs.getId())) {
+                        removed.add(obs);
+                        unsafeRemoveObservation(j, registrationId, obs.getId());
                     }
-
-                } finally {
-                    RedisLock.release(j, lockKey, lockValue);
                 }
+
+            } finally {
+                RedisLock.release(j, lockKey, lockValue);
             }
         }
-
         return removed;
-
     }
 
     @Override
