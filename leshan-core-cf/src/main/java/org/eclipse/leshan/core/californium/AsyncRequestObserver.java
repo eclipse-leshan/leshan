@@ -45,6 +45,7 @@ public abstract class AsyncRequestObserver<T extends LwM2mResponse> extends Abst
     private final ErrorCallback errorCallback;
     private final long timeoutInMs;
     private ScheduledFuture<?> cleaningTask;
+    private boolean cancelled = false;
 
     private final AtomicBoolean responseTimedOut = new AtomicBoolean(false);
 
@@ -74,25 +75,19 @@ public abstract class AsyncRequestObserver<T extends LwM2mResponse> extends Abst
 
     @Override
     public void onReadyToSend() {
-        cleaningTask = getExecutor().schedule(new Runnable() {
-            @Override
-            public void run() {
-                responseTimedOut.set(true);
-                coapRequest.cancel();
-            }
-        }, timeoutInMs, TimeUnit.MILLISECONDS);
+        scheduleCleaningTask();
     }
 
     @Override
     public void onTimeout() {
-        cleaningTask.cancel(false);
+        cancelCleaningTask();
         errorCallback.onError(new org.eclipse.leshan.core.request.exception.TimeoutException("Request %s timed out",
                 coapRequest.getURI()));
     }
 
     @Override
     public void onCancel() {
-        cleaningTask.cancel(false);
+        cancelCleaningTask();
         if (responseTimedOut.get())
             errorCallback.onError(new org.eclipse.leshan.core.request.exception.TimeoutException("Request %s timed out",
                     coapRequest.getURI()));
@@ -102,14 +97,32 @@ public abstract class AsyncRequestObserver<T extends LwM2mResponse> extends Abst
 
     @Override
     public void onReject() {
-        cleaningTask.cancel(false);
+        cancelCleaningTask();
         errorCallback.onError(new RequestRejectedException("Request %s rejected", coapRequest.getURI()));
     }
 
     @Override
     public void onSendError(Throwable error) {
-        cleaningTask.cancel(false);
+        cancelCleaningTask();
         errorCallback.onError(new SendFailedException(error, "Unable to send request %s", coapRequest.getURI()));
+    }
+
+    private synchronized void scheduleCleaningTask() {
+        if (!cancelled)
+            cleaningTask = getExecutor().schedule(new Runnable() {
+                @Override
+                public void run() {
+                    responseTimedOut.set(true);
+                    coapRequest.cancel();
+                }
+            }, timeoutInMs, TimeUnit.MILLISECONDS);
+    }
+
+    private synchronized void cancelCleaningTask() {
+        if (cleaningTask != null) {
+            cleaningTask.cancel(false);
+        }
+        cancelled = true;
     }
 
     private ScheduledExecutorService getExecutor() {
