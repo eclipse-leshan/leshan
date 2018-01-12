@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     RISE SICS AB - added Queue Mode operation
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
@@ -35,7 +36,6 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.server.Destroyable;
 import org.eclipse.leshan.server.LwM2mServer;
@@ -45,10 +45,11 @@ import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
-import org.eclipse.leshan.server.observation.ObservationListener;
 import org.eclipse.leshan.server.observation.ObservationService;
 import org.eclipse.leshan.server.queue.PresenceService;
 import org.eclipse.leshan.server.queue.PresenceServiceImpl;
+import org.eclipse.leshan.server.queue.PresenceStateListener;
+import org.eclipse.leshan.server.queue.QueueModeLwM2mRequestSender;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
 import org.eclipse.leshan.server.registration.RegistrationListener;
@@ -147,6 +148,7 @@ public class LeshanServer implements LwM2mServer {
             @Override
             public void unregistered(Registration registration, Collection<Observation> observations, boolean expired,
                     Registration newReg) {
+
                 requestSender.cancelPendingRequests(registration);
             }
 
@@ -157,46 +159,7 @@ public class LeshanServer implements LwM2mServer {
         });
 
         // notify applications of LWM2M client coming online/offline
-        this.registrationService.addListener(new RegistrationListener() {
-
-            @Override
-            public void updated(RegistrationUpdate update, Registration updatedRegistration) {
-                presenceService.setOnline(updatedRegistration);
-            }
-
-            @Override
-            public void unregistered(Registration registration, Collection<Observation> observations) {
-                // Noop.
-
-            }
-
-            @Override
-            public void registered(Registration registration) {
-                presenceService.setOnline(registration);
-            }
-        });
-        this.observationService.addListener(new ObservationListener() {
-
-            @Override
-            public void onResponse(Observation observation, Registration registration, ObserveResponse response) {
-                presenceService.setOnline(registration);
-            }
-
-            @Override
-            public void onError(Observation observation, Registration registration, Exception error) {
-                presenceService.setOnline(registration);
-            }
-
-            @Override
-            public void newObservation(Observation observation, Registration registration) {
-                // Noop.
-            }
-
-            @Override
-            public void cancelled(Observation observation) {
-                // Noop.
-            }
-        });
+        this.registrationService.addListener(new PresenceStateListener(this.presenceService));
 
         // define a set of endpoints
         Set<Endpoint> endpoints = new HashSet<>();
@@ -231,8 +194,8 @@ public class LeshanServer implements LwM2mServer {
         coapServer.add(rdResource);
 
         // create sender
-        requestSender = new CaliforniumLwM2mRequestSender(endpoints, this.observationService, modelProvider, encoder,
-                decoder);
+        requestSender = new QueueModeLwM2mRequestSender(this.presenceService,
+                new CaliforniumLwM2mRequestSender(endpoints, this.observationService, modelProvider, encoder, decoder));
     }
 
     @Override
@@ -321,24 +284,28 @@ public class LeshanServer implements LwM2mServer {
     @Override
     public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request)
             throws InterruptedException {
+
         return requestSender.send(destination, request, DEFAULT_TIMEOUT);
     }
 
     @Override
     public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request, long timeout)
             throws InterruptedException {
+
         return requestSender.send(destination, request, timeout);
     }
 
     @Override
     public <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
+
         requestSender.send(destination, request, DEFAULT_TIMEOUT, responseCallback, errorCallback);
     }
 
     @Override
     public <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request, long timeout,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
+
         requestSender.send(destination, request, timeout, responseCallback, errorCallback);
     }
 

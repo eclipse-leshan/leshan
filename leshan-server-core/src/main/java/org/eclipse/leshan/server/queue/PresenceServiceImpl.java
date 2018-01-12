@@ -12,6 +12,7 @@
  *
  * Contributors:
  *     Bosch Software Innovations GmbH - initial API
+ *     RISE SICS AB - added more features 
  *******************************************************************************/
 package org.eclipse.leshan.server.queue;
 
@@ -19,22 +20,25 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.leshan.server.registration.Registration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Tracks the status of each LWM2M client registered with Queue mode binding. Also ensures that the
  * {@link PresenceListener} are notified on state changes only for those LWM2M clients registered using Queue mode
  * binding.
- *      
+ * 
  * @see Presence
  */
 public final class PresenceServiceImpl implements PresenceService {
-    private static final Logger LOG = LoggerFactory.getLogger(PresenceServiceImpl.class);
-    private final ConcurrentMap<String, Presence> clientStatus = new ConcurrentHashMap<>();
+
+    private final ConcurrentMap<String, PresenceStatus> clientStatusList = new ConcurrentHashMap<>();
     private final List<PresenceListener> listeners = new CopyOnWriteArrayList<>();
+    ScheduledExecutorService clientTimersExecutor = Executors.newSingleThreadScheduledExecutor();
 
     @Override
     public void addListener(PresenceListener listener) {
@@ -47,54 +51,132 @@ public final class PresenceServiceImpl implements PresenceService {
     }
 
     @Override
-    public boolean isOnline(Registration registration) {
-        return Presence.ONLINE.equals(clientStatus.get(registration.getEndpoint()));
-    }
-
-    /**
-     * Sets the client identified by the given registration in {@link Presence#OFFLINE} mode if the current state is
-     * {@link Presence#ONLINE}. If the state is changed successfully, then the corresponding
-     * {@link PresenceListener} are notified.
-     * 
-     * @param registration lwm2m client registration data
-     */
-    public void setOffline(Registration registration) {
-        if (registration.usesQueueMode()
-                && transitState(registration.getEndpoint(), Presence.ONLINE, Presence.OFFLINE)) {
-            for (PresenceListener listener : listeners) {
-                listener.onOffline(registration);
-            }
+    public boolean isClientAwake(Registration registration) {
+        PresenceStatus presenceStatus = clientStatusList.get(registration.getEndpoint());
+        if (presenceStatus == null) {
+            return false;
         }
+        return presenceStatus.isClientAwake();
 
     }
 
     /**
-     * Sets the client identified by the given registration in {@link Presence.ONLINE} mode if the current state is
-     * either {@link Presence#OFFLINE} or <code>null</code>. If the state is changed successfully, then the
-     * corresponding {@link PresenceListener} are notified.
+     * Set the state of the client identified by registration as {@link Presence#AWAKE}
      * 
-     * @param registration lwm2m client registration data
+     * @param reg the client's registration object
      */
-    public void setOnline(Registration registration) {
-        if (registration.usesQueueMode()
-                && transitState(registration.getEndpoint(), Presence.OFFLINE, Presence.ONLINE)) {
-            for (PresenceListener listener : listeners) {
-                listener.onOnline(registration);
+    public void setAwake(Registration reg) {
+        if (reg.usesQueueMode()) {
+            PresenceStatus status = new PresenceStatus();
+            PresenceStatus previous = clientStatusList.putIfAbsent(reg.getEndpoint(), status);
+            if (previous != null) {
+                // We already have a status for this reg.
+                status = previous;
+            }
+
+            boolean stateChanged = false;
+            synchronized (status) {
+                stateChanged = status.setAwake();
+                startClientAwakeTimer(reg, status);
+            }
+
+            if (stateChanged) {
+                for (PresenceListener listener : listeners) {
+                    listener.onAwake(reg);
+                }
             }
         }
     }
 
-    private boolean transitState(String endpoint, Presence from, Presence to) {
-        boolean updated = clientStatus.replace(endpoint, from, to);
-        if (updated) {
-            LOG.debug("Client {} state update from {} -> {}", endpoint, from, to);
-        } else if (clientStatus.putIfAbsent(endpoint, to) == null) {
-            LOG.debug("Client {} state update to -> {}", endpoint, to);
-            updated = true;
-        } else {
-            LOG.trace("Cannot update Client {} state {} -> {}. Current state is {}", endpoint, from, to,
-                    clientStatus.get(endpoint));
+    /**
+     * Notify the listeners that the client state changed to {@link Presence#SLEEPING}. The state changes is produced
+     * inside {@link PresenceStatus} when the timer expires or when the client doesn't respond to a request.
+     * 
+     * @param reg the client's registration object
+     */
+    public void setSleeping(Registration reg) {
+        if (reg.usesQueueMode()) {
+            PresenceStatus status = clientStatusList.get(reg.getEndpoint());
+
+            if (status != null) {
+                boolean stateChanged = false;
+                synchronized (status) {
+                    stateChanged = status.setSleeping();
+                    stopClientAwakeTimer(reg);
+                }
+                if (stateChanged) {
+                    for (PresenceListener listener : listeners) {
+                        listener.onSleeping(reg);
+                    }
+                }
+            }
         }
-        return updated;
+    }
+
+    /**
+     * Removes the {@link PresenceStatus} object associated with the client from the list.
+     * 
+     * @param reg the client's registration object.
+     */
+    public void removePresenceStatusObject(Registration reg) {
+        clientStatusList.remove(reg.getEndpoint());
+    }
+
+    /**
+     * Returns the {@link PresenceStatus} object associated with the given endpoint name.
+     * 
+     * @param reg The client's registration object.
+     * @return The {@link PresenceStatus} object.
+     */
+    private PresenceStatus getPresenceStatusObject(Registration reg) {
+        return clientStatusList.get(reg.getEndpoint());
+    }
+
+    /**
+     * Start or restart (if already started) the timer that handles the client wait before sleep time.
+     * 
+     * @param status
+     */
+    public void startClientAwakeTimer(final Registration reg, PresenceStatus clientPresenceStatus) {
+
+        int clientAwakeTime = clientPresenceStatus.getClientAwakeTime();
+        ScheduledFuture<?> clientScheduledFuture = clientPresenceStatus.getClientScheduledFuture();
+
+        if (clientAwakeTime != 0) {
+            if (clientScheduledFuture != null) {
+                clientScheduledFuture.cancel(true);
+            }
+            clientScheduledFuture = clientTimersExecutor.schedule(new Runnable() {
+
+                @Override
+                public void run() {
+                    if (isClientAwake(reg)) {
+                        setSleeping(reg);
+                    }
+                }
+            }, clientAwakeTime, TimeUnit.MILLISECONDS);
+            clientPresenceStatus.setClientExecutorFuture(clientScheduledFuture);
+        }
+
+    }
+
+    /**
+     * Stop the timer that handles the client wait before sleep time.
+     */
+    private void stopClientAwakeTimer(Registration reg) {
+        PresenceStatus clientPresenceStatus = getPresenceStatusObject(reg);
+        ScheduledFuture<?> clientScheduledFuture = clientPresenceStatus.getClientScheduledFuture();
+        if (clientScheduledFuture != null) {
+            clientScheduledFuture.cancel(true);
+        }
+    }
+
+    /**
+     * Called when the client doesn't respond to a request, for changing its state to SLEEPING
+     */
+    public void clientNotResponding(Registration reg) {
+        if (isClientAwake(reg)) {
+            setSleeping(reg);
+        }
     }
 }

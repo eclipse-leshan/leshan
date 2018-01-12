@@ -41,6 +41,7 @@ import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
+import org.eclipse.leshan.core.request.exception.ClientSleepingException;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
@@ -165,7 +166,8 @@ public class ClientServlet extends HttpServlet {
                 // get content format
                 String contentFormatParam = req.getParameter(FORMAT_PARAM);
                 ContentFormat contentFormat = contentFormatParam != null
-                        ? ContentFormat.fromName(contentFormatParam.toUpperCase()) : null;
+                        ? ContentFormat.fromName(contentFormatParam.toUpperCase())
+                        : null;
 
                 // create & process request
                 ReadRequest request = new ReadRequest(contentFormat, target);
@@ -181,7 +183,8 @@ public class ClientServlet extends HttpServlet {
     }
 
     private void handleException(Exception e, HttpServletResponse resp) throws IOException {
-        if (e instanceof InvalidRequestException || e instanceof CodecException) {
+        if (e instanceof InvalidRequestException || e instanceof CodecException
+                || e instanceof ClientSleepingException) {
             LOG.warn("Invalid request", e);
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             resp.getWriter().append("Invalid request:").append(e.getMessage()).flush();
@@ -229,7 +232,8 @@ public class ClientServlet extends HttpServlet {
                 // get content format
                 String contentFormatParam = req.getParameter(FORMAT_PARAM);
                 ContentFormat contentFormat = contentFormatParam != null
-                        ? ContentFormat.fromName(contentFormatParam.toUpperCase()) : null;
+                        ? ContentFormat.fromName(contentFormatParam.toUpperCase())
+                        : null;
 
                 // create & process request
                 LwM2mNode node = extractLwM2mNode(target, req);
@@ -262,7 +266,8 @@ public class ClientServlet extends HttpServlet {
                     // get content format
                     String contentFormatParam = req.getParameter(FORMAT_PARAM);
                     ContentFormat contentFormat = contentFormatParam != null
-                            ? ContentFormat.fromName(contentFormatParam.toUpperCase()) : null;
+                            ? ContentFormat.fromName(contentFormatParam.toUpperCase())
+                            : null;
 
                     // create & process request
                     ObserveRequest request = new ObserveRequest(contentFormat, target);
@@ -306,7 +311,8 @@ public class ClientServlet extends HttpServlet {
                     // get content format
                     String contentFormatParam = req.getParameter(FORMAT_PARAM);
                     ContentFormat contentFormat = contentFormatParam != null
-                            ? ContentFormat.fromName(contentFormatParam.toUpperCase()) : null;
+                            ? ContentFormat.fromName(contentFormatParam.toUpperCase())
+                            : null;
 
                     // create & process request
                     LwM2mNode node = extractLwM2mNode(target, req);

@@ -289,7 +289,7 @@ public class Registration implements Serializable {
     }
 
     public boolean usesQueueMode() {
-        return bindingMode.equals(BindingMode.UQ);
+        return bindingMode.equals(BindingMode.UQ) || bindingMode.equals(BindingMode.UQS);
     }
 
     @Override
