@@ -12,6 +12,7 @@
  *
  * Contributors:
  *     Bosch Software Innovations GmbH - initial API
+ *     RISE SICS AB - added more features 
  *******************************************************************************/
 package org.eclipse.leshan.server.queue;
 
@@ -21,19 +22,16 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.leshan.server.registration.Registration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Tracks the status of each LWM2M client registered with Queue mode binding. Also ensures that the
  * {@link PresenceListener} are notified on state changes only for those LWM2M clients registered using Queue mode
  * binding.
- *      
+ * 
  * @see Presence
  */
 public final class PresenceServiceImpl implements PresenceService {
-    private static final Logger LOG = LoggerFactory.getLogger(PresenceServiceImpl.class);
-    private final ConcurrentMap<String, Presence> clientStatus = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, LwM2mQueue> clientStatusList = new ConcurrentHashMap<>();
     private final List<PresenceListener> listeners = new CopyOnWriteArrayList<>();
 
     @Override
@@ -47,54 +45,43 @@ public final class PresenceServiceImpl implements PresenceService {
     }
 
     @Override
-    public boolean isOnline(Registration registration) {
-        return Presence.ONLINE.equals(clientStatus.get(registration.getEndpoint()));
+    public boolean isClientSleeping(Registration registration) {
+        LwM2mQueue queue = clientStatusList.get(registration.getEndpoint());
+        return queue.isClientSleeping();
     }
 
-    /**
-     * Sets the client identified by the given registration in {@link Presence#OFFLINE} mode if the current state is
-     * {@link Presence#ONLINE}. If the state is changed successfully, then the corresponding
-     * {@link PresenceListener} are notified.
-     * 
-     * @param registration lwm2m client registration data
-     */
-    public void setOffline(Registration registration) {
-        if (registration.usesQueueMode()
-                && transitState(registration.getEndpoint(), Presence.ONLINE, Presence.OFFLINE)) {
+    @Override
+    public void setAwake(Registration registration) {
+        if (registration.usesQueueMode()) {
+            clientStatusList.get(registration.getEndpoint()).setAwake();
             for (PresenceListener listener : listeners) {
-                listener.onOffline(registration);
+                listener.onAwake(registration);
+            }
+        }
+    }
+
+    @Override
+    public void notifySleeping(Registration registration) {
+        if (registration.usesQueueMode()) {
+            for (PresenceListener listener : listeners) {
+                listener.onSleeping(registration);
             }
         }
 
     }
 
-    /**
-     * Sets the client identified by the given registration in {@link Presence.ONLINE} mode if the current state is
-     * either {@link Presence#OFFLINE} or <code>null</code>. If the state is changed successfully, then the
-     * corresponding {@link PresenceListener} are notified.
-     * 
-     * @param registration lwm2m client registration data
-     */
-    public void setOnline(Registration registration) {
-        if (registration.usesQueueMode()
-                && transitState(registration.getEndpoint(), Presence.OFFLINE, Presence.ONLINE)) {
-            for (PresenceListener listener : listeners) {
-                listener.onOnline(registration);
-            }
-        }
+    @Override
+    public void createQueueObject(Registration reg) {
+        clientStatusList.put(reg.getEndpoint(), new LwM2mQueue(reg, this));
     }
 
-    private boolean transitState(String endpoint, Presence from, Presence to) {
-        boolean updated = clientStatus.replace(endpoint, from, to);
-        if (updated) {
-            LOG.debug("Client {} state update from {} -> {}", endpoint, from, to);
-        } else if (clientStatus.putIfAbsent(endpoint, to) == null) {
-            LOG.debug("Client {} state update to -> {}", endpoint, to);
-            updated = true;
-        } else {
-            LOG.trace("Cannot update Client {} state {} -> {}. Current state is {}", endpoint, from, to,
-                    clientStatus.get(endpoint));
-        }
-        return updated;
+    /**
+     * Returns the {@link LwM2mQueue} object associated with the given endpoint name.
+     * 
+     * @param reg The client's registration object.
+     * @return The {@link LwM2mQueue} object.
+     */
+    public LwM2mQueue getQueueObject(Registration reg) {
+        return clientStatusList.get(reg.getEndpoint());
     }
 }
