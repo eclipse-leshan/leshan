@@ -15,15 +15,14 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.queue;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
-import java.net.InetAddress;
+import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
 import org.eclipse.leshan.core.request.BindingMode;
+import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.registration.Registration;
 import org.junit.Test;
 
@@ -41,77 +40,46 @@ public class PresenceServiceTest {
         instance.addListener(new PresenceListener() {
 
             @Override
-            public void onOnline(Registration registration) {
+            public void onAwake(Registration registration) {
                 fail("No invocation was expected");
             }
 
             @Override
-            public void onOffline(Registration registration) {
+            public void onSleeping(Registration registration) {
                 fail("No invocation was expected");
             }
         });
-        instance.setOnline(registration);
-    }
-
-    /**
-     * Test method for
-     * {@link org.eclipse.leshan.server.queue.PresenceService#setOffline(org.eclipse.leshan.server.client.Registration)}.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testSetOnlineAndOffline() throws Exception {
-        Registration queueModeRegistration = givenASimpleClientWithQueueMode();
-        instance.addListener(new PresenceListener() {
-            int onlineStatusCountDown = 0;
-            int offlineStatusCountDown = 0;
-
-            @Override
-            public void onOnline(Registration registration) {
-                onlineStatusCountDown++;
-                assertTrue("Expected online state to be invoked only once but invoked" + onlineStatusCountDown,
-                        onlineStatusCountDown == 1);
-            }
-
-            @Override
-            public void onOffline(Registration registration) {
-                offlineStatusCountDown++;
-                assertTrue("Expected offline state to be invoked only once but invoked" + offlineStatusCountDown,
-                        offlineStatusCountDown == 1);
-            }
-        });
-        // invoke setOnline multiple times
-        instance.setOnline(queueModeRegistration);
-        instance.setOnline(queueModeRegistration);
-        // invoke setOffline multiple times
-        instance.setOffline(queueModeRegistration);
-        instance.setOffline(queueModeRegistration);
+        instance.setAwake(registration);
     }
 
     @Test
     public void testIsOnline() throws Exception {
         Registration queueModeRegistration = givenASimpleClientWithQueueMode();
 
-        assertFalse(instance.isOnline(queueModeRegistration));
-        instance.setOnline(queueModeRegistration);
-        assertTrue(instance.isOnline(queueModeRegistration));
+        assertTrue(instance.isClientSleeping(queueModeRegistration));
+        instance.setAwake(queueModeRegistration);
+        assertFalse(instance.isClientSleeping(queueModeRegistration));
     }
 
     private Registration givenASimpleClient() throws UnknownHostException {
         InetSocketAddress address = InetSocketAddress.createUnresolved("localhost", 5683);
 
-        Registration.Builder builder = new Registration.Builder("ID", "urn:client", InetAddress.getLocalHost(), 10000,
-                address);
+        Registration.Builder builder = new Registration.Builder("ID", "urn:client",
+                Identity.unsecure(Inet4Address.getLoopbackAddress(), 12354), address);
 
-        return builder.build();
+        Registration reg = builder.build();
+        instance.createQueueObject(reg);
+        return reg;
     }
 
     private Registration givenASimpleClientWithQueueMode() throws UnknownHostException {
         InetSocketAddress address = InetSocketAddress.createUnresolved("localhost", 5683);
 
-        Registration.Builder builder = new Registration.Builder("ID", "urn:client", InetAddress.getLocalHost(), 10000,
-                address);
+        Registration.Builder builder = new Registration.Builder("ID", "urn:client",
+                Identity.unsecure(Inet4Address.getLoopbackAddress(), 12354), address);
 
-        return builder.bindingMode(BindingMode.UQ).build();
+        Registration reg = builder.bindingMode(BindingMode.UQ).build();
+        instance.createQueueObject(reg);
+        return reg;
     }
 }

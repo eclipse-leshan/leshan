@@ -12,6 +12,7 @@
  *
  * Contributors:
  *     Bosch Software Innovations GmbH - initial API
+ *     RISE SICS AB - added more features 
  *******************************************************************************/
 package org.eclipse.leshan.server.queue;
 
@@ -39,12 +40,34 @@ public interface PresenceService {
      * @param listener target to be removed.
      */
     void removeListener(PresenceListener listener);
-    
+
     /**
      * Returns the current status of a given LWM2M client registration.
      * 
      * @param registration data to check
-     * @return true if the status is {@link Presence#ONLINE}
+     * @return true if the status is {@link Presence#SLEEPING}
      */
-    boolean isOnline(Registration registration);
+    boolean isClientSleeping(Registration registration);
+
+    /**
+     * Set the state of the client identified by registration as {@link Presence#AWAKE}
+     * 
+     * @param registration the client's registration object
+     */
+    public void setAwake(Registration registration);
+
+    /**
+     * Notify the listeners that the client state changed to {@link Presence#SLEEPING}. The state changes is produced
+     * inside {@link LwM2mQueue} when the timer expires or when the client doesn't respond to a request.
+     * 
+     * @param registration the client's registration object
+     */
+    public void notifySleeping(Registration registration);
+
+    /**
+     * Creates a new {@link LwM2mQueue} object associated with the client.
+     * 
+     * @param registration the client's registration object.
+     */
+    public void createQueueObject(Registration registration);
 }

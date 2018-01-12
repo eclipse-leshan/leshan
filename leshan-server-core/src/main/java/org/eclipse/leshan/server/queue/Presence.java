@@ -20,7 +20,7 @@ package org.eclipse.leshan.server.queue;
  */
 public enum Presence {
     /** LWM2M Client is reachable and messages can be sent **/
-    ONLINE,
+    AWAKE,
     /** LWM2M Client is not reachable and no messages can be sent **/
-    OFFLINE
+    SLEEPING
 }
