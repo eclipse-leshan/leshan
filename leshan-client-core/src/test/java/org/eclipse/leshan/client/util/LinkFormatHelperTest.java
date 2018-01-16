@@ -17,9 +17,17 @@ package org.eclipse.leshan.client.util;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.leshan.Link;
+import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
+import org.eclipse.leshan.client.resource.BaseObjectEnabler;
+import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
+import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
+import org.eclipse.leshan.client.resource.ObjectEnabler;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.junit.Test;
@@ -67,6 +75,16 @@ public class LinkFormatHelperTest {
 
         assertEquals("</6>, </6/0/0>, </6/0/1>, </6/0/2>, </6/0/3>, </6/0/4>, </6/0/5>, </6/0/6>", strLinks);
     }
+    
+    @Test
+    public void encode_objectModel_to_linkObject_with_version2_0() {
+        ObjectModel locationModel = getVersionedObjectModel(6, "2.0");
+
+        Link[] links = LinkFormatHelper.getObjectDescription(locationModel, "/");
+        String strLinks = Link.serialize(links);
+
+        assertEquals("</6>;ver=\"2.0\", </6/0/0>, </6/0/1>, </6/0/2>, </6/0/3>, </6/0/4>, </6/0/5>, </6/0/6>", strLinks);
+    }
 
     @Test
     public void encode_objectModel_to_linkObject_with_explicit_complex_root_path() {
@@ -80,11 +98,65 @@ public class LinkFormatHelperTest {
                 strLinks);
     }
 
+    @Test
+    public void encode_client_description_with_version_1_0() {
+        List<LwM2mObjectEnabler> objectEnablers = new ArrayList<>();
+        
+        Map<Integer, LwM2mInstanceEnabler> instancesMap = new HashMap<>();
+        instancesMap.put(0, new BaseInstanceEnabler());
+        objectEnablers.add(new ObjectEnabler(6, getObjectModel(6), instancesMap, null));
+        
+        Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null);
+        String strLinks = Link.serialize(links);
+        
+        assertEquals("</>;rt=\"oma.lwm2m\", </6/0>", strLinks);
+    }
+
+    @Test
+    public void encode_client_description_with_version_2_0() {
+        List<LwM2mObjectEnabler> objectEnablers = new ArrayList<>();
+        
+        Map<Integer, LwM2mInstanceEnabler> instancesMap = new HashMap<>();
+        instancesMap.put(0, new BaseInstanceEnabler());
+        instancesMap.put(1, new BaseInstanceEnabler());
+        objectEnablers.add(new ObjectEnabler(6, getVersionedObjectModel(6, "2.0"), instancesMap, null));
+        
+        Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null);
+        String strLinks = Link.serialize(links);
+        
+        assertEquals("</>;rt=\"oma.lwm2m\", </6>;ver=\"2.0\", </6/0>, </6/1>", strLinks);
+    }
+
+    @Test
+    public void encode_client_description_with_version_2_0_no_instances() {
+        List<LwM2mObjectEnabler> objectEnablers = new ArrayList<>();
+        
+        Map<Integer, LwM2mInstanceEnabler> instancesMap = new HashMap<>();
+        objectEnablers.add(new ObjectEnabler(6, getVersionedObjectModel(6, "2.0"), instancesMap, null));
+        
+        Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null);
+        String strLinks = Link.serialize(links);
+        
+        assertEquals("</>;rt=\"oma.lwm2m\", </6>;ver=\"2.0\"", strLinks);
+    }
+    
     private ObjectModel getObjectModel(int id) {
         List<ObjectModel> objectModels = ObjectLoader.loadDefault();
         for (ObjectModel objectModel : objectModels) {
             if (objectModel.id == id)
                 return objectModel;
+        }
+        return null;
+    }
+    
+    /**
+     * Gets a default object model by id and manipulates its version.
+     */
+    private ObjectModel getVersionedObjectModel(int id, String version) {
+        List<ObjectModel> objectModels = ObjectLoader.loadDefault();
+        for (ObjectModel om : objectModels) {
+            if (om.id == id)
+                return new ObjectModel(om.id, om.name, om.description, version, om.multiple, om.mandatory, om.resources.values());
         }
         return null;
     }

@@ -103,8 +103,8 @@ public class IntegrationTestHelper {
                 false, Type.OBJLNK, null, null, null);
         ResourceModel objlnkSinglefield = new ResourceModel(OBJLNK_SINGLE_INSTANCE_RESOURCE_ID, "objlnk", Operations.RW,
                 false, false, Type.OBJLNK, null, null, null);
-        objectModels.add(new ObjectModel(TEST_OBJECT_ID, "testobject", null, false, false, stringfield, booleanfield,
-                integerfield, floatfield, timefield, opaquefield, objlnkfield, objlnkSinglefield));
+        objectModels.add(new ObjectModel(TEST_OBJECT_ID, "testobject", null, ObjectModel.DEFAULT_VERSION, false, false,
+                stringfield, booleanfield, integerfield, floatfield, timefield, opaquefield, objlnkfield, objlnkSinglefield));
 
         return objectModels;
     }
@@ -144,14 +144,18 @@ public class IntegrationTestHelper {
     }
 
     public void createServer() {
+        server = createServerBuilder().build();
+        // monitor client registration
+        setupRegistrationMonitoring();
+    }
+
+    protected LeshanServerBuilder createServerBuilder() {
         LeshanServerBuilder builder = new LeshanServerBuilder();
         builder.setObjectModelProvider(new StaticModelProvider(createObjectModels()));
         builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         builder.setSecurityStore(new InMemorySecurityStore());
-        server = builder.build();
-        // monitor client registration
-        setupRegistrationMonitoring();
+        return builder;
     }
 
     protected void setupRegistrationMonitoring() {
