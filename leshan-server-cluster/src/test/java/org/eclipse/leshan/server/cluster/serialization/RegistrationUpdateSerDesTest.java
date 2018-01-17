@@ -28,7 +28,7 @@ import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
 import org.junit.Test;
 
-public class ClientUpdateSerDesTest {
+public class RegistrationUpdateSerDesTest {
 
     @Test
     public void ser_and_des_are_equals() throws Exception {
@@ -36,6 +36,7 @@ public class ClientUpdateSerDesTest {
         Map<String, Object> att = new HashMap<>();
         att.put("ts", 12);
         att.put("rt", "test");
+        att.put("hb", null);
         objs[0] = new Link("/0/1024/2", att);
         objs[1] = new Link("/0/2");
 

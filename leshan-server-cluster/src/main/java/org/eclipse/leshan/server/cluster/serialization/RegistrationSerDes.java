@@ -55,7 +55,9 @@ public class RegistrationSerDes {
             ol.add("url", l.getUrl());
             JsonObject at = Json.object();
             for (Map.Entry<String, Object> e : l.getAttributes().entrySet()) {
-                if (e.getValue() instanceof Integer) {
+                if (e.getValue() == null) {
+                    at.add(e.getKey(), Json.NULL);
+                } else if (e.getValue() instanceof Integer) {
                     at.add(e.getKey(), (int) e.getValue());
                 } else {
                     at.add(e.getKey(), e.getValue().toString());
@@ -105,7 +107,9 @@ public class RegistrationSerDes {
             JsonObject att = (JsonObject) ol.get("at");
             for (String k : att.names()) {
                 JsonValue jsonValue = att.get(k);
-                if (jsonValue.isNumber()) {
+                if (jsonValue.isNull()) {
+                    attMap.put(k, null);
+                } else if (jsonValue.isNumber()) {
                     attMap.put(k, jsonValue.asInt());
                 } else {
                     attMap.put(k, jsonValue.asString());
