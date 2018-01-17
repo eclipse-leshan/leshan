@@ -31,7 +31,7 @@ import org.eclipse.leshan.server.registration.Registration;
  * @see Presence
  */
 public final class PresenceServiceImpl implements PresenceService {
-    private final ConcurrentMap<String, LwM2mQueue> clientStatusList = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, PresenceStatus> clientStatusList = new ConcurrentHashMap<>();
     private final List<PresenceListener> listeners = new CopyOnWriteArrayList<>();
 
     @Override
@@ -46,11 +46,15 @@ public final class PresenceServiceImpl implements PresenceService {
 
     @Override
     public boolean isClientSleeping(Registration registration) {
-        LwM2mQueue queue = clientStatusList.get(registration.getEndpoint());
-        return queue.isClientSleeping();
+        PresenceStatus presenceStatus = clientStatusList.get(registration.getEndpoint());
+        return presenceStatus.isClientSleeping();
     }
 
-    @Override
+    /**
+     * Set the state of the client identified by registration as {@link Presence#AWAKE}
+     * 
+     * @param registration the client's registration object
+     */
     public void setAwake(Registration registration) {
         if (registration.usesQueueMode()) {
             clientStatusList.get(registration.getEndpoint()).setAwake();
@@ -60,7 +64,12 @@ public final class PresenceServiceImpl implements PresenceService {
         }
     }
 
-    @Override
+    /**
+     * Notify the listeners that the client state changed to {@link Presence#SLEEPING}. The state changes is produced
+     * inside {@link PresenceStatus} when the timer expires or when the client doesn't respond to a request.
+     * 
+     * @param registration the client's registration object
+     */
     public void notifySleeping(Registration registration) {
         if (registration.usesQueueMode()) {
             for (PresenceListener listener : listeners) {
@@ -70,18 +79,31 @@ public final class PresenceServiceImpl implements PresenceService {
 
     }
 
-    @Override
-    public void createQueueObject(Registration reg) {
-        clientStatusList.put(reg.getEndpoint(), new LwM2mQueue(reg, this));
+    /**
+     * Creates a new {@link PresenceStatus} object associated with the client.
+     * 
+     * @param registration the client's registration object.
+     */
+    public void createPresenceStatusObject(Registration reg) {
+        clientStatusList.put(reg.getEndpoint(), new PresenceStatus(reg, this));
     }
 
     /**
-     * Returns the {@link LwM2mQueue} object associated with the given endpoint name.
+     * Creates a new {@link PresenceStatus} object associated with the client, with a specific awake time.
+     * 
+     * @param registration the client's registration object.
+     */
+    public void createPresenceStatusObject(Registration reg, int clientAwakeTime) {
+        clientStatusList.put(reg.getEndpoint(), new PresenceStatus(reg, this, clientAwakeTime));
+    }
+
+    /**
+     * Returns the {@link PresenceStatus} object associated with the given endpoint name.
      * 
      * @param reg The client's registration object.
-     * @return The {@link LwM2mQueue} object.
+     * @return The {@link PresenceStatus} object.
      */
-    public LwM2mQueue getQueueObject(Registration reg) {
+    public PresenceStatus getQueueObject(Registration reg) {
         return clientStatusList.get(reg.getEndpoint());
     }
 }
