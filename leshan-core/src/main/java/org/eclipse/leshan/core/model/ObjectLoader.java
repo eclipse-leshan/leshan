@@ -106,7 +106,7 @@ public class ObjectLoader {
             InputStream input = ObjectLoader.class.getResourceAsStream(fullpath);
             if (input != null) {
                 try (Reader reader = new InputStreamReader(input)) {
-                    models.add(loadDdfFile(input, path));
+                    models.add(loadDdfFile(input, fullpath));
                 } catch (IOException e) {
                     throw new IllegalStateException(String.format("Unable to load model %s", fullpath), e);
                 }

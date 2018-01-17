@@ -17,22 +17,20 @@ package org.eclipse.leshan.core.model;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.leshan.core.model.ResourceModel.Operations;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
 
 /**
  * A parser for Object DDF files.
@@ -50,7 +48,7 @@ public class DDFFileParser {
     public ObjectModel parse(File ddfFile) {
         try (InputStream input = new FileInputStream(ddfFile)) {
             return parse(input, ddfFile.getName());
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOG.error("Could not parse the resource definition file " + ddfFile.getName(), e);
         }
         return null;
@@ -61,19 +59,17 @@ public class DDFFileParser {
 
         LOG.debug("Parsing DDF file {}", streamName);
 
-        ObjectModel result = null;
         try {
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document document = builder.parse(inputStream);
 
             Node object = document.getDocumentElement().getElementsByTagName("Object").item(0);
-            result = this.parseObject(object);
+            return parseObject(object);
 
-        } catch (SAXException | IOException | ParserConfigurationException e) {
+        } catch (Exception e) {
             LOG.error("Could not parse the resource definition file " + streamName, e);
         }
-
-        return result;
+        return null;
     }
 
     private ObjectModel parseObject(Node object) {
@@ -99,7 +95,8 @@ public class DDFFileParser {
                 description = field.getTextContent();
                 break;
             case "ObjectVersion":
-                version = field.getTextContent();
+                if (!StringUtils.isEmpty(field.getTextContent()))
+                    version = field.getTextContent();
                 break;
             case "MultipleInstances":
                 multiple = "Multiple".equals(field.getTextContent());
