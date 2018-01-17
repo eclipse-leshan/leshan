@@ -38,6 +38,8 @@ public class ObjectModelSerDes extends JsonSerDes<ObjectModel> {
         o.add("id", m.id);
         o.add("instancetype", m.multiple ? "multiple" : "single");
         o.add("mandatory", m.mandatory);
+        if (!ObjectModel.DEFAULT_VERSION.equals(m.version))
+            o.add("version", m.version);
         o.add("description", m.description);
 
         // sort resources value
@@ -74,8 +76,10 @@ public class ObjectModelSerDes extends JsonSerDes<ObjectModel> {
         String instancetype = o.getString("instancetype", null);
         boolean mandatory = o.getBoolean("mandatory", false);
         String description = o.getString("description", null);
+        String version = o.getString("version", ObjectModel.DEFAULT_VERSION);
         List<ResourceModel> resourceSpecs = resourceModelSerDes.deserialize(o.get("resourcedefs").asArray());
 
-        return new ObjectModel(id, name, description, "multiple".equals(instancetype), mandatory, resourceSpecs);
+        return new ObjectModel(id, name, description, version, "multiple".equals(instancetype), mandatory,
+                resourceSpecs);
     }
 }
