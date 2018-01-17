@@ -16,10 +16,6 @@
 package org.eclipse.leshan.server.queue;
 
 import java.util.Timer;
-import java.util.TimerTask;
-
-import org.eclipse.leshan.server.registration.Registration;
-import org.eclipse.leshan.util.Validate;
 
 /**
  * Class that contains all the necessary elements to handle the queue mode. Every registration object that uses Queue
@@ -34,31 +30,14 @@ public class PresenceStatus {
     /* Elements to handle the time the client waits before going to sleep */
     private Timer clientAwakeTimer;
 
-    private TimerTask clientAwakeTask;
-
     private int clientAwakeTime;
 
-    /* Registration and Presence Service for notifying sleeping */
-    private Registration registration;
-
-    private PresenceServiceImpl presenceService;
-
-    public PresenceStatus(Registration registration, PresenceServiceImpl presenceService) {
-        Validate.notNull(registration);
-        Validate.notNull(presenceService);
-
-        this.registration = registration;
-        this.presenceService = presenceService;
+    public PresenceStatus() {
         this.state = Presence.SLEEPING;
         this.clientAwakeTime = 93000; /* ms, default CoAP value */
     }
 
-    public PresenceStatus(Registration registration, PresenceServiceImpl presenceService, int clientAwakeTime) {
-        Validate.notNull(registration);
-        Validate.notNull(presenceService);
-
-        this.registration = registration;
-        this.presenceService = presenceService;
+    public PresenceStatus(int clientAwakeTime) {
         this.state = Presence.SLEEPING;
         this.clientAwakeTime = clientAwakeTime; /* ms */
     }
@@ -73,7 +52,6 @@ public class PresenceStatus {
         if (state == Presence.SLEEPING) {
             state = Presence.AWAKE;
         }
-        startClientAwakeTimer();
     }
 
     /**
@@ -85,8 +63,6 @@ public class PresenceStatus {
         if (state == Presence.AWAKE) {
             state = Presence.SLEEPING;
         }
-        stopClientAwakeTimer();
-        presenceService.notifySleeping(registration);
     }
 
     /**
@@ -117,50 +93,12 @@ public class PresenceStatus {
         this.clientAwakeTime = clientAwakeTime;
     }
 
-    /**
-     * Start or restart (if already started) the timer that handles the client wait before sleep time.
-     */
-    public void startClientAwakeTimer() {
-
-        if (clientAwakeTime != 0) {
-            if (clientAwakeTimer != null) {
-                clientAwakeTimer.cancel();
-                clientAwakeTimer.purge();
-            }
-            clientAwakeTimer = new Timer();
-            clientAwakeTask = new TimerTask() {
-
-                @Override
-                public void run() {
-                    if (!isClientSleeping()) {
-                        setSleeping();
-                    }
-                }
-            };
-            clientAwakeTimer.schedule(clientAwakeTask, clientAwakeTime);
-        }
-
+    public Timer getClientTimer() {
+        return this.clientAwakeTimer;
     }
 
-    /**
-     * Stop the timer that handles the client wait before sleep time.
-     */
-    private void stopClientAwakeTimer() {
-
-        if (clientAwakeTimer != null) {
-            clientAwakeTimer.cancel();
-            clientAwakeTimer.purge();
-        }
-
-    }
-
-    /**
-     * Called when the client doesn't respond to a request, for changing its state to SLEEPING
-     */
-    public void clientNotResponding() {
-        if (!isClientSleeping()) {
-            setSleeping();
-        }
+    public void setClientTimer(Timer clientAwakeTimer) {
+        this.clientAwakeTimer = clientAwakeTimer;
     }
 
 }

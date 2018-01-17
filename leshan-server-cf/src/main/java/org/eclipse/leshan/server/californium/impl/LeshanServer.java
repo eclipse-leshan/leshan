@@ -287,7 +287,7 @@ public class LeshanServer implements LwM2mServer {
                 LOG.info("The destination client is sleeping, request couldn't been sent.");
                 return null;
             } else {
-                presenceService.getQueueObject(destination).startClientAwakeTimer();
+                presenceService.startClientAwakeTimer(destination);
             }
         }
         return requestSender.send(destination, request, DEFAULT_TIMEOUT);
@@ -302,7 +302,7 @@ public class LeshanServer implements LwM2mServer {
                 LOG.info("The destination client is sleeping, request couldn't been sent.");
                 return null;
             } else {
-                presenceService.getQueueObject(destination).startClientAwakeTimer();
+                presenceService.startClientAwakeTimer(destination);
             }
         }
         return requestSender.send(destination, request, timeout);
@@ -316,7 +316,7 @@ public class LeshanServer implements LwM2mServer {
                 LOG.info("The destination client is sleeping, request couldn't been sent.");
                 return;
             } else {
-                presenceService.getQueueObject(destination).startClientAwakeTimer();
+                presenceService.startClientAwakeTimer(destination);
             }
         }
         requestSender.send(destination, request, DEFAULT_TIMEOUT, responseCallback, errorCallback);
@@ -330,7 +330,7 @@ public class LeshanServer implements LwM2mServer {
                 LOG.info("The destination client is sleeping, request couldn't been sent.");
                 return;
             } else {
-                presenceService.getQueueObject(destination).startClientAwakeTimer();
+                presenceService.startClientAwakeTimer(destination);
             }
         }
         requestSender.send(destination, request, timeout, responseCallback, errorCallback);
