@@ -15,10 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.queue;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -27,10 +23,10 @@ import org.eclipse.leshan.util.Validate;
 
 /**
  * Class that contains all the necessary elements to handle the queue mode. Every registration object that uses Queue
- * Mode has a LwM2mQueue object for handling it.
+ * Mode has a PresenceStatus object linked to it for handling this mode.
  */
 
-public class LwM2mQueue {
+public class PresenceStatus {
 
     /* The state of the client: Awake or Sleeping */
     private Presence state;
@@ -45,19 +41,19 @@ public class LwM2mQueue {
     /* Registration and Presence Service for notifying sleeping */
     private Registration registration;
 
-    private PresenceService presenceService;
+    private PresenceServiceImpl presenceService;
 
-    public LwM2mQueue(Registration registration, PresenceService presenceService) {
+    public PresenceStatus(Registration registration, PresenceServiceImpl presenceService) {
         Validate.notNull(registration);
         Validate.notNull(presenceService);
 
         this.registration = registration;
         this.presenceService = presenceService;
         this.state = Presence.SLEEPING;
-        this.clientAwakeTime = readCoapMaxTransmitWait(); /* ms */
+        this.clientAwakeTime = 93000; /* ms, default CoAP value */
     }
 
-    public LwM2mQueue(Registration registration, PresenceService presenceService, int clientAwakeTime) {
+    public PresenceStatus(Registration registration, PresenceServiceImpl presenceService, int clientAwakeTime) {
         Validate.notNull(registration);
         Validate.notNull(presenceService);
 
@@ -154,36 +150,6 @@ public class LwM2mQueue {
         if (clientAwakeTimer != null) {
             clientAwakeTimer.cancel();
             clientAwakeTimer.purge();
-        }
-
-    }
-
-    /**
-     * Reads from the Californium.properties file the MAX_TRANSMIT_WAIT constant of the CoAP Protocol
-     * 
-     * @return MAX_TRANSMIT_WAIT
-     */
-    public int readCoapMaxTransmitWait() {
-
-        Properties prop = new Properties();
-        InputStream input = null;
-
-        try {
-
-            input = new FileInputStream("Californium.properties");
-            prop.load(input);
-
-            return Integer.valueOf(prop.getProperty("MAX_TRANSMIT_WAIT"));
-        } catch (IOException ex) {
-            return 93000; /* Default Value */
-        } finally {
-            if (input != null) {
-                try {
-                    input.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
         }
 
     }

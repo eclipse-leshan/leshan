@@ -18,7 +18,6 @@ package org.eclipse.leshan.server.queue;
 import java.util.Collection;
 
 import org.eclipse.leshan.core.observation.Observation;
-import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationListener;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
@@ -29,20 +28,18 @@ import org.eclipse.leshan.server.registration.RegistrationUpdate;
  * sleep.
  */
 
-public class LwM2mClientStateListener implements RegistrationListener {
+public class PresenceStateListener implements RegistrationListener {
 
-    LwM2mServer server;
-    PresenceService presenceService;
+    PresenceServiceImpl presenceService;
 
-    public LwM2mClientStateListener(LwM2mServer server) {
-        this.server = server;
-        presenceService = server.getPresenceService();
+    public PresenceStateListener(PresenceServiceImpl presenceService) {
+        this.presenceService = presenceService;
     }
 
     @Override
     public void registered(Registration reg, Registration previousReg, Collection<Observation> previousObsersations) {
         if (reg.usesQueueMode()) {
-            presenceService.createQueueObject(reg);
+            presenceService.createPresenceStatusObject(reg);
             presenceService.setAwake(reg);
         }
     }

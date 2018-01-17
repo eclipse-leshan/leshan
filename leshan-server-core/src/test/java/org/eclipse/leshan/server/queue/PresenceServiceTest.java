@@ -68,7 +68,7 @@ public class PresenceServiceTest {
                 Identity.unsecure(Inet4Address.getLoopbackAddress(), 12354), address);
 
         Registration reg = builder.build();
-        instance.createQueueObject(reg);
+        instance.createPresenceStatusObject(reg);
         return reg;
     }
 
@@ -79,7 +79,7 @@ public class PresenceServiceTest {
                 Identity.unsecure(Inet4Address.getLoopbackAddress(), 12354), address);
 
         Registration reg = builder.bindingMode(BindingMode.UQ).build();
-        instance.createQueueObject(reg);
+        instance.createPresenceStatusObject(reg);
         return reg;
     }
 }

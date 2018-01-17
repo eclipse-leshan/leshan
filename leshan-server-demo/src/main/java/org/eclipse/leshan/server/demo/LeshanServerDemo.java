@@ -400,10 +400,9 @@ public class LeshanServerDemo {
             ServiceInfo coapSecureServiceInfo = ServiceInfo.create("_coaps._udp.local.", "leshan", secureLocalPort, "");
             jmdns.registerService(coapSecureServiceInfo);
         }
-        
+
         /* Example of a listener that is notified every time the state of the client changes */
         lwServer.getPresenceService().addListener(new ExamplePresenceListener("IPSO-objects-Firefly"));
-        lwServer.getPresenceService().addListener(new ExamplePresenceListener("hello"));
 
         // Start Jetty & Leshan
         lwServer.start();

@@ -46,9 +46,9 @@ import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationService;
-import org.eclipse.leshan.server.queue.LwM2mClientStateListener;
 import org.eclipse.leshan.server.queue.PresenceService;
 import org.eclipse.leshan.server.queue.PresenceServiceImpl;
+import org.eclipse.leshan.server.queue.PresenceStateListener;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
 import org.eclipse.leshan.server.registration.RegistrationListener;
@@ -157,7 +157,7 @@ public class LeshanServer implements LwM2mServer {
         });
 
         // notify applications of LWM2M client coming online/offline
-        this.registrationService.addListener(new LwM2mClientStateListener(this));
+        this.registrationService.addListener(new PresenceStateListener(this.presenceService));
 
         // define a set of endpoints
         Set<Endpoint> endpoints = new HashSet<>();
