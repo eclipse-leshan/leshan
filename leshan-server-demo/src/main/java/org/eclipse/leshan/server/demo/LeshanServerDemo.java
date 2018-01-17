@@ -401,9 +401,6 @@ public class LeshanServerDemo {
             jmdns.registerService(coapSecureServiceInfo);
         }
 
-        /* Example of a listener that is notified every time the state of the client changes */
-        lwServer.getPresenceService().addListener(new ExamplePresenceListener("IPSO-objects-Firefly"));
-
         // Start Jetty & Leshan
         lwServer.start();
         server.start();

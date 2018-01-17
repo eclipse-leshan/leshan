@@ -17,6 +17,8 @@
 package org.eclipse.leshan.server.queue;
 
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -55,11 +57,12 @@ public final class PresenceServiceImpl implements PresenceService {
      * 
      * @param registration the client's registration object
      */
-    public void setAwake(Registration registration) {
-        if (registration.usesQueueMode()) {
-            clientStatusList.get(registration.getEndpoint()).setAwake();
+    public void setAwake(Registration reg) {
+        if (reg.usesQueueMode()) {
+            clientStatusList.get(reg.getEndpoint()).setAwake();
+            startClientAwakeTimer(reg);
             for (PresenceListener listener : listeners) {
-                listener.onAwake(registration);
+                listener.onAwake(reg);
             }
         }
     }
@@ -70,13 +73,14 @@ public final class PresenceServiceImpl implements PresenceService {
      * 
      * @param registration the client's registration object
      */
-    public void notifySleeping(Registration registration) {
-        if (registration.usesQueueMode()) {
+    public void setSleeping(Registration reg) {
+        if (reg.usesQueueMode()) {
+            clientStatusList.get(reg.getEndpoint()).setSleeping();
+            stopClientAwakeTimer(reg);
             for (PresenceListener listener : listeners) {
-                listener.onSleeping(registration);
+                listener.onSleeping(reg);
             }
         }
-
     }
 
     /**
@@ -85,7 +89,7 @@ public final class PresenceServiceImpl implements PresenceService {
      * @param registration the client's registration object.
      */
     public void createPresenceStatusObject(Registration reg) {
-        clientStatusList.put(reg.getEndpoint(), new PresenceStatus(reg, this));
+        clientStatusList.put(reg.getEndpoint(), new PresenceStatus());
     }
 
     /**
@@ -94,7 +98,7 @@ public final class PresenceServiceImpl implements PresenceService {
      * @param registration the client's registration object.
      */
     public void createPresenceStatusObject(Registration reg, int clientAwakeTime) {
-        clientStatusList.put(reg.getEndpoint(), new PresenceStatus(reg, this, clientAwakeTime));
+        clientStatusList.put(reg.getEndpoint(), new PresenceStatus(clientAwakeTime));
     }
 
     /**
@@ -103,7 +107,59 @@ public final class PresenceServiceImpl implements PresenceService {
      * @param reg The client's registration object.
      * @return The {@link PresenceStatus} object.
      */
-    public PresenceStatus getQueueObject(Registration reg) {
+    public PresenceStatus getPresenceStatusObject(Registration reg) {
+
         return clientStatusList.get(reg.getEndpoint());
+    }
+
+    /**
+     * Start or restart (if already started) the timer that handles the client wait before sleep time.
+     */
+    public void startClientAwakeTimer(final Registration reg) {
+
+        final PresenceStatus clientPresenceStatus = getPresenceStatusObject(reg);
+        int clientAwakeTime = clientPresenceStatus.getClientAwakeTime();
+        Timer clientAwakeTimer = clientPresenceStatus.getClientTimer();
+
+        if (clientAwakeTime != 0) {
+            if (clientAwakeTimer != null) {
+                clientAwakeTimer.cancel();
+                clientAwakeTimer.purge();
+            }
+            clientAwakeTimer = new Timer();
+            clientPresenceStatus.setClientTimer(clientAwakeTimer);
+            TimerTask clientAwakeTask = new TimerTask() {
+
+                @Override
+                public void run() {
+                    if (!isClientSleeping(reg)) {
+                        setSleeping(reg);
+                    }
+                }
+            };
+            clientAwakeTimer.schedule(clientAwakeTask, clientAwakeTime);
+        }
+
+    }
+
+    /**
+     * Stop the timer that handles the client wait before sleep time.
+     */
+    private void stopClientAwakeTimer(Registration reg) {
+        PresenceStatus clientPresenceStatus = getPresenceStatusObject(reg);
+        Timer clientAwakeTimer = clientPresenceStatus.getClientTimer();
+        if (clientAwakeTimer != null) {
+            clientAwakeTimer.cancel();
+            clientAwakeTimer.purge();
+        }
+    }
+
+    /**
+     * Called when the client doesn't respond to a request, for changing its state to SLEEPING
+     */
+    public void clientNotResponding(Registration reg) {
+        if (!isClientSleeping(reg)) {
+            setSleeping(reg);
+        }
     }
 }
