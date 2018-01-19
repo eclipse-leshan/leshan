@@ -47,5 +47,5 @@ public interface PresenceService {
      * @param registration data to check
      * @return true if the status is {@link Presence#SLEEPING}
      */
-    boolean isClientSleeping(Registration registration);
+    boolean isClientAwake(Registration registration);
 }

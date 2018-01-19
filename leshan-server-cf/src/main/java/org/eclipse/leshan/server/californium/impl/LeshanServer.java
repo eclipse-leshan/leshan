@@ -283,7 +283,7 @@ public class LeshanServer implements LwM2mServer {
     public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request)
             throws InterruptedException {
         if (destination.usesQueueMode()) {
-            if (presenceService.isClientSleeping(destination)) {
+            if (!presenceService.isClientAwake(destination)) {
                 LOG.info("The destination client is sleeping, request couldn't been sent.");
                 return null;
             } else {
@@ -298,7 +298,7 @@ public class LeshanServer implements LwM2mServer {
     public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request, long timeout)
             throws InterruptedException {
         if (destination.usesQueueMode()) {
-            if (presenceService.isClientSleeping(destination)) {
+            if (!presenceService.isClientAwake(destination)) {
                 LOG.info("The destination client is sleeping, request couldn't been sent.");
                 return null;
             } else {
@@ -312,7 +312,7 @@ public class LeshanServer implements LwM2mServer {
     public <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         if (destination.usesQueueMode()) {
-            if (presenceService.isClientSleeping(destination)) {
+            if (!presenceService.isClientAwake(destination)) {
                 LOG.info("The destination client is sleeping, request couldn't been sent.");
                 return;
             } else {
@@ -326,7 +326,7 @@ public class LeshanServer implements LwM2mServer {
     public <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request, long timeout,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         if (destination.usesQueueMode()) {
-            if (presenceService.isClientSleeping(destination)) {
+            if (!presenceService.isClientAwake(destination)) {
                 LOG.info("The destination client is sleeping, request couldn't been sent.");
                 return;
             } else {

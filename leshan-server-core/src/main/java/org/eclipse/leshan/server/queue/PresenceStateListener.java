@@ -39,7 +39,6 @@ public class PresenceStateListener implements RegistrationListener {
     @Override
     public void registered(Registration reg, Registration previousReg, Collection<Observation> previousObsersations) {
         if (reg.usesQueueMode()) {
-            presenceService.createPresenceStatusObject(reg);
             presenceService.setAwake(reg);
         }
     }
@@ -56,5 +55,6 @@ public class PresenceStateListener implements RegistrationListener {
     @Override
     public void unregistered(Registration reg, Collection<Observation> observations, boolean expired,
             Registration newReg) {
+        presenceService.removePresenceStatusObject(reg);
     }
 }

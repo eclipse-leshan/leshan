@@ -15,7 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.queue;
 
-import java.util.Timer;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 
 /**
  * Class that contains all the necessary elements to handle the queue mode. Every registration object that uses Queue
@@ -28,7 +30,9 @@ public class PresenceStatus {
     private Presence state;
 
     /* Elements to handle the time the client waits before going to sleep */
-    private Timer clientAwakeTimer;
+    ScheduledExecutorService clientAwakeExecutor = Executors.newSingleThreadScheduledExecutor();
+
+    ScheduledFuture<?> clientScheduledFuture;
 
     private int clientAwakeTime;
 
@@ -70,8 +74,8 @@ public class PresenceStatus {
      * 
      * @return true if client is sleeping
      */
-    public boolean isClientSleeping() {
-        return state == Presence.SLEEPING;
+    public boolean isClientAwake() {
+        return state == Presence.AWAKE;
     }
 
     /* Control of the time the client waits before going to sleep */
@@ -93,12 +97,31 @@ public class PresenceStatus {
         this.clientAwakeTime = clientAwakeTime;
     }
 
-    public Timer getClientTimer() {
-        return this.clientAwakeTimer;
+    /**
+     * Gets the client Scheduled Executor.
+     * 
+     * @return the client Scheduled Executor.
+     */
+    public ScheduledExecutorService getClientScheduledExecutor() {
+        return this.clientAwakeExecutor;
     }
 
-    public void setClientTimer(Timer clientAwakeTimer) {
-        this.clientAwakeTimer = clientAwakeTimer;
+    /**
+     * Sets the client scheduled task future, in order to cancel it.
+     * 
+     * @param clientScheduledFuture the scheduled future of the task.
+     */
+    public void setClientExecutorFuture(ScheduledFuture<?> clientScheduledFuture) {
+        this.clientScheduledFuture = clientScheduledFuture;
+    }
+
+    /**
+     * Gets the client scheduled task future, in order to cancel it.
+     * 
+     * @return the client scheduled task future.
+     */
+    public ScheduledFuture<?> getClientScheduledFuture() {
+        return this.clientScheduledFuture;
     }
 
 }
