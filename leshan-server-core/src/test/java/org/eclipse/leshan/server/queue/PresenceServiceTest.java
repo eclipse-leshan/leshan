@@ -56,9 +56,9 @@ public class PresenceServiceTest {
     public void testIsOnline() throws Exception {
         Registration queueModeRegistration = givenASimpleClientWithQueueMode();
 
-        assertTrue(instance.isClientSleeping(queueModeRegistration));
-        instance.setAwake(queueModeRegistration);
-        assertFalse(instance.isClientSleeping(queueModeRegistration));
+        assertTrue(instance.isClientAwake(queueModeRegistration));
+        instance.setSleeping(queueModeRegistration);
+        assertFalse(instance.isClientAwake(queueModeRegistration));
     }
 
     private Registration givenASimpleClient() throws UnknownHostException {
@@ -68,7 +68,7 @@ public class PresenceServiceTest {
                 Identity.unsecure(Inet4Address.getLoopbackAddress(), 12354), address);
 
         Registration reg = builder.build();
-        instance.createPresenceStatusObject(reg);
+        instance.setAwake(reg);
         return reg;
     }
 
@@ -79,7 +79,7 @@ public class PresenceServiceTest {
                 Identity.unsecure(Inet4Address.getLoopbackAddress(), 12354), address);
 
         Registration reg = builder.bindingMode(BindingMode.UQ).build();
-        instance.createPresenceStatusObject(reg);
+        instance.setAwake(reg);
         return reg;
     }
 }

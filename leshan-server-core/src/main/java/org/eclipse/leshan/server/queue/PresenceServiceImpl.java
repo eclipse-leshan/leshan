@@ -17,11 +17,11 @@
 package org.eclipse.leshan.server.queue;
 
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.leshan.server.registration.Registration;
 
@@ -47,18 +47,27 @@ public final class PresenceServiceImpl implements PresenceService {
     }
 
     @Override
-    public boolean isClientSleeping(Registration registration) {
+    public boolean isClientAwake(Registration registration) {
+        if (!clientStatusList.containsKey(registration.getEndpoint())) {
+            return false;
+        }
+
         PresenceStatus presenceStatus = clientStatusList.get(registration.getEndpoint());
-        return presenceStatus.isClientSleeping();
+        return presenceStatus.isClientAwake();
+
     }
 
     /**
      * Set the state of the client identified by registration as {@link Presence#AWAKE}
      * 
-     * @param registration the client's registration object
+     * @param reg the client's registration object
      */
     public void setAwake(Registration reg) {
         if (reg.usesQueueMode()) {
+            if (!clientStatusList.containsKey(reg.getEndpoint())) {
+                createPresenceStatusObject(reg);
+            }
+
             clientStatusList.get(reg.getEndpoint()).setAwake();
             startClientAwakeTimer(reg);
             for (PresenceListener listener : listeners) {
@@ -71,7 +80,7 @@ public final class PresenceServiceImpl implements PresenceService {
      * Notify the listeners that the client state changed to {@link Presence#SLEEPING}. The state changes is produced
      * inside {@link PresenceStatus} when the timer expires or when the client doesn't respond to a request.
      * 
-     * @param registration the client's registration object
+     * @param reg the client's registration object
      */
     public void setSleeping(Registration reg) {
         if (reg.usesQueueMode()) {
@@ -86,19 +95,29 @@ public final class PresenceServiceImpl implements PresenceService {
     /**
      * Creates a new {@link PresenceStatus} object associated with the client.
      * 
-     * @param registration the client's registration object.
+     * @param reg the client's registration object.
      */
-    public void createPresenceStatusObject(Registration reg) {
+    private void createPresenceStatusObject(Registration reg) {
         clientStatusList.put(reg.getEndpoint(), new PresenceStatus());
     }
 
     /**
      * Creates a new {@link PresenceStatus} object associated with the client, with a specific awake time.
      * 
-     * @param registration the client's registration object.
+     * @param reg the client's registration object.
+     * @param clientAwakeTime the client awake time.
      */
-    public void createPresenceStatusObject(Registration reg, int clientAwakeTime) {
+    private void createPresenceStatusObject(Registration reg, int clientAwakeTime) {
         clientStatusList.put(reg.getEndpoint(), new PresenceStatus(clientAwakeTime));
+    }
+
+    /**
+     * Removes the {@link PresenceStatus} object associated with the client from the list.
+     * 
+     * @param reg the client's registration object.
+     */
+    public void removePresenceStatusObject(Registration reg) {
+        clientStatusList.remove(reg.getEndpoint());
     }
 
     /**
@@ -107,7 +126,7 @@ public final class PresenceServiceImpl implements PresenceService {
      * @param reg The client's registration object.
      * @return The {@link PresenceStatus} object.
      */
-    public PresenceStatus getPresenceStatusObject(Registration reg) {
+    private PresenceStatus getPresenceStatusObject(Registration reg) {
 
         return clientStatusList.get(reg.getEndpoint());
     }
@@ -119,25 +138,22 @@ public final class PresenceServiceImpl implements PresenceService {
 
         final PresenceStatus clientPresenceStatus = getPresenceStatusObject(reg);
         int clientAwakeTime = clientPresenceStatus.getClientAwakeTime();
-        Timer clientAwakeTimer = clientPresenceStatus.getClientTimer();
+        ScheduledFuture<?> clientScheduledFuture = clientPresenceStatus.getClientScheduledFuture();
 
         if (clientAwakeTime != 0) {
-            if (clientAwakeTimer != null) {
-                clientAwakeTimer.cancel();
-                clientAwakeTimer.purge();
+            if (clientScheduledFuture != null) {
+                clientScheduledFuture.cancel(true);
             }
-            clientAwakeTimer = new Timer();
-            clientPresenceStatus.setClientTimer(clientAwakeTimer);
-            TimerTask clientAwakeTask = new TimerTask() {
+            clientScheduledFuture = clientPresenceStatus.getClientScheduledExecutor().schedule(new Runnable() {
 
                 @Override
                 public void run() {
-                    if (!isClientSleeping(reg)) {
+                    if (isClientAwake(reg)) {
                         setSleeping(reg);
                     }
                 }
-            };
-            clientAwakeTimer.schedule(clientAwakeTask, clientAwakeTime);
+            }, clientAwakeTime, TimeUnit.MILLISECONDS);
+            clientPresenceStatus.setClientExecutorFuture(clientScheduledFuture);
         }
 
     }
@@ -147,10 +163,9 @@ public final class PresenceServiceImpl implements PresenceService {
      */
     private void stopClientAwakeTimer(Registration reg) {
         PresenceStatus clientPresenceStatus = getPresenceStatusObject(reg);
-        Timer clientAwakeTimer = clientPresenceStatus.getClientTimer();
-        if (clientAwakeTimer != null) {
-            clientAwakeTimer.cancel();
-            clientAwakeTimer.purge();
+        ScheduledFuture<?> clientScheduledFuture = clientPresenceStatus.getClientScheduledFuture();
+        if (clientScheduledFuture != null) {
+            clientScheduledFuture.cancel(true);
         }
     }
 
@@ -158,7 +173,7 @@ public final class PresenceServiceImpl implements PresenceService {
      * Called when the client doesn't respond to a request, for changing its state to SLEEPING
      */
     public void clientNotResponding(Registration reg) {
-        if (!isClientSleeping(reg)) {
+        if (isClientAwake(reg)) {
             setSleeping(reg);
         }
     }
