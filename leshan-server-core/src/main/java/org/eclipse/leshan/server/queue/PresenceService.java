@@ -42,10 +42,10 @@ public interface PresenceService {
     void removeListener(PresenceListener listener);
 
     /**
-     * Returns the current status of a given LWM2M client registration.
+     * Returns the current state of a given LWM2M client registration.
      * 
-     * @param registration data to check
-     * @return true if the status is {@link Presence#SLEEPING}
+     * @param registration the client's registration object.
+     * @return true if the status is {@link Presence#Awake}
      */
     boolean isClientAwake(Registration registration);
 }

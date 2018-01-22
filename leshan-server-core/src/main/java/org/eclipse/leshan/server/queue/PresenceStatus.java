@@ -15,8 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.queue;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
 /**
@@ -28,9 +26,6 @@ public class PresenceStatus {
 
     /* The state of the client: Awake or Sleeping */
     private Presence state;
-
-    /* Elements to handle the time the client waits before going to sleep */
-    ScheduledExecutorService clientAwakeExecutor = Executors.newSingleThreadScheduledExecutor();
 
     ScheduledFuture<?> clientScheduledFuture;
 
@@ -70,9 +65,9 @@ public class PresenceStatus {
     }
 
     /**
-     * Tells if the client is sleeping or not
+     * Tells if the client is awake or not
      * 
-     * @return true if client is sleeping
+     * @return true if the status is {@link Presence#Awake}
      */
     public boolean isClientAwake() {
         return state == Presence.AWAKE;
@@ -95,15 +90,6 @@ public class PresenceStatus {
      */
     public void setClientAwakeTime(int clientAwakeTime) {
         this.clientAwakeTime = clientAwakeTime;
-    }
-
-    /**
-     * Gets the client Scheduled Executor.
-     * 
-     * @return the client Scheduled Executor.
-     */
-    public ScheduledExecutorService getClientScheduledExecutor() {
-        return this.clientAwakeExecutor;
     }
 
     /**
