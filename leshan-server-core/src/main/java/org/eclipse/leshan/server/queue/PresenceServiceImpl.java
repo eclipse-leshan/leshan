@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -33,8 +35,10 @@ import org.eclipse.leshan.server.registration.Registration;
  * @see Presence
  */
 public final class PresenceServiceImpl implements PresenceService {
+
     private final ConcurrentMap<String, PresenceStatus> clientStatusList = new ConcurrentHashMap<>();
     private final List<PresenceListener> listeners = new CopyOnWriteArrayList<>();
+    ScheduledExecutorService clientTimersExecutor = Executors.newSingleThreadScheduledExecutor();
 
     @Override
     public void addListener(PresenceListener listener) {
@@ -144,7 +148,7 @@ public final class PresenceServiceImpl implements PresenceService {
             if (clientScheduledFuture != null) {
                 clientScheduledFuture.cancel(true);
             }
-            clientScheduledFuture = clientPresenceStatus.getClientScheduledExecutor().schedule(new Runnable() {
+            clientScheduledFuture = clientTimersExecutor.schedule(new Runnable() {
 
                 @Override
                 public void run() {
