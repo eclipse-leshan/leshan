@@ -71,9 +71,10 @@ public final class PresenceServiceImpl implements PresenceService {
             if (!clientStatusList.containsKey(reg.getEndpoint())) {
                 createPresenceStatusObject(reg);
             }
-
-            clientStatusList.get(reg.getEndpoint()).setAwake();
-            startClientAwakeTimer(reg);
+            synchronized (this) {
+                clientStatusList.get(reg.getEndpoint()).setAwake();
+                startClientAwakeTimer(reg);
+            }
             for (PresenceListener listener : listeners) {
                 listener.onAwake(reg);
             }
@@ -88,8 +89,10 @@ public final class PresenceServiceImpl implements PresenceService {
      */
     public void setSleeping(Registration reg) {
         if (reg.usesQueueMode()) {
-            clientStatusList.get(reg.getEndpoint()).setSleeping();
-            stopClientAwakeTimer(reg);
+            synchronized (this) {
+                clientStatusList.get(reg.getEndpoint()).setSleeping();
+                stopClientAwakeTimer(reg);
+            }
             for (PresenceListener listener : listeners) {
                 listener.onSleeping(reg);
             }
