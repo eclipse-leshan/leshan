@@ -87,6 +87,8 @@ public class LeshanServer implements LwM2mServer {
 
     private final LwM2mRequestSender requestSender;
 
+    private final LwM2mRequestSender queueModeRequestSender;
+
     private final RegistrationServiceImpl registrationService;
 
     private final ObservationServiceImpl observationService;
@@ -147,7 +149,11 @@ public class LeshanServer implements LwM2mServer {
             @Override
             public void unregistered(Registration registration, Collection<Observation> observations, boolean expired,
                     Registration newReg) {
-                requestSender.cancelPendingRequests(registration);
+                if (registration.usesQueueMode()) {
+                    queueModeRequestSender.cancelPendingRequests(registration);
+                } else {
+                    requestSender.cancelPendingRequests(registration);
+                }
             }
 
             @Override
@@ -194,6 +200,7 @@ public class LeshanServer implements LwM2mServer {
         // create sender
         requestSender = new CaliforniumLwM2mRequestSender(endpoints, this.observationService, modelProvider, encoder,
                 decoder);
+        queueModeRequestSender = new QueueModeLwM2mRequestSender(this.presenceService, this.requestSender);
     }
 
     @Override
@@ -283,10 +290,7 @@ public class LeshanServer implements LwM2mServer {
     public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request)
             throws InterruptedException {
         if (destination.usesQueueMode()) {
-            if (!presenceService.isClientAwake(destination)) {
-                LOG.info("The destination client is sleeping, request couldn't been sent.");
-                return null;
-            }
+            return queueModeRequestSender.send(destination, request, DEFAULT_TIMEOUT);
         }
         return requestSender.send(destination, request, DEFAULT_TIMEOUT);
 
@@ -296,10 +300,7 @@ public class LeshanServer implements LwM2mServer {
     public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request, long timeout)
             throws InterruptedException {
         if (destination.usesQueueMode()) {
-            if (!presenceService.isClientAwake(destination)) {
-                LOG.info("The destination client is sleeping, request couldn't been sent.");
-                return null;
-            }
+            return queueModeRequestSender.send(destination, request, timeout);
         }
         return requestSender.send(destination, request, timeout);
     }
@@ -308,10 +309,8 @@ public class LeshanServer implements LwM2mServer {
     public <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         if (destination.usesQueueMode()) {
-            if (!presenceService.isClientAwake(destination)) {
-                LOG.info("The destination client is sleeping, request couldn't been sent.");
-                return;
-            }
+            queueModeRequestSender.send(destination, request, DEFAULT_TIMEOUT, responseCallback, errorCallback);
+            return;
         }
         requestSender.send(destination, request, DEFAULT_TIMEOUT, responseCallback, errorCallback);
     }
@@ -320,10 +319,8 @@ public class LeshanServer implements LwM2mServer {
     public <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request, long timeout,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         if (destination.usesQueueMode()) {
-            if (!presenceService.isClientAwake(destination)) {
-                LOG.info("The destination client is sleeping, request couldn't been sent.");
-                return;
-            }
+            queueModeRequestSender.send(destination, request, timeout, responseCallback, errorCallback);
+            return;
         }
         requestSender.send(destination, request, timeout, responseCallback, errorCallback);
     }
