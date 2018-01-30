@@ -41,7 +41,11 @@ public class BootstrapResource extends CoapResource {
     public void handlePOST(CoapExchange exchange) {
         ServerIdentity identity = ResourceUtil.extractServerIdentity(exchange, bootstrapHandler);
         BootstrapFinishResponse response = bootstrapHandler.finished(identity, new BootstrapFinishRequest());
-        exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
+        if (response.getCode().isError()) {
+			exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
+		} else {
+			exchange.respond(toCoapResponseCode(response.getCode()));
+		}
     }
 
 }
