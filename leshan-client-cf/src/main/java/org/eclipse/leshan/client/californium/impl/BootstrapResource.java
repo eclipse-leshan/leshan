@@ -25,6 +25,7 @@ import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.servers.BootstrapHandler;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.response.BootstrapFinishResponse;
+
 /**
  * A CoAP {@link Resource} in charge of handling the Bootstrap Finish indication from the bootstrap server.
  */
@@ -41,7 +42,10 @@ public class BootstrapResource extends CoapResource {
     public void handlePOST(CoapExchange exchange) {
         ServerIdentity identity = ResourceUtil.extractServerIdentity(exchange, bootstrapHandler);
         BootstrapFinishResponse response = bootstrapHandler.finished(identity, new BootstrapFinishRequest());
-        exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
+        if (response.getCode().isError()) {
+            exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
+        } else {
+            exchange.respond(toCoapResponseCode(response.getCode()));
+        }
     }
-
 }

@@ -228,7 +228,11 @@ public class RegisterResource extends CoapResource {
         UpdateResponse updateResponse = sendableResponse.getResponse();
 
         // Create CoAP Response from LwM2m request
-        exchange.respond(toCoapResponseCode(updateResponse.getCode()), updateResponse.getErrorMessage());
+        if (updateResponse.getCode().isError()) {
+            exchange.respond(toCoapResponseCode(updateResponse.getCode()), updateResponse.getErrorMessage());
+        } else {
+            exchange.respond(toCoapResponseCode(updateResponse.getCode()));
+        }
         sendableResponse.sent();
     }
 
@@ -245,7 +249,11 @@ public class RegisterResource extends CoapResource {
         DeregisterResponse deregisterResponse = sendableResponse.getResponse();
 
         // Create CoAP Response from LwM2m request
-        exchange.respond(toCoapResponseCode(deregisterResponse.getCode()), deregisterResponse.getErrorMessage());
+        if (deregisterResponse.getCode().isError()) {
+            exchange.respond(toCoapResponseCode(deregisterResponse.getCode()), deregisterResponse.getErrorMessage());
+        } else {
+            exchange.respond(toCoapResponseCode(deregisterResponse.getCode()));
+        }
         sendableResponse.sent();
     }
 
