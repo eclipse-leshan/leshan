@@ -15,9 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.response.ErrorCallback;
@@ -55,26 +52,45 @@ public class QueueModeLwM2mRequestSender implements LwM2mRequestSender {
     public <T extends LwM2mResponse> T send(final Registration destination, DownlinkRequest<T> request, long timeout)
             throws InterruptedException {
 
+        // If the client does not use Q-Mode, just send
+        if (!destination.usesQueueMode()) {
+            return delegatedSender.send(destination, request, timeout);
+        }
+
+        // If the client uses Q-Mode...
+
         // If the client is sleeping, warn the user and return
         if (!presenceService.isClientAwake(destination)) {
             LOG.info("The destination client is sleeping, request couldn't been sent.");
             return null;
         }
 
-        // Create a response callback to use the asynchronous send method in a synchronous way
-        ResponseCallbackQueueModeSynchronous<T> synchronousResponseCallback = new ResponseCallbackQueueModeSynchronous<T>(
-                presenceService, destination);
-
         // Use delegation to send the request
-        delegatedSender.send(destination, request, timeout, synchronousResponseCallback, synchronousResponseCallback);
+        T response = delegatedSender.send(destination, request, timeout);
+        if (response != null) {
 
+            // Set the client awake. This will restart the timer.
+            presenceService.setAwake(destination);
+        } else {
+
+            // If the timeout expires, this means the client does not respond.
+            presenceService.clientNotResponding(destination);
+        }
         // Wait for response, then return it
-        return synchronousResponseCallback.waitForResponse(timeout);
+        return response;
     }
 
     @Override
     public <T extends LwM2mResponse> void send(final Registration destination, DownlinkRequest<T> request, long timeout,
             final ResponseCallback<T> responseCallback, final ErrorCallback errorCallback) {
+
+        // If the client does not use Q-Mode, just send
+        if (!destination.usesQueueMode()) {
+            delegatedSender.send(destination, request, timeout, responseCallback, errorCallback);
+            return;
+        }
+
+        // If the client uses Q-Mode...
 
         // If the client is sleeping, warn the user and return
         if (!presenceService.isClientAwake(destination)) {
@@ -111,54 +127,4 @@ public class QueueModeLwM2mRequestSender implements LwM2mRequestSender {
     public void cancelPendingRequests(Registration registration) {
         delegatedSender.cancelPendingRequests(registration);
     }
-
-    /**
-     * Callback to use the asynchronous method of {@link CaliforniumLwM2mRequestSender} in a synchronous way
-     */
-    public class ResponseCallbackQueueModeSynchronous<T extends LwM2mResponse>
-            implements ResponseCallback<T>, ErrorCallback {
-
-        /**
-         * @param presenceService the presence service object for setting the client into {@link Presence#SLEEPING} when
-         *        request Timeout expires and into {@link Presence#Awake} when a response arrives.
-         * @param delegatedSender internal sender that it is used for sending the requests, using delegation.
-         */
-        private PresenceServiceImpl presenceService;
-        private Registration destination;
-        private final CountDownLatch latch;
-        private T response;
-
-        public ResponseCallbackQueueModeSynchronous(PresenceServiceImpl presenceService, Registration destination) {
-            this.presenceService = presenceService;
-            this.destination = destination;
-            this.response = null;
-            latch = new CountDownLatch(1);
-        }
-
-        @Override
-        public void onResponse(T response) {
-            presenceService.setAwake(destination);
-            this.response = response;
-            latch.countDown();
-        }
-
-        @Override
-        public void onError(Exception e) {
-            latch.countDown();
-            if (e instanceof TimeoutException) {
-                presenceService.clientNotResponding(destination);
-            }
-        }
-
-        public T waitForResponse(Long timeout) throws InterruptedException {
-            if (timeout != null) {
-                latch.await(timeout, TimeUnit.MILLISECONDS);
-            } else {
-                latch.await();
-            }
-            return this.response;
-        }
-
-    }
-
 }
