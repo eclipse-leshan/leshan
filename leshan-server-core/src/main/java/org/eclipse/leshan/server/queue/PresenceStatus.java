@@ -46,11 +46,15 @@ public class PresenceStatus {
     /**
      * Set the client state to awake. This should be called when an update message is received from the server. It
      * starts the client awake timer.
+     * 
+     * @return true if the state was changed (previous state was {@link Presence#SLEEPING}
      */
-    public void setAwake() {
+    public boolean setAwake() {
         if (state == Presence.SLEEPING) {
             state = Presence.AWAKE;
+            return true;
         }
+        return false;
     }
 
     /**
@@ -58,10 +62,20 @@ public class PresenceStatus {
      * expires, or when the client is not responding. It also notifies the listeners inside the {@link PresenceService}.
      * It stops the client awake timer.
      */
-    public void setSleeping() {
+
+    /**
+     * Set the client state to sleeping. This should be called when the the time the client waits before going to sleep
+     * expires, or when the client is not responding. It also notifies the listeners inside the {@link PresenceService}.
+     * It stops the client awake timer.
+     * 
+     * @return true if the state was changed (previous state was {@link Presence#AWAKE}
+     */
+    public boolean setSleeping() {
         if (state == Presence.AWAKE) {
             state = Presence.SLEEPING;
+            return true;
         }
+        return false;
     }
 
     /**
