@@ -22,7 +22,6 @@ import java.util.Date;
 import java.util.Map.Entry;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
-import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -78,20 +77,14 @@ public class LwM2mNodeTlvEncoder {
 
             Tlv[] tlvs;
 
-            ObjectModel objectModel = model.getObjectModel(object.getId());
-            if (objectModel != null && !objectModel.multiple) {
-                // single instance object, the instance is level is not needed
-                tlvs = encodeResources(object.getInstance(0).getResources().values(), new LwM2mPath(object.getId(), 0));
-            } else {
-                // encoded as an array of instances
-                tlvs = new Tlv[object.getInstances().size()];
-                int i = 0;
-                for (Entry<Integer, LwM2mObjectInstance> instance : object.getInstances().entrySet()) {
-                    Tlv[] resources = encodeResources(instance.getValue().getResources().values(),
-                            new LwM2mPath(object.getId(), instance.getKey()));
-                    tlvs[i] = new Tlv(TlvType.OBJECT_INSTANCE, resources, null, instance.getKey());
-                    i++;
-                }
+            // encoded as an array of instances
+            tlvs = new Tlv[object.getInstances().size()];
+            int i = 0;
+            for (Entry<Integer, LwM2mObjectInstance> instance : object.getInstances().entrySet()) {
+                Tlv[] resources = encodeResources(instance.getValue().getResources().values(),
+                        new LwM2mPath(object.getId(), instance.getKey()));
+                tlvs[i] = new Tlv(TlvType.OBJECT_INSTANCE, resources, null, instance.getKey());
+                i++;
             }
 
             try {

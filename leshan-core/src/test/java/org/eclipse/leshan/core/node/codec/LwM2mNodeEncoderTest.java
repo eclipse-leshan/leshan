@@ -169,7 +169,7 @@ public class LwM2mNodeEncoderTest {
         byte[] encoded = encoder.encode(object, ContentFormat.TLV, new LwM2mPath("/3"), model);
 
         // encoded as an array of resource TLVs
-        Assert.assertArrayEquals(ENCODED_DEVICE_WITHOUT_INSTANCE, encoded);
+        Assert.assertArrayEquals(ENCODED_DEVICE_WITH_INSTANCE, encoded);
     }
 
     @Test
