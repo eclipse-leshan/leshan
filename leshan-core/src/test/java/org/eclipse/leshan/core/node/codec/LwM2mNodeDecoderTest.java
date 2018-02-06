@@ -19,11 +19,15 @@ package org.eclipse.leshan.core.node.codec;
 import static org.junit.Assert.*;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
+import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.model.ResourceModel;
+import org.eclipse.leshan.core.model.ResourceModel.Operations;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mObject;
@@ -37,6 +41,7 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.tlv.Tlv;
 import org.eclipse.leshan.tlv.Tlv.TlvType;
 import org.eclipse.leshan.tlv.TlvEncoder;
+import org.eclipse.leshan.util.Hex;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -50,8 +55,145 @@ public class LwM2mNodeDecoderTest {
 
     @BeforeClass
     public static void loadModel() {
-        model = new LwM2mModel(ObjectLoader.loadDefault());
+        // load default object
+        List<ObjectModel> objects = ObjectLoader.loadDefault();
+
+        // add object 65 from the LWM2M v1.0.1 specification (figure 28)
+        List<ResourceModel> resForObj65 = new ArrayList<>();
+        resForObj65.add(new ResourceModel(0, "res0", Operations.R, true, false, Type.OBJLNK, null, null, null));
+        resForObj65.add(new ResourceModel(1, "res1", Operations.R, false, false, Type.STRING, null, null, null));
+        resForObj65.add(new ResourceModel(2, "res2", Operations.R, false, false, Type.INTEGER, null, null, null));
+        objects.add(
+                new ObjectModel(65, "object link tests 65", "", ObjectModel.DEFAULT_VERSION, true, false, resForObj65));
+
+        // add object 66 from the LWM2M v1.0.1 specification (figure 28)
+        List<ResourceModel> resForObj66 = new ArrayList<>();
+        resForObj66.add(new ResourceModel(0, "res0", Operations.R, true, false, Type.STRING, null, null, null));
+        resForObj66.add(new ResourceModel(1, "res1", Operations.R, false, false, Type.STRING, null, null, null));
+        resForObj66.add(new ResourceModel(2, "res2", Operations.R, false, false, Type.OBJLNK, null, null, null));
+        objects.add(
+                new ObjectModel(66, "object link tests 66", "", ObjectModel.DEFAULT_VERSION, true, false, resForObj66));
+
+        model = new LwM2mModel(objects);
         decoder = new DefaultLwM2mNodeDecoder();
+    }
+
+    // tlv content for instance 0 of device object (encoded as an array of resource TLVs)
+    // Example from LWM2M spec §4.3.1
+    private final static byte[] ENCODED_DEVICE_WITHOUT_INSTANCE = Hex.decodeHex(
+            "C800144F70656E204D6F62696C6520416C6C69616E6365C801164c69676874776569676874204d324d20436c69656e74C80209333435303030313233C303312E30860641000141010588070842000ED842011388870841007D42010384C10964C10A0F830B410000C40D5182428FC60E2B30323A3030C11055"
+                    .toCharArray());
+
+    // tlv content for instance 0 of device object (encoded as an array of only 1 Object instance TLV)
+    // Example from LWM2M spec §4.3.2 A)
+    private final static byte[] ENCODED_DEVICE_WITH_INSTANCE = Hex.decodeHex(
+            "080079C800144F70656E204D6F62696C6520416C6C69616E6365C801164C69676874776569676874204D324D20436C69656E74C80209333435303030313233C303312E30860641000141010588070842000ED842011388870841007D42010384C10964C10A0F830B410000C40D5182428FC60E2B30323A3030C11055"
+                    .toCharArray());
+
+    // tlv content for multi instance ACL (encoded as an array of 2 Object instances TLV)
+    // Example from LWM2M spec §4.3.2 B)
+    private final static byte[] ENCODED_ACL = Hex
+            .decodeHex("08000EC10001C101008302417F07C1037F080212C10003C101008702417F0761013601C1037F".toCharArray());
+
+    // tlv content for multi instance SERVER (encoded as an array of 1 Object instance TLV)
+    // Example from LWM2M spec §4.3.2 C)
+    private final static byte[] ENCODED_SERVER = Hex.decodeHex("08000FC10001C40100015180C10601C10755".toCharArray());
+
+    // tlv content for instance OBJ65 (encoded as an array of 3 resource TLV)
+    // Example from LWM2M spec §4.3.3 1)
+    private final static byte[] ENCODED_OBJ65 = Hex
+            .decodeHex("88000C440000420000440100420001C8010D38363133383030373535353030C40212345678".toCharArray());
+
+    // tlv content for multi instance OBJ66 (encoded as an array of 2 instance TLV)
+    // Example from LWM2M spec §4.3.3 2)
+    private final static byte[] ENCODED_OBJ66 = Hex.decodeHex(
+            "080026C8000B6D79536572766963652031C8010F496E7465726E65742E31352E323334C40200430000080126C8000B6D79536572766963652032C8010F496E7465726E65742E31352E323335C402FFFFFFFF"
+                    .toCharArray());
+
+    private void assertDeviceInstance(LwM2mObjectInstance oInstance) {
+        assertEquals(0, oInstance.getId());
+
+        assertEquals("Open Mobile Alliance", oInstance.getResource(0).getValue());
+        assertEquals("Lightweight M2M Client", oInstance.getResource(1).getValue());
+        assertEquals("345000123", oInstance.getResource(2).getValue());
+        assertEquals("1.0", oInstance.getResource(3).getValue());
+        assertNull(oInstance.getResource(4));
+        assertNull(oInstance.getResource(5));
+        assertEquals(2, oInstance.getResource(6).getValues().size());
+        assertEquals(1L, oInstance.getResource(6).getValue(0));
+        assertEquals(5L, oInstance.getResource(6).getValue(1));
+        assertEquals(3800L, oInstance.getResource(7).getValue(0));
+        assertEquals(5000L, oInstance.getResource(7).getValue(1));
+        assertEquals(125L, oInstance.getResource(8).getValue(0));
+        assertEquals(900L, oInstance.getResource(8).getValue(1));
+        assertEquals(100L, oInstance.getResource(9).getValue());
+        assertEquals(15L, oInstance.getResource(10).getValue());
+        assertEquals(1, oInstance.getResource(11).getValues().size());
+        assertEquals(0L, oInstance.getResource(11).getValue(0));
+        assertNull(oInstance.getResource(12));
+        assertEquals(new Date(1367491215000L), oInstance.getResource(13).getValue());
+        assertEquals("+02:00", oInstance.getResource(14).getValue());
+        assertEquals("U", oInstance.getResource(16).getValue());
+
+    }
+
+    private void assertAclInstances(LwM2mObject oObject) {
+        assertEquals(2, oObject.getId());
+
+        assertEquals(2, oObject.getInstances().size());
+        // instance 1
+        LwM2mObjectInstance oInstance0 = oObject.getInstance(0);
+        assertEquals(1L, oInstance0.getResource(0).getValue());
+        assertEquals(0L, oInstance0.getResource(1).getValue());
+        assertEquals(1, oInstance0.getResource(2).getValues().size());
+        assertEquals(7L, oInstance0.getResource(2).getValue(127));
+        assertEquals(127L, oInstance0.getResource(3).getValue());
+
+        // instance 2
+        LwM2mObjectInstance oInstance2 = oObject.getInstance(2);
+        assertEquals(3L, oInstance2.getResource(0).getValue());
+        assertEquals(0L, oInstance2.getResource(1).getValue());
+        assertEquals(2, oInstance2.getResource(2).getValues().size());
+        assertEquals(7L, oInstance2.getResource(2).getValue(127));
+        assertEquals(1L, oInstance2.getResource(2).getValue(310));
+        assertEquals(127L, oInstance2.getResource(3).getValue());
+    }
+
+    private void assertServerInstance(LwM2mObject oObject) {
+        assertEquals(1, oObject.getId());
+
+        assertEquals(1, oObject.getInstances().size());
+        LwM2mObjectInstance oInstance0 = oObject.getInstance(0);
+        assertEquals(1L, oInstance0.getResource(0).getValue());
+        assertEquals(86400L, oInstance0.getResource(1).getValue());
+        assertEquals(true, oInstance0.getResource(6).getValue());
+        assertEquals("U", oInstance0.getResource(7).getValue());
+    }
+
+    private void assertObj65Instance(LwM2mObjectInstance instance) {
+        assertEquals(0, instance.getId());
+
+        // instance 1
+        assertEquals(2, instance.getResource(0).getValues().size());
+        assertEquals(new ObjectLink(66, 0), instance.getResource(0).getValue(0));
+        assertEquals(new ObjectLink(66, 1), instance.getResource(0).getValue(1));
+        assertEquals("8613800755500", instance.getResource(1).getValue());
+        assertEquals(305419896L, instance.getResource(2).getValue());
+    }
+
+    private void assertObj66Instance(LwM2mObject oObject) {
+        assertEquals(66, oObject.getId());
+
+        assertEquals(2, oObject.getInstances().size());
+        // instance 1
+        LwM2mObjectInstance oInstance0 = oObject.getInstance(0);
+        assertEquals("myService 1", oInstance0.getResource(0).getValue());
+        assertEquals("Internet.15.234", oInstance0.getResource(1).getValue());
+        assertEquals(new ObjectLink(67, 0), oInstance0.getResource(2).getValue());
+
+        // instance 2
+        LwM2mObjectInstance oInstance2 = oObject.getInstance(1);
+        assertEquals("myService 2", oInstance2.getResource(0).getValue());
     }
 
     @Test
@@ -96,74 +238,55 @@ public class LwM2mNodeDecoderTest {
         assertEquals(value, resource.getValue());
     }
 
-    // tlv content for instance 0 of device object (encoded as an array of resource TLVs)
-    private final static byte[] ENCODED_DEVICE = new byte[] { -56, 0, 20, 79, 112, 101, 110, 32, 77, 111, 98, 105, 108,
-                            101, 32, 65, 108, 108, 105, 97, 110, 99, 101, -56, 1, 22, 76, 105, 103, 104, 116, 119, 101,
-                            105, 103, 104, 116, 32, 77, 50, 77, 32, 67, 108, 105, 101, 110, 116, -56, 2, 9, 51, 52, 53,
-                            48, 48, 48, 49, 50, 51, -61, 3, 49, 46, 48, -122, 6, 65, 0, 1, 65, 1, 5, -120, 7, 8, 66, 0,
-                            14, -40, 66, 1, 19, -120, -121, 8, 65, 0, 125, 66, 1, 3, -124, -63, 9, 100, -63, 10, 15,
-                            -63, 11, 0, -60, 13, 81, -126, 66, -113, -58, 14, 43, 48, 50, 58, 48, 48, -63, 15, 85 };
-
-    @Test
-    public void tlv_device_object_mono_instance() throws Exception {
-        LwM2mObjectInstance oInstance = ((LwM2mObject) decoder.decode(ENCODED_DEVICE, ContentFormat.TLV,
-                new LwM2mPath(3), model)).getInstance(0);
-        assertDeviceInstance(oInstance);
-    }
-
-    private void assertDeviceInstance(LwM2mObjectInstance oInstance) {
-        assertEquals(0, oInstance.getId());
-
-        assertEquals("Open Mobile Alliance", oInstance.getResource(0).getValue());
-        assertEquals("Lightweight M2M Client", oInstance.getResource(1).getValue());
-        assertEquals("345000123", oInstance.getResource(2).getValue());
-        assertEquals("1.0", oInstance.getResource(3).getValue());
-        assertNull(oInstance.getResource(4));
-        assertNull(oInstance.getResource(5));
-        assertEquals(2, oInstance.getResource(6).getValues().size());
-        assertEquals(1L, oInstance.getResource(6).getValue(0));
-        assertEquals(5L, oInstance.getResource(6).getValue(1));
-        assertEquals(3800L, oInstance.getResource(7).getValue(0));
-        assertEquals(5000L, oInstance.getResource(7).getValue(1));
-        assertEquals(125L, oInstance.getResource(8).getValue(0));
-        assertEquals(900L, oInstance.getResource(8).getValue(1));
-        assertEquals(100L, oInstance.getResource(9).getValue());
-        assertEquals(15L, oInstance.getResource(10).getValue());
-        assertEquals(0L, oInstance.getResource(11).getValue());
-        assertNull(oInstance.getResource(12));
-        assertEquals(new Date(1367491215000L), oInstance.getResource(13).getValue());
-        assertEquals("+02:00", oInstance.getResource(14).getValue());
-        assertEquals("U", oInstance.getResource(15).getValue());
-
-    }
-
     @Test
     public void tlv_device_object_instance0_from_resources_tlv() throws CodecException {
 
-        LwM2mObjectInstance oInstance = (LwM2mObjectInstance) decoder.decode(ENCODED_DEVICE, ContentFormat.TLV,
-                new LwM2mPath(3, 0), model);
+        LwM2mObjectInstance oInstance = (LwM2mObjectInstance) decoder.decode(ENCODED_DEVICE_WITHOUT_INSTANCE,
+                ContentFormat.TLV, new LwM2mPath(3, 0), model);
         assertDeviceInstance(oInstance);
     }
 
     @Test
     public void tlv_device_object_instance0_from_resources_tlv__instance_expected() throws CodecException {
 
-        LwM2mObjectInstance oInstance = decoder.decode(ENCODED_DEVICE, ContentFormat.TLV, new LwM2mPath(3), model,
-                LwM2mObjectInstance.class);
+        LwM2mObjectInstance oInstance = decoder.decode(ENCODED_DEVICE_WITHOUT_INSTANCE, ContentFormat.TLV,
+                new LwM2mPath(3), model, LwM2mObjectInstance.class);
         assertDeviceInstance(oInstance);
     }
 
     @Test
     public void tlv_device_object_instance0_from_instance_tlv() throws CodecException {
 
-        // TLV instance = { type=INSTANCE, instanceId=0, length=DEVICE_ENCODED.lentgh, value=DEVICE_ENCODED }
-        byte[] instanceTlv = new byte[ENCODED_DEVICE.length + 3];
-        System.arraycopy(new byte[] { 8, 0, 119 }, 0, instanceTlv, 0, 3);
-        System.arraycopy(ENCODED_DEVICE, 0, instanceTlv, 3, ENCODED_DEVICE.length);
-
-        LwM2mObjectInstance oInstance = (LwM2mObjectInstance) decoder.decode(instanceTlv, ContentFormat.TLV,
-                new LwM2mPath(3, 0), model);
+        LwM2mObjectInstance oInstance = (LwM2mObjectInstance) decoder.decode(ENCODED_DEVICE_WITH_INSTANCE,
+                ContentFormat.TLV, new LwM2mPath(3, 0), model);
         assertDeviceInstance(oInstance);
+    }
+
+    @Test
+    public void tlv_server_object_multi_instance_with_only_1_instance() throws Exception {
+        LwM2mObject oObject = ((LwM2mObject) decoder.decode(ENCODED_SERVER, ContentFormat.TLV, new LwM2mPath(1),
+                model));
+        assertServerInstance(oObject);
+    }
+
+    @Test
+    public void tlv_acl_object_multi_instance() throws Exception {
+        LwM2mObject oObject = ((LwM2mObject) decoder.decode(ENCODED_ACL, ContentFormat.TLV, new LwM2mPath(2), model));
+        assertAclInstances(oObject);
+    }
+
+    @Test
+    public void tlv_single_instance_with_obj_link() throws Exception {
+        LwM2mObjectInstance oInstance = ((LwM2mObjectInstance) decoder.decode(ENCODED_OBJ65, ContentFormat.TLV,
+                new LwM2mPath(65, 0), model));
+        assertObj65Instance(oInstance);
+    }
+
+    @Test
+    public void tlv_multi_instance_with_obj_link() throws Exception {
+        LwM2mObject oObject = ((LwM2mObject) decoder.decode(ENCODED_OBJ66, ContentFormat.TLV, new LwM2mPath(66),
+                model));
+        assertObj66Instance(oObject);
     }
 
     @Test
@@ -288,10 +411,10 @@ public class LwM2mNodeDecoderTest {
         b.append("{\"n\":\"8/1\",\"v\":900},");
         b.append("{\"n\":\"9\",\"v\":100},");
         b.append("{\"n\":\"10\",\"v\":15},");
-        b.append("{\"n\":\"11\",\"v\":0},");
+        b.append("{\"n\":\"11/0\",\"v\":0},");
         b.append("{\"n\":\"13\",\"v\":1367491215},");
         b.append("{\"n\":\"14\",\"sv\":\"+02:00\"},");
-        b.append("{\"n\":\"15\",\"sv\":\"U\"}]}");
+        b.append("{\"n\":\"16\",\"sv\":\"U\"}]}");
 
         LwM2mObjectInstance oInstance = (LwM2mObjectInstance) decoder.decode(b.toString().getBytes(),
                 ContentFormat.JSON, new LwM2mPath(3, 0), model);
@@ -317,10 +440,10 @@ public class LwM2mNodeDecoderTest {
         b.append("{\"n\":\"3/0/8/1\",\"v\":900},");
         b.append("{\"n\":\"3/0/9\",\"v\":100},");
         b.append("{\"n\":\"3/0/10\",\"v\":15},");
-        b.append("{\"n\":\"3/0/11\",\"v\":0},");
+        b.append("{\"n\":\"3/0/11/0\",\"v\":0},");
         b.append("{\"n\":\"3/0/13\",\"v\":1367491215},");
         b.append("{\"n\":\"3/0/14\",\"sv\":\"+02:00\"},");
-        b.append("{\"n\":\"3/0/15\",\"sv\":\"U\"}]}");
+        b.append("{\"n\":\"3/0/16\",\"sv\":\"U\"}]}");
 
         LwM2mObjectInstance oInstance = (LwM2mObjectInstance) decoder.decode(b.toString().getBytes(),
                 ContentFormat.JSON, new LwM2mPath(3, 0), model);
