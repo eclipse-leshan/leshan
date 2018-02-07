@@ -20,20 +20,18 @@ import static org.eclipse.leshan.integration.tests.SecureIntegrationTestHelper.*
 import static org.junit.Assert.*;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 
+import org.eclipse.californium.core.network.CoapEndpoint;
+import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.EndpointMismatchException;
 import org.eclipse.californium.elements.RawData;
 import org.eclipse.californium.elements.util.SimpleMessageCallback;
 import org.eclipse.californium.scandium.DTLSConnector;
-import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
-import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
-import org.eclipse.californium.scandium.dtls.pskstore.StaticPskStore;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
 import org.eclipse.leshan.server.registration.Registration;
@@ -113,22 +111,24 @@ public class SecurityTest {
         // Ensure we can send a read request
         helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1));
 
-        // Get the previous address and stop client silently (no deregistration)
-        InetSocketAddress securedAddress = helper.client.getSecuredAddress();
-        helper.client.destroy(false);
-        helper.client = null;
+        // Pause the client
+        // helper.client.stop(false);
 
-        // add new credential to the server
+        // Add new credential to the server
         helper.getSecurityStore().add(SecurityInfo.newPreSharedKeyInfo(GOOD_ENDPOINT, "anotherPSK", GOOD_PSK_KEY));
 
-        // Create a new connector for the same address/port and start a new DTLS handshake
-        Builder builder = new DtlsConnectorConfig.Builder();
-        builder.setAddress(securedAddress);
-        builder.setPskStore(new StaticPskStore("anotherPSK", GOOD_PSK_KEY));
-        DTLSConnector dtlsConnector = new DTLSConnector(builder.build());
-        dtlsConnector.start();
+        // Get connector
+        Endpoint endpoint = helper.client.getCoapServer().getEndpoint(helper.client.getSecuredAddress());
+        DTLSConnector connector = (DTLSConnector) ((CoapEndpoint) endpoint).getConnector();
+        // Clear DTLS session to force new handshake
+        connector.clearConnectionState();
+        // Change PSK idea
+        helper.setNewPsk(helper.client, "anotherPSK");
+        // restart connector
+        connector.start();
+        // send and empty message to force a new handshake with new credentials
         SimpleMessageCallback callback = new SimpleMessageCallback();
-        dtlsConnector.send(RawData.outbound(new byte[0], new AddressEndpointContext(helper.server.getSecuredAddress()),
+        connector.send(RawData.outbound(new byte[0], new AddressEndpointContext(helper.server.getSecuredAddress()),
                 callback, false));
 
         // Wait until new handshake DTLS is done
@@ -137,12 +137,15 @@ public class SecurityTest {
 
         // Try to send a read request this should failed with an SendFailedException.
         try {
-            helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1));
+            helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 1000);
+            fail("send must failed");
         } catch (SendFailedException e) {
             assertTrue("must be caused by an EndpointMismatchException",
                     e.getCause() instanceof EndpointMismatchException);
         } finally {
-            dtlsConnector.destroy();
+            connector.stop();
+            helper.client.destroy(false);
+            helper.client = null;
         }
     }
 

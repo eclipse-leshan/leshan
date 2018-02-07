@@ -44,13 +44,17 @@ import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.leshan.LwM2mId;
+import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.object.Server;
+import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.request.BindingMode;
+import org.eclipse.leshan.core.request.WriteRequest;
+import org.eclipse.leshan.core.response.WriteResponse;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.impl.InMemorySecurityStore;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
@@ -179,6 +183,13 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         builder.setLocalAddress(clientAddress.getHostString(), clientAddress.getPort());
         builder.setObjects(objects);
         client = builder.build();
+    }
+
+    public void setNewPsk(LwM2mClient client, String identity) {
+        LwM2mObjectEnabler securityObject = client.getObjectEnablers().get(0);
+        WriteResponse write = securityObject.write(ServerIdentity.SYSTEM,
+                new WriteRequest(LwM2mId.SECURITY, 0, LwM2mId.SEC_PUBKEY_IDENTITY, identity.getBytes()));
+        System.out.println(write);
     }
 
     // TODO implement RPK support for client
