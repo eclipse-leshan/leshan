@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.client;
 
-import java.util.Collection;
+import java.util.Map;
 
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 
@@ -41,6 +41,6 @@ public interface LwM2mClient {
      */
     void destroy(boolean deregister);
 
-    Collection<LwM2mObjectEnabler> getObjectEnablers();
+    Map<Integer, LwM2mObjectEnabler> getObjectEnablers();
 
 }

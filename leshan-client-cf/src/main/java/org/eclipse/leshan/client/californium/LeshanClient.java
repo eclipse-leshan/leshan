@@ -16,8 +16,6 @@
 package org.eclipse.leshan.client.californium;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -184,8 +182,8 @@ public class LeshanClient implements LwM2mClient {
     }
 
     @Override
-    public Collection<LwM2mObjectEnabler> getObjectEnablers() {
-        return Collections.unmodifiableCollection(new ArrayList<>(objectEnablers.values()));
+    public Map<Integer, LwM2mObjectEnabler> getObjectEnablers() {
+        return Collections.unmodifiableMap(objectEnablers);
     }
 
     public CoapServer getCoapServer() {
