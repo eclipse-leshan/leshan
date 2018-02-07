@@ -16,6 +16,7 @@
 package org.eclipse.leshan.server.californium.impl;
 
 import org.eclipse.leshan.core.request.DownlinkRequest;
+import org.eclipse.leshan.core.request.exception.ClientSleepingException;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -61,8 +62,7 @@ public class QueueModeLwM2mRequestSender implements LwM2mRequestSender {
 
         // If the client is sleeping, warn the user and return
         if (!presenceService.isClientAwake(destination)) {
-            LOG.info("The destination client is sleeping, request couldn't been sent.");
-            return null;
+            throw new ClientSleepingException("The destination client is sleeping, request cannot be sent.");
         }
 
         // Use delegation to send the request
@@ -94,8 +94,7 @@ public class QueueModeLwM2mRequestSender implements LwM2mRequestSender {
 
         // If the client is sleeping, warn the user and return
         if (!presenceService.isClientAwake(destination)) {
-            LOG.info("The destination client is sleeping, request couldn't been sent.");
-            return;
+            throw new ClientSleepingException("The destination client is sleeping, request cannot be sent.");
         }
 
         // Use delegation to send the request, with specific callbacks to perform Queue Mode operation

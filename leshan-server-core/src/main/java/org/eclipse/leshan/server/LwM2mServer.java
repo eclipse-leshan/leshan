@@ -17,6 +17,7 @@ package org.eclipse.leshan.server;
 
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.request.DownlinkRequest;
+import org.eclipse.leshan.core.request.exception.ClientSleepingException;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.request.exception.RequestRejectedException;
@@ -71,9 +72,11 @@ public interface LwM2mServer {
      * @throws RequestRejectedException if the request is rejected by foreign peer.
      * @throws RequestCanceledException if the request is cancelled.
      * @throws InvalidResponseException if the response received is malformed.
+     * @throws ClientSleepingException if the client is sleeping and then the request cannot be sent.
      */
-    <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request) throws InterruptedException,
-            CodecException, InvalidResponseException, RequestCanceledException, RequestRejectedException;
+    <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request)
+            throws InterruptedException, CodecException, InvalidResponseException, RequestCanceledException,
+            RequestRejectedException, ClientSleepingException;
 
     /**
      * Sends a Lightweight M2M request synchronously. Will block until a response is received from the remote client.
@@ -88,10 +91,11 @@ public interface LwM2mServer {
      * @throws RequestRejectedException if the request is rejected by foreign peer.
      * @throws RequestCanceledException if the request is cancelled.
      * @throws InvalidResponseException if the response received is malformed.
+     * @throws ClientSleepingException if the client is sleeping and then the request cannot be sent.
      */
     <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request, long timeout)
             throws InterruptedException, CodecException, InvalidResponseException, RequestCanceledException,
-            RequestRejectedException;
+            RequestRejectedException, ClientSleepingException;
 
     /**
      * Sends a Lightweight M2M request asynchronously.
@@ -109,9 +113,11 @@ public interface LwM2mServer {
      *        <li>or any other RuntimeException for unexpected issue.
      *        </ul>
      * @throws CodecException if request payload can not be encoded.
+     * @throws ClientSleepingException if the client is sleeping and then the request cannot be sent.
      */
     <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request,
-            ResponseCallback<T> responseCallback, ErrorCallback errorCallback) throws CodecException;
+            ResponseCallback<T> responseCallback, ErrorCallback errorCallback)
+            throws CodecException, ClientSleepingException;
 
     /**
      * Sends a Lightweight M2M request asynchronously.
@@ -130,9 +136,11 @@ public interface LwM2mServer {
      *        <li>or any other RuntimeException for unexpected issue.
      *        </ul>
      * @throws CodecException if request payload can not be encoded.
+     * @throws ClientSleepingException if the client is sleeping and then the request cannot be sent.
      */
     <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request, long timeout,
-            ResponseCallback<T> responseCallback, ErrorCallback errorCallback) throws CodecException;
+            ResponseCallback<T> responseCallback, ErrorCallback errorCallback)
+            throws CodecException, ClientSleepingException;
 
     /**
      * Get the registration service to access to registered clients. You can use this object for listening client
