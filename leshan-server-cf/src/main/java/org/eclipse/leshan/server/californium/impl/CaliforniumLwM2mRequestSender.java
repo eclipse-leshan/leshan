@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.californium.core.coap.MessageObserver;
 import org.eclipse.californium.core.coap.MessageObserverAdapter;
@@ -77,8 +78,8 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         final LwM2mModel model = modelProvider.getObjectModel(destination);
 
         // Create the CoAP request from LwM2m request
-        CoapRequestBuilder coapRequestBuilder = new CoapRequestBuilder(destination.getIdentity(), destination.getRootPath(),
-                destination.getId(), destination.getEndpoint(), model, encoder);
+        CoapRequestBuilder coapRequestBuilder = new CoapRequestBuilder(destination.getIdentity(),
+                destination.getRootPath(), destination.getId(), destination.getEndpoint(), model, encoder);
         request.accept(coapRequestBuilder);
         final Request coapRequest = coapRequestBuilder.getRequest();
 
@@ -113,9 +114,8 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         final LwM2mModel model = modelProvider.getObjectModel(destination);
 
         // Create the CoAP request from LwM2m request
-        CoapRequestBuilder coapRequestBuilder = new CoapRequestBuilder(
-                destination.getIdentity(), destination.getRootPath(),
-                destination.getId(), destination.getEndpoint(), model, encoder);
+        CoapRequestBuilder coapRequestBuilder = new CoapRequestBuilder(destination.getIdentity(),
+                destination.getRootPath(), destination.getId(), destination.getEndpoint(), model, encoder);
         request.accept(coapRequestBuilder);
         final Request coapRequest = coapRequestBuilder.getRequest();
 
@@ -152,31 +152,35 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         requests.clear();
     }
 
-    private String getFloorKey(String registrationId) {
-        // The key format is regid#int, So we need a key which is always before this pattern (in natural order).
+    private static String getFloorKey(String registrationId) {
+        // The key format is regid#long, So we need a key which is always before this pattern (in natural order).
         return registrationId + '#';
     }
 
-    private String getCeilingKey(String registrationId) {
-        // The key format is regid#int, So we need a key which is always after this pattern (in natural order).
+    private static String getCeilingKey(String registrationId) {
+        // The key format is regid#long, So we need a key which is always after this pattern (in natural order).
         return registrationId + "#A";
     }
 
-    private String getKey(String registrationId, int requestId) {
+    private static String getKey(String registrationId, long requestId) {
         return registrationId + '#' + requestId;
     }
 
     private void addPendingRequest(String registrationId, Request coapRequest) {
         Validate.notNull(registrationId);
-        CleanerMessageObserver observer = new CleanerMessageObserver(registrationId, coapRequest);
-        coapRequest.addMessageObserver(observer);
-        pendingRequests.put(observer.getRequestKey(), coapRequest);
+        if (coapRequest.isConfirmable()) {
+            CleanerMessageObserver observer = new CleanerMessageObserver(registrationId, coapRequest);
+            coapRequest.addMessageObserver(observer);
+            pendingRequests.put(observer.getRequestKey(), coapRequest);
+        }
     }
 
     private void removePendingRequest(String key, Request coapRequest) {
         Validate.notNull(key);
         pendingRequests.remove(key, coapRequest);
     }
+
+    private AtomicLong idGenerator = new AtomicLong(0l);
 
     private class CleanerMessageObserver extends MessageObserverAdapter {
 
@@ -185,7 +189,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
         public CleanerMessageObserver(String registrationId, Request coapRequest) {
             super();
-            requestKey = getKey(registrationId, hashCode());
+            requestKey = getKey(registrationId, idGenerator.incrementAndGet());
             this.coapRequest = coapRequest;
         }
 
