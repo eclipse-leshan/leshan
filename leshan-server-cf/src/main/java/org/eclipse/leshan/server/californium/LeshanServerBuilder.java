@@ -86,6 +86,7 @@ public class LeshanServerBuilder {
 
     private boolean noSecuredEndpoint;
     private boolean noUnsecuredEndpoint;
+    private boolean noQueueMode = false;
 
     /**
      * <p>
@@ -306,6 +307,14 @@ public class LeshanServerBuilder {
     }
 
     /**
+     * deactivate PresenceService which tracks presence of devices using  LWM2M Queue Mode.
+     */
+    public LeshanServerBuilder disableQueueModeSupport() {
+        this.noQueueMode = true;
+        return this;
+    }
+
+    /**
      * The default Californium/CoAP {@link NetworkConfig} used by the builder.
      */
     public static NetworkConfig createDefaultNetworkConfig() {
@@ -441,6 +450,6 @@ public class LeshanServerBuilder {
         }
 
         return new LeshanServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer,
-                modelProvider, encoder, decoder, coapConfig);
+                modelProvider, encoder, decoder, coapConfig, noQueueMode);
     }
 }
