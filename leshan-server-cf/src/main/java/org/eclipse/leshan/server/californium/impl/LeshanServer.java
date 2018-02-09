@@ -116,11 +116,12 @@ public class LeshanServer implements LwM2mServer {
      * @param decoder decoder used to decode response payload.
      * @param encoder encode used to encode request payload.
      * @param coapConfig the CoAP {@link NetworkConfig}.
+     * @param noQueueMode true to disable presenceService.
      */
     public LeshanServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
             LwM2mModelProvider modelProvider, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
-            NetworkConfig coapConfig) {
+            NetworkConfig coapConfig, boolean noQueueMode) {
 
         Validate.notNull(registrationStore, "registration store cannot be null");
         Validate.notNull(authorizer, "authorizer cannot be null");
@@ -131,14 +132,13 @@ public class LeshanServer implements LwM2mServer {
 
         // Init services and stores
         this.registrationStore = registrationStore;
-        this.registrationService = new RegistrationServiceImpl(registrationStore);
+        registrationService = new RegistrationServiceImpl(registrationStore);
         this.securityStore = securityStore;
-        this.observationService = new ObservationServiceImpl(registrationStore, modelProvider, decoder);
+        observationService = new ObservationServiceImpl(registrationStore, modelProvider, decoder);
         this.modelProvider = modelProvider;
-        this.presenceService = new PresenceServiceImpl();
 
         // Cancel observations on client unregistering
-        this.registrationService.addListener(new RegistrationListener() {
+        registrationService.addListener(new RegistrationListener() {
 
             @Override
             public void updated(RegistrationUpdate update, Registration updatedRegistration,
@@ -148,7 +148,6 @@ public class LeshanServer implements LwM2mServer {
             @Override
             public void unregistered(Registration registration, Collection<Observation> observations, boolean expired,
                     Registration newReg) {
-
                 requestSender.cancelPendingRequests(registration);
             }
 
@@ -157,9 +156,6 @@ public class LeshanServer implements LwM2mServer {
                     Collection<Observation> previousObsersations) {
             }
         });
-
-        // notify applications of LWM2M client coming online/offline
-        this.registrationService.addListener(new PresenceStateListener(this.presenceService));
 
         // define a set of endpoints
         Set<Endpoint> endpoints = new HashSet<>();
@@ -194,8 +190,18 @@ public class LeshanServer implements LwM2mServer {
         coapServer.add(rdResource);
 
         // create sender
-        requestSender = new QueueModeLwM2mRequestSender(this.presenceService,
-                new CaliforniumLwM2mRequestSender(endpoints, this.observationService, modelProvider, encoder, decoder));
+        // notify applications of LWM2M client coming online/offline
+        if (noQueueMode) {
+            // if no queue mode, create a "simple" sender
+            requestSender = new CaliforniumLwM2mRequestSender(endpoints, observationService, modelProvider, encoder,
+                    decoder);
+            presenceService = null;
+        } else {
+            presenceService = new PresenceServiceImpl();
+            registrationService.addListener(new PresenceStateListener(presenceService));
+            requestSender = new QueueModeLwM2mRequestSender(presenceService,
+                    new CaliforniumLwM2mRequestSender(endpoints, observationService, modelProvider, encoder, decoder));
+        }
     }
 
     @Override

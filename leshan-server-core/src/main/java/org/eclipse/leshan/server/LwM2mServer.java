@@ -72,7 +72,8 @@ public interface LwM2mServer {
      * @throws RequestRejectedException if the request is rejected by foreign peer.
      * @throws RequestCanceledException if the request is cancelled.
      * @throws InvalidResponseException if the response received is malformed.
-     * @throws ClientSleepingException if the client is sleeping and then the request cannot be sent.
+     * @throws ClientSleepingException if the client is sleeping and then the request cannot be sent. This exception
+     *         will never be raised if Queue Mode support is deactivate.
      */
     <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request)
             throws InterruptedException, CodecException, InvalidResponseException, RequestCanceledException,
@@ -91,7 +92,8 @@ public interface LwM2mServer {
      * @throws RequestRejectedException if the request is rejected by foreign peer.
      * @throws RequestCanceledException if the request is cancelled.
      * @throws InvalidResponseException if the response received is malformed.
-     * @throws ClientSleepingException if the client is sleeping and then the request cannot be sent.
+     * @throws ClientSleepingException if the client is sleeping and then the request cannot be sent. This exception
+     *         will never be raised if Queue Mode support is deactivate.
      */
     <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request, long timeout)
             throws InterruptedException, CodecException, InvalidResponseException, RequestCanceledException,
@@ -113,7 +115,8 @@ public interface LwM2mServer {
      *        <li>or any other RuntimeException for unexpected issue.
      *        </ul>
      * @throws CodecException if request payload can not be encoded.
-     * @throws ClientSleepingException if the client is sleeping and then the request cannot be sent.
+     * @throws ClientSleepingException if the client is sleeping and then the request cannot be sent. This exception
+     *         will never be raised if Queue Mode support is deactivate.
      */
     <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback)
@@ -136,7 +139,8 @@ public interface LwM2mServer {
      *        <li>or any other RuntimeException for unexpected issue.
      *        </ul>
      * @throws CodecException if request payload can not be encoded.
-     * @throws ClientSleepingException if the client is sleeping and then the request cannot be sent.
+     * @throws ClientSleepingException if the client is sleeping and then the request cannot be sent. This exception
+     *         will never be raised if Queue Mode support is deactivate.
      */
     <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request, long timeout,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback)

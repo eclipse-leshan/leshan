@@ -38,6 +38,7 @@ import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.request.exception.ClientSleepingException;
 import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.californium.impl.InMemoryRegistrationStore;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
@@ -86,6 +87,7 @@ public class LeshanServerBuilder {
 
     private boolean noSecuredEndpoint;
     private boolean noUnsecuredEndpoint;
+    private boolean noQueueMode = false;
 
     /**
      * <p>
@@ -306,6 +308,17 @@ public class LeshanServerBuilder {
     }
 
     /**
+     * deactivate PresenceService which tracks presence of devices using LWM2M Queue Mode. When Queue Mode is
+     * deactivated request is always sent immediately and {@link ClientSleepingException} will never be raised.
+     * Deactivate QueueMode can make sense if you want to handle it on your own or if you don't plan to support devices
+     * with queue mode.
+     */
+    public LeshanServerBuilder disableQueueModeSupport() {
+        this.noQueueMode = true;
+        return this;
+    }
+
+    /**
      * The default Californium/CoAP {@link NetworkConfig} used by the builder.
      */
     public static NetworkConfig createDefaultNetworkConfig() {
@@ -431,7 +444,8 @@ public class LeshanServerBuilder {
             if (endpointFactory != null) {
                 securedEndpoint = endpointFactory.createSecuredEndpoint(dtlsConfig, coapConfig, registrationStore);
             } else {
-                securedEndpoint = new CoapEndpoint(new DTLSConnector(dtlsConfig), coapConfig, registrationStore, null, new Lwm2mEndpointContextMatcher());
+                securedEndpoint = new CoapEndpoint(new DTLSConnector(dtlsConfig), coapConfig, registrationStore, null,
+                        new Lwm2mEndpointContextMatcher());
             }
         }
 
@@ -441,6 +455,6 @@ public class LeshanServerBuilder {
         }
 
         return new LeshanServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer,
-                modelProvider, encoder, decoder, coapConfig);
+                modelProvider, encoder, decoder, coapConfig, noQueueMode);
     }
 }
