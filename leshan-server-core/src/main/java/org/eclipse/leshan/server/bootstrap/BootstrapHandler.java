@@ -95,7 +95,7 @@ public class BootstrapHandler {
         // Get the desired bootstrap config for the endpoint
         final BootstrapConfig cfg = store.getBootstrap(endpoint);
         if (cfg == null) {
-            LOG.error("No bootstrap config for {}", endpoint);
+            LOG.debug("No bootstrap config for {}", endpoint);
             this.sessionManager.failed(session, NO_BOOTSTRAP_CONFIG, null);
             return BootstrapResponse.badRequest("no bootstrap config");
         }
@@ -117,14 +117,14 @@ public class BootstrapHandler {
         send(session, deleteRequest, new ResponseCallback<BootstrapDeleteResponse>() {
             @Override
             public void onResponse(BootstrapDeleteResponse response) {
-                LOG.debug("Bootstrap delete {} return code {}", session.getEndpoint(), response.getCode());
+                LOG.trace("Bootstrap delete {} return code {}", session.getEndpoint(), response.getCode());
                 List<Integer> toSend = new ArrayList<>(cfg.security.keySet());
                 sendBootstrap(session, cfg, toSend);
             }
         }, new ErrorCallback() {
             @Override
             public void onError(Exception e) {
-                LOG.warn(String.format("Error during bootstrap delete '/' on %s", session.getEndpoint()), e);
+                LOG.debug(String.format("Error during bootstrap delete '/' on %s", session.getEndpoint()), e);
                 sessionManager.failed(session, DELETE_FAILED, deleteRequest);
             }
         });
@@ -145,14 +145,14 @@ public class BootstrapHandler {
             send(session, writeBootstrapRequest, new ResponseCallback<BootstrapWriteResponse>() {
                 @Override
                 public void onResponse(BootstrapWriteResponse response) {
-                    LOG.debug("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
+                    LOG.trace("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
                     // recursive call until toSend is empty
                     sendBootstrap(session, cfg, toSend);
                 }
             }, new ErrorCallback() {
                 @Override
                 public void onError(Exception e) {
-                    LOG.warn(String.format("Error during bootstrap write of security instance %s on %s",
+                    LOG.debug(String.format("Error during bootstrap write of security instance %s on %s",
                             securityInstance, session.getEndpoint()), e);
                     sessionManager.failed(session, WRITE_SECURITY_FAILED, writeBootstrapRequest);
                 }
@@ -179,7 +179,7 @@ public class BootstrapHandler {
             send(session, writeServerRequest, new ResponseCallback<BootstrapWriteResponse>() {
                 @Override
                 public void onResponse(BootstrapWriteResponse response) {
-                    LOG.debug("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
+                    LOG.trace("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
                     // recursive call until toSend is empty
                     sendServers(session, cfg, toSend);
                 }
@@ -196,7 +196,7 @@ public class BootstrapHandler {
             send(session, finishBootstrapRequest, new ResponseCallback<BootstrapFinishResponse>() {
                 @Override
                 public void onResponse(BootstrapFinishResponse response) {
-                    LOG.debug("Bootstrap Finished {} return code {}", session.getEndpoint(), response.getCode());
+                    LOG.trace("Bootstrap Finished {} return code {}", session.getEndpoint(), response.getCode());
                     if (response.isSuccess()) {
                         sessionManager.end(session);
                     } else {
@@ -206,7 +206,7 @@ public class BootstrapHandler {
             }, new ErrorCallback() {
                 @Override
                 public void onError(Exception e) {
-                    LOG.warn(String.format("Error during bootstrap finished on %s", session.getEndpoint()), e);
+                    LOG.debug(String.format("Error during bootstrap finished on %s", session.getEndpoint()), e);
                     sessionManager.failed(session, SEND_FINISH_FAILED, finishBootstrapRequest);
                 }
             });
@@ -215,7 +215,8 @@ public class BootstrapHandler {
 
     private <T extends LwM2mResponse> void send(BootstrapSession session, DownlinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
-        sender.send(session.getEndpoint(), session.getIdentity(), request, DEFAULT_TIMEOUT, responseCallback, errorCallback);
+        sender.send(session.getEndpoint(), session.getIdentity(), request, DEFAULT_TIMEOUT, responseCallback,
+                errorCallback);
     }
 
     private LwM2mObjectInstance convertToSecurityInstance(int instanceId, ServerSecurity securityConfig) {
