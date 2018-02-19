@@ -46,6 +46,7 @@ import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationService;
+import org.eclipse.leshan.server.queue.ClientAwakeTimeInformation;
 import org.eclipse.leshan.server.queue.PresenceService;
 import org.eclipse.leshan.server.queue.PresenceServiceImpl;
 import org.eclipse.leshan.server.queue.PresenceStateListener;
@@ -121,7 +122,7 @@ public class LeshanServer implements LwM2mServer {
     public LeshanServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
             LwM2mModelProvider modelProvider, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
-            NetworkConfig coapConfig, boolean noQueueMode) {
+            NetworkConfig coapConfig, boolean noQueueMode, ClientAwakeTimeInformation awakeTimeInfo) {
 
         Validate.notNull(registrationStore, "registration store cannot be null");
         Validate.notNull(authorizer, "authorizer cannot be null");
@@ -197,7 +198,7 @@ public class LeshanServer implements LwM2mServer {
                     decoder);
             presenceService = null;
         } else {
-            presenceService = new PresenceServiceImpl();
+            presenceService = new PresenceServiceImpl(awakeTimeInfo);
             registrationService.addListener(new PresenceStateListener(presenceService));
             requestSender = new QueueModeLwM2mRequestSender(presenceService,
                     new CaliforniumLwM2mRequestSender(endpoints, observationService, modelProvider, encoder, decoder));

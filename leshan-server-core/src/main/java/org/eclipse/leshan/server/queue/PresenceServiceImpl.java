@@ -38,7 +38,12 @@ public final class PresenceServiceImpl implements PresenceService {
 
     private final ConcurrentMap<String, PresenceStatus> clientStatusList = new ConcurrentHashMap<>();
     private final List<PresenceListener> listeners = new CopyOnWriteArrayList<>();
+    private final ClientAwakeTimeInformation awakeTimeInfo;
     ScheduledExecutorService clientTimersExecutor = Executors.newSingleThreadScheduledExecutor();
+
+    public PresenceServiceImpl(ClientAwakeTimeInformation awakeTimeInfo) {
+        this.awakeTimeInfo = awakeTimeInfo;
+    }
 
     @Override
     public void addListener(PresenceListener listener) {
@@ -67,7 +72,7 @@ public final class PresenceServiceImpl implements PresenceService {
      */
     public void setAwake(Registration reg) {
         if (reg.usesQueueMode()) {
-            PresenceStatus status = new PresenceStatus();
+            PresenceStatus status = new PresenceStatus(awakeTimeInfo.usedClientAwakeTime(reg));
             PresenceStatus previous = clientStatusList.putIfAbsent(reg.getEndpoint(), status);
             if (previous != null) {
                 // We already have a status for this reg.
@@ -76,6 +81,9 @@ public final class PresenceServiceImpl implements PresenceService {
 
             boolean stateChanged = false;
             synchronized (status) {
+
+                // Every time we set the clientAwakeTime, in case it changes dynamically
+                status.setClientAwakeTime(awakeTimeInfo.usedClientAwakeTime(reg));
                 stateChanged = status.setAwake();
                 startClientAwakeTimer(reg, status);
             }

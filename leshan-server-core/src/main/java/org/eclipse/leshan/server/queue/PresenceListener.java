@@ -22,7 +22,6 @@ import org.eclipse.leshan.server.registration.Registration;
  *
  */
 public interface PresenceListener {
-    
 
     /**
      * This method is invoked when the LWM2M client with the given endpoint state changes to awake.
