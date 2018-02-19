@@ -83,9 +83,9 @@ Contributors:
                             <mainClass>org.eclipse.leshan.server.bootstrap.demo.LeshanBootstrapServerDemo</mainClass>
                         </manifest>
                     </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
+                    <descriptors>
+                        <descriptor>../jar-with-dependencies-with-logback.xml</descriptor>
+                    </descriptors>
                 </configuration>
                 <executions>
                   <execution>
