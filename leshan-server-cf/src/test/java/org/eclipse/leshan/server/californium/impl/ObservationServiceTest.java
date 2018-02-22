@@ -146,9 +146,9 @@ public class ObservationServiceTest {
                 registrationId, new ObserveRequest(target.toString()));
         coapRequest.setUserContext(context);
 
-        store.add(new org.eclipse.californium.core.observe.Observation(coapRequest, null));
+        store.put(coapRequest.getToken(), new org.eclipse.californium.core.observe.Observation(coapRequest, null));
 
-        Observation observation = new Observation(coapRequest.getToken(), registrationId, target, null);
+        Observation observation = new Observation(coapRequest.getToken().getBytes(), registrationId, target, null);
         observationService.addObservation(registration, observation);
 
         return observation;

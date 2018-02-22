@@ -27,6 +27,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
+import org.eclipse.californium.core.coap.Token;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.observe.NotificationListener;
 import org.eclipse.californium.core.observe.ObservationStore;
@@ -139,10 +140,11 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
     }
 
     private void cancel(Observation observation) {
+        Token token = new Token(observation.getId());
         if (secureEndpoint != null)
-            secureEndpoint.cancelObservation(observation.getId());
+            secureEndpoint.cancelObservation(token);
         if (nonSecureEndpoint != null)
-            nonSecureEndpoint.cancelObservation(observation.getId());
+            nonSecureEndpoint.cancelObservation(token);
 
         for (ObservationListener listener : listeners) {
             listener.cancelled(observation);
@@ -205,10 +207,10 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
         String regid = coapRequest.getUserContext().get(ObserveUtil.CTX_REGID);
 
         // get observation for this request
-        Observation observation = registrationStore.getObservation(regid, coapResponse.getToken());
+        Observation observation = registrationStore.getObservation(regid, coapResponse.getToken().getBytes());
         if (observation == null) {
             LOG.error("Unexpected error: Unable to find observation with token {} for registration {}",
-                    Hex.encodeHexString(coapResponse.getToken()), regid);
+                    coapResponse.getToken(), regid);
             return;
         }
 
