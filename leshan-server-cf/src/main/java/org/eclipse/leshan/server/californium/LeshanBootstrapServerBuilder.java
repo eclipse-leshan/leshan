@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Achim Kraus (Bosch Software Innovations GmbH) - use CoapEndpointBuilder
  *******************************************************************************/
 package org.eclipse.leshan.server.californium;
 
@@ -252,7 +253,10 @@ public class LeshanBootstrapServerBuilder {
             if (endpointFactory != null) {
                 unsecuredEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null);
             } else {
-                unsecuredEndpoint = new CoapEndpoint(localAddress, coapConfig);
+                CoapEndpoint.CoapEndpointBuilder builder = new CoapEndpoint.CoapEndpointBuilder();
+                builder.setInetSocketAddress(localAddress);
+                builder.setNetworkConfig(coapConfig);
+                unsecuredEndpoint = builder.build();
             }
         }
 
@@ -261,8 +265,11 @@ public class LeshanBootstrapServerBuilder {
             if (endpointFactory != null) {
                 securedEndpoint = endpointFactory.createSecuredEndpoint(dtlsConfig, coapConfig, null);
             } else {
-                securedEndpoint = new CoapEndpoint(new DTLSConnector(dtlsConfig), coapConfig, null, null,
-                        new Lwm2mEndpointContextMatcher());
+                CoapEndpoint.CoapEndpointBuilder builder = new CoapEndpoint.CoapEndpointBuilder();
+                builder.setConnector(new DTLSConnector(dtlsConfig));
+                builder.setNetworkConfig(coapConfig);
+                builder.setEndpointContextMatcher(new Lwm2mEndpointContextMatcher());
+                securedEndpoint = builder.build();
             }
         }
 
