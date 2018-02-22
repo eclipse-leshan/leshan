@@ -14,6 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - use Lwm2mEndpointContextMatcher
  *                                                     for secure endpoint.
+ *     Achim Kraus (Bosch Software Innovations GmbH) - use CoapEndpointBuilder
  *******************************************************************************/
 package org.eclipse.leshan.server.californium;
 
@@ -435,7 +436,11 @@ public class LeshanServerBuilder {
                 unsecuredEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig,
                         registrationStore);
             } else {
-                unsecuredEndpoint = new CoapEndpoint(localAddress, coapConfig, registrationStore);
+                CoapEndpoint.CoapEndpointBuilder builder = new CoapEndpoint.CoapEndpointBuilder();
+                builder.setInetSocketAddress(localAddress);
+                builder.setNetworkConfig(coapConfig);
+                builder.setObservationStore(registrationStore);
+                unsecuredEndpoint = builder.build();
             }
         }
 
@@ -444,8 +449,12 @@ public class LeshanServerBuilder {
             if (endpointFactory != null) {
                 securedEndpoint = endpointFactory.createSecuredEndpoint(dtlsConfig, coapConfig, registrationStore);
             } else {
-                securedEndpoint = new CoapEndpoint(new DTLSConnector(dtlsConfig), coapConfig, registrationStore, null,
-                        new Lwm2mEndpointContextMatcher());
+                CoapEndpoint.CoapEndpointBuilder builder = new CoapEndpoint.CoapEndpointBuilder();
+                builder.setConnector(new DTLSConnector(dtlsConfig));
+                builder.setNetworkConfig(coapConfig);
+                builder.setObservationStore(registrationStore);
+                builder.setEndpointContextMatcher(new Lwm2mEndpointContextMatcher());
+                securedEndpoint = builder.build();
             }
         }
 
