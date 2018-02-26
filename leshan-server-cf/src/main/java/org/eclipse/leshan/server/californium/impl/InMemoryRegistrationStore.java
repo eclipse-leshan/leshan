@@ -29,9 +29,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -64,7 +66,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     // Data structure
     private final Map<String /* end-point */, Registration> regsByEp = new HashMap<>();
     private Map<Token, org.eclipse.californium.core.observe.Observation> obsByToken = new HashMap<>();
-    private Map<String, List<Token>> tokensByRegId = new HashMap<>();
+    private Map<String, Set<Token>> tokensByRegId = new HashMap<>();
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
@@ -305,7 +307,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
                     previousObservation = obsByToken.put(token, obs);
                 }
                 if (!tokensByRegId.containsKey(registrationId)) {
-                    tokensByRegId.put(registrationId, new ArrayList<Token>());
+                    tokensByRegId.put(registrationId, new HashSet<Token>());
                 }
                 tokensByRegId.get(registrationId).add(token);
 
@@ -367,7 +369,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
 
         if (removed != null) {
             String registrationId = ObserveUtil.extractRegistrationId(removed);
-            List<Token> tokens = tokensByRegId.get(registrationId);
+            Set<Token> tokens = tokensByRegId.get(registrationId);
             tokens.remove(observationId);
             if (tokens.isEmpty()) {
                 tokensByRegId.remove(registrationId);
@@ -377,7 +379,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
 
     private Collection<Observation> unsafeRemoveAllObservations(String registrationId) {
         Collection<Observation> removed = new ArrayList<>();
-        List<Token> tokens = tokensByRegId.get(registrationId);
+        Set<Token> tokens = tokensByRegId.get(registrationId);
         if (tokens != null) {
             for (Token token : tokens) {
                 Observation observationRemoved = build(obsByToken.remove(token));
@@ -392,7 +394,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
 
     private Collection<Observation> unsafeGetObservations(String registrationId) {
         Collection<Observation> result = new ArrayList<>();
-        List<Token> tokens = tokensByRegId.get(registrationId);
+        Set<Token> tokens = tokensByRegId.get(registrationId);
         if (tokens != null) {
             for (Token token : tokens) {
                 Observation obs = build(unsafeGetObservation(token));
