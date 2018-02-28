@@ -301,7 +301,9 @@ public class RegistrationTest {
         coapRequest.getOptions().addUriQuery("ep=" + helper.currentEndpointIdentifier);
 
         // send request
-        CoapEndpoint coapEndpoint = new CoapEndpoint(new InetSocketAddress(0));
+        CoapEndpoint.CoapEndpointBuilder builder = new CoapEndpoint.CoapEndpointBuilder();
+        builder.setInetSocketAddress(new InetSocketAddress(0));
+        CoapEndpoint coapEndpoint = builder.build();
         coapEndpoint.start();
         coapEndpoint.sendRequest(coapRequest);
 

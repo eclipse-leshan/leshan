@@ -246,7 +246,10 @@ public class LeshanClientBuilder {
             if (endpointFactory != null) {
                 unsecuredEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null);
             } else {
-                unsecuredEndpoint = new CoapEndpoint(localAddress, coapConfig);
+                CoapEndpoint.CoapEndpointBuilder builder = new CoapEndpoint.CoapEndpointBuilder();
+                builder.setInetSocketAddress(localAddress);
+                builder.setNetworkConfig(coapConfig);
+                unsecuredEndpoint = builder.build();
             }
         }
 
@@ -255,7 +258,10 @@ public class LeshanClientBuilder {
             if (endpointFactory != null) {
                 securedEndpoint = endpointFactory.createSecuredEndpoint(dtlsConfig, coapConfig, null);
             } else {
-                securedEndpoint = new CoapEndpoint(new DTLSConnector(dtlsConfig), coapConfig, null, null);
+                CoapEndpoint.CoapEndpointBuilder builder = new CoapEndpoint.CoapEndpointBuilder();
+                builder.setConnector(new DTLSConnector(dtlsConfig));
+                builder.setNetworkConfig(coapConfig);
+                securedEndpoint = builder.build();
             }
         }
 
@@ -264,6 +270,7 @@ public class LeshanClientBuilder {
                     "All CoAP enpoints are deactivated, at least one endpoint should be activated");
         }
 
-        return new LeshanClient(endpoint, unsecuredEndpoint, securedEndpoint, objectEnablers, coapConfig, additionalAttributes);
+        return new LeshanClient(endpoint, unsecuredEndpoint, securedEndpoint, objectEnablers, coapConfig,
+                additionalAttributes);
     }
 }
