@@ -300,7 +300,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
                     if (!obsByToken.containsKey(token))
                         previousObservation = obsByToken.put(token, obs);
                     else
-                        previousObservation = obsByToken.get(token);
+                        return obsByToken.get(token);
                 } else {
                     previousObservation = obsByToken.put(token, obs);
                 }

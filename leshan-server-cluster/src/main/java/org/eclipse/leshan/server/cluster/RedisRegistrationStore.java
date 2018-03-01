@@ -499,9 +499,11 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
                 byte[] serializeObs = serializeObs(obs);
                 byte[] previousValue = null;
                 if (ifAbsent) {
-                    if (j.setnx(key, serializeObs) == 0) {
-                        // not set => already exist
-                        previousValue = j.get(key);
+                    previousValue = j.get(key);
+                    if (previousValue == null || previousValue.length == 0) {
+                        j.set(key, serializeObs);
+                    } else {
+                        return deserializeObs(previousValue);
                     }
                 } else {
                     previousValue = j.getSet(key, serializeObs);
