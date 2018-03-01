@@ -46,7 +46,7 @@ import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationService;
-import org.eclipse.leshan.server.queue.ClientAwakeTimeInformation;
+import org.eclipse.leshan.server.queue.ClientAwakeTimeProvider;
 import org.eclipse.leshan.server.queue.PresenceService;
 import org.eclipse.leshan.server.queue.PresenceServiceImpl;
 import org.eclipse.leshan.server.queue.PresenceStateListener;
@@ -118,11 +118,12 @@ public class LeshanServer implements LwM2mServer {
      * @param encoder encode used to encode request payload.
      * @param coapConfig the CoAP {@link NetworkConfig}.
      * @param noQueueMode true to disable presenceService.
+     * @param awakeTimeProvider to set the client awake time if queue mode is used
      */
     public LeshanServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
             LwM2mModelProvider modelProvider, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
-            NetworkConfig coapConfig, boolean noQueueMode, ClientAwakeTimeInformation awakeTimeInfo) {
+            NetworkConfig coapConfig, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider) {
 
         Validate.notNull(registrationStore, "registration store cannot be null");
         Validate.notNull(authorizer, "authorizer cannot be null");
@@ -198,7 +199,7 @@ public class LeshanServer implements LwM2mServer {
                     decoder);
             presenceService = null;
         } else {
-            presenceService = new PresenceServiceImpl(awakeTimeInfo);
+            presenceService = new PresenceServiceImpl(awakeTimeProvider);
             registrationService.addListener(new PresenceStateListener(presenceService));
             requestSender = new QueueModeLwM2mRequestSender(presenceService,
                     new CaliforniumLwM2mRequestSender(endpoints, observationService, modelProvider, encoder, decoder));

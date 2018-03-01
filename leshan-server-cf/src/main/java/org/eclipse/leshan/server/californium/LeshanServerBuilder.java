@@ -46,8 +46,8 @@ import org.eclipse.leshan.server.californium.impl.LwM2mPskStore;
 import org.eclipse.leshan.server.impl.InMemorySecurityStore;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StandardModelProvider;
-import org.eclipse.leshan.server.queue.ClientAwakeTimeInformation;
-import org.eclipse.leshan.server.queue.ClientAwakeTimeInformationDefaultImpl;
+import org.eclipse.leshan.server.queue.ClientAwakeTimeProvider;
+import org.eclipse.leshan.server.queue.DefaultClientAwakeTimeProvider;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.security.Authorizer;
@@ -91,7 +91,7 @@ public class LeshanServerBuilder {
     private boolean noUnsecuredEndpoint;
     private boolean noQueueMode = false;
 
-    private ClientAwakeTimeInformation awakeTimeInfo = new ClientAwakeTimeInformationDefaultImpl();
+    private ClientAwakeTimeProvider awakeTimeProvider = new DefaultClientAwakeTimeProvider();
 
     /**
      * <p>
@@ -323,12 +323,12 @@ public class LeshanServerBuilder {
     }
 
     /**
-     * Sets a new {@link ClientAwakeTimeInformation} object different from the default one (93 seconds).
+     * Sets a new {@link ClientAwakeTimeProvider} object different from the default one (93 seconds).
      * 
-     * @param awakeTimeInfo the {@link ClientAwakeTimeInformation} to set.
+     * @param awakeTimeProvider the {@link ClientAwakeTimeProvider} to set.
      */
-    public LeshanServerBuilder setClientAwakeTimeInfo(ClientAwakeTimeInformation awakeTimeInfo) {
-        this.awakeTimeInfo = awakeTimeInfo;
+    public LeshanServerBuilder setClientAwakeTimeProvider(ClientAwakeTimeProvider awakeTimeProvider) {
+        this.awakeTimeProvider = awakeTimeProvider;
         return this;
     }
 
@@ -469,6 +469,6 @@ public class LeshanServerBuilder {
         }
 
         return new LeshanServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer,
-                modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeInfo);
+                modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider);
     }
 }

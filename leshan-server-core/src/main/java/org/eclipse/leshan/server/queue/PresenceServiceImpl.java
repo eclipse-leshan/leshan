@@ -38,11 +38,11 @@ public final class PresenceServiceImpl implements PresenceService {
 
     private final ConcurrentMap<String, PresenceStatus> clientStatusList = new ConcurrentHashMap<>();
     private final List<PresenceListener> listeners = new CopyOnWriteArrayList<>();
-    private final ClientAwakeTimeInformation awakeTimeInfo;
+    private final ClientAwakeTimeProvider awakeTimeProvider;
     ScheduledExecutorService clientTimersExecutor = Executors.newSingleThreadScheduledExecutor();
 
-    public PresenceServiceImpl(ClientAwakeTimeInformation awakeTimeInfo) {
-        this.awakeTimeInfo = awakeTimeInfo;
+    public PresenceServiceImpl(ClientAwakeTimeProvider awakeTimeProvider) {
+        this.awakeTimeProvider = awakeTimeProvider;
     }
 
     @Override
@@ -72,7 +72,7 @@ public final class PresenceServiceImpl implements PresenceService {
      */
     public void setAwake(Registration reg) {
         if (reg.usesQueueMode()) {
-            PresenceStatus status = new PresenceStatus(awakeTimeInfo.usedClientAwakeTime(reg));
+            PresenceStatus status = new PresenceStatus();
             PresenceStatus previous = clientStatusList.putIfAbsent(reg.getEndpoint(), status);
             if (previous != null) {
                 // We already have a status for this reg.
@@ -83,9 +83,8 @@ public final class PresenceServiceImpl implements PresenceService {
             synchronized (status) {
 
                 // Every time we set the clientAwakeTime, in case it changes dynamically
-                status.setClientAwakeTime(awakeTimeInfo.usedClientAwakeTime(reg));
                 stateChanged = status.setAwake();
-                startClientAwakeTimer(reg, status);
+                startClientAwakeTimer(reg, status, awakeTimeProvider.getClientAwakeTime(reg));
             }
 
             if (stateChanged) {
@@ -145,9 +144,9 @@ public final class PresenceServiceImpl implements PresenceService {
      * 
      * @param status
      */
-    public void startClientAwakeTimer(final Registration reg, PresenceStatus clientPresenceStatus) {
+    public void startClientAwakeTimer(final Registration reg, PresenceStatus clientPresenceStatus,
+            int clientAwakeTime) {
 
-        int clientAwakeTime = clientPresenceStatus.getClientAwakeTime();
         ScheduledFuture<?> clientScheduledFuture = clientPresenceStatus.getClientScheduledFuture();
 
         if (clientAwakeTime != 0) {

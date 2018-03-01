@@ -31,8 +31,8 @@ import org.junit.Test;
  *
  */
 public class PresenceServiceTest {
-    private ClientAwakeTimeInformation awakeTimeInfo = new ClientAwakeTimeInformationDefaultImpl();
-    private PresenceServiceImpl presenceService = new PresenceServiceImpl(awakeTimeInfo);
+    private ClientAwakeTimeProvider awakeTimeProvider = new DefaultClientAwakeTimeProvider();
+    private PresenceServiceImpl presenceService = new PresenceServiceImpl(awakeTimeProvider);
 
     @Test
     public void testSetOnlineForNonQueueMode() throws Exception {

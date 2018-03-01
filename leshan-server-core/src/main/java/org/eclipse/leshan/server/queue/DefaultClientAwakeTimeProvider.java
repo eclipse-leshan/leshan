@@ -17,28 +17,22 @@ package org.eclipse.leshan.server.queue;
 
 import org.eclipse.leshan.server.registration.Registration;
 
-public class ClientAwakeTimeInformationDynamicImpl implements ClientAwakeTimeInformation {
+public class DefaultClientAwakeTimeProvider implements ClientAwakeTimeProvider {
 
     int clientAwakeTime;
 
-    public ClientAwakeTimeInformationDynamicImpl() {
+    public DefaultClientAwakeTimeProvider() {
         this.clientAwakeTime = 93000;
     }
 
-    public ClientAwakeTimeInformationDynamicImpl(int defaultClientAwakeTime) {
+    public DefaultClientAwakeTimeProvider(int defaultClientAwakeTime) {
         this.clientAwakeTime = defaultClientAwakeTime;
     }
 
     @Override
-    public int usedClientAwakeTime(Registration reg) {
-        if (reg.getAdditionalRegistrationAttributes().containsKey("at")) {
+    public int getClientAwakeTime(Registration reg) {
 
-            this.clientAwakeTime = Integer.valueOf(reg.getAdditionalRegistrationAttributes().get("at"));
-        }
-
-        // Returns the last awake time that was included in the registration message. If no awake time was ever included
-        // in this message, returns the default one.
-        return this.clientAwakeTime;
+        return clientAwakeTime;
     }
 
 }
