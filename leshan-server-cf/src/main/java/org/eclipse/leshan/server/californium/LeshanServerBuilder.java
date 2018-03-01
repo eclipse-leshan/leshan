@@ -46,6 +46,8 @@ import org.eclipse.leshan.server.californium.impl.LwM2mPskStore;
 import org.eclipse.leshan.server.impl.InMemorySecurityStore;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StandardModelProvider;
+import org.eclipse.leshan.server.queue.ClientAwakeTimeProvider;
+import org.eclipse.leshan.server.queue.DefaultClientAwakeTimeProvider;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.security.Authorizer;
@@ -88,6 +90,8 @@ public class LeshanServerBuilder {
     private boolean noSecuredEndpoint;
     private boolean noUnsecuredEndpoint;
     private boolean noQueueMode = false;
+
+    private ClientAwakeTimeProvider awakeTimeProvider = new DefaultClientAwakeTimeProvider();
 
     /**
      * <p>
@@ -319,6 +323,16 @@ public class LeshanServerBuilder {
     }
 
     /**
+     * Sets a new {@link ClientAwakeTimeProvider} object different from the default one (93 seconds).
+     * 
+     * @param awakeTimeProvider the {@link ClientAwakeTimeProvider} to set.
+     */
+    public LeshanServerBuilder setClientAwakeTimeProvider(ClientAwakeTimeProvider awakeTimeProvider) {
+        this.awakeTimeProvider = awakeTimeProvider;
+        return this;
+    }
+
+    /**
      * The default Californium/CoAP {@link NetworkConfig} used by the builder.
      */
     public static NetworkConfig createDefaultNetworkConfig() {
@@ -455,6 +469,6 @@ public class LeshanServerBuilder {
         }
 
         return new LeshanServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer,
-                modelProvider, encoder, decoder, coapConfig, noQueueMode);
+                modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider);
     }
 }

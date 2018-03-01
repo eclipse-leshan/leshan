@@ -31,8 +31,8 @@ import org.junit.Test;
  *
  */
 public class PresenceServiceTest {
-
-    private PresenceServiceImpl presenceService = new PresenceServiceImpl();
+    private ClientAwakeTimeProvider awakeTimeProvider = new DefaultClientAwakeTimeProvider();
+    private PresenceServiceImpl presenceService = new PresenceServiceImpl(awakeTimeProvider);
 
     @Test
     public void testSetOnlineForNonQueueMode() throws Exception {
@@ -45,6 +45,7 @@ public class PresenceServiceTest {
             }
 
             @Override
+
             public void onSleeping(Registration registration) {
                 fail("No invocation was expected");
             }
@@ -63,7 +64,6 @@ public class PresenceServiceTest {
 
     private Registration givenASimpleClient() throws UnknownHostException {
         InetSocketAddress address = InetSocketAddress.createUnresolved("localhost", 5683);
-
         Registration.Builder builder = new Registration.Builder("ID", "urn:client",
                 Identity.unsecure(Inet4Address.getLoopbackAddress(), 12354), address);
 

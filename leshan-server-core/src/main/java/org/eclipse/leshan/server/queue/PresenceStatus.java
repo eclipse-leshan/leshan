@@ -29,16 +29,8 @@ public class PresenceStatus {
 
     ScheduledFuture<?> clientScheduledFuture;
 
-    private int clientAwakeTime;
-
     public PresenceStatus() {
         this.state = Presence.SLEEPING;
-        this.clientAwakeTime = 93000; /* ms, default CoAP value */
-    }
-
-    public PresenceStatus(int clientAwakeTime) {
-        this.state = Presence.SLEEPING;
-        this.clientAwakeTime = clientAwakeTime; /* ms */
     }
 
     /* Client State Control */
@@ -88,23 +80,6 @@ public class PresenceStatus {
     }
 
     /* Control of the time the client waits before going to sleep */
-    /**
-     * Get the time that the client stays awake after an update message or the last received request.
-     * 
-     * @return The client awake time.
-     */
-    public int getClientAwakeTime() {
-        return clientAwakeTime;
-    }
-
-    /**
-     * Sets the client awake time, in case it wants to be modified during run time.
-     * 
-     * @param clientAwakeTime
-     */
-    public void setClientAwakeTime(int clientAwakeTime) {
-        this.clientAwakeTime = clientAwakeTime;
-    }
 
     /**
      * Sets the client scheduled task future, in order to cancel it.
