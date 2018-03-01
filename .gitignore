@@ -24,3 +24,7 @@ bin/
 *.jar
 *.war
 *.ear
+
+# log Files #
+**/src/main/**/logback*.xml
+**/src/test/**/logback*.xml
