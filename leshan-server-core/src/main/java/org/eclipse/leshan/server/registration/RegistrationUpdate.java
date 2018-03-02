@@ -18,7 +18,10 @@ package org.eclipse.leshan.server.registration;
 
 import java.net.InetAddress;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.leshan.Link;
 import org.eclipse.leshan.core.request.BindingMode;
@@ -37,9 +40,10 @@ public class RegistrationUpdate {
     private final String smsNumber;
     private final BindingMode bindingMode;
     private final Link[] objectLinks;
+    private final Map<String, String> additionalAttributes;
 
     public RegistrationUpdate(String registrationId, Identity identity, Long lifeTimeInSec, String smsNumber,
-            BindingMode bindingMode, Link[] objectLinks) {
+            BindingMode bindingMode, Link[] objectLinks, Map<String, String> additionalAttributes) {
         Validate.notNull(registrationId);
         Validate.notNull(identity);
         this.registrationId = registrationId;
@@ -48,6 +52,10 @@ public class RegistrationUpdate {
         this.smsNumber = smsNumber;
         this.bindingMode = bindingMode;
         this.objectLinks = objectLinks;
+        if (additionalAttributes == null)
+            this.additionalAttributes = Collections.emptyMap();
+        else
+            this.additionalAttributes = Collections.unmodifiableMap(new HashMap<>(additionalAttributes));
     }
 
     /**
@@ -63,6 +71,10 @@ public class RegistrationUpdate {
         BindingMode bindingMode = this.bindingMode != null ? this.bindingMode : registration.getBindingMode();
         String smsNumber = this.smsNumber != null ? this.smsNumber : registration.getSmsNumber();
 
+        Map<String, String> additionalAttributes = this.additionalAttributes.isEmpty()
+                ? registration.getAdditionalRegistrationAttributes()
+                : updateAdditionalAttributes(registration.getAdditionalRegistrationAttributes());
+
         // this needs to be done in any case, even if no properties have changed, in order
         // to extend the client registration time-to-live period ...
         Date lastUpdate = new Date();
@@ -72,8 +84,7 @@ public class RegistrationUpdate {
 
         builder.lwM2mVersion(registration.getLwM2mVersion()).lifeTimeInSec(lifeTimeInSec).smsNumber(smsNumber)
                 .bindingMode(bindingMode).objectLinks(linkObject).registrationDate(registration.getRegistrationDate())
-                .lastUpdate(lastUpdate)
-                .additionalRegistrationAttributes(registration.getAdditionalRegistrationAttributes());
+                .lastUpdate(lastUpdate).additionalRegistrationAttributes(additionalAttributes);
 
         return builder.build();
 
@@ -109,6 +120,19 @@ public class RegistrationUpdate {
 
     public Link[] getObjectLinks() {
         return objectLinks;
+    }
+
+    public Map<String, String> getAdditionalAttributes() {
+        return additionalAttributes;
+    }
+
+    private Map<String, String> updateAdditionalAttributes(Map<String, String> oldAdditionalAttributes) {
+
+        // putAll method updates already present key values or add them if not present.
+        Map<String, String> aux = new HashMap<String, String>();
+        aux.putAll(oldAdditionalAttributes);
+        aux.putAll(this.additionalAttributes);
+        return aux;
     }
 
     @Override

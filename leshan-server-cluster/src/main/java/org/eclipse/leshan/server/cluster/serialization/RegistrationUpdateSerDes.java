@@ -69,6 +69,14 @@ public class RegistrationUpdateSerDes {
             o.add("objLink", links);
         }
 
+        if (u.getAdditionalAttributes() != null) {
+            JsonObject addAttr = Json.object();
+            for (Map.Entry<String, String> e : u.getAdditionalAttributes().entrySet()) {
+                addAttr.add(e.getKey(), e.getValue());
+            }
+            o.add("addAttr", addAttr);
+        }
+
         return o;
     }
 
@@ -126,6 +134,12 @@ public class RegistrationUpdateSerDes {
             }
         }
 
-        return new RegistrationUpdate(regId, identity, lifetime, sms, b, linkObjs);
+        Map<String, String> addAttr = new HashMap<>();
+        JsonObject o = (JsonObject) v.get("addAttr");
+        for (String k : o.names()) {
+            addAttr.put(k, o.getString(k, ""));
+        }
+
+        return new RegistrationUpdate(regId, identity, lifetime, sms, b, linkObjs, addAttr);
     }
 }

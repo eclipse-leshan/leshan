@@ -15,6 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.leshan.Link;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.UpdateResponse;
@@ -30,6 +34,7 @@ public class UpdateRequest implements UplinkRequest<UpdateResponse> {
     private final BindingMode bindingMode;
     private final String registrationId;
     private final Link[] objectLinks;
+    private final Map<String, String> additionalAttributes;
 
     /**
      * Sets all fields.
@@ -42,7 +47,7 @@ public class UpdateRequest implements UplinkRequest<UpdateResponse> {
      * @exception InvalidRequestException if the registrationId is empty.
      */
     public UpdateRequest(String registrationId, Long lifetime, String smsNumber, BindingMode binding,
-            Link[] objectLinks) throws InvalidRequestException {
+            Link[] objectLinks, Map<String, String> additionalAttributes) throws InvalidRequestException {
 
         if (registrationId == null || registrationId.isEmpty())
             throw new InvalidRequestException("registrationId is mandatory");
@@ -52,6 +57,10 @@ public class UpdateRequest implements UplinkRequest<UpdateResponse> {
         this.lifeTimeInSec = lifetime;
         this.bindingMode = binding;
         this.smsNumber = smsNumber;
+        if (additionalAttributes == null)
+            this.additionalAttributes = Collections.emptyMap();
+        else
+            this.additionalAttributes = Collections.unmodifiableMap(new HashMap<>(additionalAttributes));
     }
 
     public String getRegistrationId() {
@@ -72,6 +81,10 @@ public class UpdateRequest implements UplinkRequest<UpdateResponse> {
 
     public BindingMode getBindingMode() {
         return bindingMode;
+    }
+
+    public Map<String, String> getAdditionalAttributes() {
+        return additionalAttributes;
     }
 
     @Override

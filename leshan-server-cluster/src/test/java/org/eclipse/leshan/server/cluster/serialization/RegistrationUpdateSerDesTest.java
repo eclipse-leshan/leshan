@@ -40,9 +40,12 @@ public class RegistrationUpdateSerDesTest {
         objs[0] = new Link("/0/1024/2", att);
         objs[1] = new Link("/0/2");
 
+        Map<String, String> additionalAtt = new HashMap<>();
+        additionalAtt.put("at", "5000");
+
         RegistrationUpdate ru = new RegistrationUpdate("myId",
                 Identity.unsecure(Inet4Address.getByName("127.0.0.1"), LwM2m.DEFAULT_COAP_PORT), 60000l, null,
-                BindingMode.U, objs);
+                BindingMode.U, objs, additionalAtt);
 
         byte[] ser = RegistrationUpdateSerDes.bSerialize(ru);
         RegistrationUpdate ru2 = RegistrationUpdateSerDes.deserialize(ser);

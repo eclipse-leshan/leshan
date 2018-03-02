@@ -209,6 +209,8 @@ public class RegisterResource extends CoapResource {
         String smsNumber = null;
         BindingMode binding = null;
         Link[] objectLinks = null;
+        Map<String, String> additionalParams = new HashMap<>();
+
         for (String param : request.getOptions().getUriQuery()) {
             if (param.startsWith(QUERY_PARAM_LIFETIME)) {
                 lifetime = Long.valueOf(param.substring(3));
@@ -216,12 +218,18 @@ public class RegisterResource extends CoapResource {
                 smsNumber = param.substring(4);
             } else if (param.startsWith(QUERY_PARAM_BINDING_MODE)) {
                 binding = BindingMode.valueOf(param.substring(2));
+            } else {
+                String[] tokens = param.split("\\=");
+                if (tokens != null && tokens.length == 2) {
+                    additionalParams.put(tokens[0], tokens[1]);
+                }
             }
         }
         if (request.getPayload() != null && request.getPayload().length > 0) {
             objectLinks = Link.parse(request.getPayload());
         }
-        UpdateRequest updateRequest = new UpdateRequest(registrationId, lifetime, smsNumber, binding, objectLinks);
+        UpdateRequest updateRequest = new UpdateRequest(registrationId, lifetime, smsNumber, binding, objectLinks,
+                additionalParams);
 
         // Handle request
         final SendableResponse<UpdateResponse> sendableResponse = registrationHandler.update(sender, updateRequest);

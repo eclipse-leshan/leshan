@@ -250,7 +250,7 @@ public class RegistrationEngine {
         // Send update
         LOG.info("Trying to update registration to {} ...", dmInfo.getFullUri());
         UpdateResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(),
-                new UpdateRequest(registrationID, null, null, null, null), DEFAULT_TIMEOUT);
+                new UpdateRequest(registrationID, null, null, null, null, null), DEFAULT_TIMEOUT);
         if (response == null) {
             registrationID = null;
             LOG.error("Registration update failed: Timeout.");
