@@ -27,6 +27,7 @@ import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
+import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.slf4j.Logger;
@@ -57,7 +58,11 @@ public class ServersInfoExtractor {
                     } else {
                         // create bootstrap info
                         ServerInfo info = new ServerInfo();
-                        info.serverId = (long) security.getResource(SEC_SERVER_ID).getValue();
+                        LwM2mResource serverIdResource = security.getResource(SEC_SERVER_ID);
+                        if (serverIdResource != null && serverIdResource.getValue() != null)
+                            info.serverId = (long) serverIdResource.getValue();
+                        else
+                            info.serverId = 0;
                         info.serverUri = new URI((String) security.getResource(SEC_SERVER_URI).getValue());
                         info.secureMode = SecurityMode
                                 .fromCode((long) security.getResource(SEC_SECURITY_MODE).getValue());
