@@ -76,7 +76,8 @@ public class ResponseCode {
             "REQUEST_ENTITY_TOO_LARGE");
     public final static ResponseCode UNSUPPORTED_CONTENT_FORMAT = new ResponseCode(UNSUPPORTED_CONTENT_FORMAT_CODE,
             "UNSUPPORTED_CONTENT_FORMAT");
-    public final static ResponseCode INTERNAL_SERVER_ERROR = new ResponseCode(INTERNAL_SERVER_ERROR_CODE, "CREATED");
+    public final static ResponseCode INTERNAL_SERVER_ERROR = new ResponseCode(INTERNAL_SERVER_ERROR_CODE,
+            "INTERNAL_SERVER_ERROR");
 
     private static final ResponseCode knownResponseCode[] = new ResponseCode[] { CREATED, DELETED, CHANGED, CONTENT,
                             BAD_REQUEST, UNAUTHORIZED, METHOD_NOT_ALLOWED, FORBIDDEN, NOT_FOUND, NOT_ACCEPTABLE,
