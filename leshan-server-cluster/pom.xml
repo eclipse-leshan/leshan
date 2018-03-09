@@ -90,9 +90,9 @@ Contributors:
                             <mainClass>org.eclipse.leshan.server.cluster.LeshanClusterServer</mainClass>
                         </manifest>
                     </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
+                    <descriptors>
+                        <descriptor>../jar-with-dependencies-with-logback.xml</descriptor>
+                    </descriptors>
                 </configuration>
                 <executions>
                     <execution>

@@ -18,6 +18,7 @@ package org.eclipse.leshan.core.attributes;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Collection;
 import java.util.Map;
 
 import org.junit.Rule;
@@ -32,18 +33,18 @@ public class AttributeSetTest {
     @Test
     public void should_provide_query_params() {
         AttributeSet sut = new AttributeSet(
-                new Attribute(AttributeName.OBJECT_VERSION, "1.1"),
-                new Attribute(AttributeName.MINIMUM_PERIOD, 5L),
-                new Attribute(AttributeName.MAXIMUM_PERIOD, 60L));
+                new Attribute(Attribute.OBJECT_VERSION, "1.1"),
+                new Attribute(Attribute.MINIMUM_PERIOD, 5L),
+                new Attribute(Attribute.MAXIMUM_PERIOD, 60L));
         assertEquals("ver=1.1&pmin=5&pmax=60", sut.toString());
     }
     
     @Test
     public void should_get_map() {
         AttributeSet sut = new AttributeSet(
-                new Attribute(AttributeName.OBJECT_VERSION, "1.1"),
-                new Attribute(AttributeName.MINIMUM_PERIOD, 5L),
-                new Attribute(AttributeName.MAXIMUM_PERIOD, 60L));
+                new Attribute(Attribute.OBJECT_VERSION, "1.1"),
+                new Attribute(Attribute.MINIMUM_PERIOD, 5L),
+                new Attribute(Attribute.MAXIMUM_PERIOD, 60L));
         Map<String, Object> map = sut.getMap();
         assertEquals("1.1", map.get("ver"));
         assertEquals(5L, map.get("pmin"));
@@ -53,12 +54,12 @@ public class AttributeSetTest {
     @Test
     public void should_merge() {
         AttributeSet sut = new AttributeSet(
-                new Attribute(AttributeName.OBJECT_VERSION, "1.1"),
-                new Attribute(AttributeName.MINIMUM_PERIOD, 5L),
-                new Attribute(AttributeName.MAXIMUM_PERIOD, 60L));
+                new Attribute(Attribute.OBJECT_VERSION, "1.1"),
+                new Attribute(Attribute.MINIMUM_PERIOD, 5L),
+                new Attribute(Attribute.MAXIMUM_PERIOD, 60L));
         AttributeSet set2 = new AttributeSet(
-                new Attribute(AttributeName.MINIMUM_PERIOD, 10L),
-                new Attribute(AttributeName.MAXIMUM_PERIOD, 120L));
+                new Attribute(Attribute.MINIMUM_PERIOD, 10L),
+                new Attribute(Attribute.MAXIMUM_PERIOD, 120L));
         
         AttributeSet merged = sut.merge(set2);
         
@@ -75,30 +76,40 @@ public class AttributeSetTest {
     }
     
     @Test
+    public void should_to_string() {
+        AttributeSet sut = new AttributeSet(
+                new Attribute(Attribute.OBJECT_VERSION, "1.1"),
+                new Attribute(Attribute.MINIMUM_PERIOD, 5L),
+                new Attribute(Attribute.MAXIMUM_PERIOD, 60L));
+        
+        assertEquals("ver=1.1&pmin=5&pmax=60", sut.toString());
+    }
+        
+    @Test
     public void should_throw_on_duplicates() {
         exception.expect(IllegalArgumentException.class);
         new AttributeSet(
-                new Attribute(AttributeName.OBJECT_VERSION, "1.1"),
-                new Attribute(AttributeName.MINIMUM_PERIOD, 5L),
-                new Attribute(AttributeName.MINIMUM_PERIOD, 60L));
+                new Attribute(Attribute.OBJECT_VERSION, "1.1"),
+                new Attribute(Attribute.MINIMUM_PERIOD, 5L),
+                new Attribute(Attribute.MINIMUM_PERIOD, 60L));
     }
 
     @Test
     public void should_validate_assignation() {
         AttributeSet sut = new AttributeSet(
-                new Attribute(AttributeName.MINIMUM_PERIOD, 5L),
-                new Attribute(AttributeName.MAXIMUM_PERIOD, 60L));
-        Attribute[] attributes = sut.getAttributes();
-        assertEquals(2, attributes.length);
+                new Attribute(Attribute.MINIMUM_PERIOD, 5L),
+                new Attribute(Attribute.MAXIMUM_PERIOD, 60L));
+        Collection<Attribute> attributes = sut.getAttributes();
+        assertEquals(2, attributes.size());
         sut.validate(AssignationLevel.RESOURCE);
     }
     
     @Test
     public void should_throw_on_invalid_assignation_level() {
         AttributeSet sut = new AttributeSet(
-                new Attribute(AttributeName.OBJECT_VERSION, "1.1"),
-                new Attribute(AttributeName.MINIMUM_PERIOD, 5L),
-                new Attribute(AttributeName.MAXIMUM_PERIOD, 60L));
+                new Attribute(Attribute.OBJECT_VERSION, "1.1"),
+                new Attribute(Attribute.MINIMUM_PERIOD, 5L),
+                new Attribute(Attribute.MAXIMUM_PERIOD, 60L));
         
         exception.expect(IllegalArgumentException.class);
         // OBJECT_VERSION cannot be assigned on resource level
@@ -108,8 +119,8 @@ public class AttributeSetTest {
     @Test
     public void should_throw_on_invalid_pmin_pmax() {
         AttributeSet sut = new AttributeSet(
-                new Attribute(AttributeName.MINIMUM_PERIOD, 50L),
-                new Attribute(AttributeName.MAXIMUM_PERIOD, 49L));
+                new Attribute(Attribute.MINIMUM_PERIOD, 50L),
+                new Attribute(Attribute.MAXIMUM_PERIOD, 49L));
         
         exception.expect(IllegalArgumentException.class);
         // pmin cannot be greater then pmax

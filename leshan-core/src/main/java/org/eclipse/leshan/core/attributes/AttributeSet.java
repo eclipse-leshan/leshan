@@ -17,6 +17,9 @@
 package org.eclipse.leshan.core.attributes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,17 +34,21 @@ import org.eclipse.leshan.util.Validate;
  */
 public class AttributeSet {
     
-    private Map<AttributeName, Attribute> attributeMap = new LinkedHashMap<>();
+    private final Map<String, Attribute> attributeMap = new LinkedHashMap<>();
     
     public AttributeSet(Attribute...attributes) {
-        if (attributes != null && attributes.length > 0) {
+        this(Arrays.asList(attributes));
+    }
+    
+    public AttributeSet(Collection<Attribute> attributes) {
+        if (attributes != null && !attributes.isEmpty()) {
             for (Attribute attr : attributes) {
                 // Check for duplicates
-                if (attributeMap.containsKey(attr.getName())) {
+                if (attributeMap.containsKey(attr.getCoRELinkParam())) {
                     throw new IllegalArgumentException(String.format("Cannot create attribute set with duplicates (attr: '%s')",
                             attr.getCoRELinkParam())); 
                 }
-                attributeMap.put(attr.getName(), attr);
+                attributeMap.put(attr.getCoRELinkParam(), attr);
             }
         }
     }
@@ -49,6 +56,7 @@ public class AttributeSet {
     /**
      * Creates an attribute set from a list of query params.
      */
+    @Deprecated
     public AttributeSet(String[] queryParams) {
         for (String param : queryParams) {
             String[] keyAndValue = param.split("=");
@@ -56,7 +64,7 @@ public class AttributeSet {
                 throw new IllegalArgumentException(String.format("Cannot parse query param '%s'", param));
             }
             Attribute attr = Attribute.create(keyAndValue[0], keyAndValue[1]);
-            attributeMap.put(attr.getName(), attr);
+            attributeMap.put(attr.getCoRELinkParam(), attr);
         }
     }
 
@@ -68,13 +76,14 @@ public class AttributeSet {
                         attr.getCoRELinkParam(), assignationLevel.name()));
             }
         }
-        Attribute pmin = attributeMap.get(AttributeName.MINIMUM_PERIOD);
-        Attribute pmax = attributeMap.get(AttributeName.MAXIMUM_PERIOD);
+        Attribute pmin = attributeMap.get(Attribute.MINIMUM_PERIOD);
+        Attribute pmax = attributeMap.get(Attribute.MAXIMUM_PERIOD);
         if ((pmin != null) && (pmax != null) && (Long) pmin.getValue() > (Long) pmax.getValue()) {
             throw new IllegalArgumentException(String.format("Cannot write attributes where '%s' > '%s'",
                     pmin.getCoRELinkParam(), pmax.getCoRELinkParam()));
         }
     }
+
 
     /**
      * Returns a new AttributeSet, containing only the attributes that have a matching
@@ -89,7 +98,7 @@ public class AttributeSet {
                 attrs.add(attr);
             }
         }
-        return new AttributeSet(attrs.toArray(new Attribute[attrs.size()]));
+        return new AttributeSet(attrs);
     }
     
     /**
@@ -100,16 +109,16 @@ public class AttributeSet {
      * @return the merged AttributeSet 
      */
     public AttributeSet merge(AttributeSet attributes) {
-        Map<AttributeName, Attribute> merged = new LinkedHashMap<>();
+        Map<String, Attribute> merged = new LinkedHashMap<>();
         for (Attribute attr : getAttributes()) {
-            merged.put(attr.getName(), attr);
+            merged.put(attr.getCoRELinkParam(), attr);
         }
         if (attributes != null) {
             for (Attribute attr : attributes.getAttributes()) {
-                merged.put(attr.getName(), attr);
+                merged.put(attr.getCoRELinkParam(), attr);
             }
         }
-        return new AttributeSet(merged.values().toArray(new Attribute[merged.size()]));        
+        return new AttributeSet(merged.values());        
     }
 
     /**
@@ -121,11 +130,11 @@ public class AttributeSet {
         for (Attribute attr : attributeMap.values()) {
             result.put(attr.getCoRELinkParam(), attr.getValue());
         }
-        return result;
+        return Collections.unmodifiableMap(result);
     }
     
-    public Attribute[] getAttributes() {
-        return attributeMap.values().toArray(new Attribute[attributeMap.size()]);
+    public Collection<Attribute> getAttributes() {
+        return attributeMap.values();
     }
     
     public String[] toQueryParams() {
@@ -138,6 +147,11 @@ public class AttributeSet {
 
     @Override
     public String toString() {
-        return String.join("&", toQueryParams()); 
+        StringBuilder sb = new StringBuilder();
+        String[] queryParams = toQueryParams();
+        for (int a = 0;a<queryParams.length;a++) {
+            sb.append(a < queryParams.length - 1 ? queryParams[a] + "&" : queryParams[a]);
+        }
+        return sb.toString();
     }
 }

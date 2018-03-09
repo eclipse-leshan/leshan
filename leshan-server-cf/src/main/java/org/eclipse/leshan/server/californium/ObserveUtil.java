@@ -60,7 +60,7 @@ public class ObserveUtil {
                 context.put(ctx.getKey(), ctx.getValue());
             }
         }
-        return new Observation(request.getToken(), regId, new LwM2mPath(lwm2mPath), context);
+        return new Observation(request.getToken().getBytes(), regId, new LwM2mPath(lwm2mPath), context);
     }
 
     /**

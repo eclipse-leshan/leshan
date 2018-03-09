@@ -105,7 +105,7 @@ Contributors:
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <californium.version>2.0.0-M6</californium.version>
+        <californium.version>2.0.0-M8</californium.version>
         <logback.version>1.2.3</logback.version>
         <slf4j.api.version>1.7.25</slf4j.api.version>
         <jetty.version>9.1.4.v20140401</jetty.version>
@@ -237,12 +237,7 @@ Contributors:
                     <version>2.19</version>
                     <configuration>
                         <systemPropertyVariables>
-                            <!-- WORKAROUND because of eclipse classpath issue: https://bugs.eclipse.org/bugs/show_bug.cgi?id=414645
-                            	This allow to have a logback-test config file for maven which is not seen by eclipse ...
-                            -->
-                        	<logback.configurationFile>
-                            src/test/resources/logback-test-${project.artifactId}.xml
-                        	</logback.configurationFile>
+                         	<logback.configurationFile>logback-test.xml</logback.configurationFile>
                     	</systemPropertyVariables>
                         <parallel>classes</parallel>
                         <threadCount>4</threadCount>

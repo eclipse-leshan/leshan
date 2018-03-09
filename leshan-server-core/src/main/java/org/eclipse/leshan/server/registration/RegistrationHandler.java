@@ -106,7 +106,7 @@ public class RegistrationHandler {
         // Create update
         final RegistrationUpdate update = new RegistrationUpdate(updateRequest.getRegistrationId(), sender,
                 updateRequest.getLifeTimeInSec(), updateRequest.getSmsNumber(), updateRequest.getBindingMode(),
-                updateRequest.getObjectLinks());
+                updateRequest.getObjectLinks(), updateRequest.getAdditionalAttributes());
 
         // update registration
         final UpdatedRegistration updatedRegistration = registrationService.getStore().updateRegistration(update);

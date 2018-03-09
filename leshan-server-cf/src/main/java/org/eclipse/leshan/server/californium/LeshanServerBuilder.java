@@ -14,6 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - use Lwm2mEndpointContextMatcher
  *                                                     for secure endpoint.
+ *     Achim Kraus (Bosch Software Innovations GmbH) - use CoapEndpointBuilder
  *******************************************************************************/
 package org.eclipse.leshan.server.californium;
 
@@ -46,6 +47,8 @@ import org.eclipse.leshan.server.californium.impl.LwM2mPskStore;
 import org.eclipse.leshan.server.impl.InMemorySecurityStore;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StandardModelProvider;
+import org.eclipse.leshan.server.queue.ClientAwakeTimeProvider;
+import org.eclipse.leshan.server.queue.StaticClientAwakeTimeProvider;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.security.Authorizer;
@@ -68,6 +71,7 @@ public class LeshanServerBuilder {
     private SecurityStore securityStore;
     private LwM2mModelProvider modelProvider;
     private Authorizer authorizer;
+    private ClientAwakeTimeProvider awakeTimeProvider;
 
     private InetSocketAddress localAddress;
     private InetSocketAddress localSecureAddress;
@@ -319,6 +323,16 @@ public class LeshanServerBuilder {
     }
 
     /**
+     * Sets a new {@link ClientAwakeTimeProvider} object different from the default one (93 seconds).
+     * 
+     * @param awakeTimeProvider the {@link ClientAwakeTimeProvider} to set.
+     */
+    public LeshanServerBuilder setClientAwakeTimeProvider(ClientAwakeTimeProvider awakeTimeProvider) {
+        this.awakeTimeProvider = awakeTimeProvider;
+        return this;
+    }
+
+    /**
      * The default Californium/CoAP {@link NetworkConfig} used by the builder.
      */
     public static NetworkConfig createDefaultNetworkConfig() {
@@ -340,9 +354,10 @@ public class LeshanServerBuilder {
             encoder = new DefaultLwM2mNodeEncoder();
         if (decoder == null)
             decoder = new DefaultLwM2mNodeDecoder();
-        if (coapConfig == null) {
+        if (coapConfig == null)
             coapConfig = createDefaultNetworkConfig();
-        }
+        if (awakeTimeProvider == null)
+            awakeTimeProvider = new StaticClientAwakeTimeProvider();
 
         // handle dtlsConfig
         DtlsConnectorConfig dtlsConfig = null;
@@ -435,7 +450,11 @@ public class LeshanServerBuilder {
                 unsecuredEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig,
                         registrationStore);
             } else {
-                unsecuredEndpoint = new CoapEndpoint(localAddress, coapConfig, registrationStore);
+                CoapEndpoint.CoapEndpointBuilder builder = new CoapEndpoint.CoapEndpointBuilder();
+                builder.setInetSocketAddress(localAddress);
+                builder.setNetworkConfig(coapConfig);
+                builder.setObservationStore(registrationStore);
+                unsecuredEndpoint = builder.build();
             }
         }
 
@@ -444,8 +463,12 @@ public class LeshanServerBuilder {
             if (endpointFactory != null) {
                 securedEndpoint = endpointFactory.createSecuredEndpoint(dtlsConfig, coapConfig, registrationStore);
             } else {
-                securedEndpoint = new CoapEndpoint(new DTLSConnector(dtlsConfig), coapConfig, registrationStore, null,
-                        new Lwm2mEndpointContextMatcher());
+                CoapEndpoint.CoapEndpointBuilder builder = new CoapEndpoint.CoapEndpointBuilder();
+                builder.setConnector(new DTLSConnector(dtlsConfig));
+                builder.setNetworkConfig(coapConfig);
+                builder.setObservationStore(registrationStore);
+                builder.setEndpointContextMatcher(new Lwm2mEndpointContextMatcher());
+                securedEndpoint = builder.build();
             }
         }
 
@@ -455,6 +478,6 @@ public class LeshanServerBuilder {
         }
 
         return new LeshanServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer,
-                modelProvider, encoder, decoder, coapConfig, noQueueMode);
+                modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider);
     }
 }

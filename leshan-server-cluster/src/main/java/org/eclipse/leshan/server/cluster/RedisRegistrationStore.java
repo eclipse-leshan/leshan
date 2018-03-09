@@ -14,6 +14,8 @@
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - rename CorrelationContext to
  *                                                     EndpointContext
+ *     Achim Kraus (Bosch Software Innovations GmbH) - update to modified 
+ *                                                     ObservationStore API
  *******************************************************************************/
 package org.eclipse.leshan.server.cluster;
 
@@ -31,6 +33,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.californium.core.coap.Token;
 import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.Startable;
@@ -409,7 +412,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
             try {
                 lockValue = RedisLock.acquire(j, lockKey);
 
-                Observation observation = build(get(observationId));
+                Observation observation = build(get(new Token(observationId)));
                 if (observation != null && registrationId.equals(observation.getRegistrationId())) {
                     unsafeRemoveObservation(j, registrationId, observationId);
                     return observation;
@@ -424,7 +427,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
 
     @Override
     public Observation getObservation(String registrationId, byte[] observationId) {
-        return build(get(observationId));
+        return build(get(new Token(observationId)));
     }
 
     @Override
@@ -470,9 +473,19 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     /* *************** Californium ObservationStore API **************** */
 
     @Override
-    public void add(org.eclipse.californium.core.observe.Observation obs) {
-        String endpoint = ObserveUtil.validateCoapObservation(obs);
+    public org.eclipse.californium.core.observe.Observation putIfAbsent(Token token, org.eclipse.californium.core.observe.Observation obs) {
+        return add(token, obs, true);
+    }
 
+    @Override
+    public org.eclipse.californium.core.observe.Observation put(Token token, org.eclipse.californium.core.observe.Observation obs) {
+        return add(token, obs, false);
+    }
+
+    private org.eclipse.californium.core.observe.Observation add(Token token, org.eclipse.californium.core.observe.Observation obs, boolean ifAbsent) {
+        String endpoint = ObserveUtil.validateCoapObservation(obs);
+        org.eclipse.californium.core.observe.Observation previousObservation = null;
+        
         try (Jedis j = pool.getResource()) {
             byte[] lockValue = null;
             byte[] lockKey = toKey(LOCK_EP, endpoint);
@@ -482,16 +495,26 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
                 String registrationId = ObserveUtil.extractRegistrationId(obs);
                 if (!j.exists(toRegIdKey(registrationId)))
                     throw new IllegalStateException("no registration for this Id");
-
-                byte[] previousValue = j.getSet(toKey(OBS_TKN, obs.getRequest().getToken()), serializeObs(obs));
+                byte[] key = toKey(OBS_TKN, obs.getRequest().getToken().getBytes());
+                byte[] serializeObs = serializeObs(obs);
+                byte[] previousValue = null;
+                if (ifAbsent) {
+                    previousValue = j.get(key);
+                    if (previousValue == null || previousValue.length == 0) {
+                        j.set(key, serializeObs);
+                    } else {
+                        return deserializeObs(previousValue);
+                    }
+                } else {
+                    previousValue = j.getSet(key, serializeObs);
+                }
 
                 // secondary index to get the list by registrationId
-                j.lpush(toKey(OBS_TKNS_REGID_IDX, registrationId), obs.getRequest().getToken());
+                j.lpush(toKey(OBS_TKNS_REGID_IDX, registrationId), obs.getRequest().getToken().getBytes());
 
                 // log any collisions
                 if (previousValue != null && previousValue.length != 0) {
-                    org.eclipse.californium.core.observe.Observation previousObservation = deserializeObs(
-                            previousValue);
+                    previousObservation = deserializeObs(previousValue);
                     LOG.warn(
                             "Token collision ? observation from request [{}] will be replaced by observation from request [{}] ",
                             previousObservation.getRequest(), obs.getRequest());
@@ -500,12 +523,13 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
                 RedisLock.release(j, lockKey, lockValue);
             }
         }
+        return previousObservation;
     }
 
     @Override
-    public void remove(byte[] token) {
+    public void remove(Token token) {
         try (Jedis j = pool.getResource()) {
-            byte[] tokenKey = toKey(OBS_TKN, token);
+            byte[] tokenKey = toKey(OBS_TKN, token.getBytes());
 
             // fetch the observation by token
             byte[] serializedObs = j.get(tokenKey);
@@ -527,7 +551,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
             try {
                 lockValue = RedisLock.acquire(j, lockKey);
 
-                unsafeRemoveObservation(j, registrationId, token);
+                unsafeRemoveObservation(j, registrationId, token.getBytes());
             } finally {
                 RedisLock.release(j, lockKey, lockValue);
             }
@@ -536,9 +560,9 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     }
 
     @Override
-    public org.eclipse.californium.core.observe.Observation get(byte[] token) {
+    public org.eclipse.californium.core.observe.Observation get(Token token) {
         try (Jedis j = pool.getResource()) {
-            byte[] obs = j.get(toKey(OBS_TKN, token));
+            byte[] obs = j.get(toKey(OBS_TKN, token.getBytes()));
             if (obs == null) {
                 return null;
             } else {
@@ -586,7 +610,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     }
 
     @Override
-    public void setContext(byte[] token, EndpointContext correlationContext) {
+    public void setContext(Token token, EndpointContext correlationContext) {
         // TODO should be implemented
     }
 

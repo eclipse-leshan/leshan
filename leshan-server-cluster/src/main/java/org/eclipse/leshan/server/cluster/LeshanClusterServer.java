@@ -47,6 +47,11 @@ import redis.clients.util.Pool;
  * and communicate using Redis. So they all need too be connected to the same redis server.
  */
 public class LeshanClusterServer {
+
+    static {
+        System.setProperty("logback.configurationFile", "logback-config.xml");
+    }
+
     private static final Logger LOG = LoggerFactory.getLogger(LeshanClusterServer.class);
 
     private final static String USAGE = "java -jar leshan-server-cluster.jar [OPTION]";

@@ -20,6 +20,9 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.eclipse.leshan.util.Validate;
+
 import java.util.Set;
 
 /**
@@ -31,6 +34,14 @@ import java.util.Set;
  */
 public class Attribute {
     
+    public static final String DIMENSION = "dim";
+    public static final String OBJECT_VERSION = "ver";
+    public static final String MINIMUM_PERIOD = "pmin";
+    public static final String MAXIMUM_PERIOD = "pmax";
+    public static final String GREATER_THAN = "gt";
+    public static final String LESSER_THAN = "lt";
+    public static final String STEP = "st";
+    
     /**
      * Metadata container for LwM2m attributes
      */
@@ -38,8 +49,8 @@ public class Attribute {
         private final String coRELinkParam;
         private final Attachment attachment;
         private final Set<AssignationLevel> assignationLevels;
-        private AccessMode accessMode;
-        private Class<?> valueClass;
+        private final AccessMode accessMode;
+        private final Class<?> valueClass;
 
         private AttributeModel(String coRELinkParam, Attachment attachment, Set<AssignationLevel> assignationLevels,
                 AccessMode accessMode, Class<?> valueClass) {
@@ -51,81 +62,72 @@ public class Attribute {
         }
     }
     
-    private static Map<AttributeName, AttributeModel> modelMap;
-    private static Map<String, AttributeName> coRELinkParamMap;
+    private static Map<String, AttributeModel> modelMap;
     
     static {
         modelMap = new HashMap<>();
-        modelMap.put(AttributeName.DIMENSION, new Attribute.AttributeModel("dim", Attachment.RESOURCE, EnumSet.of(AssignationLevel.RESOURCE),
+        modelMap.put(DIMENSION, new Attribute.AttributeModel(DIMENSION, Attachment.RESOURCE, EnumSet.of(AssignationLevel.RESOURCE),
                 AccessMode.R, Long.class));
-        modelMap.put(AttributeName.OBJECT_VERSION, new Attribute.AttributeModel("ver", Attachment.OBJECT, EnumSet.of(AssignationLevel.OBJECT),
+        modelMap.put(OBJECT_VERSION, new Attribute.AttributeModel(OBJECT_VERSION, Attachment.OBJECT, EnumSet.of(AssignationLevel.OBJECT),
                 AccessMode.R, String.class));
-        modelMap.put(AttributeName.MINIMUM_PERIOD, new Attribute.AttributeModel("pmin", Attachment.RESOURCE,
+        modelMap.put(MINIMUM_PERIOD, new Attribute.AttributeModel(MINIMUM_PERIOD, Attachment.RESOURCE,
                 EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.INSTANCE, AssignationLevel.RESOURCE),
                 AccessMode.RW, Long.class));
-        modelMap.put(AttributeName.MAXIMUM_PERIOD, new Attribute.AttributeModel("pmax", Attachment.RESOURCE,
+        modelMap.put(MAXIMUM_PERIOD, new Attribute.AttributeModel(MAXIMUM_PERIOD, Attachment.RESOURCE,
                 EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.INSTANCE, AssignationLevel.RESOURCE),
                 AccessMode.RW, Long.class));
-        modelMap.put(AttributeName.GREATER_THAN, new AttributeModel("gt", Attachment.RESOURCE,
+        modelMap.put(GREATER_THAN, new AttributeModel(GREATER_THAN, Attachment.RESOURCE,
                 EnumSet.of(AssignationLevel.RESOURCE),  AccessMode.RW,  Double.class));
-        modelMap.put(AttributeName.LESS_THAN, new AttributeModel("lt", Attachment.RESOURCE,
+        modelMap.put(LESSER_THAN, new AttributeModel(LESSER_THAN, Attachment.RESOURCE,
                 EnumSet.of(AssignationLevel.RESOURCE),  AccessMode.RW,  Double.class));
-        modelMap.put(AttributeName.STEP, new AttributeModel("st", Attachment.RESOURCE,
+        modelMap.put(STEP, new AttributeModel(STEP, Attachment.RESOURCE,
                 EnumSet.of(AssignationLevel.RESOURCE),  AccessMode.RW,  Double.class));
-        
-        // Create a map from coRELinkParam to AttributeName as well
-        coRELinkParamMap = new HashMap<>();
-        for (Entry<AttributeName, AttributeModel> entry  : modelMap.entrySet()) {
-            coRELinkParamMap.put(modelMap.get(entry.getKey()).coRELinkParam, entry.getKey());
-        }
     }
 
     private final AttributeModel model;
-    private final AttributeName name;
     private final Object value;
     
-    public Attribute(AttributeName name, Object value) {
-        this.model = modelMap.get(name);
-        // Ensure that the attribute value has the correct type
-        if (!this.model.valueClass.equals(value.getClass())) {
-            throw new IllegalArgumentException(String.format("Attribute %s must have a value of type %s",
-                    name.name(), model.valueClass.getSimpleName()));
+    public Attribute(String coRELinkParam, Object value) {
+        Validate.notEmpty(coRELinkParam);
+        this.model = modelMap.get(coRELinkParam);
+        if (model == null) {
+            throw new IllegalArgumentException(String.format("Unsupported attribute '%s'", coRELinkParam));
         }
-        this.name = name;
-        this.value = value;
-    }
-
-    public static Attribute create(AttributeName name, Object value) {
-        return new Attribute(name, value);
+        this.value = ensureMatchingValue(model, value);
     }
 
     public static Attribute create(String coRELinkParam, Object value) {
-        if (!coRELinkParamMap.containsKey(coRELinkParam)) {
-            throw new IllegalArgumentException(String.format("Unsupported attribute '%s'", coRELinkParam));
-        }
-        AttributeName attributeName = coRELinkParamMap.get(coRELinkParam);
-        // If the value is a string, we make an attempt to convert it
-        Class<?> expectedClass = modelMap.get(attributeName).valueClass;
-        if (!expectedClass.equals(value.getClass()) && value instanceof String) {
-            if (expectedClass.equals(Long.class)) {
-                return new Attribute(attributeName, Long.parseLong(value.toString()));
-            } else if (expectedClass.equals(Double.class)) {
-                return new Attribute(attributeName, Double.parseDouble(value.toString()));
-            }
-        }
-        return new Attribute(attributeName, value);
-    }
-    
-    public AttributeName getName() {
-        return name;
+        return new Attribute(coRELinkParam, value);
     }
 
-    public Object getValue() {
+    /**
+     * Ensures that a provided attribute value matches the attribute value type, including trying
+     * to perform a correct conversion if the value is a string, e.g.
+     * @return the converted or original value
+     */
+    private Object ensureMatchingValue(AttributeModel model, Object value) {
+        // Ensure that the attribute value has the correct type
+        // If the value is a string, we make an attempt to convert it
+        Class<?> expectedClass = model.valueClass;
+        if (!expectedClass.equals(value.getClass()) && value instanceof String) {
+            if (expectedClass.equals(Long.class)) {
+                return Long.parseLong(value.toString());
+            } else if (expectedClass.equals(Double.class)) {
+                return Double.parseDouble(value.toString());
+            }
+        } else if (!this.model.valueClass.equals(value.getClass())) {
+            throw new IllegalArgumentException(String.format("Attribute '%s' must have a value of type %s",
+                    model.coRELinkParam, model.valueClass.getSimpleName()));
+        }
         return value;
     }
     
     public String getCoRELinkParam() {
         return model.coRELinkParam;
+    }
+
+    public Object getValue() {
+        return value;
     }
 
     public Attachment getAttachment() {

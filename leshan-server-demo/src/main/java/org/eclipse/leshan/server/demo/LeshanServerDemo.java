@@ -86,6 +86,10 @@ import redis.clients.util.Pool;
 
 public class LeshanServerDemo {
 
+    static {
+        System.setProperty("logback.configurationFile", "logback-config.xml");
+    }
+
     private static final Logger LOG = LoggerFactory.getLogger(LeshanServerDemo.class);
 
     private final static String[] modelPaths = new String[] { "31024.xml",

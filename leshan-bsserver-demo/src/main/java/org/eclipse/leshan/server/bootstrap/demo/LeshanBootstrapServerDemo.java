@@ -45,6 +45,10 @@ import org.slf4j.LoggerFactory;
 
 public class LeshanBootstrapServerDemo {
 
+    static {
+        System.setProperty("logback.configurationFile", "logback-config.xml");
+    }
+
     private static final Logger LOG = LoggerFactory.getLogger(LeshanBootstrapServerDemo.class);
 
     private final static String USAGE = "java -jar leshan-bsserver-demo.jar [OPTION]";

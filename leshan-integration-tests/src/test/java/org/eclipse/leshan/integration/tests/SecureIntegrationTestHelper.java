@@ -213,7 +213,10 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         config.setIdentity(clientPrivateKey, clientPublicKey);
 
         CoapServer coapServer = new CoapServer();
-        coapServer.addEndpoint(new CoapEndpoint(new DTLSConnector(config.build()), NetworkConfig.getStandard()));
+        CoapEndpoint.CoapEndpointBuilder coapBuilder = new CoapEndpoint.CoapEndpointBuilder();
+        coapBuilder.setConnector(new DTLSConnector(config.build()));
+        coapBuilder.setNetworkConfig(new NetworkConfig());
+        coapServer.addEndpoint(coapBuilder.build());
 
         LeshanClientBuilder builder = new LeshanClientBuilder(getCurrentEndpoint());
         builder.setLocalAddress(clientAddress.getHostString(), clientAddress.getPort());
@@ -240,7 +243,10 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         config.setTrustStore(trustedCertificates);
 
         CoapServer coapServer = new CoapServer();
-        coapServer.addEndpoint(new CoapEndpoint(new DTLSConnector(config.build()), NetworkConfig.getStandard()));
+        CoapEndpoint.CoapEndpointBuilder coapBuilder = new CoapEndpoint.CoapEndpointBuilder();
+        coapBuilder.setConnector(new DTLSConnector(config.build()));
+        coapBuilder.setNetworkConfig(new NetworkConfig());
+        coapServer.addEndpoint(coapBuilder.build());
 
         LeshanClientBuilder builder = new LeshanClientBuilder(getCurrentEndpoint());
         builder.setLocalAddress(clientAddress.getHostString(), clientAddress.getPort());
