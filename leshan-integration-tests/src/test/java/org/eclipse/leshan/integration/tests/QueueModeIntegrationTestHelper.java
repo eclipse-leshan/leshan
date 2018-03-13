@@ -1,0 +1,350 @@
+/*******************************************************************************
+ * Copyright (c) 2017 RISE SICS AB.
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * and Eclipse Distribution License v1.0 which accompany this distribution.
+ * 
+ * The Eclipse Public License is available at
+ *    http://www.eclipse.org/legal/epl-v10.html
+ * and the Eclipse Distribution License is available at
+ *    http://www.eclipse.org/org/documents/edl-v10.html.
+ * 
+ * Contributors:
+ *     RISE SICS AB - initial API and implementation
+ *******************************************************************************/
+
+package org.eclipse.leshan.integration.tests;
+
+import static org.junit.Assert.*;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.Collection;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.eclipse.leshan.LwM2mId;
+import org.eclipse.leshan.client.californium.LeshanClient;
+import org.eclipse.leshan.client.californium.LeshanClientBuilder;
+import org.eclipse.leshan.client.object.Device;
+import org.eclipse.leshan.client.object.Security;
+import org.eclipse.leshan.client.object.Server;
+import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
+import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.ObjectLoader;
+import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.model.ResourceModel;
+import org.eclipse.leshan.core.model.ResourceModel.Operations;
+import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.request.BindingMode;
+import org.eclipse.leshan.core.response.ExecuteResponse;
+import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.server.californium.LeshanServerBuilder;
+import org.eclipse.leshan.server.californium.impl.LeshanServer;
+import org.eclipse.leshan.server.impl.InMemorySecurityStore;
+import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
+import org.eclipse.leshan.server.model.StaticModelProvider;
+import org.eclipse.leshan.server.queue.PresenceListener;
+import org.eclipse.leshan.server.queue.StaticClientAwakeTimeProvider;
+import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.RegistrationListener;
+import org.eclipse.leshan.server.registration.RegistrationUpdate;
+
+/**
+ * Helper for running a server and executing a client against it.
+ * 
+ */
+public class QueueModeIntegrationTestHelper {
+    public static final Random r = new Random();
+
+    static final String MODEL_NUMBER = "IT-TEST-123";
+    public static final long SLEEPTIME = 10; // seconds
+    public static final long AWAKETIME = 2; // seconds
+    public static final long LIFETIME = 3600; // Updates are manually triggered with a timer
+
+    public static final int TEST_OBJECT_ID = 2000;
+    public static final int STRING_RESOURCE_ID = 0;
+    public static final int BOOLEAN_RESOURCE_ID = 1;
+    public static final int INTEGER_RESOURCE_ID = 2;
+    public static final int FLOAT_RESOURCE_ID = 3;
+    public static final int TIME_RESOURCE_ID = 4;
+    public static final int OPAQUE_RESOURCE_ID = 5;
+    public static final int OBJLNK_MULTI_INSTANCE_RESOURCE_ID = 6;
+    public static final int OBJLNK_SINGLE_INSTANCE_RESOURCE_ID = 7;
+
+    LeshanServer server;
+
+    LeshanClient client;
+    AtomicReference<String> currentEndpointIdentifier = new AtomicReference<String>();
+
+    CountDownLatch registerLatch;
+    Registration last_registration;
+    CountDownLatch deregisterLatch;
+    CountDownLatch updateLatch;
+    CountDownLatch awakeLatch;
+
+    private final ScheduledExecutorService sleepTimerExecutor = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledFuture<?> sleepScheduledFuture;
+
+    int awakeNotifications = 0;
+
+    protected List<ObjectModel> createObjectModels() {
+        // load default object from the spec
+        List<ObjectModel> objectModels = ObjectLoader.loadDefault();
+        // define custom model for testing purpose
+        ResourceModel stringfield = new ResourceModel(STRING_RESOURCE_ID, "stringres", Operations.RW, false, false,
+                Type.STRING, null, null, null);
+        ResourceModel booleanfield = new ResourceModel(BOOLEAN_RESOURCE_ID, "booleanres", Operations.RW, false, false,
+                Type.BOOLEAN, null, null, null);
+        ResourceModel integerfield = new ResourceModel(INTEGER_RESOURCE_ID, "integerres", Operations.RW, false, false,
+                Type.INTEGER, null, null, null);
+        ResourceModel floatfield = new ResourceModel(FLOAT_RESOURCE_ID, "floatres", Operations.RW, false, false,
+                Type.FLOAT, null, null, null);
+        ResourceModel timefield = new ResourceModel(TIME_RESOURCE_ID, "timeres", Operations.RW, false, false, Type.TIME,
+                null, null, null);
+        ResourceModel opaquefield = new ResourceModel(OPAQUE_RESOURCE_ID, "opaque", Operations.RW, false, false,
+                Type.OPAQUE, null, null, null);
+        ResourceModel objlnkfield = new ResourceModel(OBJLNK_MULTI_INSTANCE_RESOURCE_ID, "objlnk", Operations.RW, true,
+                false, Type.OBJLNK, null, null, null);
+        ResourceModel objlnkSinglefield = new ResourceModel(OBJLNK_SINGLE_INSTANCE_RESOURCE_ID, "objlnk", Operations.RW,
+                false, false, Type.OBJLNK, null, null, null);
+        objectModels.add(new ObjectModel(TEST_OBJECT_ID, "testobject", null, ObjectModel.DEFAULT_VERSION, false, false,
+                stringfield, booleanfield, integerfield, floatfield, timefield, opaquefield, objlnkfield,
+                objlnkSinglefield));
+
+        return objectModels;
+    }
+
+    public void initialize() {
+        currentEndpointIdentifier.set("leshan_integration_test_" + r.nextInt());
+    }
+
+    public String getCurrentEndpoint() {
+        return currentEndpointIdentifier.get();
+    }
+
+    public void createClient() {
+        // Create objects Enabler
+        ObjectsInitializer initializer = new ObjectsInitializer(new LwM2mModel(createObjectModels()));
+        initializer.setInstancesForObject(LwM2mId.SECURITY, Security.noSec(
+                "coap://" + server.getUnsecuredAddress().getHostString() + ":" + server.getUnsecuredAddress().getPort(),
+                12345));
+        initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.UQ, false));
+        initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345", "UQ") {
+            @Override
+            public ExecuteResponse execute(int resourceid, String params) {
+                if (resourceid == 4) {
+                    return ExecuteResponse.success();
+                } else {
+                    return super.execute(resourceid, params);
+                }
+            }
+        });
+        List<LwM2mObjectEnabler> objects = initializer.createMandatory();
+        objects.addAll(initializer.create(2, 2000));
+
+        // Build Client
+        LeshanClientBuilder builder = new LeshanClientBuilder(currentEndpointIdentifier.get());
+        builder.setObjects(objects);
+        client = builder.build();
+    }
+
+    public void createServer(int clientAwakeTime) {
+        server = createServerBuilder(clientAwakeTime).build();
+        server.getPresenceService().addListener(new PresenceListener() {
+
+            @Override
+            public void onAwake(Registration registration) {
+                if (registration.getEndpoint().equals(currentEndpointIdentifier.get())) {
+                    awakeNotifications++;
+                }
+
+            }
+
+            @Override
+            public void onSleeping(Registration registration) {
+                awakeNotifications = 0;
+                awakeLatch.countDown();
+                scheduleUpdateAfterSleeping((int) SLEEPTIME);
+            }
+
+        });
+        // monitor client registration
+        setupRegistrationMonitoring();
+    }
+
+    protected LeshanServerBuilder createServerBuilder(int clientAwakeTime) {
+        LeshanServerBuilder builder = new LeshanServerBuilder();
+        builder.setObjectModelProvider(new StaticModelProvider(createObjectModels()));
+        builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
+        builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
+        builder.setSecurityStore(new InMemorySecurityStore());
+        builder.setClientAwakeTimeProvider(new StaticClientAwakeTimeProvider(clientAwakeTime));
+        return builder;
+    }
+
+    protected void setupRegistrationMonitoring() {
+        resetLatch();
+        server.getRegistrationService().addListener(new RegistrationListener() {
+            @Override
+            public void updated(RegistrationUpdate update, Registration updatedRegistration,
+                    Registration previousRegistration) {
+                if (updatedRegistration.getEndpoint().equals(currentEndpointIdentifier.get())) {
+                    updateLatch.countDown();
+                }
+            }
+
+            @Override
+            public void unregistered(Registration registration, Collection<Observation> observations, boolean expired,
+                    Registration newReg) {
+                if (registration.getEndpoint().equals(currentEndpointIdentifier.get())) {
+                    deregisterLatch.countDown();
+                }
+            }
+
+            @Override
+            public void registered(Registration registration, Registration previousReg,
+                    Collection<Observation> previousObsersations) {
+                if (registration.getEndpoint().equals(currentEndpointIdentifier.get())) {
+                    last_registration = registration;
+                    registerLatch.countDown();
+                }
+            }
+        });
+    }
+
+    public void resetLatch() {
+        registerLatch = new CountDownLatch(1);
+        deregisterLatch = new CountDownLatch(1);
+        updateLatch = new CountDownLatch(1);
+        awakeLatch = new CountDownLatch(1);
+    }
+
+    public void resetAwakeLatch() {
+        awakeLatch = new CountDownLatch(1);
+    }
+
+    public void waitForRegistration(long timeInSeconds) {
+        try {
+            assertTrue(registerLatch.await(timeInSeconds, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void ensureNoRegistration(long timeInSeconds) {
+        try {
+            assertFalse(registerLatch.await(timeInSeconds, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void waitForUpdate(long timeInSeconds) {
+        try {
+            assertTrue(updateLatch.await(timeInSeconds, TimeUnit.MILLISECONDS));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void waitForAwakeTime(long timeInSeconds) {
+        try {
+            assertTrue(awakeLatch.await(timeInSeconds, TimeUnit.MILLISECONDS));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void ensureOneAwakeNotification() {
+        assertEquals(1, awakeNotifications);
+    }
+
+    public void ensureNoUpdate(long timeInSeconds) {
+        try {
+            assertFalse(updateLatch.await(timeInSeconds, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void waitForDeregistration(long timeInSeconds) {
+        try {
+            assertTrue(deregisterLatch.await(timeInSeconds, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void ensureNoDeregistration(long timeInSeconds) {
+        try {
+            assertFalse(deregisterLatch.await(timeInSeconds, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Registration getCurrentRegistration() {
+        return server.getRegistrationService().getByEndpoint(currentEndpointIdentifier.get());
+    }
+
+    public void deregisterClient() {
+        Registration r = getCurrentRegistration();
+        if (r != null)
+            ((RegistrationServiceImpl) server.getRegistrationService()).getStore().removeRegistration(r.getId());
+    }
+
+    public void dispose() {
+        deregisterClient();
+        currentEndpointIdentifier.set(null);
+    }
+
+    public void assertClientRegisterered() {
+        assertNotNull(getCurrentRegistration());
+    }
+
+    public void assertClientNotRegisterered() {
+        assertNull(getCurrentRegistration());
+    }
+
+    public void ensureClientAwake() {
+        assertTrue(server.getPresenceService().isClientAwake(getCurrentRegistration()));
+    }
+
+    public void ensureClientSleeping() {
+        assertFalse(server.getPresenceService().isClientAwake(getCurrentRegistration()));
+    }
+
+    public void ensureReceivedRequest(LwM2mResponse response) {
+        assertNotNull(response);
+    }
+
+    public void ensureTimeoutException(LwM2mResponse response) {
+        assertNull(response);
+    }
+
+    public void scheduleUpdateAfterSleeping(int sleepTime) {
+
+        if (sleepScheduledFuture != null) {
+            sleepScheduledFuture.cancel(true);
+        }
+
+        sleepScheduledFuture = sleepTimerExecutor.schedule(new Runnable() {
+
+            @Override
+            public void run() {
+                client.triggerRegistrationUpdate();
+            }
+        }, sleepTime, TimeUnit.SECONDS);
+
+    }
+}
