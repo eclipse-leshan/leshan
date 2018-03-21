@@ -22,17 +22,16 @@ import java.security.Principal;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Map.Entry;
-import java.util.Set;
+import java.util.Map;
 
 import javax.security.auth.x500.X500Principal;
 
 import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.MapBasedEndpointContext;
-import org.eclipse.californium.scandium.auth.PreSharedKeyIdentity;
-import org.eclipse.californium.scandium.auth.RawPublicKeyIdentity;
-import org.eclipse.californium.scandium.auth.X509CertPath;
+import org.eclipse.californium.elements.auth.X509CertPath;
+import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
+import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.leshan.util.Hex;
 
 import com.eclipsesource.json.Json;
@@ -69,11 +68,11 @@ public class EndpointContextSerDes {
             }
         }
         /** copy the attributes **/
-        Set<Entry<String, String>> attributes = context.entrySet();
+        Map<String, String> attributes = context.entries();
         if (!attributes.isEmpty()) {
             JsonObject attContext = Json.object();
-            for (Entry<String, String> e : attributes) {
-                attContext.set(e.getKey(), e.getValue());
+            for (String key : attributes.keySet()) {
+                attContext.set(key, attributes.get(key));
             }
             peer.set(KEY_ATTRIBUTES, attContext);
         }
