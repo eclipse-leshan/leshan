@@ -16,7 +16,6 @@
 
 package org.eclipse.leshan.integration.tests;
 
-import static org.eclipse.leshan.integration.tests.QueueModeIntegrationTestHelper.*;
 import static org.junit.Assert.assertArrayEquals;
 
 import org.eclipse.leshan.Link;
@@ -33,7 +32,7 @@ public class QueueModeTest {
     @Before
     public void start() {
         queueModeHelper.initialize();
-        queueModeHelper.createServer((int) AWAKETIME * 1000);
+        queueModeHelper.createServer((int) queueModeHelper.awaketime * 1000);
         queueModeHelper.server.start();
         queueModeHelper.createClient();
     }
@@ -63,20 +62,24 @@ public class QueueModeTest {
         queueModeHelper.ensureClientAwake();
 
         // Wait for client awake time expiration (1% margin)
-        queueModeHelper.waitForAwakeTime(AWAKETIME * 1010);
+        queueModeHelper.waitForAwakeTime(queueModeHelper.awaketime * 1010);
 
         // Check that client is sleeping
         queueModeHelper.ensureClientSleeping();
 
         // Wait for update when waking up (1% margin)
-        queueModeHelper.waitForUpdate(SLEEPTIME * 1010);
+        if (queueModeHelper.sleeptime != 0) {
+            queueModeHelper.waitForUpdate(queueModeHelper.sleeptime * 1010);
+        } else {
+            queueModeHelper.waitForUpdate(1);
+        }
 
         // Check that client is awake
         queueModeHelper.ensureClientAwake();
         queueModeHelper.resetAwakeLatch();
 
         // Wait for client awake time expiration (1% margin)
-        queueModeHelper.waitForAwakeTime(AWAKETIME * 1010);
+        queueModeHelper.waitForAwakeTime(queueModeHelper.awaketime * 1010);
 
         // Check that client is sleeping
         queueModeHelper.ensureClientSleeping();
@@ -111,13 +114,17 @@ public class QueueModeTest {
         queueModeHelper.ensureOneAwakeNotification();
 
         // Wait for client awake time expiration (1% margin)
-        queueModeHelper.waitForAwakeTime(AWAKETIME * 1010);
+        queueModeHelper.waitForAwakeTime(queueModeHelper.awaketime * 1010);
 
         // Check that client is sleeping
         queueModeHelper.ensureClientSleeping();
 
         // Wait for update when waking up (1% margin)
-        queueModeHelper.waitForUpdate(SLEEPTIME * 1010);
+        if (queueModeHelper.sleeptime != 0) {
+            queueModeHelper.waitForUpdate(queueModeHelper.sleeptime * 1010);
+        } else {
+            queueModeHelper.waitForUpdate(1);
+        }
 
         // Check that client is awake
         queueModeHelper.ensureClientAwake();
@@ -181,13 +188,17 @@ public class QueueModeTest {
         queueModeHelper.ensureReceivedRequest(response);
 
         // Wait for client awake time expiration (1% margin)
-        queueModeHelper.waitForAwakeTime(AWAKETIME * 1010);
+        queueModeHelper.waitForAwakeTime(queueModeHelper.awaketime * 1010);
 
         // Check that client is sleeping
         queueModeHelper.ensureClientSleeping();
 
         // Wait for update when waking up (1% margin)
-        queueModeHelper.waitForUpdate(SLEEPTIME * 1010);
+        if (queueModeHelper.sleeptime != 0) {
+            queueModeHelper.waitForUpdate(queueModeHelper.sleeptime * 1010);
+        } else {
+            queueModeHelper.waitForUpdate(1);
+        }
 
         // Check that client is awake
         queueModeHelper.ensureClientAwake();
