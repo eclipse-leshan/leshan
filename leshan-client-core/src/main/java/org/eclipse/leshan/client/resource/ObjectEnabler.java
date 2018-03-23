@@ -151,8 +151,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
     protected DiscoverResponse doDiscover(ServerIdentity identity, DiscoverRequest request) {
         LwM2mPath path = request.getPath();
         if (path.isObject()) {
-            Link[] links = DiscoverHelper.objectLinks(getId(), objectAttributes, instances);
-            return DiscoverResponse.success(links);
+            return DiscoverResponse.success(DiscoverHelper.objectLinks(getId(), objectAttributes, instances));
         }
         
         int instanceId = path.getObjectInstanceId();
@@ -161,16 +160,10 @@ public class ObjectEnabler extends BaseObjectEnabler {
             return DiscoverResponse.notFound();
         }
         if (path.getResourceId() == null) {
-            Link[] instanceLinks = instance.discoverInstance(getId(), objectAttributes, instanceId);
-            return DiscoverResponse.success(instanceLinks);
+            return instance.discoverInstance(getId(), objectAttributes, instanceId);
         }
 
-        Link resourceLink = instance.discoverResource(getId(), objectAttributes, instanceId, path.getResourceId());
-        if (resourceLink == null) {
-            return DiscoverResponse.notFound();
-        } else {
-            return DiscoverResponse.success(new Link[] { resourceLink });
-        }
+        return instance.discoverResource(getId(), objectAttributes, instanceId, path.getResourceId());
     }
     
     @Override
@@ -256,7 +249,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
         // Manage Resource case
         return instance.write(path.getResourceId(), (LwM2mResource) request.getNode());
     }
-    
+
     @Override
     protected BootstrapWriteResponse doWrite(ServerIdentity identity, BootstrapWriteRequest request) {
         LwM2mPath path = request.getPath();

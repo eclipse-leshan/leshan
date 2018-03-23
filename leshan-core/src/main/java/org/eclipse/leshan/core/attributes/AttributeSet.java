@@ -56,7 +56,6 @@ public class AttributeSet {
     /**
      * Creates an attribute set from a list of query params.
      */
-    @Deprecated
     public AttributeSet(String[] queryParams) {
         for (String param : queryParams) {
             String[] keyAndValue = param.split("=");
@@ -153,5 +152,18 @@ public class AttributeSet {
             sb.append(a < queryParams.length - 1 ? queryParams[a] + "&" : queryParams[a]);
         }
         return sb.toString();
+    }
+    
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj instanceof AttributeSet)) {
+            return false;
+        }
+        return obj.hashCode() == hashCode();
     }
 }

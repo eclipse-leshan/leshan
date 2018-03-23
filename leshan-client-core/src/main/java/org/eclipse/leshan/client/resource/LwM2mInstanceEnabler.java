@@ -18,6 +18,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.eclipse.leshan.Link;
 import org.eclipse.leshan.ObserveSpec;
 import org.eclipse.leshan.core.attributes.AttributeSet;
@@ -50,6 +53,12 @@ import org.eclipse.leshan.core.response.WriteResponse;
  */
 public interface LwM2mInstanceEnabler {
 
+    /**
+     * Returns a list of the resources id's that are available in this instance.
+     * @return
+     */
+    Collection<Integer> getAvailableResourceIds();
+    
     /**
      * Adds a callback handler that gets notified about changes to any of this LWM2M object instance's resources.
      * 
@@ -123,9 +132,9 @@ public interface LwM2mInstanceEnabler {
      * @param objectId The object id that this instance belongs to
      * @param objectAttributes object level attributes, that may contain instance or resource level attributes
      * @param instanceId The instance id of this instance
-     * @return An array of Link objects, one for the instance and one for each available resource in the instance
+     * @return the response object representing the outcome of the request.
      */
-    Link[] discoverInstance(int objectId, AttributeSet objectAttributes, int instanceId);
+    DiscoverResponse discoverInstance(int objectId, AttributeSet objectAttributes, int instanceId);
 
     /**
      * Performs Discover on a Resource. The resource link and all resource attributes on all levels should be included.
@@ -134,9 +143,9 @@ public interface LwM2mInstanceEnabler {
      * @param objectId The object id that this resource belongs to
      * @param objectAttributes The attributes that are attached to the Object
      * @param instanceId The instance id that this resource belongs to
-     * @return {@link Link} that contains all attributes that are applicable to this resource
+     * @return the response object containing all attributes that are applicable to this resource
      */
-    Link discoverResource(int objectId, AttributeSet objectAttributes, int instanceId, int resourceId);
+    DiscoverResponse discoverResource(int objectId, AttributeSet objectAttributes, int instanceId, int resourceId);
     
     /**
      * Reset the current value of one of this LWM2M object instance's resources. Only used for implementation of REPLACE

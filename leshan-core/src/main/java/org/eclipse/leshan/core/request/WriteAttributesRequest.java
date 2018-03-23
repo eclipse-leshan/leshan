@@ -25,25 +25,23 @@ public class WriteAttributesRequest extends AbstractDownlinkRequest<WriteAttribu
 
     private final AttributeSet attributes;
 
-    public WriteAttributesRequest(int objectId, AttributeSet attributes) {
+    public WriteAttributesRequest(int objectId, AttributeSet attributes) throws InvalidRequestException {
         this(new LwM2mPath(objectId), attributes);
     }
 
-    public WriteAttributesRequest(int objectId, int objectInstanceId, AttributeSet attributes) {
+    public WriteAttributesRequest(int objectId, int objectInstanceId, AttributeSet attributes) throws InvalidRequestException {
         this(new LwM2mPath(objectId, objectInstanceId), attributes);
     }
 
-    public WriteAttributesRequest(int objectId, int objectInstanceId, int resourceId, AttributeSet attributes) {
+    public WriteAttributesRequest(int objectId, int objectInstanceId, int resourceId, AttributeSet attributes) throws InvalidRequestException {
         this(new LwM2mPath(objectId, objectInstanceId, resourceId), attributes);
     }
 
-    @Deprecated
-    public WriteAttributesRequest(String path, ObserveSpec observeSpec) {
+    public WriteAttributesRequest(String path, ObserveSpec observeSpec) throws InvalidRequestException {
         this(newPath(path), new AttributeSet(observeSpec.toQueryParams()));
     }
 
-    @Deprecated
-    public WriteAttributesRequest(int objectId, int objectInstanceId, int resourceId, ObserveSpec observeSpec) {
+    public WriteAttributesRequest(int objectId, int objectInstanceId, int resourceId, ObserveSpec observeSpec) throws InvalidRequestException {
         this(new LwM2mPath(objectId, objectInstanceId, resourceId), new AttributeSet(observeSpec.toQueryParams()));
     }
 
@@ -51,7 +49,7 @@ public class WriteAttributesRequest extends AbstractDownlinkRequest<WriteAttribu
         this(newPath(path), attributes);
     }
 
-    private WriteAttributesRequest(LwM2mPath path, AttributeSet attributes) {
+    private WriteAttributesRequest(LwM2mPath path, AttributeSet attributes) throws InvalidRequestException {
         super(path);
         if (attributes == null)
             throw new InvalidRequestException("attributes are mandatory for %s", path);

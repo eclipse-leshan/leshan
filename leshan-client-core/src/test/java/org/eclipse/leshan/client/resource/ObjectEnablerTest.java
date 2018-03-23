@@ -17,7 +17,6 @@ import org.eclipse.leshan.core.attributes.AttributeSet;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.request.DiscoverRequest;
 import org.eclipse.leshan.core.response.DiscoverResponse;
-import org.eclipse.leshan.core.response.ReadResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -25,7 +24,7 @@ import org.mockito.Mock;
 public class ObjectEnablerTest {
 
     private static final int OBJECT_ID = 3;
-    
+
     @Mock
     private ObjectModel objectModel;
     @Mock
@@ -42,15 +41,15 @@ public class ObjectEnablerTest {
     @Before
     public void setup() {
         initMocks(this);
-        
-        // Two instances  
+
+        // Two instances
         Map<Integer, LwM2mInstanceEnabler> instances = new HashMap<>();
         instances.put(0, instanceEnabler01);
         instances.put(1, instanceEnabler02);
-        
+
         sut = new ObjectEnabler(OBJECT_ID, objectModel, instances, attributeSet, instanceFactory);
     }
-    
+
     @Test
     public void should_discover_object_level() {
         Map<String, Object> objectAttributeMap = new LinkedHashMap<>();
@@ -58,16 +57,19 @@ public class ObjectEnablerTest {
         objectAttributeMap.put("pmin", 123L);
         objectAttributeMap.put("pmax", 345L);
         when(attributeSet.getMap()).thenReturn(objectAttributeMap);
-        
-        when(instanceEnabler01.discoverInstance(eq(OBJECT_ID), any(AttributeSet.class), eq(0))).thenReturn(new Link[] {
-                new Link("/3/0", new AttributeSet(Attribute.create("pmin", 5L))),
-                new Link("/3/0/0", new AttributeSet(Attribute.create("pmin", 10L)))
-        });
-        when(instanceEnabler02.discoverInstance(eq(OBJECT_ID), any(AttributeSet.class), eq(1))).thenReturn(new Link[] {
-                new Link("/3/1", new AttributeSet(Attribute.create("pmin", 5L))),
-                new Link("/3/1/4", new AttributeSet(Attribute.create("pmin", 10L)))
-        });
-        
+
+        when(instanceEnabler01.discoverInstance(eq(OBJECT_ID), any(AttributeSet.class), eq(0)))
+                .thenReturn(DiscoverResponse.success(
+                        new Link[] {
+                                new Link("/3/0", new AttributeSet(Attribute.create("pmin", 5L))),
+                                new Link("/3/0/0", new AttributeSet(Attribute.create("pmin", 10L)))
+                        }));
+        when(instanceEnabler02.discoverInstance(eq(OBJECT_ID), any(AttributeSet.class), eq(1))).thenReturn(
+                DiscoverResponse.success(new Link[] {
+                        new Link("/3/1", new AttributeSet(Attribute.create("pmin", 5L))),
+                        new Link("/3/1/4", new AttributeSet(Attribute.create("pmin", 10L)))
+                }));
+
         DiscoverResponse response = sut.discover(ServerIdentity.SYSTEM, new DiscoverRequest(3));
         Link[] links = response.getObjectLinks();
         assertEquals(ResponseCode.CONTENT, response.getCode());
@@ -82,14 +84,15 @@ public class ObjectEnablerTest {
         assertEquals("</3/1>", links[3].toString());
         assertEquals("</3/1/4>", links[4].toString());
     }
-    
+
     @Test
     public void should_discover_instance_level() {
-        when(instanceEnabler02.discoverInstance(eq(OBJECT_ID), any(AttributeSet.class), eq(1))).thenReturn(new Link[] {
+        when(instanceEnabler02.discoverInstance(eq(OBJECT_ID), any(AttributeSet.class), eq(1))).thenReturn(DiscoverResponse.success(
+                new Link[] {
                 new Link("/3/1", new AttributeSet(Attribute.create("pmin", 5L))),
                 new Link("/3/1/4", new AttributeSet(Attribute.create("pmin", 10L)))
-        });
-        
+        }));
+
         DiscoverResponse response = sut.discover(ServerIdentity.SYSTEM, new DiscoverRequest(3, 1));
         Link[] links = response.getObjectLinks();
         assertEquals(ResponseCode.CONTENT, response.getCode());
@@ -97,13 +100,14 @@ public class ObjectEnablerTest {
         assertEquals("</3/1>;pmin=5", links[0].toString());
         assertEquals("</3/1/4>;pmin=10", links[1].toString());
     }
-    
+
     @Test
     public void should_discover_resource_level() {
         when(instanceEnabler02.discoverResource(eq(OBJECT_ID), any(AttributeSet.class), eq(1), eq(4))).thenReturn(
-                new Link("/3/1/4", new AttributeSet(Attribute.create("pmin", 5L), Attribute.create("pmax", 345L)))
-        );
-        
+                DiscoverResponse.success(new Link[] {
+                        new Link("/3/1/4", new AttributeSet(Attribute.create("pmin", 5L), Attribute.create("pmax", 345L)))
+                }));
+
         DiscoverResponse response = sut.discover(ServerIdentity.SYSTEM, new DiscoverRequest(3, 1, 4));
         Link[] links = response.getObjectLinks();
         assertEquals(ResponseCode.CONTENT, response.getCode());
@@ -113,15 +117,17 @@ public class ObjectEnablerTest {
         assertTrue(links[0].toString().contains("pmin=5")); // Inherited from instance level
         assertTrue(links[0].toString().contains("pmax=345")); // Inherited from object level
     }
-    
+
     @Test
     public void should_return_not_found_instance() {
         DiscoverResponse response = sut.discover(ServerIdentity.SYSTEM, new DiscoverRequest(3, 2));
         assertEquals(ResponseCode.NOT_FOUND, response.getCode());
     }
-    
+
     @Test
     public void should_return_not_found_resource() {
+        when(instanceEnabler02.discoverResource(eq(OBJECT_ID), any(AttributeSet.class), eq(1), eq(5))).thenReturn(DiscoverResponse.notFound());
+       
         DiscoverResponse response = sut.discover(ServerIdentity.SYSTEM, new DiscoverRequest(3, 1, 5));
         assertEquals(ResponseCode.NOT_FOUND, response.getCode());
     }

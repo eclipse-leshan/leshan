@@ -19,16 +19,17 @@
 package org.eclipse.leshan.client.resource;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.leshan.Link;
 import org.eclipse.leshan.client.util.DiscoverHelper;
-import org.eclipse.leshan.core.attributes.Attachment;
 import org.eclipse.leshan.core.attributes.AttributeSet;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.response.DiscoverResponse;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
@@ -42,20 +43,17 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     private Map<Integer, AttributeSet> resourceAttributes = new HashMap<>();
 
     /**
-     * Gets a list of all instantiated resource ids in this instance.
-     * @return the resource id's
-     */
-    protected int[] getResourceIds() {
-        return new int[0];
-    }
-    
-    /**
      * Gets the attributes that are attached to a specific resource.
      * @param resourceId
      * @return
      */
     protected AttributeSet getResourceAttributes(int resourceId) {
         return resourceAttributes.get(resourceId);
+    }
+
+    @Override
+    public Collection<Integer> getAvailableResourceIds() {
+        return new ArrayList<>();
     }
     
     @Override
@@ -98,7 +96,7 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     }
 
     @Override
-    public Link[] discoverInstance(int objectId, AttributeSet objectAttributes, int instanceId) {
+    public DiscoverResponse discoverInstance(int objectId, AttributeSet objectAttributes, int instanceId) {
         List<Link> links = new ArrayList<>();
         // First add a link for the instance
         if (instanceAttributes == null || instanceAttributes.getMap().size() == 0) {
@@ -107,7 +105,7 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
             links.add(new Link(new LwM2mPath(objectId, instanceId).toString(), instanceAttributes));
         }
         
-        for (int resourceId : getResourceIds()) {
+        for (int resourceId : getAvailableResourceIds()) {
             AttributeSet attrs = getResourceAttributes(resourceId);
             if (attrs == null || attrs.getMap().size() == 0) {
                 links.add(new Link(new LwM2mPath(objectId, instanceId, resourceId).toString()));
@@ -115,17 +113,18 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
                 links.add(new Link(new LwM2mPath(objectId, instanceId, resourceId).toString(), attrs));
             }
         }
-        return links.toArray(new Link[links.size()]);
+        return DiscoverResponse.success(links.toArray(new Link[links.size()]));
     }
 
     @Override
-    public Link discoverResource(int objectId, AttributeSet objectAttributes, int instanceId, int resourceId) {
-        ReadResponse readResponse = read(resourceId);
-        if (readResponse == null || !readResponse.isSuccess()) {
-            return null;
+    public DiscoverResponse discoverResource(int objectId, AttributeSet objectAttributes, int instanceId, int resourceId) {
+        if (!getAvailableResourceIds().contains(resourceId)) {
+            return DiscoverResponse.notFound();
         }
-        return DiscoverHelper.resourceLink(objectId, objectAttributes, instanceId, instanceAttributes,
-                resourceId, resourceAttributes.get(resourceId));
+        return DiscoverResponse.success(new Link[] {
+                DiscoverHelper.resourceLink(objectId, objectAttributes, instanceId, instanceAttributes,
+                        resourceId, resourceAttributes.get(resourceId))
+        });
     }
 
     @Override

@@ -17,7 +17,6 @@
 package org.eclipse.leshan.client.util;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -27,6 +26,7 @@ import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.core.attributes.Attachment;
 import org.eclipse.leshan.core.attributes.AttributeSet;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.response.DiscoverResponse;
 
 /**
  * Helper class for creating {@link Link} objects in response to a DiscoverRequest on either
@@ -49,8 +49,8 @@ public class DiscoverHelper {
     private static void addInstanceLinksWithoutAttributes(List<Link> links, int objectId, AttributeSet objectAttributes,
             int instanceId, LwM2mInstanceEnabler instance) {
         // Get the instance links but remove their attributes 
-        Link[] instanceLinks = instance.discoverInstance(objectId, objectAttributes, instanceId);
-        for (Link link : instanceLinks) {
+        DiscoverResponse instanceDiscover = instance.discoverInstance(objectId, objectAttributes, instanceId);
+        for (Link link : instanceDiscover.getObjectLinks()) {
             links.add(new Link(link.getUrl()));
         }
     }

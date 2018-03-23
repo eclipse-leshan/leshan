@@ -339,7 +339,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         }
         return DiscoverResponse.badRequest(null);
     }
-    
+
     @Override
     public synchronized ObserveResponse observe(ServerIdentity identity, ObserveRequest request) {
         LwM2mPath path = request.getPath();
