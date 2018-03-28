@@ -20,8 +20,6 @@ package org.eclipse.leshan.core.californium;
 import java.net.InetSocketAddress;
 import java.security.Principal;
 import java.security.PublicKey;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.security.auth.x500.X500Principal;
 
@@ -31,6 +29,7 @@ import org.eclipse.californium.scandium.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.scandium.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.scandium.auth.X509CertPath;
 import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.util.X509Util;
 
 public class EndpointContextUtil {
 
@@ -43,10 +42,11 @@ public class EndpointContextUtil {
             } else if (senderIdentity instanceof RawPublicKeyIdentity) {
                 PublicKey publicKey = ((RawPublicKeyIdentity) senderIdentity).getKey();
                 return Identity.rpk(peerAddress, publicKey);
-            } else if (senderIdentity instanceof X500Principal || senderIdentity instanceof X509CertPath) {
-                // Extract common name
-                String x509CommonName = extractCN(senderIdentity.getName());
+            } else if (senderIdentity instanceof X500Principal) {
+                String x509CommonName = X509Util.extractCN(senderIdentity.getName());
                 return Identity.x509(peerAddress, x509CommonName);
+            } else if (senderIdentity instanceof X509CertPath) {
+                return Identity.x509(peerAddress, ((X509CertPath) senderIdentity).getPath());
             }
             throw new IllegalStateException("Unable to extract sender identity : unexpected type of Principal");
         }
@@ -67,28 +67,15 @@ public class EndpointContextUtil {
             } else if (identity.isRPK()) {
                 peerIdentity = new RawPublicKeyIdentity(identity.getRawPublicKey());
             } else if (identity.isX509()) {
-                /* simplify distinguished name to CN= part */
-                peerIdentity = new X500Principal("CN=" + identity.getX509CommonName());
+                if (identity.getCertificates() != null) {
+                    peerIdentity = new X509CertPath(identity.getCertificates());
+                } else {
+                    /* simplify distinguished name to CN= part */
+                    peerIdentity = new X500Principal(X509Util.createDN(identity.getX509CommonName()));
+                }
             }
         }
         return new AddressEndpointContext(identity.getPeerAddress(), peerIdentity);
     }
 
-    /**
-     * Extract "common name" from "distinguished name".
-     * 
-     * @param dn distinguished name
-     * @return common name
-     * @throws IllegalStateException if no CN is contained in DN.
-     */
-    public static String extractCN(String dn) {
-        // Extract common name
-        Matcher endpointMatcher = Pattern.compile("CN=(.*?)(,|$)").matcher(dn);
-        if (endpointMatcher.find()) {
-            return endpointMatcher.group(1);
-        } else {
-            throw new IllegalStateException(
-                    "Unable to extract sender identity : can not get common name in certificate");
-        }
-    }
 }

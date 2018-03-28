@@ -19,8 +19,11 @@ package org.eclipse.leshan.core.request;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.PublicKey;
+import java.security.cert.CertPath;
+import java.security.cert.X509Certificate;
 
 import org.eclipse.leshan.util.Validate;
+import org.eclipse.leshan.util.X509Util;
 
 /**
  * A request sender identity.
@@ -28,16 +31,26 @@ import org.eclipse.leshan.util.Validate;
 public class Identity {
 
     private final InetSocketAddress peerAddress;
-    private final String pskIdentity;
-    private final PublicKey rawPublicKey;
-    private final String x509CommonName;
 
-    private Identity(InetSocketAddress peerAddress, String pskIdentity, PublicKey rawPublicKey, String x509CommonName) {
+    // PSK
+    private final String pskIdentity;
+
+    // RPK
+    private final PublicKey rawPublicKey;
+
+    // X509
+    private final String x509CommonName;
+    // the certificate chain presented by the sender
+    private final CertPath certificates;
+
+    private Identity(InetSocketAddress peerAddress, String pskIdentity, PublicKey rawPublicKey, String x509CommonName,
+            CertPath certificates) {
         Validate.notNull(peerAddress);
         this.peerAddress = peerAddress;
         this.pskIdentity = pskIdentity;
         this.rawPublicKey = rawPublicKey;
         this.x509CommonName = x509CommonName;
+        this.certificates = certificates;
     }
 
     protected Identity(Identity identity) {
@@ -45,6 +58,7 @@ public class Identity {
         this.pskIdentity = identity.pskIdentity;
         this.rawPublicKey = identity.rawPublicKey;
         this.x509CommonName = identity.x509CommonName;
+        this.certificates = identity.certificates;
     }
 
     public InetSocketAddress getPeerAddress() {
@@ -61,6 +75,15 @@ public class Identity {
 
     public String getX509CommonName() {
         return x509CommonName;
+    }
+
+    /**
+     * Only valid for an X509 identity
+     * 
+     * @return the certificate chain presented by the sender
+     */
+    public CertPath getCertificates() {
+        return certificates;
     }
 
     public boolean isPSK() {
@@ -80,35 +103,42 @@ public class Identity {
     }
 
     public static Identity unsecure(InetSocketAddress peerAddress) {
-        return new Identity(peerAddress, null, null, null);
+        return new Identity(peerAddress, null, null, null, null);
     }
 
     public static Identity unsecure(InetAddress address, int port) {
-        return new Identity(new InetSocketAddress(address, port), null, null, null);
+        return new Identity(new InetSocketAddress(address, port), null, null, null, null);
     }
 
     public static Identity psk(InetSocketAddress peerAddress, String identity) {
-        return new Identity(peerAddress, identity, null, null);
+        return new Identity(peerAddress, identity, null, null, null);
     }
 
     public static Identity psk(InetAddress address, int port, String identity) {
-        return new Identity(new InetSocketAddress(address, port), identity, null, null);
+        return new Identity(new InetSocketAddress(address, port), identity, null, null, null);
     }
 
     public static Identity rpk(InetSocketAddress peerAddress, PublicKey publicKey) {
-        return new Identity(peerAddress, null, publicKey, null);
+        return new Identity(peerAddress, null, publicKey, null, null);
     }
 
     public static Identity rpk(InetAddress address, int port, PublicKey publicKey) {
-        return new Identity(new InetSocketAddress(address, port), null, publicKey, null);
+        return new Identity(new InetSocketAddress(address, port), null, publicKey, null, null);
     }
 
     public static Identity x509(InetSocketAddress peerAddress, String commonName) {
-        return new Identity(peerAddress, null, null, commonName);
+        return new Identity(peerAddress, null, null, commonName, null);
     }
 
     public static Identity x509(InetAddress address, int port, String commonName) {
-        return new Identity(new InetSocketAddress(address, port), null, null, commonName);
+        return new Identity(new InetSocketAddress(address, port), null, null, commonName, null);
+    }
+
+    public static Identity x509(InetSocketAddress peerAddress, CertPath certificates) {
+        return new Identity(peerAddress, null, null,
+                X509Util.extractCN(
+                        ((X509Certificate) certificates.getCertificates().get(0)).getSubjectX500Principal().getName()),
+                certificates);
     }
 
     @Override
@@ -127,6 +157,7 @@ public class Identity {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + ((certificates == null) ? 0 : certificates.hashCode());
         result = prime * result + ((peerAddress == null) ? 0 : peerAddress.hashCode());
         result = prime * result + ((pskIdentity == null) ? 0 : pskIdentity.hashCode());
         result = prime * result + ((rawPublicKey == null) ? 0 : rawPublicKey.hashCode());
@@ -143,6 +174,11 @@ public class Identity {
         if (getClass() != obj.getClass())
             return false;
         Identity other = (Identity) obj;
+        if (certificates == null) {
+            if (other.certificates != null)
+                return false;
+        } else if (!certificates.equals(other.certificates))
+            return false;
         if (peerAddress == null) {
             if (other.peerAddress != null)
                 return false;
