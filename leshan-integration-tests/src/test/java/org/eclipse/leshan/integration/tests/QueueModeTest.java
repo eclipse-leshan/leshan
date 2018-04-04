@@ -157,7 +157,9 @@ public class QueueModeTest {
         queueModeHelper.assertClientRegisterered();
         queueModeHelper.ensureClientAwake();
 
-        // Send a response with very short timeout so that exception is thrown
+        // Stop the client to ensure that TimeOut exception is thrown
+        queueModeHelper.client.stop(false);
+        // Send a response with very short timeout
         ReadResponse response = queueModeHelper.server.send(queueModeHelper.getCurrentRegistration(),
                 new ReadRequest(3, 0, 1), 1);
 
