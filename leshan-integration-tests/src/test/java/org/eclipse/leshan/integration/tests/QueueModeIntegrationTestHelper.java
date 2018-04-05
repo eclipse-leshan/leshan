@@ -18,14 +18,10 @@ package org.eclipse.leshan.integration.tests;
 
 import static org.junit.Assert.*;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
@@ -39,8 +35,6 @@ import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
-import org.eclipse.leshan.server.impl.InMemorySecurityStore;
-import org.eclipse.leshan.server.model.StaticModelProvider;
 import org.eclipse.leshan.server.queue.PresenceListener;
 import org.eclipse.leshan.server.queue.StaticClientAwakeTimeProvider;
 import org.eclipse.leshan.server.registration.Registration;
@@ -50,15 +44,9 @@ import org.eclipse.leshan.server.registration.Registration;
  * 
  */
 public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
-    public final long sleeptime = 0; // seconds
-    public final long awaketime = 1; // seconds
     public static final long LIFETIME = 3600; // Updates are manually triggered with a timer
-    CountDownLatch awakeLatch;
-
-    private final ScheduledExecutorService sleepTimerExecutor = Executors.newSingleThreadScheduledExecutor();
-    private ScheduledFuture<?> sleepScheduledFuture;
-
-    int awakeNotifications = 0;
+    private CountDownLatch awakeLatch;
+    private AtomicInteger awakeNotifications = new AtomicInteger();
 
     @Override
     public void createClient() {
@@ -89,21 +77,21 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
 
     public void createServer(int clientAwakeTime) {
         server = createServerBuilder(clientAwakeTime).build();
+        awakeNotifications.set(0);
         server.getPresenceService().addListener(new PresenceListener() {
 
             @Override
             public void onAwake(Registration registration) {
                 if (registration.getEndpoint().equals(currentEndpointIdentifier.get())) {
-                    awakeNotifications++;
+                    awakeNotifications.addAndGet(1);
                 }
 
             }
 
             @Override
             public void onSleeping(Registration registration) {
-                awakeNotifications = 0;
+                awakeNotifications.set(0);
                 awakeLatch.countDown();
-                scheduleUpdateAfterSleeping((int) sleeptime);
             }
 
         });
@@ -112,11 +100,7 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
     }
 
     protected LeshanServerBuilder createServerBuilder(int clientAwakeTime) {
-        LeshanServerBuilder builder = new LeshanServerBuilder();
-        builder.setObjectModelProvider(new StaticModelProvider(createObjectModels()));
-        builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-        builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-        builder.setSecurityStore(new InMemorySecurityStore());
+        LeshanServerBuilder builder = super.createServerBuilder();
         builder.setClientAwakeTimeProvider(new StaticClientAwakeTimeProvider(clientAwakeTime));
         return builder;
     }
@@ -133,16 +117,16 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         awakeLatch = new CountDownLatch(1);
     }
 
-    public void waitForAwakeTime(long timeInSeconds) {
+    public void waitForAwakeTime(long timeInMilliseconds) {
         try {
-            assertTrue(awakeLatch.await(timeInSeconds, TimeUnit.MILLISECONDS));
+            assertTrue(awakeLatch.await(timeInMilliseconds, TimeUnit.MILLISECONDS));
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
 
     public void ensureOneAwakeNotification() {
-        assertEquals(1, awakeNotifications);
+        assertEquals(1, awakeNotifications.intValue());
     }
 
     public void ensureClientAwake() {
@@ -161,19 +145,4 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         assertNull(response);
     }
 
-    public void scheduleUpdateAfterSleeping(int sleepTime) {
-
-        if (sleepScheduledFuture != null) {
-            sleepScheduledFuture.cancel(true);
-        }
-
-        sleepScheduledFuture = sleepTimerExecutor.schedule(new Runnable() {
-
-            @Override
-            public void run() {
-                client.triggerRegistrationUpdate();
-            }
-        }, sleepTime, TimeUnit.SECONDS);
-
-    }
 }
