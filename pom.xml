@@ -105,11 +105,13 @@ Contributors:
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <test.exclusion.pattern>**/Redis*.java</test.exclusion.pattern>
+
+        <!-- dependencies version -->
         <californium.version>2.0.0-M9</californium.version>
         <logback.version>1.2.3</logback.version>
         <slf4j.api.version>1.7.25</slf4j.api.version>
         <jetty.version>9.1.4.v20140401</jetty.version>
-        <test.exclusion.pattern>**/Redis*.java</test.exclusion.pattern>
     </properties>
 
     <distributionManagement>
@@ -131,10 +133,11 @@ Contributors:
             </modules>
         </profile>
         <profile>
-          <id>redis</id>
-          <properties>
+            <!-- This profile launch all redis integration tests -->
+            <id>redis</id>
+            <properties>
                 <test.exclusion.pattern>nothing</test.exclusion.pattern>
-          </properties>
+            </properties>
         </profile>
         <profile>
             <!-- this profile generate all the needed artifact and signatures needed, then release it on maven central -->
@@ -317,6 +320,7 @@ Contributors:
 
     <dependencyManagement>
         <dependencies>
+            <!-- Leshan Libraries -->
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>leshan-core</artifactId>
@@ -339,17 +343,7 @@ Contributors:
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>leshan-bs-server</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
                 <artifactId>leshan-server-cf</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>leshan-server-cluster</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -358,13 +352,15 @@ Contributors:
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${slf4j.api.version}</version>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>leshan-server-cluster</artifactId>
+                <version>${project.version}</version>
             </dependency>
+            
+             <!-- Leshan library dependencies -->
             <dependency>
                 <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-simple</artifactId>
+                <artifactId>slf4j-api</artifactId>
                 <version>${slf4j.api.version}</version>
             </dependency>
             <dependency>
@@ -383,14 +379,26 @@ Contributors:
                 <version>${californium.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.google.code.gson</groupId>
-                <artifactId>gson</artifactId>
-                <version>2.2.4</version>
-            </dependency>
-            <dependency>
                 <groupId>com.eclipsesource.minimal-json</groupId>
                 <artifactId>minimal-json</artifactId>
                 <version>0.9.5</version>
+            </dependency>
+
+            <!-- Demos, examples and tests dependencies -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-simple</artifactId>
+                <version>${slf4j.api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>2.2.4</version>
             </dependency>
             <dependency>
                 <groupId>commons-lang</groupId>
@@ -423,12 +431,6 @@ Contributors:
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>4.11</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-classic</artifactId>
-                <version>${logback.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>

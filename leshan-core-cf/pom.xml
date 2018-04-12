@@ -40,6 +40,7 @@ Contributors:
             <groupId>org.eclipse.californium</groupId>
             <artifactId>scandium</artifactId>
         </dependency>
+
         <!-- test dependencies -->
         <dependency>
             <groupId>junit</groupId>

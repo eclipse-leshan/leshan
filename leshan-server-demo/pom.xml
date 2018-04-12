@@ -27,13 +27,11 @@ Contributors:
     <description>A LWM2M demonstration server running an embedded Jetty server</description>
 
     <dependencies>
-
         <dependency>
             <groupId>org.jmdns</groupId>
             <artifactId>jmdns</artifactId>
             <version>3.5.2</version>
         </dependency>
-
         <dependency>
             <groupId>org.eclipse.leshan</groupId>
             <artifactId>leshan-server-cf</artifactId>
@@ -66,7 +64,6 @@ Contributors:
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-continuation</artifactId>
         </dependency>
-
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
@@ -86,6 +83,7 @@ Contributors:
             <scope>test</scope>
         </dependency>
     </dependencies>
+
     <build>
         <plugins>
             <plugin>
