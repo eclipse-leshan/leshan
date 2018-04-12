@@ -68,7 +68,7 @@ Contributors:
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <_exportcontents>!*.impl.*, !*.internal.*, *</_exportcontents>
+                        <_exportcontents>*</_exportcontents>
                         <Import-Package>*</Import-Package>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                     </instructions>
