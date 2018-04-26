@@ -70,7 +70,7 @@ public class ObjectLoader {
      * @param input An inputStream to a DDF file.
      * @param streamName A name for the stream used for logging only
      */
-    public static ObjectModel loadDdfFile(InputStream input, String streamName) {
+    public static List<ObjectModel> loadDdfFile(InputStream input, String streamName) {
         DDFFileParser ddfFileParser = new DDFFileParser();
         return ddfFileParser.parse(input, streamName);
     }
@@ -106,7 +106,7 @@ public class ObjectLoader {
             InputStream input = ObjectLoader.class.getResourceAsStream(fullpath);
             if (input != null) {
                 try (Reader reader = new InputStreamReader(input)) {
-                    models.add(loadDdfFile(input, fullpath));
+                    models.addAll(loadDdfFile(input, fullpath));
                 } catch (IOException e) {
                     throw new IllegalStateException(String.format("Unable to load model %s", fullpath), e);
                 }
@@ -130,7 +130,7 @@ public class ObjectLoader {
             InputStream input = ObjectLoader.class.getResourceAsStream(path);
             if (input != null) {
                 try (Reader reader = new InputStreamReader(input)) {
-                    models.add(loadDdfFile(input, path));
+                    models.addAll(loadDdfFile(input, path));
                 } catch (IOException e) {
                     throw new IllegalStateException(String.format("Unable to load model %s", path), e);
                 }
@@ -162,10 +162,7 @@ public class ObjectLoader {
                     // from DDF file
                     LOG.debug("Loading object models from DDF file {}", file.getAbsolutePath());
                     try (FileInputStream input = new FileInputStream(file)) {
-                        ObjectModel objectModel = loadDdfFile(input, file.getName());
-                        if (objectModel != null) {
-                            models.add(objectModel);
-                        }
+                        models.addAll(loadDdfFile(input, file.getName()));
                     } catch (IOException e) {
                         LOG.warn(MessageFormat.format("Unable to load object models for {0}", file.getAbsolutePath()),
                                 e);

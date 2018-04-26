@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -31,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * A parser for Object DDF files.
@@ -45,16 +47,16 @@ public class DDFFileParser {
         factory = DocumentBuilderFactory.newInstance();
     }
 
-    public ObjectModel parse(File ddfFile) {
+    public List<ObjectModel> parse(File ddfFile) {
         try (InputStream input = new FileInputStream(ddfFile)) {
             return parse(input, ddfFile.getName());
         } catch (Exception e) {
             LOG.error("Could not parse the resource definition file " + ddfFile.getName(), e);
         }
-        return null;
+        return Collections.emptyList();
     }
 
-    public ObjectModel parse(InputStream inputStream, String streamName) {
+    public List<ObjectModel> parse(InputStream inputStream, String streamName) {
         streamName = streamName == null ? "" : streamName;
 
         LOG.debug("Parsing DDF file {}", streamName);
@@ -63,13 +65,16 @@ public class DDFFileParser {
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document document = builder.parse(inputStream);
 
-            Node object = document.getDocumentElement().getElementsByTagName("Object").item(0);
-            return parseObject(object);
-
+            ArrayList<ObjectModel> objects = new ArrayList<>();
+            NodeList nodeList = document.getDocumentElement().getElementsByTagName("Object");
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                objects.add(parseObject(nodeList.item(i)));
+            }
+            return objects;
         } catch (Exception e) {
             LOG.error("Could not parse the resource definition file " + streamName, e);
         }
-        return null;
+        return Collections.emptyList();
     }
 
     private ObjectModel parseObject(Node object) {
