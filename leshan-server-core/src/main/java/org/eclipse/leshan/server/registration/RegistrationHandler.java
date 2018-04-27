@@ -13,6 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - use Identity as destination
+ *     Rokwoon Kim (contracted with NTELS) - use registrationIdProvider
  *******************************************************************************/
 package org.eclipse.leshan.server.registration;
 
@@ -29,7 +30,6 @@ import org.eclipse.leshan.core.response.UpdateResponse;
 import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
 import org.eclipse.leshan.server.impl.SendableResponse;
 import org.eclipse.leshan.server.security.Authorizer;
-import org.eclipse.leshan.util.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,18 +42,22 @@ public class RegistrationHandler {
     private static final Logger LOG = LoggerFactory.getLogger(RegistrationHandler.class);
 
     private RegistrationServiceImpl registrationService;
+    private RegistrationIdProvider registrationIdProvider;
     private Authorizer authorizer;
 
-    public RegistrationHandler(RegistrationServiceImpl registrationService, Authorizer authorizer) {
+    public RegistrationHandler(RegistrationServiceImpl registrationService, Authorizer authorizer,
+            RegistrationIdProvider registrationIdProvider) {
         this.registrationService = registrationService;
         this.authorizer = authorizer;
+        this.registrationIdProvider = registrationIdProvider;
     }
 
     public SendableResponse<RegisterResponse> register(Identity sender, RegisterRequest registerRequest,
             InetSocketAddress serverEndpoint) {
 
-        Registration.Builder builder = new Registration.Builder(RegistrationHandler.createRegistrationId(),
-                registerRequest.getEndpointName(), sender, serverEndpoint);
+        Registration.Builder builder = new Registration.Builder(
+                registrationIdProvider.getRegistrationId(registerRequest), registerRequest.getEndpointName(), sender,
+                serverEndpoint);
 
         builder.lwM2mVersion(registerRequest.getLwVersion()).lifeTimeInSec(registerRequest.getLifetime())
                 .bindingMode(registerRequest.getBindingMode()).objectLinks(registerRequest.getObjectLinks())
@@ -160,7 +164,4 @@ public class RegistrationHandler {
         }
     }
 
-    private static String createRegistrationId() {
-        return RandomStringUtils.random(10, true, true);
-    }
 }

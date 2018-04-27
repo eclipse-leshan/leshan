@@ -49,7 +49,9 @@ import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StandardModelProvider;
 import org.eclipse.leshan.server.queue.ClientAwakeTimeProvider;
 import org.eclipse.leshan.server.queue.StaticClientAwakeTimeProvider;
+import org.eclipse.leshan.server.registration.RandomStringRegistrationIdProvider;
 import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.RegistrationIdProvider;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.security.Authorizer;
 import org.eclipse.leshan.server.security.DefaultAuthorizer;
@@ -72,6 +74,7 @@ public class LeshanServerBuilder {
     private LwM2mModelProvider modelProvider;
     private Authorizer authorizer;
     private ClientAwakeTimeProvider awakeTimeProvider;
+    private RegistrationIdProvider registrationIdProvider;
 
     private InetSocketAddress localAddress;
     private InetSocketAddress localSecureAddress;
@@ -331,6 +334,15 @@ public class LeshanServerBuilder {
         this.awakeTimeProvider = awakeTimeProvider;
         return this;
     }
+    
+    /**
+     * Sets a new {@link RegistrationIdProvider} object different from the default one (Random string).
+     * 
+     * @param registrationIdProvider the {@link RegistrationIdProvider} to set.
+     */
+    public void setRegistrationIdProvider(RegistrationIdProvider registrationIdProvider) {
+        this.registrationIdProvider = registrationIdProvider;
+    }
 
     /**
      * The default Californium/CoAP {@link NetworkConfig} used by the builder.
@@ -358,6 +370,8 @@ public class LeshanServerBuilder {
             coapConfig = createDefaultNetworkConfig();
         if (awakeTimeProvider == null)
             awakeTimeProvider = new StaticClientAwakeTimeProvider();
+        if (registrationIdProvider == null)
+            registrationIdProvider = new RandomStringRegistrationIdProvider();
 
         // handle dtlsConfig
         DtlsConnectorConfig dtlsConfig = null;
@@ -478,6 +492,6 @@ public class LeshanServerBuilder {
         }
 
         return new LeshanServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer,
-                modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider);
+                modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider);
     }
 }

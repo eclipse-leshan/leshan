@@ -53,6 +53,7 @@ import org.eclipse.leshan.server.queue.PresenceStateListener;
 import org.eclipse.leshan.server.queue.QueueModeLwM2mRequestSender;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
+import org.eclipse.leshan.server.registration.RegistrationIdProvider;
 import org.eclipse.leshan.server.registration.RegistrationListener;
 import org.eclipse.leshan.server.registration.RegistrationService;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
@@ -118,12 +119,14 @@ public class LeshanServer implements LwM2mServer {
      * @param encoder encode used to encode request payload.
      * @param coapConfig the CoAP {@link NetworkConfig}.
      * @param noQueueMode true to disable presenceService.
-     * @param awakeTimeProvider to set the client awake time if queue mode is used
+     * @param awakeTimeProvider to set the client awake time if queue mode is used.
+     * @param registrationIdProvider to provide registrationId using for location-path option values on response of Register operation.
      */
     public LeshanServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
             LwM2mModelProvider modelProvider, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
-            NetworkConfig coapConfig, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider) {
+            NetworkConfig coapConfig, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
+            RegistrationIdProvider registrationIdProvider) {
 
         Validate.notNull(registrationStore, "registration store cannot be null");
         Validate.notNull(authorizer, "authorizer cannot be null");
@@ -188,7 +191,7 @@ public class LeshanServer implements LwM2mServer {
 
         // define /rd resource
         RegisterResource rdResource = new RegisterResource(
-                new RegistrationHandler(this.registrationService, authorizer));
+                new RegistrationHandler(this.registrationService, authorizer, registrationIdProvider));
         coapServer.add(rdResource);
 
         // create sender
