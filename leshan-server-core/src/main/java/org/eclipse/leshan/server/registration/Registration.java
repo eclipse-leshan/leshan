@@ -29,6 +29,7 @@ import java.util.Map;
 import org.eclipse.leshan.Link;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.util.StringUtils;
 import org.eclipse.leshan.util.Validate;
 
 /**
@@ -75,8 +76,8 @@ public class Registration implements Serializable {
 
     private final Date lastUpdate;
 
-    protected Registration(String id, String endpoint, Identity identity, String lwM2mVersion,
-            Long lifetimeInSec, String smsNumber, BindingMode bindingMode, Link[] objectLinks,
+    protected Registration(String id, String endpoint, Identity identity, String lwM2mVersion, Long lifetimeInSec,
+            String smsNumber, BindingMode bindingMode, Link[] objectLinks,
             InetSocketAddress registrationEndpointAddress,
 
             Date registrationDate, Date lastUpdate, Map<String, String> additionalRegistrationAttributes) {
@@ -131,7 +132,7 @@ public class Registration implements Serializable {
     /**
      * Gets the clients identity.
      * 
-     * @return identity from client's most recent registration or registration update. 
+     * @return identity from client's most recent registration or registration update.
      */
     public Identity getIdentity() {
         return identity;
@@ -224,12 +225,7 @@ public class Registration implements Serializable {
     }
 
     private static boolean isNumber(String s) {
-        try {
-            Integer.parseInt(s);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
+        return !StringUtils.isEmpty(s) && StringUtils.isNumeric(s);
     }
 
     public Long getLifeTimeInSec() {
@@ -397,9 +393,9 @@ public class Registration implements Serializable {
 
         public Registration build() {
             return new Registration(Builder.this.registrationId, Builder.this.endpoint, Builder.this.identity,
-                    Builder.this.lwM2mVersion, Builder.this.lifeTimeInSec, Builder.this.smsNumber,
-                    this.bindingMode, this.objectLinks, this.registrationEndpointAddress, this.registrationDate,
-                    this.lastUpdate, this.additionalRegistrationAttributes);
+                    Builder.this.lwM2mVersion, Builder.this.lifeTimeInSec, Builder.this.smsNumber, this.bindingMode,
+                    this.objectLinks, this.registrationEndpointAddress, this.registrationDate, this.lastUpdate,
+                    this.additionalRegistrationAttributes);
         }
 
     }
