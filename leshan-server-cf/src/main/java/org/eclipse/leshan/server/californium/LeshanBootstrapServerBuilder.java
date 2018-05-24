@@ -244,6 +244,12 @@ public class LeshanBootstrapServerBuilder {
             if (incompleteConfig.getStaleConnectionThreshold() == null)
                 dtlsConfigBuilder.setStaleConnectionThreshold(coapConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
 
+            // Deactivate SNI by default
+            // TODO should we support SNI ?
+            if (incompleteConfig.isSniEnabled() == null) {
+                dtlsConfigBuilder.setSniEnabled(false);
+            }
+
             // we try to build the dtlsConfig, if it fail we will just not create the secured endpoint
             try {
                 dtlsConfig = dtlsConfigBuilder.build();

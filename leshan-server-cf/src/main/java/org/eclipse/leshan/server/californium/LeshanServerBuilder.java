@@ -453,6 +453,12 @@ public class LeshanServerBuilder {
                 }
             }
 
+            // Deactivate SNI by default
+            // TODO should we support SNI ?
+            if (incompleteConfig.isSniEnabled() == null) {
+                dtlsConfigBuilder.setSniEnabled(false);
+            }
+
             // we try to build the dtlsConfig, if it fail we will just not create the secured endpoint
             try {
                 dtlsConfig = dtlsConfigBuilder.build();
