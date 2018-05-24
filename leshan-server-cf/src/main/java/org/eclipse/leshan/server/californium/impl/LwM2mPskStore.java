@@ -74,4 +74,10 @@ public class LwM2mPskStore implements PskStore {
         }
         return null;
     }
+
+    @Override
+    public String getIdentity(InetSocketAddress peerAddress, ServerNames virtualHost) {
+        // TODO should we support SNI ?
+        throw new UnsupportedOperationException();
+    }
 }

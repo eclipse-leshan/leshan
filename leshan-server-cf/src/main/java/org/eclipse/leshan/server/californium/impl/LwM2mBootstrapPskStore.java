@@ -58,4 +58,10 @@ public class LwM2mBootstrapPskStore implements PskStore {
     public String getIdentity(InetSocketAddress inetAddress) {
         throw new UnsupportedOperationException("Getting PSK Id by IP addresss dos not make sense on BS server side.");
     }
+
+    @Override
+    public String getIdentity(InetSocketAddress peerAddress, ServerNames virtualHost) {
+        // TODO should we support SNI ?
+        throw new UnsupportedOperationException();
+    }
 }
