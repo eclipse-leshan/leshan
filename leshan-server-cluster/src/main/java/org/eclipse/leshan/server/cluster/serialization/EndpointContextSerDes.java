@@ -29,9 +29,9 @@ import javax.security.auth.x500.X500Principal;
 import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.MapBasedEndpointContext;
-import org.eclipse.californium.elements.auth.X509CertPath;
 import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
+import org.eclipse.californium.elements.auth.X509CertPath;
 import org.eclipse.leshan.util.Hex;
 
 import com.eclipsesource.json.Json;
@@ -40,8 +40,7 @@ import com.eclipsesource.json.JsonObject.Member;
 import com.eclipsesource.json.JsonValue;
 
 /**
- * Functions for serializing and deserializing a Californium
- * {@link EndpointContext} in JSON.
+ * Functions for serializing and deserializing a Californium {@link EndpointContext} in JSON.
  */
 public class EndpointContextSerDes {
 
@@ -59,7 +58,7 @@ public class EndpointContextSerDes {
         Principal principal = context.getPeerIdentity();
         if (principal != null) {
             if (principal instanceof PreSharedKeyIdentity) {
-                peer.set(KEY_ID, principal.getName());
+                peer.set(KEY_ID, ((PreSharedKeyIdentity) principal).getIdentity());
             } else if (principal instanceof RawPublicKeyIdentity) {
                 PublicKey publicKey = ((RawPublicKeyIdentity) principal).getKey();
                 peer.set(KEY_RPK, Hex.encodeHexString(publicKey.getEncoded()));

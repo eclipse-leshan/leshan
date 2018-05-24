@@ -30,6 +30,7 @@ import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.EndpointMismatchException;
 import org.eclipse.californium.elements.RawData;
+import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.elements.util.SimpleMessageCallback;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -133,7 +134,7 @@ public class SecurityTest {
 
         // Wait until new handshake DTLS is done
         EndpointContext endpointContext = callback.getEndpointContext(1000);
-        assertEquals(endpointContext.getPeerIdentity().getName(), "anotherPSK");
+        assertEquals(((PreSharedKeyIdentity) endpointContext.getPeerIdentity()).getIdentity(), "anotherPSK");
 
         // Try to send a read request this should failed with an SendFailedException.
         try {

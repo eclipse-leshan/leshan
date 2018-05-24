@@ -27,9 +27,9 @@ import javax.security.auth.x500.X500Principal;
 
 import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.californium.elements.EndpointContext;
-import org.eclipse.californium.elements.auth.X509CertPath;
 import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
+import org.eclipse.californium.elements.auth.X509CertPath;
 import org.eclipse.leshan.core.request.Identity;
 
 public class EndpointContextUtil {
@@ -39,7 +39,7 @@ public class EndpointContextUtil {
         Principal senderIdentity = context.getPeerIdentity();
         if (senderIdentity != null) {
             if (senderIdentity instanceof PreSharedKeyIdentity) {
-                return Identity.psk(peerAddress, senderIdentity.getName());
+                return Identity.psk(peerAddress, ((PreSharedKeyIdentity) senderIdentity).getIdentity());
             } else if (senderIdentity instanceof RawPublicKeyIdentity) {
                 PublicKey publicKey = ((RawPublicKeyIdentity) senderIdentity).getKey();
                 return Identity.rpk(peerAddress, publicKey);
