@@ -123,7 +123,7 @@ public class SecurityCheck {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Invalid rpk for client {}: expected \n'{}'\n but was \n'{}'", endpoint,
                         Hex.encodeHexString(securityInfo.getRawPublicKey().getEncoded()),
-                        Hex.encodeHexString(publicKey.getEncoded()));
+                        publicKey != null ? Hex.encodeHexString(publicKey.getEncoded()) : "null");
             }
             return false;
         } else {
@@ -142,7 +142,7 @@ public class SecurityCheck {
             return false;
         }
 
-        if (!x509CommonName.equals(endpoint)) {
+        if (x509CommonName == null || !x509CommonName.equals(endpoint)) {
             LOG.debug("Invalid certificate common name for client '{}': expected \n'{}'\n but was \n'{}'", endpoint,
                     endpoint, x509CommonName);
             return false;
