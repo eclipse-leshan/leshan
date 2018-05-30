@@ -16,9 +16,7 @@
 package org.eclipse.leshan.core.node.codec.tlv;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -62,7 +60,7 @@ public class LwM2mNodeTlvDecoder {
 
         // Object
         if (nodeClass == LwM2mObject.class) {
-            List<LwM2mObjectInstance> instances = new ArrayList<>();
+            Map<Integer, LwM2mObjectInstance> instances = new HashMap<>(tlvs.length);
 
             // is it an array of TLV resources?
             if (tlvs.length > 0 && //
@@ -72,9 +70,9 @@ public class LwM2mNodeTlvDecoder {
                 if (oModel == null) {
                     LOG.warn("No model for object {}. The tlv is decoded assuming this is a single instance object",
                             path.getObjectId());
-                    instances.add(parseObjectInstanceTlv(tlvs, path.getObjectId(), 0, model));
+                    instances.put(0, parseObjectInstanceTlv(tlvs, path.getObjectId(), 0, model));
                 } else if (!oModel.multiple) {
-                    instances.add(parseObjectInstanceTlv(tlvs, path.getObjectId(), 0, model));
+                    instances.put(0, parseObjectInstanceTlv(tlvs, path.getObjectId(), 0, model));
                 } else {
                     throw new CodecException("Object instance TLV is mandatory for multiple instances object [path:%s]",
                             path);
@@ -86,11 +84,17 @@ public class LwM2mNodeTlvDecoder {
                         throw new CodecException("Expected TLV of type OBJECT_INSTANCE but was %s  [path:%s]",
                                 tlv.getType().name(), path);
 
-                    instances.add(
-                            parseObjectInstanceTlv(tlv.getChildren(), path.getObjectId(), tlv.getIdentifier(), model));
+                    LwM2mObjectInstance objectInstance = parseObjectInstanceTlv(tlv.getChildren(), path.getObjectId(),
+                            tlv.getIdentifier(), model);
+                    LwM2mObjectInstance previousObjectInstance = instances.put(objectInstance.getId(), objectInstance);
+                    if (previousObjectInstance != null) {
+                        throw new CodecException(
+                                "2 OBJECT_INSTANCE nodes (%s,%s) with the same identifier %d for path %s",
+                                previousObjectInstance, objectInstance, objectInstance.getId(), path);
+                    }
                 }
             }
-            return (T) new LwM2mObject(path.getObjectId(), instances);
+            return (T) new LwM2mObject(path.getObjectId(), instances.values());
         }
 
         // Object instance
@@ -134,7 +138,9 @@ public class LwM2mNodeTlvDecoder {
                     throw new CodecException("Id conflict between path [%s] and resource TLV [%s]", path,
                             tlvs[0].getIdentifier());
                 }
-                return (T) parseResourceTlv(tlvs[0], path.getObjectId(), path.getObjectInstanceId(), model);
+                LwM2mPath resourcePath = new LwM2mPath(path.getObjectId(), path.getObjectInstanceId(),
+                        tlvs[0].getIdentifier());
+                return (T) parseResourceTlv(tlvs[0], resourcePath, model);
             } else {
                 Type expectedRscType = getResourceType(path, model);
                 return (T) LwM2mMultipleResource.newResource(path.getResourceId(),
@@ -149,16 +155,21 @@ public class LwM2mNodeTlvDecoder {
     private static LwM2mObjectInstance parseObjectInstanceTlv(Tlv[] rscTlvs, int objectId, int instanceId,
             LwM2mModel model) throws CodecException {
         // read resources
-        List<LwM2mResource> resources = new ArrayList<>(rscTlvs.length);
+        Map<Integer, LwM2mResource> resources = new HashMap<>(rscTlvs.length);
         for (Tlv rscTlv : rscTlvs) {
-            resources.add(parseResourceTlv(rscTlv, objectId, instanceId, model));
+            LwM2mPath resourcePath = new LwM2mPath(objectId, instanceId, rscTlv.getIdentifier());
+            LwM2mResource resource = parseResourceTlv(rscTlv, resourcePath, model);
+            LwM2mResource previousResource = resources.put(resource.getId(), resource);
+            if (previousResource != null) {
+                throw new CodecException("2 RESOURCE nodes (%s,%s) with the same identifier %d for path %s",
+                        previousResource, resource, resource.getId(), resourcePath);
+            }
         }
-        return new LwM2mObjectInstance(instanceId, resources);
+        return new LwM2mObjectInstance(instanceId, resources.values());
     }
 
-    private static LwM2mResource parseResourceTlv(Tlv tlv, int objectId, int objectInstanceId, LwM2mModel model)
+    private static LwM2mResource parseResourceTlv(Tlv tlv, LwM2mPath resourcePath, LwM2mModel model)
             throws CodecException {
-        LwM2mPath resourcePath = new LwM2mPath(objectId, objectInstanceId, tlv.getIdentifier());
         Type expectedType = getResourceType(resourcePath, model);
         Integer resourceId = tlv.getIdentifier();
         switch (tlv.getType()) {
@@ -184,7 +195,7 @@ public class LwM2mNodeTlvDecoder {
             Object resourceInstance = parseTlvValue(tlvChild.getValue(), expectedType, path);
             Object previousResourceInstance = values.put(tlvChild.getIdentifier(), resourceInstance);
             if (previousResourceInstance != null) {
-                throw new CodecException("2 RESOURCE_INSTANCE (%s,%s) with the same identifier %d for path %s",
+                throw new CodecException("2 RESOURCE_INSTANCE nodes (%s,%s) with the same identifier %d for path %s",
                         previousResourceInstance, resourceInstance, tlvChild.getIdentifier(), path);
             }
         }
