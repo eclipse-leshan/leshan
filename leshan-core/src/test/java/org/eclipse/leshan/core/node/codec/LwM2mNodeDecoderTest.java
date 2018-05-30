@@ -665,4 +665,26 @@ public class LwM2mNodeDecoderTest {
         assertEquals(6, resource.getId());
         assertTrue(resource.getValues().isEmpty());
     }
+
+    @Test(expected = CodecException.class)
+    public void json_invalid_instance_2_resources_with_the_same_id() {
+        StringBuilder b = new StringBuilder();
+        b.append("{\"e\":[");
+        b.append("{\"n\":\"1\",\"sv\":\"client1\"},");
+        b.append("{\"n\":\"1\",\"sv\":\"client2\"}");
+        b.append("]}");
+
+        decoder.decode(b.toString().getBytes(), ContentFormat.JSON, new LwM2mPath(3, 0), model);
+    }
+
+    @Test(expected = CodecException.class)
+    public void json_invalid_multi_resource_2_instances_with_the_same_id() {
+        StringBuilder b = new StringBuilder();
+        b.append("{\"e\":[");
+        b.append("{\"n\":\"1\",\"v\":2},");
+        b.append("{\"n\":\"1\",\"v\":0}");
+        b.append("]}");
+
+        decoder.decode(b.toString().getBytes(), ContentFormat.JSON, new LwM2mPath(3, 0, 11), model);
+    }
 }
