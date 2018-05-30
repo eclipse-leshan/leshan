@@ -275,6 +275,24 @@ public class LwM2mNodeDecoderTest {
         assertAclInstances(oObject);
     }
 
+    @Test(expected = CodecException.class)
+    public void tlv_invalid_object_2_instances_with_the_same_id() {
+        Tlv objInstance1 = new Tlv(TlvType.OBJECT_INSTANCE, new Tlv[0], null, 1);
+        Tlv objInstance2 = new Tlv(TlvType.OBJECT_INSTANCE, new Tlv[0], null, 1);
+        byte[] content = TlvEncoder.encode(new Tlv[] { objInstance1, objInstance2 }).array();
+
+        decoder.decode(content, ContentFormat.TLV, new LwM2mPath(2), model);
+    }
+
+    @Test(expected = CodecException.class)
+    public void tlv_invalid_object__instance_2_resources_with_the_same_id() {
+        Tlv resource1 = new Tlv(TlvType.RESOURCE_VALUE, null, new byte[0], 1);
+        Tlv resource2 = new Tlv(TlvType.RESOURCE_VALUE, null, new byte[0], 1);
+        byte[] content = TlvEncoder.encode(new Tlv[] { resource1, resource2 }).array();
+
+        decoder.decode(content, ContentFormat.TLV, new LwM2mPath(3, 0), model);
+    }
+
     @Test
     public void tlv_single_instance_with_obj_link() throws Exception {
         LwM2mObjectInstance oInstance = ((LwM2mObjectInstance) decoder.decode(ENCODED_OBJ65, ContentFormat.TLV,
