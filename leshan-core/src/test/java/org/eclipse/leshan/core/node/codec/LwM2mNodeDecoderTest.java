@@ -360,6 +360,29 @@ public class LwM2mNodeDecoderTest {
     }
 
     @Test
+    public void tlv_resource_with_undesired_object_instance() throws CodecException {
+
+        Tlv resInstance1 = new Tlv(TlvType.RESOURCE_VALUE, null, "client".getBytes(), 1);
+        Tlv objInstance = new Tlv(TlvType.OBJECT_INSTANCE, new Tlv[] { resInstance1 }, null, 0);
+        byte[] content = TlvEncoder.encode(new Tlv[] { objInstance }).array();
+
+        LwM2mSingleResource res = (LwM2mSingleResource) decoder.decode(content, ContentFormat.TLV,
+                new LwM2mPath(3, 0, 1), model);
+
+        assertEquals("client", res.getValue());
+    }
+
+    @Test(expected = CodecException.class)
+    public void tlv_resource_with_undesired_invalid_object_instance() throws CodecException {
+
+        Tlv resInstance1 = new Tlv(TlvType.RESOURCE_VALUE, null, "client".getBytes(), 1);
+        Tlv objInstance = new Tlv(TlvType.OBJECT_INSTANCE, new Tlv[] { resInstance1 }, null, 1);
+        byte[] content = TlvEncoder.encode(new Tlv[] { objInstance }).array();
+
+        decoder.decode(content, ContentFormat.TLV, new LwM2mPath(3, 0, 1), model);
+    }
+
+    @Test
     public void tlv_empty_object() {
         byte[] content = TlvEncoder.encode(new Tlv[] {}).array();
 
