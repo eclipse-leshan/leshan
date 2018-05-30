@@ -309,13 +309,22 @@ public class LwM2mNodeJsonDecoder {
                     multiResource = new HashMap<>();
                     multiResourceMap.put(resourcePath, multiResource);
                 }
-                multiResource.put(nodePath.getResourceInstanceId(), resourceElt);
+                JsonArrayEntry previousResInstance = multiResource.put(nodePath.getResourceInstanceId(), resourceElt);
+                if (previousResInstance != null) {
+                    throw new CodecException(
+                            "2 RESOURCE_INSTANCE nodes (%s,%s) with the same identifier %d for path %s",
+                            previousResInstance, resourceElt, nodePath.getResourceInstanceId(), nodePath);
+                }
             } else if (nodePath.isResource()) {
                 // Single resource
                 Type expectedType = getResourceType(nodePath, model, resourceElt);
                 LwM2mResource res = LwM2mSingleResource.newResource(nodePath.getResourceId(),
                         parseJsonValue(resourceElt.getResourceValue(), expectedType, nodePath), expectedType);
-                lwM2mResourceMap.put(nodePath.getResourceId(), res);
+                LwM2mResource previousRes = lwM2mResourceMap.put(nodePath.getResourceId(), res);
+                if (previousRes != null) {
+                    throw new CodecException("2 RESOURCE nodes (%s,%s) with the same identifier %d for path %s",
+                            previousRes, res, res.getId(), nodePath);
+                }
             } else {
                 throw new CodecException(
                         "Invalid path [%s] for resource, it should be a resource or a resource instance path",
@@ -338,7 +347,11 @@ public class LwM2mNodeJsonDecoder {
                 }
                 LwM2mResource resource = LwM2mMultipleResource.newResource(resourcePath.getResourceId(), values,
                         expectedType);
-                lwM2mResourceMap.put(resourcePath.getResourceId(), resource);
+                LwM2mResource previousRes = lwM2mResourceMap.put(resourcePath.getResourceId(), resource);
+                if (previousRes != null) {
+                    throw new CodecException("2 RESOURCE nodes (%s,%s) with the same identifier %d for path %s",
+                            previousRes, resource, resource.getId(), resourcePath);
+                }
             }
         }
 
