@@ -62,7 +62,8 @@ public interface RegistrationStore {
     Registration getRegistrationByEndpoint(String endpoint);
 
     /**
-     * Get the registration by socket address.
+     * Get the registration by socket address. If there are 2 Registrations linked to the same address, the most recent
+     * one should be returned. Generally this happened when devices are behind NAT and so address could be reused.
      * 
      * @param address of the client registered.
      * @return the registration or null if there is no client registered with this socket address.

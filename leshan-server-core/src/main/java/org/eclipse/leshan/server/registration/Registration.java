@@ -139,6 +139,15 @@ public class Registration implements Serializable {
     }
 
     /**
+     * Gets the client's network socket address.
+     * 
+     * @return the source address from the client's most recent CoAP message.
+     */
+    public InetSocketAddress getSocketAddress() {
+        return identity.getPeerAddress();
+    }
+
+    /**
      * Gets the client's network address.
      * 
      * @return the source address from the client's most recent CoAP message.

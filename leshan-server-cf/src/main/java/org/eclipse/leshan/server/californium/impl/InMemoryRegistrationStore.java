@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -65,6 +66,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
 
     // Data structure
     private final Map<String /* end-point */, Registration> regsByEp = new HashMap<>();
+    private final Map<InetSocketAddress, Registration> regsByAddr = new HashMap<>();
     private Map<Token, org.eclipse.californium.core.observe.Observation> obsByToken = new HashMap<>();
     private Map<String, Set<Token>> tokensByRegId = new HashMap<>();
 
@@ -99,8 +101,12 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
             lock.writeLock().lock();
 
             Registration registrationRemoved = regsByEp.put(registration.getEndpoint(), registration);
+            // If a registration is already associated to this address we don't care as we only want to keep the most
+            // recent binding.
+            regsByAddr.put(registration.getSocketAddress(), registration);
             if (registrationRemoved != null) {
                 Collection<Observation> observationsRemoved = unsafeRemoveAllObservations(registrationRemoved.getId());
+                removeFromMap(regsByAddr, registrationRemoved.getSocketAddress(), registrationRemoved);
                 return new Deregistration(registrationRemoved, observationsRemoved);
             }
         } finally {
@@ -120,6 +126,10 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
             } else {
                 Registration updatedRegistration = update.update(registration);
                 regsByEp.put(updatedRegistration.getEndpoint(), updatedRegistration);
+                // If registration is already associated to this address we don't care as we only want to keep the most
+                // recent binding.
+                regsByAddr.put(updatedRegistration.getSocketAddress(), updatedRegistration);
+                removeFromMap(regsByAddr, registration.getSocketAddress(), registration);
                 return new UpdatedRegistration(registration, updatedRegistration);
             }
         } finally {
@@ -159,15 +169,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     public Registration getRegistrationByAdress(InetSocketAddress address) {
         try {
             lock.readLock().lock();
-            // TODO we should create an index instead of iterate all over the collection
-            if (address != null) {
-                for (Registration r : regsByEp.values()) {
-                    if (address.getPort() == r.getPort() && address.getAddress().equals(r.getAddress())) {
-                        return r;
-                    }
-                }
-            }
-            return null;
+            return regsByAddr.get(address);
         } finally {
             lock.readLock().unlock();
         }
@@ -192,6 +194,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
             if (registration != null) {
                 Collection<Observation> observationsRemoved = unsafeRemoveAllObservations(registration.getId());
                 regsByEp.remove(registration.getEndpoint());
+                removeFromMap(regsByAddr, registration.getSocketAddress(), registration);
                 return new Deregistration(registration, observationsRemoved);
             }
             return null;
@@ -280,16 +283,19 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     /* *************** Californium ObservationStore API **************** */
 
     @Override
-    public org.eclipse.californium.core.observe.Observation putIfAbsent(Token token, org.eclipse.californium.core.observe.Observation obs) {
+    public org.eclipse.californium.core.observe.Observation putIfAbsent(Token token,
+            org.eclipse.californium.core.observe.Observation obs) {
         return add(token, obs, true);
     }
 
     @Override
-    public org.eclipse.californium.core.observe.Observation put(Token token, org.eclipse.californium.core.observe.Observation obs) {
+    public org.eclipse.californium.core.observe.Observation put(Token token,
+            org.eclipse.californium.core.observe.Observation obs) {
         return add(token, obs, false);
     }
 
-    private org.eclipse.californium.core.observe.Observation add(Token token, org.eclipse.californium.core.observe.Observation obs, boolean ifAbsent) {
+    private org.eclipse.californium.core.observe.Observation add(Token token,
+            org.eclipse.californium.core.observe.Observation obs, boolean ifAbsent) {
         org.eclipse.californium.core.observe.Observation previousObservation = null;
         if (obs != null) {
             try {
@@ -475,5 +481,15 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
                 LOG.warn("Unexpected Exception while registration cleaning", e);
             }
         }
+    }
+
+    // boolean remove(Object key, Object value) exist only since java8
+    // So this method is here only while we want to support java 7
+    protected <K, V> boolean removeFromMap(Map<K, V> map, K key, V value) {
+        if (map.containsKey(key) && Objects.equals(map.get(key), value)) {
+            map.remove(key);
+            return true;
+        } else
+            return false;
     }
 }
