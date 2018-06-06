@@ -273,6 +273,14 @@ public class Registration implements Serializable {
         return lastUpdate;
     }
 
+    public long getExpirationTimeStamp() {
+        return getExpirationTimeStamp(0L);
+    }
+
+    public long getExpirationTimeStamp(long gracePeriodInSec) {
+        return lastUpdate.getTime() + lifeTimeInSec * 1000 + gracePeriodInSec * 1000;
+    }
+
     /**
      * @return true if the last registration update was done less than lifetime seconds ago.
      */
@@ -286,7 +294,7 @@ public class Registration implements Serializable {
      * @return true if the last registration update was done less than lifetime+gracePeriod seconds ago.
      */
     public boolean isAlive(long gracePeriodInSec) {
-        return lastUpdate.getTime() + lifeTimeInSec * 1000 + gracePeriodInSec * 1000 > System.currentTimeMillis();
+        return getExpirationTimeStamp(gracePeriodInSec) > System.currentTimeMillis();
     }
 
     public Map<String, String> getAdditionalRegistrationAttributes() {
