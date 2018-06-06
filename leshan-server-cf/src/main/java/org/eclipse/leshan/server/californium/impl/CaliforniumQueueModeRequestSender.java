@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 RISE SICS AB.
+ * Copyright (c) 2018 Sierra Wireless and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -11,45 +11,41 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
  * 
  * Contributors:
- *     RISE SICS AB - initial API and implementation
+ *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.queue;
+package org.eclipse.leshan.server.californium.impl;
 
-import org.eclipse.leshan.core.request.DownlinkRequest;
+import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.coap.Response;
+import org.eclipse.leshan.core.californium.CoapResponseCallback;
 import org.eclipse.leshan.core.request.exception.ClientSleepingException;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.response.ErrorCallback;
-import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.core.response.ResponseCallback;
+import org.eclipse.leshan.server.californium.CoapRequestSender;
+import org.eclipse.leshan.server.queue.PresenceServiceImpl;
+import org.eclipse.leshan.server.queue.QueueModeLwM2mRequestSender;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
-import org.eclipse.leshan.util.Validate;
 
-public class QueueModeLwM2mRequestSender implements LwM2mRequestSender {
+public class CaliforniumQueueModeRequestSender extends QueueModeLwM2mRequestSender implements CoapRequestSender {
 
-    protected PresenceServiceImpl presenceService;
-    protected LwM2mRequestSender delegatedSender;
-
-    /**
-     * @param presenceService the presence service object for setting the client into {@link Presence#SLEEPING} when
-     *        request Timeout expires and into {@link Presence#Awake} when a response arrives.
-     * @param delegatedSender internal sender that it is used for sending the requests, using delegation.
-     */
-    public QueueModeLwM2mRequestSender(PresenceServiceImpl presenceService, LwM2mRequestSender delegatedSender) {
-        Validate.notNull(presenceService);
-        Validate.notNull(delegatedSender);
-
-        this.presenceService = presenceService;
-        this.delegatedSender = delegatedSender;
+    public CaliforniumQueueModeRequestSender(PresenceServiceImpl presenceService, LwM2mRequestSender delegatedSender) {
+        super(presenceService, delegatedSender);
     }
 
     @Override
-    public <T extends LwM2mResponse> T send(final Registration destination, DownlinkRequest<T> request, long timeout)
+    public Response sendCoapRequest(Registration destination, Request coapRequest, long timeout)
             throws InterruptedException {
+
+        // Ensure that delegated sender is able to send CoAP request
+        if (!(delegatedSender instanceof CoapRequestSender)) {
+            throw new UnsupportedOperationException("This sender does not support to send CoAP request");
+        }
+        CoapRequestSender sender = (CoapRequestSender) delegatedSender;
 
         // If the client does not use Q-Mode, just send
         if (!destination.usesQueueMode()) {
-            return delegatedSender.send(destination, request, timeout);
+            return sender.sendCoapRequest(destination, coapRequest, timeout);
         }
 
         // If the client uses Q-Mode...
@@ -60,13 +56,11 @@ public class QueueModeLwM2mRequestSender implements LwM2mRequestSender {
         }
 
         // Use delegation to send the request
-        T response = delegatedSender.send(destination, request, timeout);
+        Response response = sender.sendCoapRequest(destination, coapRequest, timeout);
         if (response != null) {
-
             // Set the client awake. This will restart the timer.
             presenceService.setAwake(destination);
         } else {
-
             // If the timeout expires, this means the client does not respond.
             presenceService.clientNotResponding(destination);
         }
@@ -75,12 +69,18 @@ public class QueueModeLwM2mRequestSender implements LwM2mRequestSender {
     }
 
     @Override
-    public <T extends LwM2mResponse> void send(final Registration destination, DownlinkRequest<T> request, long timeout,
-            final ResponseCallback<T> responseCallback, final ErrorCallback errorCallback) {
+    public void sendCoapRequest(final Registration destination, Request coapRequest, long timeout,
+            final CoapResponseCallback responseCallback, final ErrorCallback errorCallback) {
+
+        // Ensure that delegated sender is able to send CoAP request
+        if (!(delegatedSender instanceof CoapRequestSender)) {
+            throw new UnsupportedOperationException("This sender does not support to send CoAP request");
+        }
+        CoapRequestSender sender = (CoapRequestSender) delegatedSender;
 
         // If the client does not use Q-Mode, just send
         if (!destination.usesQueueMode()) {
-            delegatedSender.send(destination, request, timeout, responseCallback, errorCallback);
+            sender.sendCoapRequest(destination, coapRequest, timeout, responseCallback, errorCallback);
             return;
         }
 
@@ -92,9 +92,9 @@ public class QueueModeLwM2mRequestSender implements LwM2mRequestSender {
         }
 
         // Use delegation to send the request, with specific callbacks to perform Queue Mode operation
-        delegatedSender.send(destination, request, timeout, new ResponseCallback<T>() {
+        sender.sendCoapRequest(destination, coapRequest, timeout, new CoapResponseCallback() {
             @Override
-            public void onResponse(T response) {
+            public void onResponse(Response response) {
                 // Set the client awake. This will restart the timer.
                 presenceService.setAwake(destination);
 
@@ -113,11 +113,5 @@ public class QueueModeLwM2mRequestSender implements LwM2mRequestSender {
                 errorCallback.onError(e);
             }
         });
-
-    }
-
-    @Override
-    public void cancelPendingRequests(Registration registration) {
-        delegatedSender.cancelPendingRequests(registration);
     }
 }
