@@ -28,7 +28,12 @@ import org.eclipse.californium.core.coap.MessageObserverAdapter;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
+import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.leshan.core.californium.AsyncRequestObserver;
+import org.eclipse.leshan.core.californium.CoapAsyncRequestObserver;
+import org.eclipse.leshan.core.californium.CoapResponseCallback;
+import org.eclipse.leshan.core.californium.CoapSyncRequestObserver;
+import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.californium.SyncRequestObserver;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
@@ -37,12 +42,13 @@ import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
+import org.eclipse.leshan.server.californium.CoapRequestSender;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
 import org.eclipse.leshan.util.Validate;
 
-public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
+public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRequestSender {
 
     private final Set<Endpoint> endpoints;
     private final ObservationServiceImpl observationService;
@@ -130,6 +136,49 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
                 return lwm2mResponseBuilder.getResponse();
             }
         };
+        coapRequest.addMessageObserver(obs);
+
+        // Store pending request to cancel it on de-registration
+        addPendingRequest(destination.getId(), coapRequest);
+
+        // Send CoAP request asynchronously
+        Endpoint endpoint = getEndpointForClient(destination);
+        endpoint.sendRequest(coapRequest);
+    }
+
+    @Override
+    public Response sendCoapRequest(final Registration destination, final Request coapRequest, long timeout)
+            throws InterruptedException {
+
+        // Define destination
+        EndpointContext context = EndpointContextUtil.extractContext(destination.getIdentity());
+        coapRequest.setDestinationContext(context);
+
+        // Send CoAP request synchronously
+        CoapSyncRequestObserver syncMessageObserver = new CoapSyncRequestObserver(coapRequest, timeout);
+        coapRequest.addMessageObserver(syncMessageObserver);
+
+        // Store pending request to cancel it on de-registration
+        addPendingRequest(destination.getId(), coapRequest);
+
+        // Send CoAP request asynchronously
+        Endpoint endpoint = getEndpointForClient(destination);
+        endpoint.sendRequest(coapRequest);
+
+        // Wait for response, then return it
+        return syncMessageObserver.waitForCoapResponse();
+    }
+
+    @Override
+    public void sendCoapRequest(final Registration destination, final Request coapRequest, long timeout,
+            CoapResponseCallback responseCallback, ErrorCallback errorCallback) {
+
+        // Define destination
+        EndpointContext context = EndpointContextUtil.extractContext(destination.getIdentity());
+        coapRequest.setDestinationContext(context);
+
+        // Add CoAP request callback
+        MessageObserver obs = new CoapAsyncRequestObserver(coapRequest, responseCallback, errorCallback, timeout);
         coapRequest.addMessageObserver(obs);
 
         // Store pending request to cancel it on de-registration
