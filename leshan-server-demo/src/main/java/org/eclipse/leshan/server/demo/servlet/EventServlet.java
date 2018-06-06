@@ -135,7 +135,7 @@ public class EventServlet extends EventSourceServlet {
 
         // add an interceptor to each endpoint to trace all CoAP messages
         coapMessageTracer = new CoapMessageTracer(server.getRegistrationService());
-        for (Endpoint endpoint : server.getCoapServer().getEndpoints()) {
+        for (Endpoint endpoint : server.coap().getServer().getEndpoints()) {
             endpoint.addInterceptor(coapMessageTracer);
         }
 

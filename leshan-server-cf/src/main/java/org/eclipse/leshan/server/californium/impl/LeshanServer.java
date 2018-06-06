@@ -25,15 +25,24 @@ import java.util.Set;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
+import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
+import org.eclipse.leshan.core.californium.CoapResponseCallback;
+import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.DownlinkRequest;
+import org.eclipse.leshan.core.request.exception.ClientSleepingException;
+import org.eclipse.leshan.core.request.exception.InvalidResponseException;
+import org.eclipse.leshan.core.request.exception.RequestCanceledException;
+import org.eclipse.leshan.core.request.exception.RequestRejectedException;
+import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
@@ -42,6 +51,7 @@ import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.Startable;
 import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
+import org.eclipse.leshan.server.californium.CoapRequestSender;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
@@ -50,7 +60,6 @@ import org.eclipse.leshan.server.queue.ClientAwakeTimeProvider;
 import org.eclipse.leshan.server.queue.PresenceService;
 import org.eclipse.leshan.server.queue.PresenceServiceImpl;
 import org.eclipse.leshan.server.queue.PresenceStateListener;
-import org.eclipse.leshan.server.queue.QueueModeLwM2mRequestSender;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
 import org.eclipse.leshan.server.registration.RegistrationIdProvider;
@@ -106,6 +115,8 @@ public class LeshanServer implements LwM2mServer {
 
     private final CaliforniumRegistrationStore registrationStore;
 
+    private final CoapAPI coapApi;
+
     /**
      * Initialize a server which will bind to the specified address and port.
      *
@@ -120,7 +131,8 @@ public class LeshanServer implements LwM2mServer {
      * @param coapConfig the CoAP {@link NetworkConfig}.
      * @param noQueueMode true to disable presenceService.
      * @param awakeTimeProvider to set the client awake time if queue mode is used.
-     * @param registrationIdProvider to provide registrationId using for location-path option values on response of Register operation.
+     * @param registrationIdProvider to provide registrationId using for location-path option values on response of
+     *        Register operation.
      */
     public LeshanServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
@@ -204,9 +216,11 @@ public class LeshanServer implements LwM2mServer {
         } else {
             presenceService = new PresenceServiceImpl(awakeTimeProvider);
             registrationService.addListener(new PresenceStateListener(presenceService));
-            requestSender = new QueueModeLwM2mRequestSender(presenceService,
+            requestSender = new CaliforniumQueueModeRequestSender(presenceService,
                     new CaliforniumLwM2mRequestSender(endpoints, observationService, modelProvider, encoder, decoder));
         }
+
+        coapApi = new CoapAPI();
     }
 
     @Override
@@ -295,36 +309,25 @@ public class LeshanServer implements LwM2mServer {
     @Override
     public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request)
             throws InterruptedException {
-
         return requestSender.send(destination, request, DEFAULT_TIMEOUT);
     }
 
     @Override
     public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request, long timeout)
             throws InterruptedException {
-
         return requestSender.send(destination, request, timeout);
     }
 
     @Override
     public <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
-
         requestSender.send(destination, request, DEFAULT_TIMEOUT, responseCallback, errorCallback);
     }
 
     @Override
     public <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request, long timeout,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
-
         requestSender.send(destination, request, timeout, responseCallback, errorCallback);
-    }
-
-    /**
-     * @return the underlying {@link CoapServer}
-     */
-    public CoapServer getCoapServer() {
-        return coapServer;
     }
 
     public InetSocketAddress getUnsecuredAddress() {
@@ -341,6 +344,149 @@ public class LeshanServer implements LwM2mServer {
         } else {
             return null;
         }
+    }
+
+    /**
+     * A CoAP API, generally needed when you want to mix LWM2M and CoAP protocol.
+     */
+    public CoapAPI coap() {
+        return coapApi;
+    }
+
+    public class CoapAPI {
+
+        /**
+         * @return the underlying {@link CoapServer}
+         */
+        public CoapServer getServer() {
+            return coapServer;
+        }
+
+        /**
+         * Sends a CoAP request synchronously to a registered LWM2M device. Will block until a response is received from
+         * the remote client.
+         * 
+         * @param destination the remote client
+         * @param request the request to the client
+         * @return the response or <code>null</code> if the CoAP timeout expires ( see
+         *         http://tools.ietf.org/html/rfc7252#section-4.2 ).
+         * 
+         * @throws CodecException if request payload can not be encoded.
+         * @throws InterruptedException if the thread was interrupted.
+         * @throws RequestRejectedException if the request is rejected by foreign peer.
+         * @throws RequestCanceledException if the request is cancelled.
+         * @throws InvalidResponseException if the response received is malformed.
+         * @throws ClientSleepingException if the client is sleeping and then the request cannot be sent. This exception
+         *         will never be raised if Queue Mode support is deactivate.
+         */
+        public Response send(Registration destination, Request request) throws InterruptedException {
+            // Ensure that delegated sender is able to send CoAP request
+            if (!(requestSender instanceof CoapRequestSender)) {
+                throw new UnsupportedOperationException("This sender does not support to send CoAP request");
+            }
+            CoapRequestSender sender = (CoapRequestSender) requestSender;
+
+            return sender.sendCoapRequest(destination, request, DEFAULT_TIMEOUT);
+        }
+
+        /**
+         * Sends a CoAP request synchronously to a registered LWM2M device. Will block until a response is received from
+         * the remote client.
+         * 
+         * @param destination the remote client
+         * @param request the request to send to the client
+         * @param timeout the request timeout in millisecond
+         * @return the response or <code>null</code> if the timeout expires (given parameter or CoAP timeout).
+         * 
+         * @throws CodecException if request payload can not be encoded.
+         * @throws InterruptedException if the thread was interrupted.
+         * @throws RequestRejectedException if the request is rejected by foreign peer.
+         * @throws RequestCanceledException if the request is cancelled.
+         * @throws InvalidResponseException if the response received is malformed.
+         * @throws ClientSleepingException if the client is sleeping and then the request cannot be sent. This exception
+         *         will never be raised if Queue Mode support is deactivate.
+         */
+        public Response send(Registration destination, Request request, long timeout) throws InterruptedException {
+            // Ensure that delegated sender is able to send CoAP request
+            if (!(requestSender instanceof CoapRequestSender)) {
+                throw new UnsupportedOperationException("This sender does not support to send CoAP request");
+            }
+            CoapRequestSender sender = (CoapRequestSender) requestSender;
+
+            return sender.sendCoapRequest(destination, request, timeout);
+        }
+
+        /**
+         * Sends a CoAP request asynchronously to a registered LWM2M device.
+         * 
+         * @param destination the remote client
+         * @param request the request to send to the client
+         * @param responseCallback a callback called when a response is received (successful or error response)
+         * @param errorCallback a callback called when an error or exception occurred when response is received. It can
+         *        be :
+         *        <ul>
+         *        <li>{@link RequestRejectedException} if the request is rejected by foreign peer.</li>
+         *        <li>{@link RequestCanceledException} if the request is cancelled.</li>
+         *        <li>{@link InvalidResponseException} if the response received is malformed.</li>
+         *        <li>{@link TimeoutException} if the CoAP timeout expires ( see
+         *        http://tools.ietf.org/html/rfc7252#section-4.2 ).</li>
+         *        <li>or any other RuntimeException for unexpected issue.
+         *        </ul>
+         * @throws CodecException if request payload can not be encoded.
+         * @throws ClientSleepingException if the client is sleeping and then the request cannot be sent. This exception
+         *         will never be raised if Queue Mode support is deactivate.
+         */
+        public void send(Registration destination, Request request, CoapResponseCallback responseCallback,
+                ErrorCallback errorCallback) {
+            // Ensure that delegated sender is able to send CoAP request
+            if (!(requestSender instanceof CoapRequestSender)) {
+                throw new UnsupportedOperationException("This sender does not support to send CoAP request");
+            }
+            CoapRequestSender sender = (CoapRequestSender) requestSender;
+
+            sender.sendCoapRequest(destination, request, DEFAULT_TIMEOUT, responseCallback, errorCallback);
+        }
+
+        /**
+         * Sends a CoAP request asynchronously to a registered LWM2M device.
+         * 
+         * @param destination the remote client
+         * @param request the request to send to the client
+         * @param timeout the request timeout in millisecond
+         * @param responseCallback a callback called when a response is received (successful or error response)
+         * @param errorCallback a callback called when an error or exception occurred when response is received. It can
+         *        be :
+         *        <ul>
+         *        <li>{@link RequestRejectedException} if the request is rejected by foreign peer.</li>
+         *        <li>{@link RequestCanceledException} if the request is cancelled.</li>
+         *        <li>{@link InvalidResponseException} if the response received is malformed.</li>
+         *        <li>{@link TimeoutException} if the CoAP timeout expires ( see
+         *        http://tools.ietf.org/html/rfc7252#section-4.2 ).</li>
+         *        <li>or any other RuntimeException for unexpected issue.
+         *        </ul>
+         * @throws CodecException if request payload can not be encoded.
+         * @throws ClientSleepingException if the client is sleeping and then the request cannot be sent. This exception
+         *         will never be raised if Queue Mode support is deactivate.
+         */
+        public void send(Registration destination, Request request, long timeout, CoapResponseCallback responseCallback,
+                ErrorCallback errorCallback) {
+            // Ensure that delegated sender is able to send CoAP request
+            if (!(requestSender instanceof CoapRequestSender)) {
+                throw new UnsupportedOperationException("This sender does not support to send CoAP request");
+            }
+            CoapRequestSender sender = (CoapRequestSender) requestSender;
+
+            sender.sendCoapRequest(destination, request, timeout, responseCallback, errorCallback);
+        }
+    }
+
+    /**
+     * @return the underlying {@link CoapServer}
+     * @Deprecated use coap().{@link CoapAPI#getServer() getServer()} instead
+     */
+    @Deprecated
+    public CoapServer getCoapServer() {
+        return coapServer;
     }
 
     /**
