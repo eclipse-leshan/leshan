@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Sierra Wireless and others.
+ * Copyright (c) 2013-2018 Sierra Wireless and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,24 +15,17 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.californium;
 
-import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
-import org.eclipse.leshan.core.response.LwM2mResponse;
 
-public abstract class SyncRequestObserver<T extends LwM2mResponse> extends CoapSyncRequestObserver {
+/**
+ * On success callback for request.
+ */
+public interface CoapResponseCallback {
+    // We should keep this as a 1 method interface to be java 8 lambda compatible.
 
-    public SyncRequestObserver(Request coapRequest, long timeout) {
-        super(coapRequest, timeout);
-    }
+    /**
+     * Called when the request succeed.
+     */
+    void onResponse(Response response);
 
-    public T waitForResponse() throws InterruptedException {
-        Response coapResponse = waitForCoapResponse();
-        if (coapResponse != null) {
-            return buildResponse(coapResponse);
-        } else {
-            return null;
-        }
-    }
-
-    protected abstract T buildResponse(Response coapResponse);
 }

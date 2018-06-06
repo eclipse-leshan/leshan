@@ -17,15 +17,11 @@ package org.eclipse.leshan.core.californium;
 
 import org.eclipse.californium.core.coap.MessageObserverAdapter;
 import org.eclipse.californium.core.coap.Request;
-import org.eclipse.californium.core.coap.Response;
-import org.eclipse.leshan.core.response.LwM2mResponse;
 
-public abstract class AbstractRequestObserver<T extends LwM2mResponse> extends MessageObserverAdapter {
+public abstract class AbstractRequestObserver extends MessageObserverAdapter {
     Request coapRequest;
 
     public AbstractRequestObserver(Request coapRequest) {
         this.coapRequest = coapRequest;
     }
-
-    public abstract T buildResponse(Response coapResponse);
 }
