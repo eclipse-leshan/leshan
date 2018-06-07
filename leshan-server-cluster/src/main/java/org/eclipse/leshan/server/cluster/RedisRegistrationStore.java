@@ -158,7 +158,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
                 if (old != null) {
                     Registration oldRegistration = deserializeReg(old);
                     // remove old secondary index
-                    if (registration.getId() != oldRegistration.getId())
+                    if (!registration.getId().equals(oldRegistration.getId()))
                         j.del(toRegIdKey(oldRegistration.getId()));
                     if (!oldRegistration.getSocketAddress().equals(registration.getSocketAddress())) {
                         removeAddrIndex(j, oldRegistration);
