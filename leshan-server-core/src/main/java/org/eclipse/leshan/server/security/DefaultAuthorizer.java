@@ -35,12 +35,16 @@ public class DefaultAuthorizer implements Authorizer {
     }
 
     @Override
-    public boolean isAuthorized(UplinkRequest<?> request, Registration registration, Identity senderIdentity) {
+    public Registration isAuthorized(UplinkRequest<?> request, Registration registration, Identity senderIdentity) {
 
         // do we have security information for this client?
         SecurityInfo expectedSecurityInfo = null;
         if (securityStore != null)
             expectedSecurityInfo = securityStore.getByEndpoint(registration.getEndpoint());
-        return SecurityCheck.checkSecurityInfo(registration.getEndpoint(), senderIdentity, expectedSecurityInfo);
+        if (SecurityCheck.checkSecurityInfo(registration.getEndpoint(), senderIdentity, expectedSecurityInfo)) {
+            return registration;
+        } else {
+            return null;
+        }
     }
 }

@@ -64,10 +64,9 @@ public class RegistrationHandler {
                 .smsNumber(registerRequest.getSmsNumber()).registrationDate(new Date()).lastUpdate(new Date())
                 .additionalRegistrationAttributes(registerRequest.getAdditionalAttributes());
 
-        final Registration registration = builder.build();
-
         // We must check if the client is using the right identity.
-        if (!authorizer.isAuthorized(registerRequest, registration, sender)) {
+        final Registration registration = authorizer.isAuthorized(registerRequest, builder.build(), sender);
+        if (registration == null) {
             return new SendableResponse<>(RegisterResponse.forbidden(null));
         }
 
@@ -101,7 +100,7 @@ public class RegistrationHandler {
             return new SendableResponse<>(UpdateResponse.notFound());
         }
 
-        if (!authorizer.isAuthorized(updateRequest, registration, sender)) {
+        if (authorizer.isAuthorized(updateRequest, registration, sender) == null) {
             // TODO replace by Forbidden if https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/181 is
             // closed.
             return new SendableResponse<>(UpdateResponse.badRequest("forbidden"));
@@ -138,7 +137,7 @@ public class RegistrationHandler {
         if (registration == null) {
             return new SendableResponse<>(DeregisterResponse.notFound());
         }
-        if (!authorizer.isAuthorized(deregisterRequest, registration, sender)) {
+        if (authorizer.isAuthorized(deregisterRequest, registration, sender) == null) {
             // TODO replace by Forbidden if https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/181 is
             // closed.
             return new SendableResponse<>(DeregisterResponse.badRequest("forbidden"));

@@ -29,8 +29,8 @@ public interface Authorizer {
     // closed.
 
     /**
-     * Return true if this request should be handle by the LWM2M Server. When false is returned the LWM2M server will
-     * stop to handle this request and will respond with a {@link ResponseCode#FORBIDDEN} or
+     * Return the registration if this request should be handle by the LWM2M Server. When <code>null</code> is returned
+     * the LWM2M server will stop to handle this request and will respond with a {@link ResponseCode#FORBIDDEN} or
      * {@link ResponseCode#BAD_REQUEST}.
      * 
      * @param request the request received
@@ -39,7 +39,7 @@ public interface Authorizer {
      *        For update request this is the registration before the update was done.
      * @param senderIdentity the {@link Identity} used to send the request.
      * 
-     * @return true if this request is authorized.
+     * @return the registration if this request is authorized or <code>null</code> it is not authorized.
      */
-    boolean isAuthorized(UplinkRequest<?> request, Registration registration, Identity senderIdentity);
+    Registration isAuthorized(UplinkRequest<?> request, Registration registration, Identity senderIdentity);
 }
