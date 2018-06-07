@@ -52,6 +52,7 @@ public class IdentitySerDes {
             o.set(KEY_RPK, Hex.encodeHexString(publicKey.getEncoded()));
         } else if (identity.isX509()) {
             o.set(KEY_CN, identity.getX509CommonName());
+            // we don't store the certificate chain if it is available in the identity
         }
         return o;
     }
