@@ -217,11 +217,11 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
 
     private void addPendingRequest(String registrationId, Request coapRequest) {
         Validate.notNull(registrationId);
-        if (coapRequest.isConfirmable()) {
-            CleanerMessageObserver observer = new CleanerMessageObserver(registrationId, coapRequest);
-            coapRequest.addMessageObserver(observer);
-            pendingRequests.put(observer.getRequestKey(), coapRequest);
-        }
+        // Theoretically we should add observer only for CONFIRMABLE request but with transparent block-wise mode, an
+        // UNCONFIRMABLE request could be change in several block-wised requests.
+        CleanerMessageObserver observer = new CleanerMessageObserver(registrationId, coapRequest);
+        coapRequest.addMessageObserver(observer);
+        pendingRequests.put(observer.getRequestKey(), coapRequest);
     }
 
     private void removePendingRequest(String key, Request coapRequest) {
@@ -257,8 +257,10 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
 
         @Override
         public void onAcknowledgement() {
-            // we can remove the request on acknowledgement as we only want to avoid CoAP retransmission.
-            removePendingRequest(requestKey, coapRequest);
+            // We should remove the request on acknowledgement as we only want to avoid CoAP retransmission.
+            // But for transparent block-wise first request could be ACK and this does not mean that the next one should
+            // not be cancelled later.
+            // So waiting for a response, a cancel or a failure seems to be the only way.
         }
 
         @Override
