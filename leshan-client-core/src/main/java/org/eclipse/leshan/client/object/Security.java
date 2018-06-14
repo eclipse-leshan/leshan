@@ -141,7 +141,7 @@ public class Security extends BaseInstanceEnabler {
             if (value.getType() != Type.OPAQUE) {
                 return WriteResponse.badRequest("invalid type");
             }
-            secretKey = (byte[]) value.getValue();
+            serverPublicKey = (byte[]) value.getValue();
             return WriteResponse.success();
         case SEC_SECRET_KEY: // Secret Key
             if (value.getType() != Type.OPAQUE) {
