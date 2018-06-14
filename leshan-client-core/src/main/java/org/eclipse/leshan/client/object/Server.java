@@ -38,6 +38,10 @@ public class Server extends BaseInstanceEnabler {
     private BindingMode binding;
     private boolean notifyWhenDisable;
 
+    public Server() {
+        // should only be used at bootstrap time
+    }
+
     public Server(int shortServerId, long lifetime, BindingMode binding, boolean notifyWhenDisable) {
         this.shortServerId = shortServerId;
         this.lifetime = lifetime;

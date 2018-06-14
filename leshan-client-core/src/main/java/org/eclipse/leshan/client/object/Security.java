@@ -15,13 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.object;
 
-import static org.eclipse.leshan.LwM2mId.SEC_BOOTSTRAP;
-import static org.eclipse.leshan.LwM2mId.SEC_PUBKEY_IDENTITY;
-import static org.eclipse.leshan.LwM2mId.SEC_SECRET_KEY;
-import static org.eclipse.leshan.LwM2mId.SEC_SECURITY_MODE;
-import static org.eclipse.leshan.LwM2mId.SEC_SERVER_ID;
-import static org.eclipse.leshan.LwM2mId.SEC_SERVER_PUBKEY;
-import static org.eclipse.leshan.LwM2mId.SEC_SERVER_URI;
+import static org.eclipse.leshan.LwM2mId.*;
 
 import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
@@ -50,6 +44,10 @@ public class Security extends BaseInstanceEnabler {
     private byte[] secretKey;
 
     private Integer shortServerId;
+
+    public Security() {
+        // should only be used at bootstrap time
+    }
 
     public Security(String serverUri, boolean bootstrapServer, int securityMode, byte[] publicKeyOrIdentity,
             byte[] serverPublicKey, byte[] secretKey, Integer shortServerId) {

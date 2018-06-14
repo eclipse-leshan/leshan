@@ -218,10 +218,13 @@ public class LeshanClientDemo {
         // Initialize object list
         ObjectsInitializer initializer = new ObjectsInitializer(new LwM2mModel(models));
         if (needBootstrap) {
-            if (pskIdentity == null)
+            if (pskIdentity == null) {
                 initializer.setInstancesForObject(SECURITY, noSecBootstap(serverURI));
-            else
+                initializer.setClassForObject(SERVER, Server.class);
+            } else {
                 initializer.setInstancesForObject(SECURITY, pskBootstrap(serverURI, pskIdentity, pskKey));
+                initializer.setClassForObject(SERVER, Server.class);
+            }
         } else {
             if (pskIdentity == null) {
                 initializer.setInstancesForObject(SECURITY, noSec(serverURI, 123));
