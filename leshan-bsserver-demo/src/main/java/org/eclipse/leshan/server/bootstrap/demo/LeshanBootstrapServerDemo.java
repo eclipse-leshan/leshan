@@ -20,6 +20,7 @@ package org.eclipse.leshan.server.bootstrap.demo;
 
 import java.io.File;
 import java.net.BindException;
+import java.net.InetSocketAddress;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
@@ -64,6 +65,7 @@ public class LeshanBootstrapServerDemo {
         options.addOption("slh", "coapshost", true, "Set the secure local CoAP address.\nDefault: any local address.");
         options.addOption("slp", "coapsport", true,
                 String.format("Set the secure local CoAP port.\nDefault: %d.", LwM2m.DEFAULT_COAP_SECURE_PORT));
+        options.addOption("wh", "webhost", true, "Set the HTTP address for web server.\nDefault: any local address.");
         options.addOption("wp", "webport", true, "Set the HTTP port for web server.\nDefault: 8080.");
         options.addOption("m", "modelsfolder", true, "A folder which contains object models in OMA DDF(.xml) format.");
         options.addOption("cfg", "configfile", true,
@@ -114,7 +116,8 @@ public class LeshanBootstrapServerDemo {
             secureLocalPort = Integer.parseInt(secureLocalPortOption);
         }
 
-        // Get http port
+        // get http address
+        String webAddress = cl.getOptionValue("wh");
         String webPortOption = cl.getOptionValue("wp");
         int webPort = 8080;
         if (webPortOption != null) {
@@ -131,7 +134,7 @@ public class LeshanBootstrapServerDemo {
         }
 
         try {
-            createAndStartServer(webPort, localAddress, localPort, secureLocalAddress, secureLocalPort,
+            createAndStartServer(webAddress, webPort, localAddress, localPort, secureLocalAddress, secureLocalPort,
                     modelsFolderPath, configFilename);
         } catch (BindException e) {
             System.err.println(String
@@ -142,8 +145,9 @@ public class LeshanBootstrapServerDemo {
         }
     }
 
-    public static void createAndStartServer(int webPort, String localAddress, int localPort, String secureLocalAddress,
-            int secureLocalPort, String modelsFolderPath, String configFilename) throws Exception {
+    public static void createAndStartServer(String webAddress, int webPort, String localAddress, int localPort,
+            String secureLocalAddress, int secureLocalPort, String modelsFolderPath, String configFilename)
+            throws Exception {
         // Create Models
         List<ObjectModel> models = ObjectLoader.loadDefault();
         if (modelsFolderPath != null) {
@@ -175,7 +179,13 @@ public class LeshanBootstrapServerDemo {
         bsServer.start();
 
         // Now prepare and start jetty
-        Server server = new Server(webPort);
+        InetSocketAddress jettyAddr;
+        if (webAddress == null) {
+            jettyAddr = new InetSocketAddress(webPort);
+        } else {
+            jettyAddr = new InetSocketAddress(webAddress, webPort);
+        }
+        Server server = new Server(jettyAddr);
         WebAppContext root = new WebAppContext();
 
         root.setContextPath("/");

@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.BindException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.security.AlgorithmParameters;
 import java.security.Key;
@@ -143,6 +144,7 @@ public class LeshanServerDemo {
         options.addOption("ksa", "alias", true, String.format(
                 "Set the key store alias to use for server credentials.\nDefault: %s.", DEFAULT_KEYSTORE_ALIAS));
         options.addOption("ksap", "keypass", true, "Set the key store alias password to use.");
+        options.addOption("wh", "webhost", true, "Set the HTTP address for web server.\nDefault: any local address.");
         options.addOption("wp", "webport", true, "Set the HTTP port for web server.\nDefault: 8080.");
         options.addOption("m", "modelsfolder", true, "A folder which contains object models in OMA DDF(.xml) format.");
         options.addOption("r", "redis", true,
@@ -190,7 +192,8 @@ public class LeshanServerDemo {
             secureLocalPort = Integer.parseInt(secureLocalPortOption);
         }
 
-        // get http port
+        // get http address
+        String webAddress = cl.getOptionValue("wh");
         String webPortOption = cl.getOptionValue("wp");
         int webPort = 8080;
         if (webPortOption != null) {
@@ -214,7 +217,7 @@ public class LeshanServerDemo {
         Boolean publishDNSSdServices = cl.hasOption("mdns");
 
         try {
-            createAndStartServer(webPort, localAddress, localPort, secureLocalAddress, secureLocalPort,
+            createAndStartServer(webAddress, webPort, localAddress, localPort, secureLocalAddress, secureLocalPort,
                     modelsFolderPath, redisUrl, keyStorePath, keyStoreType, keyStorePass, keyStoreAlias,
                     keyStoreAliasPass, publishDNSSdServices);
         } catch (BindException e) {
@@ -226,10 +229,10 @@ public class LeshanServerDemo {
         }
     }
 
-    public static void createAndStartServer(int webPort, String localAddress, int localPort, String secureLocalAddress,
-            int secureLocalPort, String modelsFolderPath, String redisUrl, String keyStorePath, String keyStoreType,
-            String keyStorePass, String keyStoreAlias, String keyStoreAliasPass, Boolean publishDNSSdServices)
-            throws Exception {
+    public static void createAndStartServer(String webAddress, int webPort, String localAddress, int localPort,
+            String secureLocalAddress, int secureLocalPort, String modelsFolderPath, String redisUrl,
+            String keyStorePath, String keyStoreType, String keyStorePass, String keyStoreAlias,
+            String keyStoreAliasPass, Boolean publishDNSSdServices) throws Exception {
         // Prepare LWM2M server
         LeshanServerBuilder builder = new LeshanServerBuilder();
         builder.setLocalAddress(localAddress, localPort);
@@ -364,7 +367,13 @@ public class LeshanServerDemo {
         LeshanServer lwServer = builder.build();
 
         // Now prepare Jetty
-        Server server = new Server(webPort);
+        InetSocketAddress jettyAddr;
+        if (webAddress == null) {
+            jettyAddr = new InetSocketAddress(webPort);
+        } else {
+            jettyAddr = new InetSocketAddress(webAddress, webPort);
+        }
+        Server server = new Server(jettyAddr);
         WebAppContext root = new WebAppContext();
         root.setContextPath("/");
         root.setResourceBase(LeshanServerDemo.class.getClassLoader().getResource("webapp").toExternalForm());
