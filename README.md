@@ -5,7 +5,7 @@
 [Eclipse Leshan™](https://eclipse.org/leshan) is an OMA Lightweight M2M server and client Java implementation.
 
 [What is OMA LWM2M ?](http://www.openmobilealliance.org/wp/overviews/lightweightm2m_overview.html)  
-[The specification](http://openmobilealliance.org/release/LightweightM2M/V1_0_1-20170704-A/OMA-TS-LightweightM2M-V1_0_1-20170704-A.pdf).  
+[The specification](http://openmobilealliance.org/release/LightweightM2M/V1_0_2-20180209-A/OMA-TS-LightweightM2M-V1_0_2-20180209-A.pdf).  
 [Object and Resource Registry](http://www.openmobilealliance.org/wp/OMNA/LwM2M/LwM2MRegistry.html).  
 
 Leshan provides libraries which help people to develop their own Lightweight M2M server and client.  
@@ -27,9 +27,9 @@ Test Server Sandbox
 
 You can try live our servers demos instances:
 
-* The **lwm2m server** at http://leshan.eclipse.org/  
+* The **lwm2m server** at https://leshan.eclipse.org/  
    _(coap://leshan.eclipse.org:5683  and coaps://leshan.eclipse.org:5684)_  
-* The **bootstrap server** at http://leshan.eclipse.org/bs/  
+* The **bootstrap server** at https://leshan.eclipse.org/bs/  
    _(coap://leshan.eclipse.org:5783  and coaps://leshan.eclipse.org:5784)_  
 
 (Automatic deployment of master branch)
