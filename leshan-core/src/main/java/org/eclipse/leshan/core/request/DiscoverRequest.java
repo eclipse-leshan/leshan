@@ -62,7 +62,7 @@ public class DiscoverRequest extends AbstractDownlinkRequest<DiscoverResponse> {
      * @exception InvalidRequestException if the path is not valid.
      */
     public DiscoverRequest(String path) throws InvalidRequestException {
-        super(newPath(path));
+        this(newPath(path));
     }
 
     private DiscoverRequest(LwM2mPath target) {

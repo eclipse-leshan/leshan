@@ -41,7 +41,7 @@ public class DeleteRequest extends AbstractDownlinkRequest<DeleteResponse> {
      * @exception InvalidRequestException if the path is not valid.
      */
     public DeleteRequest(String path) throws InvalidRequestException {
-        super(newPath(path));
+        this(newPath(path));
     }
 
     private DeleteRequest(LwM2mPath target) {
