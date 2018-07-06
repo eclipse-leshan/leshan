@@ -16,6 +16,7 @@
 package org.eclipse.leshan.client.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -29,6 +30,8 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
+import org.eclipse.leshan.core.node.LwM2mObjectInstance;
+import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.util.StringUtils;
 
 /**
@@ -82,7 +85,7 @@ public final class LinkFormatHelper {
         return links.toArray(new Link[] {});
     }
 
-    public static Link[] getObjectDescription(ObjectModel objectModel, String root) {
+    public static Link[] getObjectDescription(ObjectModel objectModel, List<LwM2mObjectInstance> objectInstances, String root) {
         List<Link> links = new ArrayList<>();
 
         // clean root path
@@ -93,32 +96,32 @@ public final class LinkFormatHelper {
         String objectURL = getPath("/", rootPath, Integer.toString(objectModel.id));
         links.add(new Link(objectURL, objectAttributes));
 
-        // sort resources
-        List<ResourceModel> resources = new ArrayList<>(objectModel.resources.values());
-        Collections.sort(resources, new Comparator<ResourceModel>() {
-            @Override
-            public int compare(ResourceModel o1, ResourceModel o2) {
-                return o1.id - o2.id;
-            }
-        });
-
-        // create links for resource
-        for (ResourceModel resourceModel : resources) {
-            String resourceURL = getPath("/", rootPath, Integer.toString(objectModel.id), "0",
-                    Integer.toString(resourceModel.id));
-            links.add(new Link(resourceURL));
+        for (LwM2mObjectInstance instance : objectInstances) {
+            links.addAll(Arrays.asList(getInstanceDescription(objectModel, instance.getId(), instance, rootPath)));
         }
 
         return links.toArray(new Link[] {});
     }
 
-    public static Link getInstanceDescription(ObjectModel objectModel, int instanceId, String root) {
+    public static Link[] getInstanceDescription(ObjectModel objectModel, int instanceId,
+            LwM2mObjectInstance lwM2mObjectInstance, String root) {
+        List<Link> links = new ArrayList<>();
+
         // clean root path
         String rootPath = root == null ? "" : root;
 
         // create link for "instance"
         String objectURL = getPath("/", rootPath, Integer.toString(objectModel.id), Integer.toString(instanceId));
-        return new Link(objectURL);
+        links.add(new Link(objectURL));
+        
+        for (ResourceModel resourceModel : objectModel.resources.values()) {
+            LwM2mResource lwM2mResource = lwM2mObjectInstance.getResource(resourceModel.id);
+            if (lwM2mResource != null) {
+                links.add(getResourceDescription(objectModel.id, instanceId, resourceModel, rootPath));
+            }
+        }
+        
+        return links.toArray(new Link[] {});
     }
 
     public static Link getResourceDescription(int objectId, int instanceId, ResourceModel resourceModel, String root) {

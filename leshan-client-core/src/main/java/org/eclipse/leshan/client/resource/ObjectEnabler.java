@@ -24,8 +24,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.leshan.Link;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.request.ServerIdentity;
+import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mObject;
@@ -35,6 +37,7 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
+import org.eclipse.leshan.core.request.DiscoverRequest;
 import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -43,6 +46,7 @@ import org.eclipse.leshan.core.request.WriteRequest.Mode;
 import org.eclipse.leshan.core.response.BootstrapWriteResponse;
 import org.eclipse.leshan.core.response.CreateResponse;
 import org.eclipse.leshan.core.response.DeleteResponse;
+import org.eclipse.leshan.core.response.DiscoverResponse;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
@@ -267,6 +271,50 @@ public class ObjectEnabler extends BaseObjectEnabler {
             return ExecuteResponse.notFound();
         }
         return instance.execute(path.getResourceId(), request.getParameters());
+    }
+    
+    @Override
+    protected DiscoverResponse doDiscover(DiscoverRequest request) {
+        LwM2mPath path = request.getPath();
+        if (path.isObject()) {
+            
+            List<LwM2mObjectInstance> objectInstances = new ArrayList<>(instances.size());
+            
+            for (Entry<Integer, LwM2mInstanceEnabler> instanceEntry : instances.entrySet()) {
+                objectInstances.add(getLwM2mObjectInstance(instanceEntry.getKey(), instanceEntry.getValue(),
+                        ServerIdentity.SYSTEM, false));
+            }
+
+            // Manage discover on object
+            Link[] objectLinks = LinkFormatHelper.getObjectDescription(getObjectModel(), objectInstances, null);
+            
+            return DiscoverResponse.success(objectLinks);
+        } else if (path.isObjectInstance()) {
+
+            // Manage discover on instance
+            if (!getAvailableInstanceIds().contains(path.getObjectInstanceId()))
+                return DiscoverResponse.notFound();
+
+            Link[] instanceLinks = LinkFormatHelper.getInstanceDescription(getObjectModel(), path.getObjectInstanceId(),
+                    getLwM2mObjectInstance(path.getObjectInstanceId(), instances.get(path.getObjectInstanceId()),
+                            ServerIdentity.SYSTEM, false),
+                    null);
+            return DiscoverResponse.success(instanceLinks);
+
+        } else if (path.isResource()) {
+            // Manage discover on resource
+            if (!getAvailableInstanceIds().contains(path.getObjectInstanceId()))
+                return DiscoverResponse.notFound();
+
+            ResourceModel resourceModel = getObjectModel().resources.get(path.getResourceId());
+            if (resourceModel == null)
+                return DiscoverResponse.notFound();
+
+            Link resourceLink = LinkFormatHelper.getResourceDescription(getObjectModel().id,
+                    path.getObjectInstanceId(), resourceModel, null);
+            return DiscoverResponse.success(new Link[] { resourceLink });
+        }
+        return DiscoverResponse.badRequest(null);
     }
 
     @Override
