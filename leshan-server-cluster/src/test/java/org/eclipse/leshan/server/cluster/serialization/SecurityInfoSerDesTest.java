@@ -67,7 +67,6 @@ public class SecurityInfoSerDesTest {
         assertEquals(
                 "{\"ep\":\"myendpoint\",\"rpk\":{\"x\":\"89c048261979208666f2bfb188be1968fc9021c416ce12828c06f4e314c167b5\",\"y\":\"cbf1eb7587f08e01688d9ada4be859137ca49f79394bad9179326b3090967b68\",\"params\":\"secp256r1\"}}",
                 new String(data));
-        System.err.println(new String(SecurityInfoSerDes.serialize(SecurityInfoSerDes.deserialize(data))));
         assertEquals(si, SecurityInfoSerDes.deserialize(data));
     }
 }
