@@ -23,10 +23,8 @@ package org.eclipse.leshan.client.resource;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.eclipse.leshan.Link;
 import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.request.ServerIdentity;
-import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
@@ -290,38 +288,12 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         if (id == LwM2mId.SECURITY) {
             return DiscoverResponse.notFound();
         }
-
-        LwM2mPath path = request.getPath();
-        if (path.isObject()) {
-
-            // Manage discover on object
-            Link[] ObjectLinks = LinkFormatHelper.getObjectDescription(getObjectModel(), null);
-            return DiscoverResponse.success(ObjectLinks);
-
-        } else if (path.isObjectInstance()) {
-
-            // Manage discover on instance
-            if (!getAvailableInstanceIds().contains(path.getObjectInstanceId()))
-                return DiscoverResponse.notFound();
-
-            Link instanceLink = LinkFormatHelper.getInstanceDescription(getObjectModel(),
-                    path.getObjectInstanceId(), null);
-            return DiscoverResponse.success(new Link[] { instanceLink });
-
-        } else if (path.isResource()) {
-            // Manage discover on resource
-            if (!getAvailableInstanceIds().contains(path.getObjectInstanceId()))
-                return DiscoverResponse.notFound();
-
-            ResourceModel resourceModel = getObjectModel().resources.get(path.getResourceId());
-            if (resourceModel == null)
-                return DiscoverResponse.notFound();
-
-            Link resourceLink = LinkFormatHelper.getResourceDescription(getObjectModel().id,
-                    path.getObjectInstanceId(), resourceModel, null);
-            return DiscoverResponse.success(new Link[] { resourceLink });
-        }
-        return DiscoverResponse.badRequest(null);
+        
+        return doDiscover(request);
+    }
+    
+    protected DiscoverResponse doDiscover(DiscoverRequest request) {
+        return DiscoverResponse.internalServerError("not implemented");
     }
 
     @Override
