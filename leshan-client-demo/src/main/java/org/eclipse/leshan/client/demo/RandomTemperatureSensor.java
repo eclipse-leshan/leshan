@@ -2,12 +2,15 @@ package org.eclipse.leshan.client.demo;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
+import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.util.NamedThreadFactory;
@@ -20,6 +23,8 @@ public class RandomTemperatureSensor extends BaseInstanceEnabler {
     private static final int MAX_MEASURED_VALUE = 5602;
     private static final int MIN_MEASURED_VALUE = 5601;
     private static final int RESET_MIN_MAX_MEASURED_VALUES = 5605;
+    private static final List<Integer> supportedResources = Arrays.asList(SENSOR_VALUE, UNITS, MAX_MEASURED_VALUE,
+            MIN_MEASURED_VALUE, RESET_MIN_MAX_MEASURED_VALUES);
     private final ScheduledExecutorService scheduler;
     private final Random rng = new Random();
     private double currentTemp = 20d;
@@ -96,5 +101,10 @@ public class RandomTemperatureSensor extends BaseInstanceEnabler {
     private void resetMinMaxMeasuredValues() {
         minMeasuredValue = currentTemp;
         maxMeasuredValue = currentTemp;
+    }
+
+    @Override
+    public List<Integer> getAvailableResourceIds(ObjectModel model) {
+        return supportedResources;
     }
 }

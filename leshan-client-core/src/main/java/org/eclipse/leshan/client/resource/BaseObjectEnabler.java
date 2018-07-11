@@ -20,7 +20,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.leshan.Link;
@@ -69,6 +72,14 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     @Override
     public synchronized ObjectModel getObjectModel() {
         return objectModel;
+    }
+
+    @Override
+    public List<Integer> getAvailableResourceIds(int instanceId) {
+        // By default we consider that all resources defined in the model are supported
+        ArrayList<Integer> resourceIds = new ArrayList<>(objectModel.resources.keySet());
+        Collections.sort(resourceIds);
+        return resourceIds;
     }
 
     @Override
@@ -290,23 +301,25 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         if (id == LwM2mId.SECURITY) {
             return DiscoverResponse.notFound();
         }
+        return doDiscover(request);
+
+    }
+
+    protected DiscoverResponse doDiscover(DiscoverRequest request) {
 
         LwM2mPath path = request.getPath();
         if (path.isObject()) {
-
             // Manage discover on object
-            Link[] ObjectLinks = LinkFormatHelper.getObjectDescription(getObjectModel(), null);
+            Link[] ObjectLinks = LinkFormatHelper.getObjectDescription(this, null);
             return DiscoverResponse.success(ObjectLinks);
 
         } else if (path.isObjectInstance()) {
-
             // Manage discover on instance
             if (!getAvailableInstanceIds().contains(path.getObjectInstanceId()))
                 return DiscoverResponse.notFound();
 
-            Link instanceLink = LinkFormatHelper.getInstanceDescription(getObjectModel(),
-                    path.getObjectInstanceId(), null);
-            return DiscoverResponse.success(new Link[] { instanceLink });
+            Link[] instanceLink = LinkFormatHelper.getInstanceDescription(this, path.getObjectInstanceId(), null);
+            return DiscoverResponse.success(instanceLink);
 
         } else if (path.isResource()) {
             // Manage discover on resource
@@ -317,8 +330,11 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
             if (resourceModel == null)
                 return DiscoverResponse.notFound();
 
-            Link resourceLink = LinkFormatHelper.getResourceDescription(getObjectModel().id,
-                    path.getObjectInstanceId(), resourceModel, null);
+            if (!getAvailableResourceIds(path.getObjectInstanceId()).contains(path.getResourceId()))
+                return DiscoverResponse.notFound();
+
+            Link resourceLink = LinkFormatHelper.getResourceDescription(this, path.getObjectInstanceId(),
+                    path.getResourceId(), null);
             return DiscoverResponse.success(new Link[] { resourceLink });
         }
         return DiscoverResponse.badRequest(null);
@@ -350,7 +366,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     protected ObserveResponse doObserve(ServerIdentity identity, ObserveRequest request) {
         ReadResponse readResponse = this.read(identity, new ReadRequest(request.getPath().toString()));
         return new ObserveResponse(readResponse.getCode(), readResponse.getContent(), null, null,
-                   readResponse.getErrorMessage());
+                readResponse.getErrorMessage());
     }
 
     @Override

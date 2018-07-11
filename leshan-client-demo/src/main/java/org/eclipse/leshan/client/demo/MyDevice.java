@@ -1,9 +1,11 @@
 package org.eclipse.leshan.client.demo;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.TimeZone;
@@ -11,6 +13,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
+import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.response.ExecuteResponse;
@@ -24,6 +27,8 @@ public class MyDevice extends BaseInstanceEnabler {
     private static final Logger LOG = LoggerFactory.getLogger(MyDevice.class);
 
     private static final Random RANDOM = new Random();
+    private static final List<Integer> supportedResources = Arrays.asList(0, 1, 2, 3, 9, 10, 11, 13, 14, 15, 16, 17, 18,
+            19, 20, 21);
 
     public MyDevice() {
         // notify new date each 5 second
@@ -180,5 +185,10 @@ public class MyDevice extends BaseInstanceEnabler {
 
     private long getMemoryTotal() {
         return Runtime.getRuntime().totalMemory() / 1024;
+    }
+
+    @Override
+    public List<Integer> getAvailableResourceIds(ObjectModel model) {
+        return supportedResources;
     }
 }

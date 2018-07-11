@@ -17,9 +17,13 @@ package org.eclipse.leshan.client.object;
 
 import static org.eclipse.leshan.LwM2mId.*;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
+import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.response.ExecuteResponse;
@@ -34,6 +38,9 @@ import org.slf4j.LoggerFactory;
 public class Security extends BaseInstanceEnabler {
 
     private static final Logger LOG = LoggerFactory.getLogger(Security.class);
+
+    private final static List<Integer> supportedResources = Arrays.asList(SEC_SERVER_URI, SEC_BOOTSTRAP,
+            SEC_SECURITY_MODE, SEC_PUBKEY_IDENTITY, SEC_SERVER_PUBKEY, SEC_SECRET_KEY, SEC_SERVER_ID);
 
     private String serverUri; /* coaps://host:port */
     private boolean bootstrapServer;
@@ -196,4 +203,8 @@ public class Security extends BaseInstanceEnabler {
         return super.execute(resourceid, params);
     }
 
+    @Override
+    public List<Integer> getAvailableResourceIds(ObjectModel model) {
+        return supportedResources;
+    }
 }

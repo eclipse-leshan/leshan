@@ -70,6 +70,16 @@ public class ObjectEnabler extends BaseObjectEnabler {
         return ids;
     }
 
+    @Override
+    public synchronized List<Integer> getAvailableResourceIds(int instanceId) {
+        LwM2mInstanceEnabler instanceEnabler = instances.get(instanceId);
+        if (instanceEnabler != null) {
+            return instanceEnabler.getAvailableResourceIds(getObjectModel());
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
     public synchronized void addInstance(int instanceId, LwM2mInstanceEnabler newInstance) {
         instances.put(instanceId, newInstance);
         listenInstance(newInstance, instanceId);

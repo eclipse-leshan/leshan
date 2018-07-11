@@ -18,12 +18,15 @@
 package org.eclipse.leshan.client.object;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.TimeZone;
 
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
+import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.response.ExecuteResponse;
@@ -34,6 +37,8 @@ import org.eclipse.leshan.core.response.WriteResponse;
  * A simple {@link LwM2mInstanceEnabler} for the Device (3) object.
  */
 public class Device extends BaseInstanceEnabler {
+
+    private static final List<Integer> supportedResources = Arrays.asList(0, 1, 2, 11, 14, 15, 16);
 
     private String manufacturer;
     private String modelNumber;
@@ -124,4 +129,8 @@ public class Device extends BaseInstanceEnabler {
         }
     }
 
+    @Override
+    public List<Integer> getAvailableResourceIds(ObjectModel model) {
+        return supportedResources;
+    }
 }

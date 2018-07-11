@@ -18,6 +18,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
 
+import java.util.List;
+
+import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
@@ -96,6 +99,12 @@ public interface LwM2mInstanceEnabler {
      * @param resourceid the ID of the resource to set the value for
      */
     ObserveResponse observe(int resourceid);
+
+    /**
+     * @param objectModel the model of this instance
+     * @return the list of the implemented resources of this instances mainly used for discover operation
+     */
+    List<Integer> getAvailableResourceIds(ObjectModel objectModel);
 
     /**
      * Reset the current value of one of this LWM2M object instance's resources. Only used for implementation of REPLACE

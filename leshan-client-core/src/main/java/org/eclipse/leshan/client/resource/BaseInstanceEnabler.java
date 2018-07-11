@@ -18,8 +18,10 @@
 package org.eclipse.leshan.client.resource;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
@@ -72,5 +74,13 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     @Override
     public void reset(int resourceid) {
         // No default behavior
+    }
+
+    @Override
+    public List<Integer> getAvailableResourceIds(ObjectModel model) {
+        // By default we consider that all resources defined in the model are supported
+        ArrayList<Integer> resourceIds = new ArrayList<>(model.resources.keySet());
+        Collections.sort(resourceIds);
+        return resourceIds;
     }
 }

@@ -53,7 +53,7 @@ public class DiscoverTest {
     @Test
     public void can_discover_object() throws InterruptedException {
         // read ACL object
-        DiscoverResponse response = helper.server.send(helper.getCurrentRegistration(), new DiscoverRequest(2));
+        DiscoverResponse response = helper.server.send(helper.getCurrentRegistration(), new DiscoverRequest(3));
 
         // verify result
         assertEquals(CONTENT, response.getCode());
@@ -61,7 +61,8 @@ public class DiscoverTest {
         assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         Link[] payload = response.getObjectLinks();
-        assertArrayEquals(Link.parse("</2>, </2/0/0>, </2/0/1>, </2/0/2>, </2/0/3>".getBytes()), payload);
+        assertEquals("</3>, </3/0>, </3/0/0>, </3/0/1>, </3/0/2>, </3/0/11>, </3/0/14>, </3/0/15>, </3/0/16>",
+                Link.serialize(payload));
     }
 
     @Test
@@ -86,7 +87,8 @@ public class DiscoverTest {
         assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         Link[] payload = response.getObjectLinks();
-        assertArrayEquals(Link.parse("</3/0>".getBytes()), payload);
+        assertEquals("</3/0>, </3/0/0>, </3/0/1>, </3/0/2>, </3/0/11>, </3/0/14>, </3/0/15>, </3/0/16>",
+                Link.serialize(payload));
     }
 
     @Test
@@ -111,7 +113,7 @@ public class DiscoverTest {
         assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         Link[] payload = response.getObjectLinks();
-        assertArrayEquals(Link.parse("</3/0/0>".getBytes()), payload);
+        assertEquals("</3/0/0>", Link.serialize(payload));
     }
 
     @Test

@@ -47,6 +47,8 @@ public interface LwM2mObjectEnabler {
 
     List<Integer> getAvailableInstanceIds();
 
+    List<Integer> getAvailableResourceIds(int instanceId);
+
     CreateResponse create(ServerIdentity identity, CreateRequest request);
 
     ReadResponse read(ServerIdentity identity, ReadRequest request);
