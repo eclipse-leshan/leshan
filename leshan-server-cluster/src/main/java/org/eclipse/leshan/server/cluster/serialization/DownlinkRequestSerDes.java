@@ -18,7 +18,7 @@ package org.eclipse.leshan.server.cluster.serialization;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.eclipse.leshan.ObserveSpec;
+import org.eclipse.leshan.core.attributes.AttributeSet;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
@@ -149,7 +149,7 @@ public class DownlinkRequestSerDes {
             return new ExecuteRequest(path, parameters);
         case "writeAttributes": {
             String observeSpec = o.getString("observeSpec", null);
-            return new WriteAttributesRequest(path, ObserveSpec.parse(observeSpec));
+            return new WriteAttributesRequest(path, AttributeSet.parse(observeSpec));
         }
         case "write": {
             int format = o.getInt("contentFormat", ContentFormat.TLV.getCode());

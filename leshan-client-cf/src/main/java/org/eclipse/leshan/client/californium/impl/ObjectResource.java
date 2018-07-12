@@ -32,11 +32,11 @@ import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.Link;
-import org.eclipse.leshan.ObserveSpec;
 import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.NotifySender;
 import org.eclipse.leshan.client.servers.BootstrapHandler;
+import org.eclipse.leshan.core.attributes.AttributeSet;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
@@ -174,16 +174,16 @@ public class ObjectResource extends CoapResource implements NotifySender {
         String URI = coapExchange.getRequestOptions().getUriPathString();
 
         // get Observe Spec
-        ObserveSpec spec = null;
+        AttributeSet attributes = null;
         if (coapExchange.advanced().getRequest().getOptions().getURIQueryCount() != 0) {
             List<String> uriQueries = coapExchange.advanced().getRequest().getOptions().getUriQuery();
-            spec = ObserveSpec.parse(uriQueries);
+            attributes = AttributeSet.parse(uriQueries);
         }
 
         // Manage Write Attributes Request
-        if (spec != null) {
+        if (attributes != null) {
             WriteAttributesResponse response = nodeEnabler.writeAttributes(identity,
-                    new WriteAttributesRequest(URI, spec));
+                    new WriteAttributesRequest(URI, attributes));
             if (response.getCode().isError()) {
                 coapExchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
             } else {

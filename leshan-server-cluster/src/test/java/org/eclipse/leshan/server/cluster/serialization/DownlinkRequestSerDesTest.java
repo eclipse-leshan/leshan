@@ -15,10 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.cluster.serialization;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.*;
 
-import org.eclipse.leshan.ObserveSpec;
+import org.eclipse.leshan.core.attributes.Attribute;
+import org.eclipse.leshan.core.attributes.AttributeSet;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -77,8 +77,9 @@ public class DownlinkRequestSerDesTest {
 
     @Test
     public void ser_and_des_write_attributes_request() throws Exception {
-        ObserveSpec os = new ObserveSpec.Builder().minPeriod(10).maxPeriod(60).build();
-        ser_and_des_are_equals(new WriteAttributesRequest(3, 0, 1, os));
+        AttributeSet attributes = new AttributeSet(new Attribute(Attribute.MINIMUM_PERIOD, 10L),
+                new Attribute(Attribute.MAXIMUM_PERIOD, 60L));
+        ser_and_des_are_equals(new WriteAttributesRequest(3, 0, 1, attributes));
     }
 
     public void ser_and_des_are_equals(DownlinkRequest<?> request) throws Exception {

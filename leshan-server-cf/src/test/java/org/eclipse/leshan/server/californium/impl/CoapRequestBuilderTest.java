@@ -28,7 +28,8 @@ import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.leshan.Link;
-import org.eclipse.leshan.ObserveSpec;
+import org.eclipse.leshan.core.attributes.Attribute;
+import org.eclipse.leshan.core.attributes.AttributeSet;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
@@ -196,8 +197,9 @@ public class CoapRequestBuilderTest {
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getIdentity(), reg.getRootPath(), reg.getId(),
                 reg.getEndpoint(), model, encoder);
-        WriteAttributesRequest request = new WriteAttributesRequest(3, 0, 14,
-                new ObserveSpec.Builder().minPeriod(10).maxPeriod(100).build());
+        AttributeSet attributes = new AttributeSet(new Attribute(Attribute.MINIMUM_PERIOD, 10L),
+                new Attribute(Attribute.MAXIMUM_PERIOD, 100L));
+        WriteAttributesRequest request = new WriteAttributesRequest(3, 0, 14, attributes);
         builder.visit(request);
 
         // verify

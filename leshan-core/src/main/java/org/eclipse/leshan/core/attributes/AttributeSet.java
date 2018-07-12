@@ -51,21 +51,6 @@ public class AttributeSet {
         }
     }
 
-    /**
-     * Creates an attribute set from a list of query params.
-     */
-    @Deprecated
-    public AttributeSet(String[] queryParams) {
-        for (String param : queryParams) {
-            String[] keyAndValue = param.split("=");
-            if (keyAndValue.length != 2) {
-                throw new IllegalArgumentException(String.format("Cannot parse query param '%s'", param));
-            }
-            Attribute attr = Attribute.create(keyAndValue[0], keyAndValue[1]);
-            attributeMap.put(attr.getCoRELinkParam(), attr);
-        }
-    }
-
     public void validate(AssignationLevel assignationLevel) {
         // Can all attributes be assigned to this level?
         for (Attribute attr : attributeMap.values()) {
@@ -177,5 +162,49 @@ public class AttributeSet {
         } else if (!attributeMap.equals(other.attributeMap))
             return false;
         return true;
+    }
+
+    /**
+     * Create an AttributeSet from a uri queries string. e.g. "pmin=10&pmax=60"
+     */
+    public static AttributeSet parse(String uriQueries) {
+        if (uriQueries == null)
+            return null;
+
+        String[] queriesArray = uriQueries.split("&");
+        return AttributeSet.parse(queriesArray);
+    }
+
+    /**
+     * Create an AttributeSet from an array of string. Each elements is an attribute with its value.
+     * 
+     * <pre>
+     * queryParams[0] = "pmin=10";
+     * queryParams[1] = "pmax=10";
+     * </pre>
+     */
+    public static AttributeSet parse(String... queryParams) {
+        return AttributeSet.parse(Arrays.asList(queryParams));
+    }
+
+    /**
+     * Create an AttributeSet from a collection of string. Each elements is an attribute with its value.
+     * 
+     * <pre>
+     * queryParams.get(0) = "pmin=10";
+     * queryParams.get(1) = "pmax=10";
+     * </pre>
+     */
+    public static AttributeSet parse(Collection<String> queryParams) {
+        ArrayList<Attribute> attributes = new ArrayList<>();
+
+        for (String param : queryParams) {
+            String[] keyAndValue = param.split("=");
+            if (keyAndValue.length != 2) {
+                throw new IllegalArgumentException(String.format("Cannot parse query param '%s'", param));
+            }
+            attributes.add(Attribute.create(keyAndValue[0], keyAndValue[1]));
+        }
+        return new AttributeSet(attributes);
     }
 }

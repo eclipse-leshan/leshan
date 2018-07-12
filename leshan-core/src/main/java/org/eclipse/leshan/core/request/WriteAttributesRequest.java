@@ -15,7 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
-import org.eclipse.leshan.ObserveSpec;
 import org.eclipse.leshan.core.attributes.AttributeSet;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
@@ -37,15 +36,6 @@ public class WriteAttributesRequest extends AbstractDownlinkRequest<WriteAttribu
     public WriteAttributesRequest(int objectId, int objectInstanceId, int resourceId, AttributeSet attributes)
             throws InvalidRequestException {
         this(new LwM2mPath(objectId, objectInstanceId, resourceId), attributes);
-    }
-
-    public WriteAttributesRequest(String path, ObserveSpec observeSpec) throws InvalidRequestException {
-        this(newPath(path), new AttributeSet(observeSpec.toQueryParams()));
-    }
-
-    public WriteAttributesRequest(int objectId, int objectInstanceId, int resourceId, ObserveSpec observeSpec)
-            throws InvalidRequestException {
-        this(new LwM2mPath(objectId, objectInstanceId, resourceId), new AttributeSet(observeSpec.toQueryParams()));
     }
 
     public WriteAttributesRequest(String path, AttributeSet attributes) {
