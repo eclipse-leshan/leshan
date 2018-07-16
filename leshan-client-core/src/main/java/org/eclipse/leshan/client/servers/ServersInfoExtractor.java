@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 import java.util.Map;
 
 import org.eclipse.leshan.SecurityMode;
+import org.eclipse.leshan.client.object.SecurityObjectUtil;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
@@ -64,8 +65,7 @@ public class ServersInfoExtractor {
                         else
                             info.serverId = 0;
                         info.serverUri = new URI((String) security.getResource(SEC_SERVER_URI).getValue());
-                        info.secureMode = SecurityMode
-                                .fromCode((long) security.getResource(SEC_SECURITY_MODE).getValue());
+                        info.secureMode = SecurityObjectUtil.getSecurityMode(security);
                         infos.bootstrap = info;
                     }
                 } else {
