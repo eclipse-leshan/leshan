@@ -21,6 +21,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.californium.scandium.dtls.credentialsstore.CredentialsConfiguration;
 import org.eclipse.californium.scandium.dtls.pskstore.PskStore;
@@ -55,6 +56,8 @@ public class SecurityInstanceCredentialsConfig implements CredentialsConfigurati
         case RPK:
         case X509:
             // TODO implement RPK/x509 support
+            ciphers.add(CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8);
+            ciphers.add(CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256);
             LOG.warn("RPK/x509 support not yet implemented.");
             break;
         case NO_SEC:
@@ -62,7 +65,6 @@ public class SecurityInstanceCredentialsConfig implements CredentialsConfigurati
             LOG.warn("A credentialsConfig was created for a NO_SEC secutiry instance.");
             break;
         }
-
         return ciphers.toArray(new CipherSuite[ciphers.size()]);
     }
 
@@ -92,20 +94,44 @@ public class SecurityInstanceCredentialsConfig implements CredentialsConfigurati
 
     @Override
     public PrivateKey getPrivateKey() {
-        // TODO implement RPK support
+        if (SecurityObjectUtil.getSecurityMode(securityInstance) == SecurityMode.RPK) {
+            return SecurityObjectUtil.getPrivateKey(securityInstance);
+        }
         LOG.warn("RPK support not yet implemented.");
         return null;
     }
 
     @Override
     public PublicKey getPublicKey() {
-        // TODO implement RPK support
+        if (SecurityObjectUtil.getSecurityMode(securityInstance) == SecurityMode.RPK) {
+            return SecurityObjectUtil.getPublicKey(securityInstance);
+        }
         LOG.warn("RPK support not yet implemented.");
         return null;
     }
 
     @Override
     public TrustedRpkStore getRpkTrustStore() {
+        if (SecurityObjectUtil.getSecurityMode(securityInstance) == SecurityMode.RPK) {
+            return new TrustedRpkStore() {
+                @Override
+                public boolean isTrusted(RawPublicKeyIdentity id) {
+                    PublicKey receivedKey = id.getKey();
+                    if (receivedKey == null) {
+                        LOG.warn("The server public key is null {}", id);
+                        return false;
+                    }
+                    PublicKey expectedKey = SecurityObjectUtil.getServerPublicKey(securityInstance);
+                    if (!receivedKey.equals(expectedKey)) {
+                        LOG.debug(
+                                "Server public key received does match with the expected one.\nReceived: {}\nExpected: {}",
+                                receivedKey, expectedKey);
+                        return false;
+                    }
+                    return true;
+                }
+            };
+        }
         return new TrustAllRpks();
     }
 
@@ -125,8 +151,9 @@ public class SecurityInstanceCredentialsConfig implements CredentialsConfigurati
 
     @Override
     public Boolean isSendRawKey() {
-        // TODO implement RPK support
-        LOG.warn("RPK support not yet implemented.");
+        if (SecurityObjectUtil.getSecurityMode(securityInstance) == SecurityMode.RPK) {
+            return true;
+        }
         return false;
     }
 }

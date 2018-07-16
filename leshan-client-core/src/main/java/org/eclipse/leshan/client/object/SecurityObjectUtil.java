@@ -21,6 +21,13 @@ import static org.eclipse.leshan.client.request.ServerIdentity.SYSTEM;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 
 import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
@@ -64,5 +71,50 @@ public class SecurityObjectUtil {
 
     public static byte[] getPskKey(LwM2mObjectInstance securityInstance) {
         return (byte[]) securityInstance.getResource(SEC_SECRET_KEY).getValue();
+    }
+
+    public static PublicKey getPublicKey(LwM2mObjectInstance securityInstance) {
+        byte[] encodedKey = (byte[]) securityInstance.getResource(SEC_PUBKEY_IDENTITY).getValue();
+        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(encodedKey);
+        String algorithm = "EC";
+        try {
+            KeyFactory kf = KeyFactory.getInstance(algorithm);
+            return kf.generatePublic(keySpec);
+        } catch (NoSuchAlgorithmException e) {
+            LOG.debug("Failed to instantiate key factory for algorithm " + algorithm, e);
+        } catch (InvalidKeySpecException e) {
+            LOG.debug("Failed to decode RFC7250 public key with algorithm " + algorithm, e);
+        }
+        return null;
+    }
+
+    public static PrivateKey getPrivateKey(LwM2mObjectInstance securityInstance) {
+        byte[] encodedKey = (byte[]) securityInstance.getResource(SEC_SECRET_KEY).getValue();
+        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encodedKey);
+        String algorithm = "EC";
+        try {
+            KeyFactory kf = KeyFactory.getInstance(algorithm);
+            return kf.generatePrivate(keySpec);
+        } catch (NoSuchAlgorithmException e) {
+            LOG.warn("Failed to instantiate key factory for algorithm " + algorithm, e);
+        } catch (InvalidKeySpecException e) {
+            LOG.warn("Failed to decode RFC5958 private key with algorithm " + algorithm, e);
+        }
+        return null;
+    }
+
+    public static PublicKey getServerPublicKey(LwM2mObjectInstance securityInstance) {
+        byte[] encodedKey = (byte[]) securityInstance.getResource(SEC_SERVER_PUBKEY).getValue();
+        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(encodedKey);
+        String algorithm = "EC";
+        try {
+            KeyFactory kf = KeyFactory.getInstance(algorithm);
+            return kf.generatePublic(keySpec);
+        } catch (NoSuchAlgorithmException e) {
+            LOG.debug("Failed to instantiate key factory for algorithm " + algorithm, e);
+        } catch (InvalidKeySpecException e) {
+            LOG.debug("Failed to decode RFC7250 public key with algorithm " + algorithm, e);
+        }
+        return null;
     }
 }
