@@ -38,65 +38,65 @@ import org.eclipse.leshan.server.californium.impl.LeshanBootstrapServer;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
-import org.eclipse.leshan.util.Hex;
 
 /**
  * Helper for running a server and executing a client against it.
  * 
  */
-public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
-
-    public static final String GOOD_PSK_ID = "Good_Client_identity";
-    public static final byte[] GOOD_PSK_KEY = Hex.decodeHex("73656372657450534b".toCharArray());
-    public static final byte[] BAD_PSK_KEY = Hex.decodeHex("010101010101010101".toCharArray());
+public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper {
 
     LeshanBootstrapServer bootstrapServer;
 
-    public void createBootstrapServer(BootstrapSecurityStore securityStore) {
+    public void createBootstrapServer(BootstrapSecurityStore securityStore, BootstrapStore bootstrapStore) {
+        if (bootstrapStore == null) {
+            bootstrapStore = new BootstrapStore() {
+                @Override
+                public BootstrapConfig getBootstrap(String endpoint) {
 
-        BootstrapStore bsStore = new BootstrapStore() {
-            @Override
-            public BootstrapConfig getBootstrap(String endpoint) {
+                    BootstrapConfig bsConfig = new BootstrapConfig();
 
-                BootstrapConfig bsConfig = new BootstrapConfig();
+                    // security for BS server
+                    ServerSecurity bsSecurity = new ServerSecurity();
+                    bsSecurity.serverId = 1111;
+                    bsSecurity.bootstrapServer = true;
+                    bsSecurity.uri = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
+                            + bootstrapServer.getUnsecuredAddress().getPort();
+                    bsSecurity.securityMode = SecurityMode.NO_SEC;
+                    bsConfig.security.put(0, bsSecurity);
 
-                // security for BS server
-                ServerSecurity bsSecurity = new ServerSecurity();
-                bsSecurity.serverId = 1111;
-                bsSecurity.bootstrapServer = true;
-                bsSecurity.uri = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
-                        + bootstrapServer.getUnsecuredAddress().getPort();
-                bsSecurity.securityMode = SecurityMode.NO_SEC;
-                bsConfig.security.put(0, bsSecurity);
+                    // security for DM server
+                    ServerSecurity dmSecurity = new ServerSecurity();
+                    dmSecurity.uri = "coap://" + server.getUnsecuredAddress().getHostString() + ":"
+                            + server.getUnsecuredAddress().getPort();
+                    dmSecurity.serverId = 2222;
+                    dmSecurity.securityMode = SecurityMode.NO_SEC;
+                    bsConfig.security.put(1, dmSecurity);
 
-                // security for DM server
-                ServerSecurity dmSecurity = new ServerSecurity();
-                dmSecurity.uri = "coap://" + server.getUnsecuredAddress().getHostString() + ":"
-                        + server.getUnsecuredAddress().getPort();
-                dmSecurity.serverId = 2222;
-                dmSecurity.securityMode = SecurityMode.NO_SEC;
-                bsConfig.security.put(1, dmSecurity);
+                    // DM server
+                    ServerConfig dmConfig = new ServerConfig();
+                    dmConfig.shortId = 2222;
+                    bsConfig.servers.put(0, dmConfig);
 
-                // DM server
-                ServerConfig dmConfig = new ServerConfig();
-                dmConfig.shortId = 2222;
-                bsConfig.servers.put(0, dmConfig);
-
-                return bsConfig;
-            }
-        };
+                    return bsConfig;
+                }
+            };
+        }
 
         if (securityStore == null) {
             securityStore = dummyBsSecurityStore();
         }
 
         LeshanBootstrapServerBuilder builder = new LeshanBootstrapServerBuilder();
-        builder.setConfigStore(bsStore);
+        builder.setConfigStore(bootstrapStore);
         builder.setSecurityStore(securityStore);
         builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
 
         bootstrapServer = builder.build();
+    }
+
+    public void createBootstrapServer(BootstrapSecurityStore securityStore) {
+        createBootstrapServer(securityStore, null);
     }
 
     @Override
@@ -177,6 +177,81 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
             @Override
             public List<SecurityInfo> getAllByEndpoint(String endpoint) {
                 return null;
+            }
+        };
+    }
+
+    public BootstrapStore pskBootstrapStore() {
+        return new BootstrapStore() {
+
+            @Override
+            public BootstrapConfig getBootstrap(String endpoint) {
+
+                BootstrapConfig bsConfig = new BootstrapConfig();
+
+                // security for BS server
+                ServerSecurity bsSecurity = new ServerSecurity();
+                bsSecurity.serverId = 1111;
+                bsSecurity.bootstrapServer = true;
+                bsSecurity.uri = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
+                        + bootstrapServer.getUnsecuredAddress().getPort();
+                bsSecurity.securityMode = SecurityMode.NO_SEC;
+                bsConfig.security.put(0, bsSecurity);
+
+                // security for DM server
+                ServerSecurity dmSecurity = new ServerSecurity();
+                dmSecurity.uri = "coaps://" + server.getUnsecuredAddress().getHostString() + ":"
+                        + server.getSecuredAddress().getPort();
+                dmSecurity.serverId = 2222;
+                dmSecurity.securityMode = SecurityMode.PSK;
+                dmSecurity.publicKeyOrId = GOOD_PSK_ID.getBytes();
+                dmSecurity.secretKey = GOOD_PSK_KEY;
+                bsConfig.security.put(1, dmSecurity);
+
+                // DM server
+                ServerConfig dmConfig = new ServerConfig();
+                dmConfig.shortId = 2222;
+                bsConfig.servers.put(0, dmConfig);
+
+                return bsConfig;
+            }
+        };
+    }
+
+    public BootstrapStore rpkBootstrapStore() {
+        return new BootstrapStore() {
+
+            @Override
+            public BootstrapConfig getBootstrap(String endpoint) {
+
+                BootstrapConfig bsConfig = new BootstrapConfig();
+
+                // security for BS server
+                ServerSecurity bsSecurity = new ServerSecurity();
+                bsSecurity.serverId = 1111;
+                bsSecurity.bootstrapServer = true;
+                bsSecurity.uri = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
+                        + bootstrapServer.getUnsecuredAddress().getPort();
+                bsSecurity.securityMode = SecurityMode.NO_SEC;
+                bsConfig.security.put(0, bsSecurity);
+
+                // security for DM server
+                ServerSecurity dmSecurity = new ServerSecurity();
+                dmSecurity.uri = "coaps://" + server.getUnsecuredAddress().getHostString() + ":"
+                        + server.getSecuredAddress().getPort();
+                dmSecurity.serverId = 2222;
+                dmSecurity.securityMode = SecurityMode.RPK;
+                dmSecurity.publicKeyOrId = clientPublicKey.getEncoded();
+                dmSecurity.secretKey = clientPrivateKey.getEncoded();
+                dmSecurity.serverPublicKey = serverPublicKey.getEncoded();
+                bsConfig.security.put(1, dmSecurity);
+
+                // DM server
+                ServerConfig dmConfig = new ServerConfig();
+                dmConfig.shortId = 2222;
+                bsConfig.servers.put(0, dmConfig);
+
+                return bsConfig;
             }
         };
     }

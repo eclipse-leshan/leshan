@@ -26,7 +26,7 @@ import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.LwM2mId;
-import org.eclipse.leshan.client.californium.impl.SecurityObjectPskStore;
+import org.eclipse.leshan.client.californium.impl.SecurityObjectCredentialsStore;
 import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.object.Server;
@@ -207,15 +207,21 @@ public class LeshanClientBuilder {
         }
         DtlsConnectorConfig incompleteConfig = dtlsConfigBuilder.getIncompleteConfig();
 
-        // Handle PSK Store
+        // Handle Credentials Store
         LwM2mObjectEnabler securityEnabler = this.objectEnablers.get(LwM2mId.SECURITY);
         if (securityEnabler == null) {
             throw new IllegalArgumentException("Security object is mandatory");
         }
-        if (incompleteConfig.getPskStore() == null) {
-            dtlsConfigBuilder.setPskStore(new SecurityObjectPskStore(securityEnabler));
+        if (incompleteConfig.getCredentialsStore() == null) {
+            // Handle PSK Store
+            if (incompleteConfig.getPskStore() == null) {
+                LOG.warn(
+                        "PskStore will not be used as a Leshan credentialsStore will be used. Using a custom implementation is not advised.");
+            }
+            dtlsConfigBuilder.setCredentialsStore(new SecurityObjectCredentialsStore(securityEnabler));
         } else {
-            LOG.warn("PskStore should be automatically set by Leshan. Using a custom implementation is not advised.");
+            LOG.warn(
+                    "CredentialsStore should be automatically set by Leshan. Using a custom implementation is not advised.");
         }
 
         // Handle secure address
