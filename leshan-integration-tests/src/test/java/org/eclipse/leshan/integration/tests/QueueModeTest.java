@@ -62,8 +62,8 @@ public class QueueModeTest {
         // Check that client is awake
         queueModeHelper.ensureClientAwake();
 
-        // Wait for client awake time expiration (1% margin)
-        queueModeHelper.waitForAwakeTime(awaketime * 1010);
+        // Wait for client awake time expiration (10% margin)
+        queueModeHelper.waitForAwakeTime(awaketime * 1100);
 
         // Check that client is sleeping
         queueModeHelper.ensureClientSleeping();
@@ -76,8 +76,8 @@ public class QueueModeTest {
         queueModeHelper.ensureClientAwake();
         queueModeHelper.resetAwakeLatch();
 
-        // Wait for client awake time expiration (1% margin)
-        queueModeHelper.waitForAwakeTime(awaketime * 1010);
+        // Wait for client awake time expiration (10% margin)
+        queueModeHelper.waitForAwakeTime(awaketime * 1100);
 
         // Check that client is sleeping
         queueModeHelper.ensureClientSleeping();
@@ -111,8 +111,8 @@ public class QueueModeTest {
         // Check only one notification
         queueModeHelper.ensureOneAwakeNotification();
 
-        // Wait for client awake time expiration (1% margin)
-        queueModeHelper.waitForAwakeTime(awaketime * 1010);
+        // Wait for client awake time expiration (10% margin)
+        queueModeHelper.waitForAwakeTime(awaketime * 1100);
 
         // Check that client is sleeping
         queueModeHelper.ensureClientSleeping();
@@ -185,8 +185,8 @@ public class QueueModeTest {
         response = queueModeHelper.server.send(queueModeHelper.getCurrentRegistration(), new ReadRequest(3, 0, 1));
         queueModeHelper.ensureReceivedRequest(response);
 
-        // Wait for client awake time expiration (1% margin)
-        queueModeHelper.waitForAwakeTime(awaketime * 1010);
+        // Wait for client awake time expiration (10% margin)
+        queueModeHelper.waitForAwakeTime(awaketime * 1100);
 
         // Check that client is sleeping
         queueModeHelper.ensureClientSleeping();
@@ -202,5 +202,4 @@ public class QueueModeTest {
         response = queueModeHelper.server.send(queueModeHelper.getCurrentRegistration(), new ReadRequest(3, 0, 1));
         queueModeHelper.ensureReceivedRequest(response);
     }
-
 }
