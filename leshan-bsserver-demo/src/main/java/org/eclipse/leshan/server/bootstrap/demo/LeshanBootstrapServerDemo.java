@@ -47,7 +47,11 @@ import org.slf4j.LoggerFactory;
 public class LeshanBootstrapServerDemo {
 
     static {
-        System.setProperty("logback.configurationFile", "logback-config.xml");
+        // Define a default logback.configurationFile
+        String property = System.getProperty("logback.configurationFile");
+        if (property == null) {
+            System.setProperty("logback.configurationFile", "logback-config.xml");
+        }
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanBootstrapServerDemo.class);

@@ -49,7 +49,11 @@ import redis.clients.util.Pool;
 public class LeshanClusterServer {
 
     static {
-        System.setProperty("logback.configurationFile", "logback-config.xml");
+        // Define a default logback.configurationFile
+        String property = System.getProperty("logback.configurationFile");
+        if (property == null) {
+            System.setProperty("logback.configurationFile", "logback-config.xml");
+        }
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanClusterServer.class);
