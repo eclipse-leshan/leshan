@@ -9,8 +9,8 @@
         <MultipleInstances>Multiple</MultipleInstances>
         <Mandatory>Optional</Mandatory>
         <Resources>
-            <Item ID="5851">
-                <Name>Dimmer</Name>
+            <Item ID="5548">
+                <Name>Level</Name>
                 <Operations>RW</Operations>
                 <MultipleInstances>Single</MultipleInstances>
                 <Mandatory>Mandatory</Mandatory>
@@ -29,7 +29,7 @@
                 <Units>s</Units>
                 <Description>The time in seconds that the dimmer has been on (Dimmer value has to be > 0). Writing a value of 0 resets the counter.</Description>
             </Item>
-            <Item ID="5854">
+            <Item ID="5853">
                 <Name>Off Time</Name>
                 <Operations>RW</Operations>
                 <MultipleInstances>Single</MultipleInstances>

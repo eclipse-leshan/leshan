@@ -21,7 +21,7 @@
             </Item>
             <Item ID="5538">
                 <Name>Remaining Time</Name>
-                <Operations>RW</Operations>
+                <Operations>R</Operations>
                 <MultipleInstances>Single</MultipleInstances>
                 <Mandatory>Optional</Mandatory>
                 <Type>Float</Type>
@@ -44,7 +44,7 @@
                 <Operations>E</Operations>
                 <MultipleInstances>Single</MultipleInstances>
                 <Mandatory>Optional</Mandatory>
-                <Type>Opaque</Type>
+                <Type></Type>
                 <RangeEnumeration></RangeEnumeration>
                 <Units></Units>
                 <Description>Trigger initiating actuation.</Description>

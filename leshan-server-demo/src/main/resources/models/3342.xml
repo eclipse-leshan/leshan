@@ -38,7 +38,7 @@
                 <Units>s</Units>
                 <Description>The time in seconds since the On command was sent. Writing a value of 0 resets the counter.</Description>
             </Item>
-            <Item ID="5854">
+            <Item ID="5853">
                 <Name>Off Time</Name>
                 <Operations>RW</Operations>
                 <MultipleInstances>Single</MultipleInstances>

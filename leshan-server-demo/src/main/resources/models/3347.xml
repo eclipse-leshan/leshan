@@ -20,7 +20,7 @@
                 <Description>The current state of a digital input.</Description>
             </Item>
             <Item ID="5501">
-                <Name>Digital Input State</Name>
+                <Name>Digital Input Counter</Name>
                 <Operations>R</Operations>
                 <MultipleInstances>Single</MultipleInstances>
                 <Mandatory>Optional</Mandatory>

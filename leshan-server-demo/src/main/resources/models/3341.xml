@@ -69,15 +69,15 @@
                 <Units></Units>
                 <Description>Command to clear the display.</Description>
             </Item>
-            <Item ID="5851">
-                <Name>Dimmer</Name>
+            <Item ID="5548">
+                <Name>Level</Name>
                 <Operations>RW</Operations>
                 <MultipleInstances>Single</MultipleInstances>
                 <Mandatory>Optional</Mandatory>
                 <Type>Float</Type>
                 <RangeEnumeration>0-100</RangeEnumeration>
                 <Units>%</Units>
-                <Description>Proportional control, integer value between 0 and 100 as a percentage.</Description>
+                <Description>Brightness control, integer value between 0 and 100 as a percentage.</Description>
             </Item>
             <Item ID="5531">
                 <Name>Contrast</Name>

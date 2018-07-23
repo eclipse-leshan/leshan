@@ -19,15 +19,15 @@
                 <Units></Units>
                 <Description>On/Off control, 0=OFF, 1=ON.</Description>
             </Item>
-            <Item ID="5851">
-                <Name>Dimmer</Name>
+            <Item ID="5548">
+                <Name>Level</Name>
                 <Operations>RW</Operations>
                 <MultipleInstances>Single</MultipleInstances>
                 <Mandatory>Optional</Mandatory>
-                <Type>Integer</Type>
+                <Type>Float</Type>
                 <RangeEnumeration>0-100</RangeEnumeration>
                 <Units>%</Units>
-                <Description>Proportional control, integer value between 0 and 100 as a percentage.</Description>
+                <Description>Audio volume control, float value between 0 and 100 as a percentage.</Description>
             </Item>
             <Item ID="5521">
                 <Name>Delay Duration</Name>

@@ -112,7 +112,7 @@ public class LeshanServerDemo {
                             "3326.xml", "3327.xml", "3328.xml", "3329.xml", "3330.xml", "3331.xml", "3332.xml",
                             "3333.xml", "3334.xml", "3335.xml", "3336.xml", "3337.xml", "3338.xml", "3339.xml",
                             "3340.xml", "3341.xml", "3342.xml", "3343.xml", "3344.xml", "3345.xml", "3346.xml",
-                            "3347.xml", "3348.xml",
+                            "3347.xml", "3348.xml", "3349.xml", "3350.xml",
 
                             "Communication_Characteristics-V1_0.xml",
 

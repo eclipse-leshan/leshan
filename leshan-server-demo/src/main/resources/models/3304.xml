@@ -43,7 +43,7 @@
 				<Operations>R</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
-				<Type>String</Type>
+				<Type>Float</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units>Defined by “Units” resource.</Units>
 				<Description>The minimum value that can be measured by the sensor</Description>
@@ -73,7 +73,7 @@
 				<Operations>E</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
-				<Type>Opaque</Type>
+				<Type></Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
 				<Description>Reset the Min and Max Measured Values to Current Value</Description>

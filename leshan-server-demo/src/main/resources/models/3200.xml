@@ -65,7 +65,7 @@
 				<Operations>E</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
-				<Type>Opaque</Type>
+				<Type></Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
 				<Description>Reset the Counter value.</Description>

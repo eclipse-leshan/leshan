@@ -20,13 +20,13 @@
 			</Item>
 			<Item ID="5750">
 				<Name>Application Type</Name>
-				<Operations>R</Operations>
+				<Operations>RW</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>String</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description>If present, the application type of the actuator as a string, for instance, “Thermostat”</Description>
+				<Description>If present, the application type of the actuator as a string, for instance, “Valve”</Description>
 			</Item>
 			<Item ID="5603">
 				<Name>Min Range Value</Name>
@@ -36,7 +36,7 @@
 				<Type>Float</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description>The minimum value that can be measured by the sensor</Description>
+				<Description>The minimum value that can be set for the output</Description>
 			</Item>
 			<Item ID="5604">
 				<Name>Max Range Value</Name>
@@ -46,7 +46,7 @@
 				<Type>Float</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description>The maximum value that can be measured by the sensor</Description>
+				<Description>The maximum value that can be set for the output</Description>
 			</Item>
 		</Resources>
 		<Description2></Description2>
