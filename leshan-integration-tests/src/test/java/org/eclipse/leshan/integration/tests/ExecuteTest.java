@@ -42,7 +42,7 @@ public class ExecuteTest {
         helper.server.start();
         helper.createClient();
         helper.client.start();
-        helper.waitForRegistration(1);
+        helper.waitForRegistrationAtServerSide(1);
     }
 
     @After

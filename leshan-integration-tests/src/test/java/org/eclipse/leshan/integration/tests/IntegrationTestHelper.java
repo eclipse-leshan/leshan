@@ -20,11 +20,11 @@ import static org.junit.Assert.*;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.leshan.LwM2mId;
@@ -41,7 +41,6 @@ import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Operations;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
-import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
@@ -50,8 +49,6 @@ import org.eclipse.leshan.server.impl.InMemorySecurityStore;
 import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
 import org.eclipse.leshan.server.model.StaticModelProvider;
 import org.eclipse.leshan.server.registration.Registration;
-import org.eclipse.leshan.server.registration.RegistrationListener;
-import org.eclipse.leshan.server.registration.RegistrationUpdate;
 
 /**
  * Helper for running a server and executing a client against it.
@@ -74,14 +71,16 @@ public class IntegrationTestHelper {
     public static final int OBJLNK_SINGLE_INSTANCE_RESOURCE_ID = 7;
 
     LeshanServer server;
-
     LeshanClient client;
     AtomicReference<String> currentEndpointIdentifier = new AtomicReference<String>();
 
-    CountDownLatch registerLatch;
-    Registration last_registration;
-    CountDownLatch deregisterLatch;
-    CountDownLatch updateLatch;
+    private SynchronousClientObserver clientObserver = new SynchronousClientObserver();
+    private SynchronousRegistrationListener registrationListener = new SynchronousRegistrationListener() {
+        @Override
+        public boolean accept(Registration registration) {
+            return (registration != null && registration.getEndpoint().equals(currentEndpointIdentifier.get()));
+        }
+    };
 
     protected List<ObjectModel> createObjectModels() {
         // load default object from the spec
@@ -119,6 +118,10 @@ public class IntegrationTestHelper {
     }
 
     public void createClient() {
+        createClient(null);
+    }
+
+    public void createClient(Map<String, String> additionalAttributes) {
         // Create objects Enabler
         ObjectsInitializer initializer = new ObjectsInitializer(new LwM2mModel(createObjectModels()));
         initializer.setInstancesForObject(LwM2mId.SECURITY, Security.noSec(
@@ -140,14 +143,16 @@ public class IntegrationTestHelper {
 
         // Build Client
         LeshanClientBuilder builder = new LeshanClientBuilder(currentEndpointIdentifier.get());
+        builder.setAdditionalAttributes(additionalAttributes);
         builder.setObjects(objects);
         client = builder.build();
+        setupClientMonitoring();
     }
 
     public void createServer() {
         server = createServerBuilder().build();
         // monitor client registration
-        setupRegistrationMonitoring();
+        setupServerMonitoring();
     }
 
     protected LeshanServerBuilder createServerBuilder() {
@@ -159,88 +164,88 @@ public class IntegrationTestHelper {
         return builder;
     }
 
-    protected void setupRegistrationMonitoring() {
-        resetLatch();
-        server.getRegistrationService().addListener(new RegistrationListener() {
-            @Override
-            public void updated(RegistrationUpdate update, Registration updatedRegistration,
-                    Registration previousRegistration) {
-                if (updatedRegistration.getEndpoint().equals(currentEndpointIdentifier.get())) {
-                    updateLatch.countDown();
-                }
-            }
-
-            @Override
-            public void unregistered(Registration registration, Collection<Observation> observations, boolean expired,
-                    Registration newReg) {
-                if (registration.getEndpoint().equals(currentEndpointIdentifier.get())) {
-                    deregisterLatch.countDown();
-                }
-            }
-
-            @Override
-            public void registered(Registration registration, Registration previousReg,
-                    Collection<Observation> previousObsersations) {
-                if (registration.getEndpoint().equals(currentEndpointIdentifier.get())) {
-                    last_registration = registration;
-                    registerLatch.countDown();
-                }
-            }
-        });
+    protected void setupServerMonitoring() {
+        server.getRegistrationService().addListener(registrationListener);
     }
 
-    public void resetLatch() {
-        registerLatch = new CountDownLatch(1);
-        deregisterLatch = new CountDownLatch(1);
-        updateLatch = new CountDownLatch(1);
+    protected void setupClientMonitoring() {
+        client.addObserver(clientObserver);
     }
 
-    public void waitForRegistration(long timeInSeconds) {
+    public void waitForRegistrationAtClientSide(long timeInSeconds) {
         try {
-            assertTrue(registerLatch.await(timeInSeconds, TimeUnit.SECONDS));
-        } catch (InterruptedException e) {
+            assertTrue(clientObserver.waitForRegistration(timeInSeconds, TimeUnit.SECONDS));
+        } catch (InterruptedException | TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void waitForRegistrationAtServerSide(long timeInSeconds) {
+        try {
+            registrationListener.waitForRegister(timeInSeconds, TimeUnit.SECONDS);
+        } catch (InterruptedException | TimeoutException e) {
             throw new RuntimeException(e);
         }
     }
 
     public void ensureNoRegistration(long timeInSeconds) {
         try {
-            assertFalse(registerLatch.await(timeInSeconds, TimeUnit.SECONDS));
+            registrationListener.waitForRegister(timeInSeconds, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
+        } catch (TimeoutException e) {
+            // timeou means no registration
+            return;
         }
+        fail("No registration expected");
     }
 
-    public void waitForUpdate(long timeInSeconds) {
+    public void waitForUpdateAtClientSide(long timeInSeconds) {
         try {
-            assertTrue(updateLatch.await(timeInSeconds, TimeUnit.SECONDS));
-        } catch (InterruptedException e) {
+            assertTrue(clientObserver.waitForUpdate(timeInSeconds, TimeUnit.SECONDS));
+        } catch (InterruptedException | TimeoutException e) {
             throw new RuntimeException(e);
         }
     }
 
     public void ensureNoUpdate(long timeInSeconds) {
         try {
-            assertFalse(updateLatch.await(timeInSeconds, TimeUnit.SECONDS));
+            registrationListener.waitForUpdate(timeInSeconds, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (TimeoutException e) {
+            // timeou means no registration
+            return;
+        }
+        fail("No update registration expected");
+    }
+
+    public void waitForDeregistrationAtServerSide(long timeInSeconds) {
+        try {
+            registrationListener.waitForDeregister(timeInSeconds, TimeUnit.SECONDS);
+        } catch (InterruptedException | TimeoutException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void waitForDeregistration(long timeInSeconds) {
+    public void waitForDeregistrationAtClientSide(long timeInSeconds) {
         try {
-            assertTrue(deregisterLatch.await(timeInSeconds, TimeUnit.SECONDS));
-        } catch (InterruptedException e) {
+            assertTrue(clientObserver.waitForDeregistration(timeInSeconds, TimeUnit.SECONDS));
+        } catch (InterruptedException | TimeoutException e) {
             throw new RuntimeException(e);
         }
     }
 
     public void ensureNoDeregistration(long timeInSeconds) {
         try {
-            assertFalse(deregisterLatch.await(timeInSeconds, TimeUnit.SECONDS));
+            registrationListener.waitForDeregister(timeInSeconds, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
+        } catch (TimeoutException e) {
+            // timeou means no registration
+            return;
         }
+        fail("No de-registration expected");
     }
 
     public Registration getCurrentRegistration() {
@@ -264,5 +269,9 @@ public class IntegrationTestHelper {
 
     public void assertClientNotRegisterered() {
         assertNull(getCurrentRegistration());
+    }
+
+    public Registration getLastRegistration() {
+        return registrationListener.getLastRegistration();
     }
 }

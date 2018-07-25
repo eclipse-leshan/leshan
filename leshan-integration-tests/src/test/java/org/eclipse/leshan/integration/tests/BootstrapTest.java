@@ -52,7 +52,7 @@ public class BootstrapTest {
 
         // Start it and wait for registration
         helper.client.start();
-        helper.waitForRegistration(1);
+        helper.waitForRegistrationAtServerSide(1);
 
         // check the client is registered
         helper.assertClientRegisterered();
@@ -70,7 +70,7 @@ public class BootstrapTest {
 
         // Start it and wait for registration
         helper.client.start();
-        helper.waitForRegistration(1);
+        helper.waitForRegistrationAtServerSide(1);
 
         // check the client is registered
         helper.assertClientRegisterered();

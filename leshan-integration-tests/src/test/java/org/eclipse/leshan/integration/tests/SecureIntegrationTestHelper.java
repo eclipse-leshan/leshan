@@ -183,6 +183,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         builder.setLocalAddress(clientAddress.getHostString(), clientAddress.getPort());
         builder.setObjects(objects);
         client = builder.build();
+        setupClientMonitoring();
     }
 
     public void setNewPsk(LwM2mClient client, String identity) {
@@ -222,6 +223,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         builder.setLocalAddress(clientAddress.getHostString(), clientAddress.getPort());
         builder.setObjects(objects);
         client = builder.build();
+        setupClientMonitoring();
     }
 
     // TODO implement X509 support for client
@@ -252,6 +254,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         builder.setLocalAddress(clientAddress.getHostString(), clientAddress.getPort());
         builder.setObjects(objects);
         client = builder.build();
+        setupClientMonitoring();
     }
 
     public void createServerWithRPK() {
@@ -264,7 +267,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
 
         server = builder.build();
         // monitor client registration
-        setupRegistrationMonitoring();
+        setupServerMonitoring();
     }
 
     public void createServerWithX509Cert(Certificate[] trustedCertificates) {
@@ -278,7 +281,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
 
         server = builder.build();
         // monitor client registration
-        setupRegistrationMonitoring();
+        setupServerMonitoring();
     }
 
     public PublicKey getServerPublicKey() {

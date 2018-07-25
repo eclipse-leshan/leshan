@@ -18,17 +18,12 @@ package org.eclipse.leshan.integration.tests;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.cert.Certificate;
-import java.util.Collection;
 
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
-import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.cluster.RedisRegistrationStore;
 import org.eclipse.leshan.server.cluster.RedisSecurityStore;
 import org.eclipse.leshan.server.model.StaticModelProvider;
-import org.eclipse.leshan.server.registration.Registration;
-import org.eclipse.leshan.server.registration.RegistrationListener;
-import org.eclipse.leshan.server.registration.RegistrationUpdate;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -56,33 +51,7 @@ public class RedisSecureIntegrationTestHelper extends SecureIntegrationTestHelpe
         // Build server !
         server = builder.build();
         // monitor client registration
-        resetLatch();
-        server.getRegistrationService().addListener(new RegistrationListener() {
-            @Override
-            public void updated(RegistrationUpdate update, Registration updatedRegistration,
-                    Registration previousRegistration) {
-                if (updatedRegistration.getEndpoint().equals(getCurrentEndpoint())) {
-                    updateLatch.countDown();
-                }
-            }
-
-            @Override
-            public void unregistered(Registration registration, Collection<Observation> observations, boolean expired,
-                    Registration newReg) {
-                if (registration.getEndpoint().equals(getCurrentEndpoint())) {
-                    deregisterLatch.countDown();
-                }
-            }
-
-            @Override
-            public void registered(Registration registration, Registration previousReg,
-                    Collection<Observation> previousObsersations) {
-                if (registration.getEndpoint().equals(getCurrentEndpoint())) {
-                    last_registration = registration;
-                    registerLatch.countDown();
-                }
-            }
-        });
+        setupServerMonitoring();
     }
 
     @Override

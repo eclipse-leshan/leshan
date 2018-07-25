@@ -79,7 +79,7 @@ public class SecurityTest {
 
         // Start it and wait for registration
         helper.client.start();
-        helper.waitForRegistration(1);
+        helper.waitForRegistrationAtServerSide(1);
 
         // Check client is well registered
         helper.assertClientRegisterered();
@@ -104,7 +104,7 @@ public class SecurityTest {
 
         // Start it and wait for registration
         helper.client.start();
-        helper.waitForRegistration(1);
+        helper.waitForRegistrationAtServerSide(1);
 
         // Check client is well registered
         helper.assertClientRegisterered();
@@ -169,24 +169,23 @@ public class SecurityTest {
 
         // Start it and wait for registration
         helper.client.start();
-        helper.waitForRegistration(1);
+        helper.waitForRegistrationAtServerSide(1);
 
         // Check client is well registered
         helper.assertClientRegisterered();
 
         // Check for update
-        helper.waitForUpdate(LIFETIME);
+        helper.waitForUpdateAtClientSide(LIFETIME);
         helper.assertClientRegisterered();
 
         // Check de-registration
         helper.client.stop(true);
-        helper.waitForDeregistration(1);
+        helper.waitForDeregistrationAtServerSide(1);
         helper.assertClientNotRegisterered();
 
         // check new registration
-        helper.resetLatch();
         helper.client.start();
-        helper.waitForRegistration(1);
+        helper.waitForRegistrationAtServerSide(1);
         helper.assertClientRegisterered();
     }
 
@@ -206,12 +205,12 @@ public class SecurityTest {
         // Check for registration
         helper.assertClientNotRegisterered();
         helper.client.start();
-        helper.waitForRegistration(1);
+        helper.waitForRegistrationAtServerSide(1);
         Registration registration = helper.getCurrentRegistration();
         helper.assertClientRegisterered();
 
         // Check for update
-        helper.waitForUpdate(LIFETIME);
+        helper.waitForUpdateAtClientSide(LIFETIME);
         helper.assertClientRegisterered();
 
         // Check stop do not de-register
@@ -220,9 +219,8 @@ public class SecurityTest {
         helper.assertClientRegisterered();
 
         // Check new registration
-        helper.resetLatch();
         helper.client.start();
-        helper.waitForRegistration(1);
+        helper.waitForRegistrationAtServerSide(1);
         helper.assertClientRegisterered();
         Registration newRegistration = helper.getCurrentRegistration();
         assertNotEquals(registration.getId(), newRegistration.getId());
@@ -332,7 +330,7 @@ public class SecurityTest {
 
         helper.assertClientNotRegisterered();
         helper.client.start();
-        helper.waitForRegistration(1);
+        helper.waitForRegistrationAtServerSide(1);
 
         assertNotNull(helper.getCurrentRegistration());
     }
@@ -383,7 +381,7 @@ public class SecurityTest {
 
         helper.assertClientNotRegisterered();
         helper.client.start();
-        helper.waitForRegistration(1);
+        helper.waitForRegistrationAtServerSide(1);
 
         assertNotNull(helper.getCurrentRegistration());
     }
@@ -468,7 +466,7 @@ public class SecurityTest {
                 helper.clientX509CertChain[0].getPublicKey()));
 
         helper.client.start();
-        helper.waitForRegistration(1);
+        helper.waitForRegistrationAtServerSide(1);
 
         assertNotNull(helper.getCurrentRegistration());
     }
@@ -487,7 +485,7 @@ public class SecurityTest {
                 .add(SecurityInfo.newRawPublicKeyInfo(helper.getCurrentEndpoint(), helper.clientPublicKey));
 
         helper.client.start();
-        helper.waitForRegistration(1);
+        helper.waitForRegistrationAtServerSide(1);
 
         assertNotNull(helper.getCurrentRegistration());
     }

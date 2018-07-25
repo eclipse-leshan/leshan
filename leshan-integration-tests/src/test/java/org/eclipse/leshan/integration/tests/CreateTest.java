@@ -50,7 +50,7 @@ public class CreateTest {
         helper.server.start();
         helper.createClient();
         helper.client.start();
-        helper.waitForRegistration(1);
+        helper.waitForRegistrationAtServerSide(1);
     }
 
     @After
@@ -63,8 +63,8 @@ public class CreateTest {
     @Test
     public void can_create_instance_of_object_without_instance_id() throws InterruptedException {
         // create ACL instance
-        CreateResponse response = helper.server.send(helper.getCurrentRegistration(), new CreateRequest(2,
-                new LwM2mResource[] { LwM2mSingleResource.newIntegerResource(0, 123) }));
+        CreateResponse response = helper.server.send(helper.getCurrentRegistration(),
+                new CreateRequest(2, new LwM2mResource[] { LwM2mSingleResource.newIntegerResource(0, 123) }));
 
         // verify result
         assertEquals(ResponseCode.CREATED, response.getCode());
@@ -73,8 +73,8 @@ public class CreateTest {
         assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         // create a second ACL instance
-        response = helper.server.send(helper.getCurrentRegistration(), new CreateRequest(2,
-                new LwM2mResource[] { LwM2mSingleResource.newIntegerResource(0, 123) }));
+        response = helper.server.send(helper.getCurrentRegistration(),
+                new CreateRequest(2, new LwM2mResource[] { LwM2mSingleResource.newIntegerResource(0, 123) }));
 
         // verify result
         assertEquals(ResponseCode.CREATED, response.getCode());

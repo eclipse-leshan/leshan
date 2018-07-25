@@ -16,7 +16,7 @@
 
 package org.eclipse.leshan.integration.tests;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.*;
 
 import org.eclipse.leshan.Link;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -52,32 +52,32 @@ public class QueueModeTest {
 
         // Start it and wait for registration
         queueModeHelper.client.start();
-        queueModeHelper.waitForRegistration(1);
+
+        // Check that client is awake
+        queueModeHelper.waitToGetAwake(1000);
+        queueModeHelper.ensureClientAwake();
 
         // Check client is well registered
         queueModeHelper.assertClientRegisterered();
         assertArrayEquals(Link.parse("</>;rt=\"oma.lwm2m\",</1/0>,</2>,</3/0>,</2000/0>".getBytes()),
                 queueModeHelper.getCurrentRegistration().getObjectLinks());
 
-        // Check that client is awake
-        queueModeHelper.ensureClientAwake();
-
-        // Wait for client awake time expiration (10% margin)
-        queueModeHelper.waitForAwakeTime(awaketime * 1100);
+        // Wait for client awake time expiration (20% margin)
+        queueModeHelper.ensureAwakeFor(awaketime, 200);
 
         // Check that client is sleeping
         queueModeHelper.ensureClientSleeping();
 
         // Trigger update manually for waking up
+        queueModeHelper.waitForRegistrationAtClientSide(1);
         queueModeHelper.client.triggerRegistrationUpdate();
-        queueModeHelper.waitForUpdate(1);
 
         // Check that client is awake
+        queueModeHelper.waitToGetAwake(1000);
         queueModeHelper.ensureClientAwake();
-        queueModeHelper.resetAwakeLatch();
 
-        // Wait for client awake time expiration (10% margin)
-        queueModeHelper.waitForAwakeTime(awaketime * 1100);
+        // Wait for client awake time expiration (20% margin)
+        queueModeHelper.ensureAwakeFor(awaketime, 200);
 
         // Check that client is sleeping
         queueModeHelper.ensureClientSleeping();
@@ -88,70 +88,66 @@ public class QueueModeTest {
 
     @Test
     public void one_awake_notification() {
-
         // Check client is not registered
         queueModeHelper.assertClientNotRegisterered();
 
         // Start it and wait for registration
         queueModeHelper.client.start();
-        queueModeHelper.waitForRegistration(1);
+
+        // Check that client is awake and only one awake notification
+        queueModeHelper.waitToGetAwake(1000);
+        queueModeHelper.ensureClientAwake();
+        assertEquals("Only one awake event should be received", 1, queueModeHelper.presenceCounter.getNbAwake());
 
         // Check client is well registered
         queueModeHelper.assertClientRegisterered();
 
-        // Check that client is awake and only one awake notification
-        queueModeHelper.ensureClientAwake();
-        queueModeHelper.ensureOneAwakeNotification();
-
         // Triggers one update
+        queueModeHelper.waitForRegistrationAtClientSide(1);
         queueModeHelper.client.triggerRegistrationUpdate();
-        queueModeHelper.waitForUpdate(1);
-        queueModeHelper.resetLatch();
+        queueModeHelper.waitForUpdateAtClientSide(1);
 
         // Check only one notification
-        queueModeHelper.ensureOneAwakeNotification();
+        assertEquals("Only one awake event should be received", 1, queueModeHelper.presenceCounter.getNbAwake());
 
-        // Wait for client awake time expiration (10% margin)
-        queueModeHelper.waitForAwakeTime(awaketime * 1100);
+        // Wait for client awake time expiration (20% margin)
+        queueModeHelper.ensureAwakeFor(awaketime, 200);
 
         // Check that client is sleeping
         queueModeHelper.ensureClientSleeping();
 
         // Trigger update manually for waking up
+        queueModeHelper.presenceCounter.resetCounter();
         queueModeHelper.client.triggerRegistrationUpdate();
-        queueModeHelper.waitForUpdate(1);
-        queueModeHelper.resetLatch();
+        queueModeHelper.waitForUpdateAtClientSide(1);
 
         // Check that client is awake
+        queueModeHelper.waitToGetAwake(500);
         queueModeHelper.ensureClientAwake();
-        queueModeHelper.resetAwakeLatch();
 
         // Triggers two updates
         queueModeHelper.client.triggerRegistrationUpdate();
-        queueModeHelper.waitForUpdate(1);
-        queueModeHelper.resetLatch();
+        queueModeHelper.waitForUpdateAtClientSide(1);
         queueModeHelper.client.triggerRegistrationUpdate();
-        queueModeHelper.waitForUpdate(1);
-        queueModeHelper.resetLatch();
+        queueModeHelper.waitForUpdateAtClientSide(1);
 
         // Check only one notification
-        queueModeHelper.ensureOneAwakeNotification();
+        assertEquals("Only one awake event should be received", 1, queueModeHelper.presenceCounter.getNbAwake());
 
     }
 
     @Test
     public void sleeping_if_timeout() throws InterruptedException {
-
         // Check client is not registered
         queueModeHelper.assertClientNotRegisterered();
 
         // Start it and wait for registration
         queueModeHelper.client.start();
-        queueModeHelper.waitForRegistration(1);
 
         // Check client is well registered and awake
-        queueModeHelper.assertClientRegisterered();
+        queueModeHelper.waitToGetAwake(1000);
         queueModeHelper.ensureClientAwake();
+        queueModeHelper.assertClientRegisterered();
 
         // Stop the client to ensure that TimeOut exception is thrown
         queueModeHelper.client.stop(false);
@@ -175,30 +171,31 @@ public class QueueModeTest {
 
         // Start it and wait for registration
         queueModeHelper.client.start();
-        queueModeHelper.waitForRegistration(1);
 
         // Check client is well registered and awake
-        queueModeHelper.assertClientRegisterered();
+        queueModeHelper.waitToGetAwake(1000);
         queueModeHelper.ensureClientAwake();
+        queueModeHelper.assertClientRegisterered();
 
         // Send a response a check that it is received correctly
         response = queueModeHelper.server.send(queueModeHelper.getCurrentRegistration(), new ReadRequest(3, 0, 1));
         queueModeHelper.ensureReceivedRequest(response);
 
-        // Wait for client awake time expiration (10% margin)
-        queueModeHelper.waitForAwakeTime(awaketime * 1100);
+        // Wait for client awake time expiration (20% margin)
+        queueModeHelper.ensureAwakeFor(awaketime, 200);
 
         // Check that client is sleeping
         queueModeHelper.ensureClientSleeping();
 
         // Trigger update manually for waking up
         queueModeHelper.client.triggerRegistrationUpdate();
-        queueModeHelper.waitForUpdate(1);
+        queueModeHelper.waitForUpdateAtClientSide(1);
 
         // Check that client is awake
+        queueModeHelper.waitToGetAwake(500);
         queueModeHelper.ensureClientAwake();
 
-        // Send a response a check that it is received correctly
+        // Send request and check that it is received correctly
         response = queueModeHelper.server.send(queueModeHelper.getCurrentRegistration(), new ReadRequest(3, 0, 1));
         queueModeHelper.ensureReceivedRequest(response);
     }

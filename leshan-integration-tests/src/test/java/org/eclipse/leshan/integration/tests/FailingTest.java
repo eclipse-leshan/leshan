@@ -72,7 +72,7 @@ public class FailingTest {
         client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, null, BindingMode.U, null,
                 Link.parse("</1>,</2>,</3>".getBytes()), null));
         client.expectResponse().go();
-        helper.waitForRegistration(1);
+        helper.waitForRegistrationAtServerSide(1);
 
         // Send read
         Future<ReadResponse> future = Executors.newSingleThreadExecutor().submit(new Callable<ReadResponse>() {
@@ -94,7 +94,7 @@ public class FailingTest {
         client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, null, BindingMode.U, null,
                 Link.parse("</1>,</2>,</3>".getBytes()), null));
         client.expectResponse().go();
-        helper.waitForRegistration(1);
+        helper.waitForRegistrationAtServerSide(1);
 
         // Send read
         Future<ReadResponse> future = Executors.newSingleThreadExecutor().submit(new Callable<ReadResponse>() {
@@ -123,7 +123,7 @@ public class FailingTest {
         client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, null, BindingMode.U, null,
                 Link.parse("</1>,</2>,</3>".getBytes()), null));
         client.expectResponse().go();
-        helper.waitForRegistration(1);
+        helper.waitForRegistrationAtServerSide(1);
 
         // send read
         Callback<ReadResponse> callback = new Callback<ReadResponse>();
@@ -142,7 +142,7 @@ public class FailingTest {
         client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, null, BindingMode.U, null,
                 Link.parse("</1>,</2>,</3>".getBytes()), null));
         client.expectResponse().go();
-        helper.waitForRegistration(1);
+        helper.waitForRegistrationAtServerSide(1);
 
         // send read
         Callback<ReadResponse> callback = new Callback<ReadResponse>();

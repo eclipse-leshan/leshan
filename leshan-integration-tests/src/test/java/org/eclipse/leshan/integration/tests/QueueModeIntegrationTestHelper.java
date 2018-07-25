@@ -19,9 +19,8 @@ package org.eclipse.leshan.integration.tests;
 import static org.junit.Assert.*;
 
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.TimeoutException;
 
 import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
@@ -35,7 +34,6 @@ import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
-import org.eclipse.leshan.server.queue.PresenceListener;
 import org.eclipse.leshan.server.queue.StaticClientAwakeTimeProvider;
 import org.eclipse.leshan.server.registration.Registration;
 
@@ -44,9 +42,22 @@ import org.eclipse.leshan.server.registration.Registration;
  * 
  */
 public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
+
     public static final long LIFETIME = 3600; // Updates are manually triggered with a timer
-    private CountDownLatch awakeLatch;
-    private AtomicInteger awakeNotifications = new AtomicInteger();
+
+    protected SynchronousPresenceListener presenceListener = new SynchronousPresenceListener() {
+        @Override
+        public boolean accept(Registration registration) {
+            return (registration != null && registration.getEndpoint().equals(currentEndpointIdentifier.get()));
+        }
+    };
+
+    protected PresenceCounter presenceCounter = new PresenceCounter() {
+        @Override
+        public boolean accept(Registration registration) {
+            return (registration != null && registration.getEndpoint().equals(currentEndpointIdentifier.get()));
+        }
+    };
 
     @Override
     public void createClient() {
@@ -73,30 +84,15 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         LeshanClientBuilder builder = new LeshanClientBuilder(currentEndpointIdentifier.get());
         builder.setObjects(objects);
         client = builder.build();
+        setupClientMonitoring();
     }
 
     public void createServer(int clientAwakeTime) {
         server = createServerBuilder(clientAwakeTime).build();
-        awakeNotifications.set(0);
-        server.getPresenceService().addListener(new PresenceListener() {
-
-            @Override
-            public void onAwake(Registration registration) {
-                if (registration.getEndpoint().equals(currentEndpointIdentifier.get())) {
-                    awakeNotifications.addAndGet(1);
-                }
-
-            }
-
-            @Override
-            public void onSleeping(Registration registration) {
-                awakeNotifications.set(0);
-                awakeLatch.countDown();
-            }
-
-        });
+        server.getPresenceService().addListener(presenceCounter);
+        server.getPresenceService().addListener(presenceListener);
         // monitor client registration
-        setupRegistrationMonitoring();
+        setupServerMonitoring();
     }
 
     protected LeshanServerBuilder createServerBuilder(int clientAwakeTime) {
@@ -105,28 +101,37 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         return builder;
     }
 
-    @Override
-    public void resetLatch() {
-        registerLatch = new CountDownLatch(1);
-        deregisterLatch = new CountDownLatch(1);
-        updateLatch = new CountDownLatch(1);
-        awakeLatch = new CountDownLatch(1);
-    }
-
-    public void resetAwakeLatch() {
-        awakeLatch = new CountDownLatch(1);
-    }
-
-    public void waitForAwakeTime(long timeInMilliseconds) {
+    public void waitToSleep(long timeInMilliseconds) {
         try {
-            assertTrue(awakeLatch.await(timeInMilliseconds, TimeUnit.MILLISECONDS));
-        } catch (InterruptedException e) {
+            presenceListener.waitForSleep(timeInMilliseconds, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException | TimeoutException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void ensureOneAwakeNotification() {
-        assertEquals(1, awakeNotifications.intValue());
+    public void ensureAwakeFor(long awaketimeInSeconds, long margeInMs) {
+        try {
+            long start = System.currentTimeMillis();
+            long awaketimeInMs = awaketimeInSeconds * 1000;
+            presenceListener.waitForSleep(awaketimeInMs + margeInMs, TimeUnit.MILLISECONDS);
+            long waitingTime = System.currentTimeMillis() - start;
+            long expectedTime = awaketimeInMs - margeInMs;
+            if (waitingTime < expectedTime) {
+                fail(String.format(
+                        "Client was not awake the expected among of time. expected : less than %dms, bu was %dms",
+                        expectedTime, waitingTime));
+            }
+        } catch (InterruptedException | TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void waitToGetAwake(long timeInMilliseconds) {
+        try {
+            presenceListener.waitForAwake(timeInMilliseconds, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException | TimeoutException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void ensureClientAwake() {
