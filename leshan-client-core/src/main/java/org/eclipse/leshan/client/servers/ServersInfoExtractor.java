@@ -21,6 +21,13 @@ import static org.eclipse.leshan.client.request.ServerIdentity.SYSTEM;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Map;
 
 import org.eclipse.leshan.SecurityMode;
@@ -64,11 +71,14 @@ public class ServersInfoExtractor {
                         else
                             info.serverId = 0;
                         info.serverUri = new URI((String) security.getResource(SEC_SERVER_URI).getValue());
-                        info.secureMode = SecurityMode
-                                .fromCode((long) security.getResource(SEC_SECURITY_MODE).getValue());
+                        info.secureMode = getSecurityMode(security);
                         if (info.secureMode == SecurityMode.PSK) {
-                            info.pskId = new String((byte[]) security.getResource(SEC_PUBKEY_IDENTITY).getValue());
-                            info.pskKey = (byte[]) security.getResource(SEC_SECRET_KEY).getValue();
+                            info.pskId = getPskIdentity(security);
+                            info.pskKey = getPskKey(security);
+                        } else if (info.secureMode == SecurityMode.RPK) {
+                            info.publicKey = getPublicKey(security);
+                            info.privateKey = getPrivateKey(security);
+                            info.serverPublicKey = getServerPublicKey(security);
                         }
                         infos.bootstrap = info;
                     }
@@ -77,10 +87,14 @@ public class ServersInfoExtractor {
                     DmServerInfo info = new DmServerInfo();
                     info.serverUri = new URI((String) security.getResource(SEC_SERVER_URI).getValue());
                     info.serverId = (long) security.getResource(SEC_SERVER_ID).getValue();
-                    info.secureMode = SecurityMode.fromCode((long) security.getResource(SEC_SECURITY_MODE).getValue());
+                    info.secureMode = getSecurityMode(security);
                     if (info.secureMode == SecurityMode.PSK) {
-                        info.pskId = new String((byte[]) security.getResource(SEC_PUBKEY_IDENTITY).getValue());
-                        info.pskKey = (byte[]) security.getResource(SEC_SECRET_KEY).getValue();
+                        info.pskId = getPskIdentity(security);
+                        info.pskKey = getPskKey(security);
+                    } else if (info.secureMode == SecurityMode.RPK) {
+                        info.publicKey = getPublicKey(security);
+                        info.privateKey = getPrivateKey(security);
+                        info.serverPublicKey = getServerPublicKey(security);
                     }
                     // search corresponding device management server
                     for (LwM2mObjectInstance server : servers.getInstances().values()) {
@@ -114,5 +128,63 @@ public class ServersInfoExtractor {
             return null;
 
         return info.bootstrap;
+    }
+
+    public static SecurityMode getSecurityMode(LwM2mObjectInstance securityInstance) {
+        return SecurityMode.fromCode((long) securityInstance.getResource(SEC_SECURITY_MODE).getValue());
+    }
+
+    public static String getPskIdentity(LwM2mObjectInstance securityInstance) {
+        byte[] pubKey = (byte[]) securityInstance.getResource(SEC_PUBKEY_IDENTITY).getValue();
+        return new String(pubKey);
+    }
+
+    public static byte[] getPskKey(LwM2mObjectInstance securityInstance) {
+        return (byte[]) securityInstance.getResource(SEC_SECRET_KEY).getValue();
+    }
+
+    private static PublicKey getPublicKey(LwM2mObjectInstance securityInstance) {
+        byte[] encodedKey = (byte[]) securityInstance.getResource(SEC_PUBKEY_IDENTITY).getValue();
+        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(encodedKey);
+        String algorithm = "EC";
+        try {
+            KeyFactory kf = KeyFactory.getInstance(algorithm);
+            return kf.generatePublic(keySpec);
+        } catch (NoSuchAlgorithmException e) {
+            LOG.debug("Failed to instantiate key factory for algorithm " + algorithm, e);
+        } catch (InvalidKeySpecException e) {
+            LOG.debug("Failed to decode RFC7250 public key with algorithm " + algorithm, e);
+        }
+        return null;
+    }
+
+    private static PrivateKey getPrivateKey(LwM2mObjectInstance securityInstance) {
+        byte[] encodedKey = (byte[]) securityInstance.getResource(SEC_SECRET_KEY).getValue();
+        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encodedKey);
+        String algorithm = "EC";
+        try {
+            KeyFactory kf = KeyFactory.getInstance(algorithm);
+            return kf.generatePrivate(keySpec);
+        } catch (NoSuchAlgorithmException e) {
+            LOG.warn("Failed to instantiate key factory for algorithm " + algorithm, e);
+        } catch (InvalidKeySpecException e) {
+            LOG.warn("Failed to decode RFC5958 private key with algorithm " + algorithm, e);
+        }
+        return null;
+    }
+
+    private static PublicKey getServerPublicKey(LwM2mObjectInstance securityInstance) {
+        byte[] encodedKey = (byte[]) securityInstance.getResource(SEC_SERVER_PUBKEY).getValue();
+        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(encodedKey);
+        String algorithm = "EC";
+        try {
+            KeyFactory kf = KeyFactory.getInstance(algorithm);
+            return kf.generatePublic(keySpec);
+        } catch (NoSuchAlgorithmException e) {
+            LOG.debug("Failed to instantiate key factory for algorithm " + algorithm, e);
+        } catch (InvalidKeySpecException e) {
+            LOG.debug("Failed to decode RFC7250 public key with algorithm " + algorithm, e);
+        }
+        return null;
     }
 }

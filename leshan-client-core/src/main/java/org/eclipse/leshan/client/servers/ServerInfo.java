@@ -18,6 +18,8 @@ package org.eclipse.leshan.client.servers;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 
 import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.SecurityMode;
@@ -31,8 +33,13 @@ public class ServerInfo {
     public long serverId;
     public URI serverUri;
     public SecurityMode secureMode;
+
     public String pskId;
     public byte[] pskKey;
+
+    public PublicKey publicKey;
+    public PrivateKey privateKey;
+    public PublicKey serverPublicKey;
 
     public InetSocketAddress getAddress() {
         return getAddress(serverUri);

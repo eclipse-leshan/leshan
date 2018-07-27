@@ -17,6 +17,7 @@ package org.eclipse.leshan.client.californium.impl;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -24,10 +25,12 @@ import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.californium.scandium.dtls.pskstore.StaticPskStore;
+import org.eclipse.californium.scandium.dtls.rpkstore.TrustedRpkStore;
 import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.client.servers.EndpointsManager;
 import org.eclipse.leshan.client.servers.Server;
@@ -76,9 +79,30 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             if (serverInfo.secureMode == SecurityMode.PSK) {
                 StaticPskStore staticPskStore = new StaticPskStore(serverInfo.pskId, serverInfo.pskKey);
                 newBuilder.setPskStore(staticPskStore);
+            } else if (serverInfo.secureMode == SecurityMode.RPK) {
+                // set identity
+                newBuilder.setIdentity(serverInfo.privateKey, serverInfo.publicKey);
+                // set RPK truststore
+                final PublicKey expectedKey = serverInfo.serverPublicKey;
+                newBuilder.setRpkTrustStore(new TrustedRpkStore() {
+                    @Override
+                    public boolean isTrusted(RawPublicKeyIdentity id) {
+                        PublicKey receivedKey = id.getKey();
+                        if (receivedKey == null) {
+                            LOG.warn("The server public key is null {}", id);
+                            return false;
+                        }
+                        if (!receivedKey.equals(expectedKey)) {
+                            LOG.debug(
+                                    "Server public key received does match with the expected one.\nReceived: {}\nExpected: {}",
+                                    receivedKey, expectedKey);
+                            return false;
+                        }
+                        return true;
+                    }
+                });
             }
-            // TODO add support for RPK and X509
-
+            // TODO add support X509
             if (endpointFactory != null) {
                 currentEndpoint = endpointFactory.createSecuredEndpoint(newBuilder.build(), coapConfig, null);
             } else {
