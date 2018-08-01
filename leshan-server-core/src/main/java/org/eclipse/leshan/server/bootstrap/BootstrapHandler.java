@@ -93,7 +93,7 @@ public class BootstrapHandler {
         }
 
         // Get the desired bootstrap config for the endpoint
-        final BootstrapConfig cfg = store.getBootstrap(endpoint);
+        final BootstrapConfig cfg = store.getBootstrap(endpoint, sender);
         if (cfg == null) {
             LOG.debug("No bootstrap config for {}", endpoint);
             this.sessionManager.failed(session, NO_BOOTSTRAP_CONFIG, null);

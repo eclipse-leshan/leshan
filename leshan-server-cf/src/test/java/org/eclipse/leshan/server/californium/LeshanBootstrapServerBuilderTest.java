@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 
 import java.util.List;
 
+import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapStore;
 import org.eclipse.leshan.server.californium.impl.LeshanBootstrapServer;
@@ -37,7 +38,7 @@ public class LeshanBootstrapServerBuilderTest {
         builder = new LeshanBootstrapServerBuilder();
         builder.setConfigStore(new BootstrapStore() {
             @Override
-            public BootstrapConfig getBootstrap(String endpoint) {
+            public BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity) {
                 return null;
             }
         });

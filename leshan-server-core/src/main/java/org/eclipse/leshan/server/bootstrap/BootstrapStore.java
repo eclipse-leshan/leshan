@@ -15,11 +15,13 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
+import org.eclipse.leshan.core.request.Identity;
+
 /**
  * A store containing the bootstrap information to be sent to the devices.
  */
 public interface BootstrapStore {
 
-    BootstrapConfig getBootstrap(String endpoint);
+    BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity);
 
 }

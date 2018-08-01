@@ -29,6 +29,7 @@ import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
@@ -56,7 +57,7 @@ public class BootstrapIntegrationTestHelper extends IntegrationTestHelper {
 
         BootstrapStore bsStore = new BootstrapStore() {
             @Override
-            public BootstrapConfig getBootstrap(String endpoint) {
+            public BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity) {
 
                 BootstrapConfig bsConfig = new BootstrapConfig();
 

@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapStore;
 import org.eclipse.leshan.server.bootstrap.demo.ConfigurationChecker.ConfigurationException;
@@ -72,7 +73,7 @@ public class BootstrapStoreImpl implements BootstrapStore {
     private Map<String, BootstrapConfig> bootstrapByEndpoint = new ConcurrentHashMap<>();
 
     @Override
-    public BootstrapConfig getBootstrap(String endpoint) {
+    public BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity) {
         return bootstrapByEndpoint.get(endpoint);
     }
 

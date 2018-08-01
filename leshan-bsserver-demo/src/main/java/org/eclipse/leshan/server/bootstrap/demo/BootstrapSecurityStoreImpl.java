@@ -58,7 +58,7 @@ public class BootstrapSecurityStoreImpl implements BootstrapSecurityStore {
     @Override
     public List<SecurityInfo> getAllByEndpoint(String endpoint) {
 
-        BootstrapConfig bsConfig = bsStore.getBootstrap(endpoint);
+        BootstrapConfig bsConfig = bsStore.getBootstrap(endpoint, null);
 
         if (bsConfig == null || bsConfig.security == null)
             return null;
