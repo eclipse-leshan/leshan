@@ -83,6 +83,15 @@ public class Security extends BaseInstanceEnabler {
     }
 
     /**
+     * Returns a new security instance (RPK) for a bootstrap server.
+     */
+    public static Security rpkBootstrap(String serverUri, byte[] clientPublicKey, byte[] clientPrivateKey,
+            byte[] serverPublicKey) {
+        return new Security(serverUri, true, SecurityMode.RPK.code, clientPublicKey.clone(), serverPublicKey.clone(),
+                clientPrivateKey.clone(), 0);
+    }
+
+    /**
      * Returns a new security instance (NoSec) for a device management server.
      */
     public static Security noSec(String serverUri, int shortServerId) {

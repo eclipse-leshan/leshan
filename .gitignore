@@ -28,3 +28,6 @@ bin/
 # log Files #
 **/src/main/**/logback*.xml
 **/src/test/**/logback*.xml
+
+# Credentials files #
+**/*.der

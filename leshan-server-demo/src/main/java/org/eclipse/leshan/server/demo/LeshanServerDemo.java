@@ -25,6 +25,9 @@ import java.net.BindException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.security.AlgorithmParameters;
 import java.security.Key;
 import java.security.KeyFactory;
@@ -337,6 +340,7 @@ public class LeshanServerDemo {
 
                 // Get keys
                 publicKey = KeyFactory.getInstance("EC").generatePublic(publicKeySpec);
+                Files.write(Paths.get("server_pub.der"), publicKey.getEncoded(), StandardOpenOption.CREATE);
                 PrivateKey privateKey = KeyFactory.getInstance("EC").generatePrivate(privateKeySpec);
                 builder.setPublicKey(publicKey);
                 builder.setPrivateKey(privateKey);
