@@ -21,6 +21,7 @@ import java.security.interfaces.ECPublicKey;
 import java.util.Arrays;
 
 import org.eclipse.leshan.server.security.SecurityInfo;
+import org.eclipse.leshan.util.Base64;
 import org.eclipse.leshan.util.Hex;
 
 import com.google.gson.JsonElement;
@@ -63,6 +64,9 @@ public class SecuritySerializer implements JsonSerializer<SecurityInfo> {
 
                 // Get Curves params
                 rpk.addProperty("params", ecPublicKey.getParams().toString());
+
+                // Get raw public key in format PKCS8 (DER encoding)
+                rpk.addProperty("pkcs8", Base64.encodeBase64String(ecPublicKey.getEncoded()));
             } else {
                 throw new JsonParseException("Unsupported Public Key Format (only ECPublicKey supported).");
             }

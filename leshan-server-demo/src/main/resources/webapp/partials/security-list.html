@@ -1,7 +1,11 @@
 <div class="well well-sm" ng-if="serverSecurityInfo && serverSecurityInfo.rpk">
-	<h4>The Leshan public key</h4>
+	<h4>The Leshan public key
+	<button type="button" title ="Download server public key(.der)" class="btn btn-default btn-xs" ng-click="saveServerPubKey(serverSecurityInfo.rpk.pkcs8)">
+			<span class="glyphicon glyphicon-download-alt" aria-hidden="true">
+		</button>
+	</h4>
 	<p>
-		<u>Elliptic Curve parameters :</u> <code>{{serverSecurityInfo.rpk.params}}</code> <br/>
+		<u>Elliptic Curve parameters :</u> <code>{{serverSecurityInfo.rpk.params}}</code><br/>
 		<u>Public x coord :</u> <code>{{serverSecurityInfo.rpk.x}}</code><br/>
 		<u>Public y coord :</u> <code>{{serverSecurityInfo.rpk.y}}</code>
 	</p>
