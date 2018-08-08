@@ -16,9 +16,21 @@
 
 package org.eclipse.leshan.integration.tests;
 
+import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.security.AlgorithmParameters;
+import java.security.GeneralSecurityException;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.spec.ECGenParameterSpec;
+import java.security.spec.ECParameterSpec;
+import java.security.spec.ECPoint;
+import java.security.spec.ECPrivateKeySpec;
+import java.security.spec.ECPublicKeySpec;
+import java.security.spec.KeySpec;
 import java.util.Arrays;
 import java.util.List;
 
@@ -39,6 +51,7 @@ import org.eclipse.leshan.server.californium.impl.LeshanBootstrapServer;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
+import org.eclipse.leshan.util.Hex;
 
 /**
  * Helper for running a server and executing a client against it.
@@ -46,7 +59,40 @@ import org.eclipse.leshan.server.security.SecurityInfo;
  */
 public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper {
 
-    LeshanBootstrapServer bootstrapServer;
+    public LeshanBootstrapServer bootstrapServer;
+    public final PublicKey bootstrapServerPublicKey;
+    public final PrivateKey bootstrapServerPrivateKey;
+
+    public BootstrapIntegrationTestHelper() {
+        super();
+
+        // create bootstrap server credentials
+        try {
+            // Get point values
+            byte[] publicX = Hex
+                    .decodeHex("fb136894878a9696d45fdb04506b9eb49ddcfba71e4e1b4ce23d5c3ac382d6b4".toCharArray());
+            byte[] publicY = Hex
+                    .decodeHex("3deed825e808f8ed6a9a74ff6bd24e3d34b1c0c5fc253422f7febadbdc9cb9e6".toCharArray());
+            byte[] privateS = Hex
+                    .decodeHex("35a8303e67a7e99d06552a0f8f6c8f1bf91a174396f4fad6211ae227e890da11".toCharArray());
+
+            // Get Elliptic Curve Parameter spec for secp256r1
+            AlgorithmParameters algoParameters = AlgorithmParameters.getInstance("EC");
+            algoParameters.init(new ECGenParameterSpec("secp256r1"));
+            ECParameterSpec parameterSpec = algoParameters.getParameterSpec(ECParameterSpec.class);
+
+            // Create key specs
+            KeySpec publicKeySpec = new ECPublicKeySpec(new ECPoint(new BigInteger(publicX), new BigInteger(publicY)),
+                    parameterSpec);
+            KeySpec privateKeySpec = new ECPrivateKeySpec(new BigInteger(privateS), parameterSpec);
+
+            // Get keys
+            bootstrapServerPublicKey = KeyFactory.getInstance("EC").generatePublic(publicKeySpec);
+            bootstrapServerPrivateKey = KeyFactory.getInstance("EC").generatePrivate(privateKeySpec);
+        } catch (GeneralSecurityException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public void createBootstrapServer(BootstrapSecurityStore securityStore, BootstrapStore bootstrapStore) {
         if (bootstrapStore == null) {
@@ -91,6 +137,8 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         builder.setSecurityStore(securityStore);
         builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
+        builder.setPrivateKey(bootstrapServerPrivateKey);
+        builder.setPublicKey(bootstrapServerPublicKey);
 
         bootstrapServer = builder.build();
     }
@@ -120,6 +168,16 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         createClient(security);
     }
 
+    @Override
+    public void createRPKClient() {
+        String bsUrl = "coaps://" + bootstrapServer.getSecuredAddress().getHostString() + ":"
+                + bootstrapServer.getSecuredAddress().getPort();
+        Security security = Security.rpkBootstrap(bsUrl, clientPublicKey.getEncoded(), clientPrivateKey.getEncoded(),
+                bootstrapServerPublicKey.getEncoded());
+
+        createClient(security);
+    }
+
     private void createClient(Security security) {
         ObjectsInitializer initializer = new ObjectsInitializer();
 
@@ -137,26 +195,32 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         setupClientMonitoring();
     }
 
-    public BootstrapSecurityStore bsSecurityStore() {
+    public BootstrapSecurityStore bsSecurityStore(final SecurityMode mode) {
 
         return new BootstrapSecurityStore() {
             @Override
             public SecurityInfo getByIdentity(String identity) {
-                if (BootstrapIntegrationTestHelper.GOOD_PSK_ID.equals(identity)) {
-                    return pskSecurityInfo();
-                } else {
-                    return null;
+                if (mode == SecurityMode.PSK) {
+                    if (BootstrapIntegrationTestHelper.GOOD_PSK_ID.equals(identity)) {
+                        return pskSecurityInfo();
+                    }
                 }
+                return null;
             }
 
             @Override
             public List<SecurityInfo> getAllByEndpoint(String endpoint) {
                 if (getCurrentEndpoint().equals(endpoint)) {
-                    SecurityInfo info = pskSecurityInfo();
-                    return Arrays.asList(info);
-                } else {
-                    return Arrays.asList();
+                    SecurityInfo info;
+                    if (mode == SecurityMode.PSK) {
+                        info = pskSecurityInfo();
+                        return Arrays.asList(info);
+                    } else if (mode == SecurityMode.RPK) {
+                        info = rpkSecurityInfo();
+                        return Arrays.asList(info);
+                    }
                 }
+                return Arrays.asList();
             }
         };
     }
@@ -164,6 +228,11 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
     public SecurityInfo pskSecurityInfo() {
         SecurityInfo info = SecurityInfo.newPreSharedKeyInfo(getCurrentEndpoint(),
                 BootstrapIntegrationTestHelper.GOOD_PSK_ID, BootstrapIntegrationTestHelper.GOOD_PSK_KEY);
+        return info;
+    }
+
+    public SecurityInfo rpkSecurityInfo() {
+        SecurityInfo info = SecurityInfo.newRawPublicKeyInfo(getCurrentEndpoint(), clientPublicKey);
         return info;
     }
 

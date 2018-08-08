@@ -17,6 +17,7 @@ package org.eclipse.leshan.integration.tests;
 
 import static org.eclipse.leshan.integration.tests.SecureIntegrationTestHelper.*;
 
+import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.junit.After;
@@ -63,13 +64,13 @@ public class BootstrapTest {
     }
 
     @Test
-    public void bootstrapSecure() {
+    public void bootstrapSecureWithPSK() {
         // Create DM Server without security & start it
         helper.createServer();
         helper.server.start();
 
         // Create and start bootstrap server
-        helper.createBootstrapServer(helper.bsSecurityStore());
+        helper.createBootstrapServer(helper.bsSecurityStore(SecurityMode.PSK));
         helper.bootstrapServer.start();
 
         // Create PSK Client and check it is not already registered
@@ -85,17 +86,17 @@ public class BootstrapTest {
     }
 
     @Test
-    public void bootstrapSecureWithBadCredentials() {
+    public void bootstrapSecureWithBadPSKKey() {
         // Create DM Server without security & start it
         helper.createServer();
         helper.server.start();
 
         // Create and start bootstrap server
-        helper.createBootstrapServer(helper.bsSecurityStore());
+        helper.createBootstrapServer(helper.bsSecurityStore(SecurityMode.PSK));
         helper.bootstrapServer.start();
 
         // Create PSK Client with bad credentials and check it is not already registered
-        helper.createPSKClient(GOOD_PSK_ID, BAD_PSK_KEY);
+        helper.createRPKClient();
         helper.assertClientNotRegisterered();
 
         // Start it and wait for registration
@@ -104,6 +105,28 @@ public class BootstrapTest {
 
         // check the client is not registered
         helper.assertClientNotRegisterered();
+    }
+
+    @Test
+    public void bootstrapSecureWithRPK() {
+        // Create DM Server without security & start it
+        helper.createServer();
+        helper.server.start();
+
+        // Create and start bootstrap server
+        helper.createBootstrapServer(helper.bsSecurityStore(SecurityMode.RPK));
+        helper.bootstrapServer.start();
+
+        // Create RPK Client and check it is not already registered
+        helper.createRPKClient();
+        helper.assertClientNotRegisterered();
+
+        // Start it and wait for registration
+        helper.client.start();
+        helper.waitForRegistrationAtServerSide(5000);
+
+        // check the client is registered
+        helper.assertClientRegisterered();
     }
 
     @Test
