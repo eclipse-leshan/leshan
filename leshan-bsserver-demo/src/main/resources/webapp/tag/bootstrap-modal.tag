@@ -11,78 +11,31 @@
                         <div class={ form-group:true, has-error: endpoint.error } >
                             <label for="endpoint" class="col-sm-4 control-label">Client endpoint</label>
                             <div class="col-sm-8">
-                                <input class="form-control" id="endpoint" oninput={validate_endpoint} onblur={validate_endpoint} >
+                                <input class="form-control" id="endpoint" ref="endpoint" oninput={validate_endpoint} onblur={validate_endpoint} >
                                 <p class="help-block">The endpoint is required</p>
                             </div>
                         </div>
 
-                        <div class="form-group" >
-                            <label for="dmUrl" class="col-sm-4 control-label">LWM2M Server URL</label>
-                            <div class="col-sm-8">
-                                <input class="form-control" id="dmUrl" placeholder={default_uri()}>
-                            </div>
-                        </div>
+                        <ul class="nav nav-tabs nav-justified">
+                            <li role="presentation" class={ active:activetab.lwserver }><a href="javascript:void(0);" onclick={activetab.activelwserver}>LWM2M Server</a></li>
+                            <li role="presentation" class={ active:activetab.bsserver }><a href="javascript:void(0);" onclick={activetab.activebsserver}>LWM2M Bootstrap Server</a></li>
+                        </ul>
+                        </br>
 
-                        <div class="form-group">
-                            <label for="secMode" class="col-sm-4 control-label">Security mode</label>
-                            <div class="col-sm-8">
-                                <select class="form-control" id="secMode" onchange={update}>
-                                    <option value="no_sec">No Security</option>
-                                    <option value="psk">Pre-Shared Key</option>
-                                    <!-- option value="rpk">Raw Public Key (Elliptic Curves)</option-->
-                                    <option value="x509">X.509 Certificate</option>
-                                </select>
-                            </div>
+                        <div>
+                            <securityconfig-input   ref="lwserver" onchange={update} show={activetab.lwserver}
+                                                    securi={ "coaps://" + location.hostname + ":5684" }
+                                                    unsecuri= { "coap://" + location.hostname + ":5683" }
+                                                    secmode = { {no_sec:true, psk:true, x509:true} }
+                                                    ></securityconfig-input>
                         </div>
-
-                        <!-- PSK inputs -->
-                        <div class={ form-group:true, has-error: pskId.error } if={ secMode.value == "psk"}>
-                            <label for="pskId" class="col-sm-4 control-label">Identity</label>
-                            <div class="col-sm-8">
-                                <textarea class="form-control" style="resize:none" rows="3" id="pskId" oninput={validate_pskId} onblur={validate_pskId}></textarea>
-                                <p class="help-block" if={pskId.required} >The PSK identity is required</p>
-                                <p class="help-block" if={pskId.toolong} >The PSK identity is too long</p>
-                            </div>
-                        </div>
-
-                        <div class={ form-group:true, has-error: pskVal.error } if={ secMode.value == "psk"}>
-                            <label for="pskVal" class="col-sm-4 control-label">Key</label>
-                            <div class="col-sm-8">
-                                <textarea class="form-control" style="resize:none" rows="3" id="pskVal" oninput={validate_pskVal} onblur={validate_pskVal}></textarea>
-                                <p class="text-right text-muted small" style="margin:0">Hexadecimal format</p>
-                                <p class="help-block" if={pskVal.required}>The pre-shared key is required</p>
-                                <p class="help-block" if={pskVal.nothexa}>Hexadecimal format is expected</p>
-                                <p class="help-block" if={pskVal.toolong}>The pre-shared key is too long</p>
-                            </div>
-                        </div>
-
-                        <!-- X.509 inputs -->
-                        <div class={ form-group:true, has-error: x509Cert.error } if={ secMode.value == "x509"}>
-                            <label for="x509Cert" class="col-sm-4 control-label">Client certificate</label>
-                            <div class="col-sm-8">
-                                <textarea class="form-control" style="resize:none" rows="3" id="x509Cert" oninput={validate_x509Cert} onblur={validate_x509Cert}></textarea>
-                                <p class="text-right text-muted small" style="margin:0">Hexadecimal format</p>
-                                <p class="help-block" if={x509Cert.required}>The client certificate is required</p>
-                                <p class="help-block" if={x509Cert.nothexa}>Hexadecimal format is expected</p>
-                            </div>
-                        </div>
-                        <div class={ form-group:true, has-error: x509PrivateKey.error } if={ secMode.value == "x509"}>
-                            <label for="x509PrivateKey" class="col-sm-4 control-label">Client private key</label>
-                            <div class="col-sm-8">
-                                <textarea class="form-control" style="resize:none" rows="3" id="x509PrivateKey" oninput={validate_x509PrivateKey} onblur={validate_x509PrivateKey}></textarea>
-                                <p class="text-right text-muted small" style="margin:0">Hexadecimal format</p>
-                                <p class="help-block" if={x509PrivateKey.required}>The client private key is required</p>
-                                <p class="help-block" if={x509PrivateKey.nothexa}>Hexadecimal format is expected</p>
-                            </div>
-                        </div>
-                        <div class={ form-group:true, has-error: x509ServerCert.error } if={ secMode.value == "x509"}>
-                            <label for="x509ServerCert" class="col-sm-4 control-label">Server certificate</label>
-                            <div class="col-sm-8">
-                                <textarea class="form-control" style="resize:none" rows="3" id="x509ServerCert" oninput={validate_x509ServerCert} onblur={validate_x509ServerCert}></textarea>
-                                <p class="text-right text-muted small" style="margin:0">Hexadecimal format</p>
-                                <p class="help-block" if={x509ServerCert.required}>The server certificate is required</p>
-                                <p class="help-block" if={x509ServerCert.nothexa}>Hexadecimal format is expected</p>
-                            </div>
+                        <div>
+                             <securityconfig-input ref="bsserver" onchange={update} show={activetab.bsserver}
+                                                    securi={ "coaps://" + location.hostname + ":" + serverdata.securedEndpointPort }
+                                                    unsecuri= { "coap://" + location.hostname + ":" + serverdata.unsecuredEndpointPort }
+                                                    disable = { {uri:true} }
+                                                    secmode = { {no_sec:true, psk:true} }
+                                                    ></securityconfig-input>
                         </div>
 
                     </form>
@@ -96,163 +49,49 @@
     </div>
 
     <script>
-        var self = this;
-        
+        // Tag definition
+        var tag = this;
+        // Tag Params
+        tag.serverdata = opts.server || {unsecuredEndpointPort:5683, securedEndpointPort:5684};
+        // Tag Internal state
+        tag.endpoint = {}
+        tag.has_error = has_error;
+        tag.validate_endpoint = validate_endpoint;
+        tag.submit = submit;
+
+        // Tabs management
+        tag.activetab = {
+                lwserver:true,
+                bsserver:false,
+                activelwserver:function(){ tag.activetab.lwserver=true; tag.activetab.bsserver = false; },
+                activebsserver:function(){ tag.activetab.lwserver=false; tag.activetab.bsserver = true; }
+        };
+
+        // Initialization
         this.on('mount', function() {
-	        $.get('api/server', function(data) {
-	            self.server = data;
-	            $('#bootstrap-modal').modal('show');
-            	this.update();
-	        }).fail(function(xhr, status, error){
-	            var err = "Unable to get the server info";
-	            console.error(err, status, error, xhr.responseText);
-	            alert(err + ": " + xhr.responseText);
-	        });
+            $('#bootstrap-modal').modal('show');
         });
 
-        default_uri(){
-            if (secMode.value === "no_sec")
-                return "coap://"+location.hostname+":5683";
-            else
-                return "coaps://"+location.hostname+":5684";
+        // Tag functions
+        function has_error(){
+            var endpoint_has_error = (tag.endpoint.error === undefined || tag.endpoint.error);
+            return endpoint_has_error || tag.refs.lwserver.has_error() || tag.refs.bsserver.has_error();
         }
 
-        has_error(){
-            var endpoint_has_error = (endpoint.error === undefined || endpoint.error);
-            var psk_has_error = secMode.value === "psk" && (typeof pskId.error === "undefined" || pskId.error || typeof pskVal.error === "undefined" || pskVal.error);
-            var x509_has_error = secMode.value === "x509" && (typeof x509Cert.error === "undefined" || x509Cert.error || typeof x509PrivateKey.error === "undefined" || x509PrivateKey.error || typeof x509ServerCert.error === "undefined" || x509ServerCert.error);
-            return endpoint_has_error || psk_has_error || x509_has_error;
-        }
-
-        validate_endpoint(){
-            var str = endpoint.value;
+        function validate_endpoint(){
+            var str = tag.refs.endpoint.value;
             if (!str || 0 === str.length){
-                endpoint.error = true;
-                has_error = true;
+                tag.endpoint.error = true;
             }else{
-                endpoint.error = false;
-                has_error = false;
+                tag.endpoint.error = false;
             }
         }
 
-        validate_pskId(){
-            var str = pskId.value;
-            pskId.error = false;
-            pskId.required = false;
-            pskId.toolong = false;
-            if (secMode.value === "psk"){
-                if (!str || 0 === str.length){
-                    pskId.error = true;
-                    pskId.required = true;
-                }else if (str.length > 128){
-                    pskId.error = true;
-                    pskId.toolong = true;
-                }
-            }
-        }
+        function submit(){
+            var lwserver = tag.refs.lwserver.get_value()
+            var bsserver = tag.refs.bsserver.get_value()
 
-        validate_pskVal(){
-            var str = pskVal.value;
-            pskVal.error = false;
-            pskVal.required = false;
-            pskVal.toolong = false;
-            pskVal.nothexa = false;
-            if (secMode.value === "psk"){
-                if (!str || 0 === str.length){
-                    pskVal.error = true;
-                    pskVal.required = true;
-                }else if (str.length > 128){
-                    pskVal.error = true;
-                    pskVal.toolong = true;
-                }else if (! /^[0-9a-fA-F]+$/i.test(str)){
-                    pskVal.error = true;
-                    pskVal.nothexa = true;
-                }
-            }
-        }
-
-        validate_x509Cert(){
-            var str = x509Cert.value;
-            x509Cert.error = false;
-            x509Cert.required = false;
-            x509Cert.nothexa = false;
-            if (secMode.value === "x509"){
-                if (!str || 0 === str.length){
-                    x509Cert.error = true;
-                    x509Cert.required = true;
-                }else if (! /^[0-9a-fA-F]+$/i.test(str)){
-                    x509Cert.error = true;
-                    x509Cert.nothexa = true;
-                }
-            }
-        }
-
-        validate_x509PrivateKey(){
-            var str = x509PrivateKey.value;
-            x509PrivateKey.error = false;
-            x509PrivateKey.required = false;
-            x509PrivateKey.nothexa = false;
-            if (secMode.value === "x509"){
-                if (!str || 0 === str.length){
-                    x509PrivateKey.error = true;
-                    x509PrivateKey.required = true;
-                }else if (! /^[0-9a-fA-F]+$/i.test(str)){
-                    x509PrivateKey.error = true;
-                    x509PrivateKey.nothexa = true;
-                }
-            }
-        }
-
-        validate_x509ServerCert(){
-            var str = x509ServerCert.value;
-            x509ServerCert.error = false;
-            x509ServerCert.required = false;
-            x509ServerCert.nothexa = false;
-            if (secMode.value === "x509"){
-                if (!str || 0 === str.length){
-                    x509ServerCert.error = true;
-                    x509ServerCert.required = true;
-                }else if (! /^[0-9a-fA-F]+$/i.test(str)){
-                    x509ServerCert.error = true;
-                    x509ServerCert.nothexa = true;
-                }
-            }
-        }
-
-        fromAscii(ascii){
-            var bytearray = [];
-            for (var i in ascii){
-                bytearray[i] = ascii.charCodeAt(i);
-            }
-            return bytearray;
-        };
-
-        fromHex(hex){
-            var bytes = [];
-            for(var i=0; i< hex.length-1; i+=2) {
-                bytes.push(parseInt(hex.substr(i, 2), 16));
-            }
-            return bytes;
-        };
-
-        submit(){
-            var id = [];
-            var key = [];
-            var serverKey = [];
-            if (secMode.value === "psk"){
-                id = self.fromAscii(pskId.value);
-                key = self.fromHex(pskVal.value);
-            }else if(secMode.value === "x509"){
-                id = self.fromHex(x509Cert.value);
-                key = self.fromHex(x509PrivateKey.value);
-                serverKey = self.fromHex(x509ServerCert.value);
-            }
-            var uri
-            if (!dmUrl.value || dmUrl.value.length == 0){
-                uri = self.default_uri();
-            }else{
-                uri = dmUrl.value;
-            }
+            // add config to the store
             bsConfigStore.add(endpoint.value, {
                  dm:[{
                     binding : "U",
@@ -263,32 +102,32 @@
                     security : {
                         bootstrapServer : false,
                         clientOldOffTime : 1,
-                        publicKeyOrId : id,
-                        secretKey : key,
-                        securityMode : secMode.value.toUpperCase(),
+                        publicKeyOrId : lwserver.id,
+                        secretKey : lwserver.key,
+                        securityMode : lwserver.secmode,
                         serverId : 123,
-                        serverPublicKey : serverKey,
+                        serverPublicKey : lwserver.serverKey,
                         serverSmsNumber : "",
                         smsBindingKeyParam : [  ],
                         smsBindingKeySecret : [  ],
                         smsSecurityMode : "NO_SEC",
-                        uri : uri
+                        uri : lwserver.uri
                       }
                 }],
                  bs:[{
                     security : {
                         bootstrapServer : true,
                         clientOldOffTime : 1,
-                        publicKeyOrId : [],
-                        secretKey : [],
-                        securityMode : "NO_SEC",
+                        publicKeyOrId : bsserver.id,
+                        secretKey : bsserver.key,
+                        securityMode : bsserver.secmode,
                         serverId : 111,
-                        serverPublicKey : [  ],
+                        serverPublicKey : lwserver.serverKey,
                         serverSmsNumber : "",
                         smsBindingKeyParam : [  ],
                         smsBindingKeySecret : [  ],
                         smsSecurityMode : "NO_SEC",
-                        uri : "coap://"+location.hostname+":"+self.server.unsecuredEndpointPort,
+                        uri : bsserver.uri,
                       }
                 }]
             });

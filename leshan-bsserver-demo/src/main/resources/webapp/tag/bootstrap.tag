@@ -16,7 +16,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr each={ endpoint, config in configs }>
+            <tr each={ config, endpoint in configs }>
                 <td>{ endpoint }</td>
                 <td>
                     <div each={ config.bs }>
@@ -62,27 +62,41 @@
     <div id='modal'></div>
 
     <script>
-        var self = this;
+        // Tag definition
+        var tag = this;
+        // internal state;
+        tag.remove = remove;
+        tag.showModal = showModal;
+        tag.toAscii = toAscii;
+        tag.toHex = toHex;
 
-        this.on('mount',function(){
+        // Tag initilialization
+        tag.on('mount',function(){
             bsConfigStore.init();
         });
 
         bsConfigStore.on("changed", function(configs){
-            self.configs = configs;
-            self.update();
+            tag.configs = configs;
+            tag.update();
         });
 
-        showModal(){
-            riot.mount('div#modal', 'bootstrap-modal');
+        // Tag functions
+        function showModal(){
+            $.get('api/server/endpoint', function(data) {
+                riot.mount('div#modal', 'bootstrap-modal', {server:data});
+            }).fail(function(xhr, status, error){
+                var err = "Unable to get the server info";
+                console.error(err, status, error, xhr.responseText);
+                alert(err + ": " + xhr.responseText);
+            });
+            
         };
 
-        remove(e){
+        function remove(e){
             bsConfigStore.remove(e.item.endpoint);
         }
 
-        // utils
-        toAscii(byteArray){
+        function toAscii(byteArray){
             var ascii = [];
             for (var i in byteArray){
                 ascii[i] = String.fromCharCode(byteArray[i]);
@@ -90,7 +104,7 @@
             return ascii.join('');
         };
 
-        toHex(byteArray){
+        function toHex(byteArray){
             var hex = [];
             for (var i in byteArray){
                 hex[i] = byteArray[i].toString(16).toUpperCase();

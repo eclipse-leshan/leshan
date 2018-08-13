@@ -40,7 +40,9 @@ public class ServerServlet extends HttpServlet {
         resp.setStatus(HttpServletResponse.SC_OK);
         resp.setContentType("application/json");
         resp.getOutputStream()
-                .write(String.format("{\"unsecuredEndpointPort\":\"%s\"}", server.getUnsecuredAddress().getPort())
+                .write(String
+                        .format("{ \"securedEndpointPort\":\"%s\", \"unsecuredEndpointPort\":\"%s\"}",
+                                server.getSecuredAddress().getPort(), server.getUnsecuredAddress().getPort())
                         .getBytes(StandardCharsets.UTF_8));
     }
 }
