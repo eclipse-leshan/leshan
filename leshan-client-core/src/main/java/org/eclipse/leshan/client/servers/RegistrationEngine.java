@@ -36,6 +36,7 @@ import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
+import org.eclipse.leshan.core.request.exception.SendFailedException;
 import org.eclipse.leshan.core.response.BootstrapResponse;
 import org.eclipse.leshan.core.response.DeregisterResponse;
 import org.eclipse.leshan.core.response.RegisterResponse;
@@ -189,6 +190,9 @@ public class RegistrationEngine {
                     }
                     return null;
                 }
+            } catch (SendFailedException e) {
+                logExceptionOnSendRequest("Unable to send Bootstrap request", e);
+                return null;
             } finally {
                 bootstrapHandler.closeSession();
             }
@@ -208,34 +212,40 @@ public class RegistrationEngine {
 
         // Send register request
         LOG.info("Trying to register to {} ...", dmInfo.getFullUri());
-        RegisterRequest regRequest = new RegisterRequest(endpoint, dmInfo.lifetime, LwM2m.VERSION, dmInfo.binding, null,
-                LinkFormatHelper.getClientDescription(objectEnablers.values(), null), additionalAttributes);
-        RegisterResponse response = sender.send(server.getIdentity().getPeerAddress(), server.getIdentity().isSecure(),
-                regRequest, DEFAULT_TIMEOUT);
-        if (response == null) {
-            LOG.error("Registration failed: Timeout.");
-            if (observer != null) {
-                observer.onRegistrationTimeout(server);
-            }
-        } else if (response.isSuccess()) {
-            // Add server to registered one
-            String registrationID = response.getRegistrationID();
-            registeredServers.put(registrationID, server);
-            LOG.info("Registered with location '{}'.", registrationID);
+        try {
+            RegisterRequest regRequest = new RegisterRequest(endpoint, dmInfo.lifetime, LwM2m.VERSION, dmInfo.binding,
+                    null, LinkFormatHelper.getClientDescription(objectEnablers.values(), null), additionalAttributes);
+            RegisterResponse response = sender.send(server.getIdentity().getPeerAddress(),
+                    server.getIdentity().isSecure(), regRequest, DEFAULT_TIMEOUT);
 
-            // Update every lifetime period
-            long delay = calculateNextUpdate(dmInfo.lifetime);
-            scheduleUpdate(server, registrationID, delay);
+            if (response == null) {
+                LOG.error("Registration failed: Timeout.");
+                if (observer != null) {
+                    observer.onRegistrationTimeout(server);
+                }
+            } else if (response.isSuccess()) {
+                // Add server to registered one
+                String registrationID = response.getRegistrationID();
+                registeredServers.put(registrationID, server);
+                LOG.info("Registered with location '{}'.", registrationID);
 
-            if (observer != null) {
-                observer.onRegistrationSuccess(server, registrationID);
+                // Update every lifetime period
+                long delay = calculateNextUpdate(dmInfo.lifetime);
+                scheduleUpdate(server, registrationID, delay);
+
+                if (observer != null) {
+                    observer.onRegistrationSuccess(server, registrationID);
+                }
+                return true;
+            } else {
+                LOG.error("Registration failed: {} {}.", response.getCode(), response.getErrorMessage());
+                if (observer != null) {
+                    observer.onRegistrationFailure(server, response.getCode(), response.getErrorMessage());
+                }
             }
-            return true;
-        } else {
-            LOG.error("Registration failed: {} {}.", response.getCode(), response.getErrorMessage());
-            if (observer != null) {
-                observer.onRegistrationFailure(server, response.getCode(), response.getErrorMessage());
-            }
+        } catch (SendFailedException e) {
+            logExceptionOnSendRequest("Unable to send register request", e);
+            return false;
         }
         return false;
     }
@@ -252,33 +262,38 @@ public class RegistrationEngine {
 
         // Send deregister request
         LOG.info("Trying to deregister to {} ...", dmInfo.getFullUri());
-        DeregisterResponse response = sender.send(server.getIdentity().getPeerAddress(),
-                server.getIdentity().isSecure(), new DeregisterRequest(registrationID), DEREGISTRATION_TIMEOUT);
-        if (response == null) {
-            registrationID = null;
-            LOG.error("Deregistration failed: Timeout.");
-            if (observer != null) {
-                observer.onDeregistrationTimeout(server);
-            }
-            return false;
-        } else if (response.isSuccess() || response.getCode() == ResponseCode.NOT_FOUND) {
-            registeredServers.remove(registrationID);
-            registrationID = null;
-            cancelUpdateTask(true);
-            LOG.info("De-register response {} {}.", response.getCode(), response.getErrorMessage());
-            if (observer != null) {
-                if (response.isSuccess()) {
-                    observer.onDeregistrationSuccess(server, registrationID);
-                } else {
+        try {
+            DeregisterResponse response = sender.send(server.getIdentity().getPeerAddress(),
+                    server.getIdentity().isSecure(), new DeregisterRequest(registrationID), DEREGISTRATION_TIMEOUT);
+            if (response == null) {
+                registrationID = null;
+                LOG.error("Deregistration failed: Timeout.");
+                if (observer != null) {
+                    observer.onDeregistrationTimeout(server);
+                }
+                return false;
+            } else if (response.isSuccess() || response.getCode() == ResponseCode.NOT_FOUND) {
+                registeredServers.remove(registrationID);
+                registrationID = null;
+                cancelUpdateTask(true);
+                LOG.info("De-register response {} {}.", response.getCode(), response.getErrorMessage());
+                if (observer != null) {
+                    if (response.isSuccess()) {
+                        observer.onDeregistrationSuccess(server, registrationID);
+                    } else {
+                        observer.onDeregistrationFailure(server, response.getCode(), response.getErrorMessage());
+                    }
+                }
+                return true;
+            } else {
+                LOG.error("Deregistration failed: {} {}.", response.getCode(), response.getErrorMessage());
+                if (observer != null) {
                     observer.onDeregistrationFailure(server, response.getCode(), response.getErrorMessage());
                 }
+                return false;
             }
-            return true;
-        } else {
-            LOG.error("Deregistration failed: {} {}.", response.getCode(), response.getErrorMessage());
-            if (observer != null) {
-                observer.onDeregistrationFailure(server, response.getCode(), response.getErrorMessage());
-            }
+        } catch (SendFailedException e) {
+            logExceptionOnSendRequest("Unable to send deregister request", e);
             return false;
         }
     }
@@ -292,30 +307,35 @@ public class RegistrationEngine {
 
         // Send update
         LOG.info("Trying to update registration to {} ...", dmInfo.getFullUri());
-        UpdateResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(),
-                new UpdateRequest(registrationID, null, null, null, null, null), DEFAULT_TIMEOUT);
-        if (response == null) {
-            registrationID = null;
-            LOG.error("Registration update failed: Timeout.");
-            if (observer != null) {
-                observer.onUpdateTimeout(server);
+        try {
+            UpdateResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(),
+                    new UpdateRequest(registrationID, null, null, null, null, null), DEFAULT_TIMEOUT);
+            if (response == null) {
+                registrationID = null;
+                LOG.error("Registration update failed: Timeout.");
+                if (observer != null) {
+                    observer.onUpdateTimeout(server);
+                }
+                return false;
+            } else if (response.getCode() == ResponseCode.CHANGED) {
+                // Update successful, so we reschedule new update
+                LOG.info("Registration update succeed.");
+                long delay = calculateNextUpdate(dmInfo.lifetime);
+                scheduleUpdate(server, registrationID, delay);
+                if (observer != null) {
+                    observer.onUpdateSuccess(server, registrationID);
+                }
+                return true;
+            } else {
+                LOG.error("Registration update failed: {} {}.", response.getCode(), response.getErrorMessage());
+                if (observer != null) {
+                    observer.onUpdateFailure(server, response.getCode(), response.getErrorMessage());
+                }
+                registeredServers.remove(registrationID);
+                return false;
             }
-            return false;
-        } else if (response.getCode() == ResponseCode.CHANGED) {
-            // Update successful, so we reschedule new update
-            LOG.info("Registration update succeed.");
-            long delay = calculateNextUpdate(dmInfo.lifetime);
-            scheduleUpdate(server, registrationID, delay);
-            if (observer != null) {
-                observer.onUpdateSuccess(server, registrationID);
-            }
-            return true;
-        } else {
-            LOG.error("Registration update failed: {} {}.", response.getCode(), response.getErrorMessage());
-            if (observer != null) {
-                observer.onUpdateFailure(server, response.getCode(), response.getErrorMessage());
-            }
-            registeredServers.remove(registrationID);
+        } catch (SendFailedException e) {
+            logExceptionOnSendRequest("Unable to send update request", e);
             return false;
         }
     }
@@ -522,6 +542,20 @@ public class RegistrationEngine {
                 }
             }
         }
+    }
+
+    private void logExceptionOnSendRequest(String message, Exception e) {
+        if (LOG.isDebugEnabled()) {
+            LOG.warn(message, e);
+            return;
+        }
+        if (e instanceof SendFailedException) {
+            if (e.getCause() != null && e.getMessage() != null) {
+                LOG.warn("{} : {}", message, e.getCause().getMessage());
+                return;
+            }
+        }
+        LOG.warn("{} : {}", message, e.getMessage());
     }
 
     /**
