@@ -14,18 +14,23 @@
             <select class="form-control" id="secMode" ref="secMode">
                 <option value="no_sec" show={secmode.no_sec} >No Security</option>
                 <option value="psk"    show={secmode.psk}    >Pre-Shared Key</option>
-                <!-- option value="rpk" show= {secmode.rpk} >Raw Public Key</option-->
+                <option value="rpk"    show={secmode.rpk}    >Raw Public Key</option>
                 <option value="x509"   show={secmode.x509}   >X.509 Certificate</option>
             </select>
         </div>
     </div>
-    
+
     <!-- PSK -->
     <div if={ refs.secMode.value == "psk" }>
         <psk-input ref="psk" onchange={onchange}></psk-input>
     </div>
-    
-    <!-- X09 -->
+
+     <!-- RPK -->
+    <div if={  refs.secMode.value == "rpk" } >
+        <rpk-input ref="rpk" onchange={onchange} disable={disable} serverpubkey={serverpubkey}></rpk-input>
+    </div>
+
+    <!-- X509 -->
     <div if={  refs.secMode.value == "x509" } >
         <x509-input ref="x509" onchange={onchange}></x509-input>
     </div>
@@ -36,6 +41,7 @@
         // Tag Params
         tag.secmode = opts.secmode || {no_sec:true};
         tag.disable = opts.disable || {};
+        tag.serverpubkey = opts.serverpubkey || "";
         tag.onchange = opts.onchange;
         tag.securi = opts.securi || "";
         tag.unsecuri = opts.unsecuri || "";
@@ -54,7 +60,8 @@
         }
 
         function has_error() {
-            return tag.refs.secMode.value === "psk" && tag.refs.psk.has_error()
+            return tag.refs.secMode.value === "psk"  && tag.refs.psk.has_error()
+                || tag.refs.secMode.value === "rpk"  && tag.refs.rpk.has_error()
                 || tag.refs.secMode.value === "x509" && tag.refs.x509.has_error();
         }
 
@@ -79,7 +86,12 @@
                 var psk = tag.refs.psk.get_value()
                 config.id = fromAscii(psk.id);
                 config.key = fromHex(psk.key);
-            }else if(config.secmode === "X509"){
+            } else if(config.secmode === "RPK"){
+                var rpk = tag.refs.rpk.get_value();
+                config.id = fromHex(rpk.pubkey);
+                config.key = fromHex(rpk.privkey);
+                config.serverKey = fromHex(rpk.servpubkey);
+            } else if(config.secmode === "X509"){
                 var x509 = tag.refs.x509.get_value();
                 config.id = fromHex(x509.cert);
                 config.key = fromHex(x509.key);

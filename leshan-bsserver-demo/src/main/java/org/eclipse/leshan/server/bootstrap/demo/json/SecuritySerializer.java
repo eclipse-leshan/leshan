@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.demo.servlet.json;
+package org.eclipse.leshan.server.bootstrap.demo.json;
 
 import java.lang.reflect.Type;
 import java.security.PublicKey;
@@ -30,7 +30,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
-// /!\ This class is a COPY of org.eclipse.leshan.server.bootstrap.demo.json.SecuritySerializer /!\
+///!\ This class is a COPY of org.eclipse.leshan.server.demo.servlet.json.SecuritySerializer /!\
 public class SecuritySerializer implements JsonSerializer<SecurityInfo> {
 
     @Override
