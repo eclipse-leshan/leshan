@@ -1,0 +1,32 @@
+name: leshan
+version: '1.0.0'
+summary: Eclipse Leshan is an OMA Lightweight M2M server and client Java implementation
+description: |
+  Leshan provides libraries which help people to develop their own Lightweight M2M server and client.
+  The project also provides a client, a server and a bootstrap server demonstration as an example of 
+  the Leshan API and for testing purpose.
+
+grade: stable
+confinement: strict
+
+apps:
+  server:
+    command: bin/server.sh
+    plugs: [network-bind, network]
+  bootstrap:
+    command: bin/bootstrap.sh
+    plugs: [network-bind, network]
+  client:
+    command: bin/client.sh
+    plugs: [network]
+
+parts:
+  leshan:
+    plugin: maven
+    maven-options: [-Pall]
+    maven-targets: [leshan-server-demo, leshan-bsserver-demo, leshan-client-demo]
+  bin:
+    source: snap/bin
+    plugin: dump
+    organize:
+      "*": bin/
