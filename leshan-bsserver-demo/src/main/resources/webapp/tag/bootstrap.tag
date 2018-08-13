@@ -1,4 +1,22 @@
 <bootstrap>
+    <div class="well well-sm"  if={serverSecurityInfo.rpk}>
+        <h4>The Leshan bootstrap public key <small>(SubjectPublicKeyInfo der encoded)</small>
+        <button type="button" title ="Download server public key(.der)" class="btn btn-default btn-xs" onclick={saveServerPubKey}>
+            <span class="glyphicon glyphicon-download-alt" aria-hidden="true">
+        </button>
+        </h4>
+        <p>
+           <u>Elliptic Curve parameters :</u> <code>{serverSecurityInfo.rpk.params}</code><br/>
+           <u>Public x coord :</u> <code>{serverSecurityInfo.rpk.x}</code><br/>
+           <u>Public y coord :</u> <code>{serverSecurityInfo.rpk.y}</code><br/>
+           <div class="col-md-7">
+           <u>Hex : </u> <pre>{pkcs8pubkey.hex}</pre>
+           </div>
+           <div class="col-md-5">
+           <u>Base64 : </u><pre>{pkcs8pubkey.base64}</pre>
+           </div>
+        </p>
+    </div>
     <div>
         <button class="btn btn-default center-block" onclick={showModal}>
             Add new client bootstrap configuration
@@ -69,9 +87,13 @@
         tag.showModal = showModal;
         tag.toAscii = toAscii;
         tag.toHex = toHex;
+        tag.saveServerPubKey = saveServerPubKey;
+        tag.serverSecurityInfo = {};
+        tag.pkcs8pubkey = {} // .base64 .hex .bytes fields
 
         // Tag initilialization
-        tag.on('mount',function(){
+        tag.on('mount', function(){
+            server.init();
             bsConfigStore.init();
         });
 
@@ -80,16 +102,30 @@
             tag.update();
         });
 
+        server.on("initialized", function(securityInfo){
+            tag.serverSecurityInfo = securityInfo;
+            tag.pkcs8pubkey.base64 = securityInfo.rpk.pkcs8;
+            tag.pkcs8pubkey.bytes = base64ToBytes(tag.pkcs8pubkey.base64);
+            tag.pkcs8pubkey.hex = toHex(tag.pkcs8pubkey.bytes);
+            tag.update();
+        });
+
         // Tag functions
         function showModal(){
             $.get('api/server/endpoint', function(data) {
-                riot.mount('div#modal', 'bootstrap-modal', {server:data});
+                
+                riot.mount('div#modal', 'bootstrap-modal', {server:data, security:{rpk:tag.pkcs8pubkey}});
             }).fail(function(xhr, status, error){
                 var err = "Unable to get the server info";
                 console.error(err, status, error, xhr.responseText);
                 alert(err + ": " + xhr.responseText);
             });
-            
+        };
+
+        function saveServerPubKey(){
+            var blob = new Blob(tag.pkcs8pubkey.bytes, {type: "application/octet-stream"});
+            var fileName = "bsServerPubKey.der";
+            saveAs(blob, fileName);
         };
 
         function remove(e){
@@ -114,5 +150,23 @@
             }
             return hex.join('');
         };
+
+        // Utils
+        function base64ToBytes(base64){
+            var byteKey = atob(base64);
+            var byteKeyLength = byteKey.length;
+            var array = new Uint8Array(new ArrayBuffer(byteKeyLength));
+            for(i = 0; i < byteKeyLength; i++) {
+              array[i] = byteKey.charCodeAt(i);
+            }
+            return array;
+        }
     </script>
+    <style>
+        pre {
+            word-wrap: break-word;
+            word-break: break-all;
+            white-space: pre-wrap;
+        }
+    </style>
 </bootstrap>

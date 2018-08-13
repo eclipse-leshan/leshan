@@ -16,6 +16,8 @@
 package org.eclipse.leshan.server.bootstrap.demo;
 
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -25,11 +27,16 @@ import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
+import org.eclipse.leshan.util.SecurityUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A DTLS security store using the provisioned bootstrap information for finding the DTLS/PSK credentials.
  */
 public class BootstrapSecurityStoreImpl implements BootstrapSecurityStore {
+
+    private static final Logger LOG = LoggerFactory.getLogger(BootstrapSecurityStoreImpl.class);
 
     private final BootstrapStoreImpl bsStore;
 
@@ -63,13 +70,25 @@ public class BootstrapSecurityStoreImpl implements BootstrapSecurityStore {
         if (bsConfig == null || bsConfig.security == null)
             return null;
 
-        for (Map.Entry<Integer, BootstrapConfig.ServerSecurity> e : bsConfig.security.entrySet()) {
-            ServerSecurity value = e.getValue();
+        for (Map.Entry<Integer, BootstrapConfig.ServerSecurity> bsEntry : bsConfig.security.entrySet()) {
+            ServerSecurity value = bsEntry.getValue();
+
+            // Extract PSK identity
             if (value.bootstrapServer && value.securityMode == SecurityMode.PSK) {
-                // got it!
                 SecurityInfo securityInfo = SecurityInfo.newPreSharedKeyInfo(endpoint,
                         new String(value.publicKeyOrId, StandardCharsets.UTF_8), value.secretKey);
                 return Arrays.asList(securityInfo);
+            }
+            // Extract RPK identity
+            else if (value.bootstrapServer && value.securityMode == SecurityMode.RPK) {
+                try {
+                    SecurityInfo securityInfo = SecurityInfo.newRawPublicKeyInfo(endpoint,
+                            SecurityUtil.extractPublicKey(value.publicKeyOrId));
+                    return Arrays.asList(securityInfo);
+                } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+                    LOG.error("Unable to decode Client public key for {}", endpoint, e);
+                    return null;
+                }
             }
         }
         return null;
