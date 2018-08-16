@@ -55,6 +55,18 @@ angular.module('securityControllers', [])
             });
         };
 
+        $scope.saveServerPubKey = function(serverPubKey) {
+            var byteKey = atob(serverPubKey);
+            var byteKeyLength = byteKey.length;
+            var array = new Uint8Array(new ArrayBuffer(byteKeyLength));
+            for(i = 0; i < byteKeyLength; i++) {
+              array[i] = byteKey.charCodeAt(i);
+            }
+            var blob = new Blob([array], {type: "application/octet-stream"});
+            var fileName = "serverPubKey.der";
+            saveAs(blob, fileName);
+        };
+
         $scope.save = function() {
             $scope.$broadcast('show-errors-check-validity');
             if ($scope.form.$valid) {
