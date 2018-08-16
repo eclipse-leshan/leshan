@@ -225,37 +225,29 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
             singlePSKStore.setKey(key);
     }
 
-    // TODO implement RPK support for client
-    public void createRPKClient() {
+    public void createRPKClient(boolean useServerCertificate) {
         ObjectsInitializer initializer = new ObjectsInitializer();
         initializer.setInstancesForObject(LwM2mId.SECURITY,
                 Security.rpk(
                         "coaps://" + server.getSecuredAddress().getHostString() + ":"
                                 + server.getSecuredAddress().getPort(),
                         12345, clientPublicKey.getEncoded(), clientPrivateKey.getEncoded(),
-                        serverPublicKey.getEncoded()));
+                        useServerCertificate ? serverX509CertChain[0].getPublicKey().getEncoded()
+                                : serverPublicKey.getEncoded()));
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.U, false));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345", "U"));
         List<LwM2mObjectEnabler> objects = initializer.createMandatory();
         objects.add(initializer.create(2));
 
         InetSocketAddress clientAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
-        DtlsConnectorConfig.Builder config = new DtlsConnectorConfig.Builder().setAddress(clientAddress);
-        // TODO we should read the config from the security object
-        // TODO no way to provide a dynamic config with the current scandium API
-        config.setIdentity(clientPrivateKey, clientPublicKey);
-
-        CoapServer coapServer = new CoapServer();
-        CoapEndpoint.CoapEndpointBuilder coapBuilder = new CoapEndpoint.CoapEndpointBuilder();
-        coapBuilder.setConnector(new DTLSConnector(config.build()));
-        coapBuilder.setNetworkConfig(new NetworkConfig());
-        coapServer.addEndpoint(coapBuilder.build());
-
         LeshanClientBuilder builder = new LeshanClientBuilder(getCurrentEndpoint());
         builder.setLocalAddress(clientAddress.getHostString(), clientAddress.getPort());
         builder.setObjects(objects);
         client = builder.build();
-        setupClientMonitoring();
+    }
+
+    public void createRPKClient() {
+        createRPKClient(false);
     }
 
     // TODO implement X509 support for client
