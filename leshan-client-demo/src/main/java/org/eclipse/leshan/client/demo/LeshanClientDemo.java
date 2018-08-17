@@ -328,8 +328,11 @@ public class LeshanClientDemo {
                 String params = ecPublicKey.getParams().toString();
 
                 LOG.info(
-                        "Client public Key is : \n Elliptic Curve parameters  : {} \n Public x coord : {} \n Public y coord : {}",
-                        params, Hex.encodeHexString(x), Hex.encodeHexString(y));
+                        "Client uses RPK : \n Elliptic Curve parameters  : {} \n Public x coord : {} \n Public y coord : {} \n Public Key (Hex): {} \n Private Key (Hex): {}",
+                        params, Hex.encodeHexString(x), Hex.encodeHexString(y),
+                        Hex.encodeHexString(rawPublicKey.getEncoded()),
+                        Hex.encodeHexString(clientPrivateKey.getEncoded()));
+
             } else {
                 throw new IllegalStateException("Unsupported Public Key Format (only ECPublicKey supported).");
             }
