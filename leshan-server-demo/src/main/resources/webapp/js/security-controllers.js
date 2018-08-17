@@ -22,6 +22,26 @@ angular.module('securityControllers', [])
     'dialog',
     function SecurityCtrl($scope, $http, dialog) {
 
+        function toHex(byteArray){
+            var hex = [];
+            for (var i in byteArray){
+                hex[i] = byteArray[i].toString(16).toUpperCase();
+                if (hex[i].length === 1){
+                    hex[i] = '0' + hex[i];
+                }
+            }
+            return hex.join('');
+        };
+        function base64ToBytes(base64){
+            var byteKey = atob(base64);
+            var byteKeyLength = byteKey.length;
+            var array = new Uint8Array(new ArrayBuffer(byteKeyLength));
+            for(i = 0; i < byteKeyLength; i++) {
+              array[i] = byteKey.charCodeAt(i);
+            }
+            return array;
+        }
+        
         // update navbar
         angular.element("#navbar").children().removeClass('active');
         angular.element("#security-navlink").addClass('active');
@@ -41,7 +61,11 @@ angular.module('securityControllers', [])
             $scope.error = "Unable to get the server security info list: " + status + " " + data;
             console.error($scope.error);
         }).success(function(data, status, headers, config) {
-               $scope.serverSecurityInfo = data;
+            $scope.serverSecurityInfo = data;
+            $scope.pkcs8pubkey = {};
+            $scope.pkcs8pubkey.base64 = data.rpk.pkcs8;
+            $scope.pkcs8pubkey.bytes = base64ToBytes($scope.pkcs8pubkey.base64);
+            $scope.pkcs8pubkey.hex = toHex($scope.pkcs8pubkey.bytes);
         });
 
         $scope.remove = function(endpoint) {
@@ -56,13 +80,7 @@ angular.module('securityControllers', [])
         };
 
         $scope.saveServerPubKey = function(serverPubKey) {
-            var byteKey = atob(serverPubKey);
-            var byteKeyLength = byteKey.length;
-            var array = new Uint8Array(new ArrayBuffer(byteKeyLength));
-            for(i = 0; i < byteKeyLength; i++) {
-              array[i] = byteKey.charCodeAt(i);
-            }
-            var blob = new Blob([array], {type: "application/octet-stream"});
+            var blob = new Blob($scope.pkcs8pubkey.bytes, {type: "application/octet-stream"});
             var fileName = "serverPubKey.der";
             saveAs(blob, fileName);
         };

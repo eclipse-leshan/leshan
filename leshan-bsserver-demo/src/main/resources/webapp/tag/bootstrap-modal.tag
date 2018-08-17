@@ -26,15 +26,16 @@
                             <securityconfig-input   ref="lwserver" onchange={update} show={activetab.lwserver}
                                                     securi={ "coaps://" + location.hostname + ":5684" }
                                                     unsecuri= { "coap://" + location.hostname + ":5683" }
-                                                    secmode = { {no_sec:true, psk:true, x509:true} }
+                                                    secmode = { {no_sec:true, psk:true, rpk:true, x509:true} }
                                                     ></securityconfig-input>
                         </div>
                         <div>
                              <securityconfig-input ref="bsserver" onchange={update} show={activetab.bsserver}
                                                     securi={ "coaps://" + location.hostname + ":" + serverdata.securedEndpointPort }
                                                     unsecuri= { "coap://" + location.hostname + ":" + serverdata.unsecuredEndpointPort }
-                                                    disable = { {uri:true} }
-                                                    secmode = { {no_sec:true, psk:true} }
+                                                    serverpubkey= {serversecurity.rpk.hex }
+                                                    disable = { {uri:true, serverpubkey:true} }
+                                                    secmode = { {no_sec:true, psk:true,rpk:true} }
                                                     ></securityconfig-input>
                         </div>
 
@@ -53,8 +54,9 @@
         var tag = this;
         // Tag Params
         tag.serverdata = opts.server || {unsecuredEndpointPort:5683, securedEndpointPort:5684};
+        tag.serversecurity = opts.security || {rpk:{}};
         // Tag Internal state
-        tag.endpoint = {}
+        tag.endpoint = {};
         tag.has_error = has_error;
         tag.validate_endpoint = validate_endpoint;
         tag.submit = submit;
@@ -68,8 +70,8 @@
         };
 
         // Initialization
-        this.on('mount', function() {
-            $('#bootstrap-modal').modal('show');
+        tag.on('mount', function() {
+                $('#bootstrap-modal').modal('show');
         });
 
         // Tag functions
@@ -122,7 +124,7 @@
                         secretKey : bsserver.key,
                         securityMode : bsserver.secmode,
                         serverId : 111,
-                        serverPublicKey : lwserver.serverKey,
+                        serverPublicKey : bsserver.serverKey,
                         serverSmsNumber : "",
                         smsBindingKeyParam : [  ],
                         smsBindingKeySecret : [  ],

@@ -11,12 +11,15 @@
         <script src="tag/bootstrap.tag" type="riot/tag"></script>
         <script src="tag/securityconfig-input.tag" type="riot/tag"></script>
         <script src="tag/psk-input.tag" type="riot/tag"></script>
+        <script src="tag/rpk-input.tag" type="riot/tag"></script>
         <script src="tag/x509-input.tag" type="riot/tag"></script>
         <script src="tag/bootstrap-modal.tag" type="riot/tag"></script>
         
         <script src="js/bsconfigstore.js"></script>
+        <script src="js/server.js"></script>
 
         <script src="vendor/js/jquery-2.1.1.min.js"></script>
+        <script src="vendor/js/FileSaver.min.js"></script>
         <script src="vendor/js/bootstrap.min.js"></script>
         <script src="vendor/js/riot+compiler.min.js"></script>
 
@@ -53,6 +56,7 @@
     
     <script>
         var bsConfigStore = new BsConfigStore();
+        var server = new server();
         riot.mount('bootstrap');
     </script>
     

@@ -26,6 +26,11 @@ code {
 	color: #b11eb2;	
 }
 
+pre {
+    word-wrap: break-word;
+    word-break: break-all;
+    white-space: pre-wrap;
+}
 
 .navbar {
     text-transform: uppercase;

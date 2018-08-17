@@ -17,6 +17,8 @@
 package org.eclipse.leshan.server.californium;
 
 import java.net.InetSocketAddress;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
@@ -56,6 +58,9 @@ public class LeshanBootstrapServerBuilder {
     private LwM2mModel model;
     private NetworkConfig coapConfig;
     private Builder dtlsConfigBuilder;
+
+    private PublicKey publicKey;
+    private PrivateKey privateKey;
 
     private EndpointFactory endpointFactory;
 
@@ -112,6 +117,25 @@ public class LeshanBootstrapServerBuilder {
         } else {
             this.localAddressSecure = new InetSocketAddress(hostname, port);
         }
+        return this;
+    }
+
+    /**
+     * <p>
+     * Set the {@link PublicKey} of the server which will be used for RawPublicKey DTLS authentication.
+     * </p>
+     * This should be used for RPK support only.
+     */
+    public LeshanBootstrapServerBuilder setPublicKey(PublicKey publicKey) {
+        this.publicKey = publicKey;
+        return this;
+    }
+
+    /**
+     * Set the {@link PrivateKey} of the server which will be used for RawPublicKey(RPK).
+     */
+    public LeshanBootstrapServerBuilder setPrivateKey(PrivateKey privateKey) {
+        this.privateKey = privateKey;
         return this;
     }
 
@@ -243,6 +267,25 @@ public class LeshanBootstrapServerBuilder {
                 dtlsConfigBuilder.setMaxConnections(coapConfig.getInt(Keys.MAX_ACTIVE_PEERS));
             if (incompleteConfig.getStaleConnectionThreshold() == null)
                 dtlsConfigBuilder.setStaleConnectionThreshold(coapConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
+
+            // check conflict for private key
+            if (privateKey != null) {
+                if (incompleteConfig.getPrivateKey() != null && !incompleteConfig.getPrivateKey().equals(privateKey)) {
+                    throw new IllegalStateException(String.format(
+                            "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for private key: %s != %s",
+                            privateKey, incompleteConfig.getPrivateKey()));
+                }
+
+                if (publicKey != null) {
+                    if (incompleteConfig.getPublicKey() != null && !incompleteConfig.getPublicKey().equals(publicKey)) {
+                        throw new IllegalStateException(String.format(
+                                "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for public key: %s != %s",
+                                publicKey, incompleteConfig.getPublicKey()));
+                    }
+
+                    dtlsConfigBuilder.setIdentity(privateKey, publicKey);
+                }
+            }
 
             // Deactivate SNI by default
             // TODO should we support SNI ?

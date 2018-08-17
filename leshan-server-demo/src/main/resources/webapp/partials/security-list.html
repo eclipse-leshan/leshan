@@ -1,5 +1,5 @@
-<div class="well well-sm" ng-if="serverSecurityInfo && serverSecurityInfo.rpk">
-	<h4>The Leshan public key
+<div class="well well-sm col-md-12" ng-if="serverSecurityInfo && serverSecurityInfo.rpk">
+	<h4>The Leshan public key <small>(SubjectPublicKeyInfo der encoded)</small>
 	<button type="button" title ="Download server public key(.der)" class="btn btn-default btn-xs" ng-click="saveServerPubKey(serverSecurityInfo.rpk.pkcs8)">
 			<span class="glyphicon glyphicon-download-alt" aria-hidden="true">
 		</button>
@@ -8,6 +8,12 @@
 		<u>Elliptic Curve parameters :</u> <code>{{serverSecurityInfo.rpk.params}}</code><br/>
 		<u>Public x coord :</u> <code>{{serverSecurityInfo.rpk.x}}</code><br/>
 		<u>Public y coord :</u> <code>{{serverSecurityInfo.rpk.y}}</code>
+		<div class="col-md-7">
+           <u>Hex : </u> <pre>{{pkcs8pubkey.hex}}</pre>
+           </div>
+           <div class="col-md-5">
+           <u>Base64 : </u><pre>{{pkcs8pubkey.base64}}</pre>
+        </div>
 	</p>
 </div>
 
