@@ -57,7 +57,7 @@
                 tag.x509Cert.error = true;
                 tag.x509Cert.nothexa = true;
             }
-            opts.onchange();
+            tag.onchange();
         }
 
         function validate_x509PrivateKey(){
@@ -72,7 +72,7 @@
                 tag.x509PrivateKey.error = true;
                 tag.x509PrivateKey.nothexa = true;
             }
-            opts.onchange();
+            tag.onchange();
         }
 
         function validate_x509ServerCert(){
@@ -87,11 +87,11 @@
                   tag.x509ServerCert.error = true;
                   tag.x509ServerCert.nothexa = true;
             }
-            opts.onchange();
+            tag.onchange();
         }
 
         function has_error(){
-            return typeof tag.x509Cert.error === "undefined" || x509Cert.error || typeof x509PrivateKey.error === "undefined" || x509PrivateKey.error || typeof x509ServerCert.error === "undefined" || x509ServerCert.error;
+            return typeof tag.x509Cert.error === "undefined" || tag.x509Cert.error || typeof tag.x509PrivateKey.error === "undefined" || tag.x509PrivateKey.error || typeof tag.x509ServerCert.error === "undefined" || tag.x509ServerCert.error;
         }
 
         function get_value(){
