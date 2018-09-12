@@ -95,8 +95,16 @@ public class SecurityInfo implements Serializable {
         return preSharedKey;
     }
 
+    public boolean usePSK() {
+        return identity != null && preSharedKey != null;
+    }
+
     public PublicKey getRawPublicKey() {
         return rawPublicKey;
+    }
+
+    public boolean useRPK() {
+        return rawPublicKey != null;
     }
 
     public boolean useX509Cert() {
@@ -149,9 +157,8 @@ public class SecurityInfo implements Serializable {
     @Override
     public String toString() {
         // Note : preSharedKey is explicitly excluded from display for security purposes
-        return String.format(
-                "SecurityInfo [endpoint=%s, identity=%s, rawPublicKey=%s, useX509Cert=%s]", endpoint, identity,
-                rawPublicKey, useX509Cert);
+        return String.format("SecurityInfo [endpoint=%s, identity=%s, rawPublicKey=%s, useX509Cert=%s]", endpoint,
+                identity, rawPublicKey, useX509Cert);
     }
 
 }
