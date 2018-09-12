@@ -23,9 +23,9 @@ import org.eclipse.leshan.util.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SecurityCheck {
+public class SecurityChecker {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SecurityCheck.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SecurityChecker.class);
 
     /**
      * Return true if any of the securityInfos is valid for the given endpoint and client identity.
@@ -37,8 +37,7 @@ public class SecurityCheck {
      * @param securityInfos
      * 
      */
-    public static boolean checkSecurityInfos(String endpoint, Identity clientIdentity,
-            List<SecurityInfo> securityInfos) {
+    public boolean checkSecurityInfos(String endpoint, Identity clientIdentity, List<SecurityInfo> securityInfos) {
         // if this is a secure end-point, we must check that the registering client is using the right identity.
         if (clientIdentity.isSecure()) {
             if (securityInfos == null || securityInfos.isEmpty()) {
@@ -67,7 +66,7 @@ public class SecurityCheck {
      * @param securityInfo
      * @return true if the security info is valid.
      */
-    public static boolean checkSecurityInfo(String endpoint, Identity clientIdentity, SecurityInfo securityInfo) {
+    public boolean checkSecurityInfo(String endpoint, Identity clientIdentity, SecurityInfo securityInfo) {
 
         // if this is a secure end-point, we must check that the registering client is using the right identity.
         if (clientIdentity.isSecure()) {
@@ -101,54 +100,81 @@ public class SecurityCheck {
         return true;
     }
 
-    private static boolean checkPskIdentity(String endpoint, Identity clientIdentity, SecurityInfo securityInfo) {
+    protected boolean checkPskIdentity(String endpoint, Identity clientIdentity, SecurityInfo securityInfo) {
         // Manage PSK authentication
         // ----------------------------------------------------
-        String pskIdentity = clientIdentity.getPskIdentity();
-        if (pskIdentity == null || !pskIdentity.equals(securityInfo.getIdentity())) {
-            LOG.debug("Invalid identity for client '{}': expected '{}' but was '{}'", endpoint,
-                    securityInfo.getIdentity(), pskIdentity);
+        if (!securityInfo.usePSK()) {
+            LOG.debug("Client '{}' is not supposed to use PSK to authenticate", endpoint);
             return false;
-        } else {
-            LOG.trace("Authenticated client '{}' using DTLS PSK", endpoint);
-            return true;
         }
+
+        if (!matchPskIdentity(endpoint, clientIdentity.getPskIdentity(), securityInfo.getIdentity())) {
+            return false;
+        }
+
+        LOG.trace("Authenticated client '{}' using DTLS PSK", endpoint);
+        return true;
     }
 
-    private static boolean checkRpkIdentity(String endpoint, Identity clientIdentity, SecurityInfo securityInfo) {
+    protected boolean matchPskIdentity(String endpoint, String receivedPskIdentity, String expectedPskIdentity) {
+        if (!receivedPskIdentity.equals(expectedPskIdentity)) {
+            LOG.debug("Invalid identity for client '{}': expected '{}' but was '{}'", endpoint, expectedPskIdentity,
+                    receivedPskIdentity);
+            return false;
+        }
+        return true;
+    }
+
+    protected boolean checkRpkIdentity(String endpoint, Identity clientIdentity, SecurityInfo securityInfo) {
         // Manage RPK authentication
         // ----------------------------------------------------
-        PublicKey publicKey = clientIdentity.getRawPublicKey();
-        if (publicKey == null || !publicKey.equals(securityInfo.getRawPublicKey())) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Invalid rpk for client {}: expected \n'{}'\n but was \n'{}'", endpoint,
-                        Hex.encodeHexString(securityInfo.getRawPublicKey().getEncoded()),
-                        publicKey != null ? Hex.encodeHexString(publicKey.getEncoded()) : "null");
-            }
+        if (!securityInfo.useRPK()) {
+            LOG.debug("Client '{}' is not supposed to use RPK to authenticate", endpoint);
             return false;
-        } else {
-            LOG.trace("authenticated client '{}' using DTLS RPK", endpoint);
-            return true;
         }
+
+        if (!matchRpkIdenity(endpoint, clientIdentity.getRawPublicKey(), securityInfo.getRawPublicKey())) {
+            return false;
+        }
+
+        LOG.trace("authenticated client '{}' using DTLS RPK", endpoint);
+        return true;
     }
 
-    private static boolean checkX509Identity(String endpoint, Identity clientIdentity, SecurityInfo securityInfo) {
+    protected boolean matchRpkIdenity(String endpoint, PublicKey receivedPublicKey, PublicKey expectedPublicKey) {
+        if (!receivedPublicKey.equals(expectedPublicKey)) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Invalid rpk for client {}: expected \n'{}'\n but was \n'{}'", endpoint,
+                        Hex.encodeHexString(expectedPublicKey.getEncoded()),
+                        Hex.encodeHexString(receivedPublicKey.getEncoded()));
+            }
+            return false;
+        }
+        return true;
+    }
+
+    protected boolean checkX509Identity(String endpoint, Identity clientIdentity, SecurityInfo securityInfo) {
         // Manage X509 certificate authentication
         // ----------------------------------------------------
-        String x509CommonName = clientIdentity.getX509CommonName();
-
         if (!securityInfo.useX509Cert()) {
             LOG.debug("Client '{}' is not supposed to use X509 certificate to authenticate", endpoint);
             return false;
         }
 
-        if (x509CommonName == null || !x509CommonName.equals(endpoint)) {
-            LOG.debug("Invalid certificate common name for client '{}': expected \n'{}'\n but was \n'{}'", endpoint,
-                    endpoint, x509CommonName);
+        if (!matchX509Identity(endpoint, clientIdentity.getX509CommonName(), endpoint)) {
             return false;
-        } else {
-            LOG.trace("authenticated client '{}' using DTLS X509 certificates", endpoint);
-            return true;
         }
+
+        LOG.trace("authenticated client '{}' using DTLS X509 certificates", endpoint);
+        return true;
+    }
+
+    protected boolean matchX509Identity(String endpoint, String receivedX509CommonName, String expectedX509CommonName) {
+        if (!receivedX509CommonName.equals(expectedX509CommonName)) {
+            LOG.debug("Invalid certificate common name for client '{}': expected \n'{}'\n but was \n'{}'", endpoint,
+                    expectedX509CommonName, receivedX509CommonName);
+            return false;
+        }
+        return true;
     }
 }

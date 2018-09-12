@@ -29,9 +29,15 @@ import org.eclipse.leshan.server.registration.Registration;
 public class DefaultAuthorizer implements Authorizer {
 
     private SecurityStore securityStore;
+    private SecurityChecker securityChecker;
 
     public DefaultAuthorizer(SecurityStore store) {
+        this(store, new SecurityChecker());
+    }
+
+    public DefaultAuthorizer(SecurityStore store, SecurityChecker checker) {
         securityStore = store;
+        securityChecker = checker;
     }
 
     @Override
@@ -41,7 +47,7 @@ public class DefaultAuthorizer implements Authorizer {
         SecurityInfo expectedSecurityInfo = null;
         if (securityStore != null)
             expectedSecurityInfo = securityStore.getByEndpoint(registration.getEndpoint());
-        if (SecurityCheck.checkSecurityInfo(registration.getEndpoint(), senderIdentity, expectedSecurityInfo)) {
+        if (securityChecker.checkSecurityInfo(registration.getEndpoint(), senderIdentity, expectedSecurityInfo)) {
             return registration;
         } else {
             return null;
