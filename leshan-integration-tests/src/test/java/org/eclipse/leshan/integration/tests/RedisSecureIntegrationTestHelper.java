@@ -17,7 +17,6 @@ package org.eclipse.leshan.integration.tests;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.security.cert.Certificate;
 
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
@@ -60,7 +59,7 @@ public class RedisSecureIntegrationTestHelper extends SecureIntegrationTestHelpe
     }
 
     @Override
-    public void createServerWithX509Cert(Certificate[] trustedCertificates) {
+    public void createServerWithX509Cert() {
         throw new UnsupportedOperationException("Not implemented");
     }
 

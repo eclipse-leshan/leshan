@@ -19,12 +19,17 @@ package org.eclipse.leshan.client.servers;
 import static org.eclipse.leshan.LwM2mId.*;
 import static org.eclipse.leshan.client.request.ServerIdentity.SYSTEM;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
@@ -79,6 +84,10 @@ public class ServersInfoExtractor {
                             info.publicKey = getPublicKey(security);
                             info.privateKey = getPrivateKey(security);
                             info.serverPublicKey = getServerPublicKey(security);
+                        } else if (info.secureMode == SecurityMode.X509) {
+                            info.clientCertificate = getClientCertificate(security);
+                            info.serverCertificate = getServerCertificate(security);
+                            info.privateKey = getPrivateKey(security);
                         }
                         infos.bootstrap = info;
                     }
@@ -95,6 +104,10 @@ public class ServersInfoExtractor {
                         info.publicKey = getPublicKey(security);
                         info.privateKey = getPrivateKey(security);
                         info.serverPublicKey = getServerPublicKey(security);
+                    } else if (info.secureMode == SecurityMode.X509) {
+                        info.clientCertificate = getClientCertificate(security);
+                        info.serverCertificate = getServerCertificate(security);
+                        info.privateKey = getPrivateKey(security);
                     }
                     // search corresponding device management server
                     for (LwM2mObjectInstance server : servers.getInstances().values()) {
@@ -186,5 +199,31 @@ public class ServersInfoExtractor {
             LOG.debug("Failed to decode RFC7250 public key with algorithm " + algorithm, e);
         }
         return null;
+    }
+
+    private static Certificate getServerCertificate(LwM2mObjectInstance securityInstance) {
+        byte[] encodedCert = (byte[]) securityInstance.getResource(SEC_SERVER_PUBKEY).getValue();
+        try {
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            try (ByteArrayInputStream in = new ByteArrayInputStream(encodedCert)) {
+                return cf.generateCertificate(in);
+            }
+        } catch (CertificateException | IOException e) {
+            LOG.debug("Failed to decode X.509 certificate", e);
+            return null;
+        }
+    }
+
+    private static Certificate getClientCertificate(LwM2mObjectInstance securityInstance) {
+        byte[] encodedCert = (byte[]) securityInstance.getResource(SEC_PUBKEY_IDENTITY).getValue();
+        try {
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            try (ByteArrayInputStream in = new ByteArrayInputStream(encodedCert)) {
+                return cf.generateCertificate(in);
+            }
+        } catch (CertificateException | IOException e) {
+            LOG.debug("Failed to decode X.509 certificate", e);
+            return null;
+        }
     }
 }

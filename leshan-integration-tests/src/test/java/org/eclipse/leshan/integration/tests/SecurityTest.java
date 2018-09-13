@@ -22,7 +22,7 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
@@ -41,7 +41,6 @@ import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class SecurityTest {
@@ -359,14 +358,13 @@ public class SecurityTest {
         helper.ensureNoRegistration(1);
     }
 
-    @Ignore
-    // TODO implement X509 support for client
     @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert() throws NonUniqueSecurityInfoException {
-        helper.createServerWithX509Cert(helper.trustedCertificates);
+    public void registered_device_with_x509cert_to_server_with_x509cert()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert();
         helper.server.start();
 
-        helper.createX509CertClient(helper.clientPrivateKeyFromCert, helper.trustedCertificates);
+        helper.createX509CertClient();
 
         helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
 
@@ -377,85 +375,18 @@ public class SecurityTest {
         assertNotNull(helper.getCurrentRegistration());
     }
 
-    @Ignore
-    // TODO implement X509 support for client
     @Test
-    public void registered_device_with_x509cert_and_bad_endpoint_to_server_with_x509cert()
-            throws NonUniqueSecurityInfoException {
-        helper.createServerWithX509Cert(helper.trustedCertificates);
+    public void registered_device_with_x509cert_to_server_with_self_signed_x509cert()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert(helper.serverX509CertSelfSigned);
         helper.server.start();
 
-        helper.createX509CertClient(helper.clientPrivateKeyFromCert, helper.trustedCertificates);
-
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(BAD_ENDPOINT));
-
-        helper.client.start();
-        helper.ensureNoRegistration(1);
-    }
-
-    @Ignore
-    // TODO implement X509 support for client
-    @Test
-    public void registered_device_with_x509cert_and_bad_cn_certificate_to_server_with_x509cert()
-            throws NonUniqueSecurityInfoException {
-        helper.createServerWithX509Cert(helper.trustedCertificates);
-        helper.server.start();
-
-        helper.createX509CertClient(helper.clientPrivateKeyFromCert, helper.trustedCertificates);
-
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(GOOD_ENDPOINT));
-
-        helper.client.start();
-        helper.ensureNoRegistration(1);
-    }
-
-    @Ignore
-    // TODO implement X509 support for client
-    @Test
-    public void registered_device_with_x509cert_and_bad_private_key_to_server_with_x509cert()
-            throws NonUniqueSecurityInfoException {
-        helper.createServerWithX509Cert(helper.trustedCertificates);
-        helper.server.start();
-
-        // we use the server private key as bad key, this key will not be compatible with the client certificate
-        PrivateKey badPrivateKey = helper.serverPrivateKey;
-
-        helper.createX509CertClient(badPrivateKey, helper.trustedCertificates);
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
-
-        helper.client.start();
-        helper.ensureNoRegistration(1);
-    }
-
-    @Ignore
-    // TODO implement X509 support for client
-    @Test
-    public void registered_device_with_x509cert_and_untrusted_CA_to_server_with_x509cert()
-            throws NonUniqueSecurityInfoException {
-        // the server will not trust the client Certificate authority
-        helper.createServerWithX509Cert(new Certificate[] { helper.serverCAX509Cert });
-        helper.server.start();
-
-        helper.createX509CertClient(helper.clientPrivateKeyFromCert, helper.trustedCertificates);
+        helper.createX509CertClient(helper.clientX509Cert, helper.clientPrivateKeyFromCert,
+                helper.serverX509CertSelfSigned);
 
         helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
 
-        helper.client.start();
-        helper.ensureNoRegistration(1);
-    }
-
-    @Ignore
-    // TODO implement X509 support for client
-    @Test
-    public void registered_device_with_x509cert_to_server_with_rpk() throws NonUniqueSecurityInfoException {
-        helper.createServerWithRPK();
-        helper.server.start();
-
-        helper.createX509CertClient(helper.clientPrivateKeyFromCert, helper.trustedCertificates);
-
-        helper.getSecurityStore().add(SecurityInfo.newRawPublicKeyInfo(helper.getCurrentEndpoint(),
-                helper.clientX509CertChain[0].getPublicKey()));
-
+        helper.assertClientNotRegisterered();
         helper.client.start();
         helper.waitForRegistrationAtServerSide(1);
 
@@ -463,8 +394,103 @@ public class SecurityTest {
     }
 
     @Test
+    public void registered_device_with_x509cert_and_bad_endpoint_to_server_with_x509cert()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert();
+        helper.server.start();
+
+        helper.createX509CertClient();
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(BAD_ENDPOINT));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.ensureNoRegistration(1);
+    }
+
+    @Test
+    public void registered_device_with_x509cert_and_bad_cn_certificate_to_server_with_x509cert()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert();
+        helper.server.start();
+
+        helper.createX509CertClient(helper.clientX509CertWithBadCN);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(GOOD_ENDPOINT));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.ensureNoRegistration(1);
+    }
+
+    @Test
+    public void registered_device_with_x509cert_and_bad_private_key_to_server_with_x509cert()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert();
+        helper.server.start();
+
+        // we use the RPK private key as bad key, this key will not be compatible with the client certificate
+        PrivateKey badPrivateKey = helper.clientPrivateKey;
+
+        helper.createX509CertClient(helper.clientX509Cert, badPrivateKey);
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.ensureNoRegistration(1);
+    }
+
+    @Test
+    public void registered_device_with_untrusted_x509cert_to_server_with_x509cert()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        // the server will not trust the client Certificate authority
+        helper.createServerWithX509Cert();
+        helper.server.start();
+
+        helper.createX509CertClient(helper.clientX509CertNotTrusted);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.ensureNoRegistration(1);
+    }
+
+    @Test
+    public void registered_device_with_selfsigned_x509cert_to_server_with_x509cert()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        // the server will not trust the client Certificate authority
+        helper.createServerWithX509Cert();
+        helper.server.start();
+
+        helper.createX509CertClient(helper.clientX509CertSelfSigned);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.ensureNoRegistration(1);
+    }
+
+    @Test
+    public void registered_device_with_x509cert_to_server_with_rpk()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithRPK();
+        helper.server.start();
+
+        helper.createX509CertClient(helper.clientX509Cert);
+
+        helper.getSecurityStore().add(
+                SecurityInfo.newRawPublicKeyInfo(helper.getCurrentEndpoint(), helper.clientX509Cert.getPublicKey()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.ensureNoRegistration(1);
+    }
+
+    @Test
     public void registered_device_with_rpk_to_server_with_x509cert() throws NonUniqueSecurityInfoException {
-        helper.createServerWithX509Cert(helper.trustedCertificates);
+        helper.createServerWithX509Cert();
         helper.server.start();
 
         boolean useServerCertifcatePublicKey = true;
