@@ -15,29 +15,19 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-
-import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.cluster.RedisRegistrationStore;
 import org.eclipse.leshan.server.cluster.RedisSecurityStore;
-import org.eclipse.leshan.server.model.StaticModelProvider;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.util.Pool;
 
 public class RedisSecureIntegrationTestHelper extends SecureIntegrationTestHelper {
+
     @Override
-    public void createServer() {
-        LeshanServerBuilder builder = new LeshanServerBuilder();
-        StaticModelProvider modelProvider = new StaticModelProvider(createObjectModels());
-        builder.setObjectModelProvider(modelProvider);
-        DefaultLwM2mNodeDecoder decoder = new DefaultLwM2mNodeDecoder();
-        builder.setDecoder(decoder);
-        builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-        builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
+    protected LeshanServerBuilder createServerBuilder() {
+        LeshanServerBuilder builder = super.createServerBuilder();
 
         // Create redis store
         String redisURI = System.getenv("REDIS_URI");
@@ -45,22 +35,9 @@ public class RedisSecureIntegrationTestHelper extends SecureIntegrationTestHelpe
             redisURI = "";
         Pool<Jedis> jedis = new JedisPool(redisURI);
         builder.setRegistrationStore(new RedisRegistrationStore(jedis));
-        builder.setSecurityStore(new RedisSecurityStore(jedis));
+        securityStore = new RedisSecurityStore(jedis);
+        builder.setSecurityStore(securityStore);
 
-        // Build server !
-        server = builder.build();
-        // monitor client registration
-        setupServerMonitoring();
+        return builder;
     }
-
-    @Override
-    public void createServerWithRPK() {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    @Override
-    public void createServerWithX509Cert() {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
 }

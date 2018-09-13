@@ -59,6 +59,7 @@ import org.eclipse.leshan.server.impl.InMemorySecurityStore;
 import org.eclipse.leshan.server.security.DefaultAuthorizer;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.SecurityChecker;
+import org.eclipse.leshan.server.security.SecurityStore;
 import org.eclipse.leshan.util.Hex;
 
 public class SecureIntegrationTestHelper extends IntegrationTestHelper {
@@ -70,6 +71,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
     public static final byte[] BAD_PSK_KEY = Hex.decodeHex("010101010101010101".toCharArray());
     public static final String BAD_ENDPOINT = "bad_endpoint";
     private SinglePSKStore singlePSKStore;
+    protected SecurityStore securityStore;
 
     public final PublicKey clientPublicKey; // client public key used for RPK
     public final PrivateKey clientPrivateKey; // client private key used for RPK
@@ -294,13 +296,18 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         client = builder.build();
     }
 
+    @Override
+    protected LeshanServerBuilder createServerBuilder() {
+        LeshanServerBuilder builder = super.createServerBuilder();
+        securityStore = new InMemorySecurityStore();
+        builder.setSecurityStore(securityStore);
+        return builder;
+    }
+
     public void createServerWithRPK() {
-        LeshanServerBuilder builder = new LeshanServerBuilder();
-        builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-        builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
+        LeshanServerBuilder builder = createServerBuilder();
         builder.setPublicKey(serverPublicKey);
         builder.setPrivateKey(serverPrivateKey);
-        builder.setSecurityStore(new InMemorySecurityStore());
 
         server = builder.build();
         // monitor client registration
@@ -312,15 +319,11 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
     }
 
     public void createServerWithX509Cert(X509Certificate serverCertificate) {
-        LeshanServerBuilder builder = new LeshanServerBuilder();
-        builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-        builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
+        LeshanServerBuilder builder = createServerBuilder();
         builder.setPrivateKey(serverPrivateKeyFromCert);
         builder.setCertificateChain(new X509Certificate[] { serverCertificate });
         builder.setTrustedCertificates(trustedCertificates);
-        InMemorySecurityStore inMemorySecurityStore = new InMemorySecurityStore();
-        builder.setSecurityStore(inMemorySecurityStore);
-        builder.setAuthorizer(new DefaultAuthorizer(inMemorySecurityStore, new SecurityChecker() {
+        builder.setAuthorizer(new DefaultAuthorizer(securityStore, new SecurityChecker() {
             @Override
             protected boolean matchX509Identity(String endpoint, String receivedX509CommonName,
                     String expectedX509CommonName) {
