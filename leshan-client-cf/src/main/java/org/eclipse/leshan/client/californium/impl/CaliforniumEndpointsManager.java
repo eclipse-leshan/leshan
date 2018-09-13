@@ -18,6 +18,8 @@ package org.eclipse.leshan.client.californium.impl;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -28,8 +30,15 @@ import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
+import org.eclipse.californium.scandium.dtls.AlertMessage;
+import org.eclipse.californium.scandium.dtls.AlertMessage.AlertDescription;
+import org.eclipse.californium.scandium.dtls.AlertMessage.AlertLevel;
+import org.eclipse.californium.scandium.dtls.CertificateMessage;
+import org.eclipse.californium.scandium.dtls.DTLSSession;
+import org.eclipse.californium.scandium.dtls.HandshakeException;
 import org.eclipse.californium.scandium.dtls.pskstore.StaticPskStore;
 import org.eclipse.californium.scandium.dtls.rpkstore.TrustedRpkStore;
+import org.eclipse.californium.scandium.dtls.x509.CertificateVerifier;
 import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.client.servers.EndpointsManager;
 import org.eclipse.leshan.client.servers.Server;
@@ -100,8 +109,53 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                         return true;
                     }
                 });
+            } else if (serverInfo.secureMode == SecurityMode.X509) {
+                // set identity
+                newBuilder.setIdentity(serverInfo.privateKey, new Certificate[] { serverInfo.clientCertificate },
+                        false);
+
+                // set X509 verifier
+                final Certificate expectedServerCertificate = serverInfo.serverCertificate;
+                newBuilder.setCertificateVerifier(new CertificateVerifier() {
+
+                    @Override
+                    public void verifyCertificate(CertificateMessage message, DTLSSession session)
+                            throws HandshakeException {
+                        // As specify in the LWM2M spec 1.0, we only support "domain-issued certificate" usage
+                        // Defined in : https://tools.ietf.org/html/rfc6698#section-2.1.1 (3 -- Certificate usage 3)
+
+                        // Get server certificate from certificate message
+                        if (message.getCertificateChain().getCertificates().size() == 0) {
+                            AlertMessage alert = new AlertMessage(AlertLevel.FATAL, AlertDescription.BAD_CERTIFICATE,
+                                    session.getPeer());
+                            throw new HandshakeException("Certificate chain could not be validated", alert);
+                        }
+                        Certificate receivedServerCertificate = message.getCertificateChain().getCertificates().get(0);
+
+                        // Validate certificate
+                        if (!expectedServerCertificate.equals(receivedServerCertificate)) {
+                            AlertMessage alert = new AlertMessage(AlertLevel.FATAL, AlertDescription.BAD_CERTIFICATE,
+                                    session.getPeer());
+                            throw new HandshakeException("Certificate chain could not be validated", alert);
+                        }
+                    }
+
+                    @Override
+                    public X509Certificate[] getAcceptedIssuers() {
+                        return null;
+                    }
+                });
+
+                // disable the possibility to use RPK as client should use X509.
+                // TODO add a way in Scandium to say that we don't accept RPK certificate type
+                newBuilder.setRpkTrustStore(new TrustedRpkStore() {
+                    @Override
+                    public boolean isTrusted(RawPublicKeyIdentity id) {
+                        return false;
+                    }
+                });
+
             }
-            // TODO add support X509
             if (endpointFactory != null) {
                 currentEndpoint = endpointFactory.createSecuredEndpoint(newBuilder.build(), coapConfig, null);
             } else {

@@ -116,6 +116,15 @@ public class Security extends BaseInstanceEnabler {
                 clientPrivateKey.clone(), shortServerId);
     }
 
+    /**
+     * Returns a new security instance (X509) for a device management server.
+     */
+    public static Security x509(String serverUri, int shortServerId, byte[] clientCertificate, byte[] clientPrivateKey,
+            byte[] serverPublicKey) {
+        return new Security(serverUri, false, SecurityMode.X509.code, clientCertificate.clone(),
+                serverPublicKey.clone(), clientPrivateKey.clone(), shortServerId);
+    }
+
     @Override
     public WriteResponse write(int resourceId, LwM2mResource value) {
         LOG.debug("Write on resource {}: {}", resourceId, value);
