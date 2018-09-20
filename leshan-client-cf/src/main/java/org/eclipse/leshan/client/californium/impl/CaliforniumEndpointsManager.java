@@ -27,7 +27,6 @@ import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.scandium.DTLSConnector;
-import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.californium.scandium.dtls.pskstore.StaticPskStore;
 import org.eclipse.californium.scandium.dtls.rpkstore.TrustedRpkStore;
@@ -73,7 +72,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
         // Create new endpoint
         Identity server;
         if (serverInfo.isSecure()) {
-            Builder newBuilder = cloneDtlsConfigBuilder(dtlsConfigbuilder);
+            Builder newBuilder = new Builder(dtlsConfigbuilder.getIncompleteConfig());
 
             // Support PSK
             if (serverInfo.secureMode == SecurityMode.PSK) {
@@ -138,43 +137,6 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             }
         }
         return server;
-    }
-
-    public static Builder cloneDtlsConfigBuilder(Builder builder) {
-        return cloneDtlsConfigBuilder(builder.getIncompleteConfig());
-    }
-
-    public static Builder cloneDtlsConfigBuilder(DtlsConnectorConfig config) {
-        Builder newBuilder = new Builder();
-
-        newBuilder.setAddress(config.getAddress());
-        newBuilder.setMaxConnections(config.getMaxConnections());
-        newBuilder.setStaleConnectionThreshold(config.getStaleConnectionThreshold());
-        newBuilder.setConnectionThreadCount(config.getConnectionThreadCount());
-
-        if (config.getPskStore() != null)
-            newBuilder.setPskStore(config.getPskStore());
-        if (config.isAddressReuseEnabled() != null)
-            newBuilder.setEnableAddressReuse(config.isAddressReuseEnabled());
-        if (config.isClientAuthenticationRequired() != null)
-            newBuilder.setClientAuthenticationRequired(config.isClientAuthenticationRequired());
-        if (config.isEarlyStopRetransmission() != null)
-            newBuilder.setEarlyStopRetransmission(config.isEarlyStopRetransmission());
-        if (config.getMaxFragmentLengthCode() != null)
-            newBuilder.setMaxFragmentLengthCode(config.getMaxFragmentLengthCode());
-        if (config.getMaxRetransmissions() != null)
-            newBuilder.setMaxRetransmissions(config.getMaxRetransmissions());
-        if (config.getOutboundMessageBufferSize() != null)
-            newBuilder.setOutboundMessageBufferSize(config.getOutboundMessageBufferSize());
-        if (config.getRetransmissionTimeout() != null)
-            newBuilder.setRetransmissionTimeout(config.getRetransmissionTimeout());
-        if (config.getTrustStore() != null)
-            newBuilder.setTrustStore(config.getTrustStore());
-
-        // TODO we should probably clean cipherSuite depending on which kind of endpoint(psk,rpk,x509) we will create
-        // in case users choose specific cipher
-
-        return newBuilder;
     }
 
     @Override
