@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
+import java.security.cert.X509Certificate;
 import java.util.Collection;
 
 import javax.servlet.ServletException;
@@ -27,14 +28,17 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.leshan.server.demo.servlet.json.PublicKeySerDes;
 import org.eclipse.leshan.server.demo.servlet.json.SecurityDeserializer;
 import org.eclipse.leshan.server.demo.servlet.json.SecuritySerializer;
+import org.eclipse.leshan.server.demo.servlet.json.X509CertificateSerDes;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.eclipsesource.json.JsonObject;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
@@ -49,15 +53,30 @@ public class SecurityServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     private final EditableSecurityStore store;
+    private final PublicKey serverPublicKey;
+    private final X509Certificate serverCertificate;
 
+    private final X509CertificateSerDes certificateSerDes;
+    private final PublicKeySerDes publicKeySerDes;
+    // TODO we must remove Gson dependency.
     private final Gson gsonSer;
     private final Gson gsonDes;
 
-    private PublicKey serverPublicKey;
+    public SecurityServlet(EditableSecurityStore store, X509Certificate serverCertificate) {
+        this(store, null, serverCertificate);
+    }
 
     public SecurityServlet(EditableSecurityStore store, PublicKey serverPublicKey) {
+        this(store, serverPublicKey, null);
+    }
+
+    protected SecurityServlet(EditableSecurityStore store, PublicKey serverPublicKey,
+            X509Certificate serverCertificate) {
         this.store = store;
         this.serverPublicKey = serverPublicKey;
+        this.serverCertificate = serverCertificate;
+        certificateSerDes = new X509CertificateSerDes();
+        publicKeySerDes = new PublicKeySerDes();
 
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(SecurityInfo.class, new SecuritySerializer());
@@ -125,9 +144,14 @@ public class SecurityServlet extends HttpServlet {
         }
 
         if ("server".equals(path[0])) {
-            String json = this.gsonSer.toJson(SecurityInfo.newRawPublicKeyInfo("leshan", serverPublicKey));
+            JsonObject security = new JsonObject();
+            if (serverPublicKey != null) {
+                security.add("pubkey", publicKeySerDes.jSerialize(serverPublicKey));
+            } else if (serverCertificate != null) {
+                security.add("certificate", certificateSerDes.jSerialize(serverCertificate));
+            }
             resp.setContentType("application/json");
-            resp.getOutputStream().write(json.getBytes(StandardCharsets.UTF_8));
+            resp.getOutputStream().write(security.toString().getBytes(StandardCharsets.UTF_8));
             resp.setStatus(HttpServletResponse.SC_OK);
             return;
         }

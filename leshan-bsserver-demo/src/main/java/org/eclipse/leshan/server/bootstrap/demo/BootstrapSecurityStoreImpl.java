@@ -15,9 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap.demo;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
+import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -83,9 +83,9 @@ public class BootstrapSecurityStoreImpl implements BootstrapSecurityStore {
             else if (value.bootstrapServer && value.securityMode == SecurityMode.RPK) {
                 try {
                     SecurityInfo securityInfo = SecurityInfo.newRawPublicKeyInfo(endpoint,
-                            SecurityUtil.extractPublicKey(value.publicKeyOrId));
+                            SecurityUtil.publicKey.decode(value.publicKeyOrId));
                     return Arrays.asList(securityInfo);
-                } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+                } catch (IOException | GeneralSecurityException e) {
                     LOG.error("Unable to decode Client public key for {}", endpoint, e);
                     return null;
                 }
