@@ -192,9 +192,9 @@ public class LeshanClientDemo {
         PublicKey serverPublicKey = null;
         if (cl.hasOption("cpubk")) {
             try {
-                clientPrivateKey = SecurityUtil.extractPrivateKey(cl.getOptionValue("cprik"));
-                clientPublicKey = SecurityUtil.extractPublicKey(cl.getOptionValue("cpubk"));
-                serverPublicKey = SecurityUtil.extractPublicKey(cl.getOptionValue("spubk"));
+                clientPrivateKey = SecurityUtil.privateKey.readFromFile(cl.getOptionValue("cprik"));
+                clientPublicKey = SecurityUtil.publicKey.readFromFile(cl.getOptionValue("cpubk"));
+                serverPublicKey = SecurityUtil.publicKey.readFromFile(cl.getOptionValue("spubk"));
             } catch (Exception e) {
                 System.err.println("Unable to load RPK files : " + e.getMessage());
                 e.printStackTrace();

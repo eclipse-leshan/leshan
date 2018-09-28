@@ -61,11 +61,19 @@ angular.module('securityControllers', [])
             $scope.error = "Unable to get the server security info list: " + status + " " + data;
             console.error($scope.error);
         }).success(function(data, status, headers, config) {
-            $scope.serverSecurityInfo = data;
-            $scope.pkcs8pubkey = {};
-            $scope.pkcs8pubkey.base64 = data.rpk.pkcs8;
-            $scope.pkcs8pubkey.bytes = base64ToBytes($scope.pkcs8pubkey.base64);
-            $scope.pkcs8pubkey.hex = toHex($scope.pkcs8pubkey.bytes);
+            if (data.certificate){
+                $scope.certificate = data.certificate
+                $scope.certificate.bytesDer = base64ToBytes($scope.certificate.b64Der);
+                $scope.certificate.hexDer = toHex($scope.certificate.bytesDer);
+
+                $scope.pubkey = data.certificate.pubkey;
+                $scope.pubkey.bytesDer = base64ToBytes($scope.pubkey.b64Der);
+                $scope.pubkey.hexDer = toHex($scope.pubkey.bytesDer);
+            } else if (data.pubkey) {
+                $scope.pubkey = data.pubkey;
+                $scope.pubkey.bytesDer = base64ToBytes($scope.pubkey.b64Der);
+                $scope.pubkey.hexDer = toHex($scope.pubkey.bytesDer);
+            }
         });
 
         $scope.remove = function(endpoint) {
@@ -79,10 +87,9 @@ angular.module('securityControllers', [])
             });
         };
 
-        $scope.saveServerPubKey = function(serverPubKey) {
-            var blob = new Blob([$scope.pkcs8pubkey.bytes], {type: "application/octet-stream"});
-            var fileName = "serverPubKey.der";
-            saveAs(blob, fileName);
+        $scope.saveFile = function(filename, bytes) {
+            var blob = new Blob([bytes], {type: "application/octet-stream"});
+            saveAs(blob, filename);
         };
 
         $scope.save = function() {
