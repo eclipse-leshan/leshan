@@ -80,7 +80,7 @@ angular.module('securityControllers', [])
         };
 
         $scope.saveServerPubKey = function(serverPubKey) {
-            var blob = new Blob($scope.pkcs8pubkey.bytes, {type: "application/octet-stream"});
+            var blob = new Blob([$scope.pkcs8pubkey.bytes], {type: "application/octet-stream"});
             var fileName = "serverPubKey.der";
             saveAs(blob, fileName);
         };

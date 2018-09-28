@@ -123,7 +123,7 @@
         };
 
         function saveServerPubKey(){
-            var blob = new Blob(tag.pkcs8pubkey.bytes, {type: "application/octet-stream"});
+            var blob = new Blob([tag.pkcs8pubkey.bytes], {type: "application/octet-stream"});
             var fileName = "bsServerPubKey.der";
             saveAs(blob, fileName);
         };
