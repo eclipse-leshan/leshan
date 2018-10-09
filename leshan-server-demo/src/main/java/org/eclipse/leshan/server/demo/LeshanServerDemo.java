@@ -397,8 +397,7 @@ public class LeshanServerDemo {
         ServletHolder eventServletHolder = new ServletHolder(eventServlet);
         root.addServlet(eventServletHolder, "/event/*");
 
-        ServletHolder clientServletHolder = new ServletHolder(
-                new ClientServlet(lwServer, lwServer.getSecuredAddress().getPort()));
+        ServletHolder clientServletHolder = new ServletHolder(new ClientServlet(lwServer));
         root.addServlet(clientServletHolder, "/api/clients/*");
 
         ServletHolder securityServletHolder = new ServletHolder(new SecurityServlet(securityStore, serverCertificate));

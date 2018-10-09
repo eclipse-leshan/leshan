@@ -17,6 +17,7 @@ package org.eclipse.leshan.server.demo.servlet.json;
 
 import java.lang.reflect.Type;
 
+import org.eclipse.leshan.server.queue.PresenceService;
 import org.eclipse.leshan.server.registration.Registration;
 
 import com.google.gson.JsonElement;
@@ -26,10 +27,10 @@ import com.google.gson.JsonSerializer;
 
 public class RegistrationSerializer implements JsonSerializer<Registration> {
 
-    private final int securePort;
+    private final PresenceService presenceService;
 
-    public RegistrationSerializer(int securePort) {
-        this.securePort = securePort;
+    public RegistrationSerializer(PresenceService presenceService) {
+        this.presenceService = presenceService;
     }
 
     @Override
@@ -47,8 +48,12 @@ public class RegistrationSerializer implements JsonSerializer<Registration> {
         element.addProperty("bindingMode", src.getBindingMode().toString());
         element.add("rootPath", context.serialize(src.getRootPath()));
         element.add("objectLinks", context.serialize(src.getSortedObjectLinks()));
-        element.add("secure", context.serialize(src.getRegistrationEndpointAddress().getPort() == securePort));
+        element.add("secure", context.serialize(src.getIdentity().isSecure()));
         element.add("additionalRegistrationAttributes", context.serialize(src.getAdditionalRegistrationAttributes()));
+
+        if (src.usesQueueMode()) {
+            element.add("sleeping", context.serialize(!presenceService.isClientAwake(src)));
+        }
 
         return element;
     }

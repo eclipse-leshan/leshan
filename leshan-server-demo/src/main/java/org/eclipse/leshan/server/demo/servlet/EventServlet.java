@@ -36,6 +36,7 @@ import org.eclipse.leshan.server.demo.servlet.log.CoapMessageTracer;
 import org.eclipse.leshan.server.demo.utils.EventSource;
 import org.eclipse.leshan.server.demo.utils.EventSourceServlet;
 import org.eclipse.leshan.server.observation.ObservationListener;
+import org.eclipse.leshan.server.queue.PresenceListener;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationListener;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
@@ -52,6 +53,10 @@ public class EventServlet extends EventSourceServlet {
     private static final String EVENT_UPDATED = "UPDATED";
 
     private static final String EVENT_REGISTRATION = "REGISTRATION";
+
+    private static final String EVENT_AWAKE = "AWAKE";
+
+    private static final String EVENT_SLEEPING = "SLEEPING";
 
     private static final String EVENT_NOTIFICATION = "NOTIFICATION";
 
@@ -91,6 +96,23 @@ public class EventServlet extends EventSourceServlet {
                 Registration newReg) {
             String jReg = EventServlet.this.gson.toJson(registration);
             sendEvent(EVENT_DEREGISTRATION, jReg, registration.getEndpoint());
+        }
+
+    };
+
+    public final PresenceListener presenceListener = new PresenceListener() {
+
+        @Override
+        public void onSleeping(Registration registration) {
+            String data = new StringBuilder("{\"ep\":\"").append(registration.getEndpoint()).append("\"}").toString();
+
+            sendEvent(EVENT_SLEEPING, data, registration.getEndpoint());
+        }
+
+        @Override
+        public void onAwake(Registration registration) {
+            String data = new StringBuilder("{\"ep\":\"").append(registration.getEndpoint()).append("\"}").toString();
+            sendEvent(EVENT_AWAKE, data, registration.getEndpoint());
         }
     };
 
@@ -132,6 +154,7 @@ public class EventServlet extends EventSourceServlet {
     public EventServlet(LeshanServer server, int securePort) {
         server.getRegistrationService().addListener(this.registrationListener);
         server.getObservationService().addListener(this.observationListener);
+        server.getPresenceService().addListener(this.presenceListener);
 
         // add an interceptor to each endpoint to trace all CoAP messages
         coapMessageTracer = new CoapMessageTracer(server.getRegistrationService());
@@ -140,7 +163,8 @@ public class EventServlet extends EventSourceServlet {
         }
 
         GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeHierarchyAdapter(Registration.class, new RegistrationSerializer(securePort));
+        gsonBuilder.registerTypeHierarchyAdapter(Registration.class,
+                new RegistrationSerializer(server.getPresenceService()));
         gsonBuilder.registerTypeHierarchyAdapter(LwM2mNode.class, new LwM2mNodeSerializer());
         gsonBuilder.setDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
         this.gson = gsonBuilder.create();
@@ -218,6 +242,7 @@ public class EventServlet extends EventSourceServlet {
             try {
                 emitter.event(event, data);
             } catch (IOException e) {
+                e.printStackTrace();
                 onClose();
             }
         }

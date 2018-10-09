@@ -11,6 +11,7 @@
 				<th>Last Update</th>
 				<th></th>
 				<th></th>
+				<th></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -20,11 +21,12 @@
 				<td>{{client.registrationDate | date:'medium'}}</td>
 				<td>{{client.lastUpdate | date:'medium'}}</td>
 				<td><i class="glyphicon glyphicon-info-sign" tooltip-html-unsafe="{{clientTooltip(client)}}"></i></td>
-				<td><span ng-class="{hidden: client.secure == false}" class="glyphicon glyphicon-lock" tooltip-html-unsafe="Communication over DTLS"></span></td>
+				<td><span ng-style="{'visibility': client.secure ? 'visible': 'hidden'}" class="glyphicon glyphicon-lock" tooltip-html-unsafe="Communication over DTLS"></span></td>
+				<td><span ng-style="{'visibility': client.sleeping ? 'visible': 'hidden'}" class="glyphicon glyphicon-log-out" tooltip-html-unsafe="Device using queue mode is absent"></span></td>
 			</tr>
 		</tbody>
 		</table>
-	</div>		
+	</div>
 </span>
 
 <span ng-if="error">
