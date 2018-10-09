@@ -19,12 +19,16 @@ package org.eclipse.leshan.client.californium.impl;
 import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toCoapResponseCode;
 
 import org.eclipse.californium.core.CoapResource;
+import org.eclipse.californium.core.coap.MediaTypeRegistry;
+import org.eclipse.californium.core.coap.MessageObserverAdapter;
+import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.servers.BootstrapHandler;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.response.BootstrapFinishResponse;
+import org.eclipse.leshan.core.response.SendableResponse;
 
 /**
  * A CoAP {@link Resource} in charge of handling the Bootstrap Finish indication from the bootstrap server.
@@ -40,12 +44,25 @@ public class BootstrapResource extends CoapResource {
 
     @Override
     public void handlePOST(CoapExchange exchange) {
+        // Handle bootstrap request
         ServerIdentity identity = ResourceUtil.extractServerIdentity(exchange, bootstrapHandler);
-        BootstrapFinishResponse response = bootstrapHandler.finished(identity, new BootstrapFinishRequest());
-        if (response.getCode().isError()) {
-            exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
-        } else {
-            exchange.respond(toCoapResponseCode(response.getCode()));
+        final SendableResponse<BootstrapFinishResponse> sendableResponse = bootstrapHandler.finished(identity,
+                new BootstrapFinishRequest());
+
+        // Create CoAP response
+        Response coapResponse = new Response(toCoapResponseCode(sendableResponse.getResponse().getCode()));
+        if (sendableResponse.getResponse().getCode().isError()) {
+            coapResponse.setPayload(sendableResponse.getResponse().getErrorMessage());
+            coapResponse.getOptions().setContentFormat(MediaTypeRegistry.TEXT_PLAIN);
         }
+
+        // Send response
+        coapResponse.addMessageObserver(new MessageObserverAdapter() {
+            @Override
+            public void onSent() {
+                sendableResponse.sent();
+            }
+        });
+        exchange.respond(coapResponse);
     }
 }
