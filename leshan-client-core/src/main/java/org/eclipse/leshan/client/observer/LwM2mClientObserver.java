@@ -17,18 +17,17 @@ package org.eclipse.leshan.client.observer;
 
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.servers.Server;
-import org.eclipse.leshan.core.request.Identity;
 
 /**
  * Allow to observer the registration life cycle of a LwM2m client.
  */
 public interface LwM2mClientObserver {
 
-    void onBootstrapSuccess(Identity bsserver);
+    void onBootstrapSuccess(Server bsserver);
 
-    void onBootstrapFailure(Identity bsserver, ResponseCode responseCode, String errorMessage);
+    void onBootstrapFailure(Server bsserver, ResponseCode responseCode, String errorMessage);
 
-    void onBootstrapTimeout(Identity bsserver);
+    void onBootstrapTimeout(Server bsserver);
 
     void onRegistrationSuccess(Server server, String registrationID);
 

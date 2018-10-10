@@ -17,7 +17,6 @@ package org.eclipse.leshan.client.observer;
 
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.servers.Server;
-import org.eclipse.leshan.core.request.Identity;
 
 /**
  * An abstract adapter class for observing registration life cycle. The methods in this class are empty. This class
@@ -26,15 +25,15 @@ import org.eclipse.leshan.core.request.Identity;
 public class LwM2mClientObserverAdapter implements LwM2mClientObserver {
 
     @Override
-    public void onBootstrapSuccess(Identity bsserver) {
+    public void onBootstrapSuccess(Server bsserver) {
     }
 
     @Override
-    public void onBootstrapFailure(Identity bsserver, ResponseCode responseCode, String errorMessage) {
+    public void onBootstrapFailure(Server bsserver, ResponseCode responseCode, String errorMessage) {
     }
 
     @Override
-    public void onBootstrapTimeout(Identity bsserver) {
+    public void onBootstrapTimeout(Server bsserver) {
     }
 
     @Override

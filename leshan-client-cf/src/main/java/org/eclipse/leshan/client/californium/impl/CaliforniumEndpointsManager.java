@@ -25,6 +25,7 @@ import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
@@ -45,7 +46,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
 
     private boolean started = false;
 
-    private Endpoint currentEndpoint;
+    private CoapEndpoint currentEndpoint;
     private Builder dtlsConfigbuilder;
     private NetworkConfig coapConfig;
     private InetSocketAddress localAddress;
@@ -62,7 +63,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
     }
 
     @Override
-    public synchronized Identity createEndpoint(ServerInfo serverInfo) {
+    public synchronized Server createEndpoint(ServerInfo serverInfo) {
         // Clear previous endpoint
         if (currentEndpoint != null) {
             coapServer.getEndpoints().remove(currentEndpoint);
@@ -70,7 +71,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
         }
 
         // Create new endpoint
-        Identity server;
+        Identity serverIdentity;
         if (serverInfo.isSecure()) {
             Builder newBuilder = new Builder(dtlsConfigbuilder.getIncompleteConfig());
 
@@ -110,7 +111,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                 builder.setNetworkConfig(coapConfig);
                 currentEndpoint = builder.build();
             }
-            server = Identity.psk(serverInfo.getAddress(), serverInfo.pskId);
+            serverIdentity = Identity.psk(serverInfo.getAddress(), serverInfo.pskId);
         } else {
             if (endpointFactory != null) {
                 currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null);
@@ -120,18 +121,19 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                 builder.setNetworkConfig(coapConfig);
                 currentEndpoint = builder.build();
             }
-            server = Identity.unsecure(serverInfo.getAddress());
+            serverIdentity = Identity.unsecure(serverInfo.getAddress());
         }
 
         // Add new endpoint
         coapServer.addEndpoint(currentEndpoint);
 
         // Start endpoint if needed
+        Server server = new Server(serverIdentity, serverInfo.serverId);
         if (started) {
             coapServer.start();
             try {
                 currentEndpoint.start();
-                LOG.info("New endpoint created for server {} at {}", serverInfo.serverUri, currentEndpoint.getUri());
+                LOG.info("New endpoint created for server {} at {}", server.getUri(), currentEndpoint.getUri());
             } catch (IOException e) {
                 throw new RuntimeException("Unable to start endpoint", e);
             }
@@ -146,11 +148,20 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
         else {
             // TODO support multi server;
             ServerInfo firstServer = serverInfo.iterator().next();
-            Identity identity = createEndpoint(firstServer);
             Collection<Server> servers = new ArrayList<>(1);
-            servers.add(new Server(identity, firstServer.serverId));
+            servers.add(createEndpoint(firstServer));
             return servers;
         }
+    }
+
+    @Override
+    public synchronized void forceReconnection(Server server) {
+        // TODO support multi server
+        Connector connector = currentEndpoint.getConnector();
+        if (connector instanceof DTLSConnector) {
+            ((DTLSConnector) connector).forceResumeAllSessions();
+        }
+        LOG.info("Clear DTLS session for server {}", server.getUri());
     }
 
     public synchronized Endpoint getEndpoint(Identity server) {

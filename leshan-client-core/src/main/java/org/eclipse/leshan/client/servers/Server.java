@@ -34,4 +34,16 @@ public class Server {
     public Long getId() {
         return id;
     }
+
+    public String getUri() {
+        StringBuilder uri = new StringBuilder();
+        if (identity.isSecure())
+            uri.append("coaps://");
+        else
+            uri.append("coap://");
+        uri.append(identity.getPeerAddress().getAddress().getHostAddress());
+        uri.append(":");
+        uri.append(identity.getPeerAddress().getPort());
+        return uri.toString();
+    }
 }

@@ -23,7 +23,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.servers.Server;
-import org.eclipse.leshan.core.request.Identity;
 
 public class SynchronousClientObserver implements LwM2mClientObserver {
 
@@ -44,19 +43,19 @@ public class SynchronousClientObserver implements LwM2mClientObserver {
     private AtomicBoolean bootstrapFailed = new AtomicBoolean(false);
 
     @Override
-    public void onBootstrapSuccess(Identity bsserver) {
+    public void onBootstrapSuccess(Server bsserver) {
         bootstrapSucceed.set(true);
         bootstrapLatch.countDown();
     }
 
     @Override
-    public void onBootstrapFailure(Identity bsserver, ResponseCode responseCode, String errorMessage) {
+    public void onBootstrapFailure(Server bsserver, ResponseCode responseCode, String errorMessage) {
         bootstrapFailed.set(true);
         bootstrapLatch.countDown();
     }
 
     @Override
-    public void onBootstrapTimeout(Identity bsserver) {
+    public void onBootstrapTimeout(Server bsserver) {
         bootstrapLatch.countDown();
     }
 

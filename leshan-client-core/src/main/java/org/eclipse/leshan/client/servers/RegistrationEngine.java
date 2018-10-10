@@ -33,7 +33,6 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.DeregisterRequest;
-import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
@@ -70,6 +69,10 @@ public class RegistrationEngine {
     // TODO time between bootstrap retry should be configurable and incremental
     private static final int BS_RETRY = 10 * 60 * 1000; // in ms
     private static final long NOW = 0;
+
+    private static enum Status {
+        SUCCESS, FAILURE, TIMEOUT
+    }
 
     // device state
     private final String endpoint;
@@ -149,12 +152,12 @@ public class RegistrationEngine {
             registeredServers.clear();
             cancelRegistrationTask();
             cancelUpdateTask(true);
-            Identity bootstrapServer = endpointsManager.createEndpoint(bootstrapServerInfo);
+            Server bootstrapServer = endpointsManager.createEndpoint(bootstrapServerInfo);
 
             // Send bootstrap request
             try {
-                BootstrapResponse response = sender.send(bootstrapServer.getPeerAddress(), bootstrapServer.isSecure(),
-                        new BootstrapRequest(endpoint), DEFAULT_TIMEOUT);
+                BootstrapResponse response = sender.send(bootstrapServerInfo.getAddress(),
+                        bootstrapServerInfo.isSecure(), new BootstrapRequest(endpoint), DEFAULT_TIMEOUT);
                 if (response == null) {
                     LOG.error("Unable to start bootstrap session: Timeout.");
                     if (observer != null) {
@@ -202,27 +205,39 @@ public class RegistrationEngine {
         }
     }
 
-    private boolean register(Server server) throws InterruptedException {
+    private boolean registerWithRetry(Server server) throws InterruptedException {
+        Status registerStatus = register(server);
+        if (registerStatus == Status.TIMEOUT) {
+            // if register timeout maybe server lost the session,
+            // so we reconnect (new handshake) and retry
+            endpointsManager.forceReconnection(server);
+            registerStatus = register(server);
+        }
+        return registerStatus == Status.SUCCESS;
+    }
+
+    private Status register(Server server) throws InterruptedException {
         DmServerInfo dmInfo = ServersInfoExtractor.getDMServerInfo(objectEnablers, server.getId());
 
         if (dmInfo == null) {
             LOG.error("Trying to register device but there is no LWM2M server config.");
-            return false;
+            return Status.FAILURE;
         }
 
         // Send register request
-        LOG.info("Trying to register to {} ...", dmInfo.getFullUri());
+        LOG.info("Trying to register to {} ...", server.getUri());
         try {
             RegisterRequest regRequest = new RegisterRequest(endpoint, dmInfo.lifetime, LwM2m.VERSION, dmInfo.binding,
                     null, LinkFormatHelper.getClientDescription(objectEnablers.values(), null), additionalAttributes);
-            RegisterResponse response = sender.send(server.getIdentity().getPeerAddress(),
-                    server.getIdentity().isSecure(), regRequest, DEFAULT_TIMEOUT);
+            RegisterResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(), regRequest,
+                    DEFAULT_TIMEOUT);
 
             if (response == null) {
                 LOG.error("Registration failed: Timeout.");
                 if (observer != null) {
                     observer.onRegistrationTimeout(server);
                 }
+                return Status.TIMEOUT;
             } else if (response.isSuccess()) {
                 // Add server to registered one
                 String registrationID = response.getRegistrationID();
@@ -236,18 +251,18 @@ public class RegistrationEngine {
                 if (observer != null) {
                     observer.onRegistrationSuccess(server, registrationID);
                 }
-                return true;
+                return Status.SUCCESS;
             } else {
                 LOG.error("Registration failed: {} {}.", response.getCode(), response.getErrorMessage());
                 if (observer != null) {
                     observer.onRegistrationFailure(server, response.getCode(), response.getErrorMessage());
                 }
+                return Status.FAILURE;
             }
         } catch (SendFailedException e) {
             logExceptionOnSendRequest("Unable to send register request", e);
-            return false;
+            return Status.FAILURE;
         }
-        return false;
     }
 
     private boolean deregister(Server server, String registrationID) throws InterruptedException {
@@ -261,7 +276,7 @@ public class RegistrationEngine {
         }
 
         // Send deregister request
-        LOG.info("Trying to deregister to {} ...", dmInfo.getFullUri());
+        LOG.info("Trying to deregister to {} ...", server.getUri());
         try {
             DeregisterResponse response = sender.send(server.getIdentity().getPeerAddress(),
                     server.getIdentity().isSecure(), new DeregisterRequest(registrationID), DEREGISTRATION_TIMEOUT);
@@ -298,15 +313,27 @@ public class RegistrationEngine {
         }
     }
 
-    private boolean update(Server server, String registrationID) throws InterruptedException {
+    private boolean updateWithRetry(Server server, String registrationId) throws InterruptedException {
+
+        Status updateStatus = update(server, registrationId);
+        if (updateStatus == Status.TIMEOUT) {
+            // if register timeout maybe server lost the session,
+            // so we reconnect (new handshake) and retry
+            endpointsManager.forceReconnection(server);
+            updateStatus = update(server, registrationId);
+        }
+        return updateStatus == Status.SUCCESS;
+    }
+
+    private Status update(Server server, String registrationID) throws InterruptedException {
         DmServerInfo dmInfo = ServersInfoExtractor.getDMServerInfo(objectEnablers, server.getId());
         if (dmInfo == null) {
             LOG.error("Trying to update registration but there is no LWM2M server config.");
-            return false;
+            return Status.FAILURE;
         }
 
         // Send update
-        LOG.info("Trying to update registration to {} ...", dmInfo.getFullUri());
+        LOG.info("Trying to update registration to {} ...", server.getUri());
         try {
             UpdateResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(),
                     new UpdateRequest(registrationID, null, null, null, null, null), DEFAULT_TIMEOUT);
@@ -316,7 +343,7 @@ public class RegistrationEngine {
                 if (observer != null) {
                     observer.onUpdateTimeout(server);
                 }
-                return false;
+                return Status.TIMEOUT;
             } else if (response.getCode() == ResponseCode.CHANGED) {
                 // Update successful, so we reschedule new update
                 LOG.info("Registration update succeed.");
@@ -325,18 +352,18 @@ public class RegistrationEngine {
                 if (observer != null) {
                     observer.onUpdateSuccess(server, registrationID);
                 }
-                return true;
+                return Status.SUCCESS;
             } else {
                 LOG.error("Registration update failed: {} {}.", response.getCode(), response.getErrorMessage());
                 if (observer != null) {
                     observer.onUpdateFailure(server, response.getCode(), response.getErrorMessage());
                 }
                 registeredServers.remove(registrationID);
-                return false;
+                return Status.FAILURE;
             }
         } catch (SendFailedException e) {
             logExceptionOnSendRequest("Unable to send update request", e);
-            return false;
+            return Status.FAILURE;
         }
     }
 
@@ -379,7 +406,7 @@ public class RegistrationEngine {
                     scheduleClientInitiatedBootstrap(BS_RETRY);
                 } else {
                     Server dmServer = dmServers.iterator().next();
-                    if (!register(dmServer))
+                    if (!registerWithRetry(dmServer))
                         scheduleRegistrationTask(dmServer, BS_RETRY);
                 }
             } catch (InterruptedException e) {
@@ -395,7 +422,7 @@ public class RegistrationEngine {
             return;
 
         if (timeInMs > 0) {
-            LOG.info("Try to register to {} again in {}s...", dmServer.getIdentity(), timeInMs / 1000);
+            LOG.info("Try to register to {} again in {}s...", dmServer.getUri(), timeInMs / 1000);
             registerFuture = schedExecutor.schedule(new RegistrationTask(dmServer), timeInMs, TimeUnit.MILLISECONDS);
         } else {
             registerFuture = schedExecutor.submit(new RegistrationTask(dmServer));
@@ -413,7 +440,7 @@ public class RegistrationEngine {
         @Override
         public void run() {
             try {
-                if (!register(server)) {
+                if (!registerWithRetry(server)) {
                     if (!scheduleClientInitiatedBootstrap(NOW)) {
                         scheduleRegistrationTask(server, BS_RETRY);
                     }
@@ -424,6 +451,7 @@ public class RegistrationEngine {
                 LOG.error("Unexpected exception during registration task", e);
             }
         }
+
     }
 
     private synchronized void scheduleUpdate(Server server, String registrationId, long timeInMs) {
@@ -431,8 +459,7 @@ public class RegistrationEngine {
             return;
 
         if (timeInMs > 0) {
-            LOG.info("Next registration update to {} in {}s...", server.getIdentity().getPeerAddress(),
-                    timeInMs / 1000);
+            LOG.info("Next registration update to {} in {}s...", server.getUri(), timeInMs / 1000);
             updateFuture = schedExecutor.schedule(new UpdateRegistrationTask(server, registrationId), timeInMs,
                     TimeUnit.MILLISECONDS);
         } else {
@@ -452,8 +479,8 @@ public class RegistrationEngine {
         @Override
         public void run() {
             try {
-                if (!update(server, registrationId)) {
-                    if (!register(server)) {
+                if (!updateWithRetry(server, registrationId)) {
+                    if (!registerWithRetry(server)) {
                         if (!scheduleClientInitiatedBootstrap(NOW)) {
                             scheduleRegistrationTask(server, BS_RETRY);
                         }

@@ -17,13 +17,13 @@ package org.eclipse.leshan.client.servers;
 
 import java.util.Collection;
 
-import org.eclipse.leshan.core.request.Identity;
-
 public interface EndpointsManager {
 
-    Identity createEndpoint(ServerInfo serverInfo);
+    Server createEndpoint(ServerInfo serverInfo);
 
     Collection<Server> createEndpoints(Collection<? extends ServerInfo> serverInfo);
+
+    void forceReconnection(Server server);
 
     void start();
 

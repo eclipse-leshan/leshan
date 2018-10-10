@@ -15,7 +15,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.servers.Server;
-import org.eclipse.leshan.core.request.Identity;
 
 /**
  * A dispatcher for LwM2mClientObserver. It allow several observers on a LwM2mClient.
@@ -33,21 +32,21 @@ public class LwM2mClientObserverDispatcher implements LwM2mClientObserver {
     }
 
     @Override
-    public void onBootstrapSuccess(Identity bsserver) {
+    public void onBootstrapSuccess(Server bsserver) {
         for (LwM2mClientObserver observer : observers) {
             observer.onBootstrapSuccess(bsserver);
         }
     }
 
     @Override
-    public void onBootstrapFailure(Identity bsserver, ResponseCode responseCode, String errorMessage) {
+    public void onBootstrapFailure(Server bsserver, ResponseCode responseCode, String errorMessage) {
         for (LwM2mClientObserver observer : observers) {
             observer.onBootstrapFailure(bsserver, responseCode, errorMessage);
         }
     }
 
     @Override
-    public void onBootstrapTimeout(Identity bsserver) {
+    public void onBootstrapTimeout(Server bsserver) {
         for (LwM2mClientObserver observer : observers) {
             observer.onBootstrapTimeout(bsserver);
         }
