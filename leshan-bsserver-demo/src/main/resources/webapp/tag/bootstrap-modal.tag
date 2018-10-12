@@ -33,9 +33,10 @@
                              <securityconfig-input ref="bsserver" onchange={update} show={activetab.bsserver}
                                                     securi={ "coaps://" + location.hostname + ":" + serverdata.securedEndpointPort }
                                                     unsecuri= { "coap://" + location.hostname + ":" + serverdata.unsecuredEndpointPort }
-                                                    serverpubkey= {serversecurity.rpk.hex }
-                                                    disable = { {uri:true, serverpubkey:true} }
-                                                    secmode = { {no_sec:true, psk:true,rpk:true} }
+                                                    serverpubkey= {serversecurity.rpk.hexDer}
+                                                    servercertificate= {serversecurity.certificate.hexDer}
+                                                    disable = { {uri:true, serverpubkey:true, servercertificate:true}}
+                                                    secmode = { {no_sec:true, psk:true,rpk:true, x509:true}}
                                                     ></securityconfig-input>
                         </div>
 
@@ -54,7 +55,7 @@
         var tag = this;
         // Tag Params
         tag.serverdata = opts.server || {unsecuredEndpointPort:5683, securedEndpointPort:5684};
-        tag.serversecurity = opts.security || {rpk:{}};
+        tag.serversecurity = opts.security || {rpk:{},certificate:{}};
         // Tag Internal state
         tag.endpoint = {};
         tag.has_error = has_error;

@@ -21,7 +21,7 @@
     <div class={ form-group:true, has-error: x509ServerCert.error }>
         <label for="x509ServerCert" class="col-sm-4 control-label">Server certificate</label>
         <div class="col-sm-8">
-            <textarea class="form-control" style="resize:none" rows="3" id="x509ServerCert" ref="x509ServerCert" oninput={validate_x509ServerCert} onblur={validate_x509ServerCert}></textarea>
+            <textarea class="form-control" style="resize:none" rows="3" id="x509ServerCert" ref="x509ServerCert" oninput={validate_x509ServerCert} onblur={validate_x509ServerCert} disabled={disable.servercertificate} placeholder={servercertificate}></textarea>
             <p class="text-right text-muted small" style="margin:0">Hexadecimal format</p>
             <p class="help-block" if={x509ServerCert.required}>The server certificate is required</p>
             <p class="help-block" if={x509ServerCert.nothexa}>Hexadecimal format is expected</p>
@@ -33,6 +33,8 @@
         var tag = this;
         // Tag Params
         tag.onchange = opts.onchange;
+        tag.disable = opts.disable || {};
+        tag.servercertificate = opts.servercertificate || "";
         // Tag API
         tag.has_error = has_error;
         tag.get_value = get_value
@@ -76,7 +78,7 @@
         }
 
         function validate_x509ServerCert(){
-            var str = tag.refs.x509ServerCert.value;
+            var str = tag.refs.x509ServerCert.value || tag.servercertificate;
             tag.x509ServerCert.error = false;
             tag.x509ServerCert.required = false;
             tag.x509ServerCert.nothexa = false;
@@ -91,11 +93,14 @@
         }
 
         function has_error(){
-            return typeof tag.x509Cert.error === "undefined" || tag.x509Cert.error || typeof tag.x509PrivateKey.error === "undefined" || tag.x509PrivateKey.error || typeof tag.x509ServerCert.error === "undefined" || tag.x509ServerCert.error;
+            console.log()
+            return typeof tag.x509Cert.error === "undefined" || tag.x509Cert.error ||
+                   typeof tag.x509PrivateKey.error === "undefined" || tag.x509PrivateKey.error || 
+                   (tag.servercertificate === "" && (typeof tag.x509ServerCert.error === "undefined" || tag.x509ServerCert.error));
         }
 
         function get_value(){
-            return { cert:tag.refs.x509Cert.value, key:tag.refs.x509PrivateKey.value, servCert:tag.refs.x509ServerCert.value };
+            return { cert:tag.refs.x509Cert.value, key:tag.refs.x509PrivateKey.value, servCert:tag.refs.x509ServerCert.value || tag.servercertificate };
         }
     </script>
 </x509-input>
