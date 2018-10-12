@@ -73,13 +73,13 @@ public class BootstrapSecurityStoreImpl implements BootstrapSecurityStore {
         for (Map.Entry<Integer, BootstrapConfig.ServerSecurity> bsEntry : bsConfig.security.entrySet()) {
             ServerSecurity value = bsEntry.getValue();
 
-            // Extract PSK identity
+            // Extract PSK security info
             if (value.bootstrapServer && value.securityMode == SecurityMode.PSK) {
                 SecurityInfo securityInfo = SecurityInfo.newPreSharedKeyInfo(endpoint,
                         new String(value.publicKeyOrId, StandardCharsets.UTF_8), value.secretKey);
                 return Arrays.asList(securityInfo);
             }
-            // Extract RPK identity
+            // Extract RPK security info
             else if (value.bootstrapServer && value.securityMode == SecurityMode.RPK) {
                 try {
                     SecurityInfo securityInfo = SecurityInfo.newRawPublicKeyInfo(endpoint,
@@ -89,6 +89,11 @@ public class BootstrapSecurityStoreImpl implements BootstrapSecurityStore {
                     LOG.error("Unable to decode Client public key for {}", endpoint, e);
                     return null;
                 }
+            }
+            // Extract X509 security info
+            else if (value.bootstrapServer && value.securityMode == SecurityMode.X509) {
+                SecurityInfo securityInfo = SecurityInfo.newX509CertInfo(endpoint);
+                return Arrays.asList(securityInfo);
             }
         }
         return null;

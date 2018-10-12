@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.demo.servlet.json;
+package org.eclipse.leshan.server.bootstrap.demo.json;
 
 import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
@@ -25,7 +25,7 @@ import org.eclipse.leshan.util.Hex;
 
 import com.eclipsesource.json.JsonObject;
 
-///!\ This class is a COPY of org.eclipse.leshan.server.bootstrap.demo.json.PublicKeySerDes /!\
+///!\ This class is a COPY of org.eclipse.leshan.server.demo.servlet.json.PublicKeySerDes /!\
 //TODO create a leshan-demo project ?
 public class PublicKeySerDes extends JsonSerDes<PublicKey> {
 

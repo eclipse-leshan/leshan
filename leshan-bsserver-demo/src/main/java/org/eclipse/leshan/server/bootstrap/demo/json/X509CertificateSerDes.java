@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.demo.servlet.json;
+package org.eclipse.leshan.server.bootstrap.demo.json;
 
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
@@ -24,7 +24,7 @@ import org.eclipse.leshan.util.Base64;
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
 
-///!\ This class is a COPY of org.eclipse.leshan.server.bootstrap.demo.json.X509CertificateSerDes /!\
+///!\ This class is a COPY of org.eclipse.leshan.server.demo.servlet.json.X509CertificateSerDes /!\
 // TODO create a leshan-demo project ?
 public class X509CertificateSerDes extends JsonSerDes<X509Certificate> {
 

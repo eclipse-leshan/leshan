@@ -94,7 +94,6 @@
         }
 
         function has_error(){
-            console.log(tag.refs.servpubkey.value || tag.serverpubkey);
             return typeof tag.pubkey.error === "undefined" || tag.pubkey.error ||
                    typeof tag.privkey.error === "undefined" || tag.privkey.error ||
                    (tag.serverpubkey === "" && (typeof tag.servpubkey.error === "undefined" || tag.servpubkey.error));
