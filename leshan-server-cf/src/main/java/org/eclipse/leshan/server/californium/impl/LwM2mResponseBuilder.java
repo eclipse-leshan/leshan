@@ -186,7 +186,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         } else if (coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.CONTENT
                 // This is for backward compatibility, when the spec say notification used CHANGED code
                 || coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.CHANGED) {
-            // handle success response:`
+            // handle success response:
             LwM2mNode content = decodeOneNetResponse(request.getPath(), coapResponse, request,
                     registration.getEndpoint());
             if (coapResponse.getOptions().hasObserve()) {
