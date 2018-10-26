@@ -15,8 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
-import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toLwM2mResponseCode;
-
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
@@ -25,41 +23,20 @@ import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.observation.Observation;
-import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
-import org.eclipse.leshan.core.request.BootstrapFinishRequest;
-import org.eclipse.leshan.core.request.BootstrapWriteRequest;
-import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.request.CreateRequest;
-import org.eclipse.leshan.core.request.DeleteRequest;
-import org.eclipse.leshan.core.request.DiscoverRequest;
-import org.eclipse.leshan.core.request.DownlinkRequestVisitor;
-import org.eclipse.leshan.core.request.ExecuteRequest;
-import org.eclipse.leshan.core.request.LwM2mRequest;
-import org.eclipse.leshan.core.request.ObserveRequest;
-import org.eclipse.leshan.core.request.ReadRequest;
-import org.eclipse.leshan.core.request.WriteAttributesRequest;
-import org.eclipse.leshan.core.request.WriteRequest;
+import org.eclipse.leshan.core.request.*;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
-import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
-import org.eclipse.leshan.core.response.BootstrapFinishResponse;
-import org.eclipse.leshan.core.response.BootstrapWriteResponse;
-import org.eclipse.leshan.core.response.CreateResponse;
-import org.eclipse.leshan.core.response.DeleteResponse;
-import org.eclipse.leshan.core.response.DiscoverResponse;
-import org.eclipse.leshan.core.response.ExecuteResponse;
-import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.core.response.ObserveResponse;
-import org.eclipse.leshan.core.response.ReadResponse;
-import org.eclipse.leshan.core.response.WriteAttributesResponse;
-import org.eclipse.leshan.core.response.WriteResponse;
+import org.eclipse.leshan.core.response.*;
 import org.eclipse.leshan.server.californium.ObserveUtil;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.util.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toLwM2mResponseCode;
 
 public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRequestVisitor {
 
@@ -209,8 +186,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         } else if (coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.CONTENT
                 // This is for backward compatibility, when the spec say notification used CHANGED code
                 || coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.CHANGED) {
-            // handle success response:
-            LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse, request,
+            // handle success response:`
+            LwM2mNode content = decodeOneNetResponse(request.getPath(), coapResponse, request,
                     registration.getEndpoint());
             if (coapResponse.getOptions().hasObserve()) {
                 // observe request successful
@@ -281,6 +258,39 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         ContentFormat contentFormat = null;
         if (coapResponse.getOptions().hasContentFormat()) {
             contentFormat = ContentFormat.fromCode(coapResponse.getOptions().getContentFormat());
+        }
+
+        // Decode payload
+        try {
+            return decoder.decode(coapResponse.getPayload(), contentFormat, path, model);
+        } catch (CodecException e) {
+            if (LOG.isDebugEnabled()) {
+                byte[] payload = coapResponse.getPayload() == null ? new byte[0] : coapResponse.getPayload();
+                LOG.debug(
+                        String.format("Unable to decode response payload of request [%s] from client [%s] [payload:%s]",
+                                request, endpoint, Hex.encodeHexString(payload)));
+            }
+            throw new InvalidResponseException(e, "Unable to decode response payload of request [%s] from client [%s]",
+                    request, endpoint);
+        }
+    }
+
+    /**
+     * hide the defect of oneNet protocol（violation of CoAP 2.05 content and LwM2M Observe）
+     */
+    private LwM2mNode decodeOneNetResponse(LwM2mPath path, Response coapResponse, LwM2mRequest<?> request,
+                                           String endpoint) {
+
+        // Get content format
+        ContentFormat contentFormat = null;
+        if (coapResponse.getOptions().hasContentFormat()) {
+            contentFormat = ContentFormat.fromCode(coapResponse.getOptions().getContentFormat());
+        }else {
+            if (path == null) {
+                return LwM2mSingleResource.newStringResource(path.getResourceId(), "");
+            } else {
+                return LwM2mSingleResource.newStringResource(2, "");
+            }
         }
 
         // Decode payload
