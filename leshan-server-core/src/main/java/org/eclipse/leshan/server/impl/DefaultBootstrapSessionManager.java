@@ -24,7 +24,7 @@ import org.eclipse.leshan.server.bootstrap.BootstrapFailureCause;
 import org.eclipse.leshan.server.bootstrap.BootstrapSession;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
-import org.eclipse.leshan.server.security.SecurityCheck;
+import org.eclipse.leshan.server.security.SecurityChecker;
 import org.eclipse.leshan.server.security.SecurityInfo;
 
 /**
@@ -38,9 +38,15 @@ import org.eclipse.leshan.server.security.SecurityInfo;
 public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
 
     private BootstrapSecurityStore bsSecurityStore;
+    private SecurityChecker securityChecker;
 
     public DefaultBootstrapSessionManager(BootstrapSecurityStore bsSecurityStore) {
+        this(bsSecurityStore, new SecurityChecker());
+    }
+
+    public DefaultBootstrapSessionManager(BootstrapSecurityStore bsSecurityStore, SecurityChecker securityChecker) {
         this.bsSecurityStore = bsSecurityStore;
+        this.securityChecker = securityChecker;
     }
 
     @Override
@@ -48,7 +54,7 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
         boolean authorized;
         if (bsSecurityStore != null) {
             List<SecurityInfo> securityInfos = bsSecurityStore.getAllByEndpoint(endpoint);
-            authorized = SecurityCheck.checkSecurityInfos(endpoint, clientIdentity, securityInfos);
+            authorized = securityChecker.checkSecurityInfos(endpoint, clientIdentity, securityInfos);
         } else {
             authorized = true;
         }

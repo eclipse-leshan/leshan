@@ -20,6 +20,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.Certificate;
 
 import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.SecurityMode;
@@ -38,8 +39,12 @@ public class ServerInfo {
     public byte[] pskKey;
 
     public PublicKey publicKey;
-    public PrivateKey privateKey;
     public PublicKey serverPublicKey;
+
+    public Certificate clientCertificate;
+    public Certificate serverCertificate;
+
+    public PrivateKey privateKey;
 
     public InetSocketAddress getAddress() {
         return getAddress(serverUri);

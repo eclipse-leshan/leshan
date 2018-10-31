@@ -18,6 +18,7 @@ package org.eclipse.leshan.server.bootstrap.demo.servlet;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
+import java.security.cert.X509Certificate;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -25,27 +26,45 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.leshan.server.bootstrap.demo.json.PublicKeySerDes;
 import org.eclipse.leshan.server.bootstrap.demo.json.SecuritySerializer;
+import org.eclipse.leshan.server.bootstrap.demo.json.X509CertificateSerDes;
 import org.eclipse.leshan.server.californium.impl.LeshanBootstrapServer;
 import org.eclipse.leshan.server.security.SecurityInfo;
 
-import com.google.gson.Gson;
+import com.eclipsesource.json.JsonObject;
 import com.google.gson.GsonBuilder;
 
 public class ServerServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
-    private LeshanBootstrapServer server;
-    private Gson gsonSer;
-    private PublicKey publicKey;
+    private final X509CertificateSerDes certificateSerDes;
+    private final PublicKeySerDes publicKeySerDes;
+
+    private final LeshanBootstrapServer server;
+    private final PublicKey publicKey;
+    private final X509Certificate serverCertificate;
+
+    public ServerServlet(LeshanBootstrapServer server, X509Certificate serverCertificate) {
+        this.server = server;
+        GsonBuilder builder = new GsonBuilder();
+        builder.registerTypeAdapter(SecurityInfo.class, new SecuritySerializer());
+        certificateSerDes = new X509CertificateSerDes();
+        publicKeySerDes = new PublicKeySerDes();
+
+        this.publicKey = null;
+        this.serverCertificate = serverCertificate;
+    }
 
     public ServerServlet(LeshanBootstrapServer server, PublicKey serverPublicKey) {
         this.server = server;
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(SecurityInfo.class, new SecuritySerializer());
-        this.gsonSer = builder.create();
+        certificateSerDes = new X509CertificateSerDes();
+        publicKeySerDes = new PublicKeySerDes();
         this.publicKey = serverPublicKey;
+        this.serverCertificate = null;
     }
 
     @Override
@@ -58,9 +77,14 @@ public class ServerServlet extends HttpServlet {
         }
 
         if ("security".equals(path[0])) {
-            String json = this.gsonSer.toJson(SecurityInfo.newRawPublicKeyInfo("leshan", publicKey));
+            JsonObject security = new JsonObject();
+            if (publicKey != null) {
+                security.add("pubkey", publicKeySerDes.jSerialize(publicKey));
+            } else if (serverCertificate != null) {
+                security.add("certificate", certificateSerDes.jSerialize(serverCertificate));
+            }
             resp.setContentType("application/json");
-            resp.getOutputStream().write(json.getBytes(StandardCharsets.UTF_8));
+            resp.getOutputStream().write(security.toString().getBytes(StandardCharsets.UTF_8));
             resp.setStatus(HttpServletResponse.SC_OK);
             return;
         }

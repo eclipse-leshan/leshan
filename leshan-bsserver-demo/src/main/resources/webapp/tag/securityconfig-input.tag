@@ -32,7 +32,7 @@
 
     <!-- X509 -->
     <div if={  refs.secMode.value == "x509" } >
-        <x509-input ref="x509" onchange={onchange}></x509-input>
+        <x509-input ref="x509" onchange={onchange} disable={disable} servercertificate={servercertificate}></x509-input>
     </div>
 
     <script>
@@ -42,6 +42,7 @@
         tag.secmode = opts.secmode || {no_sec:true};
         tag.disable = opts.disable || {};
         tag.serverpubkey = opts.serverpubkey || "";
+        tag.servercertificate = opts.servercertificate || "";
         tag.onchange = opts.onchange;
         tag.securi = opts.securi || "";
         tag.unsecuri = opts.unsecuri || "";

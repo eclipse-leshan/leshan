@@ -1,20 +1,37 @@
 <bootstrap>
-    <div class="well well-sm col-md-12"  if={serverSecurityInfo.rpk}>
-        <h4>The Leshan bootstrap public key <small>(SubjectPublicKeyInfo der encoded)</small>
-        <button type="button" title ="Download server public key(.der)" class="btn btn-default btn-xs" onclick={saveServerPubKey}>
+   <div class="well well-sm col-md-12"  if={certificate}>
+        <h4>The Leshan Bootstrap Certificate  <small>(x509v3 der encoded)</small>
+        <button type="button" title ="Download bootstrap server certificate(.der)" class="btn btn-default btn-xs" onclick={()=>saveFile('bsServerCertificate.der',certificate.bytesDer)}>
             <span class="glyphicon glyphicon-download-alt" aria-hidden="true">
         </button>
         </h4>
         <p>
-           <u>Elliptic Curve parameters :</u> <code>{serverSecurityInfo.rpk.params}</code><br/>
-           <u>Public x coord :</u> <code>{serverSecurityInfo.rpk.x}</code><br/>
-           <u>Public y coord :</u> <code>{serverSecurityInfo.rpk.y}</code><br/>
            <div class="col-md-7">
-           <u>Hex : </u> <pre>{pkcs8pubkey.hex}</pre>
+           <u>Hex : </u> <pre>{certificate.hexDer}</pre>
            </div>
            <div class="col-md-5">
-           <u>Base64 : </u><pre>{pkcs8pubkey.base64}</pre>
+           <u>Base64 : </u><pre>{certificate.b64Der}</pre>
            </div>
+           <small>Clients generally need it for X509 authentication.</small><br/>
+        </p>
+    </div>
+    <div class="well well-sm col-md-12"  if={pubkey}>
+        <h4>The Leshan Bootstrap Public Key <small>(SubjectPublicKeyInfo der encoded)</small>
+        <button type="button" title ="Download server public key(.der)" class="btn btn-default btn-xs" onclick={()=>saveFile('bsServerPubKey.der',pubkey.bytesDer)}>
+            <span class="glyphicon glyphicon-download-alt" aria-hidden="true">
+        </button>
+        </h4>
+        <p>
+           <u>Elliptic Curve parameters :</u> <code>{pubkey.params}</code><br/>
+           <u>Public x coord :</u> <code>{pubkey.x}</code><br/>
+           <u>Public y coord :</u> <code>{pubkey.y}</code><br/>
+           <div class="col-md-7">
+           <u>Hex : </u> <pre>{pubkey.hexDer}</pre>
+           </div>
+           <div class="col-md-5">
+           <u>Base64 : </u><pre>{pubkey.b64Der}</pre>
+           </div>
+           <small>Clients generally need it for RPK authentication.</small>
         </p>
     </div>
     <div>
@@ -45,11 +62,6 @@
                                 Id : <code> {toAscii(security.publicKeyOrId)} </code> </br>
                                 secret : <code> {toHex(security.secretKey)} </code> </br>
                             </span>
-                            <span if={security.securityMode === 'X509'}>
-                                Client certificate : <code> {toHex(security.publicKeyOrId)} </code> </br>
-                                Client private key : <code> {toHex(security.secretKey)} </code> </br>
-                                Server certificate : <code> {toHex(security.serverPublicKey)} </code> </br>
-                            </span>
                         </p>
                     </div>
                 </td>
@@ -61,11 +73,6 @@
                             <span if={security.securityMode === 'PSK'}>
                                 Id : <code> {toAscii(security.publicKeyOrId)} </code> </br>
                                 secret : <code> {toHex(security.secretKey)} </code> </br>
-                            </span>
-                            <span if={security.securityMode === 'X509'}>
-                                Client certificate : <code> {toHex(security.publicKeyOrId)} </code> </br>
-                                Client private key : <code> {toHex(security.secretKey)} </code> </br>
-                                Server certificate : <code> {toHex(security.serverPublicKey)} </code> </br>
                             </span>
                         </p>
                     </div>
@@ -87,9 +94,9 @@
         tag.showModal = showModal;
         tag.toAscii = toAscii;
         tag.toHex = toHex;
-        tag.saveServerPubKey = saveServerPubKey;
-        tag.serverSecurityInfo = {};
-        tag.pkcs8pubkey = {} // .base64 .hex .bytes fields
+        tag.saveFile = saveFile;
+        tag.pubkey = null // .b64Der .hexDer .bytesDer fields
+        tag.certificate = null // .b64Der .hexDer .bytesDer fields
 
         // Tag initilialization
         tag.on('mount', function(){
@@ -103,18 +110,28 @@
         });
 
         server.on("initialized", function(securityInfo){
-            tag.serverSecurityInfo = securityInfo;
-            tag.pkcs8pubkey.base64 = securityInfo.rpk.pkcs8;
-            tag.pkcs8pubkey.bytes = base64ToBytes(tag.pkcs8pubkey.base64);
-            tag.pkcs8pubkey.hex = toHex(tag.pkcs8pubkey.bytes);
-            tag.update();
+            if (securityInfo.certificate){
+                tag.certificate = securityInfo.certificate
+                tag.certificate.bytesDer = base64ToBytes(tag.certificate.b64Der);
+                tag.certificate.hexDer = toHex(tag.certificate.bytesDer);
+
+                tag.pubkey = securityInfo.certificate.pubkey;
+                tag.pubkey.bytesDer = base64ToBytes(tag.pubkey.b64Der);
+                tag.pubkey.hexDer = toHex(tag.pubkey.bytesDer);
+                tag.update();
+            } else if (securityInfo.pubkey) {
+                tag.pubkey = securityInfo.pubkey;
+                tag.pubkey.bytesDer = base64ToBytes(tag.pubkey.b64Der);
+                tag.pubkey.hexDer = toHex(tag.pubkey.bytesDer);
+                tag.update();
+            }
         });
 
         // Tag functions
         function showModal(){
             $.get('api/server/endpoint', function(data) {
                 
-                riot.mount('div#modal', 'bootstrap-modal', {server:data, security:{rpk:tag.pkcs8pubkey}});
+                riot.mount('div#modal', 'bootstrap-modal', {server:data, security:{rpk:tag.pubkey, certificate:tag.certificate}});
             }).fail(function(xhr, status, error){
                 var err = "Unable to get the server info";
                 console.error(err, status, error, xhr.responseText);
@@ -122,10 +139,9 @@
             });
         };
 
-        function saveServerPubKey(){
-            var blob = new Blob([tag.pkcs8pubkey.bytes], {type: "application/octet-stream"});
-            var fileName = "bsServerPubKey.der";
-            saveAs(blob, fileName);
+        function saveFile(filename, bytes) {
+            var blob = new Blob([bytes], {type: "application/octet-stream"});
+            saveAs(blob, filename);
         };
 
         function remove(e){

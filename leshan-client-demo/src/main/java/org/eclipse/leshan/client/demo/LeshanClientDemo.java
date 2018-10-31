@@ -26,6 +26,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPublicKey;
 import java.util.Arrays;
 import java.util.List;
@@ -82,10 +84,20 @@ public class LeshanClientDemo {
         RPKChapter.append("\n .");
         RPKChapter.append("\n ================================[ RPK ]=================================");
         RPKChapter.append("\n | By default Leshan demo use non secure connection.                    |");
-        RPKChapter.append("\n | To use RPK, -cpubk -cpribk -spubk options should be used together.   |");
+        RPKChapter.append("\n | To use RPK, -cpubk -cprik -spubk options should be used together.    |");
         RPKChapter.append("\n | To get helps about files format and how to generate it, see :        |");
         RPKChapter.append("\n | See https://github.com/eclipse/leshan/wiki/Credential-files-format   |");
         RPKChapter.append("\n ------------------------------------------------------------------------");
+
+        final StringBuilder X509Chapter = new StringBuilder();
+        X509Chapter.append("\n .");
+        X509Chapter.append("\n .");
+        X509Chapter.append("\n ================================[ RPK ]=================================");
+        X509Chapter.append("\n | By default Leshan demo use non secure connection.                    |");
+        X509Chapter.append("\n | To use X509, -ccert -cprik -scert options should be used together.   |");
+        X509Chapter.append("\n | To get helps about files format and how to generate it, see :        |");
+        X509Chapter.append("\n | See https://github.com/eclipse/leshan/wiki/Credential-files-format   |");
+        X509Chapter.append("\n ------------------------------------------------------------------------");
 
         options.addOption("h", "help", false, "Display help information.");
         options.addOption("n", true, String.format(
@@ -106,7 +118,12 @@ public class LeshanClientDemo {
         options.addOption("cprik", true,
                 "The path to your client private key file.\nThe private key should be in PKCS#8 format (DER encoding).");
         options.addOption("spubk", true,
-                "The path to your server public key file.\n The public Key should be in SubjectPublicKeyInfo format (DER encoding).");
+                "The path to your server public key file.\n The public Key should be in SubjectPublicKeyInfo format (DER encoding)."
+                        + X509Chapter);
+        options.addOption("ccert", true,
+                "The path to your client certificate file.\n The certificate should be in X509v3 format (DER encoding).");
+        options.addOption("scert", true,
+                "The path to your server certificate file.\n The certificate should be in X509v3 format (DER encoding).");
 
         HelpFormatter formatter = new HelpFormatter();
         formatter.setWidth(90);
@@ -144,9 +161,34 @@ public class LeshanClientDemo {
         }
 
         // Abort if all RPK config is not complete
-        if (cl.hasOption("cpubk") || cl.hasOption("cprik") || cl.hasOption("spubk")) {
+        boolean rpkConfig = false;
+        if (cl.hasOption("cpubk") || cl.hasOption("spubk")) {
             if (!cl.hasOption("cpubk") || !cl.hasOption("cprik") || !cl.hasOption("spubk")) {
                 System.err.println("cpubk, cprik and spubk should be used together to connect using RPK");
+                formatter.printHelp(USAGE, options);
+                return;
+            } else {
+                rpkConfig = true;
+            }
+        }
+
+        // Abort if all X509 config is not complete
+        boolean x509config = false;
+        if (cl.hasOption("ccert") || cl.hasOption("scert")) {
+            if (!cl.hasOption("ccert") || !cl.hasOption("cprik") || !cl.hasOption("scert")) {
+                System.err.println("ccert, cprik and scert should be used together to connect using X509");
+                formatter.printHelp(USAGE, options);
+                return;
+            } else {
+                x509config = true;
+            }
+        }
+
+        // Abort if cprik is used without complete RPK or X509 config
+        if (cl.hasOption("cprik")) {
+            if (!x509config && !rpkConfig) {
+                System.err.println(
+                        "cprik should be used with ccert and scert for X509 config OR cpubk and spubk for RPK config");
                 formatter.printHelp(USAGE, options);
                 return;
             }
@@ -172,7 +214,7 @@ public class LeshanClientDemo {
             else
                 serverURI = "coap://" + cl.getOptionValue("u");
         } else {
-            if (cl.hasOption("i") || cl.hasOption("cpubk"))
+            if (cl.hasOption("i") || cl.hasOption("cpubk") || cl.hasOption("ccert"))
                 serverURI = "coaps://localhost:" + LwM2m.DEFAULT_COAP_SECURE_PORT;
             else
                 serverURI = "coap://localhost:" + LwM2m.DEFAULT_COAP_PORT;
@@ -192,11 +234,27 @@ public class LeshanClientDemo {
         PublicKey serverPublicKey = null;
         if (cl.hasOption("cpubk")) {
             try {
-                clientPrivateKey = SecurityUtil.extractPrivateKey(cl.getOptionValue("cprik"));
-                clientPublicKey = SecurityUtil.extractPublicKey(cl.getOptionValue("cpubk"));
-                serverPublicKey = SecurityUtil.extractPublicKey(cl.getOptionValue("spubk"));
+                clientPrivateKey = SecurityUtil.privateKey.readFromFile(cl.getOptionValue("cprik"));
+                clientPublicKey = SecurityUtil.publicKey.readFromFile(cl.getOptionValue("cpubk"));
+                serverPublicKey = SecurityUtil.publicKey.readFromFile(cl.getOptionValue("spubk"));
             } catch (Exception e) {
                 System.err.println("Unable to load RPK files : " + e.getMessage());
+                e.printStackTrace();
+                formatter.printHelp(USAGE, options);
+                return;
+            }
+        }
+
+        // get X509 info
+        X509Certificate clientCertificate = null;
+        X509Certificate serverCertificate = null;
+        if (cl.hasOption("ccert")) {
+            try {
+                clientPrivateKey = SecurityUtil.privateKey.readFromFile(cl.getOptionValue("cprik"));
+                clientCertificate = SecurityUtil.certificate.readFromFile(cl.getOptionValue("ccert"));
+                serverCertificate = SecurityUtil.certificate.readFromFile(cl.getOptionValue("scert"));
+            } catch (Exception e) {
+                System.err.println("Unable to load X509 files : " + e.getMessage());
                 e.printStackTrace();
                 formatter.printHelp(USAGE, options);
                 return;
@@ -243,14 +301,21 @@ public class LeshanClientDemo {
                 return;
             }
         }
-
-        createAndStartClient(endpoint, localAddress, localPort, cl.hasOption("b"), serverURI, pskIdentity, pskKey,
-                clientPublicKey, clientPrivateKey, serverPublicKey, latitude, longitude, scaleFactor);
+        try {
+            createAndStartClient(endpoint, localAddress, localPort, cl.hasOption("b"), serverURI, pskIdentity, pskKey,
+                    clientPrivateKey, clientPublicKey, serverPublicKey, clientCertificate, serverCertificate, latitude,
+                    longitude, scaleFactor);
+        } catch (Exception e) {
+            System.err.println("Unable to create and start client ...");
+            e.printStackTrace();
+            return;
+        }
     }
 
     public static void createAndStartClient(String endpoint, String localAddress, int localPort, boolean needBootstrap,
-            String serverURI, byte[] pskIdentity, byte[] pskKey, PublicKey clientPublicKey, PrivateKey clientPrivateKey,
-            PublicKey serverPublicKey, Float latitude, Float longitude, float scaleFactor) {
+            String serverURI, byte[] pskIdentity, byte[] pskKey, PrivateKey clientPrivateKey, PublicKey clientPublicKey,
+            PublicKey serverPublicKey, X509Certificate clientCertificate, X509Certificate serverCertificate,
+            Float latitude, Float longitude, float scaleFactor) throws CertificateEncodingException {
 
         locationInstance = new MyLocation(latitude, longitude, scaleFactor);
 
@@ -268,6 +333,10 @@ public class LeshanClientDemo {
                 initializer.setInstancesForObject(SECURITY, rpkBootstrap(serverURI, clientPublicKey.getEncoded(),
                         clientPrivateKey.getEncoded(), serverPublicKey.getEncoded()));
                 initializer.setClassForObject(SERVER, Server.class);
+            } else if (clientCertificate != null) {
+                initializer.setInstancesForObject(SECURITY, x509Bootstrap(serverURI, clientCertificate.getEncoded(),
+                        clientPrivateKey.getEncoded(), serverCertificate.getEncoded()));
+                initializer.setInstancesForObject(SERVER, new Server(123, 30, BindingMode.U, false));
             } else {
                 initializer.setInstancesForObject(SECURITY, noSecBootstap(serverURI));
                 initializer.setClassForObject(SERVER, Server.class);
@@ -279,6 +348,10 @@ public class LeshanClientDemo {
             } else if (clientPublicKey != null) {
                 initializer.setInstancesForObject(SECURITY, rpk(serverURI, 123, clientPublicKey.getEncoded(),
                         clientPrivateKey.getEncoded(), serverPublicKey.getEncoded()));
+                initializer.setInstancesForObject(SERVER, new Server(123, 30, BindingMode.U, false));
+            } else if (clientCertificate != null) {
+                initializer.setInstancesForObject(SECURITY, x509(serverURI, 123, clientCertificate.getEncoded(),
+                        clientPrivateKey.getEncoded(), serverCertificate.getEncoded()));
                 initializer.setInstancesForObject(SERVER, new Server(123, 30, BindingMode.U, false));
             } else {
                 initializer.setInstancesForObject(SECURITY, noSec(serverURI, 123));
@@ -309,7 +382,7 @@ public class LeshanClientDemo {
         builder.setCoapConfig(coapConfig);
         final LeshanClient client = builder.build();
 
-        // Display client public key to easily add it in Leshan Server Demo
+        // Display client public key to easily add it in demo servers.
         if (clientPublicKey != null) {
             PublicKey rawPublicKey = clientPublicKey;
             if (rawPublicKey instanceof ECPublicKey) {
@@ -336,6 +409,12 @@ public class LeshanClientDemo {
             } else {
                 throw new IllegalStateException("Unsupported Public Key Format (only ECPublicKey supported).");
             }
+        }
+        // Display X509 credentials to easily at it in demo servers.
+        if (clientCertificate != null) {
+            LOG.info("Client uses X509 : \n X509 Certificate (Hex): {} \n Private Key (Hex): {}",
+                    Hex.encodeHexString(clientCertificate.getEncoded()),
+                    Hex.encodeHexString(clientPrivateKey.getEncoded()));
         }
 
         LOG.info("Press 'w','a','s','d' to change reported Location ({},{}).", locationInstance.getLatitude(),

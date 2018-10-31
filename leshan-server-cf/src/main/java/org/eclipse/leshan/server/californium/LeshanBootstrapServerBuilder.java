@@ -19,6 +19,9 @@ package org.eclipse.leshan.server.californium;
 import java.net.InetSocketAddress;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.Arrays;
 
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
@@ -61,6 +64,8 @@ public class LeshanBootstrapServerBuilder {
 
     private PublicKey publicKey;
     private PrivateKey privateKey;
+    private X509Certificate[] certificateChain;
+    private Certificate[] trustedCertificates;
 
     private EndpointFactory endpointFactory;
 
@@ -136,6 +141,26 @@ public class LeshanBootstrapServerBuilder {
      */
     public LeshanBootstrapServerBuilder setPrivateKey(PrivateKey privateKey) {
         this.privateKey = privateKey;
+        return this;
+    }
+
+    /**
+     * <p>
+     * Set the CertificateChain of the server which will be used for X509 DTLS authentication.
+     * </p>
+     * For RPK the public key will be extract from the first X509 certificate of the certificate chain. If you only need
+     * RPK support, use {@link LeshanServerBuilder#setPublicKey(PublicKey)} instead.
+     */
+    public <T extends X509Certificate> LeshanBootstrapServerBuilder setCertificateChain(T[] certificateChain) {
+        this.certificateChain = certificateChain;
+        return this;
+    }
+
+    /**
+     * The list of trusted certificates used to authenticate devices.
+     */
+    public <T extends Certificate> LeshanBootstrapServerBuilder setTrustedCertificates(T[] trustedCertificates) {
+        this.trustedCertificates = trustedCertificates;
         return this;
     }
 
@@ -268,6 +293,17 @@ public class LeshanBootstrapServerBuilder {
             if (incompleteConfig.getStaleConnectionThreshold() == null)
                 dtlsConfigBuilder.setStaleConnectionThreshold(coapConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
 
+            // handle trusted certificates
+            if (trustedCertificates != null) {
+                if (incompleteConfig.getTrustStore() == null) {
+                    dtlsConfigBuilder.setTrustStore(trustedCertificates);
+                } else if (!Arrays.equals(trustedCertificates, incompleteConfig.getTrustStore())) {
+                    throw new IllegalStateException(String.format(
+                            "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for trusted Certificates (trustStore) : \n%s != \n%s",
+                            Arrays.toString(trustedCertificates), Arrays.toString(incompleteConfig.getTrustStore())));
+                }
+            }
+
             // check conflict for private key
             if (privateKey != null) {
                 if (incompleteConfig.getPrivateKey() != null && !incompleteConfig.getPrivateKey().equals(privateKey)) {
@@ -276,7 +312,8 @@ public class LeshanBootstrapServerBuilder {
                             privateKey, incompleteConfig.getPrivateKey()));
                 }
 
-                if (publicKey != null) {
+                // if in raw key mode and not in X.509 set the raw keys
+                if (certificateChain == null && publicKey != null) {
                     if (incompleteConfig.getPublicKey() != null && !incompleteConfig.getPublicKey().equals(publicKey)) {
                         throw new IllegalStateException(String.format(
                                 "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for public key: %s != %s",
@@ -284,6 +321,18 @@ public class LeshanBootstrapServerBuilder {
                     }
 
                     dtlsConfigBuilder.setIdentity(privateKey, publicKey);
+                }
+                // if in X.509 mode set the private key, certificate chain, public key is extracted from the certificate
+                if (certificateChain != null && certificateChain.length > 0) {
+                    if (incompleteConfig.getCertificateChain() != null
+                            && !Arrays.equals(incompleteConfig.getCertificateChain(), certificateChain)) {
+                        throw new IllegalStateException(String.format(
+                                "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for certificate chain: %s != %s",
+                                Arrays.toString(certificateChain),
+                                Arrays.toString(incompleteConfig.getCertificateChain())));
+                    }
+
+                    dtlsConfigBuilder.setIdentity(privateKey, certificateChain, false);
                 }
             }
 

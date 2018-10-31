@@ -31,3 +31,5 @@ bin/
 
 # Credentials files #
 **/*.der
+**/*.pem
+!**/src/**/*.der

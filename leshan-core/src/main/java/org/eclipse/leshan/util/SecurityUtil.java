@@ -15,47 +15,52 @@
  *******************************************************************************/
 package org.eclipse.leshan.util;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.InputStream;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
+import org.eclipse.leshan.core.credentials.CredentialsReader;
+
 public class SecurityUtil {
 
-    /**
-     * Extract Elliptic Curve private key in PKCS8 format from file (DER encoded).
-     */
-    public static PrivateKey extractPrivateKey(String fileName)
-            throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
-        byte[] keyBytes = Files.readAllBytes(Paths.get(fileName));
+    public static CredentialsReader<PrivateKey> privateKey = new CredentialsReader<PrivateKey>() {
+        @Override
+        public PrivateKey decode(byte[] bytes) throws InvalidKeySpecException, NoSuchAlgorithmException {
+            PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(bytes);
+            KeyFactory kf = KeyFactory.getInstance("EC");
+            return kf.generatePrivate(spec);
+        }
+    };
 
-        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
-        KeyFactory kf = KeyFactory.getInstance("EC");
-        return kf.generatePrivate(spec);
-    }
+    public static CredentialsReader<PublicKey> publicKey = new CredentialsReader<PublicKey>() {
+        @Override
+        public PublicKey decode(byte[] bytes) throws NoSuchAlgorithmException, InvalidKeySpecException {
+            X509EncodedKeySpec spec = new X509EncodedKeySpec(bytes);
+            KeyFactory kf = KeyFactory.getInstance("EC");
+            return kf.generatePublic(spec);
+        }
+    };
 
-    /**
-     * Extract Elliptic Curve public key in SubjectPublicKeyInfo format from file (DER encoded).
-     */
-    public static PublicKey extractPublicKey(String fileName)
-            throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
-        byte[] keyBytes = Files.readAllBytes(Paths.get(fileName));
-        return extractPublicKey(keyBytes);
-    }
-
-    /**
-     * Extract Elliptic Curve public key in SubjectPublicKeyInfo format from byteArray (DER encoded).
-     */
-    public static PublicKey extractPublicKey(byte[] subjectPublicKeyInfo)
-            throws NoSuchAlgorithmException, InvalidKeySpecException {
-        X509EncodedKeySpec spec = new X509EncodedKeySpec(subjectPublicKeyInfo);
-        KeyFactory kf = KeyFactory.getInstance("EC");
-        return kf.generatePublic(spec);
-    }
+    public static CredentialsReader<X509Certificate> certificate = new CredentialsReader<X509Certificate>() {
+        @Override
+        public X509Certificate decode(InputStream inputStream) throws CertificateException {
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            Certificate certificate = cf.generateCertificate(inputStream);
+            if (certificate instanceof X509Certificate) {
+                return (X509Certificate) certificate;
+            }
+            throw new CertificateException(
+                    String.format("%s certificate format is not supported, Only X.509 certificate is supported",
+                            certificate.getType()));
+        }
+    };
 }

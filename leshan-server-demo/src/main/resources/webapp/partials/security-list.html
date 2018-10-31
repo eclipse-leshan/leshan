@@ -1,19 +1,36 @@
-<div class="well well-sm col-md-12" ng-if="serverSecurityInfo && serverSecurityInfo.rpk">
-	<h4>The Leshan public key <small>(SubjectPublicKeyInfo der encoded)</small>
-	<button type="button" title ="Download server public key(.der)" class="btn btn-default btn-xs" ng-click="saveServerPubKey(serverSecurityInfo.rpk.pkcs8)">
+<div class="well well-sm col-md-12" ng-if="certificate">
+	<h4>The Leshan Certificate  <small>(x509v3 der encoded)</small>
+		<button type="button" title ="Download server certificate(.der)" class="btn btn-default btn-xs" ng-click="saveFile('serverCertificate.der', certificate.bytesDer)">
+		<span class="glyphicon glyphicon-download-alt" aria-hidden="true">
+		</button>
+	</h4>
+	<p>
+		<div class="col-md-7">
+			<u>Hex : </u> <pre>{{certificate.hexDer}}</pre>
+		</div>
+		<div class="col-md-5">
+			<u>Base64 : </u><pre>{{certificate.b64Der}}</pre>
+		</div>
+		<small>Clients generally need it for X509 authentication.</small><br/>
+	</p>
+</div>
+<div class="well well-sm col-md-12" ng-if="pubkey">
+	<h4>The Leshan Public Key <small>(SubjectPublicKeyInfo der encoded)</small>
+		<button type="button" title ="Download server public key(.der)" class="btn btn-default btn-xs" ng-click="saveFile('serverPubKey.der',pubkey.bytesDer)">
 			<span class="glyphicon glyphicon-download-alt" aria-hidden="true">
 		</button>
 	</h4>
 	<p>
-		<u>Elliptic Curve parameters :</u> <code>{{serverSecurityInfo.rpk.params}}</code><br/>
-		<u>Public x coord :</u> <code>{{serverSecurityInfo.rpk.x}}</code><br/>
-		<u>Public y coord :</u> <code>{{serverSecurityInfo.rpk.y}}</code>
+		<u>Elliptic Curve parameters :</u> <code>{{pubkey.params}}</code><br/>
+		<u>Public x coord :</u> <code>{{pubkey.x}}</code><br/>
+		<u>Public y coord :</u> <code>{{pubkey.y}}</code>
 		<div class="col-md-7">
-           <u>Hex : </u> <pre>{{pkcs8pubkey.hex}}</pre>
-           </div>
-           <div class="col-md-5">
-           <u>Base64 : </u><pre>{{pkcs8pubkey.base64}}</pre>
-        </div>
+			<u>Hex : </u> <pre>{{pubkey.hexDer}}</pre>
+		</div>
+		<div class="col-md-5">
+			<u>Base64 : </u><pre>{{pubkey.b64Der}}</pre>
+		</div>	
+		<small>Clients generally need it for RPK authentication.</small>
 	</p>
 </div>
 

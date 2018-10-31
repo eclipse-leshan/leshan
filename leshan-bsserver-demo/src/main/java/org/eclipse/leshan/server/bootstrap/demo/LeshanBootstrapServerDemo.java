@@ -19,25 +19,10 @@
 package org.eclipse.leshan.server.bootstrap.demo;
 
 import java.io.File;
-import java.math.BigInteger;
 import java.net.BindException;
 import java.net.InetSocketAddress;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.security.AlgorithmParameters;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.spec.ECGenParameterSpec;
-import java.security.spec.ECParameterSpec;
-import java.security.spec.ECPoint;
-import java.security.spec.ECPrivateKeySpec;
-import java.security.spec.ECPublicKeySpec;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.InvalidParameterSpecException;
-import java.security.spec.KeySpec;
+import java.security.cert.X509Certificate;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
@@ -46,6 +31,12 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
+import org.eclipse.californium.scandium.dtls.CertificateMessage;
+import org.eclipse.californium.scandium.dtls.DTLSSession;
+import org.eclipse.californium.scandium.dtls.HandshakeException;
+import org.eclipse.californium.scandium.dtls.x509.CertificateVerifier;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -58,7 +49,7 @@ import org.eclipse.leshan.server.bootstrap.demo.servlet.ServerServlet;
 import org.eclipse.leshan.server.californium.LeshanBootstrapServerBuilder;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LeshanBootstrapServer;
-import org.eclipse.leshan.util.Hex;
+import org.eclipse.leshan.util.SecurityUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -185,35 +176,32 @@ public class LeshanBootstrapServerDemo {
         builder.setLocalSecureAddress(secureLocalAddress, secureLocalPort);
         builder.setModel(new LwM2mModel(models));
 
-        // Create RPK credentials;
-        PublicKey publicKey = null;
+        // Create X509 credentials;
+        X509Certificate serverCertificate = null;
         try {
-            // Get point values
-            byte[] publicX = Hex
-                    .decodeHex("fb136894878a9696d45fdb04506b9eb49ddcfba71e4e1b4ce23d5c3ac382d6b4".toCharArray());
-            byte[] publicY = Hex
-                    .decodeHex("3deed825e808f8ed6a9a74ff6bd24e3d34b1c0c5fc253422f7febadbdc9cb9e6".toCharArray());
-            byte[] privateS = Hex
-                    .decodeHex("35a8303e67a7e99d06552a0f8f6c8f1bf91a174396f4fad6211ae227e890da11".toCharArray());
-
-            // Get Elliptic Curve Parameter spec for secp256r1
-            AlgorithmParameters algoParameters = AlgorithmParameters.getInstance("EC");
-            algoParameters.init(new ECGenParameterSpec("secp256r1"));
-            ECParameterSpec parameterSpec = algoParameters.getParameterSpec(ECParameterSpec.class);
-
-            // Create key specs
-            KeySpec publicKeySpec = new ECPublicKeySpec(new ECPoint(new BigInteger(publicX), new BigInteger(publicY)),
-                    parameterSpec);
-            KeySpec privateKeySpec = new ECPrivateKeySpec(new BigInteger(privateS), parameterSpec);
-
-            // Get keys
-            publicKey = KeyFactory.getInstance("EC").generatePublic(publicKeySpec);
-            Files.write(Paths.get("server_pub.der"), publicKey.getEncoded(), StandardOpenOption.CREATE);
-            PrivateKey privateKey = KeyFactory.getInstance("EC").generatePrivate(privateKeySpec);
-            builder.setPublicKey(publicKey);
+            PrivateKey privateKey = SecurityUtil.privateKey.readFromResource("credentials/bsserver_privkey.der");
+            serverCertificate = SecurityUtil.certificate.readFromResource("credentials/bsserver_cert.der");
             builder.setPrivateKey(privateKey);
-        } catch (InvalidKeySpecException | NoSuchAlgorithmException | InvalidParameterSpecException e) {
-            LOG.error("Unable to initialize RPK.", e);
+            builder.setCertificateChain(new X509Certificate[] { serverCertificate });
+
+            // Use a certificate verifier which trust all certificates by default.
+            Builder dtlsConfigBuilder = new DtlsConnectorConfig.Builder();
+            dtlsConfigBuilder.setCertificateVerifier(new CertificateVerifier() {
+                @Override
+                public void verifyCertificate(CertificateMessage message, DTLSSession session)
+                        throws HandshakeException {
+                    // trust all means never raise HandshakeException
+                }
+
+                @Override
+                public X509Certificate[] getAcceptedIssuers() {
+                    return null;
+                }
+            });
+            builder.setDtlsConfig(dtlsConfigBuilder);
+
+        } catch (Exception e) {
+            LOG.error("Unable to load embedded X.509 certificate.", e);
             System.exit(-1);
         }
 
@@ -249,7 +237,7 @@ public class LeshanBootstrapServerDemo {
         ServletHolder bsServletHolder = new ServletHolder(new BootstrapServlet(bsStore));
         root.addServlet(bsServletHolder, "/api/bootstrap/*");
 
-        ServletHolder serverServletHolder = new ServletHolder(new ServerServlet(bsServer, publicKey));
+        ServletHolder serverServletHolder = new ServletHolder(new ServerServlet(bsServer, serverCertificate));
         root.addServlet(serverServletHolder, "/api/server/*");
 
         server.setHandler(root);

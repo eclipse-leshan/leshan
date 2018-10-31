@@ -20,32 +20,16 @@ package org.eclipse.leshan.server.demo;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.BindException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.security.AlgorithmParameters;
 import java.security.Key;
-import java.security.KeyFactory;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.security.spec.ECGenParameterSpec;
-import java.security.spec.ECParameterSpec;
-import java.security.spec.ECPoint;
-import java.security.spec.ECPrivateKeySpec;
-import java.security.spec.ECPublicKeySpec;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.InvalidParameterSpecException;
-import java.security.spec.KeySpec;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -59,6 +43,12 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
+import org.eclipse.californium.scandium.dtls.CertificateMessage;
+import org.eclipse.californium.scandium.dtls.DTLSSession;
+import org.eclipse.californium.scandium.dtls.HandshakeException;
+import org.eclipse.californium.scandium.dtls.x509.CertificateVerifier;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -80,7 +70,7 @@ import org.eclipse.leshan.server.impl.FileSecurityStore;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StaticModelProvider;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
-import org.eclipse.leshan.util.Hex;
+import org.eclipse.leshan.util.SecurityUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,7 +116,7 @@ public class LeshanServerDemo {
 
                             "Non-Access_Stratum_NAS_configuration-V1_0.xml" };
 
-    private final static String USAGE = "java -jar leshan-server-demo.jar [OPTION]";
+    private final static String USAGE = "java -jar leshan-server-demo.jar [OPTION]\n\n";
 
     private final static String DEFAULT_KEYSTORE_TYPE = KeyStore.getDefaultType();
 
@@ -136,6 +126,18 @@ public class LeshanServerDemo {
         // Define options for command line tools
         Options options = new Options();
 
+        final StringBuilder X509Chapter = new StringBuilder();
+        X509Chapter.append("\n .");
+        X509Chapter.append("\n .");
+        X509Chapter.append("\n ===============================[ X509 ]=================================");
+        X509Chapter.append("\n | By default Leshan demo uses an embedded self-signed certificate and  |");
+        X509Chapter.append("\n | trusts any client certificates.                                      |");
+        X509Chapter.append("\n | If you want to use your own server keys, certificates and truststore,|");
+        X509Chapter.append("\n | you can provide a keystore using -ks, -ksp, -kst, -ksa, -ksap.       |");
+        X509Chapter.append("\n | To get helps about files format and how to generate it, see :        |");
+        X509Chapter.append("\n | See https://github.com/eclipse/leshan/wiki/Credential-files-format   |");
+        X509Chapter.append("\n ------------------------------------------------------------------------");
+
         options.addOption("h", "help", false, "Display help information.");
         options.addOption("lh", "coaphost", true, "Set the local CoAP address.\n  Default: any local address.");
         options.addOption("lp", "coapport", true,
@@ -143,21 +145,26 @@ public class LeshanServerDemo {
         options.addOption("slh", "coapshost", true, "Set the secure local CoAP address.\nDefault: any local address.");
         options.addOption("slp", "coapsport", true,
                 String.format("Set the secure local CoAP port.\nDefault: %d.", LwM2m.DEFAULT_COAP_SECURE_PORT));
-        options.addOption("ks", "keystore", true,
-                "Set the key store file. If set, X.509 mode is enabled, otherwise built-in RPK credentials are used.");
-        options.addOption("ksp", "storepass", true, "Set the key store password.");
-        options.addOption("kst", "storetype", true,
-                String.format("Set the key store type.\nDefault: %s.", DEFAULT_KEYSTORE_TYPE));
-        options.addOption("ksa", "alias", true, String.format(
-                "Set the key store alias to use for server credentials.\nDefault: %s.", DEFAULT_KEYSTORE_ALIAS));
-        options.addOption("ksap", "keypass", true, "Set the key store alias password to use.");
         options.addOption("wh", "webhost", true, "Set the HTTP address for web server.\nDefault: any local address.");
         options.addOption("wp", "webport", true, "Set the HTTP port for web server.\nDefault: 8080.");
         options.addOption("m", "modelsfolder", true, "A folder which contains object models in OMA DDF(.xml) format.");
         options.addOption("r", "redis", true,
-                "Set the location of the Redis database for running in cluster mode. The URL is in the format of: 'redis://:password@hostname:port/db_number'\nExample without DB and password: 'redis://localhost:6379'\nDefault: none, no Redis connection.");
-        options.addOption("mdns", "publishDNSSdServices", false, "Publish leshan's services to DNS Service discovery");
+                "Set the location of the Redis database for running in cluster mode.\nThe URL is in the format of: 'redis://:password@hostname:port/db_number'\nExample without DB and password: 'redis://localhost:6379'\nDefault: none, no Redis connection.");
+        options.addOption("mdns", "publishDNSSdServices", false,
+                "Publish leshan's services to DNS Service discovery" + X509Chapter);
+
+        options.addOption("ks", "keystore", true,
+                "Set the key store file.\nIf set, X.509 mode is enabled, otherwise built-in RPK credentials are used.");
+        options.addOption("ksp", "storepass", true, "Set the key store password.");
+        options.addOption("kst", "storetype", true,
+                String.format("Set the key store type.\nDefault: %s.", DEFAULT_KEYSTORE_TYPE));
+        options.addOption("ksa", "alias", true, String.format(
+                "Set the key store alias to use for server credentials.\nDefault: %s.\n All other alias referencing a certificate will be trusted.",
+                DEFAULT_KEYSTORE_ALIAS));
+        options.addOption("ksap", "keypass", true, "Set the key store alias password to use.");
+
         HelpFormatter formatter = new HelpFormatter();
+        formatter.setWidth(120);
         formatter.setOptionComparator(null);
 
         // Parse arguments
@@ -260,14 +267,14 @@ public class LeshanServerDemo {
         }
         builder.setCoapConfig(coapConfig);
 
-        // connect to redis if needed
+        // Connect to redis if needed
         Pool<Jedis> jedis = null;
         if (redisUrl != null) {
             // TODO: support sentinel pool and make pool configurable
             jedis = new JedisPool(new URI(redisUrl));
         }
 
-        PublicKey publicKey = null;
+        X509Certificate serverCertificate = null;
 
         // Set up X.509 mode
         if (keyStorePath != null) {
@@ -304,7 +311,7 @@ public class LeshanServerDemo {
                                 System.exit(-1);
                             }
                             builder.setPrivateKey((PrivateKey) key);
-                            publicKey = keyStore.getCertificate(alias).getPublicKey();
+                            serverCertificate = (X509Certificate) keyStore.getCertificate(alias);
                             builder.setCertificateChain(
                                     x509CertificateChain.toArray(new X509Certificate[x509CertificateChain.size()]));
                         }
@@ -320,32 +327,29 @@ public class LeshanServerDemo {
         // Otherwise, set up RPK mode
         else {
             try {
-                // Get point values
-                byte[] publicX = Hex
-                        .decodeHex("fcc28728c123b155be410fc1c0651da374fc6ebe7f96606e90d927d188894a73".toCharArray());
-                byte[] publicY = Hex
-                        .decodeHex("d2ffaa73957d76984633fc1cc54d0b763ca0559a9dff9706e9f4557dacc3f52a".toCharArray());
-                byte[] privateS = Hex
-                        .decodeHex("1dae121ba406802ef07c193c1ee4df91115aabd79c1ed7f4c0ef7ef6a5449400".toCharArray());
-
-                // Get Elliptic Curve Parameter spec for secp256r1
-                AlgorithmParameters algoParameters = AlgorithmParameters.getInstance("EC");
-                algoParameters.init(new ECGenParameterSpec("secp256r1"));
-                ECParameterSpec parameterSpec = algoParameters.getParameterSpec(ECParameterSpec.class);
-
-                // Create key specs
-                KeySpec publicKeySpec = new ECPublicKeySpec(
-                        new ECPoint(new BigInteger(publicX), new BigInteger(publicY)), parameterSpec);
-                KeySpec privateKeySpec = new ECPrivateKeySpec(new BigInteger(privateS), parameterSpec);
-
-                // Get keys
-                publicKey = KeyFactory.getInstance("EC").generatePublic(publicKeySpec);
-                Files.write(Paths.get("server_pub.der"), publicKey.getEncoded(), StandardOpenOption.CREATE);
-                PrivateKey privateKey = KeyFactory.getInstance("EC").generatePrivate(privateKeySpec);
-                builder.setPublicKey(publicKey);
+                PrivateKey privateKey = SecurityUtil.privateKey.readFromResource("credentials/server_privkey.der");
+                serverCertificate = SecurityUtil.certificate.readFromResource("credentials/server_cert.der");
                 builder.setPrivateKey(privateKey);
-            } catch (InvalidKeySpecException | NoSuchAlgorithmException | InvalidParameterSpecException e) {
-                LOG.error("Unable to initialize RPK.", e);
+                builder.setCertificateChain(new X509Certificate[] { serverCertificate });
+
+                // Use a certificate verifier which trust all certificates by default.
+                Builder dtlsConfigBuilder = new DtlsConnectorConfig.Builder();
+                dtlsConfigBuilder.setCertificateVerifier(new CertificateVerifier() {
+                    @Override
+                    public void verifyCertificate(CertificateMessage message, DTLSSession session)
+                            throws HandshakeException {
+                        // trust all means never raise HandshakeException
+                    }
+
+                    @Override
+                    public X509Certificate[] getAcceptedIssuers() {
+                        return null;
+                    }
+                });
+                builder.setDtlsConfig(dtlsConfigBuilder);
+
+            } catch (Exception e) {
+                LOG.error("Unable to load embedded X.509 certificate.", e);
                 System.exit(-1);
             }
         }
@@ -397,7 +401,7 @@ public class LeshanServerDemo {
                 new ClientServlet(lwServer, lwServer.getSecuredAddress().getPort()));
         root.addServlet(clientServletHolder, "/api/clients/*");
 
-        ServletHolder securityServletHolder = new ServletHolder(new SecurityServlet(securityStore, publicKey));
+        ServletHolder securityServletHolder = new ServletHolder(new SecurityServlet(securityStore, serverCertificate));
         root.addServlet(securityServletHolder, "/api/security/*");
 
         ServletHolder objectSpecServletHolder = new ServletHolder(new ObjectSpecServlet(lwServer.getModelProvider()));
