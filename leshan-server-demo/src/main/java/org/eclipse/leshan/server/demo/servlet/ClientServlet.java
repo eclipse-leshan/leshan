@@ -15,45 +15,19 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.demo.servlet;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.codec.CodecException;
-import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.request.CreateRequest;
-import org.eclipse.leshan.core.request.DeleteRequest;
-import org.eclipse.leshan.core.request.DiscoverRequest;
-import org.eclipse.leshan.core.request.ExecuteRequest;
-import org.eclipse.leshan.core.request.ObserveRequest;
-import org.eclipse.leshan.core.request.ReadRequest;
-import org.eclipse.leshan.core.request.WriteRequest;
+import org.eclipse.leshan.core.request.*;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
-import org.eclipse.leshan.core.request.exception.ClientSleepingException;
-import org.eclipse.leshan.core.request.exception.InvalidRequestException;
-import org.eclipse.leshan.core.request.exception.InvalidResponseException;
-import org.eclipse.leshan.core.request.exception.RequestCanceledException;
-import org.eclipse.leshan.core.request.exception.RequestRejectedException;
-import org.eclipse.leshan.core.response.CreateResponse;
-import org.eclipse.leshan.core.response.DeleteResponse;
-import org.eclipse.leshan.core.response.DiscoverResponse;
-import org.eclipse.leshan.core.response.ExecuteResponse;
-import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.core.response.ObserveResponse;
-import org.eclipse.leshan.core.response.ReadResponse;
-import org.eclipse.leshan.core.response.WriteResponse;
+import org.eclipse.leshan.core.request.exception.*;
+import org.eclipse.leshan.core.response.*;
 import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.demo.servlet.json.LwM2mNodeDeserializer;
 import org.eclipse.leshan.server.demo.servlet.json.LwM2mNodeSerializer;
@@ -63,9 +37,15 @@ import org.eclipse.leshan.server.registration.Registration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonSyntaxException;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * Service HTTP REST API calls.
@@ -117,7 +97,7 @@ public class ClientServlet extends HttpServlet {
             return;
         }
 
-        String[] path = StringUtils.split(req.getPathInfo(), '/');
+        String[] path = StringUtils.split(escapeSemicolonPathInfo(req.getRequestURI(), req.getPathInfo()), '/');
         if (path.length < 1) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid path");
             return;
@@ -160,7 +140,7 @@ public class ClientServlet extends HttpServlet {
 
         // /clients/endPoint/LWRequest : do LightWeight M2M read request on a given client.
         try {
-            String target = StringUtils.removeStart(req.getPathInfo(), "/" + clientEndpoint);
+            String target = StringUtils.removeStart(escapeSemicolonPathInfo(req.getRequestURI(), req.getPathInfo()), "/" + clientEndpoint);
             Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
             if (registration != null) {
                 // get content format
@@ -211,12 +191,19 @@ public class ClientServlet extends HttpServlet {
         }
     }
 
+    static String escapeSemicolonPathInfo(String requestUri,String pathInfo){
+        if(requestUri.contains(";")&&requestUri.contains(pathInfo)){
+            return requestUri.substring(requestUri.indexOf(pathInfo));
+        }
+        return pathInfo;
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String[] path = StringUtils.split(req.getPathInfo(), '/');
+        String[] path = StringUtils.split(escapeSemicolonPathInfo(req.getRequestURI(), req.getPathInfo()), '/');
         String clientEndpoint = path[0];
 
         // at least /endpoint/objectId/instanceId
@@ -226,7 +213,7 @@ public class ClientServlet extends HttpServlet {
         }
 
         try {
-            String target = StringUtils.removeStart(req.getPathInfo(), "/" + clientEndpoint);
+            String target = StringUtils.removeStart(escapeSemicolonPathInfo(req.getRequestURI(), req.getPathInfo()), "/" + clientEndpoint);
             Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
             if (registration != null) {
                 // get content format
@@ -254,13 +241,13 @@ public class ClientServlet extends HttpServlet {
      */
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String[] path = StringUtils.split(req.getPathInfo(), '/');
+        String[] path = StringUtils.split(escapeSemicolonPathInfo(req.getRequestURI(), req.getPathInfo()), '/');
         String clientEndpoint = path[0];
 
         // /clients/endPoint/LWRequest/observe : do LightWeight M2M observe request on a given client.
         if (path.length >= 3 && "observe".equals(path[path.length - 1])) {
             try {
-                String target = StringUtils.substringBetween(req.getPathInfo(), clientEndpoint, "/observe");
+                String target = StringUtils.substringBetween(escapeSemicolonPathInfo(req.getRequestURI(), req.getPathInfo()), clientEndpoint, "/observe");
                 Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
                 if (registration != null) {
                     // get content format
@@ -336,13 +323,13 @@ public class ClientServlet extends HttpServlet {
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String[] path = StringUtils.split(req.getPathInfo(), '/');
+        String[] path = StringUtils.split(escapeSemicolonPathInfo(req.getRequestURI(), req.getPathInfo()), '/');
         String clientEndpoint = path[0];
 
         // /clients/endPoint/LWRequest/observe : cancel observation for the given resource.
         if (path.length >= 3 && "observe".equals(path[path.length - 1])) {
             try {
-                String target = StringUtils.substringsBetween(req.getPathInfo(), clientEndpoint, "/observe")[0];
+                String target = StringUtils.substringsBetween(escapeSemicolonPathInfo(req.getRequestURI(), req.getPathInfo()), clientEndpoint, "/observe")[0];
                 Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
                 if (registration != null) {
                     server.getObservationService().cancelObservations(registration, target);
@@ -359,7 +346,7 @@ public class ClientServlet extends HttpServlet {
 
         // /clients/endPoint/LWRequest/ : delete instance
         try {
-            String target = StringUtils.removeStart(req.getPathInfo(), "/" + clientEndpoint);
+            String target = StringUtils.removeStart(escapeSemicolonPathInfo(req.getRequestURI(), req.getPathInfo()), "/" + clientEndpoint);
             Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
             if (registration != null) {
                 DeleteRequest request = new DeleteRequest(target);

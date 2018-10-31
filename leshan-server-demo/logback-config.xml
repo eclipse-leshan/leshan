@@ -15,17 +15,33 @@ Contributors:
     Sierra Wireless - initial API and implementation
  -->
 <configuration>
-	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-		<encoder>
-			<pattern>%d %p %C{0} - %m%n</pattern>
-		</encoder>
-	</appender>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d %p %C{0} - %m%n</pattern>
+        </encoder>
+    </appender>
 
-	<root level="WARN">
-		<appender-ref ref="STDOUT" />
-	</root>
-	
-	<logger name="org.eclipse.leshan" level="INFO"/>
-	<logger name="org.eclipse.leshan.server.security.SecurityCheck" level="DEBUG"/>
-	<logger name="org.eclipse.leshan.core.model.LwM2mModel" level="TRACE"/>
+    <appender name="server" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <Encoding>UTF-8</Encoding>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+            <pattern>%d %p %C{0} - %m%n</pattern>
+        </layout>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--日志文件输出的文件名-->
+            <FileNamePattern>${user.dir}/log/s_%d{yyyyMMdd}-%i.log</FileNamePattern>
+            <MaxHistory>100</MaxHistory>
+            <TimeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <MaxFileSize>100MB</MaxFileSize>
+            </TimeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+
+    <root level="ERROR">
+        <appender-ref ref="server" />
+    </root>
+
+    <logger name="org.eclipse.leshan" level="INFO"/>
+    <logger name="org.eclipse.leshan.server.security.SecurityCheck" level="DEBUG"/>
+    <logger name="org.eclipse.leshan.core.model.LwM2mModel" level="TRACE"/>
 </configuration>

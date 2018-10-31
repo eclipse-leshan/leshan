@@ -108,7 +108,7 @@ Contributors:
         <test.exclusion.pattern>**/Redis*.java</test.exclusion.pattern>
 
         <!-- dependencies version -->
-        <californium.version>2.0.0-M12</californium.version>
+        <californium.version>2.0.0-M12-gt</californium.version>
         <logback.version>1.2.3</logback.version>
         <slf4j.api.version>1.7.25</slf4j.api.version>
         <jetty.version>9.1.4.v20140401</jetty.version>
@@ -116,9 +116,15 @@ Contributors:
 
     <distributionManagement>
         <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <id>nexus-releases</id>
+            <name>Nexus Release Repository</name>
+            <url>http://192.168.10.49:8081/nexus/content/repositories/releases</url>
         </repository>
+        <snapshotRepository>
+            <id>nexus-snapshots</id>
+            <name>Nexus Snapshot Repository</name>
+            <url>http://192.168.10.49:8081/nexus/content/repositories/snapshots</url>
+        </snapshotRepository>
     </distributionManagement>
 
     <profiles>
@@ -263,7 +269,6 @@ Contributors:
                         <target>1.7</target>
                         <debug>true</debug>
                         <optimize>true</optimize>
-                        <showDeprecations>true</showDeprecations>
                     </configuration>
                 </plugin>
                 <plugin>
