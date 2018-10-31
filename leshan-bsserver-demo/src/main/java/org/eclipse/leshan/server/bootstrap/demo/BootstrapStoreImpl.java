@@ -16,16 +16,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap.demo;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.lang.reflect.Type;
-import java.util.Collections;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapStore;
@@ -34,9 +27,11 @@ import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
+import java.io.*;
+import java.lang.reflect.Type;
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Simple bootstrap store implementation storing bootstrap information in memory
@@ -70,7 +65,7 @@ public class BootstrapStoreImpl implements BootstrapStore {
         this.loadFromFile();
     }
 
-    private Map<String, BootstrapConfig> bootstrapByEndpoint = new ConcurrentHashMap<>();
+    protected Map<String, BootstrapConfig> bootstrapByEndpoint = new ConcurrentHashMap<>();
 
     @Override
     public BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity) {
