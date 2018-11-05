@@ -52,7 +52,7 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
     @Override
     public BootstrapSession begin(String endpoint, Identity clientIdentity) {
         boolean authorized;
-        if (bsSecurityStore != null) {
+        if (bsSecurityStore != null && clientIdentity.isSecure()) {
             List<SecurityInfo> securityInfos = bsSecurityStore.getAllByEndpoint(endpoint);
             authorized = securityChecker.checkSecurityInfos(endpoint, clientIdentity, securityInfos);
         } else {
