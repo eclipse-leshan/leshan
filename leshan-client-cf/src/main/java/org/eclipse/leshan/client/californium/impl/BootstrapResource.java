@@ -46,12 +46,17 @@ public class BootstrapResource extends CoapResource {
     public void handlePOST(CoapExchange exchange) {
         // Handle bootstrap request
         ServerIdentity identity = ResourceUtil.extractServerIdentity(exchange, bootstrapHandler);
+        // Acknowledge bootstrap finished request
+        exchange.accept();
         final SendableResponse<BootstrapFinishResponse> sendableResponse = bootstrapHandler.finished(identity,
                 new BootstrapFinishRequest());
 
         // Create CoAP response
         Response coapResponse = new Response(toCoapResponseCode(sendableResponse.getResponse().getCode()));
         if (sendableResponse.getResponse().getCode().isError()) {
+            // Use confirmable response to be ensure answer is well received before the end of the bootstrap session.
+            // (after bootstrap session will not be able to handle retransmission correctly)
+            coapResponse.setConfirmable(true);
             coapResponse.setPayload(sendableResponse.getResponse().getErrorMessage());
             coapResponse.getOptions().setContentFormat(MediaTypeRegistry.TEXT_PLAIN);
         }
@@ -59,7 +64,9 @@ public class BootstrapResource extends CoapResource {
         // Send response
         coapResponse.addMessageObserver(new MessageObserverAdapter() {
             @Override
-            public void onSent() {
+            public void onAcknowledgement() {
+                // we wait the response is acknowledged.
+                // TODO should we modify SendableResponse by adding an acknowledged method ?
                 sendableResponse.sent();
             }
         });
