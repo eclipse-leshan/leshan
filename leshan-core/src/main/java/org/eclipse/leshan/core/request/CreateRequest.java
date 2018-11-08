@@ -203,8 +203,10 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
     // ***************** generic constructor ******************* /
     private CreateRequest(ContentFormat format, LwM2mPath target, Integer instanceId, LwM2mResource[] resources) {
         super(target);
-
         // accept only object and object instance path
+        if (target.isRoot())
+            throw new InvalidRequestException("Create request cannot target root path");
+
         if (!target.isObject() && !target.isObjectInstance())
             throw new InvalidRequestException(
                     "Invalid path %s: Create request must not target an object or object instance", target);

@@ -44,6 +44,9 @@ public class WriteAttributesRequest extends AbstractDownlinkRequest<WriteAttribu
 
     private WriteAttributesRequest(LwM2mPath path, AttributeSet attributes) throws InvalidRequestException {
         super(path);
+        if (path.isRoot())
+            throw new InvalidRequestException("WriteAttributes request cannot target root path");
+
         if (attributes == null)
             throw new InvalidRequestException("attributes are mandatory for %s", path);
         this.attributes = attributes;

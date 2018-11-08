@@ -72,6 +72,9 @@ public class ExecuteRequest extends AbstractDownlinkRequest<ExecuteResponse> {
 
     private ExecuteRequest(LwM2mPath path, String parameters) {
         super(path);
+        if (path.isRoot())
+            throw new InvalidRequestException("Execute request cannot target root path");
+
         if (!path.isResource())
             throw new InvalidRequestException("Invalid path %s : Only resource can be executed.", path);
         this.parameters = parameters;

@@ -67,6 +67,8 @@ public class DiscoverRequest extends AbstractDownlinkRequest<DiscoverResponse> {
 
     private DiscoverRequest(LwM2mPath target) {
         super(target);
+        if (target.isRoot())
+            throw new InvalidRequestException("Discover request cannot target root path");
     }
 
     @Override

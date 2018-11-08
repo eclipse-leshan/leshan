@@ -46,6 +46,9 @@ public class DeleteRequest extends AbstractDownlinkRequest<DeleteResponse> {
 
     private DeleteRequest(LwM2mPath target) {
         super(target);
+        if (target.isRoot())
+            throw new InvalidRequestException("Delete request cannot target root path");
+
         if (!target.isObjectInstance())
             throw new InvalidRequestException("Invalid path %s : Only object instances can be delete", target);
     }

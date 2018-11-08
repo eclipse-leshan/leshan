@@ -40,16 +40,16 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
      * Define the behavior of a write request.
      */
     public enum Mode {
-        /**
-         * Replaces the Object Instance or the Resource(s) with the new value provided in the “Write” operation. (see
-         * section 5.3.3 of the LW M2M spec).
-         */
-        REPLACE,
-        /**
-         * Adds or updates Resources provided in the new value and leaves other existing Resources unchanged. (see
-         * section 5.3.3 of the LW M2M spec).
-         */
-        UPDATE
+    /**
+     * Replaces the Object Instance or the Resource(s) with the new value provided in the “Write” operation. (see
+     * section 5.3.3 of the LW M2M spec).
+     */
+    REPLACE,
+    /**
+     * Adds or updates Resources provided in the new value and leaves other existing Resources unchanged. (see section
+     * 5.3.3 of the LW M2M spec).
+     */
+    UPDATE
     }
 
     private final LwM2mNode node;
@@ -295,6 +295,8 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
 
     private WriteRequest(Mode mode, ContentFormat format, LwM2mPath target, LwM2mNode node) {
         super(target);
+        if (target.isRoot())
+            throw new InvalidRequestException("Write request cannot target root path");
         if (mode == null)
             throw new InvalidRequestException("mode is mandatory for %s", target);
         if (node == null)
