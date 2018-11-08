@@ -101,7 +101,7 @@ public class DeleteTest {
     }
 
     @Test
-    public void cannot_delete_single_manadatory_object_instance() throws InterruptedException {
+    public void cannot_delete_device_object_instance() throws InterruptedException {
         // try to create an instance of object 50
         DeleteResponse response = helper.server.send(helper.getCurrentRegistration(), new DeleteRequest(3, 0));
 

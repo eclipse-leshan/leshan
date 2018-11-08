@@ -231,14 +231,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
                 return DeleteResponse.notFound();
             }
 
-            // a resource can not be deleted
-            LwM2mPath path = request.getPath();
-            if (path.isResource()) {
-                return DeleteResponse.methodNotAllowed();
-            }
-
-            // we can not delete instance on single object
-            if (objectModel != null && !objectModel.multiple) {
+            if (id == LwM2mId.DEVICE) {
                 return DeleteResponse.methodNotAllowed();
             }
         }
@@ -253,6 +246,11 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
     @Override
     public synchronized BootstrapDeleteResponse delete(ServerIdentity identity, BootstrapDeleteRequest request) {
+        if (!identity.isSystem()) {
+            if (id == LwM2mId.DEVICE) {
+                return BootstrapDeleteResponse.badRequest("Device object instance is not deletable");
+            }
+        }
         return doDelete(request);
     }
 
