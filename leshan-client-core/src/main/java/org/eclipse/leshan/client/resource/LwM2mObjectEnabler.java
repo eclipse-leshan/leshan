@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
@@ -29,6 +30,7 @@ import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
+import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
 import org.eclipse.leshan.core.response.BootstrapWriteResponse;
 import org.eclipse.leshan.core.response.CreateResponse;
 import org.eclipse.leshan.core.response.DeleteResponse;
@@ -58,6 +60,8 @@ public interface LwM2mObjectEnabler {
     BootstrapWriteResponse write(ServerIdentity identity, BootstrapWriteRequest request);
 
     DeleteResponse delete(ServerIdentity identity, DeleteRequest request);
+
+    BootstrapDeleteResponse delete(ServerIdentity identity, BootstrapDeleteRequest request);
 
     ExecuteResponse execute(ServerIdentity identity, ExecuteRequest request);
 

@@ -32,6 +32,7 @@ import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
@@ -40,6 +41,7 @@ import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
+import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
 import org.eclipse.leshan.core.response.BootstrapWriteResponse;
 import org.eclipse.leshan.core.response.CreateResponse;
 import org.eclipse.leshan.core.response.DeleteResponse;
@@ -285,6 +287,22 @@ public class ObjectEnabler extends BaseObjectEnabler {
             return DeleteResponse.success();
         }
         return DeleteResponse.notFound();
+    }
+
+    @Override
+    public BootstrapDeleteResponse doDelete(BootstrapDeleteRequest request) {
+        if (request.getPath().isRoot() || request.getPath().isObject()) {
+            instances.clear();
+            return BootstrapDeleteResponse.success();
+
+        } else if (request.getPath().isObjectInstance()) {
+            if (null != instances.remove(request.getPath().getObjectInstanceId())) {
+                return BootstrapDeleteResponse.success();
+            } else {
+                return BootstrapDeleteResponse.badRequest(String.format("Instance %s not found", request.getPath()));
+            }
+        }
+        return BootstrapDeleteResponse.badRequest(String.format("unexcepted path %s", request.getPath()));
     }
 
     private void listenInstance(LwM2mInstanceEnabler instance, final int instanceId) {

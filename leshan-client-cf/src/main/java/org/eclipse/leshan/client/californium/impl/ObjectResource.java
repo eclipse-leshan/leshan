@@ -44,6 +44,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
+import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
@@ -56,6 +57,7 @@ import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
+import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
 import org.eclipse.leshan.core.response.BootstrapWriteResponse;
 import org.eclipse.leshan.core.response.CreateResponse;
 import org.eclipse.leshan.core.response.DeleteResponse;
@@ -326,11 +328,20 @@ public class ObjectResource extends CoapResource implements NotifySender {
         String URI = coapExchange.getRequestOptions().getUriPathString();
         ServerIdentity identity = extractServerIdentity(coapExchange, bootstrapHandler);
 
-        DeleteResponse response = nodeEnabler.delete(identity, new DeleteRequest(URI));
-        if (response.getCode().isError()) {
-            coapExchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
+        if (identity.isLwm2mBootstrapServer()) {
+            BootstrapDeleteResponse response = nodeEnabler.delete(identity, new BootstrapDeleteRequest(URI));
+            if (response.getCode().isError()) {
+                coapExchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
+            } else {
+                coapExchange.respond(toCoapResponseCode(response.getCode()));
+            }
         } else {
-            coapExchange.respond(toCoapResponseCode(response.getCode()));
+            DeleteResponse response = nodeEnabler.delete(identity, new DeleteRequest(URI));
+            if (response.getCode().isError()) {
+                coapExchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
+            } else {
+                coapExchange.respond(toCoapResponseCode(response.getCode()));
+            }
         }
     }
 
