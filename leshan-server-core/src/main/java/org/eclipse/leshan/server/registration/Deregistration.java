@@ -26,8 +26,8 @@ import org.eclipse.leshan.core.observation.Observation;
  * @see RegistrationStore
  */
 public class Deregistration {
-    final Registration registration;
-    final Collection<Observation> observations;
+    public final Registration registration;
+    public final Collection<Observation> observations;
 
     public Deregistration(Registration registration, Collection<Observation> observations) {
         this.registration = registration;

@@ -49,10 +49,7 @@ import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StandardModelProvider;
 import org.eclipse.leshan.server.queue.ClientAwakeTimeProvider;
 import org.eclipse.leshan.server.queue.StaticClientAwakeTimeProvider;
-import org.eclipse.leshan.server.registration.RandomStringRegistrationIdProvider;
-import org.eclipse.leshan.server.registration.Registration;
-import org.eclipse.leshan.server.registration.RegistrationIdProvider;
-import org.eclipse.leshan.server.registration.RegistrationStore;
+import org.eclipse.leshan.server.registration.*;
 import org.eclipse.leshan.server.security.Authorizer;
 import org.eclipse.leshan.server.security.DefaultAuthorizer;
 import org.eclipse.leshan.server.security.SecurityInfo;
@@ -96,11 +93,13 @@ public class LeshanServerBuilder {
     private boolean noUnsecuredEndpoint;
     private boolean noQueueMode = false;
 
+    private RegistrationHandler registrationHandler;
+
     /**
      * <p>
      * Set the address/port for unsecured CoAP Server.
      * </p>
-     * 
+     *
      * By default a wildcard address and the default CoAP port(5683) is used
      * 
      * @param hostname The address to bind. If null wildcard address is used.
@@ -356,6 +355,14 @@ public class LeshanServerBuilder {
         return networkConfig;
     }
 
+    /**
+     * custom RegistrationHandler
+     */
+    public LeshanServerBuilder setRegistrationHandler(RegistrationHandler registrationHandler) {
+        this.registrationHandler = registrationHandler;
+        return this;
+    }
+
     public LeshanServer build() {
         if (localAddress == null)
             localAddress = new InetSocketAddress(LwM2m.DEFAULT_COAP_PORT);
@@ -501,6 +508,6 @@ public class LeshanServerBuilder {
         }
 
         return new LeshanServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer,
-                modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider);
+                modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider,registrationHandler);
     }
 }

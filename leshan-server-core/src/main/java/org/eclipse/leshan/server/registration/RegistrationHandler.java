@@ -41,9 +41,11 @@ public class RegistrationHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(RegistrationHandler.class);
 
-    private RegistrationServiceImpl registrationService;
-    private RegistrationIdProvider registrationIdProvider;
-    private Authorizer authorizer;
+    protected RegistrationServiceImpl registrationService;
+    protected RegistrationIdProvider registrationIdProvider;
+    protected Authorizer authorizer;
+
+    protected RegistrationHandler(){}
 
     public RegistrationHandler(RegistrationServiceImpl registrationService, Authorizer authorizer,
             RegistrationIdProvider registrationIdProvider) {
@@ -163,4 +165,18 @@ public class RegistrationHandler {
         }
     }
 
+    public RegistrationHandler setRegistrationService(RegistrationServiceImpl registrationService) {
+        this.registrationService = registrationService;
+        return this;
+    }
+
+    public RegistrationHandler setRegistrationIdProvider(RegistrationIdProvider registrationIdProvider) {
+        this.registrationIdProvider = registrationIdProvider;
+        return this;
+    }
+
+    public RegistrationHandler setAuthorizer(Authorizer authorizer) {
+        this.authorizer = authorizer;
+        return this;
+    }
 }

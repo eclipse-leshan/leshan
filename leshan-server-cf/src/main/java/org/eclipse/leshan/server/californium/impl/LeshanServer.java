@@ -16,6 +16,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.HashSet;
@@ -138,7 +140,7 @@ public class LeshanServer implements LwM2mServer {
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
             LwM2mModelProvider modelProvider, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
             NetworkConfig coapConfig, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
-            RegistrationIdProvider registrationIdProvider) {
+            RegistrationIdProvider registrationIdProvider,RegistrationHandler registrationHandler) {
 
         Validate.notNull(registrationStore, "registration store cannot be null");
         Validate.notNull(authorizer, "authorizer cannot be null");
@@ -201,9 +203,22 @@ public class LeshanServer implements LwM2mServer {
             endpoints.add(securedEndpoint);
         }
 
+        //use custom registrationHandler
+
+        if (registrationHandler != null) {
+            try{
+                registrationHandler.setRegistrationService(registrationService);
+                registrationHandler.setAuthorizer(authorizer);
+                registrationHandler.setRegistrationIdProvider(registrationIdProvider);
+            }catch (Exception e){
+                throw new IllegalArgumentException("createRegistrationHandlerError",e);
+            }
+        } else {
+            registrationHandler = new RegistrationHandler(this.registrationService, authorizer, registrationIdProvider);
+        }
+
         // define /rd resource
-        RegisterResource rdResource = new RegisterResource(
-                new RegistrationHandler(this.registrationService, authorizer, registrationIdProvider));
+        RegisterResource rdResource = new RegisterResource(registrationHandler);
         coapServer.add(rdResource);
 
         // create sender
