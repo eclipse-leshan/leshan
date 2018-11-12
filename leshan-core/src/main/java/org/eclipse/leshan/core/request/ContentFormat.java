@@ -35,6 +35,8 @@ public class ContentFormat {
     public static final ContentFormat OPAQUE = new ContentFormat("OPAQUE", "application/octet-stream", OPAQUE_CODE);
     public static final ContentFormat LINK = new ContentFormat("LINK", "application/link-format", LINK_CODE);
 
+    public static final ContentFormat DEFAULT = TLV;
+
     private static final ContentFormat knownContentFormat[] = new ContentFormat[] { TLV, JSON, TEXT, OPAQUE, LINK };
 
     private final String name;

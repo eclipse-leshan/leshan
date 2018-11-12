@@ -50,6 +50,7 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.DiscoverRequest;
+import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -128,10 +129,11 @@ public class ObjectResource extends CoapResource implements NotifySender {
             }
         } else {
             // handle content format for Read and Observe Request
-            ContentFormat format = ContentFormat.TLV; // use TLV as default format
+            ContentFormat requestedContentFormat = null;
             if (exchange.getRequestOptions().hasAccept()) {
-                format = ContentFormat.fromCode(exchange.getRequestOptions().getAccept());
-                if (!encoder.isSupported(format)) {
+                // If an request ask for a specific content format, use it (if we support it)
+                requestedContentFormat = ContentFormat.fromCode(exchange.getRequestOptions().getAccept());
+                if (!encoder.isSupported(requestedContentFormat)) {
                     exchange.respond(ResponseCode.NOT_ACCEPTABLE);
                     return;
                 }
@@ -139,11 +141,13 @@ public class ObjectResource extends CoapResource implements NotifySender {
 
             // Manage Observe Request
             if (exchange.getRequestOptions().hasObserve()) {
-                ObserveResponse response = nodeEnabler.observe(identity, new ObserveRequest(URI));
+                ObserveRequest observeRequest = new ObserveRequest(URI);
+                ObserveResponse response = nodeEnabler.observe(identity, observeRequest);
                 if (response.getCode() == org.eclipse.leshan.ResponseCode.CONTENT) {
                     LwM2mPath path = new LwM2mPath(URI);
                     LwM2mNode content = response.getContent();
                     LwM2mModel model = new LwM2mModel(nodeEnabler.getObjectModel());
+                    ContentFormat format = getContentFormat(observeRequest, requestedContentFormat);
                     exchange.respond(ResponseCode.CONTENT, encoder.encode(content, format, path, model),
                             format.getCode());
                     return;
@@ -154,11 +158,13 @@ public class ObjectResource extends CoapResource implements NotifySender {
             }
             // Manage Read Request
             else {
-                ReadResponse response = nodeEnabler.read(identity, new ReadRequest(URI));
+                ReadRequest readRequest = new ReadRequest(URI);
+                ReadResponse response = nodeEnabler.read(identity, readRequest);
                 if (response.getCode() == org.eclipse.leshan.ResponseCode.CONTENT) {
                     LwM2mPath path = new LwM2mPath(URI);
                     LwM2mNode content = response.getContent();
                     LwM2mModel model = new LwM2mModel(nodeEnabler.getObjectModel());
+                    ContentFormat format = getContentFormat(readRequest, requestedContentFormat);
                     exchange.respond(ResponseCode.CONTENT, encoder.encode(content, format, path, model),
                             format.getCode());
                     return;
@@ -168,6 +174,16 @@ public class ObjectResource extends CoapResource implements NotifySender {
                 }
             }
         }
+    }
+
+    private ContentFormat getContentFormat(DownlinkRequest<?> request, ContentFormat requestedContentFormat) {
+        if (requestedContentFormat != null) {
+            // we already check before this content format is supported.
+            return requestedContentFormat;
+        }
+
+        ContentFormat format = nodeEnabler.getDefaultEncodingFormat(request);
+        return format == null ? ContentFormat.DEFAULT : format;
     }
 
     @Override

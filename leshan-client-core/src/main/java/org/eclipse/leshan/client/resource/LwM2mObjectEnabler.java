@@ -22,9 +22,11 @@ import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.DiscoverRequest;
+import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -72,4 +74,6 @@ public interface LwM2mObjectEnabler {
     ObserveResponse observe(ServerIdentity identity, ObserveRequest request);
 
     void setNotifySender(NotifySender sender);
+
+    ContentFormat getDefaultEncodingFormat(DownlinkRequest<?> request);
 }

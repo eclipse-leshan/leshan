@@ -36,8 +36,10 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
+import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -56,12 +58,14 @@ public class ObjectEnabler extends BaseObjectEnabler {
 
     private Map<Integer, LwM2mInstanceEnabler> instances;
     private LwM2mInstanceEnablerFactory instanceFactory;
+    private ContentFormat defaultContentFormat;
 
     public ObjectEnabler(int id, ObjectModel objectModel, Map<Integer, LwM2mInstanceEnabler> instances,
-            LwM2mInstanceEnablerFactory instanceFactory) {
+            LwM2mInstanceEnablerFactory instanceFactory, ContentFormat defaultContentFormat) {
         super(id, objectModel);
         this.instances = new HashMap<>(instances);
         this.instanceFactory = instanceFactory;
+        this.defaultContentFormat = defaultContentFormat;
         for (Entry<Integer, LwM2mInstanceEnabler> entry : this.instances.entrySet()) {
             addInstance(entry.getKey(), entry.getValue());
         }
@@ -346,4 +350,8 @@ public class ObjectEnabler extends BaseObjectEnabler {
         });
     }
 
+    @Override
+    public ContentFormat getDefaultEncodingFormat(DownlinkRequest<?> request) {
+        return defaultContentFormat;
+    }
 }
