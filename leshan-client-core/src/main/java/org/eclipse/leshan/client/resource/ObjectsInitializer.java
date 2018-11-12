@@ -24,6 +24,7 @@ import java.util.Map;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.util.Validate;
 
 public class ObjectsInitializer {
@@ -39,6 +40,7 @@ public class ObjectsInitializer {
 
     protected Map<Integer, LwM2mInstanceEnablerFactory> factories = new HashMap<>();
     protected Map<Integer, LwM2mInstanceEnabler[]> instances = new HashMap<>();
+    protected Map<Integer, ContentFormat> defaultContentFormat = new HashMap<>();
     protected LwM2mModel model;
 
     public ObjectsInitializer() {
@@ -86,6 +88,10 @@ public class ObjectsInitializer {
             throw new IllegalArgumentException("Cannot set more than one instance for the single Object " + objectId);
 
         this.instances.put(objectId, instances);
+    }
+
+    public void setDefaultContentFormat(int objectId, ContentFormat format) {
+        defaultContentFormat.put(objectId, format);
     }
 
     public List<LwM2mObjectEnabler> createMandatory() {
@@ -151,7 +157,16 @@ public class ObjectsInitializer {
         for (int i = 0; i < newInstances.length; i++) {
             instances.put(i, newInstances[i]);
         }
-        return new ObjectEnabler(objectModel.id, objectModel, instances, getFactoryFor(objectModel));
+        return new ObjectEnabler(objectModel.id, objectModel, instances, getFactoryFor(objectModel),
+                getContentFormat(objectModel.id));
+    }
+
+    protected ContentFormat getContentFormat(int id) {
+        ContentFormat contentFormat = defaultContentFormat.get(id);
+        if (contentFormat != null) {
+            return contentFormat;
+        }
+        return ContentFormat.DEFAULT;
     }
 
     protected LwM2mInstanceEnabler[] createInstances(ObjectModel objectModel) {

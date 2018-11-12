@@ -31,6 +31,7 @@ import org.eclipse.leshan.client.resource.ObjectEnabler;
 import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.junit.Test;
 
 public class LinkFormatHelperTest {
@@ -106,7 +107,7 @@ public class LinkFormatHelperTest {
 
         Map<Integer, LwM2mInstanceEnabler> instancesMap = new HashMap<>();
         instancesMap.put(0, new BaseInstanceEnabler());
-        objectEnablers.add(new ObjectEnabler(6, getObjectModel(6), instancesMap, null));
+        objectEnablers.add(new ObjectEnabler(6, getObjectModel(6), instancesMap, null, ContentFormat.DEFAULT));
 
         Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null);
         String strLinks = Link.serialize(links);
@@ -121,7 +122,8 @@ public class LinkFormatHelperTest {
         Map<Integer, LwM2mInstanceEnabler> instancesMap = new HashMap<>();
         instancesMap.put(0, new BaseInstanceEnabler());
         instancesMap.put(1, new BaseInstanceEnabler());
-        objectEnablers.add(new ObjectEnabler(6, getVersionedObjectModel(6, "2.0"), instancesMap, null));
+        objectEnablers
+                .add(new ObjectEnabler(6, getVersionedObjectModel(6, "2.0"), instancesMap, null, ContentFormat.DEFAULT));
 
         Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null);
         String strLinks = Link.serialize(links);
@@ -134,7 +136,8 @@ public class LinkFormatHelperTest {
         List<LwM2mObjectEnabler> objectEnablers = new ArrayList<>();
 
         Map<Integer, LwM2mInstanceEnabler> instancesMap = new HashMap<>();
-        objectEnablers.add(new ObjectEnabler(6, getVersionedObjectModel(6, "2.0"), instancesMap, null));
+        objectEnablers
+                .add(new ObjectEnabler(6, getVersionedObjectModel(6, "2.0"), instancesMap, null, ContentFormat.DEFAULT));
 
         Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null);
         String strLinks = Link.serialize(links);
@@ -183,6 +186,6 @@ public class LinkFormatHelperTest {
         instances.put(0, factory.create(objectModel));
 
         // create objectEnabler
-        return new ObjectEnabler(objectModel.id, objectModel, instances, factory);
+        return new ObjectEnabler(objectModel.id, objectModel, instances, factory, ContentFormat.TLV);
     }
 }

@@ -35,9 +35,11 @@ import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.DiscoverRequest;
+import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -376,5 +378,10 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
     public NotifySender getNotifySender() {
         return notifySender;
+    }
+
+    @Override
+    public ContentFormat getDefaultEncodingFormat(DownlinkRequest<?> request) {
+        return ContentFormat.DEFAULT;
     }
 }
