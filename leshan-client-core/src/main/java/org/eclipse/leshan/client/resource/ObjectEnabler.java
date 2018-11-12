@@ -24,8 +24,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.request.ServerIdentity;
+import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mObject;
@@ -292,10 +294,31 @@ public class ObjectEnabler extends BaseObjectEnabler {
     @Override
     public BootstrapDeleteResponse doDelete(BootstrapDeleteRequest request) {
         if (request.getPath().isRoot() || request.getPath().isObject()) {
-            instances.clear();
-            return BootstrapDeleteResponse.success();
-
+            if (id == LwM2mId.SECURITY) {
+                // For security object, we clean everything except bootstrap Server account.
+                Entry<Integer, LwM2mInstanceEnabler> bootstrapServerAccount = null;
+                for (Entry<Integer, LwM2mInstanceEnabler> instance : instances.entrySet()) {
+                    if (ServersInfoExtractor.isBootstrapServer(instance.getValue())) {
+                        bootstrapServerAccount = instance;
+                    }
+                }
+                instances.clear();
+                if (bootstrapServerAccount != null) {
+                    instances.put(bootstrapServerAccount.getKey(), bootstrapServerAccount.getValue());
+                }
+                return BootstrapDeleteResponse.success();
+            } else {
+                instances.clear();
+                return BootstrapDeleteResponse.success();
+            }
         } else if (request.getPath().isObjectInstance()) {
+            if (id == LwM2mId.SECURITY) {
+                // For security object, deleting bootstrap Server account is not allowed
+                LwM2mInstanceEnabler instance = instances.get(request.getPath().getObjectInstanceId());
+                if (ServersInfoExtractor.isBootstrapServer(instance)) {
+                    return BootstrapDeleteResponse.badRequest("bootstrap server can not be deleted");
+                }
+            }
             if (null != instances.remove(request.getPath().getObjectInstanceId())) {
                 return BootstrapDeleteResponse.success();
             } else {

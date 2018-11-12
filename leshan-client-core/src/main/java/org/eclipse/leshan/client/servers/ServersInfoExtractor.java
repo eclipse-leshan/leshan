@@ -35,13 +35,16 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Map;
 
+import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.SecurityMode;
+import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ReadRequest;
+import org.eclipse.leshan.core.response.ReadResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -225,5 +228,15 @@ public class ServersInfoExtractor {
             LOG.debug("Failed to decode X.509 certificate", e);
             return null;
         }
+    }
+
+    public static boolean isBootstrapServer(LwM2mInstanceEnabler instance) {
+        ReadResponse response = instance.read(LwM2mId.SEC_BOOTSTRAP);
+        if (response == null || response.isFailure()) {
+            return false;
+        }
+
+        LwM2mResource isBootstrap = (LwM2mResource) response.getContent();
+        return (Boolean) isBootstrap.getValue();
     }
 }
