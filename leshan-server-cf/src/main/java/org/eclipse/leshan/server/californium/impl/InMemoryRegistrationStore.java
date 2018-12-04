@@ -109,8 +109,12 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
             regsByAddr.put(registration.getSocketAddress(), registration);
             if (registrationRemoved != null) {
                 Collection<Observation> observationsRemoved = unsafeRemoveAllObservations(registrationRemoved.getId());
-                removeFromMap(regsByAddr, registrationRemoved.getSocketAddress(), registrationRemoved);
-                removeFromMap(regsByRegId, registrationRemoved.getId(), registrationRemoved);
+                if (!registrationRemoved.getSocketAddress().equals(registration.getSocketAddress())) {
+                    removeFromMap(regsByAddr, registrationRemoved.getSocketAddress(), registrationRemoved);
+                }
+                if (!registrationRemoved.getId().equals(registration.getId())) {
+                    removeFromMap(regsByRegId, registrationRemoved.getId(), registrationRemoved);
+                }
                 return new Deregistration(registrationRemoved, observationsRemoved);
             }
         } finally {
@@ -133,7 +137,9 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
                 // If registration is already associated to this address we don't care as we only want to keep the most
                 // recent binding.
                 regsByAddr.put(updatedRegistration.getSocketAddress(), updatedRegistration);
-                removeFromMap(regsByAddr, registration.getSocketAddress(), registration);
+                if (!registration.getSocketAddress().equals(updatedRegistration.getSocketAddress())) {
+                    removeFromMap(regsByAddr, registration.getSocketAddress(), registration);
+                }
 
                 regsByRegId.put(updatedRegistration.getId(), updatedRegistration);
 
