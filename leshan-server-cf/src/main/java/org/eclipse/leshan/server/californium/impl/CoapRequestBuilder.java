@@ -160,6 +160,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         coapRequest.setConfirmable(true);
         EndpointContext context = EndpointContextUtil.extractContext(destination);
         coapRequest.setDestinationContext(context);
+        setTarget(coapRequest, request.getPath());
     }
 
     @Override
@@ -195,7 +196,9 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         }
 
         // objectId
-        coapRequest.getOptions().addUriPath(Integer.toString(path.getObjectId()));
+        if (path.getObjectId() != null) {
+            coapRequest.getOptions().addUriPath(Integer.toString(path.getObjectId()));
+        }
 
         // objectInstanceId
         if (path.getObjectInstanceId() == null) {
