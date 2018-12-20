@@ -286,11 +286,9 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         if (coapResponse.getOptions().hasContentFormat()) {
             contentFormat = ContentFormat.fromCode(coapResponse.getOptions().getContentFormat());
         }else {
-            if (path != null) {
-                return LwM2mSingleResource.newStringResource(path.getResourceId(), "");
-            } else {
-                return LwM2mSingleResource.newStringResource(2, "");
-            }
+            // 2 as a arbitrarily resourceId
+            int resourceId = path == null ? 2 : path.getResourceId() == null ? 2 : path.getResourceId();
+            return LwM2mSingleResource.newStringResource(resourceId, "");
         }
 
         // Decode payload
