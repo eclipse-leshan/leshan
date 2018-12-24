@@ -176,7 +176,7 @@ public final class PresenceServiceImpl implements PresenceService {
         PresenceStatus clientPresenceStatus = getPresenceStatusObject(reg);
         ScheduledFuture<?> clientScheduledFuture = clientPresenceStatus.getClientScheduledFuture();
         if (clientScheduledFuture != null) {
-            clientScheduledFuture.cancel(true);
+            clientScheduledFuture.cancel(false);
         }
     }
 

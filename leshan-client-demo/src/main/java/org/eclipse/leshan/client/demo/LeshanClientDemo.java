@@ -92,7 +92,7 @@ public class LeshanClientDemo {
         final StringBuilder X509Chapter = new StringBuilder();
         X509Chapter.append("\n .");
         X509Chapter.append("\n .");
-        X509Chapter.append("\n ================================[ RPK ]=================================");
+        X509Chapter.append("\n ================================[X509]==================================");
         X509Chapter.append("\n | By default Leshan demo use non secure connection.                    |");
         X509Chapter.append("\n | To use X509, -ccert -cprik -scert options should be used together.   |");
         X509Chapter.append("\n | To get helps about files format and how to generate it, see :        |");
@@ -121,7 +121,7 @@ public class LeshanClientDemo {
                 "The path to your server public key file.\n The public Key should be in SubjectPublicKeyInfo format (DER encoding)."
                         + X509Chapter);
         options.addOption("ccert", true,
-                "The path to your client certificate file.\n The certificate should be in X509v3 format (DER encoding).");
+                "The path to your client certificate file.\n The certificate Common Name (CN) should generaly be equal to the client endpoint name (see -n option).\nThe certificate should be in X509v3 format (DER encoding).");
         options.addOption("scert", true,
                 "The path to your server certificate file.\n The certificate should be in X509v3 format (DER encoding).");
 

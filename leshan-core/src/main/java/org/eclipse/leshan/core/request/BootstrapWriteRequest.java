@@ -35,6 +35,9 @@ public class BootstrapWriteRequest extends AbstractDownlinkRequest<BootstrapWrit
     public BootstrapWriteRequest(LwM2mPath target, LwM2mNode node, ContentFormat format)
             throws InvalidRequestException {
         super(target);
+        if (target.isRoot())
+            throw new InvalidRequestException("BootstrapWrite request cannot target root path");
+
         if (node == null)
             throw new InvalidRequestException("new node value is mandatory for %s", target);
 

@@ -101,11 +101,37 @@ lwClientControllers.controller('ClientListCtrl', [
                     $scope.clients = updateClient(client, $scope.clients);
                 });
             };
-            
+
+            var sleepingCallback =  function(msg) {
+                $scope.$apply(function() {
+                    var data = JSON.parse(msg.data);
+                    for (var i = 0; i < $scope.clients.length; i++) {
+                        if ($scope.clients[i].endpoint === data.ep) {
+                            $scope.clients[i].sleeping = true;
+                        }
+                    }
+                });
+            };
+
+            var awakeCallback =  function(msg) {
+                $scope.$apply(function() {
+                    var data = JSON.parse(msg.data);
+                    for (var i = 0; i < $scope.clients.length; i++) {
+                        if ($scope.clients[i].endpoint === data.ep) {
+                            $scope.clients[i].sleeping = false;
+                        }
+                    }
+                });
+            };
+
             $scope.eventsource.addEventListener('REGISTRATION', registerCallback, false);
 
             $scope.eventsource.addEventListener('UPDATED', updateCallback, false);
-            
+
+            $scope.eventsource.addEventListener('SLEEPING', sleepingCallback, false);
+
+            $scope.eventsource.addEventListener('AWAKE', awakeCallback, false);
+
             var getClientIdx = function(client) {
                 for (var i = 0; i < $scope.clients.length; i++) {
                     if ($scope.clients[i].registrationId == client.registrationId) {

@@ -87,6 +87,8 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     private ExpirationListener expirationListener;
 
     private final ScheduledExecutorService schedExecutor;
+    private boolean started = false;
+
     private final long cleanPeriod; // in seconds
     private final int cleanLimit; // maximum number to clean in a clean period
     private final long gracePeriod; // in seconds
@@ -691,20 +693,26 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
      * Start regular cleanup of dead registrations.
      */
     @Override
-    public void start() {
-        schedExecutor.scheduleAtFixedRate(new Cleaner(), cleanPeriod, cleanPeriod, TimeUnit.SECONDS);
+    public synchronized void start() {
+        if (!started) {
+            started = true;
+            schedExecutor.scheduleAtFixedRate(new Cleaner(), cleanPeriod, cleanPeriod, TimeUnit.SECONDS);
+        }
     }
 
     /**
      * Stop the underlying cleanup of the registrations.
      */
     @Override
-    public void stop() {
-        schedExecutor.shutdownNow();
-        try {
-            schedExecutor.awaitTermination(5, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            LOG.warn("Clean up registration thread was interrupted.", e);
+    public synchronized void stop() {
+        if (started) {
+            started = false;
+            schedExecutor.shutdownNow();
+            try {
+                schedExecutor.awaitTermination(5, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                LOG.warn("Clean up registration thread was interrupted.", e);
+            }
         }
     }
 

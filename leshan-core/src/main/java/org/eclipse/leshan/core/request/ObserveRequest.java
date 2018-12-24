@@ -135,6 +135,9 @@ public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
 
     private ObserveRequest(ContentFormat format, LwM2mPath target, Map<String, String> context) {
         super(target);
+        if (target.isRoot())
+            throw new InvalidRequestException("Observe request cannot target root path");
+
         this.format = format;
         if (context == null || context.isEmpty())
             this.context = Collections.emptyMap();

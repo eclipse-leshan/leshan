@@ -34,15 +34,19 @@ import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.DiscoverRequest;
+import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
+import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
 import org.eclipse.leshan.core.response.BootstrapWriteResponse;
 import org.eclipse.leshan.core.response.CreateResponse;
 import org.eclipse.leshan.core.response.DeleteResponse;
@@ -222,21 +226,14 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
     @Override
     public synchronized DeleteResponse delete(ServerIdentity identity, DeleteRequest request) {
-        if (!identity.isLwm2mBootstrapServer() && !identity.isSystem()) {
+        if (!identity.isSystem()) {
 
             // delete the security object is forbidden
             if (id == LwM2mId.SECURITY) {
                 return DeleteResponse.notFound();
             }
 
-            // a resource can not be deleted
-            LwM2mPath path = request.getPath();
-            if (path.isResource()) {
-                return DeleteResponse.methodNotAllowed();
-            }
-
-            // we can not delete instance on single object
-            if (objectModel != null && !objectModel.multiple) {
+            if (id == LwM2mId.DEVICE) {
                 return DeleteResponse.methodNotAllowed();
             }
         }
@@ -247,6 +244,21 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     protected DeleteResponse doDelete(DeleteRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
         return DeleteResponse.internalServerError("not implemented");
+    }
+
+    @Override
+    public synchronized BootstrapDeleteResponse delete(ServerIdentity identity, BootstrapDeleteRequest request) {
+        if (!identity.isSystem()) {
+            if (id == LwM2mId.DEVICE) {
+                return BootstrapDeleteResponse.badRequest("Device object instance is not deletable");
+            }
+        }
+        return doDelete(request);
+    }
+
+    public BootstrapDeleteResponse doDelete(BootstrapDeleteRequest request) {
+        // This should be a not implemented error, but this is not defined in the spec.
+        return BootstrapDeleteResponse.internalServerError("not implemented");
     }
 
     @Override
@@ -376,5 +388,10 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
     public NotifySender getNotifySender() {
         return notifySender;
+    }
+
+    @Override
+    public ContentFormat getDefaultEncodingFormat(DownlinkRequest<?> request) {
+        return ContentFormat.DEFAULT;
     }
 }

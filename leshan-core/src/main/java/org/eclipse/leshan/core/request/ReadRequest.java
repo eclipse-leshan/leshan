@@ -16,6 +16,7 @@
 package org.eclipse.leshan.core.request;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.ReadResponse;
 
 /**
@@ -114,6 +115,9 @@ public class ReadRequest extends AbstractDownlinkRequest<ReadResponse> {
 
     private ReadRequest(ContentFormat format, LwM2mPath target) {
         super(target);
+        if (target.isRoot())
+            throw new InvalidRequestException("Read request cannot target root path");
+
         this.format = format;
     }
 

@@ -16,8 +16,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.servers;
 
-import static org.eclipse.leshan.LwM2mId.SECURITY;
-import static org.eclipse.leshan.LwM2mId.SERVER;
+import static org.eclipse.leshan.LwM2mId.*;
 
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -31,6 +30,7 @@ import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
 import org.eclipse.leshan.core.response.BootstrapFinishResponse;
+import org.eclipse.leshan.core.response.SendableResponse;
 
 /**
  * Handle bootstrap session state.
@@ -47,19 +47,25 @@ public class BootstrapHandler {
         objects = objectEnablers;
     }
 
-    public synchronized BootstrapFinishResponse finished(ServerIdentity identity,
+    public synchronized SendableResponse<BootstrapFinishResponse> finished(ServerIdentity identity,
             BootstrapFinishRequest finishedRequest) {
         if (bootstrapping) {
             // only if the request is from the bootstrap server
             if (!isBootstrapServer(identity)) {
-                return BootstrapFinishResponse.badRequest("not from a bootstrap server");
+                return new SendableResponse<>(BootstrapFinishResponse.badRequest("not from a bootstrap server"));
             }
             // TODO delete bootstrap server (see 5.2.5.2 Bootstrap Delete)
 
-            bootstrappingLatch.countDown();
-            return BootstrapFinishResponse.success();
+            Runnable whenSent = new Runnable() {
+                @Override
+                public void run() {
+                    bootstrappingLatch.countDown();
+                }
+            };
+
+            return new SendableResponse<>(BootstrapFinishResponse.success(), whenSent);
         } else {
-            return BootstrapFinishResponse.badRequest("no pending bootstrap session");
+            return new SendableResponse<>(BootstrapFinishResponse.badRequest("no pending bootstrap session"));
         }
     }
 

@@ -13,9 +13,8 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.impl;
+package org.eclipse.leshan.core.response;
 
-import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

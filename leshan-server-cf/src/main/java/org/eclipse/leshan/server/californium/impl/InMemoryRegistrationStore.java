@@ -77,6 +77,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     private ExpirationListener expirationListener;
 
     private final ScheduledExecutorService schedExecutor;
+    private boolean started = false;
     private final long cleanPeriod; // in seconds
 
     public InMemoryRegistrationStore() {
@@ -108,10 +109,10 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
             regsByAddr.put(registration.getSocketAddress(), registration);
             if (registrationRemoved != null) {
                 Collection<Observation> observationsRemoved = unsafeRemoveAllObservations(registrationRemoved.getId());
-                if (!registration.getSocketAddress().equals(registrationRemoved.getSocketAddress())) {
+                if (!registrationRemoved.getSocketAddress().equals(registration.getSocketAddress())) {
                     removeFromMap(regsByAddr, registrationRemoved.getSocketAddress(), registrationRemoved);
                 }
-                if (!registration.getId().equals(registrationRemoved.getId())) {
+                if (!registrationRemoved.getId().equals(registration.getId())) {
                     removeFromMap(regsByRegId, registrationRemoved.getId(), registrationRemoved);
                 }
                 return new Deregistration(registrationRemoved, observationsRemoved);
@@ -444,20 +445,26 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
      * start the registration store, will start regular cleanup of dead registrations.
      */
     @Override
-    public void start() {
-        schedExecutor.scheduleAtFixedRate(new Cleaner(), cleanPeriod, cleanPeriod, TimeUnit.SECONDS);
+    public synchronized void start() {
+        if (!started) {
+            started = true;
+            schedExecutor.scheduleAtFixedRate(new Cleaner(), cleanPeriod, cleanPeriod, TimeUnit.SECONDS);
+        }
     }
 
     /**
      * Stop the underlying cleanup of the registrations.
      */
     @Override
-    public void stop() {
-        schedExecutor.shutdownNow();
-        try {
-            schedExecutor.awaitTermination(5, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            LOG.warn("Clean up registration thread was interrupted.", e);
+    public synchronized void stop() {
+        if (started) {
+            started = false;
+            schedExecutor.shutdownNow();
+            try {
+                schedExecutor.awaitTermination(5, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                LOG.warn("Clean up registration thread was interrupted.", e);
+            }
         }
     }
 

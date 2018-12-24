@@ -123,7 +123,7 @@ public class BootstrapTest {
 
         // Start it and wait for registration
         helper.client.start();
-        helper.waitForRegistrationAtServerSide(5000);
+        helper.waitForRegistrationAtServerSide(1);
 
         // check the client is registered
         helper.assertClientRegisterered();

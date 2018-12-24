@@ -241,8 +241,10 @@ public class RegistrationTest {
     // TODO not really a registration test
     @Test(expected = IllegalArgumentException.class)
     public void fail_to_create_client_with_same_object_twice() {
-        ObjectEnabler objectEnabler = new ObjectEnabler(1, null, new HashMap<Integer, LwM2mInstanceEnabler>(), null);
-        ObjectEnabler objectEnabler2 = new ObjectEnabler(1, null, new HashMap<Integer, LwM2mInstanceEnabler>(), null);
+        ObjectEnabler objectEnabler = new ObjectEnabler(1, null, new HashMap<Integer, LwM2mInstanceEnabler>(), null,
+                ContentFormat.DEFAULT);
+        ObjectEnabler objectEnabler2 = new ObjectEnabler(1, null, new HashMap<Integer, LwM2mInstanceEnabler>(), null,
+                ContentFormat.DEFAULT);
         ArrayList<LwM2mObjectEnabler> objects = new ArrayList<>();
         objects.add(objectEnabler);
         objects.add(objectEnabler2);
