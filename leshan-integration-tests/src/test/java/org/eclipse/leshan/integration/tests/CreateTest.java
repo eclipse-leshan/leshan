@@ -185,7 +185,7 @@ public class CreateTest {
                 new CreateRequest(3, new LwM2mResource[] { LwM2mSingleResource.newIntegerResource(3, 123) }));
 
         // verify result
-        assertEquals(ResponseCode.METHOD_NOT_ALLOWED, response.getCode());
+        assertEquals(ResponseCode.BAD_REQUEST, response.getCode());
         assertNotNull(response.getCoapResponse());
         assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
     }
