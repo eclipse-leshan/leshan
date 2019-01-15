@@ -29,7 +29,7 @@ import org.eclipse.leshan.util.Validate;
 
 public class ObjectsInitializer {
 
-    protected LwM2mInstanceEnablerFactory defaultFactory = new LwM2mInstanceEnablerFactory() {
+    protected LwM2mInstanceEnablerFactory defaultFactory = new BaseInstanceEnablerFactory() {
         @Override
         public LwM2mInstanceEnabler create(ObjectModel model) {
             SimpleInstanceEnabler simpleInstanceEnabler = new SimpleInstanceEnabler();
@@ -84,8 +84,15 @@ public class ObjectsInitializer {
         Validate.notNull(instances);
         Validate.notEmpty(instances);
 
-        if (instances.length > 1 && !objectModel.multiple)
-            throw new IllegalArgumentException("Cannot set more than one instance for the single Object " + objectId);
+        if (!objectModel.multiple) {
+            if (instances.length > 1)
+                throw new IllegalArgumentException(
+                        "Cannot set more than one instance for the single Object " + objectId);
+            if (instances[0].getId() != null && instances[0].getId() != 0)
+                throw new IllegalArgumentException(String.format(
+                        "Invalid instance id for single object %d : single object instance should have an id equals to 0",
+                        objectId));
+        }
 
         this.instances.put(objectId, instances);
     }
@@ -154,8 +161,13 @@ public class ObjectsInitializer {
     protected ObjectEnabler createNodeEnabler(ObjectModel objectModel) {
         Map<Integer, LwM2mInstanceEnabler> instances = new HashMap<>();
         LwM2mInstanceEnabler[] newInstances = createInstances(objectModel);
-        for (int i = 0; i < newInstances.length; i++) {
-            instances.put(i, newInstances[i]);
+        for (LwM2mInstanceEnabler instance : newInstances) {
+            // set id if not already set
+            if (instance.getId() == null) {
+                int id = BaseInstanceEnablerFactory.generateNewInstanceId(instances.keySet());
+                instance.setId(id);
+            }
+            instances.put(instance.getId(), instance);
         }
         return new ObjectEnabler(objectModel.id, objectModel, instances, getFactoryFor(objectModel),
                 getContentFormat(objectModel.id));
@@ -177,14 +189,14 @@ public class ObjectsInitializer {
             // we create instance from class only for single object
             if (!objectModel.multiple) {
                 LwM2mInstanceEnablerFactory instanceFactory = getFactoryFor(objectModel);
-                newInstances = new LwM2mInstanceEnabler[] { instanceFactory.create(objectModel) };
+                newInstances = new LwM2mInstanceEnabler[] { instanceFactory.create(objectModel, 0, null) };
             }
         }
         return newInstances;
     }
 
     protected LwM2mInstanceEnablerFactory getClassFactory(final Class<? extends LwM2mInstanceEnabler> clazz) {
-        LwM2mInstanceEnablerFactory factory = new LwM2mInstanceEnablerFactory() {
+        LwM2mInstanceEnablerFactory factory = new BaseInstanceEnablerFactory() {
             @Override
             public LwM2mInstanceEnabler create(ObjectModel model) {
                 try {

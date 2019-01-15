@@ -103,25 +103,21 @@ public class ObjectEnabler extends BaseObjectEnabler {
 
     @Override
     protected CreateResponse doCreate(CreateRequest request) {
-        Integer instanceId = request.getInstanceId();
-        if (instanceId == null) {
-            // the client is in charge to generate the id of the new instance
-            if (instances.isEmpty()) {
-                instanceId = 0;
-            } else {
-                instanceId = Collections.max(instances.keySet()) + 1;
-            }
-        }
+        Integer instanceId = request.getInstanceId(); // instanceId CAN be NULL
 
-        LwM2mInstanceEnabler newInstance = instanceFactory.create(getObjectModel());
+        // create the new instance
+        LwM2mInstanceEnabler newInstance = instanceFactory.create(getObjectModel(), instanceId, instances.keySet());
 
+        // add/write resource
         for (LwM2mResource resource : request.getResources()) {
             newInstance.write(resource.getId(), resource);
         }
-        instances.put(instanceId, newInstance);
-        listenInstance(newInstance, instanceId);
 
-        return CreateResponse.success(new LwM2mPath(request.getPath().getObjectId(), instanceId).toString());
+        // add new instance to this object
+        instances.put(newInstance.getId(), newInstance);
+        listenInstance(newInstance, newInstance.getId());
+
+        return CreateResponse.success(new LwM2mPath(request.getPath().getObjectId(), newInstance.getId()).toString());
     }
 
     @Override

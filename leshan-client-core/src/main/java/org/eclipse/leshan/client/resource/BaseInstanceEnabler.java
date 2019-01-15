@@ -31,6 +31,24 @@ import org.eclipse.leshan.core.response.WriteResponse;
 public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
 
     private List<ResourceChangedListener> listeners = new ArrayList<>();
+    private Integer id = null;
+
+    public BaseInstanceEnabler() {
+    }
+
+    public BaseInstanceEnabler(int id) {
+        setId(id);
+    }
+
+    @Override
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    @Override
+    public Integer getId() {
+        return id;
+    }
 
     @Override
     public void addResourceChangedListener(ResourceChangedListener listener) {
