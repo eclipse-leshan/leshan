@@ -20,6 +20,7 @@ package org.eclipse.leshan.client.object;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -56,7 +57,7 @@ public class Server extends BaseInstanceEnabler {
     }
 
     @Override
-    public ReadResponse read(int resourceid) {
+    public ReadResponse read(ServerIdentity identity, int resourceid) {
 
         switch (resourceid) {
         case 0: // short server ID
@@ -82,12 +83,12 @@ public class Server extends BaseInstanceEnabler {
             return ReadResponse.success(resourceid, binding.toString());
 
         default:
-            return super.read(resourceid);
+            return super.read(identity, resourceid);
         }
     }
 
     @Override
-    public WriteResponse write(int resourceid, LwM2mResource value) {
+    public WriteResponse write(ServerIdentity identity, int resourceid, LwM2mResource value) {
 
         switch (resourceid) {
 
@@ -138,18 +139,18 @@ public class Server extends BaseInstanceEnabler {
             }
 
         default:
-            return super.write(resourceid, value);
+            return super.write(identity, resourceid, value);
         }
     }
 
     @Override
-    public ExecuteResponse execute(int resourceid, String params) {
+    public ExecuteResponse execute(ServerIdentity identity, int resourceid, String params) {
 
         if (resourceid == 8) { // registration update trigger
             // TODO implement registration update trigger executable resource
             return ExecuteResponse.internalServerError("not implemented");
         } else {
-            return super.execute(resourceid, params);
+            return super.execute(identity, resourceid, params);
         }
     }
 

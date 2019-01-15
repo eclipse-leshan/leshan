@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.response.ExecuteResponse;
@@ -67,24 +68,24 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     }
 
     @Override
-    public ReadResponse read(int resourceid) {
+    public ReadResponse read(ServerIdentity identity, int resourceid) {
         return ReadResponse.notFound();
     }
 
     @Override
-    public WriteResponse write(int resourceid, LwM2mResource value) {
+    public WriteResponse write(ServerIdentity identity, int resourceid, LwM2mResource value) {
         return WriteResponse.notFound();
     }
 
     @Override
-    public ExecuteResponse execute(int resourceid, String params) {
+    public ExecuteResponse execute(ServerIdentity identity, int resourceid, String params) {
         return ExecuteResponse.notFound();
     }
 
     @Override
-    public ObserveResponse observe(int resourceid) {
+    public ObserveResponse observe(ServerIdentity identity, int resourceid) {
         // Perform a read by default
-        ReadResponse readResponse = this.read(resourceid);
+        ReadResponse readResponse = this.read(identity, resourceid);
         return new ObserveResponse(readResponse.getCode(), readResponse.getContent(), null, null,
                 readResponse.getErrorMessage());
     }

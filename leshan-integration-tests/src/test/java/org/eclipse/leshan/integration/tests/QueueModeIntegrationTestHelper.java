@@ -27,6 +27,7 @@ import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.object.Server;
+import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -69,11 +70,11 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.UQ, false));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345", "UQ") {
             @Override
-            public ExecuteResponse execute(int resourceid, String params) {
+            public ExecuteResponse execute(ServerIdentity identity, int resourceid, String params) {
                 if (resourceid == 4) {
                     return ExecuteResponse.success();
                 } else {
-                    return super.execute(resourceid, params);
+                    return super.execute(identity, resourceid, params);
                 }
             }
         });

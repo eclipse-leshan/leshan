@@ -12,6 +12,7 @@ import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
@@ -42,7 +43,7 @@ public class MyDevice extends BaseInstanceEnabler {
     }
 
     @Override
-    public ReadResponse read(int resourceid) {
+    public ReadResponse read(ServerIdentity identity, int resourceid) {
         LOG.info("Read on Device Resource " + resourceid);
         switch (resourceid) {
         case 0:
@@ -80,12 +81,12 @@ public class MyDevice extends BaseInstanceEnabler {
         case 21:
             return ReadResponse.success(resourceid, getMemoryTotal());
         default:
-            return super.read(resourceid);
+            return super.read(identity, resourceid);
         }
     }
 
     @Override
-    public ExecuteResponse execute(int resourceid, String params) {
+    public ExecuteResponse execute(ServerIdentity identity, int resourceid, String params) {
         LOG.info("Execute on Device resource " + resourceid);
         if (params != null && params.length() != 0)
             System.out.println("\t params " + params);
@@ -93,7 +94,7 @@ public class MyDevice extends BaseInstanceEnabler {
     }
 
     @Override
-    public WriteResponse write(int resourceid, LwM2mResource value) {
+    public WriteResponse write(ServerIdentity identity, int resourceid, LwM2mResource value) {
         LOG.info("Write on Device Resource " + resourceid + " value " + value);
         switch (resourceid) {
         case 13:
@@ -107,7 +108,7 @@ public class MyDevice extends BaseInstanceEnabler {
             fireResourcesChange(resourceid);
             return WriteResponse.success();
         default:
-            return super.write(resourceid, value);
+            return super.write(identity, resourceid, value);
         }
     }
 
