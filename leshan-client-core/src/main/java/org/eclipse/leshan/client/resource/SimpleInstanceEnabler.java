@@ -39,6 +39,13 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
     protected Map<Integer, LwM2mResource> resources = new HashMap<>();
     protected ObjectModel objectModel;
 
+    public SimpleInstanceEnabler() {
+    }
+
+    public SimpleInstanceEnabler(int id) {
+        super(id);
+    }
+
     @Override
     public ReadResponse read(int resourceid) {
         if (resources.containsKey(resourceid)) {

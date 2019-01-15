@@ -48,6 +48,19 @@ import org.eclipse.leshan.core.response.WriteResponse;
 public interface LwM2mInstanceEnabler {
 
     /**
+     * @return the id of this instance.
+     */
+    Integer getId();
+
+    /**
+     * Set this id of this instance. It should be called only by
+     * {@link LwM2mInstanceEnablerFactory#create(ObjectModel, Integer, java.util.Collection)}.
+     * 
+     * @param id this id of this instance.
+     */
+    void setId(int id);
+
+    /**
      * Adds a callback handler that gets notified about changes to any of this LWM2M object instance's resources.
      * 
      * @param listener the handler to add, a <code>null</code> value is silently ignored
