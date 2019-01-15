@@ -105,6 +105,21 @@ public class ObjectEnabler extends BaseObjectEnabler {
     protected CreateResponse doCreate(CreateRequest request) {
         Integer instanceId = request.getInstanceId(); // instanceId CAN be NULL
 
+        // check instance id is valid
+        if (instanceId != null) {
+            if (instances.containsKey(instanceId)) {
+                return CreateResponse.badRequest("Target already exists");
+            }
+            if (!getObjectModel().multiple && instanceId != 0) {
+                return CreateResponse.badRequest("id must be 0 for single instance");
+            }
+        } else {
+            // default 0 instance id for single instance object
+            if (!getObjectModel().multiple) {
+                instanceId = 0;
+            }
+        }
+
         // create the new instance
         LwM2mInstanceEnabler newInstance = instanceFactory.create(getObjectModel(), instanceId, instances.keySet());
 

@@ -89,18 +89,10 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     @Override
     public synchronized CreateResponse create(ServerIdentity identity, CreateRequest request) {
         if (!identity.isSystem()) {
-            // we can not create new instance on single object
-            if (objectModel != null && !objectModel.multiple) {
-                return CreateResponse.methodNotAllowed();
-            }
-
             if (id == LwM2mId.SECURITY) {
                 return CreateResponse.notFound();
             }
         }
-
-        // TODO we could do a validation of request.getObjectInstance() by comparing with resourceSpec information.
-
         return doCreate(request);
     }
 
