@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.leshan.SecurityMode;
+import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -135,7 +136,7 @@ public class Security extends BaseInstanceEnabler {
     }
 
     @Override
-    public WriteResponse write(int resourceId, LwM2mResource value) {
+    public WriteResponse write(ServerIdentity identity, int resourceId, LwM2mResource value) {
         LOG.debug("Write on resource {}: {}", resourceId, value);
 
         // restricted to BS server?
@@ -189,13 +190,13 @@ public class Security extends BaseInstanceEnabler {
             return WriteResponse.success();
 
         default:
-            return super.write(resourceId, value);
+            return super.write(identity, resourceId, value);
         }
 
     }
 
     @Override
-    public ReadResponse read(int resourceid) {
+    public ReadResponse read(ServerIdentity identity, int resourceid) {
         // only accessible for internal read?
 
         switch (resourceid) {
@@ -221,13 +222,13 @@ public class Security extends BaseInstanceEnabler {
             return ReadResponse.success(resourceid, shortServerId);
 
         default:
-            return super.read(resourceid);
+            return super.read(identity, resourceid);
         }
     }
 
     @Override
-    public ExecuteResponse execute(int resourceid, String params) {
-        return super.execute(resourceid, params);
+    public ExecuteResponse execute(ServerIdentity identity, int resourceid, String params) {
+        return super.execute(identity, resourceid, params);
     }
 
     @Override

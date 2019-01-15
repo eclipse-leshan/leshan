@@ -37,6 +37,7 @@ import java.util.Map;
 
 import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.SecurityMode;
+import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.core.node.LwM2mObject;
@@ -231,7 +232,7 @@ public class ServersInfoExtractor {
     }
 
     public static boolean isBootstrapServer(LwM2mInstanceEnabler instance) {
-        ReadResponse response = instance.read(LwM2mId.SEC_BOOTSTRAP);
+        ReadResponse response = instance.read(ServerIdentity.SYSTEM, LwM2mId.SEC_BOOTSTRAP);
         if (response == null || response.isFailure()) {
             return false;
         }

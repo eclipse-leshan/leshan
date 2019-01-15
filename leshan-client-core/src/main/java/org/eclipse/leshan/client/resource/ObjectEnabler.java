@@ -102,7 +102,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
     }
 
     @Override
-    protected CreateResponse doCreate(CreateRequest request) {
+    protected CreateResponse doCreate(ServerIdentity identity, CreateRequest request) {
         Integer instanceId = request.getInstanceId(); // instanceId CAN be NULL
 
         // check instance id is valid
@@ -125,7 +125,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
 
         // add/write resource
         for (LwM2mResource resource : request.getResources()) {
-            newInstance.write(resource.getId(), resource);
+            newInstance.write(identity, resource.getId(), resource);
         }
 
         // add new instance to this object
@@ -158,7 +158,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
         }
 
         // Manage Resource case
-        return instance.read(path.getResourceId());
+        return instance.read(identity, path.getResourceId());
     }
 
     @Override
@@ -185,7 +185,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
         }
 
         // Manage Resource case
-        return instance.observe(path.getResourceId());
+        return instance.observe(identity, path.getResourceId());
     }
 
     LwM2mObjectInstance getLwM2mObjectInstance(int instanceid, LwM2mInstanceEnabler instance, ServerIdentity identity,
@@ -195,11 +195,11 @@ public class ObjectEnabler extends BaseObjectEnabler {
             // check, if internal request (SYSTEM) or readable
             if (identity.isSystem() || resourceModel.operations.isReadable()) {
                 if (observe) {
-                    ObserveResponse response = instance.observe(resourceModel.id);
+                    ObserveResponse response = instance.observe(identity, resourceModel.id);
                     if (response.getCode() == ResponseCode.CONTENT && response.getContent() instanceof LwM2mResource)
                         resources.add((LwM2mResource) response.getContent());
                 } else {
-                    ReadResponse response = instance.read(resourceModel.id);
+                    ReadResponse response = instance.read(identity, resourceModel.id);
                     if (response.getCode() == ResponseCode.CONTENT && response.getContent() instanceof LwM2mResource)
                         resources.add((LwM2mResource) response.getContent());
                 }
@@ -227,7 +227,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
                     if (!identity.isLwm2mServer() || resourceModel.operations.isWritable()) {
                         LwM2mResource writeResource = writeResources.remove(resourceModel.id);
                         if (null != writeResource) {
-                            instance.write(resourceModel.id, writeResource);
+                            instance.write(identity, resourceModel.id, writeResource);
                         } else {
                             instance.reset(resourceModel.id);
                         }
@@ -236,13 +236,13 @@ public class ObjectEnabler extends BaseObjectEnabler {
             }
             // UPDATE and resources currently not in the model
             for (LwM2mResource resource : writeResources.values()) {
-                instance.write(resource.getId(), resource);
+                instance.write(identity, resource.getId(), resource);
             }
             return WriteResponse.success();
         }
 
         // Manage Resource case
-        return instance.write(path.getResourceId(), (LwM2mResource) request.getNode());
+        return instance.write(identity, path.getResourceId(), (LwM2mResource) request.getNode());
     }
 
     @Override
@@ -254,7 +254,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
             for (LwM2mObjectInstance instanceNode : ((LwM2mObject) request.getNode()).getInstances().values()) {
                 LwM2mInstanceEnabler instanceEnabler = instances.get(instanceNode.getId());
                 if (instanceEnabler == null) {
-                    doCreate(new CreateRequest(path.getObjectId(), instanceNode));
+                    doCreate(identity, new CreateRequest(path.getObjectId(), instanceNode));
                 } else {
                     doWrite(identity, new WriteRequest(Mode.REPLACE, path.getObjectId(), path.getObjectInstanceId(),
                             instanceNode.getResources().values()));
@@ -268,7 +268,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
             LwM2mObjectInstance instanceNode = (LwM2mObjectInstance) request.getNode();
             LwM2mInstanceEnabler instanceEnabler = instances.get(path.getObjectInstanceId());
             if (instanceEnabler == null) {
-                doCreate(new CreateRequest(path.getObjectId(), instanceNode));
+                doCreate(identity, new CreateRequest(path.getObjectId(), instanceNode));
             } else {
                 doWrite(identity, new WriteRequest(Mode.REPLACE, request.getContentFormat(), path.getObjectId(),
                         path.getObjectInstanceId(), instanceNode.getResources().values()));
@@ -280,26 +280,26 @@ public class ObjectEnabler extends BaseObjectEnabler {
         LwM2mResource resource = (LwM2mResource) request.getNode();
         LwM2mInstanceEnabler instanceEnabler = instances.get(path.getObjectInstanceId());
         if (instanceEnabler == null) {
-            doCreate(new CreateRequest(path.getObjectId(),
+            doCreate(identity, new CreateRequest(path.getObjectId(),
                     new LwM2mObjectInstance(path.getObjectInstanceId(), resource)));
         } else {
-            instanceEnabler.write(path.getResourceId(), resource);
+            instanceEnabler.write(identity, path.getResourceId(), resource);
         }
         return BootstrapWriteResponse.success();
     }
 
     @Override
-    protected ExecuteResponse doExecute(ExecuteRequest request) {
+    protected ExecuteResponse doExecute(ServerIdentity identity, ExecuteRequest request) {
         LwM2mPath path = request.getPath();
         LwM2mInstanceEnabler instance = instances.get(path.getObjectInstanceId());
         if (instance == null) {
             return ExecuteResponse.notFound();
         }
-        return instance.execute(path.getResourceId(), request.getParameters());
+        return instance.execute(identity, path.getResourceId(), request.getParameters());
     }
 
     @Override
-    protected DeleteResponse doDelete(DeleteRequest request) {
+    protected DeleteResponse doDelete(ServerIdentity identity, DeleteRequest request) {
         if (null != instances.remove(request.getPath().getObjectInstanceId())) {
             return DeleteResponse.success();
         }
@@ -307,7 +307,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
     }
 
     @Override
-    public BootstrapDeleteResponse doDelete(BootstrapDeleteRequest request) {
+    public BootstrapDeleteResponse doDelete(ServerIdentity identity, BootstrapDeleteRequest request) {
         if (request.getPath().isRoot() || request.getPath().isObject()) {
             if (id == LwM2mId.SECURITY) {
                 // For security object, we clean everything except bootstrap Server account.

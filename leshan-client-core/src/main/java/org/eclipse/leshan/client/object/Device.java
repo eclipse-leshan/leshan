@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.TimeZone;
 
+import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -56,7 +57,7 @@ public class Device extends BaseInstanceEnabler {
     }
 
     @Override
-    public ReadResponse read(int resourceid) {
+    public ReadResponse read(ServerIdentity identity, int resourceid) {
 
         switch (resourceid) {
         case 0: // manufacturer
@@ -81,12 +82,12 @@ public class Device extends BaseInstanceEnabler {
             return ReadResponse.success(resourceid, supportedBinding);
 
         default:
-            return super.read(resourceid);
+            return super.read(identity, resourceid);
         }
     }
 
     @Override
-    public WriteResponse write(int resourceid, LwM2mResource value) {
+    public WriteResponse write(ServerIdentity identity, int resourceid, LwM2mResource value) {
 
         switch (resourceid) {
 
@@ -101,17 +102,17 @@ public class Device extends BaseInstanceEnabler {
             return WriteResponse.success();
 
         default:
-            return super.write(resourceid, value);
+            return super.write(identity, resourceid, value);
         }
     }
 
     @Override
-    public ExecuteResponse execute(int resourceid, String params) {
+    public ExecuteResponse execute(ServerIdentity identity, int resourceid, String params) {
 
         if (resourceid == 4) { // reboot
             return ExecuteResponse.internalServerError("not implemented");
         } else {
-            return super.execute(resourceid, params);
+            return super.execute(identity, resourceid, params);
         }
     }
 

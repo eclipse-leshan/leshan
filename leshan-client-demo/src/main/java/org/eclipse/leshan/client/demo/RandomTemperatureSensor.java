@@ -9,6 +9,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.response.ExecuteResponse;
@@ -43,7 +44,7 @@ public class RandomTemperatureSensor extends BaseInstanceEnabler {
     }
 
     @Override
-    public synchronized ReadResponse read(int resourceId) {
+    public synchronized ReadResponse read(ServerIdentity identity, int resourceId) {
         switch (resourceId) {
         case MIN_MEASURED_VALUE:
             return ReadResponse.success(resourceId, getTwoDigitValue(minMeasuredValue));
@@ -54,18 +55,18 @@ public class RandomTemperatureSensor extends BaseInstanceEnabler {
         case UNITS:
             return ReadResponse.success(resourceId, UNIT_CELSIUS);
         default:
-            return super.read(resourceId);
+            return super.read(identity, resourceId);
         }
     }
 
     @Override
-    public synchronized ExecuteResponse execute(int resourceId, String params) {
+    public synchronized ExecuteResponse execute(ServerIdentity identity, int resourceId, String params) {
         switch (resourceId) {
         case RESET_MIN_MAX_MEASURED_VALUES:
             resetMinMaxMeasuredValues();
             return ExecuteResponse.success();
         default:
-            return super.execute(resourceId, params);
+            return super.execute(identity, resourceId, params);
         }
     }
 

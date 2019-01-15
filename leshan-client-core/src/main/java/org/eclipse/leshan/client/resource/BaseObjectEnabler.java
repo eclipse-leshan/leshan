@@ -93,10 +93,10 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
                 return CreateResponse.notFound();
             }
         }
-        return doCreate(request);
+        return doCreate(identity, request);
     }
 
-    protected CreateResponse doCreate(CreateRequest request) {
+    protected CreateResponse doCreate(ServerIdentity identity, CreateRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
         return CreateResponse.internalServerError("not implemented");
     }
@@ -230,10 +230,10 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
             }
         }
 
-        return doDelete(request);
+        return doDelete(identity, request);
     }
 
-    protected DeleteResponse doDelete(DeleteRequest request) {
+    protected DeleteResponse doDelete(ServerIdentity identity, DeleteRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
         return DeleteResponse.internalServerError("not implemented");
     }
@@ -245,10 +245,10 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
                 return BootstrapDeleteResponse.badRequest("Device object instance is not deletable");
             }
         }
-        return doDelete(request);
+        return doDelete(identity, request);
     }
 
-    public BootstrapDeleteResponse doDelete(BootstrapDeleteRequest request) {
+    public BootstrapDeleteResponse doDelete(ServerIdentity identity, BootstrapDeleteRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
         return BootstrapDeleteResponse.internalServerError("not implemented");
     }
@@ -278,10 +278,10 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
             return ExecuteResponse.methodNotAllowed();
         }
 
-        return doExecute(request);
+        return doExecute(identity, request);
     }
 
-    protected ExecuteResponse doExecute(ExecuteRequest request) {
+    protected ExecuteResponse doExecute(ServerIdentity identity, ExecuteRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
         return ExecuteResponse.internalServerError("not implemented");
     }
@@ -305,11 +305,11 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         if (id == LwM2mId.SECURITY) {
             return DiscoverResponse.notFound();
         }
-        return doDiscover(request);
+        return doDiscover(identity, request);
 
     }
 
-    protected DiscoverResponse doDiscover(DiscoverRequest request) {
+    protected DiscoverResponse doDiscover(ServerIdentity identity, DiscoverRequest request) {
 
         LwM2mPath path = request.getPath();
         if (path.isObject()) {

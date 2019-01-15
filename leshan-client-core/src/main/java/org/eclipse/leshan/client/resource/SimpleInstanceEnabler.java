@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
@@ -47,7 +48,7 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
     }
 
     @Override
-    public ReadResponse read(int resourceid) {
+    public ReadResponse read(ServerIdentity identity, int resourceid) {
         if (resources.containsKey(resourceid)) {
             return ReadResponse.success(resources.get(resourceid));
         }
@@ -55,7 +56,7 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
     }
 
     @Override
-    public WriteResponse write(int resourceid, LwM2mResource value) {
+    public WriteResponse write(ServerIdentity identity, int resourceid, LwM2mResource value) {
         LwM2mResource previousValue = resources.put(resourceid, value);
         if (!value.equals(previousValue))
             fireResourcesChange(resourceid);
@@ -63,7 +64,7 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
     }
 
     @Override
-    public ExecuteResponse execute(int resourceid, String params) {
+    public ExecuteResponse execute(ServerIdentity identity, int resourceid, String params) {
         if (objectModel.resources.containsKey(resourceid)) {
             LOG.info("Executing resource [{}] with params [{}]", resourceid, params);
             return ExecuteResponse.success();

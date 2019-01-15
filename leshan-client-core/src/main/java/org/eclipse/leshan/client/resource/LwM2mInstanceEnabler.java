@@ -20,6 +20,7 @@ package org.eclipse.leshan.client.resource;
 
 import java.util.List;
 
+import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.response.ExecuteResponse;
@@ -77,41 +78,49 @@ public interface LwM2mInstanceEnabler {
     /**
      * Gets the current value of one of this LWM2M object instance's resources.
      * 
+     * @param identity the identity of the requester. This could be an internal call in this case
+     *        <code> identity == ServerIdentity.SYSTEM</code>.
      * @param resourceId the ID of the resource to get the value of
      * @return the response object representing the outcome of the operation. An implementation should set the result's
      *         {@link ReadResponse#getCode() response code} to either reflect the success or reason for failure to
      *         retrieve the value.
      */
-    ReadResponse read(int resourceId);
+    ReadResponse read(ServerIdentity identity, int resourceId);
 
     /**
      * Sets the value of one of this LWM2M object instance's resources.
      * 
+     * @param identity the identity of the requester. This could be an internal call in this case
+     *        <code> identity == ServerIdentity.SYSTEM</code>.
      * @param resourceid the ID of the resource to set the value for
      * @param value the value to set the resource to
      * @return the response object representing the outcome of the operation. An implementation should set the result's
      *         {@link WriteResponse#getCode() response code} to either reflect the success or reason for failure to set
      *         the value.
      */
-    WriteResponse write(int resourceid, LwM2mResource value);
+    WriteResponse write(ServerIdentity identity, int resourceid, LwM2mResource value);
 
     /**
      * Executes the operation represented by one of this LWM2M object instance's resources.
      * 
+     * @param identity the identity of the requester. This could be an internal call in this case
+     *        <code> identity == ServerIdentity.SYSTEM</code>.
      * @param resourceid the ID of the resource to set the value for
      * @param params the input parameters of the operation
      * @return the response object representing the outcome of the operation. An implementation should set the result's
      *         {@link ExecuteResponse#getCode() response code} to either reflect the success or reason for failure to
      *         execute the operation.
      */
-    ExecuteResponse execute(int resourceid, String params);
+    ExecuteResponse execute(ServerIdentity identity, int resourceid, String params);
 
     /**
      * Performs an observe register on one of this LWM2M object instance's resources.
-     *
+     * 
+     * @param identity the identity of the requester. This could be an internal call in this case
+     *        <code> identity == ServerIdentity.SYSTEM</code>.
      * @param resourceid the ID of the resource to set the value for
      */
-    ObserveResponse observe(int resourceid);
+    ObserveResponse observe(ServerIdentity identity, int resourceid);
 
     /**
      * @param objectModel the model of this instance

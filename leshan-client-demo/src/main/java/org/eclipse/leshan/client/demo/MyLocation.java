@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.response.ReadResponse;
@@ -43,7 +44,7 @@ public class MyLocation extends BaseInstanceEnabler {
     }
 
     @Override
-    public ReadResponse read(int resourceid) {
+    public ReadResponse read(ServerIdentity identity, int resourceid) {
         LOG.info("Read on Location Resource " + resourceid);
         switch (resourceid) {
         case 0:
@@ -53,7 +54,7 @@ public class MyLocation extends BaseInstanceEnabler {
         case 5:
             return ReadResponse.success(resourceid, getTimestamp());
         default:
-            return super.read(resourceid);
+            return super.read(identity, resourceid);
         }
     }
 
