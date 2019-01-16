@@ -25,11 +25,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.eclipse.leshan.LwM2mId;
-import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.core.model.ObjectModel;
-import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -142,8 +140,11 @@ public class ObjectEnabler extends BaseObjectEnabler {
         // Manage Object case
         if (path.isObject()) {
             List<LwM2mObjectInstance> lwM2mObjectInstances = new ArrayList<>();
-            for (Entry<Integer, LwM2mInstanceEnabler> entry : instances.entrySet()) {
-                lwM2mObjectInstances.add(getLwM2mObjectInstance(entry.getKey(), entry.getValue(), identity, false));
+            for (LwM2mInstanceEnabler instance : instances.values()) {
+                ReadResponse response = instance.read(identity);
+                if (response.isSuccess()) {
+                    lwM2mObjectInstances.add((LwM2mObjectInstance) response.getContent());
+                }
             }
             return ReadResponse.success(new LwM2mObject(getId(), lwM2mObjectInstances));
         }
@@ -154,7 +155,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
             return ReadResponse.notFound();
 
         if (path.getResourceId() == null) {
-            return ReadResponse.success(getLwM2mObjectInstance(path.getObjectInstanceId(), instance, identity, false));
+            return instance.read(identity);
         }
 
         // Manage Resource case
@@ -168,8 +169,11 @@ public class ObjectEnabler extends BaseObjectEnabler {
         // Manage Object case
         if (path.isObject()) {
             List<LwM2mObjectInstance> lwM2mObjectInstances = new ArrayList<>();
-            for (Entry<Integer, LwM2mInstanceEnabler> entry : instances.entrySet()) {
-                lwM2mObjectInstances.add(getLwM2mObjectInstance(entry.getKey(), entry.getValue(), identity, true));
+            for (LwM2mInstanceEnabler instance : instances.values()) {
+                ReadResponse response = instance.observe(identity);
+                if (response.isSuccess()) {
+                    lwM2mObjectInstances.add((LwM2mObjectInstance) response.getContent());
+                }
             }
             return ObserveResponse.success(new LwM2mObject(getId(), lwM2mObjectInstances));
         }
@@ -180,32 +184,11 @@ public class ObjectEnabler extends BaseObjectEnabler {
             return ObserveResponse.notFound();
 
         if (path.getResourceId() == null) {
-            return ObserveResponse
-                    .success(getLwM2mObjectInstance(path.getObjectInstanceId(), instance, identity, true));
+            return instance.observe(identity);
         }
 
         // Manage Resource case
         return instance.observe(identity, path.getResourceId());
-    }
-
-    LwM2mObjectInstance getLwM2mObjectInstance(int instanceid, LwM2mInstanceEnabler instance, ServerIdentity identity,
-            boolean observe) {
-        List<LwM2mResource> resources = new ArrayList<>();
-        for (ResourceModel resourceModel : getObjectModel().resources.values()) {
-            // check, if internal request (SYSTEM) or readable
-            if (identity.isSystem() || resourceModel.operations.isReadable()) {
-                if (observe) {
-                    ObserveResponse response = instance.observe(identity, resourceModel.id);
-                    if (response.getCode() == ResponseCode.CONTENT && response.getContent() instanceof LwM2mResource)
-                        resources.add((LwM2mResource) response.getContent());
-                } else {
-                    ReadResponse response = instance.read(identity, resourceModel.id);
-                    if (response.getCode() == ResponseCode.CONTENT && response.getContent() instanceof LwM2mResource)
-                        resources.add((LwM2mResource) response.getContent());
-                }
-            }
-        }
-        return new LwM2mObjectInstance(instanceid, resources);
     }
 
     @Override
@@ -218,27 +201,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
             return WriteResponse.notFound();
 
         if (path.isObjectInstance()) {
-            // instance write
-            Map<Integer, LwM2mResource> writeResources = ((LwM2mObjectInstance) request.getNode()).getResources();
-            if (request.isReplaceRequest()) {
-                // REPLACE
-                writeResources = new HashMap<>(writeResources); // make them modifiable
-                for (ResourceModel resourceModel : getObjectModel().resources.values()) {
-                    if (!identity.isLwm2mServer() || resourceModel.operations.isWritable()) {
-                        LwM2mResource writeResource = writeResources.remove(resourceModel.id);
-                        if (null != writeResource) {
-                            instance.write(identity, resourceModel.id, writeResource);
-                        } else {
-                            instance.reset(resourceModel.id);
-                        }
-                    }
-                }
-            }
-            // UPDATE and resources currently not in the model
-            for (LwM2mResource resource : writeResources.values()) {
-                instance.write(identity, resource.getId(), resource);
-            }
-            return WriteResponse.success();
+            return instance.write(identity, request.isReplaceRequest(), (LwM2mObjectInstance) request.getNode());
         }
 
         // Manage Resource case

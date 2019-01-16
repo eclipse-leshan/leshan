@@ -31,10 +31,8 @@ public class ObjectsInitializer {
 
     protected LwM2mInstanceEnablerFactory defaultFactory = new BaseInstanceEnablerFactory() {
         @Override
-        public LwM2mInstanceEnabler create(ObjectModel model) {
-            SimpleInstanceEnabler simpleInstanceEnabler = new SimpleInstanceEnabler();
-            simpleInstanceEnabler.setObjectModel(model);
-            return simpleInstanceEnabler;
+        public LwM2mInstanceEnabler create() {
+            return new SimpleInstanceEnabler();
         }
     };
 
@@ -167,6 +165,7 @@ public class ObjectsInitializer {
                 int id = BaseInstanceEnablerFactory.generateNewInstanceId(instances.keySet());
                 instance.setId(id);
             }
+            instance.setModel(objectModel);
             instances.put(instance.getId(), instance);
         }
         return new ObjectEnabler(objectModel.id, objectModel, instances, getFactoryFor(objectModel),
@@ -198,7 +197,7 @@ public class ObjectsInitializer {
     protected LwM2mInstanceEnablerFactory getClassFactory(final Class<? extends LwM2mInstanceEnabler> clazz) {
         LwM2mInstanceEnablerFactory factory = new BaseInstanceEnablerFactory() {
             @Override
-            public LwM2mInstanceEnabler create(ObjectModel model) {
+            public LwM2mInstanceEnabler create() {
                 try {
                     return clazz.newInstance();
                 } catch (InstantiationException | IllegalAccessException e) {

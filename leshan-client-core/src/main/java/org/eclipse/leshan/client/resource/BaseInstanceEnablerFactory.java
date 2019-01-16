@@ -29,7 +29,7 @@ public abstract class BaseInstanceEnablerFactory implements LwM2mInstanceEnabler
         }
 
         // create new instance
-        LwM2mInstanceEnabler instance = create(model);
+        LwM2mInstanceEnabler instance = create();
 
         // set id if not already done
         if (instance.getId() == null) {
@@ -41,6 +41,9 @@ public abstract class BaseInstanceEnablerFactory implements LwM2mInstanceEnabler
                         String.format("instance id should be %d but was %d", id, instance.getId()));
             }
         }
+
+        // set model
+        instance.setModel(model);
 
         return instance;
     }
@@ -58,10 +61,9 @@ public abstract class BaseInstanceEnablerFactory implements LwM2mInstanceEnabler
     /**
      * Create a new instance enabler.
      * 
-     * @param model of this instance (CAN NOT be null).
      * @return the new instance enabler
      */
-    public abstract LwM2mInstanceEnabler create(ObjectModel model);
+    public abstract LwM2mInstanceEnabler create();
 
     public static int generateNewInstanceId(Collection<Integer> alreadyUsedIdentifier) {
         if (alreadyUsedIdentifier.isEmpty()) {

@@ -22,7 +22,9 @@ import java.util.List;
 
 import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.request.WriteRequest.Mode;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
@@ -62,6 +64,14 @@ public interface LwM2mInstanceEnabler {
     void setId(int id);
 
     /**
+     * Set the model of this instance. It should be called only by
+     * {@link LwM2mInstanceEnablerFactory#create(ObjectModel, Integer, java.util.Collection)}.
+     * 
+     * @param model the model of this instance
+     */
+    void setModel(ObjectModel model);
+
+    /**
      * Adds a callback handler that gets notified about changes to any of this LWM2M object instance's resources.
      * 
      * @param listener the handler to add, a <code>null</code> value is silently ignored
@@ -76,6 +86,17 @@ public interface LwM2mInstanceEnabler {
     void removeResourceChangedListener(ResourceChangedListener listener);
 
     /**
+     * Gets values of all readable resources of this instance.
+     * 
+     * @param identity the identity of the requester. This could be an internal call in this case
+     *        <code> identity == ServerIdentity.SYSTEM</code>.
+     * 
+     * @return a success response with an {@link LwM2mObjectInstance} as content or a failure response with optional
+     *         explanation message.
+     */
+    ReadResponse read(ServerIdentity identity);
+
+    /**
      * Gets the current value of one of this LWM2M object instance's resources.
      * 
      * @param identity the identity of the requester. This could be an internal call in this case
@@ -86,6 +107,19 @@ public interface LwM2mInstanceEnabler {
      *         retrieve the value.
      */
     ReadResponse read(ServerIdentity identity, int resourceId);
+
+    /**
+     * Sets all resources of this LWM2M object instance.
+     * 
+     * @param identity the identity of the requester. This could be an internal call in this case
+     *        <code> identity == ServerIdentity.SYSTEM</code>.
+     * @param replace if replace is true a {@link Mode#REPLACE} should be done, else {@link Mode#UPDATE} should be done.
+     * @param value all the resources to be written.
+     * @return the response object representing the outcome of the operation. An implementation should set the result's
+     *         {@link WriteResponse#getCode() response code} to either reflect the success or reason for failure to set
+     *         the value.
+     */
+    WriteResponse write(ServerIdentity identity, boolean replace, LwM2mObjectInstance value);
 
     /**
      * Sets the value of one of this LWM2M object instance's resources.
@@ -114,6 +148,16 @@ public interface LwM2mInstanceEnabler {
     ExecuteResponse execute(ServerIdentity identity, int resourceid, String params);
 
     /**
+     * Performs an observe register the whole LWM2M object instance.
+     * 
+     * @param identity the identity of the requester. This could be an internal call in this case
+     *        <code> identity == ServerIdentity.SYSTEM</code>.
+     * @return a success response with an {@link LwM2mObjectInstance} as content or a failure response with optional
+     *         explanation message.
+     */
+    ObserveResponse observe(ServerIdentity identity);
+
+    /**
      * Performs an observe register on one of this LWM2M object instance's resources.
      * 
      * @param identity the identity of the requester. This could be an internal call in this case
@@ -135,5 +179,4 @@ public interface LwM2mInstanceEnabler {
      * @param resourceId the ID of the resource to be reseted
      */
     void reset(int resourceId);
-
 }
