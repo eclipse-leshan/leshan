@@ -19,10 +19,14 @@ package org.eclipse.leshan.client.resource;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.model.ResourceModel;
+import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
@@ -31,8 +35,9 @@ import org.eclipse.leshan.core.response.WriteResponse;
 
 public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
 
-    private List<ResourceChangedListener> listeners = new ArrayList<>();
-    private Integer id = null;
+    protected List<ResourceChangedListener> listeners = new ArrayList<>();
+    protected Integer id = null;
+    protected ObjectModel model;
 
     public BaseInstanceEnabler() {
     }
@@ -52,6 +57,15 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     }
 
     @Override
+    public void setModel(ObjectModel model) {
+        this.model = model;
+    }
+
+    public ObjectModel getModel() {
+        return model;
+    }
+
+    @Override
     public void addResourceChangedListener(ResourceChangedListener listener) {
         listeners.add(listener);
     }
@@ -68,8 +82,46 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     }
 
     @Override
+    public ReadResponse read(ServerIdentity identity) {
+        List<LwM2mResource> resources = new ArrayList<>();
+        for (ResourceModel resourceModel : model.resources.values()) {
+            // check, if internal request (SYSTEM) or readable
+            if (identity.isSystem() || resourceModel.operations.isReadable()) {
+                ReadResponse response = read(identity, resourceModel.id);
+                if (response.isSuccess() && response.getContent() instanceof LwM2mResource)
+                    resources.add((LwM2mResource) response.getContent());
+            }
+        }
+        return ReadResponse.success(new LwM2mObjectInstance(id, resources));
+    }
+
+    @Override
     public ReadResponse read(ServerIdentity identity, int resourceid) {
         return ReadResponse.notFound();
+    }
+
+    @Override
+    public WriteResponse write(ServerIdentity identity, boolean replace, LwM2mObjectInstance value) {
+        Map<Integer, LwM2mResource> resourcesToWrite = new HashMap<>(value.getResources());
+
+        if (replace) {
+            // REPLACE
+            for (ResourceModel resourceModel : model.resources.values()) {
+                if (!identity.isLwm2mServer() || resourceModel.operations.isWritable()) {
+                    LwM2mResource writeResource = resourcesToWrite.remove(resourceModel.id);
+                    if (null != writeResource) {
+                        write(identity, resourceModel.id, writeResource);
+                    } else {
+                        reset(resourceModel.id);
+                    }
+                }
+            }
+        }
+        // UPDATE and resources currently not in the model
+        for (LwM2mResource resource : resourcesToWrite.values()) {
+            write(identity, resource.getId(), resource);
+        }
+        return WriteResponse.success();
     }
 
     @Override
@@ -80,6 +132,14 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     @Override
     public ExecuteResponse execute(ServerIdentity identity, int resourceid, String params) {
         return ExecuteResponse.notFound();
+    }
+
+    @Override
+    public ObserveResponse observe(ServerIdentity identity) {
+        // Perform a read by default
+        ReadResponse readResponse = this.read(identity);
+        return new ObserveResponse(readResponse.getCode(), readResponse.getContent(), null, null,
+                readResponse.getErrorMessage());
     }
 
     @Override

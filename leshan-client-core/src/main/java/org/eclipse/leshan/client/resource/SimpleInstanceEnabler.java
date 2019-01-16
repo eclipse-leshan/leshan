@@ -38,7 +38,6 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
 
     private static Logger LOG = LoggerFactory.getLogger(SimpleInstanceEnabler.class);
     protected Map<Integer, LwM2mResource> resources = new HashMap<>();
-    protected ObjectModel objectModel;
 
     public SimpleInstanceEnabler() {
     }
@@ -65,7 +64,7 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
 
     @Override
     public ExecuteResponse execute(ServerIdentity identity, int resourceid, String params) {
-        if (objectModel.resources.containsKey(resourceid)) {
+        if (getModel().resources.containsKey(resourceid)) {
             LOG.info("Executing resource [{}] with params [{}]", resourceid, params);
             return ExecuteResponse.success();
         } else {
@@ -78,8 +77,9 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
         resources.remove(resourceid);
     }
 
-    public void setObjectModel(ObjectModel objectModel) {
-        this.objectModel = objectModel;
+    @Override
+    public void setModel(ObjectModel objectModel) {
+        super.setModel(objectModel);
 
         // initialize resources
         for (ResourceModel resourceModel : objectModel.resources.values()) {

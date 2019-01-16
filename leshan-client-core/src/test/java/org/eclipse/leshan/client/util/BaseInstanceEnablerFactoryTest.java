@@ -27,7 +27,6 @@ import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
-import org.eclipse.leshan.core.model.ObjectModel;
 import org.junit.Test;
 
 public class BaseInstanceEnablerFactoryTest {
@@ -42,7 +41,7 @@ public class BaseInstanceEnablerFactoryTest {
         BaseInstanceEnablerFactory badInstanceEnablerFactory = new BaseInstanceEnablerFactory() {
 
             @Override
-            public LwM2mInstanceEnabler create(ObjectModel model) {
+            public LwM2mInstanceEnabler create() {
                 // do no respect the contract and set a bad id;
                 return new SimpleInstanceEnabler(id + 1);
             }
@@ -56,7 +55,7 @@ public class BaseInstanceEnablerFactoryTest {
         BaseInstanceEnablerFactory instanceEnablerFactory = new BaseInstanceEnablerFactory() {
 
             @Override
-            public LwM2mInstanceEnabler create(ObjectModel model) {
+            public LwM2mInstanceEnabler create() {
                 return new SimpleInstanceEnabler();
             }
         };

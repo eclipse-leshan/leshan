@@ -174,17 +174,16 @@ public class LinkFormatHelperTest {
         // create factory
         BaseInstanceEnablerFactory factory = new BaseInstanceEnablerFactory() {
             @Override
-            public LwM2mInstanceEnabler create(ObjectModel model) {
-                SimpleInstanceEnabler simpleInstanceEnabler = new SimpleInstanceEnabler();
-                simpleInstanceEnabler.setObjectModel(model);
-                return simpleInstanceEnabler;
+            public LwM2mInstanceEnabler create() {
+                return new SimpleInstanceEnabler();
             }
         };
 
         // create first instance
         Map<Integer, LwM2mInstanceEnabler> instances = new HashMap<>();
-        LwM2mInstanceEnabler instance = factory.create(objectModel);
+        LwM2mInstanceEnabler instance = factory.create();
         instance.setId(0);
+        instance.setModel(objectModel);
         instances.put(0, instance);
 
         // create objectEnabler
