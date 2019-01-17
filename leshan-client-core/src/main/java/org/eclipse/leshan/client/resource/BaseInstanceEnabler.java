@@ -151,6 +151,11 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     }
 
     @Override
+    public void onDelete(ServerIdentity identity) {
+        // No default behavior
+    }
+
+    @Override
     public void reset(int resourceid) {
         // No default behavior
     }

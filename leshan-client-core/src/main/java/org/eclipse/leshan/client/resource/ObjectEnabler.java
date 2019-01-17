@@ -263,7 +263,9 @@ public class ObjectEnabler extends BaseObjectEnabler {
 
     @Override
     protected DeleteResponse doDelete(ServerIdentity identity, DeleteRequest request) {
-        if (null != instances.remove(request.getPath().getObjectInstanceId())) {
+        LwM2mInstanceEnabler deletedInstance = instances.remove(request.getPath().getObjectInstanceId());
+        if (deletedInstance != null) {
+            deletedInstance.onDelete(identity);
             return DeleteResponse.success();
         }
         return DeleteResponse.notFound();

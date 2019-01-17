@@ -167,6 +167,14 @@ public interface LwM2mInstanceEnabler {
     ObserveResponse observe(ServerIdentity identity, int resourceid);
 
     /**
+     * A callback called when this instance is deleted
+     * 
+     * @param identity the identity of the requester. This could be an internal call in this case
+     *        <code> identity == ServerIdentity.SYSTEM</code>.
+     */
+    void onDelete(ServerIdentity identity);
+
+    /**
      * @param objectModel the model of this instance
      * @return the list of the implemented resources of this instances mainly used for discover operation
      */
