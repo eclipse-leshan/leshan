@@ -30,13 +30,6 @@ import org.eclipse.leshan.util.Validate;
 
 public class ObjectsInitializer {
 
-    protected LwM2mInstanceEnablerFactory defaultFactory = new BaseInstanceEnablerFactory() {
-        @Override
-        public LwM2mInstanceEnabler create() {
-            return new SimpleInstanceEnabler();
-        }
-    };
-
     protected Map<Integer, LwM2mInstanceEnablerFactory> factories = new HashMap<>();
     protected Map<Integer, LwM2mInstanceEnabler[]> instances = new HashMap<>();
     protected Map<Integer, ContentFormat> defaultContentFormat = new HashMap<>();
@@ -96,6 +89,42 @@ public class ObjectsInitializer {
         this.instances.put(objectId, instances);
     }
 
+    /**
+     * Add dummy instance for each given <code>objectId</code>. ObjectId can be repeated to create several dummy
+     * instances. A dummy instance is just a very simple instance implementation which respect the object model and
+     * return some random values. A good way to begin to test Leshan client but not adapted to production environment.
+     * 
+     * @param objectId
+     */
+    public void setDummyInstancesForObject(int... objectIds) {
+        // create a map (id => nb instances)
+        Map<Integer, Integer> idToNbInstance = new HashMap<>();
+        for (int objectid : objectIds) {
+            // get current number of instance
+            Integer nbInstance = idToNbInstance.get(objectid);
+            if (nbInstance == null)
+                nbInstance = 0;
+
+            // add a new instance
+            idToNbInstance.put(objectid, nbInstance + 1);
+        }
+
+        // create dummy instances for each object
+        for (Map.Entry<Integer, Integer> entry : idToNbInstance.entrySet()) {
+            int objectid = entry.getKey();
+
+            // create instance Array;
+            Integer nbInstances = entry.getValue();
+            SimpleInstanceEnabler[] instances = new SimpleInstanceEnabler[nbInstances];
+            for (int i = 0; i < instances.length; i++) {
+                instances[i] = new SimpleInstanceEnabler();
+            }
+
+            // set instances for current object id
+            setInstancesForObject(objectid, instances);
+        }
+    }
+
     public void setDefaultContentFormat(int objectId, ContentFormat format) {
         defaultContentFormat.put(objectId, format);
     }
@@ -129,7 +158,7 @@ public class ObjectsInitializer {
     /**
      * Create an {@link LwM2mObjectEnabler} for the given <code>objectId</code>.
      * 
-     * An "instances", "object class" or "factory" should have been associated before.
+     * An "instances", "object class" or "factory" MUST have been associated before.
      * 
      * @return a LwM2MObjectEnabler
      * 
@@ -149,7 +178,7 @@ public class ObjectsInitializer {
     /**
      * Create an {@link LwM2mObjectEnabler} for each given <code>objectId</code>.
      * 
-     * An "instances", "object class" or "factory" should have been associated before.
+     * An "instances", "object class" or "factory" MUST have been associated before.
      * 
      * @return a list of LwM2MObjectEnabler
      * 
@@ -187,8 +216,9 @@ public class ObjectsInitializer {
                 }
             }
         }
-        // default class :
-        return defaultFactory;
+        throw new IllegalStateException(String.format(
+                "Unable to create factory for %s object (%d) : a factory, a class or an instance with a default constructor should be associated to",
+                objectModel.name, objectModel.id));
     }
 
     protected ObjectEnabler createNodeEnabler(ObjectModel objectModel) {

@@ -36,6 +36,7 @@ import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -122,6 +123,26 @@ public class IntegrationTestHelper {
         createClient(null);
     }
 
+    public static class TestDevice extends Device {
+
+        public TestDevice() {
+            super();
+        }
+
+        public TestDevice(String manufacturer, String modelNumber, String serialNumber, String supportedBinding) {
+            super(manufacturer, modelNumber, serialNumber, supportedBinding);
+        }
+
+        @Override
+        public ExecuteResponse execute(ServerIdentity identity, int resourceid, String params) {
+            if (resourceid == 4) {
+                return ExecuteResponse.success();
+            } else {
+                return super.execute(identity, resourceid, params);
+            }
+        }
+    }
+
     public void createClient(Map<String, String> additionalAttributes) {
         // Create objects Enabler
         ObjectsInitializer initializer = new ObjectsInitializer(new LwM2mModel(createObjectModels()));
@@ -129,18 +150,10 @@ public class IntegrationTestHelper {
                 "coap://" + server.getUnsecuredAddress().getHostString() + ":" + server.getUnsecuredAddress().getPort(),
                 12345));
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.U, false));
-        initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345", "U") {
-            @Override
-            public ExecuteResponse execute(ServerIdentity identity, int resourceid, String params) {
-                if (resourceid == 4) {
-                    return ExecuteResponse.success();
-                } else {
-                    return super.execute(identity, resourceid, params);
-                }
-            }
-        });
+        initializer.setInstancesForObject(LwM2mId.DEVICE, new TestDevice("Eclipse Leshan", MODEL_NUMBER, "12345", "U"));
+        initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, SimpleInstanceEnabler.class);
+        initializer.setClassForObject(2000, SimpleInstanceEnabler.class);
         List<LwM2mObjectEnabler> objects = initializer.createAll();
-        objects.addAll(initializer.create(2, 2000));
 
         // Build Client
         LeshanClientBuilder builder = new LeshanClientBuilder(currentEndpointIdentifier.get());

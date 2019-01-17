@@ -43,7 +43,7 @@ public class ObjectEnablerTest {
         assertTrue("callback delete should have been called", instanceEnabler.waitForDelete(2, TimeUnit.SECONDS));
     }
 
-    private class TestInstanceEnabler extends BaseInstanceEnabler {
+    public static class TestInstanceEnabler extends BaseInstanceEnabler {
 
         CountDownLatch onDelete = new CountDownLatch(1);
 

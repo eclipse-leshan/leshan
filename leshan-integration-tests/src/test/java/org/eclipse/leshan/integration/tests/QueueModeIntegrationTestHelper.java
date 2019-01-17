@@ -24,15 +24,13 @@ import java.util.concurrent.TimeoutException;
 
 import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
-import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.object.Server;
-import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.request.BindingMode;
-import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.queue.StaticClientAwakeTimeProvider;
@@ -68,18 +66,11 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
                 "coap://" + server.getUnsecuredAddress().getHostString() + ":" + server.getUnsecuredAddress().getPort(),
                 12345));
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.UQ, false));
-        initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345", "UQ") {
-            @Override
-            public ExecuteResponse execute(ServerIdentity identity, int resourceid, String params) {
-                if (resourceid == 4) {
-                    return ExecuteResponse.success();
-                } else {
-                    return super.execute(identity, resourceid, params);
-                }
-            }
-        });
+        initializer.setInstancesForObject(LwM2mId.DEVICE,
+                new TestDevice("Eclipse Leshan", MODEL_NUMBER, "12345", "UQ"));
+        initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, SimpleInstanceEnabler.class);
+        initializer.setClassForObject(2000, SimpleInstanceEnabler.class);
         List<LwM2mObjectEnabler> objects = initializer.createAll();
-        objects.addAll(initializer.create(2, 2000));
 
         // Build Client
         LeshanClientBuilder builder = new LeshanClientBuilder(currentEndpointIdentifier.get());
