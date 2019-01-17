@@ -49,6 +49,10 @@ public class Device extends BaseInstanceEnabler {
     private String timezone = TimeZone.getDefault().getID();
     private String utcOffset = new SimpleDateFormat("X").format(Calendar.getInstance().getTime());
 
+    public Device() {
+        // should never be used
+    }
+
     public Device(String manufacturer, String modelNumber, String serialNumber, String supportedBinding) {
         this.manufacturer = manufacturer;
         this.modelNumber = modelNumber;
