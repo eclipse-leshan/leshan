@@ -44,6 +44,7 @@ import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.client.servers.EndpointsManager;
 import org.eclipse.leshan.client.servers.Server;
 import org.eclipse.leshan.client.servers.ServerInfo;
+import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.request.Identity;
 import org.slf4j.Logger;
@@ -88,6 +89,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             if (serverInfo.secureMode == SecurityMode.PSK) {
                 StaticPskStore staticPskStore = new StaticPskStore(serverInfo.pskId, serverInfo.pskKey);
                 newBuilder.setPskStore(staticPskStore);
+                serverIdentity = Identity.psk(serverInfo.getAddress(), serverInfo.pskId);
             } else if (serverInfo.secureMode == SecurityMode.RPK) {
                 // set identity
                 newBuilder.setIdentity(serverInfo.privateKey, serverInfo.publicKey);
@@ -110,6 +112,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                         return true;
                     }
                 });
+                serverIdentity = Identity.rpk(serverInfo.getAddress(), expectedKey);
             } else if (serverInfo.secureMode == SecurityMode.X509) {
                 // set identity
                 newBuilder.setIdentity(serverInfo.privateKey, new Certificate[] { serverInfo.clientCertificate },
@@ -155,7 +158,10 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                         return false;
                     }
                 });
-
+                serverIdentity = Identity.x509(serverInfo.getAddress(), EndpointContextUtil
+                        .extractCN(((X509Certificate) expectedServerCertificate).getSubjectX500Principal().getName()));
+            } else {
+                throw new RuntimeException("Unable to create connector : unsupported security mode");
             }
             if (endpointFactory != null) {
                 currentEndpoint = endpointFactory.createSecuredEndpoint(newBuilder.build(), coapConfig, null);
@@ -165,7 +171,6 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                 builder.setNetworkConfig(coapConfig);
                 currentEndpoint = builder.build();
             }
-            serverIdentity = Identity.psk(serverInfo.getAddress(), serverInfo.pskId);
         } else {
             if (endpointFactory != null) {
                 currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null);
