@@ -185,8 +185,8 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         initializer.setInstancesForObject(LwM2mId.SECURITY, security);
         initializer.setInstancesForObject(LwM2mId.DEVICE,
                 new Device("Eclipse Leshan", IntegrationTestHelper.MODEL_NUMBER, "12345", "U"));
-        List<LwM2mObjectEnabler> objects = initializer.createMandatory();
-        objects.add(initializer.create(2));
+        List<LwM2mObjectEnabler> objects = initializer.createAll();
+        objects.addAll(initializer.create(1, 2));
 
         // Create Leshan Client
         LeshanClientBuilder builder = new LeshanClientBuilder(getCurrentEndpoint());

@@ -191,7 +191,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
                         12345, GOOD_PSK_ID.getBytes(StandardCharsets.UTF_8), GOOD_PSK_KEY));
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.U, false));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345", "U"));
-        List<LwM2mObjectEnabler> objects = initializer.createMandatory();
+        List<LwM2mObjectEnabler> objects = initializer.createAll();
         objects.add(initializer.create(2));
 
         InetSocketAddress clientAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
@@ -248,7 +248,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
                 useServerCertificate ? serverX509Cert.getPublicKey().getEncoded() : serverPublicKey.getEncoded()));
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.U, false));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345", "U"));
-        List<LwM2mObjectEnabler> objects = initializer.createMandatory();
+        List<LwM2mObjectEnabler> objects = initializer.createAll();
         objects.add(initializer.create(2));
 
         InetSocketAddress clientAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
@@ -286,7 +286,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
                         serverCertificate.getEncoded()));
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.U, false));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345", "U"));
-        List<LwM2mObjectEnabler> objects = initializer.createMandatory();
+        List<LwM2mObjectEnabler> objects = initializer.createAll();
         objects.add(initializer.create(2));
 
         InetSocketAddress clientAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);

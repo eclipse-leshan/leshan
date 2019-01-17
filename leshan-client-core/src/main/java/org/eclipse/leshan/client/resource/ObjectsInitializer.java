@@ -16,10 +16,11 @@
 package org.eclipse.leshan.client.resource;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
@@ -99,20 +100,43 @@ public class ObjectsInitializer {
         defaultContentFormat.put(objectId, format);
     }
 
-    public List<LwM2mObjectEnabler> createMandatory() {
-        Collection<ObjectModel> objectModels = model.getObjectModels();
+    /**
+     * Create an {@link LwM2mObjectEnabler} for each object to which you associated an "instances", "object class" or
+     * "factory".
+     * 
+     * @return a list of LwM2MObjectEnabler
+     * 
+     * @see ObjectsInitializer#setInstancesForObject(int, LwM2mInstanceEnabler...)
+     * @see ObjectsInitializer#setClassForObject(int, Class)
+     * @see ObjectsInitializer#setFactoryForObject(int, LwM2mInstanceEnablerFactory)
+     */
+    public List<LwM2mObjectEnabler> createAll() {
+        // collect object ids which is set
+        Set<Integer> ids = new HashSet<>();
+        ids.addAll(factories.keySet());
+        ids.addAll(instances.keySet());
 
-        List<LwM2mObjectEnabler> enablers = new ArrayList<>();
-        for (ObjectModel objectModel : objectModels) {
-            if (objectModel.mandatory) {
-                ObjectEnabler objectEnabler = createNodeEnabler(objectModel);
-                if (objectEnabler != null)
-                    enablers.add(objectEnabler);
-            }
+        // create objects
+        int[] idArray = new int[ids.size()];
+        int i = 0;
+        for (Integer id : ids) {
+            idArray[i] = id;
+            i++;
         }
-        return enablers;
+        return create(idArray);
     }
 
+    /**
+     * Create an {@link LwM2mObjectEnabler} for the given <code>objectId</code>.
+     * 
+     * An "instances", "object class" or "factory" should have been associated before.
+     * 
+     * @return a LwM2MObjectEnabler
+     * 
+     * @see ObjectsInitializer#setInstancesForObject(int, LwM2mInstanceEnabler...)
+     * @see ObjectsInitializer#setClassForObject(int, Class)
+     * @see ObjectsInitializer#setFactoryForObject(int, LwM2mInstanceEnablerFactory)
+     */
     public LwM2mObjectEnabler create(int objectId) {
         ObjectModel objectModel = model.getObjectModel(objectId);
         if (objectModel == null) {
@@ -122,6 +146,17 @@ public class ObjectsInitializer {
         return createNodeEnabler(objectModel);
     }
 
+    /**
+     * Create an {@link LwM2mObjectEnabler} for each given <code>objectId</code>.
+     * 
+     * An "instances", "object class" or "factory" should have been associated before.
+     * 
+     * @return a list of LwM2MObjectEnabler
+     * 
+     * @see ObjectsInitializer#setClassForObject(int, Class)
+     * @see ObjectsInitializer#setFactoryForObject(int, LwM2mInstanceEnablerFactory)
+     * @see ObjectsInitializer#setInstancesForObject(int, LwM2mInstanceEnabler...)
+     */
     public List<LwM2mObjectEnabler> create(int... objectId) {
         List<LwM2mObjectEnabler> enablers = new ArrayList<>();
         for (int anObjectId : objectId) {
