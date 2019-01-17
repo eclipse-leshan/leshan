@@ -73,6 +73,11 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
     }
 
     @Override
+    public void onDelete(ServerIdentity identity) {
+        LOG.info("Instance {} from object {} ({}) deleted.", getId(), getModel().name, getModel().id);
+    }
+
+    @Override
     public void reset(int resourceid) {
         resources.remove(resourceid);
     }
