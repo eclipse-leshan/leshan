@@ -78,7 +78,7 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
                 }
             }
         });
-        List<LwM2mObjectEnabler> objects = initializer.createMandatory();
+        List<LwM2mObjectEnabler> objects = initializer.createAll();
         objects.addAll(initializer.create(2, 2000));
 
         // Build Client

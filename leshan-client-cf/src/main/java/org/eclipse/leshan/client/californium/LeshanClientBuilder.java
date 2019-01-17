@@ -154,7 +154,7 @@ public class LeshanClientBuilder {
                     Security.noSec("coap://leshan.eclipse.org:5683", 12345));
             initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, 5 * 60, BindingMode.U, false));
             initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", "model12345", "12345", "U"));
-            objectEnablers = initializer.createMandatory();
+            objectEnablers = initializer.createAll();
         }
         if (coapConfig == null) {
             coapConfig = createDefaultNetworkConfig();
