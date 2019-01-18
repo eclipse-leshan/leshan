@@ -152,7 +152,7 @@ public class IntegrationTestHelper {
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.U, false));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new TestDevice("Eclipse Leshan", MODEL_NUMBER, "12345", "U"));
         initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, DummyInstanceEnabler.class);
-        initializer.setClassForObject(2000, DummyInstanceEnabler.class);
+        initializer.setDummyInstancesForObject(2000);
         List<LwM2mObjectEnabler> objects = initializer.createAll();
 
         // Build Client
