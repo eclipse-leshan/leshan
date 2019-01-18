@@ -249,12 +249,6 @@ public class ObjectsInitializer {
         LwM2mInstanceEnabler[] newInstances = new LwM2mInstanceEnabler[0];
         if (instances.containsKey(objectModel.id)) {
             newInstances = instances.get(objectModel.id);
-        } else {
-            // we create instance from class only for single object
-            if (!objectModel.multiple) {
-                LwM2mInstanceEnablerFactory instanceFactory = getFactoryFor(objectModel);
-                newInstances = new LwM2mInstanceEnabler[] { instanceFactory.create(objectModel, 0, null) };
-            }
         }
         return newInstances;
     }
