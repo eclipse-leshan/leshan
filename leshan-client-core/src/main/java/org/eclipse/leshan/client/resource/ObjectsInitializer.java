@@ -115,9 +115,9 @@ public class ObjectsInitializer {
 
             // create instance Array;
             Integer nbInstances = entry.getValue();
-            SimpleInstanceEnabler[] instances = new SimpleInstanceEnabler[nbInstances];
+            DummyInstanceEnabler[] instances = new DummyInstanceEnabler[nbInstances];
             for (int i = 0; i < instances.length; i++) {
-                instances[i] = new SimpleInstanceEnabler();
+                instances[i] = new DummyInstanceEnabler();
             }
 
             // set instances for current object id

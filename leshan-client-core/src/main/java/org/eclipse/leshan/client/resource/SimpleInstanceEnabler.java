@@ -18,6 +18,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,12 +32,9 @@ import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SimpleInstanceEnabler extends BaseInstanceEnabler {
 
-    private static Logger LOG = LoggerFactory.getLogger(SimpleInstanceEnabler.class);
     protected Map<Integer, LwM2mResource> resources = new HashMap<>();
 
     public SimpleInstanceEnabler() {
@@ -64,17 +62,7 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
 
     @Override
     public ExecuteResponse execute(ServerIdentity identity, int resourceid, String params) {
-        if (getModel().resources.containsKey(resourceid)) {
-            LOG.info("Executing resource [{}] with params [{}]", resourceid, params);
-            return ExecuteResponse.success();
-        } else {
-            return ExecuteResponse.notFound();
-        }
-    }
-
-    @Override
-    public void onDelete(ServerIdentity identity) {
-        LOG.info("Instance {} from object {} ({}) deleted.", getId(), getModel().name, getModel().id);
+        return ExecuteResponse.notFound();
     }
 
     @Override
@@ -89,7 +77,7 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
         // initialize resources
         for (ResourceModel resourceModel : objectModel.resources.values()) {
             if (resourceModel.operations.isReadable()) {
-                LwM2mResource newResource = createResource(objectModel, resourceModel);
+                LwM2mResource newResource = initializeResource(objectModel, resourceModel);
                 if (newResource != null) {
                     resources.put(newResource.getId(), newResource);
                 }
@@ -97,87 +85,67 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
         }
     }
 
-    protected LwM2mResource createResource(ObjectModel objectModel, ResourceModel resourceModel) {
+    protected LwM2mResource initializeResource(ObjectModel objectModel, ResourceModel resourceModel) {
         if (!resourceModel.multiple) {
-            switch (resourceModel.type) {
-            case STRING:
-                return LwM2mSingleResource.newStringResource(resourceModel.id,
-                        createDefaultStringValue(objectModel, resourceModel));
-            case BOOLEAN:
-                return LwM2mSingleResource.newBooleanResource(resourceModel.id,
-                        createDefaultBooleanValue(objectModel, resourceModel));
-            case INTEGER:
-                return LwM2mSingleResource.newIntegerResource(resourceModel.id,
-                        createDefaultIntegerValue(objectModel, resourceModel));
-            case FLOAT:
-                return LwM2mSingleResource.newFloatResource(resourceModel.id,
-                        createDefaultFloatValue(objectModel, resourceModel));
-            case TIME:
-                return LwM2mSingleResource.newDateResource(resourceModel.id,
-                        createDefaultDateValue(objectModel, resourceModel));
-            case OPAQUE:
-                return LwM2mSingleResource.newBinaryResource(resourceModel.id,
-                        createDefaultOpaqueValue(objectModel, resourceModel));
-            default:
-                // this should not happened
-                return null;
-            }
+            return initializeSingleResource(objectModel, resourceModel);
         } else {
-            Map<Integer, Object> values = new HashMap<>();
-            switch (resourceModel.type) {
-            case STRING:
-                values.put(0, createDefaultStringValue(objectModel, resourceModel));
-                break;
-            case BOOLEAN:
-                values.put(0, createDefaultBooleanValue(objectModel, resourceModel));
-                values.put(1, createDefaultBooleanValue(objectModel, resourceModel));
-                break;
-            case INTEGER:
-                values.put(0, createDefaultIntegerValue(objectModel, resourceModel));
-                values.put(1, createDefaultIntegerValue(objectModel, resourceModel));
-                break;
-            case FLOAT:
-                values.put(0, createDefaultFloatValue(objectModel, resourceModel));
-                values.put(1, createDefaultFloatValue(objectModel, resourceModel));
-                break;
-            case TIME:
-                values.put(0, createDefaultDateValue(objectModel, resourceModel));
-                break;
-            case OPAQUE:
-                values.put(0, createDefaultOpaqueValue(objectModel, resourceModel));
-                break;
-            default:
-                // this should not happened
-                values = null;
-                break;
-            }
-            if (values != null)
-                return LwM2mMultipleResource.newResource(resourceModel.id, values, resourceModel.type);
+            return initializeMultipleResource(objectModel, resourceModel);
         }
-        return null;
     }
 
-    protected String createDefaultStringValue(ObjectModel objectModel, ResourceModel resourceModel) {
-        return resourceModel.name;
+    protected LwM2mSingleResource initializeSingleResource(ObjectModel objectModel, ResourceModel resourceModel) {
+        switch (resourceModel.type) {
+        case STRING:
+            return LwM2mSingleResource.newStringResource(resourceModel.id,
+                    createDefaultStringValueFor(objectModel, resourceModel));
+        case BOOLEAN:
+            return LwM2mSingleResource.newBooleanResource(resourceModel.id,
+                    createDefaultBooleanValueFor(objectModel, resourceModel));
+        case INTEGER:
+            return LwM2mSingleResource.newIntegerResource(resourceModel.id,
+                    createDefaultIntegerValueFor(objectModel, resourceModel));
+        case FLOAT:
+            return LwM2mSingleResource.newFloatResource(resourceModel.id,
+                    createDefaultFloatValueFor(objectModel, resourceModel));
+        case TIME:
+            return LwM2mSingleResource.newDateResource(resourceModel.id,
+                    createDefaultDateValueFor(objectModel, resourceModel));
+        case OPAQUE:
+            return LwM2mSingleResource.newBinaryResource(resourceModel.id,
+                    createDefaultOpaqueValueFor(objectModel, resourceModel));
+        default:
+            // this should not happened
+            return null;
+        }
     }
 
-    protected long createDefaultIntegerValue(ObjectModel objectModel, ResourceModel resourceModel) {
-        return (long) (Math.random() * 100 % 101);
+    protected LwM2mMultipleResource initializeMultipleResource(ObjectModel objectModel, ResourceModel resourceModel) {
+        // no default value
+        Map<Integer, ?> emptyMap = Collections.emptyMap();
+        return LwM2mMultipleResource.newResource(resourceModel.id, emptyMap, resourceModel.type);
     }
 
-    protected boolean createDefaultBooleanValue(ObjectModel objectModel, ResourceModel resourceModel) {
-        return Math.random() * 100 % 2 == 0;
+    protected String createDefaultStringValueFor(ObjectModel objectModel, ResourceModel resourceModel) {
+        return "";
     }
 
-    protected Date createDefaultDateValue(ObjectModel objectModel, ResourceModel resourceModel) {
-        return new Date();
+    protected long createDefaultIntegerValueFor(ObjectModel objectModel, ResourceModel resourceModel) {
+        return 0;
     }
 
-    protected double createDefaultFloatValue(ObjectModel objectModel, ResourceModel resourceModel) {
-        return Math.random() * 100;
+    protected boolean createDefaultBooleanValueFor(ObjectModel objectModel, ResourceModel resourceModel) {
+        return false;
     }
 
-    protected byte[] createDefaultOpaqueValue(ObjectModel objectModel, ResourceModel resourceModel) {
-        return ("Default " + resourceModel.name).getBytes();
+    protected Date createDefaultDateValueFor(ObjectModel objectModel, ResourceModel resourceModel) {
+        return new Date(0);
+    }
+
+    protected double createDefaultFloatValueFor(ObjectModel objectModel, ResourceModel resourceModel) {
+        return 0;
+    }
+
+    protected byte[] createDefaultOpaqueValueFor(ObjectModel objectModel, ResourceModel resourceModel) {
+        return new byte[0];
     }
 }
