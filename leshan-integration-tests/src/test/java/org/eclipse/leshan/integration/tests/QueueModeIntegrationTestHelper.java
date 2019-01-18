@@ -26,9 +26,9 @@ import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.object.Server;
+import org.eclipse.leshan.client.resource.DummyInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
-import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -68,8 +68,8 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.UQ, false));
         initializer.setInstancesForObject(LwM2mId.DEVICE,
                 new TestDevice("Eclipse Leshan", MODEL_NUMBER, "12345", "UQ"));
-        initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, SimpleInstanceEnabler.class);
-        initializer.setClassForObject(2000, SimpleInstanceEnabler.class);
+        initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, DummyInstanceEnabler.class);
+        initializer.setClassForObject(2000, DummyInstanceEnabler.class);
         List<LwM2mObjectEnabler> objects = initializer.createAll();
 
         // Build Client

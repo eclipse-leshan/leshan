@@ -50,9 +50,9 @@ import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.object.Server;
+import org.eclipse.leshan.client.resource.DummyInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
-import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
 import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
@@ -249,7 +249,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
                 useServerCertificate ? serverX509Cert.getPublicKey().getEncoded() : serverPublicKey.getEncoded()));
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.U, false));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345", "U"));
-        initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, SimpleInstanceEnabler.class);
+        initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, DummyInstanceEnabler.class);
         List<LwM2mObjectEnabler> objects = initializer.createAll();
 
         InetSocketAddress clientAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
@@ -287,7 +287,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
                         serverCertificate.getEncoded()));
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.U, false));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345", "U"));
-        initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, SimpleInstanceEnabler.class);
+        initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, DummyInstanceEnabler.class);
         List<LwM2mObjectEnabler> objects = initializer.createAll();
 
         InetSocketAddress clientAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
