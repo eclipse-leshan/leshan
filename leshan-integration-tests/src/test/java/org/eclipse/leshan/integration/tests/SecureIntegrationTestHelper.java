@@ -205,7 +205,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
             @Override
             public CoapEndpoint createUnsecuredEndpoint(InetSocketAddress address, NetworkConfig coapConfig,
                     ObservationStore store) {
-                CoapEndpoint.CoapEndpointBuilder builder = new CoapEndpoint.CoapEndpointBuilder();
+                CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
                 builder.setInetSocketAddress(address);
                 builder.setNetworkConfig(coapConfig);
                 return builder.build();
@@ -214,7 +214,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
             @Override
             public CoapEndpoint createSecuredEndpoint(DtlsConnectorConfig dtlsConfig, NetworkConfig coapConfig,
                     ObservationStore store) {
-                CoapEndpoint.CoapEndpointBuilder builder = new CoapEndpoint.CoapEndpointBuilder();
+                CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
                 Builder dtlsConfigBuilder = new Builder(dtlsConfig);
                 if (dtlsConfig.getPskStore() != null) {
                     String identity = dtlsConfig.getPskStore().getIdentity(null);
