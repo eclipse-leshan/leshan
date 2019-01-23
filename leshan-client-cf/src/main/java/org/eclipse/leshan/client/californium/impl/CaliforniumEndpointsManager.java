@@ -115,8 +115,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                 serverIdentity = Identity.rpk(serverInfo.getAddress(), expectedKey);
             } else if (serverInfo.secureMode == SecurityMode.X509) {
                 // set identity
-                newBuilder.setIdentity(serverInfo.privateKey, new Certificate[] { serverInfo.clientCertificate },
-                        false);
+                newBuilder.setIdentity(serverInfo.privateKey, new Certificate[] { serverInfo.clientCertificate });
 
                 // set X509 verifier
                 final Certificate expectedServerCertificate = serverInfo.serverCertificate;
@@ -149,15 +148,6 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                         return null;
                     }
                 });
-
-                // disable the possibility to use RPK as client should use X509.
-                // TODO add a way in Scandium to say that we don't accept RPK certificate type
-                newBuilder.setRpkTrustStore(new TrustedRpkStore() {
-                    @Override
-                    public boolean isTrusted(RawPublicKeyIdentity id) {
-                        return false;
-                    }
-                });
                 serverIdentity = Identity.x509(serverInfo.getAddress(), EndpointContextUtil
                         .extractCN(((X509Certificate) expectedServerCertificate).getSubjectX500Principal().getName()));
             } else {
@@ -166,7 +156,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             if (endpointFactory != null) {
                 currentEndpoint = endpointFactory.createSecuredEndpoint(newBuilder.build(), coapConfig, null);
             } else {
-                CoapEndpoint.CoapEndpointBuilder builder = new CoapEndpoint.CoapEndpointBuilder();
+                CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
                 builder.setConnector(new DTLSConnector(newBuilder.build()));
                 builder.setNetworkConfig(coapConfig);
                 currentEndpoint = builder.build();
@@ -175,7 +165,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             if (endpointFactory != null) {
                 currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null);
             } else {
-                CoapEndpoint.CoapEndpointBuilder builder = new CoapEndpoint.CoapEndpointBuilder();
+                CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
                 builder.setInetSocketAddress(localAddress);
                 builder.setNetworkConfig(coapConfig);
                 currentEndpoint = builder.build();
@@ -258,7 +248,11 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
 
     @Override
     public synchronized void destroy() {
+        // TODO we should be able to destroy a not started coapServer.
+        if (!started)
+            return;
         started = false;
+
         coapServer.destroy();
     }
 }
