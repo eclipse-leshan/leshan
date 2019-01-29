@@ -28,16 +28,19 @@ public class ContentFormat {
     // Keep old code for backward-compatibility
     public static final int OLD_JSON_CODE = 1543;
     public static final int OLD_TLV_CODE = 1542;
+    
+    public static final int SENML_CBOR_CODE = 112;
 
     public static final ContentFormat TLV = new ContentFormat("TLV", "application/vnd.oma.lwm2m+tlv", TLV_CODE);
     public static final ContentFormat JSON = new ContentFormat("JSON", "application/vnd.oma.lwm2m+json", JSON_CODE);
     public static final ContentFormat TEXT = new ContentFormat("TEXT", "text/plain", TEXT_CODE);
     public static final ContentFormat OPAQUE = new ContentFormat("OPAQUE", "application/octet-stream", OPAQUE_CODE);
     public static final ContentFormat LINK = new ContentFormat("LINK", "application/link-format", LINK_CODE);
+    public static final ContentFormat SENML_CBOR = new ContentFormat("CBOR", "application/senml+cbor", SENML_CBOR_CODE);
 
     public static final ContentFormat DEFAULT = TLV;
 
-    private static final ContentFormat knownContentFormat[] = new ContentFormat[] { TLV, JSON, TEXT, OPAQUE, LINK };
+    private static final ContentFormat knownContentFormat[] = new ContentFormat[] { TLV, JSON, TEXT, OPAQUE, LINK, SENML_CBOR };
 
     private final String name;
     private final String mediaType;

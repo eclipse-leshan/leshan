@@ -27,6 +27,7 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
+import org.eclipse.leshan.core.node.codec.cbor.LwM2mNodeCborDecoder;
 import org.eclipse.leshan.core.node.codec.json.LwM2mNodeJsonDecoder;
 import org.eclipse.leshan.core.node.codec.opaque.LwM2mNodeOpaqueDecoder;
 import org.eclipse.leshan.core.node.codec.text.LwM2mNodeTextDecoder;
@@ -70,6 +71,8 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
         case ContentFormat.JSON_CODE:
         case ContentFormat.OLD_JSON_CODE:
             return LwM2mNodeJsonDecoder.decode(content, path, model, nodeClass);
+        case ContentFormat.SENML_CBOR_CODE:
+            return LwM2mNodeCborDecoder.decode(content, path, model, nodeClass);
         case ContentFormat.LINK_CODE:
             throw new CodecException("Content format %s not yet implemented [%s]", format, path);
         default:
@@ -99,6 +102,8 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
         case ContentFormat.JSON_CODE:
         case ContentFormat.OLD_JSON_CODE:
             return LwM2mNodeJsonDecoder.decodeTimestamped(content, path, model, nodeClassFromPath(path));
+        case ContentFormat.SENML_CBOR_CODE:
+            return LwM2mNodeCborDecoder.decodeTimestamped(content, path, model, nodeClassFromPath(path));
         case ContentFormat.LINK_CODE:
             throw new CodecException("Content format %s not yet implemented [%s]", format, path);
         default:
@@ -135,6 +140,7 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
         case ContentFormat.OPAQUE_CODE:
         case ContentFormat.JSON_CODE:
         case ContentFormat.OLD_JSON_CODE:
+        case ContentFormat.SENML_CBOR_CODE:
             return true;
         default:
             return false;
