@@ -25,6 +25,11 @@ Access to [leshan-dev archives](https://dev.eclipse.org/mhonarc/lists/leshan-dev
 Test Server Sandbox
 ------------
 
+> **:warning: :warning: Our sandbox is currently not available  ! :warning: :warning:**
+> 
+> We can not use our server anymore, we are waiting for a [new host from eclipse](https://bugs.eclipse.org/bugs/show_bug.cgi?id=543581).  
+> Waiting you should [play with demo locally](https://github.com/eclipse/leshan#test-leshan-demos-locally).
+
 You can try live our servers demos instances:
 
 * The **lwm2m server** at https://leshan.eclipse.org/  
