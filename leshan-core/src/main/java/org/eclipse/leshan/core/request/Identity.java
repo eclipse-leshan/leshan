@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.PublicKey;
@@ -25,7 +26,9 @@ import org.eclipse.leshan.util.Validate;
 /**
  * A request sender identity.
  */
-public class Identity {
+public class Identity implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private final InetSocketAddress peerAddress;
     private final String pskIdentity;

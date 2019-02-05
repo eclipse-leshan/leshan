@@ -34,6 +34,8 @@ public class Link implements Serializable {
 
     private final String url;
 
+    // TODO a map from String to Object could be a problem with serialization.
+    // TODO we are not able to make difference between string and quoted string.
     private final Map<String, Object> attributes;
 
     /**
