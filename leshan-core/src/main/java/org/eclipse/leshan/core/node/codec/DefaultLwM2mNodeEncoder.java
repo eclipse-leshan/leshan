@@ -22,9 +22,9 @@ import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
-import org.eclipse.leshan.core.node.codec.cbor.LwM2mNodeCborEncoder;
 import org.eclipse.leshan.core.node.codec.json.LwM2mNodeJsonEncoder;
 import org.eclipse.leshan.core.node.codec.opaque.LwM2mNodeOpaqueEncoder;
+import org.eclipse.leshan.core.node.codec.senml.LwM2mNodeSenMLEncoder;
 import org.eclipse.leshan.core.node.codec.text.LwM2mNodeTextEncoder;
 import org.eclipse.leshan.core.node.codec.tlv.LwM2mNodeTlvEncoder;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -73,7 +73,11 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
             encoded = LwM2mNodeJsonEncoder.encode(node, path, model, converter);
             break;
         case ContentFormat.SENML_CBOR_CODE:
-            encoded = LwM2mNodeCborEncoder.encode(node, path, model, converter);
+            encoded = LwM2mNodeSenMLEncoder.encodeToCbor(node, path, model, converter);
+            break;
+        case ContentFormat.SENML_JSON_CODE:
+            encoded = LwM2mNodeSenMLEncoder.encodeToJson(node, path, model, converter);
+            break;
         default:
             throw new CodecException("Cannot encode %s:%s with format %s.", path, node, format);
         }
@@ -114,6 +118,7 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
         case ContentFormat.JSON_CODE:
         case ContentFormat.OLD_JSON_CODE:
         case ContentFormat.SENML_CBOR_CODE:
+        case ContentFormat.SENML_JSON_CODE:
             return true;
         default:
             return false;
