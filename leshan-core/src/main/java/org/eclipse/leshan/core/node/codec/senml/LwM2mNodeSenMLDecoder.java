@@ -1,5 +1,6 @@
 package org.eclipse.leshan.core.node.codec.senml;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,15 +26,16 @@ import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.json.LwM2mNodeJsonDecoder;
-import org.eclipse.leshan.json.JsonArrayEntry;
 import org.eclipse.leshan.json.JsonRootObject;
 import org.eclipse.leshan.json.LwM2mJson;
 import org.eclipse.leshan.json.LwM2mJsonException;
+import org.eclipse.leshan.senml.SenMLDataPoint;
 import org.eclipse.leshan.senml.SenMLRootObject;
 import org.eclipse.leshan.util.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORParser;
 
@@ -42,10 +44,10 @@ public class LwM2mNodeSenMLDecoder {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeJsonDecoder.class);
 
     @SuppressWarnings("unchecked")
-    public static <T extends LwM2mNode> T decode(byte[] content, LwM2mPath path, LwM2mModel model, Class<T> nodeClass)
-            throws CodecException {
-        SenMLRootObject senMLRoot = parseSenML(content);
-        List<TimestampedLwM2mNode> timestampedNodes = parseJSON(senMLRoot, path, model, nodeClass);
+    public static <T extends LwM2mNode> T decodeCbor(byte[] content, LwM2mPath path, LwM2mModel model,
+            Class<T> nodeClass) throws CodecException {
+        SenMLRootObject senMLRoot = parseSenMLCbor(content);
+        List<TimestampedLwM2mNode> timestampedNodes = parseLwM2MNodes(senMLRoot, path, model, nodeClass);
         if (timestampedNodes.size() == 0) {
             return null;
         } else {
@@ -54,22 +56,86 @@ public class LwM2mNodeSenMLDecoder {
         }
     }
 
-    private static SenMLRootObject parseSenML(byte[] content)throws CodecException {
-        CBORFactory factory = new CBORFactory();
-        
-        try {
-            CBORParser parser=   factory.createParser(content);
-            
-           Object obj= parser.nextToken();
-           
-            
-        }
-        catch (Exception e) {
-            // TODO: handle exception
-        }
-        
-        
+    @SuppressWarnings("unchecked")
+    public static <T extends LwM2mNode> T decodeJson(byte[] content, LwM2mPath path, LwM2mModel model,
+            Class<T> nodeClass) throws CodecException {
+        // SenMLRootObject senMLRoot = parseSenMLCbor(content);
+        // List<TimestampedLwM2mNode> timestampedNodes = parseJSON(senMLRoot, path, model, nodeClass);
+        // if (timestampedNodes.size() == 0) {
+        // return null;
+        // } else {
+        // // return the most recent value
+        // return (T) timestampedNodes.get(0).getNode();
+        // }
+
         return null;
+    }
+
+    private static SenMLRootObject parseSenMLCbor(byte[] content) throws CodecException {
+        SenMLRootObject rootObject = new SenMLRootObject();
+        try {
+            CBORFactory factory = new CBORFactory();
+            CBORParser parser = factory.createParser(content);
+
+            JsonToken token = null;
+            while (true) {
+                token = parser.nextToken();
+                if (token == JsonToken.START_ARRAY) {
+                    continue;
+                }
+
+                if (token == JsonToken.START_OBJECT) {
+                    SenMLDataPoint dataPoint = parseSenMLDataPoint(rootObject, parser);
+                    rootObject.addResource(dataPoint);
+                }
+
+                if (token == JsonToken.END_ARRAY) {
+                    System.out.println(rootObject);
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            throw new CodecException(e, "Unable to deserialize json [path:%s]");
+        }
+
+        return rootObject;
+    }
+
+    private static SenMLDataPoint parseSenMLDataPoint(SenMLRootObject rootObject, CBORParser parser) {
+        SenMLDataPoint dataPoint = new SenMLDataPoint();
+        try {
+            JsonToken token = null;
+            String fileName = null;
+            while (true) {
+                token = parser.nextToken();
+                if (token == JsonToken.END_OBJECT) {
+                    return dataPoint;
+                } else if (token == JsonToken.FIELD_NAME) {
+                    fileName = parser.getCurrentName();
+                    if (fileName.equals("-2")) {
+                        token = parser.nextToken();
+                        rootObject.setBaseName(parser.getText());
+                        continue;
+                    } else if (fileName.equals("0")) {
+                        token = parser.nextToken();
+                        dataPoint.setName(parser.getText());
+                    }
+                } else {
+                    if (fileName.equals("2")) {
+                        dataPoint.setFloatValue(parser.getFloatValue());
+                    } else if (fileName.equals("4")) {
+                        dataPoint.setBooleanValue(parser.getValueAsBoolean());
+                    } else if (fileName.equals("8")) {
+                    } else if (fileName.equals("3")) {
+                        dataPoint.setStringValue(parser.getValueAsString());
+                    } else if (fileName.equals("6")) {
+                        dataPoint.setTime(parser.getValueAsLong());
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new CodecException(e, "Unable to deserialize json [path:%s]");
+        }
     }
 
     public static List<TimestampedLwM2mNode> decodeTimestamped(byte[] content, LwM2mPath path, LwM2mModel model,
@@ -77,20 +143,20 @@ public class LwM2mNodeSenMLDecoder {
         try {
             String jsonStrValue = new String(content);
             JsonRootObject json = LwM2mJson.fromJsonLwM2m(jsonStrValue);
-      //      return parseJSON(json, path, model, nodeClass);
+            // return parseJSON(json, path, model, nodeClass);
             return null;
         } catch (LwM2mJsonException e) {
             throw new CodecException(e, "Unable to deserialize json [path:%s]", path);
         }
     }
 
-    private static List<TimestampedLwM2mNode> parseJSON(SenMLRootObject jsonObject, LwM2mPath path, LwM2mModel model,
-            Class<? extends LwM2mNode> nodeClass) throws CodecException {
+    private static List<TimestampedLwM2mNode> parseLwM2MNodes(SenMLRootObject jsonObject, LwM2mPath path,
+            LwM2mModel model, Class<? extends LwM2mNode> nodeClass) throws CodecException {
 
         LOG.trace("Parsing JSON content for path {}: {}", path, jsonObject);
 
         // Group JSON entry by time-stamp
-        Map<Long, Collection<JsonArrayEntry>> jsonEntryByTimestamp = groupJsonEntryByTimestamp(jsonObject);
+        Map<Long, Collection<SenMLDataPoint>> jsonEntryByTimestamp = groupJsonEntryByTimestamp(jsonObject);
 
         // Extract baseName
         LwM2mPath baseName = extractAndValidateBaseName(jsonObject, path);
@@ -99,17 +165,17 @@ public class LwM2mNodeSenMLDecoder {
 
         // fill time-stamped nodes collection
         List<TimestampedLwM2mNode> timestampedNodes = new ArrayList<>();
-        for (Entry<Long, Collection<JsonArrayEntry>> entryByTimestamp : jsonEntryByTimestamp.entrySet()) {
+        for (Entry<Long, Collection<SenMLDataPoint>> entryByTimestamp : jsonEntryByTimestamp.entrySet()) {
 
             // Group JSON entry by instance
-            Map<Integer, Collection<JsonArrayEntry>> jsonEntryByInstanceId = groupJsonEntryByInstanceId(
+            Map<Integer, Collection<SenMLDataPoint>> jsonEntryByInstanceId = groupJsonEntryByInstanceId(
                     entryByTimestamp.getValue(), baseName);
 
             // Create lwm2m node
             LwM2mNode node;
             if (nodeClass == LwM2mObject.class) {
                 Collection<LwM2mObjectInstance> instances = new ArrayList<>();
-                for (Entry<Integer, Collection<JsonArrayEntry>> entryByInstanceId : jsonEntryByInstanceId.entrySet()) {
+                for (Entry<Integer, Collection<SenMLDataPoint>> entryByInstanceId : jsonEntryByInstanceId.entrySet()) {
                     Map<Integer, LwM2mResource> resourcesMap = extractLwM2mResources(entryByInstanceId.getValue(),
                             baseName, model);
 
@@ -123,7 +189,7 @@ public class LwM2mNodeSenMLDecoder {
                     throw new CodecException("One instance expected in the payload [path:%s]", path);
 
                 // Extract resources
-                Entry<Integer, Collection<JsonArrayEntry>> instanceEntry = jsonEntryByInstanceId.entrySet().iterator()
+                Entry<Integer, Collection<SenMLDataPoint>> instanceEntry = jsonEntryByInstanceId.entrySet().iterator()
                         .next();
                 Map<Integer, LwM2mResource> resourcesMap = extractLwM2mResources(instanceEntry.getValue(), baseName,
                         model);
@@ -182,8 +248,8 @@ public class LwM2mNodeSenMLDecoder {
      * 
      * @return a map (relativeTimestamp => collection of JsonArrayEntry)
      */
-    private static SortedMap<Long, Collection<JsonArrayEntry>> groupJsonEntryByTimestamp(SenMLRootObject jsonObject) {
-        SortedMap<Long, Collection<JsonArrayEntry>> result = new TreeMap<>(new Comparator<Long>() {
+    private static SortedMap<Long, Collection<SenMLDataPoint>> groupJsonEntryByTimestamp(SenMLRootObject jsonObject) {
+        SortedMap<Long, Collection<SenMLDataPoint>> result = new TreeMap<>(new Comparator<Long>() {
             @Override
             public int compare(Long o1, Long o2) {
                 // comparator which
@@ -193,14 +259,12 @@ public class LwM2mNodeSenMLDecoder {
             }
         });
 
-        List<JsonArrayEntry> list = new ArrayList<>();
-        //for (JsonArrayEntry e : jsonObject.getResourceList()) {
-        for (JsonArrayEntry e : list) {
+        for (SenMLDataPoint e : jsonObject.getResourceList()) {
             // Get time for this entry
             Long time = e.getTime();
 
             // Get jsonArray for this time-stamp
-            Collection<JsonArrayEntry> jsonArray = result.get(time);
+            Collection<SenMLDataPoint> jsonArray = result.get(time);
             if (jsonArray == null) {
                 jsonArray = new ArrayList<>();
                 result.put(time, jsonArray);
@@ -212,7 +276,7 @@ public class LwM2mNodeSenMLDecoder {
 
         // Ensure there is at least one entry for null timestamp
         if (result.isEmpty()) {
-            result.put((Long) null, new ArrayList<JsonArrayEntry>());
+            result.put((Long) null, new ArrayList<SenMLDataPoint>());
         }
 
         return result;
@@ -226,13 +290,14 @@ public class LwM2mNodeSenMLDecoder {
      *
      * @return a map (instanceId => collection of JsonArrayEntry)
      */
-    private static Map<Integer, Collection<JsonArrayEntry>> groupJsonEntryByInstanceId(
-            Collection<JsonArrayEntry> jsonEntries, LwM2mPath baseName) throws CodecException {
-        Map<Integer, Collection<JsonArrayEntry>> result = new HashMap<>();
+    private static Map<Integer, Collection<SenMLDataPoint>> groupJsonEntryByInstanceId(
+            Collection<SenMLDataPoint> jsonEntries, LwM2mPath baseName) throws CodecException {
+        Map<Integer, Collection<SenMLDataPoint>> result = new HashMap<>();
 
-        for (JsonArrayEntry e : jsonEntries) {
+        for (SenMLDataPoint e : jsonEntries) {
             // Build resource path
-            LwM2mPath nodePath = baseName.append(e.getName());
+
+            LwM2mPath nodePath = e.getName() == null ? baseName : baseName.append(e.getName());
 
             // Validate path
             if (!nodePath.isResourceInstance() && !nodePath.isResource()) {
@@ -242,7 +307,7 @@ public class LwM2mNodeSenMLDecoder {
             }
 
             // Get jsonArray for this instance
-            Collection<JsonArrayEntry> jsonArray = result.get(nodePath.getObjectInstanceId());
+            Collection<SenMLDataPoint> jsonArray = result.get(nodePath.getObjectInstanceId());
             if (jsonArray == null) {
                 jsonArray = new ArrayList<>();
                 result.put(nodePath.getObjectInstanceId(), jsonArray);
@@ -254,7 +319,7 @@ public class LwM2mNodeSenMLDecoder {
 
         // Create an entry for an empty instance if possible
         if (result.isEmpty() && baseName.getObjectInstanceId() != null) {
-            result.put(baseName.getObjectInstanceId(), new ArrayList<JsonArrayEntry>());
+            result.put(baseName.getObjectInstanceId(), new ArrayList<SenMLDataPoint>());
         }
         return result;
     }
@@ -290,18 +355,18 @@ public class LwM2mNodeSenMLDecoder {
 
     }
 
-    private static Map<Integer, LwM2mResource> extractLwM2mResources(Collection<JsonArrayEntry> jsonArrayEntries,
+    private static Map<Integer, LwM2mResource> extractLwM2mResources(Collection<SenMLDataPoint> jsonArrayEntries,
             LwM2mPath baseName, LwM2mModel model) throws CodecException {
         if (jsonArrayEntries == null)
             return Collections.emptyMap();
 
         // Extract LWM2M resources from JSON resource list
         Map<Integer, LwM2mResource> lwM2mResourceMap = new HashMap<>();
-        Map<LwM2mPath, Map<Integer, JsonArrayEntry>> multiResourceMap = new HashMap<>();
-        for (JsonArrayEntry resourceElt : jsonArrayEntries) {
+        Map<LwM2mPath, Map<Integer, SenMLDataPoint>> multiResourceMap = new HashMap<>();
+        for (SenMLDataPoint resourceElt : jsonArrayEntries) {
 
             // Build resource path
-            LwM2mPath nodePath = baseName.append(resourceElt.getName());
+            LwM2mPath nodePath = resourceElt.getName() == null ? baseName : baseName.append(resourceElt.getName());
 
             // handle LWM2M resources
             if (nodePath.isResourceInstance()) {
@@ -310,12 +375,12 @@ public class LwM2mNodeSenMLDecoder {
                 // we will deal with it later
                 LwM2mPath resourcePath = new LwM2mPath(nodePath.getObjectId(), nodePath.getObjectInstanceId(),
                         nodePath.getResourceId());
-                Map<Integer, JsonArrayEntry> multiResource = multiResourceMap.get(resourcePath);
+                Map<Integer, SenMLDataPoint> multiResource = multiResourceMap.get(resourcePath);
                 if (multiResource == null) {
                     multiResource = new HashMap<>();
                     multiResourceMap.put(resourcePath, multiResource);
                 }
-                JsonArrayEntry previousResInstance = multiResource.put(nodePath.getResourceInstanceId(), resourceElt);
+                SenMLDataPoint previousResInstance = multiResource.put(nodePath.getResourceInstanceId(), resourceElt);
                 if (previousResInstance != null) {
                     throw new CodecException(
                             "2 RESOURCE_INSTANCE nodes (%s,%s) with the same identifier %d for path %s",
@@ -339,14 +404,14 @@ public class LwM2mNodeSenMLDecoder {
         }
 
         // Handle multi-instance resource.
-        for (Map.Entry<LwM2mPath, Map<Integer, JsonArrayEntry>> entry : multiResourceMap.entrySet()) {
+        for (Map.Entry<LwM2mPath, Map<Integer, SenMLDataPoint>> entry : multiResourceMap.entrySet()) {
             LwM2mPath resourcePath = entry.getKey();
-            Map<Integer, JsonArrayEntry> jsonEntries = entry.getValue();
+            Map<Integer, SenMLDataPoint> jsonEntries = entry.getValue();
 
             if (jsonEntries != null && !jsonEntries.isEmpty()) {
                 Type expectedType = getResourceType(resourcePath, model, jsonEntries.values().iterator().next());
                 Map<Integer, Object> values = new HashMap<>();
-                for (Entry<Integer, JsonArrayEntry> e : jsonEntries.entrySet()) {
+                for (Entry<Integer, SenMLDataPoint> e : jsonEntries.entrySet()) {
                     Integer resourceInstanceId = e.getKey();
                     values.put(resourceInstanceId,
                             parseJsonValue(e.getValue().getResourceValue(), expectedType, resourcePath));
@@ -405,7 +470,7 @@ public class LwM2mNodeSenMLDecoder {
         }
     }
 
-    public static Type getResourceType(LwM2mPath rscPath, LwM2mModel model, JsonArrayEntry resourceElt) {
+    public static Type getResourceType(LwM2mPath rscPath, LwM2mModel model, SenMLDataPoint resourceElt) {
         // Use model type in priority
         ResourceModel rscDesc = model.getResourceModel(rscPath.getObjectId(), rscPath.getResourceId());
         if (rscDesc != null && rscDesc.type != null)

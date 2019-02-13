@@ -72,7 +72,9 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
         case ContentFormat.OLD_JSON_CODE:
             return LwM2mNodeJsonDecoder.decode(content, path, model, nodeClass);
         case ContentFormat.SENML_CBOR_CODE:
-            return LwM2mNodeSenMLDecoder.decode(content, path, model, nodeClass);
+            return LwM2mNodeSenMLDecoder.decodeCbor(content, path, model, nodeClass);
+        case ContentFormat.SENML_JSON_CODE:
+            return LwM2mNodeSenMLDecoder.decodeJson(content, path, model, nodeClass);
         case ContentFormat.LINK_CODE:
             throw new CodecException("Content format %s not yet implemented [%s]", format, path);
         default:

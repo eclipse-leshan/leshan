@@ -17,6 +17,7 @@
 
 package org.eclipse.leshan.senml;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -48,6 +49,14 @@ public class SenMLRootObject {
 
     public void setBaseTime(Long baseTime) {
         this.baseTime = baseTime;
+    }
+    
+    public void addResource(SenMLDataPoint dataPoint) {
+        if(resourceList ==null) {
+            resourceList = new ArrayList<>();
+        }
+        
+        resourceList.add(dataPoint);
     }
 
     public void setResourceList(List<SenMLDataPoint> resourceList) {
