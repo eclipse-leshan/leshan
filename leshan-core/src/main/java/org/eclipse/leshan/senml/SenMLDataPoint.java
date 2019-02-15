@@ -1,6 +1,4 @@
 /*******************************************************************************
- * Copyright (c) 2013-2015 Sierra Wireless and others.
- * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
@@ -11,8 +9,7 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
  * 
  * Contributors:
- *     Sierra Wireless - initial API and implementation
- *     Gemalto M2M GmbH
+ *     Cavenaghi9 - initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.leshan.senml;
@@ -24,7 +21,7 @@ public class SenMLDataPoint {
 
     private String name;
     private Long time;
-    
+
     private Number floatValue;
     private Boolean booleanValue;
     private String objectLinkValue;
@@ -53,11 +50,11 @@ public class SenMLDataPoint {
         }
         return null;
     }
-    
+
     public void setTime(Long time) {
         this.time = time;
     }
-    
+
     public Long getTime() {
         return time;
     }
@@ -193,7 +190,7 @@ public class SenMLDataPoint {
                 return false;
         } else if (!timeValue.equals(other.timeValue))
             return false;
-        
+
         if (opaqueValue == null) {
             if (other.opaqueValue != null)
                 return false;
