@@ -105,7 +105,9 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
         case ContentFormat.OLD_JSON_CODE:
             return LwM2mNodeJsonDecoder.decodeTimestamped(content, path, model, nodeClassFromPath(path));
         case ContentFormat.SENML_CBOR_CODE:
-            return LwM2mNodeSenMLDecoder.decodeTimestamped(content, path, model, nodeClassFromPath(path));
+            return LwM2mNodeSenMLDecoder.decodeTimestampedCbor(content, path, model, nodeClassFromPath(path));
+        case ContentFormat.SENML_JSON_CODE:
+            return LwM2mNodeSenMLDecoder.decodeTimestampedJson(content, path, model, nodeClassFromPath(path));
         case ContentFormat.LINK_CODE:
             throw new CodecException("Content format %s not yet implemented [%s]", format, path);
         default:
@@ -143,6 +145,7 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
         case ContentFormat.JSON_CODE:
         case ContentFormat.OLD_JSON_CODE:
         case ContentFormat.SENML_CBOR_CODE:
+        case ContentFormat.SENML_JSON_CODE:
             return true;
         default:
             return false;

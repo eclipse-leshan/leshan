@@ -28,7 +28,7 @@ public class SenMLRootObject {
 
     private String baseName = null;
 
-    private List<SenMLDataPoint> resourceList;
+    private List<SenMLDataPoint> dataPoints;
 
     private Long baseTime;
 
@@ -51,22 +51,22 @@ public class SenMLRootObject {
         this.baseTime = baseTime;
     }
     
-    public void addResource(SenMLDataPoint dataPoint) {
-        if(resourceList ==null) {
-            resourceList = new ArrayList<>();
+    public void addDataPoint(SenMLDataPoint dataPoint) {
+        if(dataPoints ==null) {
+            dataPoints = new ArrayList<>();
         }
         
-        resourceList.add(dataPoint);
+        dataPoints.add(dataPoint);
     }
 
-    public void setResourceList(List<SenMLDataPoint> resourceList) {
-        this.resourceList = resourceList;
+    public void setDataPoints(List<SenMLDataPoint> dataPoints) {
+        this.dataPoints = dataPoints;
     }
 
-    public List<SenMLDataPoint> getResourceList() {
-        if (resourceList == null)
+    public List<SenMLDataPoint> getDataPoints() {
+        if (dataPoints == null)
             return Collections.emptyList();
-        return resourceList;
+        return dataPoints;
     }
 
     @Override
@@ -75,7 +75,7 @@ public class SenMLRootObject {
         int result = 1;
         result = prime * result + ((baseName == null) ? 0 : baseName.hashCode());
         result = prime * result + ((baseTime == null) ? 0 : baseTime.hashCode());
-        result = prime * result + ((resourceList == null) ? 0 : resourceList.hashCode());
+        result = prime * result + ((dataPoints == null) ? 0 : dataPoints.hashCode());
         return result;
     }
 
@@ -98,17 +98,17 @@ public class SenMLRootObject {
                 return false;
         } else if (!baseTime.equals(other.baseTime))
             return false;
-        if (resourceList == null) {
-            if (other.resourceList != null)
+        if (dataPoints == null) {
+            if (other.dataPoints != null)
                 return false;
-        } else if (!resourceList.equals(other.resourceList))
+        } else if (!dataPoints.equals(other.dataPoints))
             return false;
         return true;
     }
 
     @Override
     public String toString() {
-        return String.format("SenMLObj [baseName=%s, baseTime=%d, resourceList=%s]", baseName, baseTime,
-                resourceList);
+        return String.format("SenMLObj [baseName=%s, baseTime=%d, dataPoints=%s]", baseName, baseTime,
+                dataPoints);
     }
 }

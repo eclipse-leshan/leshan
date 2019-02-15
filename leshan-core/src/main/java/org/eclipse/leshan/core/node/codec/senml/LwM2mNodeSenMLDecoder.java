@@ -29,12 +29,20 @@ import org.eclipse.leshan.core.node.codec.json.LwM2mNodeJsonDecoder;
 import org.eclipse.leshan.json.JsonRootObject;
 import org.eclipse.leshan.json.LwM2mJson;
 import org.eclipse.leshan.json.LwM2mJsonException;
+import org.eclipse.leshan.senml.SenMLCborLabel;
 import org.eclipse.leshan.senml.SenMLDataPoint;
+import org.eclipse.leshan.senml.SenMLJsonLabel;
+import org.eclipse.leshan.senml.SenMLLabel;
 import org.eclipse.leshan.senml.SenMLRootObject;
 import org.eclipse.leshan.util.Base64;
+import org.eclipse.leshan.util.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonArray;
+import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORParser;
@@ -42,6 +50,9 @@ import com.fasterxml.jackson.dataformat.cbor.CBORParser;
 public class LwM2mNodeSenMLDecoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeJsonDecoder.class);
+
+    private static final SenMLLabel SENML_CBOR_LABEL = new SenMLCborLabel();
+    private static final SenMLLabel SENML_JSON_LABEL = new SenMLJsonLabel();
 
     @SuppressWarnings("unchecked")
     public static <T extends LwM2mNode> T decodeCbor(byte[] content, LwM2mPath path, LwM2mModel model,
@@ -51,7 +62,6 @@ public class LwM2mNodeSenMLDecoder {
         if (timestampedNodes.size() == 0) {
             return null;
         } else {
-            // return the most recent value
             return (T) timestampedNodes.get(0).getNode();
         }
     }
@@ -59,16 +69,74 @@ public class LwM2mNodeSenMLDecoder {
     @SuppressWarnings("unchecked")
     public static <T extends LwM2mNode> T decodeJson(byte[] content, LwM2mPath path, LwM2mModel model,
             Class<T> nodeClass) throws CodecException {
-        // SenMLRootObject senMLRoot = parseSenMLCbor(content);
-        // List<TimestampedLwM2mNode> timestampedNodes = parseJSON(senMLRoot, path, model, nodeClass);
-        // if (timestampedNodes.size() == 0) {
-        // return null;
-        // } else {
-        // // return the most recent value
-        // return (T) timestampedNodes.get(0).getNode();
-        // }
+        SenMLRootObject senMLRoot = parseSenMLJson(content);
+        List<TimestampedLwM2mNode> timestampedNodes = parseLwM2MNodes(senMLRoot, path, model, nodeClass);
+        if (timestampedNodes.size() == 0) {
+            return null;
+        } else {
+            return (T) timestampedNodes.get(0).getNode();
+        }
+    }
 
+    public static List<TimestampedLwM2mNode> decodeTimestampedCbor(byte[] content, LwM2mPath path, LwM2mModel model,
+            Class<? extends LwM2mNode> nodeClassFromPath) {
         return null;
+    }
+
+    public static List<TimestampedLwM2mNode> decodeTimestampedJson(byte[] content, LwM2mPath path, LwM2mModel model,
+            Class<? extends LwM2mNode> nodeClassFromPath) {
+        return null;
+    }
+
+    private static SenMLRootObject parseSenMLJson(byte[] content) throws CodecException {
+        SenMLRootObject rootObject = new SenMLRootObject();
+        try {
+            JsonArray array = Json.parse(new String(content)).asArray();
+
+            for (int i = 0; i < array.size(); i++) {
+                SenMLDataPoint dataPoint = new SenMLDataPoint();
+                JsonObject jo = array.get(i).asObject();
+
+                JsonValue bn = jo.get(SENML_JSON_LABEL.getBaseName());
+                if (bn != null && bn.isString())
+                    rootObject.setBaseName(bn.asString());
+
+                JsonValue bt = jo.get(SENML_JSON_LABEL.getBaseTime());
+                if (bt != null && bt.isNumber())
+                    rootObject.setBaseTime(bt.asLong());
+
+                JsonValue n = jo.get(SENML_JSON_LABEL.getName());
+                if (n != null && n.isString()) {
+                    dataPoint.setName(n.asString());
+                }
+
+                JsonValue t = jo.get(SENML_JSON_LABEL.getTime());
+                if (t != null && t.isNumber())
+                    dataPoint.setTime(t.asLong());
+
+                JsonValue v = jo.get(SENML_JSON_LABEL.getNumberValue());
+                if (v != null && v.isNumber())
+                    dataPoint.setFloatValue(v.asDouble());
+
+                JsonValue bv = jo.get(SENML_JSON_LABEL.getBooleanValue());
+                if (bv != null && bv.isBoolean())
+                    dataPoint.setBooleanValue(bv.asBoolean());
+
+                JsonValue dv = jo.get(SENML_JSON_LABEL.getDataValue());
+                if (bv != null && bv.isBoolean())
+                    dataPoint.setOpaqueValue(Hex.decodeHex(dv.asString().toCharArray()));
+
+                JsonValue sv = jo.get(SENML_JSON_LABEL.getStringValue());
+                if (sv != null && sv.isString())
+                    dataPoint.setStringValue(sv.asString());
+
+                rootObject.addDataPoint(dataPoint);
+            }
+        } catch (Exception e) {
+            throw new CodecException(e, "Unable to deserialize json [path:%s]");
+        }
+
+        return rootObject;
     }
 
     private static SenMLRootObject parseSenMLCbor(byte[] content) throws CodecException {
@@ -86,11 +154,10 @@ public class LwM2mNodeSenMLDecoder {
 
                 if (token == JsonToken.START_OBJECT) {
                     SenMLDataPoint dataPoint = parseSenMLDataPoint(rootObject, parser);
-                    rootObject.addResource(dataPoint);
+                    rootObject.addDataPoint(dataPoint);
                 }
 
                 if (token == JsonToken.END_ARRAY) {
-                    System.out.println(rootObject);
                     break;
                 }
             }
@@ -112,24 +179,23 @@ public class LwM2mNodeSenMLDecoder {
                     return dataPoint;
                 } else if (token == JsonToken.FIELD_NAME) {
                     fileName = parser.getCurrentName();
-                    if (fileName.equals("-2")) {
+                    if (SENML_CBOR_LABEL.isBaseName(fileName)) {
                         token = parser.nextToken();
                         rootObject.setBaseName(parser.getText());
                         continue;
-                    } else if (fileName.equals("0")) {
+                    } else if (SENML_CBOR_LABEL.isName(fileName)) {
                         token = parser.nextToken();
                         dataPoint.setName(parser.getText());
                     }
                 } else {
-                    if (fileName.equals("2")) {
+                    if (SENML_CBOR_LABEL.isNumberValue(fileName)) {
                         dataPoint.setFloatValue(parser.getFloatValue());
-                    } else if (fileName.equals("4")) {
+                    } else if (SENML_CBOR_LABEL.isBooleanValue(fileName)) {
                         dataPoint.setBooleanValue(parser.getValueAsBoolean());
-                    } else if (fileName.equals("8")) {
-                    } else if (fileName.equals("3")) {
+                    } else if (SENML_CBOR_LABEL.isStringValue(fileName)) {
                         dataPoint.setStringValue(parser.getValueAsString());
-                    } else if (fileName.equals("6")) {
-                        dataPoint.setTime(parser.getValueAsLong());
+                    } else if (SENML_CBOR_LABEL.isDataValue(fileName)) {
+                        dataPoint.setStringValue(parser.getValueAsString());
                     }
                 }
             }
@@ -259,7 +325,7 @@ public class LwM2mNodeSenMLDecoder {
             }
         });
 
-        for (SenMLDataPoint e : jsonObject.getResourceList()) {
+        for (SenMLDataPoint e : jsonObject.getDataPoints()) {
             // Get time for this entry
             Long time = e.getTime();
 
@@ -456,6 +522,8 @@ public class LwM2mNodeSenMLDecoder {
                 return ((Number) value).doubleValue();
             case TIME:
                 return new Date(((Number) value).longValue() * 1000L);
+            case OBJLNK:
+                return value;
             case OPAQUE:
                 // If the Resource data type is opaque the string value
                 // holds the Base64 encoded representation of the Resource

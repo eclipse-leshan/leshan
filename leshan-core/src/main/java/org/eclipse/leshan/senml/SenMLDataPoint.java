@@ -23,11 +23,14 @@ import org.eclipse.leshan.core.model.ResourceModel.Type;
 public class SenMLDataPoint {
 
     private String name;
+    private Long time;
+    
     private Number floatValue;
     private Boolean booleanValue;
     private String objectLinkValue;
     private String stringValue;
-    private Long time;
+    private Long timeValue;
+    private byte[] opaqueValue;
 
     public ResourceModel.Type getType() {
         if (booleanValue != null) {
@@ -42,10 +45,21 @@ public class SenMLDataPoint {
         if (stringValue != null) {
             return Type.STRING;
         }
-        if (time != null) {
+        if (timeValue != null) {
             return Type.TIME;
         }
+        if (opaqueValue != null) {
+            return Type.OPAQUE;
+        }
         return null;
+    }
+    
+    public void setTime(Long time) {
+        this.time = time;
+    }
+    
+    public Long getTime() {
+        return time;
     }
 
     public String getName() {
@@ -56,12 +70,12 @@ public class SenMLDataPoint {
         this.name = name;
     }
 
-    public Long getTime() {
-        return time;
+    public Long getTimeValue() {
+        return timeValue;
     }
 
-    public void setTime(Long time) {
-        this.time = time;
+    public void setTimeValue(Long time) {
+        this.timeValue = time;
     }
 
     public Number getFloatValue() {
@@ -96,6 +110,14 @@ public class SenMLDataPoint {
         this.stringValue = stringValue;
     }
 
+    public void setOpaqueValue(byte[] opaqueValue) {
+        this.opaqueValue = opaqueValue;
+    }
+
+    public byte[] getOpaqueValue() {
+        return opaqueValue;
+    }
+
     public Object getResourceValue() {
         if (booleanValue != null) {
             return booleanValue;
@@ -109,8 +131,11 @@ public class SenMLDataPoint {
         if (stringValue != null) {
             return stringValue;
         }
-        if (time != null) {
-            return time;
+        if (timeValue != null) {
+            return timeValue;
+        }
+        if (opaqueValue != null) {
+            return opaqueValue;
         }
         return null;
     }
@@ -124,7 +149,8 @@ public class SenMLDataPoint {
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((objectLinkValue == null) ? 0 : objectLinkValue.hashCode());
         result = prime * result + ((stringValue == null) ? 0 : stringValue.hashCode());
-        result = prime * result + ((time == null) ? 0 : time.hashCode());
+        result = prime * result + ((timeValue == null) ? 0 : timeValue.hashCode());
+        result = prime * result + ((opaqueValue == null) ? 0 : opaqueValue.hashCode());
         return result;
     }
 
@@ -162,10 +188,16 @@ public class SenMLDataPoint {
                 return false;
         } else if (!stringValue.equals(other.stringValue))
             return false;
-        if (time == null) {
-            if (other.time != null)
+        if (timeValue == null) {
+            if (other.timeValue != null)
                 return false;
-        } else if (!time.equals(other.time))
+        } else if (!timeValue.equals(other.timeValue))
+            return false;
+        
+        if (opaqueValue == null) {
+            if (other.opaqueValue != null)
+                return false;
+        } else if (!opaqueValue.equals(other.opaqueValue))
             return false;
         return true;
     }
@@ -173,7 +205,7 @@ public class SenMLDataPoint {
     @Override
     public String toString() {
         return String.format(
-                "SenMLDataPoint [name=%s, floatValue=%s, booleanValue=%s, objectLinkValue=%s, stringValue=%s, time=%s]",
-                name, floatValue, booleanValue, objectLinkValue, stringValue, time);
+                "SenMLDataPoint [name=%s, floatValue=%s, booleanValue=%s, objectLinkValue=%s, stringValue=%s, timeValue=%s, opaque=%s]",
+                name, floatValue, booleanValue, objectLinkValue, stringValue, timeValue, opaqueValue);
     }
 }
