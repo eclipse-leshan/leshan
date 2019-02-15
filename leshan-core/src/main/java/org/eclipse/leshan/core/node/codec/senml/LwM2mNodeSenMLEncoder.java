@@ -53,21 +53,21 @@ public class LwM2mNodeSenMLEncoder {
 
     public static byte[] encodeToCbor(LwM2mNode node, LwM2mPath path, LwM2mModel model, LwM2mValueConverter converter)
             throws CodecException {
-        SenMLRootObject senMLRootObj = convertToSenMLObject(node, path, model, converter);
+        SenMLRootObject rootObject = convertToSenMLObject(node, path, model, converter);
 
-        byte[] bytes = encodeToCbor(senMLRootObj, SENML_CBOR_LABEL);
+        byte[] bytes = encodeToCbor(rootObject, SENML_CBOR_LABEL);
         System.out.println(Hex.encodeHexString(bytes));
 
-        return encodeToCbor(senMLRootObj, SENML_CBOR_LABEL);
+        return encodeToCbor(rootObject, SENML_CBOR_LABEL);
     }
 
     public static byte[] encodeToJson(LwM2mNode node, LwM2mPath path, LwM2mModel model, LwM2mValueConverter converter) {
-        SenMLRootObject senMLRootObj = convertToSenMLObject(node, path, model, converter);
+        SenMLRootObject rootObject = convertToSenMLObject(node, path, model, converter);
 
-        byte[] bytes = encodeToJson(senMLRootObj, SENML_JSON_LABEL);
+        byte[] bytes = encodeToJson(rootObject, SENML_JSON_LABEL);
         System.out.println(new String(bytes));
 
-        return encodeToJson(senMLRootObj, SENML_JSON_LABEL);
+        return encodeToJson(rootObject, SENML_JSON_LABEL);
     }
 
     public static SenMLRootObject convertToSenMLObject(LwM2mNode node, LwM2mPath path, LwM2mModel model,
@@ -83,11 +83,11 @@ public class LwM2mNodeSenMLEncoder {
         cborVisitor.converter = converter;
         node.accept(cborVisitor);
 
-        SenMLRootObject senMLRootObj = new SenMLRootObject();
-        senMLRootObj.setDataPoints(cborVisitor.resourceList);
-        senMLRootObj.setBaseName(path.toString());
+        SenMLRootObject rootObject = new SenMLRootObject();
+        rootObject.setDataPoints(cborVisitor.resourceList);
+        rootObject.setBaseName(path.toString());
 
-        return senMLRootObj;
+        return rootObject;
     }
 
     private static byte[] encodeToJson(SenMLRootObject obj, SenMLLabel label) throws CodecException {
@@ -227,7 +227,7 @@ public class LwM2mNodeSenMLEncoder {
             LOG.trace("Encoding Object {} into CBOR", object);
             // Validate request path
             if (!requestPath.isObject()) {
-                throw new CodecException("Invalid request path %s for CBOR object encoding", requestPath);
+                throw new CodecException("Invalid request path %s for object encoding", requestPath);
             }
 
             // Create resources
@@ -242,7 +242,7 @@ public class LwM2mNodeSenMLEncoder {
 
         @Override
         public void visit(LwM2mObjectInstance instance) {
-            LOG.trace("Encoding object instance {} into CBOR", instance);
+            LOG.trace("Encoding object instance {} into SenML CBOR/JSON", instance);
             resourceList = new ArrayList<>();
             for (LwM2mResource resource : instance.getResources().values()) {
                 // Validate request path & compute resource path
@@ -252,7 +252,7 @@ public class LwM2mNodeSenMLEncoder {
                 } else if (requestPath.isObjectInstance()) {
                     prefixPath = Integer.toString(resource.getId());
                 } else {
-                    throw new CodecException("Invalid request path %s for JSON instance encoding", requestPath);
+                    throw new CodecException("Invalid request path %s for instance encoding", requestPath);
                 }
                 // Create resources
                 resourceList.addAll(lwM2mResourceToSenMLDataPoints(prefixPath, timestamp, resource));
@@ -261,9 +261,9 @@ public class LwM2mNodeSenMLEncoder {
 
         @Override
         public void visit(LwM2mResource resource) {
-            LOG.trace("Encoding resource {} into CBOR", resource);
+            LOG.trace("Encoding resource {} into SenML CBOR/JSON", resource);
             if (!requestPath.isResource()) {
-                throw new CodecException("Invalid request path %s for CBOR resource encoding", requestPath);
+                throw new CodecException("Invalid request path %s for resource encoding", requestPath);
             }
 
             resourceList = lwM2mResourceToSenMLDataPoints("", timestamp, resource);
@@ -320,7 +320,7 @@ public class LwM2mNodeSenMLEncoder {
         }
 
         private void setResourceValue(Object value, Type type, SenMLDataPoint resource, LwM2mPath resourcePath) {
-            LOG.trace("Encoding value {} in CBOR", value);
+            LOG.trace("Encoding value {} in SenML CBOR/JSON", value);
             switch (type) {
             case STRING:
                 resource.setStringValue((String) value);
