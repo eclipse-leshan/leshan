@@ -100,6 +100,10 @@ public class LwM2mNodeEncoderTest {
     private final static byte[] ENCODED_DEVICE_WITH_INSTANCE = Hex.decodeHex(
             "080079C800144F70656E204D6F62696C6520416C6C69616E6365C801164C69676874776569676874204D324D20436C69656E74C80209333435303030313233C303312E30860641000141010588070842000ED842011388870841007D42010384C10964C10A0F830B410000C40D5182428FC60E2B30323A3030C11055"
                     .toCharArray());
+    
+    // cbor content for instance 0 of device object(/3/0)
+    private final static byte[] ENCODED_DEVICE_WITH_CBOR = Hex.decodeHex(
+            "9fbf622d32642f332f30613061306133744f70656e204d6f62696c6520416c6c69616e6365ffbf613061316133764c69676874776569676874204d324d20436c69656e74ffbf61306132613369333435303030313233ffbf61306133613363312e30ffbf613063362f306132fb3ff0000000000000ffbf613063362f316132fb4014000000000000ffbf613063372f306132fb40adb00000000000ffbf613063372f316132fb40b3880000000000ffbf613063382f306132fb405f400000000000ffbf613063382f316132fb408c200000000000ffbf613061396132fb4059000000000000ffbf61306231306132fb402e000000000000ffbf61306431312f306132fb0000000000000000ffbf613062313361321b0000013e64d3fe98ffbf61306231346133662b30323a3030ffbf613062313661336155ffff".toCharArray());
 
     private Collection<LwM2mResource> getDeviceResources() {
         Collection<LwM2mResource> resources = new ArrayList<>();
@@ -277,5 +281,37 @@ public class LwM2mNodeEncoderTest {
 
         String expected = b.toString();
         Assert.assertEquals(expected, new String(encoded));
+    }
+
+    @Test
+    public void senml_json_encode_device_object_instance() {
+        LwM2mObjectInstance oInstance = new LwM2mObjectInstance(0, getDeviceResources());
+        byte[] encoded = encoder.encode(oInstance, ContentFormat.SENML_JSON, new LwM2mPath("/3/0"), model);
+
+        StringBuilder b = new StringBuilder();
+        b.append("[{\"bn\":\"/3/0\",\"n\":\"0\",\"vs\":\"Open Mobile Alliance\"},");
+        b.append("{\"n\":\"1\",\"vs\":\"Lightweight M2M Client\"},");
+        b.append("{\"n\":\"2\",\"vs\":\"345000123\"},");
+        b.append("{\"n\":\"3\",\"vs\":\"1.0\"},");
+        b.append("{\"n\":\"6/0\",\"v\":1},{\"n\":\"6/1\",\"v\":5},");
+        b.append("{\"n\":\"7/0\",\"v\":3800},{\"n\":\"7/1\",\"v\":5000},");
+        b.append("{\"n\":\"8/0\",\"v\":125},{\"n\":\"8/1\",\"v\":900},");
+        b.append("{\"n\":\"9\",\"v\":100},");
+        b.append("{\"n\":\"10\",\"v\":15},");
+        b.append("{\"n\":\"11/0\",\"v\":0},");
+        b.append("{\"n\":\"13\",\"v\":1367491215000},");
+        b.append("{\"n\":\"14\",\"vs\":\"+02:00\"},");
+        b.append("{\"n\":\"16\",\"vs\":\"U\"}]");
+
+        String expected = b.toString();
+        Assert.assertEquals(expected, new String(encoded));
+    }
+
+    @Test
+    public void senml_cbor_encode_device_object_instance() {
+        LwM2mObjectInstance oInstance = new LwM2mObjectInstance(0, getDeviceResources());
+        byte[] encoded = encoder.encode(oInstance, ContentFormat.SENML_CBOR, new LwM2mPath("/3/0"), model);
+
+        Assert.assertArrayEquals(ENCODED_DEVICE_WITH_CBOR, encoded);
     }
 }

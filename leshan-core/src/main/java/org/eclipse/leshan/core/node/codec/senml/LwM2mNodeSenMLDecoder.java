@@ -43,7 +43,7 @@ import org.eclipse.leshan.senml.SenMLCborLabel;
 import org.eclipse.leshan.senml.SenMLDataPoint;
 import org.eclipse.leshan.senml.SenMLJsonLabel;
 import org.eclipse.leshan.senml.SenMLLabel;
-import org.eclipse.leshan.senml.SenMLRootObject;
+import org.eclipse.leshan.senml.SensorMeasurementList;
 import org.eclipse.leshan.util.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,7 +66,7 @@ public class LwM2mNodeSenMLDecoder {
     @SuppressWarnings("unchecked")
     public static <T extends LwM2mNode> T decodeCbor(byte[] content, LwM2mPath path, LwM2mModel model,
             Class<T> nodeClass) throws CodecException {
-        SenMLRootObject senMLRoot = parseSenMLCbor(content);
+        SensorMeasurementList senMLRoot = parseSenMLCbor(content);
         List<TimestampedLwM2mNode> timestampedNodes = parseLwM2MNodes(senMLRoot, path, model, nodeClass);
         if (timestampedNodes.size() == 0) {
             return null;
@@ -78,7 +78,7 @@ public class LwM2mNodeSenMLDecoder {
     @SuppressWarnings("unchecked")
     public static <T extends LwM2mNode> T decodeJson(byte[] content, LwM2mPath path, LwM2mModel model,
             Class<T> nodeClass) throws CodecException {
-        SenMLRootObject senMLRoot = parseSenMLJson(content);
+        SensorMeasurementList senMLRoot = parseSenMLJson(content);
         List<TimestampedLwM2mNode> timestampedNodes = parseLwM2MNodes(senMLRoot, path, model, nodeClass);
         if (timestampedNodes.size() == 0) {
             return null;
@@ -89,18 +89,18 @@ public class LwM2mNodeSenMLDecoder {
 
     public static List<TimestampedLwM2mNode> decodeTimestampedCbor(byte[] content, LwM2mPath path, LwM2mModel model,
             Class<? extends LwM2mNode> nodeClassFromPath) {
-        SenMLRootObject senMLRoot = parseSenMLCbor(content);
+        SensorMeasurementList senMLRoot = parseSenMLCbor(content);
         return parseLwM2MNodes(senMLRoot, path, model, nodeClassFromPath);
     }
 
     public static List<TimestampedLwM2mNode> decodeTimestampedJson(byte[] content, LwM2mPath path, LwM2mModel model,
             Class<? extends LwM2mNode> nodeClassFromPath) {
-        SenMLRootObject senMLRoot = parseSenMLJson(content);
+        SensorMeasurementList senMLRoot = parseSenMLJson(content);
         return parseLwM2MNodes(senMLRoot, path, model, nodeClassFromPath);
     }
 
-    private static SenMLRootObject parseSenMLJson(byte[] content) throws CodecException {
-        SenMLRootObject rootObject = new SenMLRootObject();
+    private static SensorMeasurementList parseSenMLJson(byte[] content) throws CodecException {
+        SensorMeasurementList rootObject = new SensorMeasurementList();
         try {
             JsonArray ja = Json.parse(new String(content)).asArray();
 
@@ -150,8 +150,8 @@ public class LwM2mNodeSenMLDecoder {
         return rootObject;
     }
 
-    private static SenMLRootObject parseSenMLCbor(byte[] content) throws CodecException {
-        SenMLRootObject rootObject = new SenMLRootObject();
+    private static SensorMeasurementList parseSenMLCbor(byte[] content) throws CodecException {
+        SensorMeasurementList rootObject = new SensorMeasurementList();
         try {
             CBORFactory factory = new CBORFactory();
             CBORParser parser = factory.createParser(content);
@@ -179,7 +179,7 @@ public class LwM2mNodeSenMLDecoder {
         return rootObject;
     }
 
-    private static SenMLDataPoint parseSenMLDataPoint(SenMLRootObject rootObject, CBORParser parser) {
+    private static SenMLDataPoint parseSenMLDataPoint(SensorMeasurementList rootObject, CBORParser parser) {
         SenMLDataPoint dataPoint = new SenMLDataPoint();
         try {
             JsonToken token = null;
@@ -215,7 +215,7 @@ public class LwM2mNodeSenMLDecoder {
         }
     }
 
-    private static List<TimestampedLwM2mNode> parseLwM2MNodes(SenMLRootObject rootObject, LwM2mPath path,
+    private static List<TimestampedLwM2mNode> parseLwM2MNodes(SensorMeasurementList rootObject, LwM2mPath path,
             LwM2mModel model, Class<? extends LwM2mNode> nodeClass) throws CodecException {
 
         LOG.trace("Parsing SenML object for path {}: {}", path, rootObject);
@@ -313,7 +313,7 @@ public class LwM2mNodeSenMLDecoder {
      * 
      * @return a map (relativeTimestamp => collection of JsonArrayEntry)
      */
-    private static SortedMap<Long, Collection<SenMLDataPoint>> groupDataPointsByTimestamp(SenMLRootObject rootObject) {
+    private static SortedMap<Long, Collection<SenMLDataPoint>> groupDataPointsByTimestamp(SensorMeasurementList rootObject) {
         SortedMap<Long, Collection<SenMLDataPoint>> result = new TreeMap<>(new Comparator<Long>() {
             @Override
             public int compare(Long o1, Long o2) {
@@ -389,7 +389,7 @@ public class LwM2mNodeSenMLDecoder {
         return result;
     }
 
-    private static LwM2mPath extractAndValidateBaseName(SenMLRootObject rootObject, LwM2mPath requestPath)
+    private static LwM2mPath extractAndValidateBaseName(SensorMeasurementList rootObject, LwM2mPath requestPath)
             throws CodecException {
         // Check baseName is valid
         if (rootObject.getBaseName() != null && !rootObject.getBaseName().isEmpty()) {

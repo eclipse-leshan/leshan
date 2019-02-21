@@ -34,7 +34,7 @@ import org.eclipse.leshan.senml.SenMLCborLabel;
 import org.eclipse.leshan.senml.SenMLDataPoint;
 import org.eclipse.leshan.senml.SenMLJsonLabel;
 import org.eclipse.leshan.senml.SenMLLabel;
-import org.eclipse.leshan.senml.SenMLRootObject;
+import org.eclipse.leshan.senml.SensorMeasurementList;
 import org.eclipse.leshan.util.Hex;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
@@ -50,104 +50,98 @@ public class LwM2mNodeSenMLEncoder {
 
     private static final SenMLLabel SENML_CBOR_LABEL = new SenMLCborLabel();
     private static final SenMLLabel SENML_JSON_LABEL = new SenMLJsonLabel();
+    private static final String EMPTY_RESOURCE_PATH = "";
 
     public static byte[] encodeToCbor(LwM2mNode node, LwM2mPath path, LwM2mModel model, LwM2mValueConverter converter)
             throws CodecException {
-        SenMLRootObject rootObject = convertToSenMLObject(node, path, model, converter);
-
-        byte[] bytes = encodeToCbor(rootObject, SENML_CBOR_LABEL);
-        System.out.println(Hex.encodeHexString(bytes));
-
-        return encodeToCbor(rootObject, SENML_CBOR_LABEL);
+        SensorMeasurementList sml = new SensorMeasurementList();
+        readDataFromLwM2MNode(node, path, model, converter, sml);
+        return encodeToCbor(sml, SENML_CBOR_LABEL);
     }
 
     public static byte[] encodeToJson(LwM2mNode node, LwM2mPath path, LwM2mModel model, LwM2mValueConverter converter) {
-        SenMLRootObject rootObject = convertToSenMLObject(node, path, model, converter);
-
-        byte[] bytes = encodeToJson(rootObject, SENML_JSON_LABEL);
-        System.out.println(new String(bytes));
-
-        return encodeToJson(rootObject, SENML_JSON_LABEL);
+        SensorMeasurementList sml = new SensorMeasurementList();
+        readDataFromLwM2MNode(node, path, model, converter, sml);
+        return encodeToJson(sml, SENML_JSON_LABEL);
     }
 
-    public static SenMLRootObject convertToSenMLObject(LwM2mNode node, LwM2mPath path, LwM2mModel model,
-            LwM2mValueConverter converter) {
+    public static SensorMeasurementList readDataFromLwM2MNode(LwM2mNode node, LwM2mPath path, LwM2mModel model,
+            LwM2mValueConverter converter, SensorMeasurementList sml) {
         Validate.notNull(node);
         Validate.notNull(path);
         Validate.notNull(model);
 
-        InternalSenMLVisitor cborVisitor = new InternalSenMLVisitor();
-        cborVisitor.objectId = path.getObjectId();
-        cborVisitor.model = model;
-        cborVisitor.requestPath = path;
-        cborVisitor.converter = converter;
-        node.accept(cborVisitor);
+        InternalSenMLVisitor senMLVisitor = new InternalSenMLVisitor();
+        senMLVisitor.objectId = path.getObjectId();
+        senMLVisitor.model = model;
+        senMLVisitor.requestPath = path;
+        senMLVisitor.converter = converter;
+        node.accept(senMLVisitor);
 
-        SenMLRootObject rootObject = new SenMLRootObject();
-        rootObject.setDataPoints(cborVisitor.resourceList);
-        rootObject.setBaseName(path.toString());
+        sml.setBaseName(path.toString());
+        sml.setDataPoints(senMLVisitor.dataPoints);
 
-        return rootObject;
+        return sml;
     }
 
-    private static byte[] encodeToJson(SenMLRootObject obj, SenMLLabel label) throws CodecException {
-        JsonArray ja = new JsonArray();
+    private static byte[] encodeToJson(SensorMeasurementList sml, SenMLLabel label) throws CodecException {
+        JsonArray jsonArray = new JsonArray();
         try {
-            for (int i = 0; i < obj.getDataPoints().size(); i++) {
-                JsonObject jo = new JsonObject();
+            for (int i = 0; i < sml.getDataPoints().size(); i++) {
+                JsonObject jsonObj = new JsonObject();
 
-                if (i == 0 && obj.getBaseName() != null) {
-                    jo.add(label.getBaseName(), obj.getBaseName());
+                if (i == 0 && sml.getBaseName() != null) {
+                    jsonObj.add(label.getBaseName(), sml.getBaseName());
                 }
-                if (i == 0 && obj.getBaseTime() != null) {
-                    jo.add(label.getBaseTime(), obj.getBaseTime());
-                }
-
-                SenMLDataPoint jae = obj.getDataPoints().get(i);
-                if (jae.getName() != null) {
-                    jo.add(label.getName(), jae.getName());
+                if (i == 0 && sml.getBaseTime() != null) {
+                    jsonObj.add(label.getBaseTime(), sml.getBaseTime());
                 }
 
-                if (jae.getTime() != null) {
-                    jo.add(label.getTime(), jae.getTime());
+                SenMLDataPoint dataPoint = sml.getDataPoints().get(i);
+                if (dataPoint.getName() != null && dataPoint.getName().length() > 0) {
+                    jsonObj.add(label.getName(), dataPoint.getName());
                 }
 
-                Type type = jae.getType();
+                if (dataPoint.getTime() != null) {
+                    jsonObj.add(label.getTime(), dataPoint.getTime());
+                }
+
+                Type type = dataPoint.getType();
                 if (type != null) {
-                    switch (jae.getType()) {
+                    switch (dataPoint.getType()) {
                     case FLOAT:
                     case INTEGER:
-                        jo.add(label.getNumberValue(), jae.getFloatValue().floatValue());
+                        jsonObj.add(label.getNumberValue(), dataPoint.getFloatValue().floatValue());
                         break;
                     case BOOLEAN:
-                        jo.add(label.getBooleanValue(), jae.getBooleanValue());
+                        jsonObj.add(label.getBooleanValue(), dataPoint.getBooleanValue());
                         break;
                     case OBJLNK:
-                        jo.add(label.getDataValue(), jae.getObjectLinkValue());
+                        jsonObj.add(label.getDataValue(), dataPoint.getObjectLinkValue());
                         break;
                     case OPAQUE:
-                        jo.add(label.getDataValue(), Hex.encodeHexString(jae.getOpaqueValue()));
+                        jsonObj.add(label.getDataValue(), Hex.encodeHexString(dataPoint.getOpaqueValue()));
                     case STRING:
-                        jo.add(label.getStringValue(), jae.getStringValue());
+                        jsonObj.add(label.getStringValue(), dataPoint.getStringValue());
                         break;
                     case TIME:
-                        jo.add(label.getNumberValue(), jae.getTimeValue());
+                        jsonObj.add(label.getNumberValue(), dataPoint.getTimeValue());
                     default:
                         break;
                     }
                 }
 
-                ja.add(jo);
+                jsonArray.add(jsonObj);
             }
 
-            return ja.toString().getBytes();
+            return jsonArray.toString().getBytes();
 
         } catch (Exception e) {
             throw new CodecException(e.getLocalizedMessage(), e);
         }
     }
 
-    private static byte[] encodeToCbor(SenMLRootObject obj, SenMLLabel label) throws CodecException {
+    private static byte[] encodeToCbor(SensorMeasurementList sml, SenMLLabel label) throws CodecException {
         CBORFactory factory = new CBORFactory();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
@@ -155,46 +149,47 @@ public class LwM2mNodeSenMLEncoder {
             CBORGenerator generator = factory.createGenerator(out);
             generator.writeStartArray();
 
-            for (int i = 0; i < obj.getDataPoints().size(); i++) {
+            for (int i = 0; i < sml.getDataPoints().size(); i++) {
                 generator.writeStartObject();
-                if (i == 0 && obj.getBaseName() != null) {
-                    generator.writeStringField(label.getBaseName(), obj.getBaseName());
+                if (i == 0 && sml.getBaseName() != null) {
+                    generator.writeStringField(label.getBaseName(), sml.getBaseName());
                 }
 
-                if (i == 0 && obj.getBaseTime() != null) {
-                    generator.writeNumberField(label.getBaseTime(), obj.getBaseTime());
+                if (i == 0 && sml.getBaseTime() != null) {
+                    generator.writeNumberField(label.getBaseTime(), sml.getBaseTime());
                 }
 
-                SenMLDataPoint jae = obj.getDataPoints().get(i);
+                SenMLDataPoint dataPoint = sml.getDataPoints().get(i);
 
-                if (jae.getName() != null && jae.getName().length() > 0) {
-                    generator.writeStringField(label.getName(), jae.getName());
+                if (dataPoint.getName() != null && dataPoint.getName().length() > 0) {
+                    generator.writeStringField(label.getName(), dataPoint.getName());
                 }
 
-                if (jae.getTime() != null) {
-                    generator.writeNumberField(label.getTime(), jae.getTime());
+                if (dataPoint.getTime() != null) {
+                    generator.writeNumberField(label.getTime(), dataPoint.getTime());
                 }
 
-                Type type = jae.getType();
+                Type type = dataPoint.getType();
                 if (type != null) {
-                    switch (jae.getType()) {
+                    switch (dataPoint.getType()) {
                     case FLOAT:
                     case INTEGER:
-                        generator.writeNumberField(label.getNumberValue(), jae.getFloatValue().doubleValue());
+                        generator.writeNumberField(label.getNumberValue(), dataPoint.getFloatValue().doubleValue());
                         break;
                     case BOOLEAN:
-                        generator.writeBooleanField(label.getBooleanValue(), jae.getBooleanValue());
+                        generator.writeBooleanField(label.getBooleanValue(), dataPoint.getBooleanValue());
                         break;
                     case OBJLNK:
-                        generator.writeStringField(label.getStringValue(), jae.getObjectLinkValue());
+                        generator.writeStringField(label.getStringValue(), dataPoint.getObjectLinkValue());
                         break;
                     case OPAQUE:
-                        generator.writeStringField(label.getDataValue(), Hex.encodeHexString(jae.getOpaqueValue()));
+                        generator.writeStringField(label.getDataValue(),
+                                Hex.encodeHexString(dataPoint.getOpaqueValue()));
                     case STRING:
-                        generator.writeStringField(label.getStringValue(), jae.getStringValue());
+                        generator.writeStringField(label.getStringValue(), dataPoint.getStringValue());
                         break;
                     case TIME:
-                        generator.writeNumberField(label.getNumberValue(), jae.getTimeValue());
+                        generator.writeNumberField(label.getNumberValue(), dataPoint.getTimeValue());
                     default:
                         break;
                     }
@@ -204,6 +199,8 @@ public class LwM2mNodeSenMLEncoder {
 
             generator.writeEndArray();
             generator.close();
+
+            System.out.println(Hex.encodeHexString(out.toByteArray()));
 
             return out.toByteArray();
         } catch (Exception e) {
@@ -220,22 +217,21 @@ public class LwM2mNodeSenMLEncoder {
         private LwM2mValueConverter converter;
 
         // visitor output
-        private ArrayList<SenMLDataPoint> resourceList = null;
+        private ArrayList<SenMLDataPoint> dataPoints = new ArrayList<>();
 
         @Override
         public void visit(LwM2mObject object) {
-            LOG.trace("Encoding Object {} into CBOR", object);
+            LOG.trace("Encoding Object {} into SenML CBOR/JSON", object);
             // Validate request path
             if (!requestPath.isObject()) {
                 throw new CodecException("Invalid request path %s for object encoding", requestPath);
             }
 
             // Create resources
-            resourceList = new ArrayList<>();
             for (LwM2mObjectInstance instance : object.getInstances().values()) {
                 for (LwM2mResource resource : instance.getResources().values()) {
                     String prefixPath = Integer.toString(instance.getId()) + "/" + Integer.toString(resource.getId());
-                    resourceList.addAll(lwM2mResourceToSenMLDataPoints(prefixPath, timestamp, resource));
+                    lwM2mResourceToSenMLDataPoint(prefixPath, timestamp, resource);
                 }
             }
         }
@@ -243,7 +239,6 @@ public class LwM2mNodeSenMLEncoder {
         @Override
         public void visit(LwM2mObjectInstance instance) {
             LOG.trace("Encoding object instance {} into SenML CBOR/JSON", instance);
-            resourceList = new ArrayList<>();
             for (LwM2mResource resource : instance.getResources().values()) {
                 // Validate request path & compute resource path
                 String prefixPath;
@@ -255,7 +250,7 @@ public class LwM2mNodeSenMLEncoder {
                     throw new CodecException("Invalid request path %s for instance encoding", requestPath);
                 }
                 // Create resources
-                resourceList.addAll(lwM2mResourceToSenMLDataPoints(prefixPath, timestamp, resource));
+                lwM2mResourceToSenMLDataPoint(prefixPath, timestamp, resource);
             }
         }
 
@@ -266,17 +261,11 @@ public class LwM2mNodeSenMLEncoder {
                 throw new CodecException("Invalid request path %s for resource encoding", requestPath);
             }
 
-            resourceList = lwM2mResourceToSenMLDataPoints("", timestamp, resource);
+            lwM2mResourceToSenMLDataPoint(EMPTY_RESOURCE_PATH, timestamp, resource);
         }
 
-        private ArrayList<SenMLDataPoint> lwM2mResourceToSenMLDataPoints(String resourcePath, Long timestamp,
-                LwM2mResource resource) {
-            // get type for this resource
-            ResourceModel rSpec = model.getResourceModel(objectId, resource.getId());
-            Type expectedType = rSpec != null ? rSpec.type : resource.getType();
-            ArrayList<SenMLDataPoint> resourcesList = new ArrayList<>();
-
-            // create JSON resource element
+        private void lwM2mResourceToSenMLDataPoint(String resourcePath, Long timestamp, LwM2mResource resource) {
+            // create resource element
             if (resource.isMultiInstances()) {
                 for (Entry<Integer, ?> entry : resource.getValues().entrySet()) {
                     // compute resource instance path
@@ -287,62 +276,57 @@ public class LwM2mNodeSenMLEncoder {
                         resourceInstancePath = resourcePath + "/" + entry.getKey();
                     }
 
-                    // Create resource element
-                    SenMLDataPoint dataPoint = new SenMLDataPoint();
-                    dataPoint.setName(resourceInstancePath);
-                    dataPoint.setTime(timestamp);
-
-                    // Convert value using expected type
-                    LwM2mPath lwM2mResourceInstancePath = new LwM2mPath(resourceInstancePath);
-                    Object dataPointValue = converter.convertValue(entry.getValue(), resource.getType(), expectedType,
-                            lwM2mResourceInstancePath);
-                    this.setResourceValue(dataPointValue, expectedType, dataPoint, lwM2mResourceInstancePath);
-
-                    // Add it to the List
-                    resourcesList.add(dataPoint);
+                    addDataPoint(resourceInstancePath, timestamp, resource, entry.getValue());
                 }
             } else {
-                // Create resource element
-                SenMLDataPoint dataPoint = new SenMLDataPoint();
-                dataPoint.setName(resourcePath);
-                dataPoint.setTime(timestamp);
-
-                // Convert value using expected type
-                LwM2mPath lwM2mResourcePath = new LwM2mPath(resourcePath);
-                Object dataPointValue = converter.convertValue(resource.getValue(), resource.getType(), expectedType,
-                        lwM2mResourcePath);
-                this.setResourceValue(dataPointValue, expectedType, dataPoint, lwM2mResourcePath);
-
-                // Add it to the List
-                resourcesList.add(dataPoint);
+                addDataPoint(resourcePath, timestamp, resource, resource.getValue());
             }
-            return resourcesList;
         }
 
-        private void setResourceValue(Object value, Type type, SenMLDataPoint resource, LwM2mPath resourcePath) {
-            LOG.trace("Encoding value {} in SenML CBOR/JSON", value);
+        private void addDataPoint(String resourcePath, Long timestamp, LwM2mResource resource, Object value) {
+            // get type for this resource
+            ResourceModel rSpec = model.getResourceModel(objectId, resource.getId());
+            Type expectedType = rSpec != null ? rSpec.type : resource.getType();
+
+            // Create resource element
+            SenMLDataPoint dataPoint = new SenMLDataPoint();
+            dataPoint.setName(resourcePath);
+            dataPoint.setTime(timestamp);
+
+            // Convert value using expected type
+            LwM2mPath lwM2mResourcePath = new LwM2mPath(resourcePath);
+            Object convertedValue = converter.convertValue(value, resource.getType(), expectedType, lwM2mResourcePath);
+            setDataPointValue(convertedValue, expectedType, lwM2mResourcePath, dataPoint);
+
+            // Add it to the List
+            dataPoints.add(dataPoint);
+        }
+
+        private void setDataPointValue(Object value, Type type, LwM2mPath resourcePath, SenMLDataPoint dataPoint) {
+            LOG.trace("Encoding resource value {} in SenML CBOR/JSON", value);
             switch (type) {
             case STRING:
-                resource.setStringValue((String) value);
+                dataPoint.setStringValue((String) value);
                 break;
             case INTEGER:
             case FLOAT:
-                resource.setFloatValue((Number) value);
+                dataPoint.setFloatValue((Number) value);
                 break;
             case BOOLEAN:
-                resource.setBooleanValue((Boolean) value);
+                dataPoint.setBooleanValue((Boolean) value);
                 break;
             case TIME:
-                resource.setTimeValue(((Date) value).getTime());
+                dataPoint.setTimeValue(((Date) value).getTime());
                 break;
             case OPAQUE:
-                resource.setStringValue(Hex.encodeHexString((byte[]) value));
+                dataPoint.setStringValue(Hex.encodeHexString((byte[]) value));
                 break;
             case OBJLNK:
-                resource.setStringValue(value.toString());
+                dataPoint.setStringValue(value.toString());
             default:
                 throw new CodecException("Invalid value type %s for %s", type, resourcePath);
             }
         }
     }
+
 }
