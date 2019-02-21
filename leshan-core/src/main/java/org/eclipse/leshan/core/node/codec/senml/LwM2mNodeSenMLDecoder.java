@@ -66,8 +66,8 @@ public class LwM2mNodeSenMLDecoder {
     @SuppressWarnings("unchecked")
     public static <T extends LwM2mNode> T decodeCbor(byte[] content, LwM2mPath path, LwM2mModel model,
             Class<T> nodeClass) throws CodecException {
-        SensorMeasurementList senMLRoot = parseSenMLCbor(content);
-        List<TimestampedLwM2mNode> timestampedNodes = parseLwM2MNodes(senMLRoot, path, model, nodeClass);
+        SensorMeasurementList sml = parseSenMLCbor(content);
+        List<TimestampedLwM2mNode> timestampedNodes = parseLwM2MNodes(sml, path, model, nodeClass);
         if (timestampedNodes.size() == 0) {
             return null;
         } else {
@@ -78,8 +78,8 @@ public class LwM2mNodeSenMLDecoder {
     @SuppressWarnings("unchecked")
     public static <T extends LwM2mNode> T decodeJson(byte[] content, LwM2mPath path, LwM2mModel model,
             Class<T> nodeClass) throws CodecException {
-        SensorMeasurementList senMLRoot = parseSenMLJson(content);
-        List<TimestampedLwM2mNode> timestampedNodes = parseLwM2MNodes(senMLRoot, path, model, nodeClass);
+        SensorMeasurementList sml = parseSenMLJson(content);
+        List<TimestampedLwM2mNode> timestampedNodes = parseLwM2MNodes(sml, path, model, nodeClass);
         if (timestampedNodes.size() == 0) {
             return null;
         } else {
@@ -89,18 +89,18 @@ public class LwM2mNodeSenMLDecoder {
 
     public static List<TimestampedLwM2mNode> decodeTimestampedCbor(byte[] content, LwM2mPath path, LwM2mModel model,
             Class<? extends LwM2mNode> nodeClassFromPath) {
-        SensorMeasurementList senMLRoot = parseSenMLCbor(content);
-        return parseLwM2MNodes(senMLRoot, path, model, nodeClassFromPath);
+        SensorMeasurementList sml = parseSenMLCbor(content);
+        return parseLwM2MNodes(sml, path, model, nodeClassFromPath);
     }
 
     public static List<TimestampedLwM2mNode> decodeTimestampedJson(byte[] content, LwM2mPath path, LwM2mModel model,
             Class<? extends LwM2mNode> nodeClassFromPath) {
-        SensorMeasurementList senMLRoot = parseSenMLJson(content);
-        return parseLwM2MNodes(senMLRoot, path, model, nodeClassFromPath);
+        SensorMeasurementList sml = parseSenMLJson(content);
+        return parseLwM2MNodes(sml, path, model, nodeClassFromPath);
     }
 
     private static SensorMeasurementList parseSenMLJson(byte[] content) throws CodecException {
-        SensorMeasurementList rootObject = new SensorMeasurementList();
+        SensorMeasurementList sml = new SensorMeasurementList();
         try {
             JsonArray ja = Json.parse(new String(content)).asArray();
 
@@ -110,11 +110,11 @@ public class LwM2mNodeSenMLDecoder {
 
                 JsonValue bn = jo.get(SENML_JSON_LABEL.getBaseName());
                 if (bn != null && bn.isString())
-                    rootObject.setBaseName(bn.asString());
+                    sml.setBaseName(bn.asString());
 
                 JsonValue bt = jo.get(SENML_JSON_LABEL.getBaseTime());
                 if (bt != null && bt.isNumber())
-                    rootObject.setBaseTime(bt.asLong());
+                    sml.setBaseTime(bt.asLong());
 
                 JsonValue n = jo.get(SENML_JSON_LABEL.getName());
                 if (n != null && n.isString()) {
@@ -141,17 +141,17 @@ public class LwM2mNodeSenMLDecoder {
                 if (sv != null && sv.isString())
                     dataPoint.setStringValue(sv.asString());
 
-                rootObject.addDataPoint(dataPoint);
+                sml.addDataPoint(dataPoint);
             }
         } catch (Exception e) {
             throw new CodecException(e, "Unable to deserialize senml-json [path:%s]");
         }
 
-        return rootObject;
+        return sml;
     }
 
     private static SensorMeasurementList parseSenMLCbor(byte[] content) throws CodecException {
-        SensorMeasurementList rootObject = new SensorMeasurementList();
+        SensorMeasurementList sml = new SensorMeasurementList();
         try {
             CBORFactory factory = new CBORFactory();
             CBORParser parser = factory.createParser(content);
@@ -164,8 +164,8 @@ public class LwM2mNodeSenMLDecoder {
                 }
 
                 if (token == JsonToken.START_OBJECT) {
-                    SenMLDataPoint dataPoint = parseSenMLDataPoint(rootObject, parser);
-                    rootObject.addDataPoint(dataPoint);
+                    SenMLDataPoint dataPoint = parseSenMLDataPoint(sml, parser);
+                    sml.addDataPoint(dataPoint);
                 }
 
                 if (token == JsonToken.END_ARRAY) {
@@ -176,10 +176,10 @@ public class LwM2mNodeSenMLDecoder {
             throw new CodecException(e, "Unable to deserialize senml-cbor [path:%s]");
         }
 
-        return rootObject;
+        return sml;
     }
 
-    private static SenMLDataPoint parseSenMLDataPoint(SensorMeasurementList rootObject, CBORParser parser) {
+    private static SenMLDataPoint parseSenMLDataPoint(SensorMeasurementList sml, CBORParser parser) {
         SenMLDataPoint dataPoint = new SenMLDataPoint();
         try {
             JsonToken token = null;
@@ -192,7 +192,7 @@ public class LwM2mNodeSenMLDecoder {
                     fileName = parser.getCurrentName();
                     if (SENML_CBOR_LABEL.isBaseName(fileName)) {
                         token = parser.nextToken();
-                        rootObject.setBaseName(parser.getText());
+                        sml.setBaseName(parser.getText());
                         continue;
                     } else if (SENML_CBOR_LABEL.isName(fileName)) {
                         token = parser.nextToken();
@@ -215,16 +215,16 @@ public class LwM2mNodeSenMLDecoder {
         }
     }
 
-    private static List<TimestampedLwM2mNode> parseLwM2MNodes(SensorMeasurementList rootObject, LwM2mPath path,
+    private static List<TimestampedLwM2mNode> parseLwM2MNodes(SensorMeasurementList sml, LwM2mPath path,
             LwM2mModel model, Class<? extends LwM2mNode> nodeClass) throws CodecException {
 
-        LOG.trace("Parsing SenML object for path {}: {}", path, rootObject);
+        LOG.trace("Parsing CBOR/JSON object for path {}: {}", path, sml);
 
         // Group JSON entry by time-stamp
-        Map<Long, Collection<SenMLDataPoint>> dataPoints = groupDataPointsByTimestamp(rootObject);
+        Map<Long, Collection<SenMLDataPoint>> dataPoints = groupDataPointsByTimestamp(sml);
 
         // Extract baseName
-        LwM2mPath baseName = extractAndValidateBaseName(rootObject, path);
+        LwM2mPath baseName = extractAndValidateBaseName(sml, path);
         if (baseName == null)
             baseName = path; // if no base name, use request path as base name
 
@@ -280,7 +280,7 @@ public class LwM2mNodeSenMLDecoder {
             }
 
             // compute time-stamp
-            Long timestamp = computeTimestamp(rootObject.getBaseTime(), entryByTimestamp.getKey());
+            Long timestamp = computeTimestamp(sml.getBaseTime(), entryByTimestamp.getKey());
 
             // add time-stamped node
             timestampedNodes.add(new TimestampedLwM2mNode(timestamp, node));
@@ -313,7 +313,8 @@ public class LwM2mNodeSenMLDecoder {
      * 
      * @return a map (relativeTimestamp => collection of JsonArrayEntry)
      */
-    private static SortedMap<Long, Collection<SenMLDataPoint>> groupDataPointsByTimestamp(SensorMeasurementList rootObject) {
+    private static SortedMap<Long, Collection<SenMLDataPoint>> groupDataPointsByTimestamp(
+            SensorMeasurementList sml) {
         SortedMap<Long, Collection<SenMLDataPoint>> result = new TreeMap<>(new Comparator<Long>() {
             @Override
             public int compare(Long o1, Long o2) {
@@ -324,7 +325,7 @@ public class LwM2mNodeSenMLDecoder {
             }
         });
 
-        for (SenMLDataPoint e : rootObject.getDataPoints()) {
+        for (SenMLDataPoint e : sml.getDataPoints()) {
             // Get time for this entry
             Long time = e.getTime();
 
@@ -359,10 +360,10 @@ public class LwM2mNodeSenMLDecoder {
             Collection<SenMLDataPoint> dataPointCollection, LwM2mPath baseName) throws CodecException {
         Map<Integer, Collection<SenMLDataPoint>> result = new HashMap<>();
 
-        for (SenMLDataPoint e : dataPointCollection) {
+        for (SenMLDataPoint dataPoint : dataPointCollection) {
             // Build resource path
 
-            LwM2mPath nodePath = e.getName() == null ? baseName : baseName.append(e.getName());
+            LwM2mPath nodePath = dataPoint.getName() == null ? baseName : baseName.append(dataPoint.getName());
 
             // Validate path
             if (!nodePath.isResourceInstance() && !nodePath.isResource()) {
@@ -379,7 +380,7 @@ public class LwM2mNodeSenMLDecoder {
             }
 
             // Add it to the list
-            dataPoints.add(e);
+            dataPoints.add(dataPoint);
         }
 
         // Create an entry for an empty instance if possible
@@ -389,11 +390,11 @@ public class LwM2mNodeSenMLDecoder {
         return result;
     }
 
-    private static LwM2mPath extractAndValidateBaseName(SensorMeasurementList rootObject, LwM2mPath requestPath)
+    private static LwM2mPath extractAndValidateBaseName(SensorMeasurementList sml, LwM2mPath requestPath)
             throws CodecException {
         // Check baseName is valid
-        if (rootObject.getBaseName() != null && !rootObject.getBaseName().isEmpty()) {
-            LwM2mPath bnPath = new LwM2mPath(rootObject.getBaseName());
+        if (sml.getBaseName() != null && !sml.getBaseName().isEmpty()) {
+            LwM2mPath bnPath = new LwM2mPath(sml.getBaseName());
 
             // check returned base name path is under requested path
             if (requestPath.getObjectId() != null && bnPath.getObjectId() != null) {
@@ -518,7 +519,7 @@ public class LwM2mNodeSenMLDecoder {
                 // JSON format specs said v = integer or float
                 return ((Number) value).doubleValue();
             case TIME:
-                return new Date(((Number) value).longValue() * 1000L);
+                return new Date(((Number) value).longValue());
             case OBJLNK:
                 return value;
             case OPAQUE:
