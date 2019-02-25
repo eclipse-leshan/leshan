@@ -87,11 +87,11 @@ myModule.factory('lwResources',["$http", function($http) {
     /**
      * Build Resource Tree for the given rootPath and objectLinks
      */
-    var buildResourceTree = function(rootPath, objectLinks, callback) {
+    var buildResourceTree = function(endpoint, rootPath, objectLinks, callback) {
         if (objectLinks.length == 0)
             callback([]);
 
-        getObjectDefinitions(function(objectDefs){
+        getObjectDefinitions(endpoint, function(objectDefs){
             var tree = [];
 
             for (var i = 0; i < objectLinks.length; i++) {
@@ -267,31 +267,27 @@ myModule.factory('lwResources',["$http", function($http) {
     /**
      * Load all the Object Definition known by the server.
      */
-    var loadObjectDefinitions = function(callback) {
-        if (objectDefs){
-            callback(objectDefs);
-        }else{
-            $http.get("api/objectspecs")
-            .success(function(data, status, headers, config) {
-                if (data) {
-                    objectDefs = data;
-                    callback(objectDefs);
-                }else{
-                    callback([]);
-                }
-            }).error(function(data, status, headers, config) {
-                errormessage = "Unable to load object specfication : " + status +" "+ data;
-                console.error(errormessage);
+    var loadObjectDefinitions = function(endpoint, callback) {
+        $http.get("api/objectspecs/"+endpoint)
+        .success(function(data, status, headers, config) {
+            if (data) {
+                objectDefs = data;
+                callback(objectDefs);
+            }else{
                 callback([]);
-            });
-        }
+            }
+        }).error(function(data, status, headers, config) {
+            errormessage = "Unable to load object specfication : " + status +" "+ data;
+            console.error(errormessage);
+            callback([]);
+        });
     };
 
     /**
      * Return a copy of model describing the LWM2M Objects defined by OMA
      */
-    var getObjectDefinitions = function(callback) {
-        loadObjectDefinitions(function(objectDefs){
+    var getObjectDefinitions = function(endpoint,callback) {
+        loadObjectDefinitions(endpoint, function(objectDefs){
             callback($.extend(true,[],objectDefs)); // make a deep copy of the cache
         });
     };

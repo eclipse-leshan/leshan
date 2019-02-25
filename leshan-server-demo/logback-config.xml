@@ -28,5 +28,5 @@ Contributors:
 	<logger name="org.eclipse.leshan" level="INFO"/>
 	<logger name="org.eclipse.leshan.core.californium.LwM2mCoapResource" level="DEBUG"/>
 	<logger name="org.eclipse.leshan.server.security.SecurityCheck" level="DEBUG"/>
-	<logger name="org.eclipse.leshan.core.model.LwM2mModel" level="TRACE"/>
+	<logger name="org.eclipse.leshan.core.model.LwM2mModelRepository" level="TRACE"/>
 </configuration>
