@@ -19,6 +19,7 @@ import java.util.Collection;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.server.registration.Registration;
 
 /**
@@ -28,7 +29,7 @@ public class StaticModelProvider implements LwM2mModelProvider {
     private final LwM2mModel model;
 
     public StaticModelProvider(Collection<ObjectModel> objects) {
-        this(new LwM2mModel(objects));
+        this(new StaticModel(objects));
     }
 
     public StaticModelProvider(LwM2mModel model) {

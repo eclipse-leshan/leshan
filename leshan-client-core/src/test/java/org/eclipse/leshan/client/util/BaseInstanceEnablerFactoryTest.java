@@ -23,15 +23,16 @@ import java.util.List;
 
 import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.resource.BaseInstanceEnablerFactory;
-import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.client.resource.DummyInstanceEnabler;
+import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
+import org.eclipse.leshan.core.model.StaticModel;
 import org.junit.Test;
 
 public class BaseInstanceEnablerFactoryTest {
 
-    public static final LwM2mModel model = new LwM2mModel(ObjectLoader.loadDefault());
+    public static final LwM2mModel model = new StaticModel(ObjectLoader.loadDefault());
     public static List<Integer> emptyList = Collections.emptyList();
 
     @Test(expected = IllegalStateException.class)

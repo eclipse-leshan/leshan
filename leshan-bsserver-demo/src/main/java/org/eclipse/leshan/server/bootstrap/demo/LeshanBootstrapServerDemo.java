@@ -41,9 +41,9 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.leshan.LwM2m;
-import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.BootstrapServlet;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.ServerServlet;
 import org.eclipse.leshan.server.californium.LeshanBootstrapServerBuilder;
@@ -174,7 +174,7 @@ public class LeshanBootstrapServerDemo {
         builder.setSecurityStore(new BootstrapConfigSecurityStore(bsStore));
         builder.setLocalAddress(localAddress, localPort);
         builder.setLocalSecureAddress(secureLocalAddress, secureLocalPort);
-        builder.setModel(new LwM2mModel(models));
+        builder.setModel(new StaticModel(models));
 
         // Create X509 credentials;
         X509Certificate serverCertificate = null;

@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
+import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
@@ -49,7 +50,7 @@ public class LwM2mNodeEncoderTest {
 
     @BeforeClass
     public static void loadModel() {
-        model = new LwM2mModel(ObjectLoader.loadDefault());
+        model = new StaticModel(ObjectLoader.loadDefault());
         encoder = new DefaultLwM2mNodeEncoder();
     }
 

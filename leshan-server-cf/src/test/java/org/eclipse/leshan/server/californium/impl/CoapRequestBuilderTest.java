@@ -32,6 +32,7 @@ import org.eclipse.leshan.core.attributes.Attribute;
 import org.eclipse.leshan.core.attributes.AttributeSet;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
+import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
@@ -65,7 +66,7 @@ public class CoapRequestBuilderTest {
 
     @BeforeClass
     public static void loadModel() {
-        model = new LwM2mModel(ObjectLoader.loadDefault());
+        model = new StaticModel(ObjectLoader.loadDefault());
         encoder = new DefaultLwM2mNodeEncoder();
     }
 

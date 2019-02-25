@@ -36,6 +36,7 @@ import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
+import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
@@ -421,7 +422,7 @@ public class LeshanBootstrapServerBuilder {
                 }
             };
         if (model == null)
-            model = new LwM2mModel(ObjectLoader.loadDefault());
+            model = new StaticModel(ObjectLoader.loadDefault());
         if (coapConfig == null) {
             coapConfig = createDefaultNetworkConfig();
         }

@@ -45,9 +45,9 @@ import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
-import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.util.Hex;
 import org.eclipse.leshan.util.SecurityUtil;
@@ -324,7 +324,7 @@ public class LeshanClientDemo {
         models.addAll(ObjectLoader.loadDdfResources("/models", modelPaths));
 
         // Initialize object list
-        ObjectsInitializer initializer = new ObjectsInitializer(new LwM2mModel(models));
+        ObjectsInitializer initializer = new ObjectsInitializer(new StaticModel(models));
         if (needBootstrap) {
             if (pskIdentity != null) {
                 initializer.setInstancesForObject(SECURITY, pskBootstrap(serverURI, pskIdentity, pskKey));

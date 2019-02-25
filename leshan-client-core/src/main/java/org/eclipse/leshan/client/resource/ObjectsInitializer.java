@@ -25,6 +25,7 @@ import java.util.Set;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.util.Validate;
 
@@ -41,7 +42,7 @@ public class ObjectsInitializer {
 
     public ObjectsInitializer(LwM2mModel model) {
         if (model == null) {
-            this.model = new LwM2mModel(ObjectLoader.loadDefault());
+            this.model = new StaticModel(ObjectLoader.loadDefault());
         } else {
             this.model = model;
         }

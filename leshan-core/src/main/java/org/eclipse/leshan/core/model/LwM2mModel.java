@@ -15,42 +15,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.model;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * A collection of LWM2M object definitions.
+ * A collection of LWM2M object definitions. This collection contains only 1 version of a specific object definition.
  */
-public class LwM2mModel {
-
-    private static final Logger LOG = LoggerFactory.getLogger(LwM2mModel.class);
-
-    private final Map<Integer, ObjectModel> objects; // objects by ID
-
-    public LwM2mModel(ObjectModel... objectModels) {
-        this(Arrays.asList(objectModels));
-    }
-
-    public LwM2mModel(Collection<ObjectModel> objectModels) {
-        if (objectModels == null) {
-            objects = new HashMap<>();
-        } else {
-            Map<Integer, ObjectModel> map = new HashMap<>();
-            for (ObjectModel model : objectModels) {
-                ObjectModel old = map.put(model.id, model);
-                if (old != null) {
-                    LOG.debug("Model already exists for object {}. Overriding it.", model.id);
-                }
-            }
-            objects = Collections.unmodifiableMap(map);
-        }
-    }
+public interface LwM2mModel {
 
     /**
      * Returns the description of a given resource.
@@ -59,13 +29,7 @@ public class LwM2mModel {
      * @param resourceId the resource identifier
      * @return the resource specification or <code>null</code> if not found
      */
-    public ResourceModel getResourceModel(int objectId, int resourceId) {
-        ObjectModel object = objects.get(objectId);
-        if (object != null) {
-            return object.resources.get(resourceId);
-        }
-        return null;
-    }
+    ResourceModel getResourceModel(int objectId, int resourceId);
 
     /**
      * Returns the description of a given object.
@@ -73,15 +37,11 @@ public class LwM2mModel {
      * @param objectId the object identifier
      * @return the object definition or <code>null</code> if not found
      */
-    public ObjectModel getObjectModel(int objectId) {
-        return objects.get(objectId);
-    }
+    ObjectModel getObjectModel(int objectId);
 
     /**
      * @return all the objects descriptions known.
      */
-    public Collection<ObjectModel> getObjectModels() {
-        return objects.values();
-    }
+    Collection<ObjectModel> getObjectModels();
 
 }

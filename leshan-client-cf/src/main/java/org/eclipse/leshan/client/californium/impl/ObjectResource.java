@@ -34,6 +34,7 @@ import org.eclipse.leshan.client.resource.NotifySender;
 import org.eclipse.leshan.client.servers.BootstrapHandler;
 import org.eclipse.leshan.core.attributes.AttributeSet;
 import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -116,7 +117,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements NotifySen
                 if (response.getCode() == org.eclipse.leshan.ResponseCode.CONTENT) {
                     LwM2mPath path = new LwM2mPath(URI);
                     LwM2mNode content = response.getContent();
-                    LwM2mModel model = new LwM2mModel(nodeEnabler.getObjectModel());
+                    LwM2mModel model = new StaticModel(nodeEnabler.getObjectModel());
                     ContentFormat format = getContentFormat(observeRequest, requestedContentFormat);
                     exchange.respond(ResponseCode.CONTENT, encoder.encode(content, format, path, model),
                             format.getCode());
@@ -133,7 +134,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements NotifySen
                 if (response.getCode() == org.eclipse.leshan.ResponseCode.CONTENT) {
                     LwM2mPath path = new LwM2mPath(URI);
                     LwM2mNode content = response.getContent();
-                    LwM2mModel model = new LwM2mModel(nodeEnabler.getObjectModel());
+                    LwM2mModel model = new StaticModel(nodeEnabler.getObjectModel());
                     ContentFormat format = getContentFormat(readRequest, requestedContentFormat);
                     exchange.respond(ResponseCode.CONTENT, encoder.encode(content, format, path, model),
                             format.getCode());
@@ -195,7 +196,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements NotifySen
             }
             LwM2mNode lwM2mNode;
             try {
-                LwM2mModel model = new LwM2mModel(nodeEnabler.getObjectModel());
+                LwM2mModel model = new StaticModel(nodeEnabler.getObjectModel());
                 lwM2mNode = decoder.decode(coapExchange.getRequestPayload(), contentFormat, path, model);
                 if (identity.isLwm2mBootstrapServer()) {
                     BootstrapWriteResponse response = nodeEnabler.write(identity,
@@ -255,7 +256,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements NotifySen
             exchange.respond(ResponseCode.UNSUPPORTED_CONTENT_FORMAT);
             return;
         }
-        LwM2mModel model = new LwM2mModel(nodeEnabler.getObjectModel());
+        LwM2mModel model = new StaticModel(nodeEnabler.getObjectModel());
 
         // Manage Update Instance
         if (path.isObjectInstance()) {
