@@ -20,6 +20,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -55,21 +56,40 @@ public class SerializationUtil {
             if (excludes.contains(clazz.getName())) {
                 return true;
             }
-            // we support only collection and map and we consider that checking only if parameterized type is
-            // serializable is enough.
-            if (Collection.class.isAssignableFrom(clazz) || Map.class.isAssignableFrom(clazz)) {
-                for (Type t : ptype.getActualTypeArguments()) {
-                    if (!isSerializable(t, notSerializableObject, excludes)) {
-                        notSerializableObject.put(clazz, String
-                                .format("[%s] is parameterized with not serializable type [%s].", clazz.getName(), t));
-                        return false;
+
+            if (Serializable.class.isAssignableFrom(clazz)) {
+                boolean isSerializable = true;
+                for (Field field : clazz.getDeclaredFields()) {
+                    // check if this field is Serializable
+                    if (!isSerializable(field, ptype, notSerializableObject, excludes)) {
+                        notSerializableObject.put(field, String.format("[%s %s] field from [%s] is not serializable",
+                                field.getType().getSimpleName(), field.getName(), field.getDeclaringClass().getName()));
+                        isSerializable = false;
                     }
                 }
-                return true;
+                return isSerializable;
+            }
+            // we accept Collection, Map interface because most implementation is Serializable and checking if
+            // parameterized type is serializable should enough.
+            else if (clazz.isInterface()) {
+                if (Collection.class.isAssignableFrom(clazz) || Map.class.isAssignableFrom(clazz)) {
+                    for (Type t : ptype.getActualTypeArguments()) {
+                        if (!isSerializable(t, notSerializableObject, excludes)) {
+                            notSerializableObject.put(clazz, String.format(
+                                    "[%s] is parameterized with not serializable type [%s].", clazz.getName(), t));
+                            return false;
+                        }
+                    }
+                    return true;
+                } else {
+                    notSerializableObject.put(clazz, String.format(
+                            "[%s] interface is maybe serializable but we only support Collection and Map as parameterized interface class.",
+                            clazz));
+                    return false;
+                }
             } else {
-                notSerializableObject.put(clazz, String.format(
-                        "[%s] is maybe serializable but we only support Collection and Map as parameterized class.",
-                        clazz));
+                notSerializableObject.put(clazz,
+                        String.format("[%s] is not primitive or does not implement Serializable.", clazz.getName()));
                 return false;
             }
         }
@@ -88,7 +108,7 @@ public class SerializationUtil {
             } else if (Serializable.class.isAssignableFrom(clazz)) {
                 boolean isSerializable = true;
                 for (Field field : clazz.getDeclaredFields()) {
-                    if (!isSerializable(field, notSerializableObject, excludes)) {
+                    if (!isSerializable(field, null, notSerializableObject, excludes)) {
                         notSerializableObject.put(field, String.format("[%s %s] field from [%s] is not serializable",
                                 field.getType().getSimpleName(), field.getName(), field.getDeclaringClass().getName()));
                         isSerializable = false;
@@ -100,7 +120,9 @@ public class SerializationUtil {
                         String.format("[%s] is not primitive or does not implement Serializable.", clazz.getName()));
                 return false;
             }
-        } else {
+        }
+        // others cases
+        else {
             if (excludes.contains(type.toString())) {
                 return true;
             }
@@ -109,8 +131,20 @@ public class SerializationUtil {
         }
     }
 
-    private static boolean isSerializable(Field field, Map<Object, String> notSerializableObject,
-            Collection<String> excludes) {
+    public static Type resolveType(TypeVariable<?> fieldType, ParameterizedType ptype) {
+        if (!(ptype.getRawType() instanceof Class)) {
+            return null;
+        }
+        Class<?> clazz = (Class<?>) ptype.getRawType();
+        TypeVariable<?>[] typeParameters = clazz.getTypeParameters();
+        int index = Arrays.asList(typeParameters).indexOf(fieldType);
+        if (index < 0)
+            return null;
+        return ptype.getActualTypeArguments()[index];
+    }
+
+    private static boolean isSerializable(Field field, ParameterizedType ptype,
+            Map<Object, String> notSerializableObject, Collection<String> excludes) {
 
         if (excludes.contains(field.getDeclaringClass().getName() + "." + field.getName())) {
             return true;
@@ -121,7 +155,17 @@ public class SerializationUtil {
             return true;
         }
 
-        if (isSerializable(field.getGenericType(), notSerializableObject, excludes)) {
+        Type fieldType = field.getGenericType();
+        // if this is a generic field (e.g. private V myAttribute from myClass<T>) resolve type first.
+        if (fieldType instanceof TypeVariable<?> && ptype != null) {
+            fieldType = resolveType((TypeVariable<?>) fieldType, ptype);
+            if (fieldType == null) {
+                notSerializableObject.put(field,
+                        String.format("Generic type [%s] of [%s] field from [%s] is can not be resolved",
+                                field.getGenericType(), field.getName(), field.getDeclaringClass().getName()));
+            }
+        }
+        if (isSerializable(fieldType, notSerializableObject, excludes)) {
             return true;
         }
         return false;

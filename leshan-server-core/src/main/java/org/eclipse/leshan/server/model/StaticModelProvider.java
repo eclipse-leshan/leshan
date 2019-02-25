@@ -23,7 +23,8 @@ import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.server.registration.Registration;
 
 /**
- * A LwM2mModelProvider which uses only one model for all registered clients.
+ * A LwM2mModelProvider which uses only one model for all registered clients without taking into account object version
+ * provided at registration.
  */
 public class StaticModelProvider implements LwM2mModelProvider {
     private final LwM2mModel model;

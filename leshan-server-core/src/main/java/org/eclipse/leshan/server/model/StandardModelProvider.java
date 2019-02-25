@@ -18,9 +18,11 @@ package org.eclipse.leshan.server.model;
 import org.eclipse.leshan.core.model.ObjectLoader;
 
 /**
- * A static model provider which uses the default model embedded in Leshan.
+ * A versioned model provider which uses the default model embedded in Leshan.
+ * 
+ * @see VersionedModelProvider
  */
-public class StandardModelProvider extends StaticModelProvider {
+public class StandardModelProvider extends VersionedModelProvider {
 
     public StandardModelProvider() {
         super(ObjectLoader.loadDefault());

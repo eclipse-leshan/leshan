@@ -25,8 +25,13 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.leshan.Link;
+import org.eclipse.leshan.core.attributes.Attribute;
+import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.util.StringUtils;
@@ -69,6 +74,10 @@ public class Registration implements Serializable {
 
     private final Link[] objectLinks;
 
+    // Lazy Loaded map of supported object (object id => version)
+    // built from objectLinks
+    private final AtomicReference<Map<Integer, String>> supportedObjects;
+
     private final Map<String, String> additionalRegistrationAttributes;
 
     /** The location where LWM2M objects are hosted on the device */
@@ -78,9 +87,8 @@ public class Registration implements Serializable {
 
     protected Registration(String id, String endpoint, Identity identity, String lwM2mVersion, Long lifetimeInSec,
             String smsNumber, BindingMode bindingMode, Link[] objectLinks,
-            InetSocketAddress registrationEndpointAddress,
-
-            Date registrationDate, Date lastUpdate, Map<String, String> additionalRegistrationAttributes) {
+            InetSocketAddress registrationEndpointAddress, Date registrationDate, Date lastUpdate,
+            Map<String, String> additionalRegistrationAttributes, Map<Integer, String> supportedObjects) {
 
         Validate.notNull(id);
         Validate.notEmpty(endpoint);
@@ -94,7 +102,7 @@ public class Registration implements Serializable {
         this.registrationEndpointAddress = registrationEndpointAddress;
 
         this.objectLinks = objectLinks;
-        // extract the root objects path from the object links
+        // Parse object link to extract root path.
         String rootPath = "/";
         if (objectLinks != null) {
             for (Link link : objectLinks) {
@@ -104,8 +112,10 @@ public class Registration implements Serializable {
                 }
             }
         }
+        if (!rootPath.endsWith("/"))
+            rootPath = rootPath + "/";
         this.rootPath = rootPath;
-
+        this.supportedObjects = new AtomicReference<Map<Integer, String>>(supportedObjects);
         this.lifeTimeInSec = lifetimeInSec == null ? DEFAULT_LIFETIME_IN_SEC : lifetimeInSec;
         this.lwM2mVersion = lwM2mVersion == null ? DEFAULT_LWM2M_VERSION : lwM2mVersion;
         this.bindingMode = bindingMode == null ? BindingMode.U : bindingMode;
@@ -305,6 +315,26 @@ public class Registration implements Serializable {
         return bindingMode.equals(BindingMode.UQ) || bindingMode.equals(BindingMode.UQS);
     }
 
+    /**
+     * @return the supported version of the object with the id {@code objectid}. If the object is not supported return
+     *         {@code null}
+     */
+    public String getSupportedVersion(Integer objectid) {
+        return getSupportedObject().get(objectid);
+    }
+
+    /**
+     * @return a map from {@code objectId} => {@code supportedVersion} for each supported objects. supported.
+     */
+    public Map<Integer, String> getSupportedObject() {
+        Map<Integer, String> objects = supportedObjects.get();
+        if (objects != null)
+            return objects;
+
+        supportedObjects.compareAndSet(null, Collections.unmodifiableMap(getSupportedObject(rootPath, objectLinks)));
+        return supportedObjects.get();
+    }
+
     @Override
     public String toString() {
         return String.format(
@@ -339,6 +369,46 @@ public class Registration implements Serializable {
         }
     }
 
+    /**
+     * Build a Map (object Id => object Version) from root path and registration object links.
+     */
+    public static Map<Integer, String> getSupportedObject(String rootPath, Link[] objectLinks) {
+        Map<Integer, String> objects = new HashMap<>();
+        for (Link link : objectLinks) {
+            if (link != null) {
+                Pattern p = Pattern.compile("^\\Q" + rootPath + "\\E(\\d+)(?:/\\d+)*$");
+                Matcher m = p.matcher(link.getUrl());
+                if (m.matches()) {
+                    try {
+                        // extract object id and version
+                        int objectId = Integer.parseInt(m.group(1));
+                        Object version = link.getAttributes().get(Attribute.OBJECT_VERSION);
+                        String currentVersion = objects.get(objectId);
+
+                        // store it in map
+                        if (currentVersion == null) {
+                            // we never find version for this object add it
+                            if (version instanceof String) {
+                                objects.put(objectId, (String) version);
+                            } else {
+                                objects.put(objectId, ObjectModel.DEFAULT_VERSION);
+                            }
+                        } else {
+                            // if version is already set, we override it only if new version is not DEFAULT_VERSION
+                            if (version instanceof String && !version.equals(ObjectModel.DEFAULT_VERSION)) {
+                                objects.put(objectId, (String) version);
+                            }
+                        }
+                    } catch (NumberFormatException e) {
+                        // This should not happened except maybe if the number in url is too long...
+                        // In this case we just ignore it because this is not an object id.
+                    }
+                }
+            }
+        }
+        return objects;
+    }
+
     public static class Builder {
         private final String registrationId;
         private final String endpoint;
@@ -352,6 +422,7 @@ public class Registration implements Serializable {
         private BindingMode bindingMode;
         private String lwM2mVersion;
         private Link[] objectLinks;
+        private Map<Integer, String> supportedObjects;
         private Map<String, String> additionalRegistrationAttributes;
 
         public Builder(String registrationId, String endpoint, Identity identity,
@@ -403,6 +474,11 @@ public class Registration implements Serializable {
             return this;
         }
 
+        public Builder supportedObjects(Map<Integer, String> supportedObjects) {
+            this.supportedObjects = Collections.unmodifiableMap(supportedObjects);
+            return this;
+        }
+
         public Builder additionalRegistrationAttributes(Map<String, String> additionalRegistrationAttributes) {
             this.additionalRegistrationAttributes = additionalRegistrationAttributes;
             return this;
@@ -412,9 +488,8 @@ public class Registration implements Serializable {
             return new Registration(Builder.this.registrationId, Builder.this.endpoint, Builder.this.identity,
                     Builder.this.lwM2mVersion, Builder.this.lifeTimeInSec, Builder.this.smsNumber, this.bindingMode,
                     this.objectLinks, this.registrationEndpointAddress, this.registrationDate, this.lastUpdate,
-                    this.additionalRegistrationAttributes);
+                    this.additionalRegistrationAttributes, this.supportedObjects);
         }
 
     }
-
 }
