@@ -328,5 +328,4 @@ public class LwM2mNodeSenMLEncoder {
             }
         }
     }
-
 }
