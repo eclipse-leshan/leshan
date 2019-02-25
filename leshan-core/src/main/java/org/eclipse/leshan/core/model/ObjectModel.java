@@ -77,6 +77,17 @@ public class ObjectModel {
         return id >= OMA_OBJECT_MIN_ID && id <= OMA_OBJECT_MAX_ID;
     }
 
+    /**
+     * @return the version and if the version is null or empty return the default value 1.0
+     * @see ObjectModel#DEFAULT_VERSION
+     */
+    public String getVersion() {
+        if (version == null || version.isEmpty()) {
+            return ObjectModel.DEFAULT_VERSION;
+        }
+        return version;
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
