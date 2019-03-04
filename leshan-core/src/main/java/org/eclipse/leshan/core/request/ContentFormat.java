@@ -29,11 +29,15 @@ public class ContentFormat {
     public static final int OLD_JSON_CODE = 1543;
     public static final int OLD_TLV_CODE = 1542;
 
+    public static final int SENML_JSON_CODE = 110;
+
     public static final ContentFormat TLV = new ContentFormat("TLV", "application/vnd.oma.lwm2m+tlv", TLV_CODE);
     public static final ContentFormat JSON = new ContentFormat("JSON", "application/vnd.oma.lwm2m+json", JSON_CODE);
     public static final ContentFormat TEXT = new ContentFormat("TEXT", "text/plain", TEXT_CODE);
     public static final ContentFormat OPAQUE = new ContentFormat("OPAQUE", "application/octet-stream", OPAQUE_CODE);
     public static final ContentFormat LINK = new ContentFormat("LINK", "application/link-format", LINK_CODE);
+    public static final ContentFormat SENML_JSON = new ContentFormat("SENML_JSON", "application/senml+json",
+            SENML_JSON_CODE);
 
     public static final ContentFormat DEFAULT = TLV;
 
