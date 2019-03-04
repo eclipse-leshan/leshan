@@ -278,4 +278,57 @@ public class LwM2mNodeEncoderTest {
         String expected = b.toString();
         Assert.assertEquals(expected, new String(encoded));
     }
+
+    @Test
+    public void senml_json_encode_device_object_instance() {
+        LwM2mObjectInstance oInstance = new LwM2mObjectInstance(0, getDeviceResources());
+        byte[] encoded = encoder.encode(oInstance, ContentFormat.SENML_JSON, new LwM2mPath("/3/0"), model);
+
+        StringBuilder b = new StringBuilder();
+        b.append("[{\"bn\":\"/3/0\",\"n\":\"0\",\"vs\":\"Open Mobile Alliance\"},");
+        b.append("{\"n\":\"1\",\"vs\":\"Lightweight M2M Client\"},");
+        b.append("{\"n\":\"2\",\"vs\":\"345000123\"},");
+        b.append("{\"n\":\"3\",\"vs\":\"1.0\"},");
+        b.append("{\"n\":\"6/0\",\"v\":1},{\"n\":\"6/1\",\"v\":5},");
+        b.append("{\"n\":\"7/0\",\"v\":3800},{\"n\":\"7/1\",\"v\":5000},");
+        b.append("{\"n\":\"8/0\",\"v\":125},{\"n\":\"8/1\",\"v\":900},");
+        b.append("{\"n\":\"9\",\"v\":100},");
+        b.append("{\"n\":\"10\",\"v\":15},");
+        b.append("{\"n\":\"11/0\",\"v\":0},");
+        b.append("{\"n\":\"13\",\"v\":1367491215000},");
+        b.append("{\"n\":\"14\",\"vs\":\"+02:00\"},");
+        b.append("{\"n\":\"16\",\"vs\":\"U\"}]");
+
+        String expected = b.toString();
+        Assert.assertEquals(expected, new String(encoded));
+    }
+
+    @Test
+    public void senml_json_encode_single_resource() {
+        byte[] encoded = encoder.encode(LwM2mSingleResource.newStringResource(0, "Open Mobile Alliance"),
+                ContentFormat.SENML_JSON, new LwM2mPath("/3/0/0"), model);
+
+        String expectedStringValue = "[{\"bn\":\"/3/0/0\",\"vs\":\"Open Mobile Alliance\"}]";
+        Assert.assertEquals(expectedStringValue, new String(encoded));
+
+        encoded = encoder.encode(LwM2mSingleResource.newBooleanResource(6, true), ContentFormat.SENML_JSON,
+                new LwM2mPath("/1/0/6"), model);
+        expectedStringValue = "[{\"bn\":\"/1/0/6\",\"vb\":true}]";
+        Assert.assertEquals(expectedStringValue, new String(encoded));
+
+        encoded = encoder.encode(LwM2mSingleResource.newIntegerResource(9, 85l), ContentFormat.SENML_JSON,
+                new LwM2mPath("/3/0/9"), model);
+        expectedStringValue = "[{\"bn\":\"/3/0/9\",\"v\":85}]";
+        Assert.assertEquals(expectedStringValue, new String(encoded));
+
+        encoded = encoder.encode(LwM2mSingleResource.newFloatResource(2, 3.5f), ContentFormat.SENML_JSON,
+                new LwM2mPath("/6/0/2"), model);
+        expectedStringValue = "[{\"bn\":\"/6/0/2\",\"v\":3.5}]";
+        Assert.assertEquals(expectedStringValue, new String(encoded));
+
+        encoded = encoder.encode(LwM2mSingleResource.newDateResource(13, new Date(1367491215000l)),
+                ContentFormat.SENML_JSON, new LwM2mPath("/3/0/13"), model);
+        expectedStringValue = "[{\"bn\":\"/3/0/13\",\"v\":1367491215000}]";
+        Assert.assertEquals(expectedStringValue, new String(encoded));
+    }
 }
