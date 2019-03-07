@@ -22,6 +22,7 @@ import org.eclipse.leshan.core.attributes.AttributeSet;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.request.CancelObservationRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
@@ -106,6 +107,11 @@ public class DownlinkRequestSerDes {
                 o.add("kind", "read");
                 if (request.getContentFormat() != null)
                     o.add("contentFormat", request.getContentFormat().getCode());
+            }
+
+            @Override
+            public void visit(CancelObservationRequest request) {
+                throw new UnsupportedOperationException("not implemented yet");
             }
         });
         return o;

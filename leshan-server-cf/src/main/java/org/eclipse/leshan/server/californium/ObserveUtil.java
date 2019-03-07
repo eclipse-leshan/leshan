@@ -22,6 +22,7 @@ import java.util.Map.Entry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ObserveRequest;
 
 /**
@@ -60,7 +61,12 @@ public class ObserveUtil {
                 context.put(ctx.getKey(), ctx.getValue());
             }
         }
-        return new Observation(request.getToken().getBytes(), regId, new LwM2mPath(lwm2mPath), context);
+
+        ContentFormat contentFormat = null;
+        if (request.getOptions().hasAccept()) {
+            contentFormat = ContentFormat.fromCode(request.getOptions().getAccept());
+        }
+        return new Observation(request.getToken().getBytes(), regId, new LwM2mPath(lwm2mPath), contentFormat, context);
     }
 
     /**

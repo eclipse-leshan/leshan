@@ -31,6 +31,7 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
+import org.eclipse.leshan.core.request.CancelObservationRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
@@ -46,6 +47,7 @@ import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
 import org.eclipse.leshan.core.response.BootstrapFinishResponse;
 import org.eclipse.leshan.core.response.BootstrapWriteResponse;
+import org.eclipse.leshan.core.response.CancelObservationResponse;
 import org.eclipse.leshan.core.response.CreateResponse;
 import org.eclipse.leshan.core.response.DeleteResponse;
 import org.eclipse.leshan.core.response.DiscoverResponse;
@@ -222,6 +224,35 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             } else {
                 lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), content, null, null,
                         null, coapResponse);
+            }
+        } else {
+            // handle unexpected response:
+            handleUnexpectedResponseCode(registration.getEndpoint(), request, coapResponse);
+        }
+    }
+
+    @Override
+    public void visit(CancelObservationRequest request) {
+        if (coapResponse.isError()) {
+            // handle error response:
+            lwM2mresponse = new CancelObservationResponse(toLwM2mResponseCode(coapResponse.getCode()), null, null, null,
+                    coapResponse.getPayloadString(), coapResponse);
+        } else if (coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.CONTENT
+                // This is for backward compatibility, when the spec say notification used CHANGED code
+                || coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.CHANGED) {
+            // handle success response:
+            LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse, request,
+                    registration.getEndpoint());
+            if (coapResponse.getOptions().hasObserve()) {
+                // observe request successful
+                Observation observation = ObserveUtil.createLwM2mObservation(coapRequest);
+                observationService.addObservation(registration, observation);
+                // add the observation to an ObserveResponse instance
+                lwM2mresponse = new CancelObservationResponse(toLwM2mResponseCode(coapResponse.getCode()), content,
+                        null, observation, null, coapResponse);
+            } else {
+                lwM2mresponse = new CancelObservationResponse(toLwM2mResponseCode(coapResponse.getCode()), content,
+                        null, null, null, coapResponse);
             }
         } else {
             // handle unexpected response:

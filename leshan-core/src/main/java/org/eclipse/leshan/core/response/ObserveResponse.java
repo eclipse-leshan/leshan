@@ -30,8 +30,8 @@ import org.eclipse.leshan.core.request.exception.InvalidResponseException;
  */
 public class ObserveResponse extends ReadResponse {
 
-    private final Observation observation;
-    private final List<TimestampedLwM2mNode> timestampedValues;
+    protected final Observation observation;
+    protected final List<TimestampedLwM2mNode> timestampedValues;
 
     public ObserveResponse(ResponseCode code, LwM2mNode content, List<TimestampedLwM2mNode> timestampedValues,
             Observation observation, String errorMessage) {

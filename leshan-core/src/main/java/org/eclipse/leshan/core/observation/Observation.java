@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.util.Hex;
 
 /**
@@ -30,6 +31,7 @@ public class Observation {
 
     private final byte[] id;
     private final LwM2mPath path;
+    private final ContentFormat contentFormat;
     private final String registrationId;
     private final Map<String, String> context;
 
@@ -39,11 +41,14 @@ public class Observation {
      * @param id token identifier of the observation
      * @param registrationId client's unique registration identifier.
      * @param path resource path for which the observation is set.
+     * @param contentFormat contentFormat used to read the resource (could be null).
      * @param context additional information relative to this observation.
      */
-    public Observation(byte[] id, String registrationId, LwM2mPath path, Map<String, String> context) {
+    public Observation(byte[] id, String registrationId, LwM2mPath path, ContentFormat contentFormat,
+            Map<String, String> context) {
         this.id = id;
         this.path = path;
+        this.contentFormat = contentFormat;
         this.registrationId = registrationId;
         if (context != null)
             this.context = Collections.unmodifiableMap(new HashMap<>(context));
@@ -78,6 +83,15 @@ public class Observation {
     }
 
     /**
+     * Gets the requested contentFormat (could be null).
+     * 
+     * @return the resource path
+     */
+    public ContentFormat getContentFormat() {
+        return contentFormat;
+    }
+
+    /**
      * @return the contextual information relative to this observation.
      */
     public Map<String, String> getContext() {
@@ -86,8 +100,8 @@ public class Observation {
 
     @Override
     public String toString() {
-        return String.format("Observation [id=%s, path=%s, registrationId=%s, context=%s]", Hex.encodeHexString(id),
-                path, registrationId, context);
+        return String.format("Observation [id=%s, path=%s, registrationId=%s, contentFormat=%s context=%s]",
+                Hex.encodeHexString(id), path, registrationId, contentFormat, context);
     }
 
     @Override
@@ -129,5 +143,4 @@ public class Observation {
             return false;
         return true;
     }
-
 }

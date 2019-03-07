@@ -50,10 +50,12 @@ import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mValueConverter;
 import org.eclipse.leshan.core.node.codec.json.LwM2mNodeJsonEncoder;
 import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.request.CancelObservationRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
+import org.eclipse.leshan.core.response.CancelObservationResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
@@ -116,6 +118,111 @@ public class ObserveTest {
         assertEquals(LwM2mSingleResource.newStringResource(15, "Europe/Paris"), listener.getResponse().getContent());
         assertNotNull(listener.getResponse().getCoapResponse());
         assertThat(listener.getResponse().getCoapResponse(), is(instanceOf(Response.class)));
+    }
+
+    @Test
+    public void can_observe_resource_then_passive_cancel() throws InterruptedException {
+        TestObservationListener listener = new TestObservationListener();
+        helper.server.getObservationService().addListener(listener);
+
+        // observe device timezone
+        ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(),
+                new ObserveRequest(3, 0, 15));
+        assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
+        assertNotNull(observeResponse.getCoapResponse());
+        assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
+
+        // an observation response should have been sent
+        Observation observation = observeResponse.getObservation();
+        assertEquals("/3/0/15", observation.getPath().toString());
+        assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
+        Set<Observation> observations = helper.server.getObservationService()
+                .getObservations(helper.getCurrentRegistration());
+        assertTrue("We should have only on observation", observations.size() == 1);
+        assertTrue("New observation is not there", observations.contains(observation));
+
+        // write device timezone
+        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
+                new WriteRequest(3, 0, 15, "Europe/Paris"));
+
+        // verify result
+        listener.waitForNotification(2000);
+        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
+        assertTrue(listener.receivedNotify().get());
+        assertEquals(LwM2mSingleResource.newStringResource(15, "Europe/Paris"), listener.getResponse().getContent());
+        assertNotNull(listener.getResponse().getCoapResponse());
+        assertThat(listener.getResponse().getCoapResponse(), is(instanceOf(Response.class)));
+
+        // cancel observation : passive way
+        helper.server.getObservationService().cancelObservation(observation);
+        observations = helper.server.getObservationService().getObservations(helper.getCurrentRegistration());
+        assertTrue("Observation should be removed", observations.isEmpty());
+
+        // write device timezone
+        listener.reset();
+        writeResponse = helper.server.send(helper.getCurrentRegistration(),
+                new WriteRequest(3, 0, 15, "Europe/London"));
+
+        // verify result
+        listener.waitForNotification(1000);
+        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
+        assertFalse("Observation should be cancelled", listener.receivedNotify.get());
+    }
+
+    @Test
+    public void can_observe_resource_then_active_cancel() throws InterruptedException {
+        TestObservationListener listener = new TestObservationListener();
+        helper.server.getObservationService().addListener(listener);
+
+        // observe device timezone
+        ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(),
+                new ObserveRequest(3, 0, 15));
+        assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
+        assertNotNull(observeResponse.getCoapResponse());
+        assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
+
+        // an observation response should have been sent
+        Observation observation = observeResponse.getObservation();
+        assertEquals("/3/0/15", observation.getPath().toString());
+        assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
+        Set<Observation> observations = helper.server.getObservationService()
+                .getObservations(helper.getCurrentRegistration());
+        assertTrue("We should have only on observation", observations.size() == 1);
+        assertTrue("New observation is not there", observations.contains(observation));
+
+        // write device timezone
+        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
+                new WriteRequest(3, 0, 15, "Europe/Paris"));
+
+        // verify result
+        listener.waitForNotification(2000);
+        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
+        assertTrue(listener.receivedNotify().get());
+        assertEquals(LwM2mSingleResource.newStringResource(15, "Europe/Paris"), listener.getResponse().getContent());
+        assertNotNull(listener.getResponse().getCoapResponse());
+        assertThat(listener.getResponse().getCoapResponse(), is(instanceOf(Response.class)));
+
+        // cancel observation : active way
+        CancelObservationResponse response = helper.server.send(helper.getCurrentRegistration(),
+                new CancelObservationRequest(observation));
+        assertTrue(response.isSuccess());
+        assertEquals(ResponseCode.CONTENT, response.getCode());
+        assertEquals("Europe/Paris", ((LwM2mSingleResource) response.getContent()).getValue());
+        // active cancellation does not remove observation from store : it should be done manually using
+        // ObservationService().cancelObservation(observation)
+        observations = helper.server.getObservationService().getObservations(helper.getCurrentRegistration());
+        assertTrue("We should have only on observation", observations.size() == 1);
+        assertTrue("Observation should still be there", observations.contains(observation));
+
+        // write device timezone
+        listener.reset();
+        writeResponse = helper.server.send(helper.getCurrentRegistration(),
+                new WriteRequest(3, 0, 15, "Europe/London"));
+
+        // verify result
+        listener.waitForNotification(1000);
+        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
+        assertFalse("Observation should be cancelled", listener.receivedNotify.get());
     }
 
     @Test
@@ -391,7 +498,7 @@ public class ObserveTest {
 
     private final class TestObservationListener implements ObservationListener {
 
-        private final CountDownLatch latch = new CountDownLatch(1);
+        private CountDownLatch latch = new CountDownLatch(1);
         private final AtomicBoolean receivedNotify = new AtomicBoolean();
         private ObserveResponse response;
         private Exception error;
@@ -435,6 +542,13 @@ public class ObserveTest {
 
         public void waitForNotification(long timeout) throws InterruptedException {
             latch.await(timeout, TimeUnit.MILLISECONDS);
+        }
+
+        public void reset() {
+            latch = new CountDownLatch(1);
+            receivedNotify.set(false);
+            response = null;
+            error = null;
         }
     }
 }
