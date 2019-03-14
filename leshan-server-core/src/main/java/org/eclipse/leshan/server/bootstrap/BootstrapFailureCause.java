@@ -32,6 +32,10 @@ public enum BootstrapFailureCause {
      */
     DELETE_FAILED,
     /**
+     * Object 2 (ACL) could not be written on the device
+     */
+    WRITE_ACL_FAILED,
+    /**
      * Object 1 (Server) could not be written on the device
      */
     WRITE_SERVER_FAILED,
