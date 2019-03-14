@@ -33,6 +33,8 @@ public class BootstrapConfig implements Serializable {
 
     public Map<Integer, ServerSecurity> security = new HashMap<>();
 
+    public Map<Integer, ACLConfig> acls = new HashMap<>();
+
     /** server configuration (object 1) */
     static public class ServerConfig implements Serializable {
         public int shortId;
@@ -45,10 +47,9 @@ public class BootstrapConfig implements Serializable {
 
         @Override
         public String toString() {
-            return String
-                    .format("ServerConfig [shortId=%s, lifetime=%s, defaultMinPeriod=%s, defaultMaxPeriod=%s, disableTimeout=%s, notifIfDisabled=%s, binding=%s]",
-                            shortId, lifetime, defaultMinPeriod, defaultMaxPeriod, disableTimeout, notifIfDisabled,
-                            binding);
+            return String.format(
+                    "ServerConfig [shortId=%s, lifetime=%s, defaultMinPeriod=%s, defaultMaxPeriod=%s, disableTimeout=%s, notifIfDisabled=%s, binding=%s]",
+                    shortId, lifetime, defaultMinPeriod, defaultMaxPeriod, disableTimeout, notifIfDisabled, binding);
         }
     }
 
@@ -71,18 +72,30 @@ public class BootstrapConfig implements Serializable {
         @Override
         public String toString() {
             // Note : secretKey and smsBindingKeySecret are explicitly excluded from the display for security purposes
-            return String
-                    .format("ServerSecurity [uri=%s, bootstrapServer=%s, securityMode=%s, publicKeyOrId=%s, serverPublicKey=%s, smsSecurityMode=%s, smsBindingKeySecret=%s, serverSmsNumber=%s, serverId=%s, clientOldOffTime=%s, bootstrapServerAccountTimeout=%s]",
-                            uri, bootstrapServer, securityMode, Arrays.toString(publicKeyOrId),
-                            Arrays.toString(serverPublicKey), smsSecurityMode,
-                            Arrays.toString(smsBindingKeyParam), serverSmsNumber,
-                            serverId, clientOldOffTime, bootstrapServerAccountTimeout);
+            return String.format(
+                    "ServerSecurity [uri=%s, bootstrapServer=%s, securityMode=%s, publicKeyOrId=%s, serverPublicKey=%s, smsSecurityMode=%s, smsBindingKeySecret=%s, serverSmsNumber=%s, serverId=%s, clientOldOffTime=%s, bootstrapServerAccountTimeout=%s]",
+                    uri, bootstrapServer, securityMode, Arrays.toString(publicKeyOrId),
+                    Arrays.toString(serverPublicKey), smsSecurityMode, Arrays.toString(smsBindingKeyParam),
+                    serverSmsNumber, serverId, clientOldOffTime, bootstrapServerAccountTimeout);
+        }
+    }
+
+    /** server configuration (object 1) */
+    static public class ACLConfig implements Serializable {
+        public int objectId;
+        public int objectInstanceId;
+        public Map<Integer, Long> acls;
+        public Integer AccessControlOwner;
+
+        @Override
+        public String toString() {
+            return String.format("ACLConfig [objectId=%s, objectInstanceId=%s, ACLs=%s, AccessControlOwner=%s]",
+                    objectId, objectInstanceId, acls, AccessControlOwner);
         }
     }
 
     @Override
     public String toString() {
-        return String.format("BootstrapConfig [servers=%s, security=%s]", servers, security);
+        return String.format("BootstrapConfig [servers=%s, security=%s, acls=%s]", servers, security, acls);
     }
-
 }

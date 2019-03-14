@@ -32,6 +32,7 @@ import java.security.spec.ECPrivateKeySpec;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.KeySpec;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.leshan.LwM2mId;
@@ -42,8 +43,10 @@ import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.resource.DummyInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ACLConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
 import org.eclipse.leshan.server.bootstrap.BootstrapStore;
@@ -97,36 +100,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
 
     public void createBootstrapServer(BootstrapSecurityStore securityStore, BootstrapStore bootstrapStore) {
         if (bootstrapStore == null) {
-            bootstrapStore = new BootstrapStore() {
-                @Override
-                public BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity) {
-                    BootstrapConfig bsConfig = new BootstrapConfig();
-
-                    // security for BS server
-                    ServerSecurity bsSecurity = new ServerSecurity();
-                    bsSecurity.serverId = 1111;
-                    bsSecurity.bootstrapServer = true;
-                    bsSecurity.uri = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
-                            + bootstrapServer.getUnsecuredAddress().getPort();
-                    bsSecurity.securityMode = SecurityMode.NO_SEC;
-                    bsConfig.security.put(0, bsSecurity);
-
-                    // security for DM server
-                    ServerSecurity dmSecurity = new ServerSecurity();
-                    dmSecurity.uri = "coap://" + server.getUnsecuredAddress().getHostString() + ":"
-                            + server.getUnsecuredAddress().getPort();
-                    dmSecurity.serverId = 2222;
-                    dmSecurity.securityMode = SecurityMode.NO_SEC;
-                    bsConfig.security.put(1, dmSecurity);
-
-                    // DM server
-                    ServerConfig dmConfig = new ServerConfig();
-                    dmConfig.shortId = 2222;
-                    bsConfig.servers.put(0, dmConfig);
-
-                    return bsConfig;
-                }
-            };
+            bootstrapStore = unsecuredBootstrapStore();
         }
 
         if (securityStore == null) {
@@ -186,7 +160,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         initializer.setInstancesForObject(LwM2mId.SECURITY, security);
         initializer.setInstancesForObject(LwM2mId.DEVICE,
                 new Device("Eclipse Leshan", IntegrationTestHelper.MODEL_NUMBER, "12345", "U"));
-        initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, DummyInstanceEnabler.class);
+        initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, SimpleInstanceEnabler.class);
         initializer.setClassForObject(LwM2mId.SERVER, DummyInstanceEnabler.class);
         List<LwM2mObjectEnabler> objects = initializer.createAll();
 
@@ -249,6 +223,92 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
             @Override
             public List<SecurityInfo> getAllByEndpoint(String endpoint) {
                 return null;
+            }
+        };
+    }
+
+    public BootstrapStore unsecuredBootstrapStore() {
+        return new BootstrapStore() {
+
+            @Override
+            public BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity) {
+
+                BootstrapConfig bsConfig = new BootstrapConfig();
+
+                // security for BS server
+                ServerSecurity bsSecurity = new ServerSecurity();
+                bsSecurity.serverId = 1111;
+                bsSecurity.bootstrapServer = true;
+                bsSecurity.uri = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
+                        + bootstrapServer.getUnsecuredAddress().getPort();
+                bsSecurity.securityMode = SecurityMode.NO_SEC;
+                bsConfig.security.put(0, bsSecurity);
+
+                // security for DM server
+                ServerSecurity dmSecurity = new ServerSecurity();
+                dmSecurity.uri = "coap://" + server.getUnsecuredAddress().getHostString() + ":"
+                        + server.getUnsecuredAddress().getPort();
+                dmSecurity.serverId = 2222;
+                dmSecurity.securityMode = SecurityMode.NO_SEC;
+                bsConfig.security.put(1, dmSecurity);
+
+                // DM server
+                ServerConfig dmConfig = new ServerConfig();
+                dmConfig.shortId = 2222;
+                bsConfig.servers.put(0, dmConfig);
+
+                return bsConfig;
+            }
+        };
+    }
+
+    public BootstrapStore unsecuredWithAclBootstrapStore() {
+        return new BootstrapStore() {
+
+            @Override
+            public BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity) {
+
+                BootstrapConfig bsConfig = new BootstrapConfig();
+
+                // security for BS server
+                ServerSecurity bsSecurity = new ServerSecurity();
+                bsSecurity.serverId = 1111;
+                bsSecurity.bootstrapServer = true;
+                bsSecurity.uri = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
+                        + bootstrapServer.getUnsecuredAddress().getPort();
+                bsSecurity.securityMode = SecurityMode.NO_SEC;
+                bsConfig.security.put(0, bsSecurity);
+
+                // security for DM server
+                ServerSecurity dmSecurity = new ServerSecurity();
+                dmSecurity.uri = "coap://" + server.getUnsecuredAddress().getHostString() + ":"
+                        + server.getUnsecuredAddress().getPort();
+                dmSecurity.serverId = 2222;
+                dmSecurity.securityMode = SecurityMode.NO_SEC;
+                bsConfig.security.put(1, dmSecurity);
+
+                // DM server
+                ServerConfig dmConfig = new ServerConfig();
+                dmConfig.shortId = 2222;
+                bsConfig.servers.put(0, dmConfig);
+
+                // ACL
+                ACLConfig aclConfig = new ACLConfig();
+                aclConfig.objectId = 3;
+                aclConfig.objectInstanceId = 0;
+                HashMap<Integer, Long> acl = new HashMap<Integer, Long>();
+                acl.put(3333, 1l); // server with short id 3333 has just read(1) right on device object (3/0)
+                aclConfig.acls = acl;
+                aclConfig.AccessControlOwner = 2222;
+                bsConfig.acls.put(0, aclConfig);
+
+                aclConfig = new ACLConfig();
+                aclConfig.objectId = 4;
+                aclConfig.objectInstanceId = 0;
+                aclConfig.AccessControlOwner = 2222;
+                bsConfig.acls.put(1, aclConfig);
+
+                return bsConfig;
             }
         };
     }

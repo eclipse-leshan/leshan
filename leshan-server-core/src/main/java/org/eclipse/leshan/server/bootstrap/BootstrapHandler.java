@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -41,6 +42,7 @@ import org.eclipse.leshan.core.response.BootstrapWriteResponse;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ACLConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
 import org.slf4j.Logger;
@@ -192,6 +194,40 @@ public class BootstrapHandler {
                 }
             });
         } else {
+            // we are done, send the ACL
+            List<Integer> aclsToSend = new ArrayList<>(cfg.acls.keySet());
+            sendAcls(session, cfg, aclsToSend);
+        }
+    }
+
+    private void sendAcls(final BootstrapSession session, final BootstrapConfig cfg, final List<Integer> toSend) {
+        if (!toSend.isEmpty()) {
+            // get next config
+            Integer key = toSend.remove(0);
+            ACLConfig aclConfig = cfg.acls.get(key);
+
+            // extract write request parameters
+            LwM2mPath path = new LwM2mPath(2, key);
+            final LwM2mNode aclInstance = convertToAclInstance(key, aclConfig);
+
+            final BootstrapWriteRequest writeACLRequest = new BootstrapWriteRequest(path, aclInstance,
+                    session.getContentFormat());
+            send(session, writeACLRequest, new ResponseCallback<BootstrapWriteResponse>() {
+                @Override
+                public void onResponse(BootstrapWriteResponse response) {
+                    LOG.trace("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
+                    // recursive call until toSend is empty
+                    sendAcls(session, cfg, toSend);
+                }
+            }, new ErrorCallback() {
+                @Override
+                public void onError(Exception e) {
+                    LOG.warn(String.format("Error during bootstrap write of acl instance %s on %s", aclInstance,
+                            session.getEndpoint()), e);
+                    sessionManager.failed(session, WRITE_ACL_FAILED, writeACLRequest);
+                }
+            });
+        } else {
             final BootstrapFinishRequest finishBootstrapRequest = new BootstrapFinishRequest();
             send(session, finishBootstrapRequest, new ResponseCallback<BootstrapFinishResponse>() {
                 @Override
@@ -265,6 +301,19 @@ public class BootstrapHandler {
         resources.add(LwM2mSingleResource.newBooleanResource(6, serverConfig.notifIfDisabled));
         if (serverConfig.binding != null)
             resources.add(LwM2mSingleResource.newStringResource(7, serverConfig.binding.name()));
+
+        return new LwM2mObjectInstance(instanceId, resources);
+    }
+
+    private LwM2mObjectInstance convertToAclInstance(int instanceId, ACLConfig aclConfig) {
+        Collection<LwM2mResource> resources = new ArrayList<>();
+
+        resources.add(LwM2mSingleResource.newIntegerResource(0, aclConfig.objectId));
+        resources.add(LwM2mSingleResource.newIntegerResource(1, aclConfig.objectInstanceId));
+        if (aclConfig.acls != null)
+            resources.add(LwM2mMultipleResource.newIntegerResource(2, aclConfig.acls));
+        if (aclConfig.AccessControlOwner != null)
+            resources.add(LwM2mSingleResource.newIntegerResource(3, aclConfig.AccessControlOwner));
 
         return new LwM2mObjectInstance(instanceId, resources);
     }
