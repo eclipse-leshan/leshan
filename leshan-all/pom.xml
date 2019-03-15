@@ -53,6 +53,12 @@ Contributors:
                 <configuration>
                     <createDependencyReducedPom>false</createDependencyReducedPom>
                     <createSourcesJar>true</createSourcesJar>
+                    <!-- workaround for https://github.com/eclipse/californium/issues/910 -->
+                    <artifactSet>
+                    	<excludes>
+                    		<exclude>*:californium-legal*</exclude>
+                    	</excludes>
+                    </artifactSet>
                     <filters>
                         <filter>
                             <artifact>*:*</artifact>
