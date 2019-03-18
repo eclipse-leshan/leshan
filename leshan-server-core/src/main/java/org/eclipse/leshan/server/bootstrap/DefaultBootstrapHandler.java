@@ -18,17 +18,12 @@ package org.eclipse.leshan.server.bootstrap;
 import static org.eclipse.leshan.server.bootstrap.BootstrapFailureCause.*;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mNode;
-import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.node.LwM2mResource;
-import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
@@ -59,13 +54,13 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
 
     // We choose a default timeout a bit higher to the MAX_TRANSMIT_WAIT(62-93s) which is the time from starting to
     // send a Confirmable message to the time when an acknowledgement is no longer expected.
-    private static final long DEFAULT_TIMEOUT = 2 * 60 * 1000l; // 2min in ms
+    protected static final long DEFAULT_TIMEOUT = 2 * 60 * 1000l; // 2min in ms
 
-    private final Executor e;
+    protected final Executor e;
 
-    private final BootstrapStore store;
-    private final LwM2mBootstrapRequestSender sender;
-    private final BootstrapSessionManager sessionManager;
+    protected final BootstrapStore store;
+    protected final LwM2mBootstrapRequestSender sender;
+    protected final BootstrapSessionManager sessionManager;
 
     public DefaultBootstrapHandler(BootstrapStore store, LwM2mBootstrapRequestSender sender,
             BootstrapSessionManager sessionManager) {
@@ -107,22 +102,22 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
         e.execute(new Runnable() {
             @Override
             public void run() {
-                sendDelete(session, cfg);
+                delete(session, cfg);
             }
         });
 
         return BootstrapResponse.success();
     }
 
-    private void sendDelete(final BootstrapSession session, final BootstrapConfig cfg) {
+    protected void delete(final BootstrapSession session, final BootstrapConfig cfg) {
 
         final BootstrapDeleteRequest deleteRequest = new BootstrapDeleteRequest();
         send(session, deleteRequest, new ResponseCallback<BootstrapDeleteResponse>() {
             @Override
             public void onResponse(BootstrapDeleteResponse response) {
                 LOG.trace("Bootstrap delete {} return code {}", session.getEndpoint(), response.getCode());
-                List<Integer> toSend = new ArrayList<>(cfg.security.keySet());
-                sendBootstrap(session, cfg, toSend);
+                List<Integer> instancesToWrite = new ArrayList<>(cfg.security.keySet());
+                writeSecurities(session, cfg, instancesToWrite);
             }
         }, new ErrorCallback() {
             @Override
@@ -133,24 +128,26 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
         });
     }
 
-    private void sendBootstrap(final BootstrapSession session, final BootstrapConfig cfg, final List<Integer> toSend) {
-        if (!toSend.isEmpty()) {
-            // 1st encode them into a juicy TLV binary
-            Integer key = toSend.remove(0);
+    protected void writeSecurities(final BootstrapSession session, final BootstrapConfig cfg,
+            final List<Integer> securityInstancesToWrite) {
+        if (!securityInstancesToWrite.isEmpty()) {
+            // get next Security configuration
+            Integer key = securityInstancesToWrite.remove(0);
             ServerSecurity securityConfig = cfg.security.get(key);
 
-            // extract write request parameters
+            // create write request from it
             LwM2mPath path = new LwM2mPath(0, key);
-            final LwM2mNode securityInstance = convertToSecurityInstance(key, securityConfig);
-
+            final LwM2mNode securityInstance = BootstrapUtil.convertToSecurityInstance(key, securityConfig);
             final BootstrapWriteRequest writeBootstrapRequest = new BootstrapWriteRequest(path, securityInstance,
                     session.getContentFormat());
+
+            // sent it
             send(session, writeBootstrapRequest, new ResponseCallback<BootstrapWriteResponse>() {
                 @Override
                 public void onResponse(BootstrapWriteResponse response) {
                     LOG.trace("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
-                    // recursive call until toSend is empty
-                    sendBootstrap(session, cfg, toSend);
+                    // recursive call until securityInstancesToWrite is empty
+                    writeSecurities(session, cfg, securityInstancesToWrite);
                 }
             }, new ErrorCallback() {
                 @Override
@@ -161,30 +158,32 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                 }
             });
         } else {
-            // we are done, send the servers
-            List<Integer> serversToSend = new ArrayList<>(cfg.servers.keySet());
-            sendServers(session, cfg, serversToSend);
+            // we are done, write the servers now
+            List<Integer> serverInstancesToWrite = new ArrayList<>(cfg.servers.keySet());
+            writeServers(session, cfg, serverInstancesToWrite);
         }
     }
 
-    private void sendServers(final BootstrapSession session, final BootstrapConfig cfg, final List<Integer> toSend) {
-        if (!toSend.isEmpty()) {
-            // get next config
-            Integer key = toSend.remove(0);
+    protected void writeServers(final BootstrapSession session, final BootstrapConfig cfg,
+            final List<Integer> serverInstancesToWrite) {
+        if (!serverInstancesToWrite.isEmpty()) {
+            // get next Server configuration
+            Integer key = serverInstancesToWrite.remove(0);
             ServerConfig serverConfig = cfg.servers.get(key);
 
-            // extract write request parameters
+            // create write request from it
             LwM2mPath path = new LwM2mPath(1, key);
-            final LwM2mNode serverInstance = convertToServerInstance(key, serverConfig);
-
+            final LwM2mNode serverInstance = BootstrapUtil.convertToServerInstance(key, serverConfig);
             final BootstrapWriteRequest writeServerRequest = new BootstrapWriteRequest(path, serverInstance,
                     session.getContentFormat());
+
+            // sent it
             send(session, writeServerRequest, new ResponseCallback<BootstrapWriteResponse>() {
                 @Override
                 public void onResponse(BootstrapWriteResponse response) {
                     LOG.trace("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
-                    // recursive call until toSend is empty
-                    sendServers(session, cfg, toSend);
+                    // recursive call until serverInstancesToWrite is empty
+                    writeServers(session, cfg, serverInstancesToWrite);
                 }
             }, new ErrorCallback() {
                 @Override
@@ -195,30 +194,32 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                 }
             });
         } else {
-            // we are done, send the ACL
-            List<Integer> aclsToSend = new ArrayList<>(cfg.acls.keySet());
-            sendAcls(session, cfg, aclsToSend);
+            // we are done, write ACLs now
+            List<Integer> aclInstancesToWrite = new ArrayList<>(cfg.acls.keySet());
+            writedAcls(session, cfg, aclInstancesToWrite);
         }
     }
 
-    private void sendAcls(final BootstrapSession session, final BootstrapConfig cfg, final List<Integer> toSend) {
-        if (!toSend.isEmpty()) {
-            // get next config
-            Integer key = toSend.remove(0);
+    protected void writedAcls(final BootstrapSession session, final BootstrapConfig cfg,
+            final List<Integer> aclInstancesToWrite) {
+        if (!aclInstancesToWrite.isEmpty()) {
+            // get next ACL configuration
+            Integer key = aclInstancesToWrite.remove(0);
             ACLConfig aclConfig = cfg.acls.get(key);
 
-            // extract write request parameters
+            // create write request from it
             LwM2mPath path = new LwM2mPath(2, key);
-            final LwM2mNode aclInstance = convertToAclInstance(key, aclConfig);
-
+            final LwM2mNode aclInstance = BootstrapUtil.convertToAclInstance(key, aclConfig);
             final BootstrapWriteRequest writeACLRequest = new BootstrapWriteRequest(path, aclInstance,
                     session.getContentFormat());
+
+            // sent it
             send(session, writeACLRequest, new ResponseCallback<BootstrapWriteResponse>() {
                 @Override
                 public void onResponse(BootstrapWriteResponse response) {
                     LOG.trace("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
-                    // recursive call until toSend is empty
-                    sendAcls(session, cfg, toSend);
+                    // recursive call until aclInstancesToWrite is empty
+                    writedAcls(session, cfg, aclInstancesToWrite);
                 }
             }, new ErrorCallback() {
                 @Override
@@ -250,72 +251,9 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
         }
     }
 
-    private <T extends LwM2mResponse> void send(BootstrapSession session, DownlinkRequest<T> request,
+    protected <T extends LwM2mResponse> void send(BootstrapSession session, DownlinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         sender.send(session.getEndpoint(), session.getIdentity(), request, DEFAULT_TIMEOUT, responseCallback,
                 errorCallback);
-    }
-
-    private LwM2mObjectInstance convertToSecurityInstance(int instanceId, ServerSecurity securityConfig) {
-        Collection<LwM2mResource> resources = new ArrayList<>();
-
-        if (securityConfig.uri != null)
-            resources.add(LwM2mSingleResource.newStringResource(0, securityConfig.uri));
-        resources.add(LwM2mSingleResource.newBooleanResource(1, securityConfig.bootstrapServer));
-        if (securityConfig.securityMode != null)
-            resources.add(LwM2mSingleResource.newIntegerResource(2, securityConfig.securityMode.code));
-        if (securityConfig.publicKeyOrId != null)
-            resources.add(LwM2mSingleResource.newBinaryResource(3, securityConfig.publicKeyOrId));
-        if (securityConfig.serverPublicKey != null)
-            resources.add(LwM2mSingleResource.newBinaryResource(4, securityConfig.serverPublicKey));
-        if (securityConfig.secretKey != null)
-            resources.add(LwM2mSingleResource.newBinaryResource(5, securityConfig.secretKey));
-        if (securityConfig.smsSecurityMode != null)
-            resources.add(LwM2mSingleResource.newIntegerResource(6, securityConfig.smsSecurityMode.code));
-        if (securityConfig.smsBindingKeyParam != null)
-            resources.add(LwM2mSingleResource.newBinaryResource(7, securityConfig.smsBindingKeyParam));
-        if (securityConfig.smsBindingKeySecret != null)
-            resources.add(LwM2mSingleResource.newBinaryResource(8, securityConfig.smsBindingKeySecret));
-        if (securityConfig.serverSmsNumber != null)
-            resources.add(LwM2mSingleResource.newStringResource(9, securityConfig.serverSmsNumber));
-        if (securityConfig.serverId != null)
-            resources.add(LwM2mSingleResource.newIntegerResource(10, securityConfig.serverId));
-        if (securityConfig.clientOldOffTime != null)
-            resources.add(LwM2mSingleResource.newIntegerResource(11, securityConfig.clientOldOffTime));
-        if (securityConfig.bootstrapServerAccountTimeout != null)
-            resources.add(LwM2mSingleResource.newIntegerResource(12, securityConfig.bootstrapServerAccountTimeout));
-
-        return new LwM2mObjectInstance(instanceId, resources);
-    }
-
-    private LwM2mObjectInstance convertToServerInstance(int instanceId, ServerConfig serverConfig) {
-        Collection<LwM2mResource> resources = new ArrayList<>();
-
-        resources.add(LwM2mSingleResource.newIntegerResource(0, serverConfig.shortId));
-        resources.add(LwM2mSingleResource.newIntegerResource(1, serverConfig.lifetime));
-        if (serverConfig.defaultMinPeriod != null)
-            resources.add(LwM2mSingleResource.newIntegerResource(2, serverConfig.defaultMinPeriod));
-        if (serverConfig.defaultMaxPeriod != null)
-            resources.add(LwM2mSingleResource.newIntegerResource(3, serverConfig.defaultMaxPeriod));
-        if (serverConfig.disableTimeout != null)
-            resources.add(LwM2mSingleResource.newIntegerResource(5, serverConfig.disableTimeout));
-        resources.add(LwM2mSingleResource.newBooleanResource(6, serverConfig.notifIfDisabled));
-        if (serverConfig.binding != null)
-            resources.add(LwM2mSingleResource.newStringResource(7, serverConfig.binding.name()));
-
-        return new LwM2mObjectInstance(instanceId, resources);
-    }
-
-    private LwM2mObjectInstance convertToAclInstance(int instanceId, ACLConfig aclConfig) {
-        Collection<LwM2mResource> resources = new ArrayList<>();
-
-        resources.add(LwM2mSingleResource.newIntegerResource(0, aclConfig.objectId));
-        resources.add(LwM2mSingleResource.newIntegerResource(1, aclConfig.objectInstanceId));
-        if (aclConfig.acls != null)
-            resources.add(LwM2mMultipleResource.newIntegerResource(2, aclConfig.acls));
-        if (aclConfig.AccessControlOwner != null)
-            resources.add(LwM2mSingleResource.newIntegerResource(3, aclConfig.AccessControlOwner));
-
-        return new LwM2mObjectInstance(instanceId, resources);
     }
 }
