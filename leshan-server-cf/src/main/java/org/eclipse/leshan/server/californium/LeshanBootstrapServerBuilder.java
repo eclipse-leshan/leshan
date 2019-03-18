@@ -35,8 +35,11 @@ import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.californium.Lwm2mEndpointContextMatcher;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
+import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
+import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.BootstrapStore;
+import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapServer;
 import org.eclipse.leshan.server.californium.impl.LeshanBootstrapServer;
 import org.eclipse.leshan.server.californium.impl.LwM2mBootstrapPskStore;
@@ -59,6 +62,8 @@ public class LeshanBootstrapServerBuilder {
     private BootstrapStore configStore;
     private BootstrapSecurityStore securityStore;
     private BootstrapSessionManager sessionManager;
+    private BootstrapHandlerFactory bootstrapHandlerFactory;
+
     private LwM2mModel model;
     private NetworkConfig coapConfig;
     private Builder dtlsConfigBuilder;
@@ -192,6 +197,11 @@ public class LeshanBootstrapServerBuilder {
         return this;
     }
 
+    public LeshanBootstrapServerBuilder setBootstrapHandlerFactory(BootstrapHandlerFactory bootstrapHandlerFactory) {
+        this.bootstrapHandlerFactory = bootstrapHandlerFactory;
+        return this;
+    }
+
     public LeshanBootstrapServerBuilder setModel(LwM2mModel model) {
         this.model = model;
         return this;
@@ -254,6 +264,14 @@ public class LeshanBootstrapServerBuilder {
 
         if (sessionManager == null)
             sessionManager = new DefaultBootstrapSessionManager(securityStore);
+        if (bootstrapHandlerFactory == null)
+            bootstrapHandlerFactory = new BootstrapHandlerFactory() {
+                @Override
+                public BootstrapHandler create(BootstrapStore store, LwM2mBootstrapRequestSender sender,
+                        BootstrapSessionManager sessionManager) {
+                    return new BootstrapHandler(store, sender, sessionManager);
+                }
+            };
         if (model == null)
             model = new LwM2mModel(ObjectLoader.loadDefault());
         if (coapConfig == null) {
@@ -395,6 +413,6 @@ public class LeshanBootstrapServerBuilder {
         }
 
         return new LeshanBootstrapServer(unsecuredEndpoint, securedEndpoint, configStore, securityStore, sessionManager,
-                model, coapConfig);
+                bootstrapHandlerFactory, model, coapConfig);
     }
 }

@@ -21,7 +21,7 @@ import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.leshan.core.model.LwM2mModel;
-import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
+import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.BootstrapStore;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
@@ -46,11 +46,12 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
     private final BootstrapSecurityStore bsSecurityStore;
 
     public LeshanBootstrapServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint, BootstrapStore bsStore,
-            BootstrapSecurityStore bsSecurityStore, BootstrapSessionManager bsSessionManager, LwM2mModel model,
-            NetworkConfig coapConfig) {
+            BootstrapSecurityStore bsSecurityStore, BootstrapSessionManager bsSessionManager,
+            BootstrapHandlerFactory bsHandlerFactory, LwM2mModel model, NetworkConfig coapConfig) {
 
         Validate.notNull(bsStore, "bootstrap store must not be null");
         Validate.notNull(bsSessionManager, "session manager must not be null");
+        Validate.notNull(bsHandlerFactory, "BootstrapHandler factory must not be null");
         Validate.notNull(model, "model must not be null");
         Validate.notNull(coapConfig, "coapConfig must not be null");
 
@@ -73,7 +74,7 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
                 unsecuredEndpoint, model);
 
         BootstrapResource bsResource = new BootstrapResource(
-                new BootstrapHandler(bsStore, requestSender, bsSessionManager));
+                bsHandlerFactory.create(bsStore, requestSender, bsSessionManager));
         coapServer.add(bsResource);
     }
 
