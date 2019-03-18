@@ -39,6 +39,7 @@ import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.BootstrapStore;
+import org.eclipse.leshan.server.bootstrap.DefaultBootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapServer;
 import org.eclipse.leshan.server.californium.impl.LeshanBootstrapServer;
@@ -269,7 +270,7 @@ public class LeshanBootstrapServerBuilder {
                 @Override
                 public BootstrapHandler create(BootstrapStore store, LwM2mBootstrapRequestSender sender,
                         BootstrapSessionManager sessionManager) {
-                    return new BootstrapHandler(store, sender, sessionManager);
+                    return new DefaultBootstrapHandler(store, sender, sessionManager);
                 }
             };
         if (model == null)

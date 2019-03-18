@@ -43,7 +43,7 @@ public class BootstrapHandlerTest {
     public void error_if_not_authorized() {
         final BootstrapSessionManager bsSessionManager = new MockBootstrapSessionManager(false);
 
-        BootstrapHandler bsHandler = new BootstrapHandler(null, null, bsSessionManager);
+        BootstrapHandler bsHandler = new DefaultBootstrapHandler(null, null, bsSessionManager);
         BootstrapResponse bootstrapResponse = bsHandler
                 .bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("enpoint"));
         assertEquals(ResponseCode.BAD_REQUEST, bootstrapResponse.getCode());
@@ -61,7 +61,7 @@ public class BootstrapHandlerTest {
             }
         };
 
-        BootstrapHandler bsHandler = new BootstrapHandler(bsStore, requestSender, bsSessionManager, new Executor() {
+        BootstrapHandler bsHandler = new DefaultBootstrapHandler(bsStore, requestSender, bsSessionManager, new Executor() {
 
             @Override
             public void execute(Runnable command) {
@@ -86,7 +86,7 @@ public class BootstrapHandlerTest {
             }
         };
 
-        BootstrapHandler bsHandler = new BootstrapHandler(bsStore, requestSender, bsSessionManager, new Executor() {
+        BootstrapHandler bsHandler = new DefaultBootstrapHandler(bsStore, requestSender, bsSessionManager, new Executor() {
 
             @Override
             public void execute(Runnable command) {
