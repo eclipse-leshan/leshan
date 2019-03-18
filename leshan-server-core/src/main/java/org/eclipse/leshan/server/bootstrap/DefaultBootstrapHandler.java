@@ -61,21 +61,25 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
     protected final BootstrapStore store;
     protected final LwM2mBootstrapRequestSender sender;
     protected final BootstrapSessionManager sessionManager;
+    protected final long requestTimeout;
 
     public DefaultBootstrapHandler(BootstrapStore store, LwM2mBootstrapRequestSender sender,
             BootstrapSessionManager sessionManager) {
-        this.store = store;
-        this.sender = sender;
-        this.sessionManager = sessionManager;
-        this.e = Executors.newFixedThreadPool(5);
+        this(store, sender, sessionManager, Executors.newFixedThreadPool(5), DEFAULT_TIMEOUT);
     }
 
-    protected DefaultBootstrapHandler(BootstrapStore store, LwM2mBootstrapRequestSender sender,
+    public DefaultBootstrapHandler(BootstrapStore store, LwM2mBootstrapRequestSender sender,
             BootstrapSessionManager sessionManager, Executor executor) {
+        this(store, sender, sessionManager, executor, DEFAULT_TIMEOUT);
+    }
+
+    public DefaultBootstrapHandler(BootstrapStore store, LwM2mBootstrapRequestSender sender,
+            BootstrapSessionManager sessionManager, Executor executor, long requestTimeout) {
         this.store = store;
         this.sender = sender;
         this.sessionManager = sessionManager;
         this.e = executor;
+        this.requestTimeout = requestTimeout;
     }
 
     @Override
@@ -232,6 +236,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
         } else {
             final BootstrapFinishRequest finishBootstrapRequest = new BootstrapFinishRequest();
             send(session, finishBootstrapRequest, new ResponseCallback<BootstrapFinishResponse>() {
+
                 @Override
                 public void onResponse(BootstrapFinishResponse response) {
                     LOG.trace("Bootstrap Finished {} return code {}", session.getEndpoint(), response.getCode());
@@ -253,7 +258,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
 
     protected <T extends LwM2mResponse> void send(BootstrapSession session, DownlinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
-        sender.send(session.getEndpoint(), session.getIdentity(), request, DEFAULT_TIMEOUT, responseCallback,
+        sender.send(session.getEndpoint(), session.getIdentity(), request, requestTimeout, responseCallback,
                 errorCallback);
     }
 }
