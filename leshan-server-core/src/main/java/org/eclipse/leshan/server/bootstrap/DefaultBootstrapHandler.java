@@ -106,11 +106,15 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
         e.execute(new Runnable() {
             @Override
             public void run() {
-                delete(session, cfg);
+                startBootstrap(session, cfg);
             }
         });
 
         return BootstrapResponse.success();
+    }
+
+    protected void startBootstrap(BootstrapSession session, BootstrapConfig cfg) {
+        delete(session, cfg);
     }
 
     protected void delete(final BootstrapSession session, final BootstrapConfig cfg) {
@@ -234,26 +238,31 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                 }
             });
         } else {
-            final BootstrapFinishRequest finishBootstrapRequest = new BootstrapFinishRequest();
-            send(session, finishBootstrapRequest, new ResponseCallback<BootstrapFinishResponse>() {
-
-                @Override
-                public void onResponse(BootstrapFinishResponse response) {
-                    LOG.trace("Bootstrap Finished {} return code {}", session.getEndpoint(), response.getCode());
-                    if (response.isSuccess()) {
-                        sessionManager.end(session);
-                    } else {
-                        sessionManager.failed(session, FINISHED_WITH_ERROR, finishBootstrapRequest);
-                    }
-                }
-            }, new ErrorCallback() {
-                @Override
-                public void onError(Exception e) {
-                    LOG.debug(String.format("Error during bootstrap finished on %s", session.getEndpoint()), e);
-                    sessionManager.failed(session, SEND_FINISH_FAILED, finishBootstrapRequest);
-                }
-            });
+            // we are done, send bootstrap finished.
+            bootstrapFinished(session, cfg);
         }
+    }
+
+    protected void bootstrapFinished(final BootstrapSession session, final BootstrapConfig cfg) {
+
+        final BootstrapFinishRequest finishBootstrapRequest = new BootstrapFinishRequest();
+        send(session, finishBootstrapRequest, new ResponseCallback<BootstrapFinishResponse>() {
+            @Override
+            public void onResponse(BootstrapFinishResponse response) {
+                LOG.trace("Bootstrap Finished {} return code {}", session.getEndpoint(), response.getCode());
+                if (response.isSuccess()) {
+                    sessionManager.end(session);
+                } else {
+                    sessionManager.failed(session, FINISHED_WITH_ERROR, finishBootstrapRequest);
+                }
+            }
+        }, new ErrorCallback() {
+            @Override
+            public void onError(Exception e) {
+                LOG.debug(String.format("Error during bootstrap finished on %s", session.getEndpoint()), e);
+                sessionManager.failed(session, SEND_FINISH_FAILED, finishBootstrapRequest);
+            }
+        });
     }
 
     protected <T extends LwM2mResponse> void send(BootstrapSession session, DownlinkRequest<T> request,
