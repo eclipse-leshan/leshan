@@ -16,8 +16,10 @@
 package org.eclipse.leshan.server.bootstrap;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.leshan.SecurityMode;
@@ -28,6 +30,8 @@ import org.eclipse.leshan.core.request.BindingMode;
  */
 @SuppressWarnings("serial")
 public class BootstrapConfig implements Serializable {
+
+    public List<String> toDelete = new ArrayList<>();
 
     public Map<Integer, ServerConfig> servers = new HashMap<>();
 

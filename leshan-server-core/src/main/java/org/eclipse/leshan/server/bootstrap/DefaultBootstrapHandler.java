@@ -114,26 +114,34 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
     }
 
     protected void startBootstrap(BootstrapSession session, BootstrapConfig cfg) {
-        delete(session, cfg);
+        delete(session, cfg, new ArrayList<>(cfg.toDelete));
     }
 
-    protected void delete(final BootstrapSession session, final BootstrapConfig cfg) {
+    protected void delete(final BootstrapSession session, final BootstrapConfig cfg, final List<String> pathToDelete) {
+        if (!pathToDelete.isEmpty()) {
+            // get next Security configuration
+            String path = pathToDelete.remove(0);
 
-        final BootstrapDeleteRequest deleteRequest = new BootstrapDeleteRequest();
-        send(session, deleteRequest, new ResponseCallback<BootstrapDeleteResponse>() {
-            @Override
-            public void onResponse(BootstrapDeleteResponse response) {
-                LOG.trace("Bootstrap delete {} return code {}", session.getEndpoint(), response.getCode());
-                List<Integer> instancesToWrite = new ArrayList<>(cfg.security.keySet());
-                writeSecurities(session, cfg, instancesToWrite);
-            }
-        }, new ErrorCallback() {
-            @Override
-            public void onError(Exception e) {
-                LOG.debug(String.format("Error during bootstrap delete '/' on %s", session.getEndpoint()), e);
-                sessionManager.failed(session, DELETE_FAILED, deleteRequest);
-            }
-        });
+            final BootstrapDeleteRequest deleteRequest = new BootstrapDeleteRequest(path);
+            send(session, deleteRequest, new ResponseCallback<BootstrapDeleteResponse>() {
+                @Override
+                public void onResponse(BootstrapDeleteResponse response) {
+                    LOG.trace("Bootstrap delete {} return code {}", session.getEndpoint(), response.getCode());
+
+                    delete(session, cfg, pathToDelete);
+                }
+            }, new ErrorCallback() {
+                @Override
+                public void onError(Exception e) {
+                    LOG.debug(String.format("Error during bootstrap delete '/' on %s", session.getEndpoint()), e);
+                    sessionManager.failed(session, DELETE_FAILED, deleteRequest);
+                }
+            });
+        } else {
+            // we are done, write the securities now
+            List<Integer> securityInstancesToWrite = new ArrayList<>(cfg.security.keySet());
+            writeSecurities(session, cfg, securityInstancesToWrite);
+        }
     }
 
     protected void writeSecurities(final BootstrapSession session, final BootstrapConfig cfg,
