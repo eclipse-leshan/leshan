@@ -41,9 +41,7 @@ import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.resource.DummyInstanceEnabler;
-import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
-import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ACLConfig;
@@ -122,25 +120,26 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         createBootstrapServer(securityStore, null);
     }
 
-    @Override
-    public void createClient() {
+    public Security withoutSecurity() {
         // Create Security Object (with bootstrap server only)
         String bsUrl = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
                 + bootstrapServer.getUnsecuredAddress().getPort();
-        Security security = new Security(bsUrl, true, 3, new byte[0], new byte[0], new byte[0], 12345);
+        return new Security(bsUrl, true, 3, new byte[0], new byte[0], new byte[0], 12345);
+    }
 
-        createClient(security);
+    @Override
+    public void createClient() {
+        createClient(withoutSecurity(), null);
     }
 
     public void createPSKClient(String pskIdentity, byte[] pskKey) {
-
         // Create Security Object (with bootstrap server only)
         String bsUrl = "coaps://" + bootstrapServer.getSecuredAddress().getHostString() + ":"
                 + bootstrapServer.getSecuredAddress().getPort();
         byte[] pskId = pskIdentity.getBytes(StandardCharsets.UTF_8);
         Security security = Security.pskBootstrap(bsUrl, pskId, pskKey);
 
-        createClient(security);
+        createClient(security, null);
     }
 
     @Override
@@ -150,23 +149,26 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         Security security = Security.rpkBootstrap(bsUrl, clientPublicKey.getEncoded(), clientPrivateKey.getEncoded(),
                 bootstrapServerPublicKey.getEncoded());
 
-        createClient(security);
+        createClient(security, null);
     }
 
-    private void createClient(Security security) {
-        ObjectsInitializer initializer = new ObjectsInitializer();
+    public void createClient(Security security, ObjectsInitializer initializer) {
+        if (initializer == null) {
+            initializer = new ObjectsInitializer();
+        }
 
         // Initialize LWM2M Object Tree
         initializer.setInstancesForObject(LwM2mId.SECURITY, security);
         initializer.setInstancesForObject(LwM2mId.DEVICE,
                 new Device("Eclipse Leshan", IntegrationTestHelper.MODEL_NUMBER, "12345", "U"));
-        initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, SimpleInstanceEnabler.class);
         initializer.setClassForObject(LwM2mId.SERVER, DummyInstanceEnabler.class);
-        List<LwM2mObjectEnabler> objects = initializer.createAll();
+        createClient(initializer);
+    }
 
+    public void createClient(ObjectsInitializer initializer) {
         // Create Leshan Client
         LeshanClientBuilder builder = new LeshanClientBuilder(getCurrentEndpoint());
-        builder.setObjects(objects);
+        builder.setObjects(initializer.createAll());
         client = builder.build();
         setupClientMonitoring();
     }
@@ -257,6 +259,28 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                 dmConfig.shortId = 2222;
                 bsConfig.servers.put(0, dmConfig);
 
+                return bsConfig;
+            }
+        };
+    }
+
+    public BootstrapStore deleteSecurityStore(Integer... objectToDelete) {
+        String[] pathToDelete = new String[objectToDelete.length];
+        for (int i = 0; i < pathToDelete.length; i++) {
+            pathToDelete[i] = "/" + objectToDelete[i];
+
+        }
+        return deleteSecurityStore(pathToDelete);
+    }
+
+    public BootstrapStore deleteSecurityStore(final String... pathToDelete) {
+        return new BootstrapStore() {
+
+            @Override
+            public BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity) {
+
+                BootstrapConfig bsConfig = new BootstrapConfig();
+                bsConfig.toDelete = Arrays.asList(pathToDelete);
                 return bsConfig;
             }
         };

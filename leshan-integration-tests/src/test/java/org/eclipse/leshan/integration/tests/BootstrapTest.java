@@ -19,8 +19,11 @@ import static org.eclipse.leshan.integration.tests.SecureIntegrationTestHelper.*
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.junit.Assert.*;
 
+import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.client.request.ServerIdentity;
+import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -71,6 +74,39 @@ public class BootstrapTest {
     }
 
     @Test
+    public void bootstrapDeleteSecurity() {
+        // Create DM Server without security & start it
+        helper.createServer();
+        helper.server.start();
+
+        // Create and start bootstrap server
+        helper.createBootstrapServer(null,
+                helper.deleteSecurityStore(LwM2mId.ACCESS_CONTROL, LwM2mId.CONNECTIVITY_STATISTICS));
+        helper.bootstrapServer.start();
+
+        // Create Client and check it is not already registered
+        ObjectsInitializer initializer = new ObjectsInitializer();
+        initializer.setInstancesForObject(LwM2mId.ACCESS_CONTROL, new SimpleInstanceEnabler());
+        initializer.setInstancesForObject(LwM2mId.CONNECTIVITY_STATISTICS, new SimpleInstanceEnabler());
+        helper.createClient(helper.withoutSecurity(), initializer);
+        helper.assertClientNotRegisterered();
+
+        // Start it and wait for bootstrap finished
+        helper.client.start();
+        helper.waitForBootstrapFinishedAtClientSide(1);
+
+        // ensure instances are deleted
+        ReadResponse response = helper.client.getObjectEnablers().get(LwM2mId.ACCESS_CONTROL)
+                .read(ServerIdentity.SYSTEM, new ReadRequest(LwM2mId.ACCESS_CONTROL));
+        assertTrue("ACL instance is not deleted", ((LwM2mObject) response.getContent()).getInstances().isEmpty());
+
+        response = helper.client.getObjectEnablers().get(LwM2mId.CONNECTIVITY_STATISTICS).read(ServerIdentity.SYSTEM,
+                new ReadRequest(LwM2mId.CONNECTIVITY_STATISTICS));
+        assertTrue("Connectvity instance is not deleted",
+                ((LwM2mObject) response.getContent()).getInstances().isEmpty());
+    }
+
+    @Test
     public void bootstrapWithAcl() {
         // Create DM Server without security & start it
         helper.createServer();
@@ -81,7 +117,9 @@ public class BootstrapTest {
         helper.bootstrapServer.start();
 
         // Create Client and check it is not already registered
-        helper.createClient();
+        ObjectsInitializer initializer = new ObjectsInitializer();
+        initializer.setInstancesForObject(LwM2mId.ACCESS_CONTROL, new SimpleInstanceEnabler());
+        helper.createClient(helper.withoutSecurity(), initializer);
         helper.assertClientNotRegisterered();
 
         // Start it and wait for registration

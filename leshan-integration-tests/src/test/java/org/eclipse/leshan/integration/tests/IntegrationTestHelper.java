@@ -222,6 +222,14 @@ public class IntegrationTestHelper {
         }
     }
 
+    public void waitForBootstrapFinishedAtClientSide(long timeInSeconds) {
+        try {
+            assertTrue(clientObserver.waitForBootstrap(timeInSeconds, TimeUnit.SECONDS));
+        } catch (InterruptedException | TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void ensureNoUpdate(long timeInSeconds) {
         try {
             registrationListener.waitForUpdate(timeInSeconds, TimeUnit.SECONDS);
