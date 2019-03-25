@@ -17,7 +17,7 @@ package org.eclipse.leshan.senml;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 
-public class SenMLDataPoint {
+public class SenMLRecord {
 
     private String name;
     private Long time;
@@ -159,7 +159,7 @@ public class SenMLDataPoint {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        SenMLDataPoint other = (SenMLDataPoint) obj;
+        SenMLRecord other = (SenMLRecord) obj;
         if (booleanValue == null) {
             if (other.booleanValue != null)
                 return false;

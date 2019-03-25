@@ -19,17 +19,17 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * The class representing the SenML format of LWM2M
+ * The class representing the SenML Pack of LwM2M
  */
-public class SensorMeasurementList {
+public class SenMLPack {
 
     private String baseName = null;
 
-    private List<SenMLDataPoint> dataPoints;
+    private List<SenMLRecord> records;
 
     private Long baseTime;
 
-    public SensorMeasurementList() {
+    public SenMLPack() {
     }
 
     public String getBaseName() {
@@ -48,22 +48,22 @@ public class SensorMeasurementList {
         this.baseTime = baseTime;
     }
     
-    public void addDataPoint(SenMLDataPoint dataPoint) {
-        if(dataPoints ==null) {
-            dataPoints = new ArrayList<>();
+    public void addRecord(SenMLRecord record) {
+        if(records ==null) {
+            records = new ArrayList<>();
         }
         
-        dataPoints.add(dataPoint);
+        records.add(record);
     }
 
-    public void setDataPoints(List<SenMLDataPoint> dataPoints) {
-        this.dataPoints = dataPoints;
+    public void setRecords(List<SenMLRecord> records) {
+        this.records = records;
     }
 
-    public List<SenMLDataPoint> getDataPoints() {
-        if (dataPoints == null)
+    public List<SenMLRecord> getRecords() {
+        if (records == null)
             return Collections.emptyList();
-        return dataPoints;
+        return records;
     }
 
     @Override
@@ -72,7 +72,7 @@ public class SensorMeasurementList {
         int result = 1;
         result = prime * result + ((baseName == null) ? 0 : baseName.hashCode());
         result = prime * result + ((baseTime == null) ? 0 : baseTime.hashCode());
-        result = prime * result + ((dataPoints == null) ? 0 : dataPoints.hashCode());
+        result = prime * result + ((records == null) ? 0 : records.hashCode());
         return result;
     }
 
@@ -84,7 +84,7 @@ public class SensorMeasurementList {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        SensorMeasurementList other = (SensorMeasurementList) obj;
+        SenMLPack other = (SenMLPack) obj;
         if (baseName == null) {
             if (other.baseName != null)
                 return false;
@@ -95,17 +95,17 @@ public class SensorMeasurementList {
                 return false;
         } else if (!baseTime.equals(other.baseTime))
             return false;
-        if (dataPoints == null) {
-            if (other.dataPoints != null)
+        if (records == null) {
+            if (other.records != null)
                 return false;
-        } else if (!dataPoints.equals(other.dataPoints))
+        } else if (!records.equals(other.records))
             return false;
         return true;
     }
 
     @Override
     public String toString() {
-        return String.format("SenMLObj [baseName=%s, baseTime=%d, dataPoints=%s]", baseName, baseTime,
-                dataPoints);
+        return String.format("SenMLObj [baseName=%s, baseTime=%d, records=%s]", baseName, baseTime,
+                records);
     }
 }
