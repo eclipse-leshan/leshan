@@ -27,9 +27,9 @@ public class SenMLSerializerTest {
     public void serialize_device_object() {
         
         SenMLPack pack = new SenMLPack();
-        pack.setBaseName("/3/0");
-        
+      
         SenMLRecord elt1 = new SenMLRecord();
+        elt1.setBaseName("/3/0");
         elt1.setName("0");
         elt1.setStringValue("Open Mobile Alliance");
         pack.addRecord(elt1);
@@ -91,7 +91,7 @@ public class SenMLSerializerTest {
         
         SenMLRecord elt13= new SenMLRecord();
         elt13.setName("13");
-        elt13.setTimeValue(1367491215000l);
+        elt13.setFloatValue(1367491215l);
         pack.addRecord(elt13);
         
         SenMLRecord elt14 = new SenMLRecord();
@@ -105,7 +105,7 @@ public class SenMLSerializerTest {
         pack.addRecord(elt15);
 
         String json = SenMLJson.toJsonSenML(pack);
-        LOG.debug(" JSON String: " + json);
+        LOG.debug("JSON String: " + json);
        
         StringBuilder b = new StringBuilder();
         b.append("[{\"bn\":\"/3/0\",\"n\":\"0\",\"vs\":\"Open Mobile Alliance\"},");
@@ -117,7 +117,7 @@ public class SenMLSerializerTest {
         b.append("{\"n\":\"9\",\"v\":100},");
         b.append("{\"n\":\"10\",\"v\":15},");
         b.append("{\"n\":\"11/0\",\"v\":0},");
-        b.append("{\"n\":\"13\",\"v\":1367491215000},");
+        b.append("{\"n\":\"13\",\"v\":1.3674912E9},");
         b.append("{\"n\":\"14\",\"vs\":\"+02:00\"},");
         b.append("{\"n\":\"15\",\"vs\":\"U\"}]");
         

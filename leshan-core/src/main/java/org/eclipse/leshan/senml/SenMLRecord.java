@@ -19,6 +19,9 @@ import org.eclipse.leshan.core.model.ResourceModel.Type;
 
 public class SenMLRecord {
 
+    private String baseName = null;
+    private Long baseTime;
+
     private String name;
     private Long time;
 
@@ -26,7 +29,6 @@ public class SenMLRecord {
     private Boolean booleanValue;
     private String objectLinkValue;
     private String stringValue;
-    private Long timeValue;
     private byte[] opaqueValue;
 
     public ResourceModel.Type getType() {
@@ -41,9 +43,6 @@ public class SenMLRecord {
         }
         if (stringValue != null) {
             return Type.STRING;
-        }
-        if (timeValue != null) {
-            return Type.TIME;
         }
         if (opaqueValue != null) {
             return Type.OPAQUE;
@@ -65,14 +64,6 @@ public class SenMLRecord {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public Long getTimeValue() {
-        return timeValue;
-    }
-
-    public void setTimeValue(Long time) {
-        this.timeValue = time;
     }
 
     public Number getFloatValue() {
@@ -115,6 +106,22 @@ public class SenMLRecord {
         return opaqueValue;
     }
 
+    public String getBaseName() {
+        return baseName;
+    }
+
+    public void setBaseName(String baseName) {
+        this.baseName = baseName;
+    }
+
+    public Long getBaseTime() {
+        return baseTime;
+    }
+
+    public void setBaseTime(Long baseTime) {
+        this.baseTime = baseTime;
+    }
+
     public Object getResourceValue() {
         if (booleanValue != null) {
             return booleanValue;
@@ -128,9 +135,6 @@ public class SenMLRecord {
         if (stringValue != null) {
             return stringValue;
         }
-        if (timeValue != null) {
-            return timeValue;
-        }
         if (opaqueValue != null) {
             return opaqueValue;
         }
@@ -141,12 +145,13 @@ public class SenMLRecord {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + ((baseName == null) ? 0 : baseName.hashCode());
+        result = prime * result + ((baseTime == null) ? 0 : baseTime.hashCode());
         result = prime * result + ((booleanValue == null) ? 0 : booleanValue.hashCode());
         result = prime * result + ((floatValue == null) ? 0 : floatValue.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((objectLinkValue == null) ? 0 : objectLinkValue.hashCode());
         result = prime * result + ((stringValue == null) ? 0 : stringValue.hashCode());
-        result = prime * result + ((timeValue == null) ? 0 : timeValue.hashCode());
         result = prime * result + ((opaqueValue == null) ? 0 : opaqueValue.hashCode());
         return result;
     }
@@ -160,6 +165,29 @@ public class SenMLRecord {
         if (getClass() != obj.getClass())
             return false;
         SenMLRecord other = (SenMLRecord) obj;
+
+        if (baseName == null) {
+            if (other.baseName != null)
+                return false;
+        } else if (!baseName.equals(other.baseName))
+            return false;
+        if (baseTime == null) {
+            if (other.baseTime != null)
+                return false;
+        } else if (!baseTime.equals(other.baseTime))
+            return false;
+
+        if (name == null) {
+            if (other.name != null)
+                return false;
+        } else if (!name.equals(other.name))
+            return false;
+        if (time == null) {
+            if (other.time != null)
+                return false;
+        } else if (!time.equals(other.time))
+            return false;
+
         if (booleanValue == null) {
             if (other.booleanValue != null)
                 return false;
@@ -185,24 +213,19 @@ public class SenMLRecord {
                 return false;
         } else if (!stringValue.equals(other.stringValue))
             return false;
-        if (timeValue == null) {
-            if (other.timeValue != null)
-                return false;
-        } else if (!timeValue.equals(other.timeValue))
-            return false;
-
         if (opaqueValue == null) {
             if (other.opaqueValue != null)
                 return false;
         } else if (!opaqueValue.equals(other.opaqueValue))
             return false;
+
         return true;
     }
 
     @Override
     public String toString() {
         return String.format(
-                "SenMLDataPoint [name=%s, floatValue=%s, booleanValue=%s, objectLinkValue=%s, stringValue=%s, timeValue=%s, opaque=%s]",
-                name, floatValue, booleanValue, objectLinkValue, stringValue, timeValue, opaqueValue);
+                "SenMLRecord [baseName=%s, baseTime=%d, name=%s, time=%d, floatValue=%s, booleanValue=%s, objectLinkValue=%s, stringValue=%s, opaque=%s]",
+                baseName, baseTime, name, time, floatValue, booleanValue, objectLinkValue, stringValue, opaqueValue);
     }
 }

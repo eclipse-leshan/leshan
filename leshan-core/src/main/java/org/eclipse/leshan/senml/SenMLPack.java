@@ -23,36 +23,13 @@ import java.util.List;
  */
 public class SenMLPack {
 
-    private String baseName = null;
-
     private List<SenMLRecord> records;
 
-    private Long baseTime;
-
-    public SenMLPack() {
-    }
-
-    public String getBaseName() {
-        return baseName;
-    }
-
-    public void setBaseName(String baseName) {
-        this.baseName = baseName;
-    }
-
-    public Long getBaseTime() {
-        return baseTime;
-    }
-
-    public void setBaseTime(Long baseTime) {
-        this.baseTime = baseTime;
-    }
-    
     public void addRecord(SenMLRecord record) {
-        if(records ==null) {
+        if (records == null) {
             records = new ArrayList<>();
         }
-        
+
         records.add(record);
     }
 
@@ -70,8 +47,6 @@ public class SenMLPack {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((baseName == null) ? 0 : baseName.hashCode());
-        result = prime * result + ((baseTime == null) ? 0 : baseTime.hashCode());
         result = prime * result + ((records == null) ? 0 : records.hashCode());
         return result;
     }
@@ -85,16 +60,6 @@ public class SenMLPack {
         if (getClass() != obj.getClass())
             return false;
         SenMLPack other = (SenMLPack) obj;
-        if (baseName == null) {
-            if (other.baseName != null)
-                return false;
-        } else if (!baseName.equals(other.baseName))
-            return false;
-        if (baseTime == null) {
-            if (other.baseTime != null)
-                return false;
-        } else if (!baseTime.equals(other.baseTime))
-            return false;
         if (records == null) {
             if (other.records != null)
                 return false;
@@ -105,7 +70,6 @@ public class SenMLPack {
 
     @Override
     public String toString() {
-        return String.format("SenMLObj [baseName=%s, baseTime=%d, records=%s]", baseName, baseTime,
-                records);
+        return String.format("SenMLPack [records=%s]", records);
     }
 }

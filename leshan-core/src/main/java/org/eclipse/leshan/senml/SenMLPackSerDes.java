@@ -15,7 +15,7 @@
 package org.eclipse.leshan.senml;
 
 import org.eclipse.leshan.core.model.ResourceModel.Type;
-import org.eclipse.leshan.util.Hex;
+import org.eclipse.leshan.util.Base64;
 
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
@@ -25,45 +25,42 @@ public class SenMLPackSerDes {
     public String serialize(SenMLPack pack) {
         JsonArray jsonArray = new JsonArray();
 
-        for (int i = 0; i < pack.getRecords().size(); i++) {
+        for (SenMLRecord record : pack.getRecords()) {
             JsonObject jsonObj = new JsonObject();
 
-            if (i == 0 && pack.getBaseName() != null) {
-                jsonObj.add("bn", pack.getBaseName());
-            }
-            if (i == 0 && pack.getBaseTime() != null) {
-                jsonObj.add("bt", pack.getBaseTime());
+            if (record.getBaseName() != null && record.getBaseName().length() > 0) {
+                jsonObj.add("bn", record.getBaseName());
             }
 
-            SenMLRecord records = pack.getRecords().get(i);
-            if (records.getName() != null && records.getName().length() > 0) {
-                jsonObj.add("n", records.getName());
+            if (record.getBaseTime() != null) {
+                jsonObj.add("bt", record.getBaseTime());
             }
 
-            if (records.getTime() != null) {
-                jsonObj.add("t", records.getTime());
+            if (record.getName() != null && record.getName().length() > 0) {
+                jsonObj.add("n", record.getName());
             }
 
-            Type type = records.getType();
+            if (record.getTime() != null) {
+                jsonObj.add("t", record.getTime());
+            }
+
+            Type type = record.getType();
             if (type != null) {
-                switch (records.getType()) {
+                switch (record.getType()) {
                 case FLOAT:
-                case INTEGER:
-                    jsonObj.add("v", records.getFloatValue().floatValue());
+                    jsonObj.add("v", record.getFloatValue().floatValue());
                     break;
                 case BOOLEAN:
-                    jsonObj.add("vb", records.getBooleanValue());
+                    jsonObj.add("vb", record.getBooleanValue());
                     break;
                 case OBJLNK:
-                    jsonObj.add("vd", records.getObjectLinkValue());
+                    jsonObj.add("vlo", record.getObjectLinkValue());
                     break;
                 case OPAQUE:
-                    jsonObj.add("vd", Hex.encodeHexString(records.getOpaqueValue()));
+                    jsonObj.add("vd", Base64.encodeBase64String(record.getOpaqueValue()));
                 case STRING:
-                    jsonObj.add("vs", records.getStringValue());
+                    jsonObj.add("vs", record.getStringValue());
                     break;
-                case TIME:
-                    jsonObj.add("v", records.getTimeValue());
                 default:
                     break;
                 }
@@ -74,5 +71,4 @@ public class SenMLPackSerDes {
 
         return jsonArray.toString();
     }
-    
 }
