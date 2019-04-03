@@ -14,6 +14,8 @@
 
 package org.eclipse.leshan.senml;
 
+import com.eclipsesource.json.Json;
+
 /**
  * Helper for encoding/decoding SenML JSON format
  */
@@ -22,5 +24,9 @@ public class SenMLJson {
 
     public static String toJsonSenML(SenMLPack pack) {
         return serDes.serialize(pack);
+    }
+
+    public static SenMLPack fromJsonSenML(String jsonString) {
+        return serDes.deserialize(Json.parse(jsonString).asArray());
     }
 }
