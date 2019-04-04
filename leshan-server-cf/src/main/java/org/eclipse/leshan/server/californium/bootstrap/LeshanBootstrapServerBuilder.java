@@ -31,6 +31,7 @@ import org.eclipse.californium.elements.UDPConnector;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.SystemConfig;
 import org.eclipse.californium.elements.config.UdpConfig;
+import org.eclipse.californium.oscore.HashMapCtxDB;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
@@ -243,7 +244,7 @@ public class LeshanBootstrapServerBuilder {
      * 
      * @param configStore the bootstrap configuration store.
      * @return the builder for fluent Bootstrap Server creation.
-     * 
+     *
      */
     public LeshanBootstrapServerBuilder setConfigStore(BootstrapConfigStore configStore) {
         this.configStore = configStore;
@@ -298,7 +299,7 @@ public class LeshanBootstrapServerBuilder {
      * Set your {@link LwM2mBootstrapModelProvider} implementation.
      * </p>
      * By default the {@link StandardBootstrapModelProvider}.
-     * 
+     *
      */
     public LeshanBootstrapServerBuilder setObjectModelProvider(LwM2mBootstrapModelProvider objectModelProvider) {
         this.modelProvider = objectModelProvider;
@@ -411,6 +412,13 @@ public class LeshanBootstrapServerBuilder {
         networkConfig.set(CoapConfig.MID_TRACKER, TrackerMode.NULL);
         networkConfig.set(DtlsConfig.DTLS_ROLE, DtlsRole.SERVER_ONLY);
         return networkConfig;
+    }
+
+    HashMapCtxDB oscoreCtxDB;
+
+    public LeshanBootstrapServerBuilder setOscoreCtxDB(HashMapCtxDB oscoreCtxDB) {
+        this.oscoreCtxDB = oscoreCtxDB;
+        return this;
     }
 
     /**
@@ -548,12 +556,12 @@ public class LeshanBootstrapServerBuilder {
 
         CoapEndpoint unsecuredEndpoint = null;
         if (!noUnsecuredEndpoint) {
-            unsecuredEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null);
+            unsecuredEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null, oscoreCtxDB);
         }
 
         CoapEndpoint securedEndpoint = null;
         if (!noSecuredEndpoint && dtlsConfig != null) {
-            securedEndpoint = endpointFactory.createSecuredEndpoint(dtlsConfig, coapConfig, null);
+            securedEndpoint = endpointFactory.createSecuredEndpoint(dtlsConfig, coapConfig, null, null);
         }
 
         if (securedEndpoint == null && unsecuredEndpoint == null) {
