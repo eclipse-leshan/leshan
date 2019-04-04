@@ -12,11 +12,14 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.client.californium;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -26,13 +29,20 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.californium.core.CoapServer;
+import org.eclipse.californium.core.Utils;
 import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
+import org.eclipse.californium.cose.AlgorithmID;
+import org.eclipse.californium.cose.CoseException;
 import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.util.CertPathUtil;
+import org.eclipse.californium.oscore.ContextRederivation.PHASE;
+import org.eclipse.californium.oscore.HashMapCtxDB;
+import org.eclipse.californium.oscore.OSCoreCtx;
+import org.eclipse.californium.oscore.OSException;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
@@ -53,6 +63,8 @@ import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.request.Identity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.upokecenter.cbor.CBORObject;
 
 /**
  * An {@link EndpointsManager} based on Californium(CoAP implementation) and Scandium (DTLS implementation) which
@@ -228,9 +240,58 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                 }
             }
 
-            currentEndpoint = endpointFactory.createSecuredEndpoint(newBuilder.build(), coapConfig, null);
+            currentEndpoint = endpointFactory.createSecuredEndpoint(newBuilder.build(), coapConfig, null, null);
+        } else if (serverInfo.useOscore) {
+            // oscore only mode
+            LOG.info("Adding OSCORE context for " + serverInfo.getFullUri().toASCIIString());
+            // TODO OSCORE : use OscoreStore instead ?
+            HashMapCtxDB db = OscoreClientHandler.getContextDB();
+
+            AlgorithmID hkdfAlg = null;
+            try {
+                hkdfAlg = AlgorithmID.FromCBOR(CBORObject.FromObject(serverInfo.hkdfAlgorithm));
+            } catch (CoseException e) {
+                LOG.error("Failed to decode OSCORE HMAC algorithm");
+            }
+
+            AlgorithmID aeadAlg = null;
+            try {
+                aeadAlg = AlgorithmID.FromCBOR(CBORObject.FromObject(serverInfo.aeadAlgorithm));
+            } catch (CoseException e) {
+                LOG.error("Failed to decode OSCORE AEAD algorithm");
+            }
+
+            try {
+                byte[] idContext = null;
+                OSCoreCtx ctx = new OSCoreCtx(serverInfo.masterSecret, true, aeadAlg, serverInfo.senderId,
+                        serverInfo.recipientId, hkdfAlg, 32, serverInfo.masterSalt, idContext, 1000);
+                db.addContext(serverInfo.getFullUri().toASCIIString(), ctx);
+
+                // Also add the context by the IP of the server since requests may use that
+                String serverIP = InetAddress.getByName(serverInfo.getFullUri().getHost()).getHostAddress();
+                // Support Appendix B.2 functionality
+                ctx.setContextRederivationEnabled(true);
+                // Set to initiate Appendix B.2 procedure on first sent request
+                // To either server or bs server
+                ctx.setContextRederivationPhase(PHASE.CLIENT_INITIATE);
+
+                db.addContext("coap://" + serverIP, ctx);
+
+            } catch (OSException | UnknownHostException e) {
+                LOG.error("Failed to generate OSCORE context information");
+                return null;
+            }
+
+            currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null, db);
+
+            // Build server identity for OSCORE
+            String sidString = Utils.toHexString(serverInfo.senderId).replace("[", "").replace("]", "").toLowerCase();
+            String ridString = Utils.toHexString(serverInfo.recipientId).replace("[", "").replace("]", "")
+                    .toLowerCase();
+            String oscoreIdentity = "sid=" + sidString + ",rid=" + ridString;
+            serverIdentity = Identity.oscoreOnly(serverInfo.getAddress(), oscoreIdentity);
         } else {
-            currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null);
+            currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null, null);
             serverIdentity = Identity.unsecure(serverInfo.getAddress());
         }
 

@@ -105,6 +105,32 @@ public class SecurityTest {
     }
 
     @Test
+    public void registered_device_with_oscore_to_server_with_oscore()
+            throws NonUniqueSecurityInfoException, InterruptedException {
+
+        helper.createServer();
+        helper.server.start();
+
+        helper.createOscoreClient();
+
+        helper.getSecurityStore().add(SecurityInfo.newOSCoreInfo(helper.getCurrentEndpoint(), getOscoreCtx()));
+
+        // Check client is not registered
+        helper.assertClientNotRegisterered();
+
+        // Start it and wait for registration
+        helper.client.start();
+        helper.waitForRegistrationAtServerSide(1);
+
+        // Check client is well registered
+        helper.assertClientRegisterered();
+
+        // check we can send request to client.
+        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
+        assertTrue(response.isSuccess());
+    }
+
+    @Test
     public void dont_sent_request_if_identity_change()
             throws NonUniqueSecurityInfoException, InterruptedException, IOException {
         // Create PSK server & start it
