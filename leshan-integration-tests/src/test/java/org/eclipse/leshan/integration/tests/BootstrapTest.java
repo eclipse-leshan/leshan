@@ -25,6 +25,7 @@ import static org.junit.Assert.*;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.californium.oscore.OSException;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
@@ -53,6 +54,7 @@ import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class BootstrapTest {
@@ -231,7 +233,7 @@ public class BootstrapTest {
         BootstrapDiscoverResponse lastDiscoverAnswer = (BootstrapDiscoverResponse) helper.lastCustomResponse;
         assertEquals(ResponseCode.CONTENT, lastDiscoverAnswer.getCode());
         assertEquals(
-                String.format("</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</1>;ver=1.1,</3>;ver=1.1,</3/0>",
+                String.format("</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</1>;ver=1.1,</3>;ver=1.1,</3/0>,</21>",
                         helper.bootstrapServer.getUnsecuredAddress().getHostString(),
                         helper.bootstrapServer.getUnsecuredAddress().getPort()),
                 linkSerializer.serializeCoreLinkFormat(lastDiscoverAnswer.getObjectLinks()));
@@ -262,7 +264,7 @@ public class BootstrapTest {
         BootstrapDiscoverResponse lastDiscoverAnswer = (BootstrapDiscoverResponse) helper.lastCustomResponse;
         assertEquals(ResponseCode.CONTENT, lastDiscoverAnswer.getCode());
         assertEquals(
-                String.format("</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</1>;ver=1.1,</3>;ver=1.1,</3/0>",
+                String.format("</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</1>;ver=1.1,</3>;ver=1.1,</3/0>,</21>",
                         helper.bootstrapServer.getUnsecuredAddress().getHostString(),
                         helper.bootstrapServer.getUnsecuredAddress().getPort()),
                 linkSerializer.serializeCoreLinkFormat(lastDiscoverAnswer.getObjectLinks()));
@@ -285,7 +287,7 @@ public class BootstrapTest {
         lastDiscoverAnswer = (BootstrapDiscoverResponse) helper.lastCustomResponse;
         assertEquals(ResponseCode.CONTENT, lastDiscoverAnswer.getCode());
         assertEquals(String.format(
-                "</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</0/1>;ssid=2222;uri=\"coap://%s:%d\",</1>;ver=1.1,</1/0>;ssid=2222,</3>;ver=1.1,</3/0>",
+                "</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</0/1>;ssid=2222;uri=\"coap://%s:%d\",</1>;ver=1.1,</1/0>;ssid=2222,</3>;ver=1.1,</3/0>,</21>",
                 helper.bootstrapServer.getUnsecuredAddress().getHostString(),
                 helper.bootstrapServer.getUnsecuredAddress().getPort(),
                 helper.server.getUnsecuredAddress().getHostString(), helper.server.getUnsecuredAddress().getPort()),
@@ -649,6 +651,74 @@ public class BootstrapTest {
         helper.waitForRegistrationAtServerSide(1);
 
         // check the client is registered
+        helper.assertClientRegisterered();
+    }
+
+    @Test
+    public void bootstrapUnsecuredToServerWithOscore() throws NonUniqueSecurityInfoException {
+        helper.createServer();
+        helper.server.start();
+
+        helper.createBootstrapServer(null, helper.unsecuredBootstrapStoreWithOscoreServer());
+        helper.bootstrapServer.start();
+
+        // Check client is not registered
+        helper.createClient();
+        helper.assertClientNotRegisterered();
+
+        helper.getSecurityStore().add(SecurityInfo.newOSCoreInfo(helper.getCurrentEndpoint(), getOscoreCtx()));
+
+        // Start it and wait for registration
+        helper.client.start();
+
+        helper.waitForRegistrationAtServerSide(1);
+
+        // Check client is well registered
+        helper.assertClientRegisterered();
+    }
+
+    @Test
+    public void bootstrapViaOscoreToServerWithOscore() throws NonUniqueSecurityInfoException {
+        helper.createServer();
+        helper.server.start();
+
+
+        helper.createBootstrapServer(helper.bsSecurityStore(SecurityMode.NO_SEC), helper.oscoreBootstrapStoreWithOscoreServer());
+        helper.bootstrapServer.start();
+
+        // Check client is not registered
+        helper.createOscoreOnlyBootstrapClient();
+        helper.assertClientNotRegisterered();
+
+        helper.getSecurityStore().add(SecurityInfo.newOSCoreInfo(helper.getCurrentEndpoint(), getOscoreCtx()));
+
+        // Start it and wait for registration
+        helper.client.start();
+
+        helper.waitForRegistrationAtServerSide(1);
+
+        // Check client is well registered
+        helper.assertClientRegisterered();
+    }
+
+    @Test
+    public void bootstrapViaOscoreToUnsecuredServer() throws OSException {
+        helper.createServer();
+        helper.server.start();
+
+        helper.createBootstrapServer(helper.bsSecurityStore(SecurityMode.NO_SEC), helper.oscoreBootstrapStoreWithUnsecuredServer());
+        helper.bootstrapServer.start();
+
+        // Check client is not registered
+        helper.createOscoreOnlyBootstrapClient();
+        helper.assertClientNotRegisterered();
+
+        // Start it and wait for registration
+        helper.client.start();
+
+        helper.waitForRegistrationAtServerSide(1);
+
+        // Check client is well registered
         helper.assertClientRegisterered();
     }
 }

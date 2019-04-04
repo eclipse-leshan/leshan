@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.server.security;
 
@@ -56,6 +57,20 @@ public class SecurityChecker {
                 } while (securityInfos.hasNext());
                 return false;
             }
+        } else if (clientIdentity.isOSCORE()) {
+            if (securityInfos == null || !securityInfos.hasNext()) {
+                LOG.debug("Client '{}' without security info trying to connect using OSCORE", endpoint);
+                return false;
+            } else {
+                // check if one expected security info matches OSCORE client identity
+                LOG.trace("Checking incoming client's OSCORE identity.");
+                do {
+                    SecurityInfo securityInfo = securityInfos.next();
+                    if (checkSecurityInfo(endpoint, clientIdentity, securityInfo)) {
+                        return true;
+                    }
+                } while (securityInfos.hasNext());
+            }
         } else if (securityInfos != null && securityInfos.hasNext()) {
             LOG.debug("Client '{}' must connect using DTLS", endpoint);
             return false;
@@ -74,7 +89,6 @@ public class SecurityChecker {
      * @see SecurityInfo
      */
     public boolean checkSecurityInfo(String endpoint, Identity clientIdentity, SecurityInfo securityInfo) {
-
         // if this is a secure end-point, we must check that the registering client is using the right identity.
         if (clientIdentity.isSecure()) {
             if (securityInfo == null) {
@@ -99,7 +113,10 @@ public class SecurityChecker {
                 return false;
             }
         } else {
-            if (securityInfo != null) {
+            if (clientIdentity.isOSCORE()) {
+                LOG.trace("Checking incoming client's OSCORE identity.");
+                return checkOscoreIdentity(endpoint, clientIdentity, securityInfo);
+            } else if (securityInfo != null) {
                 LOG.debug("Client '{}' must connect using DTLS", endpoint);
                 return false;
             }
@@ -180,6 +197,32 @@ public class SecurityChecker {
         if (!receivedX509CommonName.equals(expectedX509CommonName)) {
             LOG.debug("Invalid certificate common name for client '{}': expected \n'{}'\n but was \n'{}'", endpoint,
                     expectedX509CommonName, receivedX509CommonName);
+            return false;
+        }
+        return true;
+    }
+
+    protected boolean checkOscoreIdentity(String endpoint, Identity clientIdentity, SecurityInfo securityInfo) {
+        // Manage OSCORE authentication
+        // ----------------------------------------------------
+        if (!securityInfo.useOSCORE()) {
+            LOG.debug("Client '{}' is not supposed to use OSCORE to authenticate", endpoint);
+            return false;
+        }
+
+        if (!matchOscoreIdentity(endpoint, clientIdentity.getOscoreIdentity(), securityInfo.getOscoreIdentity())) {
+            return false;
+        }
+
+        LOG.trace("Authenticated client '{}' using OSCORE", endpoint);
+        return true;
+    }
+
+    protected boolean matchOscoreIdentity(String endpoint, String receivedOscoreIdentity,
+            String expectedOscoreIdentity) {
+        if (!receivedOscoreIdentity.equals(expectedOscoreIdentity)) {
+            LOG.debug("Invalid identity for client '{}': expected '{}' but was '{}'", endpoint, expectedOscoreIdentity,
+                    receivedOscoreIdentity);
             return false;
         }
         return true;
