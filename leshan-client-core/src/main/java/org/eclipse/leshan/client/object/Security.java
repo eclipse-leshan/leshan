@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.client.object;
 
@@ -29,6 +30,7 @@ import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.request.argument.Arguments;
+import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
@@ -45,7 +47,7 @@ public class Security extends BaseInstanceEnabler {
 
     private final static List<Integer> supportedResources = Arrays.asList(SEC_SERVER_URI, SEC_BOOTSTRAP,
             SEC_SECURITY_MODE, SEC_PUBKEY_IDENTITY, SEC_SERVER_PUBKEY, SEC_SECRET_KEY, SEC_SERVER_ID,
-            SEC_CERTIFICATE_USAGE);
+            SEC_CERTIFICATE_USAGE, SEC_OSCORE_SECURITY_MODE);
 
     private String serverUri; /* coaps://host:port */
     private boolean bootstrapServer;
@@ -56,6 +58,7 @@ public class Security extends BaseInstanceEnabler {
     private byte[] secretKey;
 
     private Integer shortServerId;
+    private ObjectLink oscoreSecurityMode;
 
     private ULong certificateUsage;
 
@@ -65,7 +68,8 @@ public class Security extends BaseInstanceEnabler {
     }
 
     public Security(String serverUri, boolean bootstrapServer, int securityMode, byte[] publicKeyOrIdentity,
-            byte[] serverPublicKey, byte[] secretKey, Integer shortServerId, ULong certificateUsage) {
+            byte[] serverPublicKey, byte[] secretKey, Integer shortServerId, ULong certificateUsage,
+            ObjectLink oscoreSecurityMode) {
         this.serverUri = serverUri;
         this.bootstrapServer = bootstrapServer;
         this.securityMode = securityMode;
@@ -74,6 +78,16 @@ public class Security extends BaseInstanceEnabler {
         this.secretKey = secretKey;
         this.shortServerId = shortServerId;
         this.certificateUsage = certificateUsage;
+        this.oscoreSecurityMode = oscoreSecurityMode;
+    }
+
+    /**
+     * Returns a new security instance (OSCORE only) for a bootstrap server.
+     */
+    public static Security oscoreOnlyBootstrap(String serverUri, Integer shortServerId, int oscoreObjectInstanceId) {
+        return new Security(serverUri, true, SecurityMode.NO_SEC.code, new byte[0], new byte[0], new byte[0],
+                shortServerId, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code,
+                new ObjectLink(OSCORE, oscoreObjectInstanceId));
     }
 
     /**
@@ -81,7 +95,7 @@ public class Security extends BaseInstanceEnabler {
      */
     public static Security noSecBootstap(String serverUri) {
         return new Security(serverUri, true, SecurityMode.NO_SEC.code, new byte[0], new byte[0], new byte[0], null,
-                CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code);
+                CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code, new ObjectLink());
     }
 
     /**
@@ -89,7 +103,7 @@ public class Security extends BaseInstanceEnabler {
      */
     public static Security pskBootstrap(String serverUri, byte[] pskIdentity, byte[] privateKey) {
         return new Security(serverUri, true, SecurityMode.PSK.code, pskIdentity.clone(), new byte[0],
-                privateKey.clone(), null, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code);
+                privateKey.clone(), null, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code, new ObjectLink());
     }
 
     /**
@@ -98,7 +112,7 @@ public class Security extends BaseInstanceEnabler {
     public static Security rpkBootstrap(String serverUri, byte[] clientPublicKey, byte[] clientPrivateKey,
             byte[] serverPublicKey) {
         return new Security(serverUri, true, SecurityMode.RPK.code, clientPublicKey.clone(), serverPublicKey.clone(),
-                clientPrivateKey.clone(), null, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code);
+                clientPrivateKey.clone(), null, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code, new ObjectLink());
     }
 
     /**
@@ -107,7 +121,7 @@ public class Security extends BaseInstanceEnabler {
     public static Security x509Bootstrap(String serverUri, byte[] clientCertificate, byte[] clientPrivateKey,
             byte[] serverPublicKey) {
         return new Security(serverUri, true, SecurityMode.X509.code, clientCertificate.clone(), serverPublicKey.clone(),
-                clientPrivateKey.clone(), null, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code);
+                clientPrivateKey.clone(), null, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code, new ObjectLink());
     }
 
     /**
@@ -116,7 +130,7 @@ public class Security extends BaseInstanceEnabler {
     public static Security x509Bootstrap(String serverUri, byte[] clientCertificate, byte[] clientPrivateKey,
             byte[] serverPublicKey, ULong certificateUsage) {
         return new Security(serverUri, true, SecurityMode.X509.code, clientCertificate.clone(), serverPublicKey.clone(),
-                clientPrivateKey.clone(), null, certificateUsage);
+                clientPrivateKey.clone(), null, certificateUsage, new ObjectLink());
     }
 
     /**
@@ -124,7 +138,16 @@ public class Security extends BaseInstanceEnabler {
      */
     public static Security noSec(String serverUri, int shortServerId) {
         return new Security(serverUri, false, SecurityMode.NO_SEC.code, new byte[0], new byte[0], new byte[0],
-                shortServerId, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code);
+                shortServerId, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code, new ObjectLink());
+    }
+
+    /**
+     * Returns a new security instance (OSCORE only) for a device management server.
+     */
+    public static Security oscoreOnly(String serverUri, int shortServerId, int oscoreObjectInstanceId) {
+        return new Security(serverUri, false, SecurityMode.NO_SEC.code, new byte[0], new byte[0], new byte[0],
+                shortServerId, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code,
+                new ObjectLink(OSCORE, oscoreObjectInstanceId));
     }
 
     /**
@@ -132,7 +155,7 @@ public class Security extends BaseInstanceEnabler {
      */
     public static Security psk(String serverUri, int shortServerId, byte[] pskIdentity, byte[] privateKey) {
         return new Security(serverUri, false, SecurityMode.PSK.code, pskIdentity.clone(), new byte[0],
-                privateKey.clone(), shortServerId, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code);
+                privateKey.clone(), shortServerId, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code, new ObjectLink());
     }
 
     /**
@@ -141,7 +164,8 @@ public class Security extends BaseInstanceEnabler {
     public static Security rpk(String serverUri, int shortServerId, byte[] clientPublicKey, byte[] clientPrivateKey,
             byte[] serverPublicKey) {
         return new Security(serverUri, false, SecurityMode.RPK.code, clientPublicKey.clone(), serverPublicKey.clone(),
-                clientPrivateKey.clone(), shortServerId, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code);
+                clientPrivateKey.clone(), shortServerId, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code,
+                new ObjectLink());
     }
 
     /**
@@ -151,7 +175,7 @@ public class Security extends BaseInstanceEnabler {
             byte[] serverPublicKey) {
         return new Security(serverUri, false, SecurityMode.X509.code, clientCertificate.clone(),
                 serverPublicKey.clone(), clientPrivateKey.clone(), shortServerId,
-                CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code);
+                CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code, new ObjectLink());
     }
 
     /**
@@ -160,7 +184,7 @@ public class Security extends BaseInstanceEnabler {
     public static Security x509(String serverUri, int shortServerId, byte[] clientCertificate, byte[] clientPrivateKey,
             byte[] serverPublicKey, ULong certificateUsage) {
         return new Security(serverUri, false, SecurityMode.X509.code, clientCertificate.clone(),
-                serverPublicKey.clone(), clientPrivateKey.clone(), shortServerId, certificateUsage);
+                serverPublicKey.clone(), clientPrivateKey.clone(), shortServerId, certificateUsage, new ObjectLink());
     }
 
     @Override
@@ -221,6 +245,13 @@ public class Security extends BaseInstanceEnabler {
             certificateUsage = (ULong) value.getValue();
             return WriteResponse.success();
 
+        case SEC_OSCORE_SECURITY_MODE: // oscore security mode
+            if (value.getType() != Type.OBJLNK) {
+                return WriteResponse.badRequest("invalid type");
+            }
+            oscoreSecurityMode = (ObjectLink) value.getValue();
+            return WriteResponse.success();
+
         default:
             return super.write(identity, replace, resourceId, value);
         }
@@ -257,6 +288,9 @@ public class Security extends BaseInstanceEnabler {
                 return ReadResponse.notFound();
         case SEC_CERTIFICATE_USAGE: // certificate usage
             return ReadResponse.success(resourceid, certificateUsage);
+
+        case SEC_OSCORE_SECURITY_MODE: // oscore security mode
+            return ReadResponse.success(resourceid, oscoreSecurityMode == null ? new ObjectLink() : oscoreSecurityMode);
 
         default:
             return super.read(identity, resourceid);

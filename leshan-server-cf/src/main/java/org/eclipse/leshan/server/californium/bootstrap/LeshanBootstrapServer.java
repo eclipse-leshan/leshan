@@ -31,6 +31,7 @@ import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.util.Validate;
+import org.eclipse.leshan.server.OscoreBootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionDispatcher;
@@ -162,6 +163,9 @@ public class LeshanBootstrapServer {
         } else if (requestSender instanceof Stoppable) {
             ((Stoppable) requestSender).stop();
         }
+
+        OscoreBootstrapHandler.purge();
+
         LOG.info("Bootstrap server destroyed.");
     }
 

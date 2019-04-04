@@ -35,6 +35,7 @@ import org.eclipse.californium.elements.UDPConnector;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.SystemConfig;
 import org.eclipse.californium.elements.config.UdpConfig;
+import org.eclipse.californium.oscore.HashMapCtxDB;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
@@ -302,7 +303,7 @@ public class LeshanServerBuilder {
      * <p>
      * This is strongly recommended to create the {@link Configuration} with {@link #createDefaultCoapConfiguration()}
      * before to modify it.
-     * 
+     *
      */
     public LeshanServerBuilder setCoapConfig(Configuration config) {
         this.coapConfig = config;
@@ -421,6 +422,13 @@ public class LeshanServerBuilder {
         networkConfig.set(DtlsConfig.DTLS_ROLE, DtlsRole.BOTH);
 
         return networkConfig;
+    }
+
+    HashMapCtxDB oscoreCtxDB;
+
+    public LeshanServerBuilder setOscoreCtxDB(HashMapCtxDB oscoreCtxDB) {
+        this.oscoreCtxDB = oscoreCtxDB;
+        return this;
     }
 
     /**
@@ -554,12 +562,13 @@ public class LeshanServerBuilder {
         // create endpoints
         CoapEndpoint unsecuredEndpoint = null;
         if (!noUnsecuredEndpoint) {
-            unsecuredEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, registrationStore);
+            unsecuredEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, registrationStore,
+                    oscoreCtxDB);
         }
 
         CoapEndpoint securedEndpoint = null;
         if (!noSecuredEndpoint && dtlsConfig != null) {
-            securedEndpoint = endpointFactory.createSecuredEndpoint(dtlsConfig, coapConfig, registrationStore);
+            securedEndpoint = endpointFactory.createSecuredEndpoint(dtlsConfig, coapConfig, registrationStore, null);
         }
 
         if (securedEndpoint == null && unsecuredEndpoint == null) {
@@ -600,7 +609,7 @@ public class LeshanServerBuilder {
      * @param registrationIdProvider to provide registrationId using for location-path option values on response of
      *        Register operation.
      * @param linkParser a parser {@link LwM2mLinkParser} used to parse a CoRE Link.
-     * 
+     *
      * @return the LWM2M server
      */
     protected LeshanServer createServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,

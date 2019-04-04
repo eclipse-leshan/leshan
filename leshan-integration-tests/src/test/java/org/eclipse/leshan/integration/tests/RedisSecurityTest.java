@@ -16,9 +16,21 @@
 package org.eclipse.leshan.integration.tests;
 
 import org.eclipse.leshan.integration.tests.util.RedisSecureIntegrationTestHelper;
+import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
+import org.junit.Ignore;
+import org.junit.Test;
 
 public class RedisSecurityTest extends SecurityTest {
     public RedisSecurityTest() {
         helper = new RedisSecureIntegrationTestHelper();
+    }
+
+    @Test
+    @Ignore
+    @Override
+    public void registered_device_with_oscore_to_server_with_oscore()
+            throws NonUniqueSecurityInfoException, InterruptedException {
+        // TODO OSCORE : https://github.com/eclipse/leshan/pull/1180#issuecomment-1007587985
+        // Redis security store does support oscore for now.
     }
 }

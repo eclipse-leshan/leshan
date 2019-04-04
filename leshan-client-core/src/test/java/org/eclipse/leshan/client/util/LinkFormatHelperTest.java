@@ -304,6 +304,7 @@ public class LinkFormatHelperTest {
         Link[] links = LinkFormatHelper.getBootstrapClientDescription(objectEnablers);
         String strLinks = serializer.serializeCoreLinkFormat(links);
 
+        // TODO : handle version correctly
         assertEquals("</>;lwm2m=1.0,</0/0>;ssid=111;uri=\"coap://localhost:11\"," //
                 + "</0/1>;uri=\"coap://localhost:1\"," //
                 + "</0/2>;ssid=222;uri=\"coap://localhost:22\"," //
