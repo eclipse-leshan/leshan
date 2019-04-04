@@ -13,6 +13,7 @@ and the Eclipse Distribution License is available at
 
 Contributors:
     Sierra Wireless - initial API and implementation
+    Rikard Höglund (RISE SICS) - Additions to support OSCORE
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -39,6 +40,11 @@ Contributors:
         <dependency>
             <groupId>org.eclipse.californium</groupId>
             <artifactId>scandium</artifactId>
+        </dependency>
+        <dependency>
+                <groupId>org.eclipse.californium</groupId>
+                <artifactId>cf-oscore</artifactId>
+                <version>${californium.version}</version>
         </dependency>
 
         <!-- test dependencies -->

@@ -58,6 +58,7 @@ import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.core.request.argument.Arguments;
 import org.eclipse.leshan.core.response.ExecuteResponse;
+import org.eclipse.leshan.server.OscoreServerHandler;
 import org.eclipse.leshan.server.californium.LeshanServer;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.model.VersionedModelProvider;
@@ -236,6 +237,7 @@ public class IntegrationTestHelper {
                 return super.isAuthorized(request, registration, senderIdentity);
             }
         });
+        builder.setOscoreCtxDB(OscoreServerHandler.getContextDB());
         return builder;
     }
 

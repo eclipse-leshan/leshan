@@ -322,7 +322,10 @@ Contributors:
                              <logback.configurationFile>logback-leshan-test.xml</logback.configurationFile>
                         </systemPropertyVariables>
                         <parallel>classes</parallel>
-                        <threadCount>4</threadCount>
+                        <!--  TODO OSCORE threadcount should be set to 4 again as soon as instability was resolved
+                              see : https://github.com/eclipse/leshan/pull/1180#issuecomment-1007587985
+                         -->
+                        <threadCount>1</threadCount>
                         <excludes>
                             <exclude>**/*$*</exclude>
                         </excludes>
