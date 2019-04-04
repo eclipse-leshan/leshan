@@ -16,6 +16,9 @@
 
 package org.eclipse.leshan.integration.tests.util;
 
+import static org.eclipse.leshan.client.object.Security.oscoreOnly;
+import static org.eclipse.leshan.core.LwM2mId.*;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -48,6 +51,7 @@ import javax.security.auth.x500.X500Principal;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.observe.ObservationStore;
 import org.eclipse.californium.elements.config.Configuration;
+import org.eclipse.californium.oscore.OSCoreCtxDB;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
@@ -61,6 +65,7 @@ import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.californium.X509Util;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.object.Device;
+import org.eclipse.leshan.client.object.Oscore;
 import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.DummyInstanceEnabler;
@@ -69,6 +74,9 @@ import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.californium.EndpointFactory;
+import org.eclipse.leshan.core.oscore.AeadAlgorithm;
+import org.eclipse.leshan.core.oscore.HkdfAlgorithm;
+import org.eclipse.leshan.core.oscore.OscoreSetting;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.X509CertUtil;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
@@ -86,6 +94,15 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
     public static final String BAD_PSK_ID = "Bad_Client_identity";
     public static final byte[] BAD_PSK_KEY = Hex.decodeHex("010101010101010101".toCharArray());
     public static final String BAD_ENDPOINT = "bad_endpoint";
+
+    public static final byte[] OSCORE_MASTER_SECRET = Hex.decodeHex("1234567890".toCharArray());
+    public static final byte[] OSCORE_MASTER_SALT = Hex.decodeHex("0987654321".toCharArray());
+    public static final byte[] OSCORE_SENDER_ID = Hex.decodeHex("ABCDEF".toCharArray());
+    public static final byte[] OSCORE_RECIPIENT_ID = Hex.decodeHex("FEDCBA".toCharArray());
+
+    public static final AeadAlgorithm OSCORE_AEAD_ALGORITHM = AeadAlgorithm.AES_CCM_16_64_128;
+    public static final HkdfAlgorithm OSCORE_HKDF_ALGORITHM = HkdfAlgorithm.HKDF_HMAC_SHA_256;
+
     private SinglePSKStore singlePSKStore;
     protected SecurityStore securityStore;
 
@@ -245,15 +262,15 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         builder.setRegistrationEngineFactory(new DefaultRegistrationEngineFactory().setQueueMode(queueMode));
         builder.setLocalAddress(clientAddress.getHostString(), clientAddress.getPort());
         builder.setObjects(objects);
-        builder.setDtlsConfig(DtlsConnectorConfig.builder(configuration)
-                .setAsList(DtlsConfig.DTLS_CIPHER_SUITES, CipherSuite.TLS_PSK_WITH_AES_128_CCM_8));
+        builder.setDtlsConfig(DtlsConnectorConfig.builder(configuration).setAsList(DtlsConfig.DTLS_CIPHER_SUITES,
+                CipherSuite.TLS_PSK_WITH_AES_128_CCM_8));
 
         // set an editable PSK store for tests
         builder.setEndpointFactory(new EndpointFactory() {
 
             @Override
             public CoapEndpoint createUnsecuredEndpoint(InetSocketAddress address, Configuration coapConfig,
-                    ObservationStore store) {
+                    ObservationStore store, OSCoreCtxDB db) {
                 CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
                 builder.setInetSocketAddress(address);
                 builder.setConfiguration(coapConfig);
@@ -262,7 +279,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
 
             @Override
             public CoapEndpoint createSecuredEndpoint(DtlsConnectorConfig dtlsConfig, Configuration coapConfig,
-                    ObservationStore store) {
+                    ObservationStore store, OSCoreCtxDB db) {
                 CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
                 Builder dtlsConfigBuilder = DtlsConnectorConfig.builder(dtlsConfig);
 
@@ -461,6 +478,39 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         server = builder.build();
         // monitor client registration
         setupServerMonitoring();
+    }
+
+    public void createOscoreClient() {
+        ObjectsInitializer initializer = new TestObjectsInitializer();
+
+        String serverUri = "coap://" + server.getUnsecuredAddress().getHostString() + ":"
+                + server.getUnsecuredAddress().getPort();
+
+        Oscore oscoreObject = new Oscore(12345, getClientOscoreSetting());
+        initializer.setInstancesForObject(SECURITY, oscoreOnly(serverUri, 12345, oscoreObject.getId()));
+        initializer.setInstancesForObject(OSCORE, oscoreObject);
+
+        initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME));
+        initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345"));
+        List<LwM2mObjectEnabler> objects = initializer.createAll();
+
+        InetSocketAddress clientAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
+        LeshanClientBuilder builder = new LeshanClientBuilder(getCurrentEndpoint());
+        builder.setLocalAddress(clientAddress.getHostString(), clientAddress.getPort());
+
+        builder.setObjects(objects);
+        client = builder.build();
+        setupClientMonitoring();
+    }
+
+    public static OscoreSetting getServerOscoreSetting() {
+        return new OscoreSetting(OSCORE_RECIPIENT_ID, OSCORE_SENDER_ID, OSCORE_MASTER_SECRET, OSCORE_AEAD_ALGORITHM,
+                OSCORE_HKDF_ALGORITHM, OSCORE_MASTER_SALT);
+    }
+
+    protected static OscoreSetting getClientOscoreSetting() {
+        return new OscoreSetting(OSCORE_SENDER_ID, OSCORE_RECIPIENT_ID, OSCORE_MASTER_SECRET, OSCORE_AEAD_ALGORITHM,
+                OSCORE_HKDF_ALGORITHM, OSCORE_MASTER_SALT);
     }
 
     public PublicKey getServerPublicKey() {

@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.client.servers;
 
@@ -25,6 +26,7 @@ import java.security.cert.Certificate;
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.LwM2m;
 import org.eclipse.leshan.core.SecurityMode;
+import org.eclipse.leshan.core.oscore.OscoreSetting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +55,10 @@ public class ServerInfo {
     public Certificate serverCertificate;
 
     public PrivateKey privateKey;
+
+    // OSCORE parameters
+    public boolean useOscore;
+    public OscoreSetting oscoreSetting;
 
     public InetSocketAddress getAddress() {
         return getAddress(serverUri);

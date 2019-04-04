@@ -35,6 +35,7 @@ import org.eclipse.californium.elements.UDPConnector;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.SystemConfig;
 import org.eclipse.californium.elements.config.UdpConfig;
+import org.eclipse.californium.oscore.OSCoreCtxDB;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
@@ -47,6 +48,7 @@ import org.eclipse.californium.scandium.dtls.x509.StaticNewAdvancedCertificateVe
 import org.eclipse.leshan.core.LwM2m;
 import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.californium.EndpointFactory;
+import org.eclipse.leshan.core.californium.oscore.cf.InMemoryOscoreContextDB;
 import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -68,6 +70,7 @@ import org.eclipse.leshan.server.registration.RegistrationIdProvider;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.security.Authorizer;
 import org.eclipse.leshan.server.security.DefaultAuthorizer;
+import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.InMemorySecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.SecurityStore;
@@ -112,6 +115,8 @@ public class LeshanServerBuilder {
     /** @since 1.1 */
     protected boolean updateRegistrationOnNotification;
     private LwM2mLinkParser linkParser;
+
+    private boolean enableOscore = false;
 
     /**
      * <p>
@@ -302,7 +307,7 @@ public class LeshanServerBuilder {
      * <p>
      * This is strongly recommended to create the {@link Configuration} with {@link #createDefaultCoapConfiguration()}
      * before to modify it.
-     * 
+     *
      */
     public LeshanServerBuilder setCoapConfig(Configuration config) {
         this.coapConfig = config;
@@ -405,6 +410,16 @@ public class LeshanServerBuilder {
      */
     public LeshanServerBuilder setUpdateRegistrationOnNotification(boolean updateRegistrationOnNotification) {
         this.updateRegistrationOnNotification = updateRegistrationOnNotification;
+        return this;
+    }
+
+    /**
+     * Enable EXPERIMENTAL OSCORE feature.
+     * <p>
+     * By default OSCORE is not enabled.
+     */
+    public LeshanServerBuilder setEnableOscore(boolean enableOscore) {
+        this.enableOscore = enableOscore;
         return this;
     }
 
@@ -551,15 +566,27 @@ public class LeshanServerBuilder {
             }
         }
 
+        // Handle OSCORE support.
+        OSCoreCtxDB oscoreCtxDB = null;
+        OscoreContextCleaner oscoreCtxCleaner = null;
+        if (enableOscore) {
+            LOG.warn("Experimental OSCORE feature is enabled.");
+            if (securityStore != null) {
+                oscoreCtxDB = new InMemoryOscoreContextDB(new LwM2mOscoreStore(securityStore, registrationStore));
+                oscoreCtxCleaner = new OscoreContextCleaner(oscoreCtxDB);
+            }
+        }
+
         // create endpoints
         CoapEndpoint unsecuredEndpoint = null;
         if (!noUnsecuredEndpoint) {
-            unsecuredEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, registrationStore);
+            unsecuredEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, registrationStore,
+                    oscoreCtxDB);
         }
 
         CoapEndpoint securedEndpoint = null;
         if (!noSecuredEndpoint && dtlsConfig != null) {
-            securedEndpoint = endpointFactory.createSecuredEndpoint(dtlsConfig, coapConfig, registrationStore);
+            securedEndpoint = endpointFactory.createSecuredEndpoint(dtlsConfig, coapConfig, registrationStore, null);
         }
 
         if (securedEndpoint == null && unsecuredEndpoint == null) {
@@ -567,9 +594,18 @@ public class LeshanServerBuilder {
                     "All CoAP enpoints are deactivated, at least one endpoint should be activated");
         }
 
-        return createServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer,
-                modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider,
-                linkParser);
+        LeshanServer server = createServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore,
+                authorizer, modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider,
+                registrationIdProvider, linkParser);
+
+        if (oscoreCtxCleaner != null) {
+            server.getRegistrationService().addListener(oscoreCtxCleaner);
+            if (securityStore instanceof EditableSecurityStore) {
+                ((EditableSecurityStore) securityStore).addListener(oscoreCtxCleaner);
+            }
+        }
+
+        return server;
     }
 
     /**
@@ -600,7 +636,7 @@ public class LeshanServerBuilder {
      * @param registrationIdProvider to provide registrationId using for location-path option values on response of
      *        Register operation.
      * @param linkParser a parser {@link LwM2mLinkParser} used to parse a CoRE Link.
-     * 
+     *
      * @return the LWM2M server
      */
     protected LeshanServer createServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,

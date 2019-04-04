@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE) - additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
@@ -25,7 +26,7 @@ import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
 
 /**
  * Simple bootstrap store implementation storing bootstrap configuration information in memory.
- * 
+ *
  */
 public class InMemoryBootstrapConfigStore implements EditableBootstrapConfigStore {
 
@@ -58,6 +59,12 @@ public class InMemoryBootstrapConfigStore implements EditableBootstrapConfigStor
             }
         }
         // TODO we should probably also check lwm2m server
+        // TODO OSCORE we should also check recipient ID uniqueness.
+
+        // About this uniqueness check above,
+        // This was introduced because of : https://github.com/eclipse/leshan/issues/322
+        // but with https://github.com/eclipse/leshan/issues/1112
+        // I'm not sure this still makes sense...
 
         bootstrapByEndpoint.put(endpoint, config);
         if (pskToAdd != null) {

@@ -31,6 +31,7 @@ import org.eclipse.californium.elements.UDPConnector;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.SystemConfig;
 import org.eclipse.californium.elements.config.UdpConfig;
+import org.eclipse.californium.oscore.OSCoreCtxDB;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
@@ -43,6 +44,7 @@ import org.eclipse.californium.scandium.dtls.x509.StaticNewAdvancedCertificateVe
 import org.eclipse.leshan.core.LwM2m;
 import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.californium.EndpointFactory;
+import org.eclipse.leshan.core.californium.oscore.cf.InMemoryOscoreContextDB;
 import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -102,6 +104,8 @@ public class LeshanBootstrapServerBuilder {
     private boolean noUnsecuredEndpoint;
 
     private LwM2mLinkParser linkParser;
+
+    private boolean enableOscore = false;
 
     /**
      * Set the address/port for unsecured CoAP communication (<code>coap://</code>).
@@ -243,7 +247,7 @@ public class LeshanBootstrapServerBuilder {
      * 
      * @param configStore the bootstrap configuration store.
      * @return the builder for fluent Bootstrap Server creation.
-     * 
+     *
      */
     public LeshanBootstrapServerBuilder setConfigStore(BootstrapConfigStore configStore) {
         this.configStore = configStore;
@@ -298,7 +302,7 @@ public class LeshanBootstrapServerBuilder {
      * Set your {@link LwM2mBootstrapModelProvider} implementation.
      * </p>
      * By default the {@link StandardBootstrapModelProvider}.
-     * 
+     *
      */
     public LeshanBootstrapServerBuilder setObjectModelProvider(LwM2mBootstrapModelProvider objectModelProvider) {
         this.modelProvider = objectModelProvider;
@@ -394,6 +398,16 @@ public class LeshanBootstrapServerBuilder {
      */
     public LeshanBootstrapServerBuilder disableSecuredEndpoint() {
         this.noSecuredEndpoint = true;
+        return this;
+    }
+
+    /**
+     * Enable EXPERIMENTAL OSCORE feature.
+     * <p>
+     * By default OSCORE is not enabled.
+     */
+    public LeshanBootstrapServerBuilder setEnableOscore(boolean enableOscore) {
+        this.enableOscore = enableOscore;
         return this;
     }
 
@@ -546,14 +560,27 @@ public class LeshanBootstrapServerBuilder {
             }
         }
 
+        // Handle OSCORE support.
+        OSCoreCtxDB oscoreCtxDB = null;
+        OscoreBootstrapListener sessionHolder = null;
+        BootstrapOscoreContextCleaner oscoreContextCleaner = null;
+        if (enableOscore) {
+            if (securityStore != null) {
+                sessionHolder = new OscoreBootstrapListener();
+                oscoreCtxDB = new InMemoryOscoreContextDB(new LwM2mBootstrapOscoreStore(securityStore, sessionHolder));
+                oscoreContextCleaner = new BootstrapOscoreContextCleaner(oscoreCtxDB);
+                LOG.warn("Experimental OSCORE feature is enabled.");
+            }
+        }
+
         CoapEndpoint unsecuredEndpoint = null;
         if (!noUnsecuredEndpoint) {
-            unsecuredEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null);
+            unsecuredEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null, oscoreCtxDB);
         }
 
         CoapEndpoint securedEndpoint = null;
         if (!noSecuredEndpoint && dtlsConfig != null) {
-            securedEndpoint = endpointFactory.createSecuredEndpoint(dtlsConfig, coapConfig, null);
+            securedEndpoint = endpointFactory.createSecuredEndpoint(dtlsConfig, coapConfig, null, null);
         }
 
         if (securedEndpoint == null && unsecuredEndpoint == null) {
@@ -561,8 +588,23 @@ public class LeshanBootstrapServerBuilder {
                     "All CoAP enpoints are deactivated, at least one endpoint should be activated");
         }
 
-        return createBootstrapServer(unsecuredEndpoint, securedEndpoint, sessionManager, bootstrapHandlerFactory,
-                coapConfig, encoder, decoder, linkParser);
+        // TODO OSCORE
+        // <temporary code>
+        LeshanBootstrapServer bootstrapServer = createBootstrapServer(unsecuredEndpoint, securedEndpoint,
+                sessionManager, bootstrapHandlerFactory, coapConfig, encoder, decoder, linkParser);
+
+        if (sessionHolder != null) {
+            bootstrapServer.addListener(sessionHolder);
+        }
+        if (oscoreContextCleaner != null) {
+            bootstrapServer.addListener(oscoreContextCleaner);
+        }
+        return bootstrapServer;
+        // </temporay code>
+        // replacing ===>
+        // return createBootstrapServer(unsecuredEndpoint, securedEndpoint,
+        // sessionManager, bootstrapHandlerFactory, coapConfig, encoder, decoder, linkParser);
+
     }
 
     /**

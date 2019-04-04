@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.client.californium;
 
@@ -29,7 +30,10 @@ import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
+import org.eclipse.californium.cose.AlgorithmID;
+import org.eclipse.californium.cose.CoseException;
 import org.eclipse.californium.elements.Connector;
+import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.util.CertPathUtil;
@@ -49,10 +53,19 @@ import org.eclipse.leshan.client.servers.ServerIdentity.Role;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.SecurityMode;
+import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.californium.EndpointFactory;
+import org.eclipse.leshan.core.californium.oscore.cf.InMemoryOscoreContextDB;
+import org.eclipse.leshan.core.californium.oscore.cf.OscoreParameters;
+import org.eclipse.leshan.core.californium.oscore.cf.StaticOscoreStore;
+import org.eclipse.leshan.core.oscore.InvalidOscoreSettingException;
+import org.eclipse.leshan.core.oscore.OscoreIdentity;
+import org.eclipse.leshan.core.oscore.OscoreValidator;
 import org.eclipse.leshan.core.request.Identity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.upokecenter.cbor.CBORObject;
 
 /**
  * An {@link EndpointsManager} based on Californium(CoAP implementation) and Scandium (DTLS implementation) which
@@ -228,9 +241,53 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                 }
             }
 
-            currentEndpoint = endpointFactory.createSecuredEndpoint(newBuilder.build(), coapConfig, null);
+            currentEndpoint = endpointFactory.createSecuredEndpoint(newBuilder.build(), coapConfig, null, null);
+        } else if (serverInfo.useOscore) {
+            // oscore only mode
+            LOG.warn("Experimental OSCORE support is used for {}", serverInfo.getFullUri().toASCIIString());
+
+            try {
+                new OscoreValidator().validateOscoreSetting(serverInfo.oscoreSetting);
+            } catch (InvalidOscoreSettingException e) {
+                throw new RuntimeException(String.format("Unable to create endpoint for %s using OSCORE : Invalid %s.",
+                        serverInfo, serverInfo.oscoreSetting), e);
+            }
+
+            AlgorithmID hkdfAlg = null;
+            try {
+                hkdfAlg = AlgorithmID
+                        .FromCBOR(CBORObject.FromObject(serverInfo.oscoreSetting.getHkdfAlgorithm().getValue()));
+            } catch (CoseException e) {
+                throw new RuntimeException(String.format(
+                        "Unable to create endpoint for %s using OSCORE : Unable to decode OSCORE HKDF from %s.",
+                        serverInfo, serverInfo.oscoreSetting), e);
+            }
+            AlgorithmID aeadAlg = null;
+            try {
+                aeadAlg = AlgorithmID
+                        .FromCBOR(CBORObject.FromObject(serverInfo.oscoreSetting.getAeadAlgorithm().getValue()));
+            } catch (CoseException e) {
+                throw new RuntimeException(String.format(
+                        "Unable to create endpoint for %s using OSCORE : Unable to decode OSCORE AEAD from %s.",
+                        serverInfo, serverInfo.oscoreSetting), e);
+            }
+
+            // TODO OSCORE kind of hack because californium doesn't support an empty byte[] array for salt ?
+            byte[] masterSalt = serverInfo.oscoreSetting.getMasterSalt().length == 0 ? null
+                    : serverInfo.oscoreSetting.getMasterSalt();
+
+            OscoreParameters oscoreParameters = new OscoreParameters(serverInfo.oscoreSetting.getSenderId(),
+                    serverInfo.oscoreSetting.getRecipientId(), serverInfo.oscoreSetting.getMasterSecret(), aeadAlg,
+                    hkdfAlg, masterSalt);
+
+            currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null,
+                    new InMemoryOscoreContextDB(new StaticOscoreStore(oscoreParameters)));
+
+            // Build server identity for OSCORE
+            serverIdentity = Identity.oscoreOnly(serverInfo.getAddress(),
+                    new OscoreIdentity(serverInfo.oscoreSetting.getRecipientId()));
         } else {
-            currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null);
+            currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null, null);
             serverIdentity = Identity.unsecure(serverInfo.getAddress());
         }
 
@@ -248,9 +305,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             try {
                 currentEndpoint.start();
                 LOG.info("New endpoint created for server {} at {}", currentServer.getUri(), currentEndpoint.getUri());
-            } catch (
-
-            IOException e) {
+            } catch (IOException e) {
                 throw new RuntimeException("Unable to start endpoint", e);
             }
         }
@@ -324,7 +379,8 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
         return null;
     }
 
-    public synchronized ServerIdentity getServerIdentity(Endpoint endpoint, InetSocketAddress serverAddress) {
+    public synchronized ServerIdentity getServerIdentity(Endpoint endpoint, InetSocketAddress serverAddress,
+            EndpointContext endpointContext) {
         // TODO support multi server
 
         // knowing used CoAP endpoint we should be able to know the server identity because :
@@ -336,6 +392,19 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             if (currentEndpoint.getConnector().getProtocol() == "UDP"
                     && !currentServer.getIdentity().getPeerAddress().equals(serverAddress)) {
                 return null;
+            }
+            // For OSCORE, be sure OSCORE is used.
+            if (currentServer.getIdentity().isOSCORE()) {
+                Identity foreignPeerIdentity = EndpointContextUtil.extractIdentity(endpointContext);
+                if (!foreignPeerIdentity.isOSCORE() //
+                        // we also check OscoreIdentity but this is probably not useful
+                        // because we are using static OSCOREstore which holds only 1 OscoreParameter,
+                        // so if the request was successfully decrypted and OSCORE is used, this MUST be the right
+                        // server.
+                        || !foreignPeerIdentity.getOscoreIdentity()
+                                .equals(currentServer.getIdentity().getOscoreIdentity())) {
+                    return null;
+                }
             }
             return currentServer;
         }

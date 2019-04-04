@@ -48,9 +48,12 @@ public interface EditableSecurityStore extends SecurityStore {
     SecurityInfo remove(String endpoint, boolean infosAreCompromised);
 
     /**
-     * Set a Listener for this store.
-     * 
-     * @param listener the security store listener
+     * Adds a new {@link SecurityStoreListener} to this store.
      */
-    void setListener(SecurityStoreListener listener);
+    void addListener(SecurityStoreListener listener);
+
+    /**
+     * Removes the given {@link SecurityStoreListener} from the listeners of this store .
+     */
+    void removeListener(SecurityStoreListener listener);
 }

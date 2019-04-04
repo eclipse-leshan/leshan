@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.security;
 
+import org.eclipse.leshan.core.oscore.OscoreIdentity;
+
 /**
  * A store for {@link SecurityInfo}.
  */
@@ -35,5 +37,13 @@ public interface SecurityStore {
      * @return the security information of <code>null</code> if not found.
      */
     SecurityInfo getByIdentity(String pskIdentity);
+
+    /**
+     * Returns the security information for an OSCORE identity.
+     * 
+     * @param oscoreIdentity the Oscore identity of the client
+     * @return the security information of <code>null</code> if not found.
+     */
+    SecurityInfo getByOscoreIdentity(OscoreIdentity oscoreIdentity);
 
 }

@@ -27,6 +27,8 @@ import org.eclipse.californium.elements.EndpointContextMatcher;
 import org.eclipse.californium.elements.PrincipalEndpointContextMatcher;
 import org.eclipse.californium.elements.UDPConnector;
 import org.eclipse.californium.elements.config.Configuration;
+import org.eclipse.californium.oscore.OSCoreCoapStackFactory;
+import org.eclipse.californium.oscore.OSCoreCtxDB;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 
@@ -101,8 +103,12 @@ public class DefaultEndpointFactory implements EndpointFactory {
 
     @Override
     public CoapEndpoint createUnsecuredEndpoint(InetSocketAddress address, Configuration coapConfig,
-            ObservationStore store) {
-        return createUnsecuredEndpointBuilder(address, coapConfig, store).build();
+            ObservationStore store, OSCoreCtxDB db) {
+        Builder builder = createUnsecuredEndpointBuilder(address, coapConfig, store);
+        if (db != null) {
+            builder.setCustomCoapStackArgument(db).setCoapStackFactory(new OSCoreCoapStackFactory());
+        }
+        return builder.build();
     }
 
     /**
@@ -149,7 +155,8 @@ public class DefaultEndpointFactory implements EndpointFactory {
 
     @Override
     public CoapEndpoint createSecuredEndpoint(DtlsConnectorConfig dtlsConfig, Configuration coapConfig,
-            ObservationStore store) {
+            ObservationStore store, OSCoreCtxDB db) {
+        // TODO OSCORE : add support of OSCORE to secured (DTLS) endpoint.
         return createSecuredEndpointBuilder(dtlsConfig, coapConfig, store).build();
     }
 

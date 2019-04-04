@@ -13,6 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Michał Wadowski (Orange) - Improved compliance with rfc6690
+ *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.request;
 
@@ -275,6 +276,8 @@ public class RequestSender implements Destroyable {
                     coapRequest);
         }
 
+        // TODO OSCORE : should we add the OSCORE option automatically here too ?
+
         // Send CoAP request synchronously
         CoapSyncRequestObserver syncMessageObserver = new CoapSyncRequestObserver(coapRequest, timeoutInMs);
         coapRequest.addMessageObserver(syncMessageObserver);
@@ -335,6 +338,8 @@ public class RequestSender implements Destroyable {
                     "Destination context was not set by Leshan for this request. The context is used to ensure you talk to the right peer. Bad usage could bring to security issue.{}",
                     coapRequest);
         }
+
+        // TODO OSCORE : should we add the OSCORE option automatically here too ?
 
         // Add CoAP request callback
         MessageObserver obs = new CoapAsyncRequestObserver(coapRequest, responseCallback, errorCallback, timeoutInMs,

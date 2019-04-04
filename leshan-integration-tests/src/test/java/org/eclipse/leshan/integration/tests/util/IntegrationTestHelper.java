@@ -167,6 +167,12 @@ public class IntegrationTestHelper {
         setupServerMonitoring();
     }
 
+    public void createOscoreServer() {
+        server = createServerBuilder().setEnableOscore(true).build();
+        // monitor client registration
+        setupServerMonitoring();
+    }
+
     protected LeshanServerBuilder createServerBuilder() {
         LeshanServerBuilder builder = new LeshanServerBuilder();
         builder.setDecoder(new DefaultLwM2mDecoder(true));
@@ -230,6 +236,14 @@ public class IntegrationTestHelper {
     public void waitForUpdateAtClientSide(long timeInSeconds) {
         try {
             assertTrue(clientObserver.waitForUpdate(timeInSeconds, TimeUnit.SECONDS));
+        } catch (InterruptedException | TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void waitForUpdateFailureAtClientSide(long timeInSeconds) {
+        try {
+            assertFalse(clientObserver.waitForUpdate(timeInSeconds, TimeUnit.SECONDS));
         } catch (InterruptedException | TimeoutException e) {
             throw new RuntimeException(e);
         }

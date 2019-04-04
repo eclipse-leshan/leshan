@@ -12,9 +12,11 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE) - additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -28,6 +30,7 @@ import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.datatype.ULong;
 
 /**
@@ -87,6 +90,11 @@ public class BootstrapConfig {
      * Map indexed by ACL Instance Id. Key is the ACL Instance to write.
      */
     public Map<Integer, ACLConfig> acls = new HashMap<>();
+
+    /**
+     * Map indexed by OSCORE Object Instance Id. Key is the OSCORE Object Instance to write.
+     */
+    public Map<Integer, OscoreObject> oscore = new HashMap<>();
 
     /** Server Configuration (object 1) as defined in LWM2M 1.0.x TS. */
     public static class ServerConfig {
@@ -280,6 +288,12 @@ public class BootstrapConfig {
          * Bootstrap-Server Account lifetime is infinite.
          */
         public Integer bootstrapServerAccountTimeout = 0;
+        /**
+         * The Object ID of the OSCORE Object Instance that holds the OSCORE configuration to be used by the LWM2M
+         * Client to the LWM2M Server associated with this Security object.
+         * 
+         */
+        public Integer oscoreSecurityMode;
 
         /**
          * The Matching Type Resource specifies how the certificate or raw public key in in the Server Public Key is
@@ -328,13 +342,6 @@ public class BootstrapConfig {
          * Since Security v1.1
          */
         public ULong cipherSuite = null;
-
-        /**
-         * The Object ID of the OSCORE Object Instance that holds the OSCORE configuration to be used by the LWM2M
-         * Client to the LWM2M Server associated with this Security object.
-         * 
-         */
-        public Integer oscoreSecurityMode = null;
 
         @Override
         public String toString() {
@@ -394,8 +401,73 @@ public class BootstrapConfig {
         }
     }
 
+    /**
+     * OSCORE configuration (object 21) as defined in LWM2M 1.1.x TS.
+     * <p>
+     * WARNING BootstrapConfig support OSCORE object since version 2.0 :
+     * https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/521
+     * <p>
+     * This LwM2M Object provides the keying material and related information of a LwM2M Client appropriate to access a
+     * specified LwM2M Server using OSCORE. One Object Instance MAY address a LwM2M Bootstrap-Server. These LwM2M Object
+     * Resources MUST only be changed by a LwM2M Bootstrap-Server or Bootstrap from Smartcard and MUST NOT be accessible
+     * by any other LwM2M Server. Instances of this Object are linked from Instances of Object 0 using the OSCORE
+     * Security Mode Resource of Object 0. Instances of this Object MUST NOT be linked from more than one Instance of
+     * Object 0.
+     */
+    public static class OscoreObject implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        /**
+         * This resource MUST be used to store the pre-shared key used in LwM2M Client and LwM2M
+         * Server/Bootstrap-Server, called the Master Secret.
+         */
+        public byte[] oscoreMasterSecret = null;
+        /**
+         * This resource MUST store an OSCORE identifier for the LwM2M Client called the Sender ID.
+         */
+        public byte[] oscoreSenderId = null;
+        /**
+         * This resource MUST store an OSCORE identifier for the LwM2M Client called the Recipient ID.
+         */
+        public byte[] oscoreRecipientId = null;
+        /**
+         * This resource MUST be used to store the encoding of the AEAD Algorithm as defined in Table 10 of RFC 8152.
+         * The AEAD is used by OSCORE for encryption and integrity protection of CoAP message fields.
+         */
+        public Integer oscoreAeadAlgorithm = null;
+        /**
+         * This resource MUST be used to store the encoding of the HMAC Algorithm used in the HKDF. The encoding of HMAC
+         * algorithms are defined in Table 7 of RFC 8152. The HKDF is used to derive the security context used by
+         * OSCORE.
+         */
+        public Integer oscoreHmacAlgorithm = null;
+        /**
+         * This resource MUST be used to store a non-secret random value called the Master Salt. The Master Salt is used
+         * to derive the security context used by OSCORE.
+         */
+        public byte[] oscoreMasterSalt = null;
+
+        // TODO OSCORE : not yet implemented
+        // /**
+        // * This resource MUST be used to store an OSCORE identifier called ID Context. This identifier is used to
+        // * identify the Common Context and derive the security context used by OSCORE.
+        // */
+        // public byte[] oscoreContextId = null;
+
+        @Override
+        public String toString() {
+            // Note : oscoreMasterSecret and oscoreMasterSalt are explicitly excluded from the display for security
+            // purposes
+            return String.format(
+                    "OscoreObject [oscoreSenderId=%s, oscoreRecipientId=%s, oscoreAeadAlgorithm=%s, oscoreHmacAlgorithm=%s]",
+                    Hex.encodeHexString(oscoreSenderId), Hex.encodeHexString(oscoreRecipientId), oscoreAeadAlgorithm,
+                    oscoreHmacAlgorithm);
+        }
+    }
+
     @Override
     public String toString() {
-        return String.format("BootstrapConfig [servers=%s, security=%s, acls=%s]", servers, security, acls);
+        return String.format("BootstrapConfig [servers=%s, security=%s, acls=%s, oscore=%s]", servers, security, acls,
+                oscore);
     }
 }

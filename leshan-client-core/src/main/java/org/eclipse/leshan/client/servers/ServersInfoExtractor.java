@@ -13,6 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - use ServerIdentity.SYSTEM
+ *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.client.servers;
 
@@ -44,6 +45,10 @@ import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.ObjectLink;
+import org.eclipse.leshan.core.oscore.AeadAlgorithm;
+import org.eclipse.leshan.core.oscore.HkdfAlgorithm;
+import org.eclipse.leshan.core.oscore.OscoreSetting;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ReadResponse;
@@ -57,6 +62,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ServersInfoExtractor {
     private static final Logger LOG = LoggerFactory.getLogger(ServersInfoExtractor.class);
+    private static LwM2mObject oscores = null;
 
     public static ServersInfo getInfo(Map<Integer, LwM2mObjectEnabler> objectEnablers) {
         return getInfo(objectEnablers, false);
@@ -67,6 +73,7 @@ public class ServersInfoExtractor {
 
         LwM2mObjectEnabler securityEnabler = objectEnablers.get(SECURITY);
         LwM2mObjectEnabler serverEnabler = objectEnablers.get(SERVER);
+        LwM2mObjectEnabler oscoreEnabler = objectEnablers.get(OSCORE);
 
         if (securityEnabler == null || serverEnabler == null)
             return null;
@@ -74,6 +81,10 @@ public class ServersInfoExtractor {
         ServersInfo infos = new ServersInfo();
         LwM2mObject securities = (LwM2mObject) securityEnabler.read(SYSTEM, new ReadRequest(SECURITY)).getContent();
         LwM2mObject servers = (LwM2mObject) serverEnabler.read(SYSTEM, new ReadRequest(SERVER)).getContent();
+
+        if (oscoreEnabler != null) {
+            oscores = (LwM2mObject) oscoreEnabler.read(SYSTEM, new ReadRequest(OSCORE)).getContent();
+        }
 
         for (LwM2mObjectInstance security : securities.getInstances().values()) {
             if ((boolean) security.getResource(SEC_BOOTSTRAP).getValue()) {
@@ -123,7 +134,41 @@ public class ServersInfoExtractor {
                 info.serverId = 0;
             info.serverUri = new URI((String) security.getResource(SEC_SERVER_URI).getValue());
             info.secureMode = getSecurityMode(security);
-            if (info.secureMode == SecurityMode.PSK) {
+
+            // find associated oscore instance (if any)
+            LwM2mObjectInstance oscoreInstance = null;
+            ObjectLink oscoreObjLink = (ObjectLink) security.getResource(SEC_OSCORE_SECURITY_MODE).getValue();
+            if (oscoreObjLink != null && !oscoreObjLink.isNullLink()) {
+                if (oscoreObjLink.getObjectId() != OSCORE) {
+                    LOG.warn(
+                            "Invalid Security info for LWM2M server {} : 'OSCORE Security Mode' does not link to OSCORE Object but to {} object.",
+                            info.serverUri, oscoreObjLink.getObjectId());
+                } else {
+                    if (oscores == null) {
+                        LOG.warn("Invalid Security info for LWM2M server {}: OSCORE object enabler is not available.",
+                                info.serverUri);
+                    } else {
+                        oscoreInstance = oscores.getInstance(oscoreObjLink.getObjectInstanceId());
+                        if (oscoreInstance == null) {
+                            LOG.warn("Invalid Security info for LWM2M server {} : OSCORE instance {} does not exist.",
+                                    info.serverUri, oscoreObjLink.getObjectInstanceId());
+                        }
+                    }
+                }
+            }
+
+            if (oscoreInstance != null) {
+                info.useOscore = true;
+
+                byte[] masterSecret = getMasterSecret(oscoreInstance);
+                byte[] senderId = getSenderId(oscoreInstance);
+                byte[] recipientId = getRecipientId(oscoreInstance);
+                AeadAlgorithm aeadAlgorithm = AeadAlgorithm.fromValue(getAeadAlgorithm(oscoreInstance));
+                HkdfAlgorithm hkdfAlgorithm = HkdfAlgorithm.fromValue(getHkdfAlgorithm(oscoreInstance));
+                byte[] masterSalt = getMasterSalt(oscoreInstance);
+                info.oscoreSetting = new OscoreSetting(senderId, recipientId, masterSecret, aeadAlgorithm,
+                        hkdfAlgorithm, masterSalt);
+            } else if (info.secureMode == SecurityMode.PSK) {
                 info.pskId = getPskIdentity(security);
                 info.pskKey = getPskKey(security);
             } else if (info.secureMode == SecurityMode.RPK) {
@@ -167,6 +212,19 @@ public class ServersInfoExtractor {
             return null;
 
         return info.deviceManagements.get(shortID);
+    }
+
+    public static LwM2mObjectInstance getBootstrapSecurityInstance(LwM2mObjectEnabler securityEnabler) {
+        LwM2mObject securities = (LwM2mObject) securityEnabler.read(SYSTEM, new ReadRequest(SECURITY)).getContent();
+        if (securities != null) {
+            for (LwM2mObjectInstance instance : securities.getInstances().values()) {
+                if (isBootstrapServer(instance)) {
+                    return instance;
+                }
+            }
+        }
+
+        return null;
     }
 
     public static ServerInfo getBootstrapServerInfo(Map<Integer, LwM2mObjectEnabler> objectEnablers) {
@@ -321,5 +379,63 @@ public class ServersInfoExtractor {
 
         LwM2mResource isBootstrap = (LwM2mResource) response.getContent();
         return (Boolean) isBootstrap.getValue();
+    }
+
+    public static boolean isBootstrapServer(LwM2mObjectInstance instance) {
+        LwM2mResource resource = instance.getResource(SEC_BOOTSTRAP);
+        if (resource == null) {
+            return false;
+        }
+        return (Boolean) resource.getValue();
+    }
+
+    // OSCORE related methods below
+
+    public static Integer getOscoreSecurityMode(LwM2mObjectInstance securityInstance) {
+        LwM2mResource resource = securityInstance.getResource(LwM2mId.SEC_OSCORE_SECURITY_MODE);
+        if (resource != null)
+            return ((ObjectLink) resource.getValue()).getObjectInstanceId();
+        return null;
+    }
+
+    public static byte[] getMasterSecret(LwM2mObjectInstance oscoreInstance) {
+        return (byte[]) oscoreInstance.getResource(OSCORE_MASTER_SECRET).getValue();
+    }
+
+    public static byte[] getSenderId(LwM2mObjectInstance oscoreInstance) {
+        return (byte[]) oscoreInstance.getResource(OSCORE_SENDER_ID).getValue();
+    }
+
+    public static byte[] getRecipientId(LwM2mObjectInstance oscoreInstance) {
+        return (byte[]) oscoreInstance.getResource(OSCORE_RECIPIENT_ID).getValue();
+    }
+
+    public static long getAeadAlgorithm(LwM2mObjectInstance oscoreInstance) {
+        LwM2mResource resource = oscoreInstance.getResource(OSCORE_AEAD_ALGORITHM);
+        if (resource != null)
+            return (long) resource.getValue();
+        // return default one from https://datatracker.ietf.org/doc/html/rfc8613#section-3.2
+        return AeadAlgorithm.AES_CCM_16_64_128.getValue();
+    }
+
+    public static long getHkdfAlgorithm(LwM2mObjectInstance oscoreInstance) {
+        LwM2mResource resource = oscoreInstance.getResource(OSCORE_HMAC_ALGORITHM);
+        if (resource != null)
+            return (long) resource.getValue();
+        // return default one from https://datatracker.ietf.org/doc/html/rfc8613#section-3.2
+        return HkdfAlgorithm.HKDF_HMAC_SHA_256.getValue();
+    }
+
+    public static byte[] getMasterSalt(LwM2mObjectInstance oscoreInstance) {
+        LwM2mResource resource = oscoreInstance.getResource(OSCORE_MASTER_SALT);
+        if (resource == null)
+            return null;
+
+        byte[] value = (byte[]) resource.getValue();
+        if (value.length == 0) {
+            return null;
+        } else {
+            return value;
+        }
     }
 }
