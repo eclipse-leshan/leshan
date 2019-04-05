@@ -226,6 +226,27 @@ public class LwM2mNodeDecoderTest {
     }
 
     @Test
+    public void text_decode_opaque_from_base64_string() throws CodecException {
+        // Using Firmware Update/Package
+        LwM2mSingleResource resource = (LwM2mSingleResource) decoder.decode("AQIDBAU=".getBytes(StandardCharsets.UTF_8),
+                ContentFormat.TEXT, new LwM2mPath(5, 0, 0), model);
+
+        byte[] expectedValue = new byte[] { 0x1, 0x2, 0x3, 0x4, 0x5 };
+
+        assertEquals(0, resource.getId());
+        assertFalse(resource.isMultiInstances());
+        assertEquals(Type.OPAQUE, resource.getType());
+        assertArrayEquals(expectedValue, ((byte[]) resource.getValue()));
+    }
+
+    @Test(expected = CodecException.class)
+    public void text_decode_should_throw_an_exception_for_invalid_base64() throws CodecException {
+        // Using Firmware Update/Package
+        decoder.decode("!,-INVALID$_'".getBytes(StandardCharsets.UTF_8),
+                ContentFormat.TEXT, new LwM2mPath(5, 0, 0), model);
+    }
+
+    @Test
     public void tlv_manufacturer_resource() throws CodecException {
         String value = "MyManufacturer";
         byte[] content = TlvEncoder.encode(new Tlv[] { new Tlv(TlvType.RESOURCE_VALUE, null, value.getBytes(), 0) })

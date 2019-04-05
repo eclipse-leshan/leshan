@@ -27,6 +27,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.codec.CodecException;
+import org.eclipse.leshan.util.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,7 +97,10 @@ public class LwM2mNodeTextDecoder {
                         path);
             }
         case OPAQUE:
-            // not specified
+            if (!Base64.isBase64(value)) {
+                throw new CodecException("Invalid value for opaque resource [%s], base64 expected", path);
+            }
+            return Base64.decodeBase64(value);
         default:
             throw new CodecException("Could not handle %s value with TEXT encoder for resource %s", type, path);
         }

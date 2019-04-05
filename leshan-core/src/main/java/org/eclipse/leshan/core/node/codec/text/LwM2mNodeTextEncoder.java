@@ -30,6 +30,7 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
+import org.eclipse.leshan.util.Base64;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,6 +100,10 @@ public class LwM2mNodeTextEncoder {
             case OBJLNK:
                 ObjectLink objlnk = (ObjectLink) val;
                 strValue = String.valueOf(objlnk.getObjectId() + ":" + objlnk.getObjectInstanceId());
+                break;
+            case OPAQUE:
+                byte[] binaryValue = (byte[]) val;
+                strValue = Base64.encodeBase64String(binaryValue);
                 break;
             default:
                 throw new CodecException("Cannot encode %s in text format for %s", val, path);

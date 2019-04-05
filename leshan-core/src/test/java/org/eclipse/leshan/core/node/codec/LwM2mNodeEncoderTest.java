@@ -89,6 +89,15 @@ public class LwM2mNodeEncoderTest {
                 model);
     }
 
+    @Test
+    public void text_encode_opaque_as_base64_string() {
+        byte[] opaqueValue = new byte[] { 0x1, 0x2, 0x3, 0x4, 0x5 };
+        byte[] encoded = encoder.encode(LwM2mSingleResource.newBinaryResource(0, opaqueValue), ContentFormat.TEXT,
+                new LwM2mPath("/5/0/0"), model);
+
+        Assert.assertEquals("AQIDBAU=", new String(encoded, StandardCharsets.UTF_8));
+    }
+
     // tlv content for instance 0 of device object (encoded as an array of resource TLVs)
     // Example from LWM2M spec §4.3.1
     private final static byte[] ENCODED_DEVICE_WITHOUT_INSTANCE = Hex.decodeHex(

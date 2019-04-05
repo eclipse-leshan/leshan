@@ -20,6 +20,9 @@ bin/
 .idea/
 *.iml
 
+# Visual Studio Code files #
+.vscode/
+
 # Package Files #
 *.jar
 *.war
