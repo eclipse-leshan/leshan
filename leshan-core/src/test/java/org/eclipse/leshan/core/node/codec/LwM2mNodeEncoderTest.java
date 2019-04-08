@@ -279,4 +279,52 @@ public class LwM2mNodeEncoderTest {
         String expected = b.toString();
         Assert.assertEquals(expected, new String(encoded));
     }
+
+    @Test
+    public void senml_json_encode_device_object_instance() {
+        LwM2mObjectInstance oInstance = new LwM2mObjectInstance(0, getDeviceResources());
+        byte[] encoded = encoder.encode(oInstance, ContentFormat.SENML_JSON, new LwM2mPath("/3/0"), model);
+
+        StringBuilder b = new StringBuilder();
+        b.append("[{\"bn\":\"/3/0/\",\"n\":\"0\",\"vs\":\"Open Mobile Alliance\"},");
+        b.append("{\"n\":\"1\",\"vs\":\"Lightweight M2M Client\"},");
+        b.append("{\"n\":\"2\",\"vs\":\"345000123\"},");
+        b.append("{\"n\":\"3\",\"vs\":\"1.0\"},");
+        b.append("{\"n\":\"6/0\",\"v\":1},");
+        b.append("{\"n\":\"6/1\",\"v\":5},");
+        b.append("{\"n\":\"7/0\",\"v\":3800},");
+        b.append("{\"n\":\"7/1\",\"v\":5000},");
+        b.append("{\"n\":\"8/0\",\"v\":125},");
+        b.append("{\"n\":\"8/1\",\"v\":900},");
+        b.append("{\"n\":\"9\",\"v\":100},");
+        b.append("{\"n\":\"10\",\"v\":15},");
+        b.append("{\"n\":\"11/0\",\"v\":0},");
+        b.append("{\"n\":\"13\",\"v\":1.3674912E9},");
+        b.append("{\"n\":\"14\",\"vs\":\"+02:00\"},");
+        b.append("{\"n\":\"16\",\"vs\":\"U\"}]");
+
+        String expected = b.toString();
+        Assert.assertEquals(expected, new String(encoded));
+    }
+
+    @Test
+    public void senml_json_encode_single_resource() {
+        LwM2mResource oResource = LwM2mSingleResource.newStringResource(0, "Open Mobile Alliance");
+        byte[] encoded = encoder.encode(oResource, ContentFormat.SENML_JSON, new LwM2mPath("/3/0/0"), model);
+
+        String expected = "[{\"bn\":\"/3/0/0\",\"vs\":\"Open Mobile Alliance\"}]";
+        Assert.assertEquals(expected, new String(encoded));
+    }
+
+    @Test
+    public void senml_json_encode_multiple_resource() {
+        Map<Integer, Long> values = new HashMap<>();
+        values.put(0, 3800L);
+        values.put(1, 5000L);
+        LwM2mResource oResource = LwM2mMultipleResource.newIntegerResource(7, values);
+        byte[] encoded = encoder.encode(oResource, ContentFormat.SENML_JSON, new LwM2mPath("/3/0/7"), model);
+
+        String expected = "[{\"bn\":\"/3/0/7/\",\"n\":\"0\",\"v\":3800},{\"n\":\"1\",\"v\":5000}]";
+        Assert.assertEquals(expected, new String(encoded));
+    }
 }
