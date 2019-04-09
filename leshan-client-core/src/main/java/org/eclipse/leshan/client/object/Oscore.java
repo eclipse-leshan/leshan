@@ -27,83 +27,83 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A simple {@link LwM2mInstanceEnabler} for the OSCORE Security (0) object.
+ * A simple {@link LwM2mInstanceEnabler} for the OSCORE Security (21) object.
  */
-public class OSCORESecurity extends BaseInstanceEnabler {
+public class Oscore extends BaseInstanceEnabler {
 
     private static final Logger LOG = LoggerFactory.getLogger(Security.class);
 
-    byte[] OSCORE_master_secret;
-    String OSCORE_sender_id;
-    String OSCORE_recipient_id;
-    int OSCORE_AEAD_algorithm;
-    int OSCORE_HMAC_algorithm;
+    private byte[] masterSecret;
+    private String senderId;
+    private String recipientId;
+    private int aeadAlgorithm;
+    private int hmacAlgorithm;
 
-    public OSCORESecurity() {
+    public Oscore() {
 
     }
 
-	public OSCORESecurity(byte[] OSCORE_master_secret, String OSCORE_sender_id, String OSCORE_recipient_id,
-			int OSCORE_AEAD_algorithm, int OSCORE_HMAC_algorithm) {
+	public Oscore(byte[] masterSecret, String senderId, String recipientId,
+			int aeadAlgorithm, int hmacAlgorithm) {
 		super();
-		this.OSCORE_master_secret = OSCORE_master_secret.clone();
-		this.OSCORE_sender_id = OSCORE_sender_id;
-		this.OSCORE_recipient_id = OSCORE_recipient_id;
-		this.OSCORE_AEAD_algorithm = OSCORE_AEAD_algorithm;
-		this.OSCORE_HMAC_algorithm = OSCORE_HMAC_algorithm;
+		this.masterSecret = masterSecret.clone();
+		this.senderId = senderId;
+		this.recipientId = recipientId;
+		this.aeadAlgorithm = aeadAlgorithm;
+		this.hmacAlgorithm = hmacAlgorithm;
 	}
 
     @Override
     public WriteResponse write(ServerIdentity identity, int resourceId, LwM2mResource value) {
     	LOG.debug("Write on resource {}: {}", resourceId, value);
     	// extend
-		return null;
+    	return WriteResponse.notFound();
     }
     
     @Override
     public ReadResponse read(ServerIdentity identity, int resourceid) {
     	// extend
-		return null;
+		return ReadResponse.notFound();
     }
 
 	public byte[] getOSCOREMasterSecret() {
-		return OSCORE_master_secret;
+		return masterSecret;
 	}
 
 	public void setOSCOREMasterSecret(byte[] OSCORE_master_secret) {
-		this.OSCORE_master_secret = OSCORE_master_secret;
+		this.masterSecret = OSCORE_master_secret;
 	}
 
 	public String getOSCORESenderId() {
-		return OSCORE_sender_id;
+		return senderId;
 	}
 
 	public void setOSCORESenderId(String OSCORE_sender_id) {
-		this.OSCORE_sender_id = OSCORE_sender_id;
+		this.senderId = OSCORE_sender_id;
 	}
 
 	public String getOSCORERecipientId() {
-		return OSCORE_recipient_id;
+		return recipientId;
 	}
 
 	public void setOSCORERecipientId(String OSCORE_recipient_id) {
-		this.OSCORE_recipient_id = OSCORE_recipient_id;
+		this.recipientId = OSCORE_recipient_id;
 	}
 
 	public int getOSCOREAeadAlgorithm() {
-		return OSCORE_AEAD_algorithm;
+		return aeadAlgorithm;
 	}
 
 	public void setOSCOREAeadAlgorithm(int OSCORE_AEAD_algorithm) {
-		this.OSCORE_AEAD_algorithm = OSCORE_AEAD_algorithm;
+		this.aeadAlgorithm = OSCORE_AEAD_algorithm;
 	}
 
 	public int getOSCOREHmacAlgorithm() {
-		return OSCORE_HMAC_algorithm;
+		return hmacAlgorithm;
 	}
 
 	public void setOSCOREHmacAlgorithm(int OSCORE_HMAC_algorithm) {
-		this.OSCORE_HMAC_algorithm = OSCORE_HMAC_algorithm;
+		this.hmacAlgorithm = OSCORE_HMAC_algorithm;
 	}
 
 }
