@@ -43,67 +43,66 @@ public class Oscore extends BaseInstanceEnabler {
 
     }
 
-	public Oscore(byte[] masterSecret, String senderId, String recipientId,
-			int aeadAlgorithm, int hmacAlgorithm) {
-		super();
-		this.masterSecret = masterSecret.clone();
-		this.senderId = senderId;
-		this.recipientId = recipientId;
-		this.aeadAlgorithm = aeadAlgorithm;
-		this.hmacAlgorithm = hmacAlgorithm;
-	}
+    public Oscore(byte[] masterSecret, String senderId, String recipientId, int aeadAlgorithm, int hmacAlgorithm) {
+        super();
+        this.masterSecret = masterSecret.clone();
+        this.senderId = senderId;
+        this.recipientId = recipientId;
+        this.aeadAlgorithm = aeadAlgorithm;
+        this.hmacAlgorithm = hmacAlgorithm;
+    }
 
     @Override
     public WriteResponse write(ServerIdentity identity, int resourceId, LwM2mResource value) {
-    	LOG.debug("Write on resource {}: {}", resourceId, value);
-    	// extend
-    	return WriteResponse.notFound();
+        LOG.debug("Write on resource {}: {}", resourceId, value);
+        // extend
+        return WriteResponse.notFound();
     }
-    
+
     @Override
     public ReadResponse read(ServerIdentity identity, int resourceid) {
-    	// extend
-		return ReadResponse.notFound();
+        // extend
+        return ReadResponse.notFound();
     }
 
-	public byte[] getOSCOREMasterSecret() {
-		return masterSecret;
-	}
+    public byte[] getOSCOREMasterSecret() {
+        return masterSecret;
+    }
 
-	public void setOSCOREMasterSecret(byte[] OSCORE_master_secret) {
-		this.masterSecret = OSCORE_master_secret;
-	}
+    public void setOSCOREMasterSecret(byte[] OSCORE_master_secret) {
+        this.masterSecret = OSCORE_master_secret;
+    }
 
-	public String getOSCORESenderId() {
-		return senderId;
-	}
+    public String getOSCORESenderId() {
+        return senderId;
+    }
 
-	public void setOSCORESenderId(String OSCORE_sender_id) {
-		this.senderId = OSCORE_sender_id;
-	}
+    public void setOSCORESenderId(String OSCORE_sender_id) {
+        this.senderId = OSCORE_sender_id;
+    }
 
-	public String getOSCORERecipientId() {
-		return recipientId;
-	}
+    public String getOSCORERecipientId() {
+        return recipientId;
+    }
 
-	public void setOSCORERecipientId(String OSCORE_recipient_id) {
-		this.recipientId = OSCORE_recipient_id;
-	}
+    public void setOSCORERecipientId(String OSCORE_recipient_id) {
+        this.recipientId = OSCORE_recipient_id;
+    }
 
-	public int getOSCOREAeadAlgorithm() {
-		return aeadAlgorithm;
-	}
+    public int getOSCOREAeadAlgorithm() {
+        return aeadAlgorithm;
+    }
 
-	public void setOSCOREAeadAlgorithm(int OSCORE_AEAD_algorithm) {
-		this.aeadAlgorithm = OSCORE_AEAD_algorithm;
-	}
+    public void setOSCOREAeadAlgorithm(int OSCORE_AEAD_algorithm) {
+        this.aeadAlgorithm = OSCORE_AEAD_algorithm;
+    }
 
-	public int getOSCOREHmacAlgorithm() {
-		return hmacAlgorithm;
-	}
+    public int getOSCOREHmacAlgorithm() {
+        return hmacAlgorithm;
+    }
 
-	public void setOSCOREHmacAlgorithm(int OSCORE_HMAC_algorithm) {
-		this.hmacAlgorithm = OSCORE_HMAC_algorithm;
-	}
+    public void setOSCOREHmacAlgorithm(int OSCORE_HMAC_algorithm) {
+        this.hmacAlgorithm = OSCORE_HMAC_algorithm;
+    }
 
 }
