@@ -286,8 +286,6 @@ public class LwM2mNodeEncoderTest {
         byte[] encoded = LwM2mNodeSenMLJsonEncoder.encode(oInstance, new LwM2mPath("/3/0"), model,
                 new DefaultLwM2mValueConverter());
 
-        System.out.println(new String(encoded));
-
         StringBuilder b = new StringBuilder();
         b.append("[{\"bn\":\"/3/0/\",\"n\":\"0\",\"vs\":\"Open Mobile Alliance\"},");
         b.append("{\"n\":\"1\",\"vs\":\"Lightweight M2M Client\"},");
@@ -311,22 +309,25 @@ public class LwM2mNodeEncoderTest {
     }
 
     @Test
-    public void senml_json_encode_resource() {
+    public void senml_json_encode_single_resource() {
         LwM2mResource oResource = LwM2mSingleResource.newStringResource(0, "Open Mobile Alliance");
         byte[] encoded = LwM2mNodeSenMLJsonEncoder.encode(oResource, new LwM2mPath("/3/0/0"), model,
                 new DefaultLwM2mValueConverter());
 
         String expected = "[{\"bn\":\"/3/0/0\",\"vs\":\"Open Mobile Alliance\"}]";
         Assert.assertEquals(expected, new String(encoded));
+    }
 
+    @Test
+    public void senml_json_encode_multiple_resource() {
         Map<Integer, Long> values = new HashMap<>();
         values.put(0, 3800L);
         values.put(1, 5000L);
-        oResource = LwM2mMultipleResource.newIntegerResource(7, values);
-        encoded = LwM2mNodeSenMLJsonEncoder.encode(oResource, new LwM2mPath("/3/0/7"), model,
+        LwM2mResource oResource = LwM2mMultipleResource.newIntegerResource(7, values);
+        byte[] encoded = LwM2mNodeSenMLJsonEncoder.encode(oResource, new LwM2mPath("/3/0/7"), model,
                 new DefaultLwM2mValueConverter());
 
-        expected = "[{\"bn\":\"/3/0/7\",\"n\":\"0\",\"v\":3800},{\"n\":\"1\",\"v\":5000}]";
+        String expected = "[{\"bn\":\"/3/0/7\",\"n\":\"0\",\"v\":3800},{\"n\":\"1\",\"v\":5000}]";
         Assert.assertEquals(expected, new String(encoded));
     }
 }
