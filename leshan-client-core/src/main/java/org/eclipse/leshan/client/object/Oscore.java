@@ -61,48 +61,49 @@ public class Oscore extends BaseInstanceEnabler {
 
     @Override
     public ReadResponse read(ServerIdentity identity, int resourceid) {
+    	LOG.debug("Read on resource {}", resourceid);
         // extend
         return ReadResponse.notFound();
     }
 
-    public byte[] getOSCOREMasterSecret() {
+    public byte[] getMasterSecret() {
         return masterSecret;
     }
 
-    public void setOSCOREMasterSecret(byte[] OSCORE_master_secret) {
-        this.masterSecret = OSCORE_master_secret;
+    public void setMasterSecret(byte[] masterSecret) {
+        this.masterSecret = masterSecret;
     }
 
-    public String getOSCORESenderId() {
+    public String getSenderId() {
         return senderId;
     }
 
-    public void setOSCORESenderId(String OSCORE_sender_id) {
-        this.senderId = OSCORE_sender_id;
+    public void setSenderId(String senderId) {
+        this.senderId = senderId;
     }
 
-    public String getOSCORERecipientId() {
+    public String getRecipientId() {
         return recipientId;
     }
 
-    public void setOSCORERecipientId(String OSCORE_recipient_id) {
-        this.recipientId = OSCORE_recipient_id;
+    public void setRecipientId(String recipientId) {
+        this.recipientId = recipientId;
     }
 
-    public int getOSCOREAeadAlgorithm() {
+    public int getAeadAlgorithm() {
         return aeadAlgorithm;
     }
 
-    public void setOSCOREAeadAlgorithm(int OSCORE_AEAD_algorithm) {
-        this.aeadAlgorithm = OSCORE_AEAD_algorithm;
+    public void setAeadAlgorithm(int aeadAlgorithm) {
+        this.aeadAlgorithm = aeadAlgorithm;
     }
 
-    public int getOSCOREHmacAlgorithm() {
+    public int getHmacAlgorithm() {
         return hmacAlgorithm;
     }
 
-    public void setOSCOREHmacAlgorithm(int OSCORE_HMAC_algorithm) {
-        this.hmacAlgorithm = OSCORE_HMAC_algorithm;
+    public void setHmacAlgorithm(int hmacAlgorithm) {
+        this.hmacAlgorithm = hmacAlgorithm;
     }
 
 }
