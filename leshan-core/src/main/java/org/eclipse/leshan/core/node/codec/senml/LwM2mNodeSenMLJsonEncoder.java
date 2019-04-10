@@ -144,7 +144,7 @@ public class LwM2mNodeSenMLJsonEncoder {
             String n = recordName == null ? "" : recordName;
 
             if (records.isEmpty()) {
-                if (!requestPath.isResource()) {
+                if (!n.isEmpty()) {
                     bn += "/";
                 }
                 record.setBaseName(bn);

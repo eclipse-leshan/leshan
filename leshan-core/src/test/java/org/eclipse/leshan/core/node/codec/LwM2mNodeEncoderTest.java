@@ -327,7 +327,7 @@ public class LwM2mNodeEncoderTest {
         byte[] encoded = LwM2mNodeSenMLJsonEncoder.encode(oResource, new LwM2mPath("/3/0/7"), model,
                 new DefaultLwM2mValueConverter());
 
-        String expected = "[{\"bn\":\"/3/0/7\",\"n\":\"0\",\"v\":3800},{\"n\":\"1\",\"v\":5000}]";
+        String expected = "[{\"bn\":\"/3/0/7/\",\"n\":\"0\",\"v\":3800},{\"n\":\"1\",\"v\":5000}]";
         Assert.assertEquals(expected, new String(encoded));
     }
 }
