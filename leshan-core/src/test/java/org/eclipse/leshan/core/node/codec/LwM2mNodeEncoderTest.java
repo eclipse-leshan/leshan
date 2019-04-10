@@ -286,8 +286,10 @@ public class LwM2mNodeEncoderTest {
         byte[] encoded = LwM2mNodeSenMLJsonEncoder.encode(oInstance, new LwM2mPath("/3/0"), model,
                 new DefaultLwM2mValueConverter());
 
+        System.out.println(new String(encoded));
+
         StringBuilder b = new StringBuilder();
-        b.append("[{\"bn\":\"/3/0\",\"n\":\"0\",\"vs\":\"Open Mobile Alliance\"},");
+        b.append("[{\"bn\":\"/3/0/\",\"n\":\"0\",\"vs\":\"Open Mobile Alliance\"},");
         b.append("{\"n\":\"1\",\"vs\":\"Lightweight M2M Client\"},");
         b.append("{\"n\":\"2\",\"vs\":\"345000123\"},");
         b.append("{\"n\":\"3\",\"vs\":\"1.0\"},");
@@ -315,6 +317,16 @@ public class LwM2mNodeEncoderTest {
                 new DefaultLwM2mValueConverter());
 
         String expected = "[{\"bn\":\"/3/0/0\",\"vs\":\"Open Mobile Alliance\"}]";
+        Assert.assertEquals(expected, new String(encoded));
+
+        Map<Integer, Long> values = new HashMap<>();
+        values.put(0, 3800L);
+        values.put(1, 5000L);
+        oResource = LwM2mMultipleResource.newIntegerResource(7, values);
+        encoded = LwM2mNodeSenMLJsonEncoder.encode(oResource, new LwM2mPath("/3/0/7"), model,
+                new DefaultLwM2mValueConverter());
+
+        expected = "[{\"bn\":\"/3/0/7\",\"n\":\"0\",\"v\":3800},{\"n\":\"1\",\"v\":5000}]";
         Assert.assertEquals(expected, new String(encoded));
     }
 }

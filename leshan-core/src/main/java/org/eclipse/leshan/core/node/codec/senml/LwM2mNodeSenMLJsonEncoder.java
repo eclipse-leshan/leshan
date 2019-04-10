@@ -39,8 +39,6 @@ import org.slf4j.LoggerFactory;
 public class LwM2mNodeSenMLJsonEncoder {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeSenMLJsonEncoder.class);
 
-    private static final String EMPTY_RESOURCE_PATH = "";
-
     public static byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model, LwM2mValueConverter converter) {
         Validate.notNull(node);
         Validate.notNull(path);
@@ -63,7 +61,6 @@ public class LwM2mNodeSenMLJsonEncoder {
         private int objectId;
         private LwM2mModel model;
         private LwM2mPath requestPath;
-        private Long timestamp;
         private LwM2mValueConverter converter;
 
         // visitor output
@@ -77,11 +74,11 @@ public class LwM2mNodeSenMLJsonEncoder {
                 throw new CodecException("Invalid request path %s for object encoding", requestPath);
             }
 
-            // Create resources
+            // Create SenML records
             for (LwM2mObjectInstance instance : object.getInstances().values()) {
                 for (LwM2mResource resource : instance.getResources().values()) {
                     String prefixPath = Integer.toString(instance.getId()) + "/" + Integer.toString(resource.getId());
-                    lwM2mResourceToSenMLRecord(prefixPath, timestamp, resource);
+                    lwM2mResourceToSenMLRecord(prefixPath, resource);
                 }
             }
         }
@@ -99,8 +96,8 @@ public class LwM2mNodeSenMLJsonEncoder {
                 } else {
                     throw new CodecException("Invalid request path %s for instance encoding", requestPath);
                 }
-                // Create resources
-                lwM2mResourceToSenMLRecord(prefixPath, timestamp, resource);
+                // Create SenML records
+                lwM2mResourceToSenMLRecord(prefixPath, resource);
             }
         }
 
@@ -111,54 +108,55 @@ public class LwM2mNodeSenMLJsonEncoder {
                 throw new CodecException("Invalid request path %s for resource encoding", requestPath);
             }
 
-            lwM2mResourceToSenMLRecord(EMPTY_RESOURCE_PATH, timestamp, resource);
+            // Using request path as base name, and record doesn't have name
+            lwM2mResourceToSenMLRecord(null, resource);
         }
 
-        private void lwM2mResourceToSenMLRecord(String resourcePath, Long timestamp, LwM2mResource resource) {
+        private void lwM2mResourceToSenMLRecord(String recordName, LwM2mResource resource) {
             // create resource element
             if (resource.isMultiInstances()) {
                 for (Entry<Integer, ?> entry : resource.getValues().entrySet()) {
-                    // compute resource instance path
-                    String resourceInstancePath;
-                    if (resourcePath == null || resourcePath.isEmpty()) {
-                        resourceInstancePath = Integer.toString(entry.getKey());
+                    // compute record name for resource instance
+                    String resourceInstanceRecordName;
+                    if (recordName == null || recordName.isEmpty()) {
+                        resourceInstanceRecordName = Integer.toString(entry.getKey());
                     } else {
-                        resourceInstancePath = resourcePath + "/" + entry.getKey();
+                        resourceInstanceRecordName = recordName + "/" + entry.getKey();
                     }
 
-                    addSenMLRecord(resourceInstancePath, timestamp, resource, entry.getValue());
+                    addSenMLRecord(resourceInstanceRecordName, resource, entry.getValue());
                 }
             } else {
-                addSenMLRecord(resourcePath, timestamp, resource, resource.getValue());
+                addSenMLRecord(recordName, resource, resource.getValue());
             }
         }
 
-        private void addSenMLRecord(String resourcePath, Long timestamp, LwM2mResource resource, Object value) {
+        private void addSenMLRecord(String recordName, LwM2mResource resource, Object value) {
             // get type for this resource
             ResourceModel rSpec = model.getResourceModel(objectId, resource.getId());
             Type expectedType = rSpec != null ? rSpec.type : resource.getType();
 
-            // Create resource element
+            // Create SenML record
             SenMLRecord record = new SenMLRecord();
-            
-            if (records.isEmpty() && requestPath.isObjectInstance()) {
-                record.setBaseName(requestPath.toString());
+
+            // Compute baseName and name for SenML record
+            String bn = requestPath.toString();
+            String n = recordName == null ? "" : recordName;
+
+            if (records.isEmpty()) {
+                if (!requestPath.isResource()) {
+                    bn += "/";
+                }
+                record.setBaseName(bn);
             }
-            
-            if(requestPath.isResource()) {
-                record.setBaseName(requestPath.toString());
-            }
-            else if(requestPath.isObjectInstance()) {
-                record.setName(resourcePath);
-                record.setTime(timestamp);
-            }
+            record.setName(n);
 
             // Convert value using expected type
-            LwM2mPath lwM2mResourcePath = new LwM2mPath(resourcePath);
+            LwM2mPath lwM2mResourcePath = new LwM2mPath(bn + n);
             Object convertedValue = converter.convertValue(value, resource.getType(), expectedType, lwM2mResourcePath);
             setResourceValue(convertedValue, expectedType, lwM2mResourcePath, record);
 
-            // Add it to the List
+            // Add record to the List
             records.add(record);
         }
 
