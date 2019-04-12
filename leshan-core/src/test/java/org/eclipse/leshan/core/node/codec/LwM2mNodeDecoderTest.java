@@ -37,6 +37,7 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
+import org.eclipse.leshan.core.node.codec.senml.LwM2mNodeSenMLJsonDecoder;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.tlv.Tlv;
 import org.eclipse.leshan.tlv.Tlv.TlvType;
@@ -709,5 +710,87 @@ public class LwM2mNodeDecoderTest {
         b.append("]}");
 
         decoder.decode(b.toString().getBytes(), ContentFormat.JSON, new LwM2mPath(3, 0, 11), model);
+    }
+
+    @Test
+    public void senml_json_decode_device_object_instance() {
+        StringBuilder b = new StringBuilder();
+        b.append("[{\"bn\":\"/3/0/\",\"n\":\"0\",\"vs\":\"Open Mobile Alliance\"},");
+        b.append("{\"n\":\"1\",\"vs\":\"Lightweight M2M Client\"},");
+        b.append("{\"n\":\"2\",\"vs\":\"345000123\"},");
+        b.append("{\"n\":\"3\",\"vs\":\"1.0\"},");
+        b.append("{\"n\":\"6/0\",\"v\":1},");
+        b.append("{\"n\":\"6/1\",\"v\":5},");
+        b.append("{\"n\":\"7/0\",\"v\":3800},");
+        b.append("{\"n\":\"7/1\",\"v\":5000},");
+        b.append("{\"n\":\"8/0\",\"v\":125},");
+        b.append("{\"n\":\"8/1\",\"v\":900},");
+        b.append("{\"n\":\"9\",\"v\":100},");
+        b.append("{\"n\":\"10\",\"v\":15},");
+        b.append("{\"n\":\"11/0\",\"v\":0},");
+        b.append("{\"n\":\"13\",\"v\":1.3674912E9},");
+        b.append("{\"n\":\"14\",\"vs\":\"+02:00\"},");
+        b.append("{\"n\":\"16\",\"vs\":\"U\"}]");
+
+        LwM2mObjectInstance instance = LwM2mNodeSenMLJsonDecoder.decode(b.toString().getBytes(), new LwM2mPath("/3/0"),
+                model, LwM2mObjectInstance.class);
+
+        assertNotNull(instance);
+        assertEquals(0, instance.getId());
+        assertEquals(instance.getResource(0).getValue(), "Open Mobile Alliance");
+        assertEquals(instance.getResource(1).getValue(), "Lightweight M2M Client");
+        assertEquals(instance.getResource(2).getValue(), "345000123");
+        assertEquals(instance.getResource(3).getValue(), "1.0");
+
+        assertEquals(instance.getResource(6).getValue(0), 1l);
+        assertEquals(instance.getResource(6).getValue(1), 5l);
+        assertEquals(instance.getResource(7).getValue(0), 3800l);
+        assertEquals(instance.getResource(7).getValue(1), 5000l);
+        assertEquals(instance.getResource(8).getValue(0), 125l);
+        assertEquals(instance.getResource(8).getValue(1), 900l);
+
+        assertEquals(instance.getResource(9).getValue(), 100l);
+        assertEquals(instance.getResource(10).getValue(), 15l);
+
+        assertEquals(instance.getResource(11).getValue(0), 0l);
+
+        Date time = (Date) instance.getResource(13).getValue();
+        assertEquals(time.getTime(), 1367491200000l);
+
+        assertEquals(instance.getResource(14).getValue(), "+02:00");
+        assertEquals(instance.getResource(16).getValue(), "U");
+    }
+
+    @Test
+    public void senml_json_decode_single_resource() {
+        String payload = "[{\"bn\":\"/3/0/0\",\"vs\":\"Open Mobile Alliance\"}]";
+
+        LwM2mResource resource = LwM2mNodeSenMLJsonDecoder.decode(payload.getBytes(), new LwM2mPath("/3/0/0"), model,
+                LwM2mResource.class);
+        assertNotNull(resource);
+        assertTrue(!resource.isMultiInstances());
+        assertEquals(0, resource.getId());
+        assertEquals(resource.getValue(), "Open Mobile Alliance");
+
+        payload = "[{\"bn\":\"/6/0/3\",\"v\":20.0}]";
+        resource = LwM2mNodeSenMLJsonDecoder.decode(payload.getBytes(), new LwM2mPath("/6/0/3"), model,
+                LwM2mResource.class);
+        assertNotNull(resource);
+        assertTrue(!resource.isMultiInstances());
+        assertEquals(3, resource.getId());
+        assertEquals(resource.getValue(), 20.0);
+    }
+
+    @Test
+    public void senml_json_decode_multiple_resource() {
+        String payload = "[{\"bn\":\"/3/0/7/\",\"n\":\"0\",\"v\":3800},{\"n\":\"1\",\"v\":5000}]";
+
+        LwM2mResource multipleResources = LwM2mNodeSenMLJsonDecoder.decode(payload.getBytes(), new LwM2mPath("/3/0/7"),
+                model, LwM2mResource.class);
+
+        assertNotNull(multipleResources);
+        assertTrue(multipleResources.isMultiInstances());
+        assertEquals(multipleResources.getValue(0), 3800l);
+        assertEquals(multipleResources.getValue(1), 5000l);
     }
 }
