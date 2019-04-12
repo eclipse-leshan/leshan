@@ -53,7 +53,7 @@ public class LwM2mNodeSenMLJsonEncoder {
 
         SenMLPack pack = new SenMLPack();
         pack.setRecords(internalEncoder.records);
-        return SenMLJson.toJsonSenML(pack).getBytes();
+        return SenMLJson.toSenMLJson(pack).getBytes();
     }
 
     private static class InternalEncoder implements LwM2mNodeVisitor {

@@ -14,19 +14,17 @@
 
 package org.eclipse.leshan.senml;
 
-import com.eclipsesource.json.Json;
+import org.junit.Assert;
+import org.junit.Test;
 
-/**
- * Helper for encoding/decoding SenML JSON format
- */
-public class SenMLJson {
-    private static final SenMLJsonPackSerDes serDes = new SenMLJsonPackSerDes();
+public class SenMLJsonDeserializerTest extends AbstractSenMLTest {
 
-    public static String toSenMLJson(SenMLPack pack) {
-        return serDes.serializeToJson(pack);
-    }
+    @Test
+    public void deserialize_device_object() {
+        String dataString = givenSenMLJsonExample();
+        SenMLPack pack = SenMLJson.fromSenMLJson(dataString);
 
-    public static SenMLPack fromSenMLJson(String jsonString) {
-        return serDes.deserializeFromJson(Json.parse(jsonString).asArray());
+        String outString = SenMLJson.toSenMLJson(pack);
+        Assert.assertEquals(dataString.trim(), outString);
     }
 }
