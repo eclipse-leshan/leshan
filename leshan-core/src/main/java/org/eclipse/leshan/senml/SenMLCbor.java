@@ -14,19 +14,13 @@
 
 package org.eclipse.leshan.senml;
 
-import com.eclipsesource.json.Json;
-
 /**
- * Helper for encoding/decoding SenML JSON format
+ * Helper for encoding/decoding SenML CBOR format
  */
-public class SenMLJson {
+public class SenMLCbor {
     private static final SenMLPackSerDes serDes = new SenMLPackSerDes();
 
-    public static String toJsonSenML(SenMLPack pack) {
-        return serDes.serializeToJson(pack);
-    }
-
-    public static SenMLPack fromJsonSenML(String jsonString) {
-        return serDes.deserializeFromJson(Json.parse(jsonString).asArray());
+    public static byte[] toSenMLCbor(SenMLPack pack) {
+        return serDes.serializeToCbor(pack);
     }
 }
