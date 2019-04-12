@@ -199,8 +199,6 @@ public class LwM2mNodeSenMLJsonEncoder implements NodeEncoder {
             case OPAQUE:
                 record.setStringValue(Base64.encodeBase64String((byte[]) value));
                 break;
-            case OBJLNK:
-                record.setStringValue(value.toString());
             default:
                 throw new CodecException("Invalid value type %s for %s", type, resourcePath);
             }

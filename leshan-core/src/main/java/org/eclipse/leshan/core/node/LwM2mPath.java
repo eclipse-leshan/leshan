@@ -156,6 +156,38 @@ public class LwM2mPath {
     }
 
     /**
+     * @param start start of the path
+     * @return true if the current path start with the given path
+     */
+    public boolean startWith(LwM2mPath start) {
+        // object id
+        if (start.getObjectId() == null)
+            return true;
+        if (!start.getObjectId().equals(this.getObjectId())) {
+            return false;
+        }
+        // object instance id
+        if (start.getObjectInstanceId() == null)
+            return true;
+        if (!start.getObjectInstanceId().equals(this.getObjectInstanceId())) {
+            return false;
+        }
+        // resource id
+        if (start.getResourceId() == null)
+            return true;
+        if (!start.getResourceId().equals(this.getResourceId())) {
+            return false;
+        }
+        // resource instance id
+        if (start.getResourceInstanceId() == null)
+            return true;
+        if (!start.getResourceInstanceId().equals(this.getResourceInstanceId())) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Returns the object ID in the path.
      *
      * @return the object ID. Can be <code>null</code> when this is an root path.
