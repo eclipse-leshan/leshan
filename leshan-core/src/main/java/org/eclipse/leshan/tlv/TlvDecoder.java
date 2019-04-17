@@ -16,6 +16,7 @@
 package org.eclipse.leshan.tlv;
 
 import java.math.BigInteger;
+import java.nio.Buffer;
 import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
@@ -124,12 +125,16 @@ public class TlvDecoder {
                     try {
                         // create a view of the contained TLVs
                         ByteBuffer slice = input.slice();
-                        slice.limit(length);
+                        // HACK the cast is necessary for binary backward compatibility bug introduce in Java 9
+                        // https://github.com/apache/felix/pull/114
+                        ((Buffer) slice).limit(length);
 
                         Tlv[] children = decode(slice);
 
                         // skip the children, it will be decoded by the view
-                        input.position(input.position() + length);
+                        // HACK the cast is necessary for binary backward compatibility bug introduce in Java 9
+                        // https://github.com/apache/felix/pull/114
+                        ((Buffer) input).position(((Buffer) input).position() + length);
 
                         Tlv tlv = new Tlv(type, children, null, identifier);
                         tlvs.add(tlv);

@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.tlv;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
@@ -51,7 +52,9 @@ public class TlvEncoder {
         for (Tlv tlv : tlvs) {
             encode(tlv, b);
         }
-        b.flip();
+        // HACK the cast is necessary for binary backward compatibility bug introduce in Java 9
+        // https://github.com/apache/felix/pull/114
+        ((Buffer) b).flip();
         return b;
     }
 
