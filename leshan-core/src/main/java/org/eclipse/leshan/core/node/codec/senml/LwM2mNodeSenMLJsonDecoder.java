@@ -61,7 +61,7 @@ public class LwM2mNodeSenMLJsonDecoder {
         if (baseName == null)
             baseName = path; // if no base name, use request path as base name
 
-        // Group JSON entry by instance
+        // Group records by instance
         Map<Integer, Collection<SenMLRecord>> recordsByInstanceId = groupRecordsByInstanceId(pack.getRecords(),
                 baseName);
 
