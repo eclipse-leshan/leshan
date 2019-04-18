@@ -592,7 +592,7 @@ public class RegistrationEngine {
         // TODO we currently support only one dm server.
         Iterator<String> it = registeredServers.keySet().iterator();
         if (it.hasNext()) {
-            it.next();
+            return it.next();
         }
         return null;
     }
