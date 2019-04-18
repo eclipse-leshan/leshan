@@ -58,6 +58,11 @@
 				Identity : <code>{{ security.psk.identity }}</code><br/>
 				Key : <code>{{ security.psk.key }}</code>
 			</td>
+			<!-- OSCORE fields. -->
+			<td ng-if="security.oscore">OSCORE</td>
+			<td ng-if="security.oscore">
+				Context file : <code>{{ security.oscore.contextFile }}</code>
+			</td>
 			<td ng-if="security.rpk">Raw Public Key <br/><small class="text-muted" >(Elliptic Curve)</small></td>
 			<td ng-if="security.rpk">
 				Params : <code>{{ security.rpk.params }}</code><br/> 
@@ -101,6 +106,8 @@
 								<option value="psk">Pre-Shared Key</option>
 								<option value="rpk">Raw Public Key (Elliptic Curves)</option>
 								<option value="x509">X.509 Certificate</option>
+								<!-- Drop-down option for OSCORE security contex information. -->
+								<option value="oscore">OSCORE</option>
 							</select>
 						</div>
 					</div>
@@ -125,6 +132,17 @@
 							<p class="help-block" ng-if="form.pskValue.$error.required">The pre-shared key is required</p>
 							<p class="help-block" ng-if="form.pskValue.$error.pattern">Hexadecimal format is expected</p>
 							<p class="help-block" ng-if="form.pskValue.$error.maxlength">The pre-shared key is too long</p>
+						</div>
+					</div>
+					
+					<!-- OSCORE inputs -->
+					<div class="form-group" ng-class="{'hidden': securityMode!='oscore'}" show-errors>
+						<label for="oscoreContextFileValue" class="col-sm-4 control-label">Context file</label>
+						<div class="col-sm-8">
+							<textarea class="form-control" style="resize:none" rows="2" id="oscoreContextFileValue" name="oscoreContextFile" 
+							ng-model="oscoreContextFile" ng-required="securityMode=='oscore'" ng-maxlength="64" ></textarea>
+							<p class="help-block" ng-if="form.oscoreContextFile.$error.required">The OSCORE context file is required</p>
+							<p class="help-block" ng-if="form.oscoreContextFile.$error.maxlength">The OSCORE context file name is too long</p>
 						</div>
 					</div>
 

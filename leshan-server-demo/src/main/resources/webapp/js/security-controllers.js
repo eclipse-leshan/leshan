@@ -99,6 +99,9 @@ angular.module('securityControllers', [])
                     var security = {endpoint: $scope.endpoint, psk : { identity : $scope.pskIdentity , key : $scope.pskValue}};
                 } else if($scope.securityMode == "rpk") {
                     var security = {endpoint: $scope.endpoint, rpk : { x : $scope.rpkXValue , y : $scope.rpkYValue, params : $scope.rpkParamsValue || $scope.defaultParams}};
+                //Saving of information for OSCORE
+                } else if($scope.securityMode == "oscore") {
+                    var security = {endpoint: $scope.endpoint, oscore : { contextFile : $scope.oscoreContextFile }};
                 } else {
                     var security = {endpoint: $scope.endpoint, x509 : true};
                 }
