@@ -249,9 +249,8 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
     @Override
     public synchronized void destroy() {
         // TODO we should be able to destroy a not started coapServer.
-        if (!started)
-            return;
-        started = false;
+        if (started)
+            started = false;
 
         coapServer.destroy();
     }
