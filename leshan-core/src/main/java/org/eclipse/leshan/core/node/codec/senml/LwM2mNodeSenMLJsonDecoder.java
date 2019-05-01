@@ -58,9 +58,12 @@ public class LwM2mNodeSenMLJsonDecoder {
 
         // Extract baseName
         LwM2mPath baseName = extractAndValidateBaseName(pack, path);
+        if (baseName == null)
+            baseName = path; // if no base name, use request path as base name
 
         // Group records by instance
-        Map<Integer, Collection<SenMLRecord>> recordsByInstanceId = groupRecordsByInstanceId(pack.getRecords());
+        Map<Integer, Collection<SenMLRecord>> recordsByInstanceId = groupRecordsByInstanceId(pack.getRecords(),
+                baseName);
 
         // Create lwm2m node
         LwM2mNode node = null;
@@ -107,7 +110,7 @@ public class LwM2mNodeSenMLJsonDecoder {
     }
 
     /**
-     * Extract and validate base name from SenML pack, and update name field with full path for each of SenML Record.
+     * Extract and validate base name from SenML pack
      * 
      * @param pack
      * @param requestPath
@@ -120,16 +123,6 @@ public class LwM2mNodeSenMLJsonDecoder {
             if (record.getBaseName() != null && !record.getBaseName().isEmpty()) {
                 baseName = record.getBaseName();
                 break;
-            }
-        }
-
-        if (baseName != null && !baseName.isEmpty()) {
-            for (SenMLRecord record : pack.getRecords()) {
-                if (record.getName() != null && !record.getName().isEmpty()) {
-                    record.setName(baseName + record.getName());
-                } else {
-                    record.setName(baseName);
-                }
             }
         }
 
@@ -165,16 +158,17 @@ public class LwM2mNodeSenMLJsonDecoder {
      * Group all SenML record by instanceId
      * 
      * @param records
+     * @param baseName
      *
      * @return a map (instanceId => collection of SenML Record)
      */
-    private static Map<Integer, Collection<SenMLRecord>> groupRecordsByInstanceId(Collection<SenMLRecord> records)
-            throws CodecException {
+    private static Map<Integer, Collection<SenMLRecord>> groupRecordsByInstanceId(Collection<SenMLRecord> records,
+            LwM2mPath baseName) throws CodecException {
         Map<Integer, Collection<SenMLRecord>> result = new HashMap<>();
 
         for (SenMLRecord record : records) {
             // Build resource path
-            LwM2mPath nodePath = new LwM2mPath(record.getName());
+            LwM2mPath nodePath = record.getName() == null ? baseName : baseName.append(record.getName());
 
             // Validate path
             if (!nodePath.isResourceInstance() && !nodePath.isResource()) {
@@ -194,6 +188,11 @@ public class LwM2mNodeSenMLJsonDecoder {
             recordForInstance.add(record);
         }
 
+        // Create an entry for an empty instance if possible
+        if (result.isEmpty() && baseName.getObjectInstanceId() != null) {
+            result.put(baseName.getObjectInstanceId(), new ArrayList<SenMLRecord>());
+        }
+
         return result;
     }
 
@@ -208,7 +207,7 @@ public class LwM2mNodeSenMLJsonDecoder {
 
         for (SenMLRecord record : records) {
             // Build resource path
-            LwM2mPath nodePath = new LwM2mPath(record.getName());
+            LwM2mPath nodePath = record.getName() == null ? baseName : baseName.append(record.getName());
 
             // handle LWM2M resources
             if (nodePath.isResourceInstance()) {
