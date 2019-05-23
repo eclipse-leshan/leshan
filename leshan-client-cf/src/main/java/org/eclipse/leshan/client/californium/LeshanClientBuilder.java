@@ -87,9 +87,6 @@ public class LeshanClientBuilder {
     /**
      * <p>
      * Sets the list of objects enablers
-     * </p>
-     * Warning : The Security ObjectEnabler should not contains 2 or more entries with the same identity. This is not a
-     * LWM2M specification constraint but an implementation limitation.
      */
     public LeshanClientBuilder setObjects(List<? extends LwM2mObjectEnabler> objectEnablers) {
         this.objectEnablers = objectEnablers;
