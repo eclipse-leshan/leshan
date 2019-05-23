@@ -246,7 +246,7 @@ public class LeshanBootstrapServerBuilder {
     /**
      * The default Californium/CoAP {@link NetworkConfig} used by the builder.
      */
-    public static NetworkConfig createDefaultNetworkConfig() {
+    public NetworkConfig createDefaultNetworkConfig() {
         NetworkConfig networkConfig = new NetworkConfig();
         networkConfig.set(Keys.MID_TRACKER, "NULL");
         // Workaround for https://github.com/eclipse/leshan/issues/502
@@ -413,7 +413,22 @@ public class LeshanBootstrapServerBuilder {
                     "All CoAP enpoints are deactivated, at least one endpoint should be activated");
         }
 
-        return new LeshanBootstrapServer(unsecuredEndpoint, securedEndpoint, configStore, securityStore, sessionManager,
+        return createBootstrapServer(unsecuredEndpoint, securedEndpoint, configStore, securityStore, sessionManager,
                 bootstrapHandlerFactory, model, coapConfig);
+    }
+
+    /**
+     * Create the <code>LeshanBootstrapServer</code>.
+     * 
+     * <p>
+     * You can extend <code>LeshanBootstrapServerBuilder</code> and override this method to create a new builder which
+     * will be able to build custom <code>LeshanBootstrapServer</code>.
+     * </p>
+     */
+    protected LeshanBootstrapServer createBootstrapServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
+            BootstrapStore bsStore, BootstrapSecurityStore bsSecurityStore, BootstrapSessionManager bsSessionManager,
+            BootstrapHandlerFactory bsHandlerFactory, LwM2mModel model, NetworkConfig coapConfig) {
+        return new LeshanBootstrapServer(unsecuredEndpoint, securedEndpoint, bsStore, bsSecurityStore, bsSessionManager,
+                bsHandlerFactory, model, coapConfig);
     }
 }
