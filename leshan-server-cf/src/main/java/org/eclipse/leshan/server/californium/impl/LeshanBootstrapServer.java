@@ -38,10 +38,13 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
 
     private final static Logger LOG = LoggerFactory.getLogger(LeshanBootstrapServer.class);
 
+    // CoAP/Californium attributes
+    private final CoapAPI coapApi;
     private final CoapServer coapServer;
     private final CoapEndpoint unsecuredEndpoint;
     private final CoapEndpoint securedEndpoint;
 
+    // LWM2M attributes
     private final BootstrapStore bsStore;
     private final BootstrapSecurityStore bsSecurityStore;
 
@@ -57,6 +60,7 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
 
         this.bsStore = bsStore;
         this.bsSecurityStore = bsSecurityStore;
+        this.coapApi = new CoapAPI();
 
         // init CoAP server
         coapServer = new CoapServer(coapConfig);
@@ -132,6 +136,40 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
             return securedEndpoint.getAddress();
         } else {
             return null;
+        }
+    }
+
+    /**
+     * <p>
+     * A CoAP API, generally needed when need to access to underlying CoAP protocol.
+     * </p>
+     * e.g. for CoAP monitoring or to directly use underlying {@link Coap Server}.
+     */
+    public CoapAPI coap() {
+        return coapApi;
+    }
+
+    public class CoapAPI {
+
+        /**
+         * @return the underlying {@link CoapServer}
+         */
+        public CoapServer getServer() {
+            return coapServer;
+        }
+
+        /**
+         * @return the {@link CoapEndpoint} used for secured CoAP communication (coaps://)
+         */
+        public CoapEndpoint getSecuredEndpoint() {
+            return securedEndpoint;
+        }
+
+        /**
+         * @return the {@link CoapEndpoint} used for unsecured CoAP communication (coap://)
+         */
+        public CoapEndpoint getUnsecuredEndpoint() {
+            return unsecuredEndpoint;
         }
     }
 }
