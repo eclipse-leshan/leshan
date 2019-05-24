@@ -15,7 +15,21 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
+/**
+ * Creates {@link BootstrapHandler}.
+ * 
+ * @see {@link DefaultBootstrapHandler}
+ */
 public interface BootstrapHandlerFactory {
+
+    /**
+     * Creates {@link BootstrapHandler}.
+     * 
+     * @param store the store containing bootstrap configuration.
+     * @param sender the class responsible to send LWM2M request during a bootstapSession.
+     * @param sessionManager the manager responsible to handle bootstrap session.
+     * @return the new {@link BootstrapHandler}.
+     */
     BootstrapHandler create(BootstrapStore store, LwM2mBootstrapRequestSender sender,
             BootstrapSessionManager sessionManager);
 }

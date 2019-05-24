@@ -23,19 +23,22 @@ import org.eclipse.leshan.util.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Ensure that client with given endpoint name and {@link Identity} authenticated itself in an expected way.
+ */
 public class SecurityChecker {
 
     private static final Logger LOG = LoggerFactory.getLogger(SecurityChecker.class);
 
     /**
-     * Return true if any of the securityInfos is valid for the given endpoint and client identity.
+     * Return true if client authenticated itself with any of the expected way.
      * 
-     * @see #checkSecurityInfo(String, Identity, SecurityInfo)
+     * @param endpoint the client endpoint name.
+     * @param clientIdentity the client identity.
+     * @param securityInfos the expected ways to authenticate.
      * 
-     * @param endpoint
-     * @param clientIdentity
-     * @param securityInfos
-     * 
+     * @return true if client is correctly authenticated.
+     * @see SecurityInfo
      */
     public boolean checkSecurityInfos(String endpoint, Identity clientIdentity, List<SecurityInfo> securityInfos) {
         // if this is a secure end-point, we must check that the registering client is using the right identity.
@@ -59,12 +62,14 @@ public class SecurityChecker {
     }
 
     /**
-     * Validates security info against a known endpoint and identity.
+     * Return true if client authenticated itself with the expected way.
      * 
-     * @param endpoint
-     * @param clientIdentity
-     * @param securityInfo
-     * @return true if the security info is valid.
+     * @param endpoint the client endpoint name.
+     * @param clientIdentity the client identity.
+     * @param securityInfo the expected way to authenticate.
+     * 
+     * @return true if client is correctly authenticated.
+     * @see SecurityInfo
      */
     public boolean checkSecurityInfo(String endpoint, Identity clientIdentity, SecurityInfo securityInfo) {
 

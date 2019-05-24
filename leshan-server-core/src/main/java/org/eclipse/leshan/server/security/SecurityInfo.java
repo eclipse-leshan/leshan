@@ -24,11 +24,13 @@ import org.eclipse.leshan.util.Validate;
 /**
  * The security info for a client.
  * <p>
+ * A {@link SecurityInfo} contain data about how a client should authenticate itself.
+ * <p>
  * The following security modes are supported:
  * <ul>
- * <li>Pre-Shared Key: an identity and a key are needed</li>
- * <li>Raw Public Key Certificate: a public key is needed</li>
- * <li>X509 Certificate: an X509 certificate is needed</li>
+ * <li>Pre-Shared Key: the given identity and a key are needed</li>
+ * <li>Raw Public Key Certificate: the given public key is needed</li>
+ * <li>X509 Certificate: any trusted X509 certificate is needed</li>
  * </ul>
  */
 public class SecurityInfo implements Serializable {
@@ -42,8 +44,10 @@ public class SecurityInfo implements Serializable {
     private final String identity;
     private final byte[] preSharedKey;
 
+    // RPK
     private final PublicKey rawPublicKey;
 
+    // X.509
     private final boolean useX509Cert;
 
     private SecurityInfo(String endpoint, String identity, byte[] preSharedKey, PublicKey rawPublicKey,
@@ -57,7 +61,13 @@ public class SecurityInfo implements Serializable {
     }
 
     /**
-     * Construct a {@link SecurityInfo} when using DTLS with Pre-Shared Keys.
+     * Construct a {@link SecurityInfo} meaning that client with given endpoint name should authenticate itself using
+     * PSK mode and the given PSK Identity and the given Pre-Shared Key.
+     * 
+     * @param endpoint the endpont name of the client.
+     * @param identity the expected PSK Identity.
+     * @param preSharedKey the expected Pre-Shared Key.
+     * @return a PSK Security Info.
      */
     public static SecurityInfo newPreSharedKeyInfo(String endpoint, String identity, byte[] preSharedKey) {
         Validate.notEmpty(identity);
@@ -66,7 +76,12 @@ public class SecurityInfo implements Serializable {
     }
 
     /**
-     * Construct a {@link SecurityInfo} when using DTLS with Raw Public Key (RPK).
+     * Construct a {@link SecurityInfo} meaning that client with given endpoint name should authenticate itself using
+     * RPK mode and the given Raw Public Key.
+     * 
+     * @param endpoint the endpont name of the client.
+     * @param rawPublicKey the expected Raw Public Key.
+     * @return a RPK Security Info.
      */
     public static SecurityInfo newRawPublicKeyInfo(String endpoint, PublicKey rawPublicKey) {
         Validate.notNull(rawPublicKey);
@@ -74,39 +89,65 @@ public class SecurityInfo implements Serializable {
     }
 
     /**
-     * Construct a {@link SecurityInfo} when using DTLS with an X509 Certificate.
+     * Construct a {@link SecurityInfo} meaning that client with given endpoint name should authenticate itself using
+     * X.509 mode with any trusted X.509 Certificate.
+     * <p>
+     * By default, the certificate Common Name (CN) MUST match the endpoint name.
+     * 
+     * @param endpoint
+     * @return a X.509 Security Info.
      */
     public static SecurityInfo newX509CertInfo(String endpoint) {
         return new SecurityInfo(endpoint, null, null, null, true);
     }
 
+    /**
+     * @return the client endpoint name.
+     */
     public String getEndpoint() {
         return endpoint;
     }
 
     /**
-     * The Pre-Shared-Key identity
+     * @return the Pre-Shared-Key identity or <code>null</code> if {@link #usePSK()} return <code>false</code>.
+     * @see #getPreSharedKey()
      */
     public String getIdentity() {
         return identity;
     }
 
+    /**
+     * @return the Pre-Shared-Key or <code>null</code> if {@link #usePSK()} return <code>false</code>.
+     * @see #getIdentity()
+     */
     public byte[] getPreSharedKey() {
         return preSharedKey;
     }
 
+    /**
+     * @return <code>true</code> if this client should use PSK authentication.
+     */
     public boolean usePSK() {
         return identity != null && preSharedKey != null;
     }
 
+    /**
+     * @return the {@link PublicKey} or <code>null</code> if {@link #useRPK()} returns <code>false</code>.
+     */
     public PublicKey getRawPublicKey() {
         return rawPublicKey;
     }
 
+    /**
+     * @return <code>true</code> if this client should use RPK authentication.
+     */
     public boolean useRPK() {
         return rawPublicKey != null;
     }
 
+    /**
+     * @return <code>true</code> if this client should use X.509 authentication.
+     */
     public boolean useX509Cert() {
         return useX509Cert;
     }

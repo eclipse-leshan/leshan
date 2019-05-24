@@ -24,7 +24,8 @@ import java.security.PublicKey;
 import org.eclipse.leshan.util.Validate;
 
 /**
- * A request sender identity.
+ * Contains all data which could identify a peer like peer address, PSK identity, Raw Public Key or Certificate Common
+ * Name.
  */
 public class Identity implements Serializable {
 

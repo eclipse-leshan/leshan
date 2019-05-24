@@ -134,6 +134,7 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
     /**
      * Stops the server and unbinds it from assigned ports.
      */
+    @Override
     public void destroy() {
         coapServer.destroy();
         LOG.info("Bootstrap server destroyed.");

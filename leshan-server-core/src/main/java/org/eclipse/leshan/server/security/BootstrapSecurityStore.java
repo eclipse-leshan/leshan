@@ -17,10 +17,16 @@ package org.eclipse.leshan.server.security;
 
 import java.util.List;
 
+/**
+ * A store containing data needed to authenticate clients.
+ */
 public interface BootstrapSecurityStore {
 
     /**
      * Returns all acceptable security information for a given end-point.
+     * <p>
+     * Generally, only 1 securityInfo is returned for a given endpoint but there is rare use cases where severals
+     * credentials could be associated to 1 client.
      * 
      * @param endpoint the client end-point
      * @return the security information of <code>null</code> if not found.

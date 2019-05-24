@@ -35,13 +35,13 @@ import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.californium.Lwm2mEndpointContextMatcher;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.BootstrapStore;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
-import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapServer;
 import org.eclipse.leshan.server.californium.impl.LeshanBootstrapServer;
 import org.eclipse.leshan.server.californium.impl.LwM2mBootstrapPskStore;
 import org.eclipse.leshan.server.impl.DefaultBootstrapSessionManager;
@@ -50,9 +50,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class helping you to build and configure a Californium based Leshan Bootstrap Lightweight M2M server. Usage: create
- * it, call the different setters for changing the configuration and then call the {@link #build()} method for creating
- * the {@link LwM2mBootstrapServer} ready to operate.
+ * Class helping you to build and configure a Californium based Leshan Bootstrap Lightweight M2M server.
+ * <p>
+ * Usage: create it, call the different setters for changing the configuration and then call the {@link #build()} method
+ * for creating the {@link LeshanBootstrapServer} ready to operate.
  */
 public class LeshanBootstrapServerBuilder {
 
@@ -75,21 +76,18 @@ public class LeshanBootstrapServerBuilder {
     private Certificate[] trustedCertificates;
 
     private EndpointFactory endpointFactory;
-
     private boolean noSecuredEndpoint;
-
     private boolean noUnsecuredEndpoint;
 
     /**
+     * Set the address/port for unsecured CoAP communication (<code>coap://</code>).
      * <p>
-     * Set the address/port for unsecured CoAP Server.
-     * </p>
-     * 
-     * By default a wildcard address and the default CoAP port(5683) is used
+     * By default a wildcard address and the default CoAP port(5683) is used.
      * 
      * @param hostname The address to bind. If null wildcard address is used.
      * @param port A valid port value is between 0 and 65535. A port number of zero will let the system pick up an
      *        ephemeral port in a bind operation.
+     * @return the builder for fluent Bootstrap Server creation.
      */
     public LeshanBootstrapServerBuilder setLocalAddress(String hostname, int port) {
         if (hostname == null) {
@@ -101,11 +99,12 @@ public class LeshanBootstrapServerBuilder {
     }
 
     /**
+     * Set the address for unsecured CoAP communication (<code>coap://</code>).
      * <p>
-     * Set the address for unsecured CoAP Server.
-     * </p>
-     * 
      * By default a wildcard address and the default CoAP port(5683) is used.
+     * 
+     * @param localAddress the socket address for <code>coap://</code>.
+     * @return the builder for fluent Bootstrap Server creation.
      */
     public LeshanBootstrapServerBuilder setLocalAddress(InetSocketAddress localAddress) {
         this.localAddress = localAddress;
@@ -113,15 +112,14 @@ public class LeshanBootstrapServerBuilder {
     }
 
     /**
+     * Set the address/port for secured CoAP over DTLS communication (<code>coaps://</code>).
      * <p>
-     * Set the address/port for secured CoAP Server (Using DTLS).
-     * <p>
-     * 
      * By default a wildcard address and the default CoAPs port(5684) is used.
      * 
      * @param hostname The address to bind. If null wildcard address is used.
      * @param port A valid port value is between 0 and 65535. A port number of zero will let the system pick up an
      *        ephemeral port in a bind operation.
+     * @return the builder for fluent Bootstrap Server creation.
      */
     public LeshanBootstrapServerBuilder setLocalSecureAddress(String hostname, int port) {
         if (hostname == null) {
@@ -133,10 +131,28 @@ public class LeshanBootstrapServerBuilder {
     }
 
     /**
+     * Set the address for secured CoAP over DTLS communication Server (<code>coaps://</code>).
      * <p>
-     * Set the {@link PublicKey} of the server which will be used for RawPublicKey DTLS authentication.
-     * </p>
+     * By default a wildcard address and the default CoAP port(5684) is used.
+     * 
+     * @param localSecureAddress the socket address for <code>coaps://</code>.
+     * @return the builder for fluent Bootstrap Server creation.
+     */
+    public LeshanBootstrapServerBuilder setLocalSecureAddress(InetSocketAddress localSecureAddress) {
+        this.localAddressSecure = localSecureAddress;
+        return this;
+    }
+
+    /**
+     * Set the {@link PublicKey} of the server which will be used for Raw Public Key DTLS authentication.
+     * <p>
      * This should be used for RPK support only.
+     * <p>
+     * Setting <code>publicKey</code> and <code>privateKey</code> will enable RawPublicKey DTLS authentication, see also
+     * {@link LeshanBootstrapServerBuilder#setPrivateKey(PrivateKey)}.
+     * 
+     * @param publicKey the Raw Public Key of the bootstrap server.
+     * @return the builder for fluent Bootstrap Server creation.
      */
     public LeshanBootstrapServerBuilder setPublicKey(PublicKey publicKey) {
         this.publicKey = publicKey;
@@ -144,19 +160,19 @@ public class LeshanBootstrapServerBuilder {
     }
 
     /**
-     * Set the {@link PrivateKey} of the server which will be used for RawPublicKey(RPK).
-     */
-    public LeshanBootstrapServerBuilder setPrivateKey(PrivateKey privateKey) {
-        this.privateKey = privateKey;
-        return this;
-    }
-
-    /**
+     * Set the CertificateChain of the server which will be used for X.509 DTLS authentication.
      * <p>
-     * Set the CertificateChain of the server which will be used for X509 DTLS authentication.
-     * </p>
-     * For RPK the public key will be extract from the first X509 certificate of the certificate chain. If you only need
-     * RPK support, use {@link LeshanServerBuilder#setPublicKey(PublicKey)} instead.
+     * Setting <code>publicKey</code> and <code>privateKey</code> will enable RPK and X.509 DTLS authentication, see
+     * also {@link LeshanBootstrapServerBuilder#setPrivateKey(PrivateKey)}.
+     * <p>
+     * For RPK the public key will be extracted from the first X.509 certificate of the certificate chain. If you only
+     * need RPK support, use {@link LeshanServerBuilder#setPublicKey(PublicKey)} instead.
+     * <p>
+     * If you want to deactivate RPK mode, look at {@link LeshanBootstrapServerBuilder#setDtlsConfig(Builder)} and
+     * {@link DtlsConnectorConfig.Builder#setTrustCertificateTypes(CertificateType...)}
+     * 
+     * @param certificateChain the certificate chain of the bootstrap server.
+     * @return the builder for fluent Bootstrap Server creation.
      */
     public <T extends X509Certificate> LeshanBootstrapServerBuilder setCertificateChain(T[] certificateChain) {
         this.certificateChain = certificateChain;
@@ -164,7 +180,27 @@ public class LeshanBootstrapServerBuilder {
     }
 
     /**
-     * The list of trusted certificates used to authenticate devices.
+     * Set the {@link PrivateKey} of the server which will be used for RawPublicKey(RPK) and/or X.509 DTLS
+     * authentication.
+     * 
+     * @param privateKey the Private Key of the bootstrap server.
+     * @return the builder for fluent Bootstrap Server creation.
+     */
+    public LeshanBootstrapServerBuilder setPrivateKey(PrivateKey privateKey) {
+        this.privateKey = privateKey;
+        return this;
+    }
+
+    /**
+     * The list of trusted certificates used to authenticate devices using X.509 DTLS authentication.
+     * <p>
+     * If you need more complex/dynamic trust behavior, look at
+     * {@link LeshanBootstrapServerBuilder#setDtlsConfig(Builder)} and
+     * {@link DtlsConnectorConfig.Builder#setCertificateVerifier(org.eclipse.californium.scandium.dtls.x509.CertificateVerifier)}
+     * instead.
+     * 
+     * @param trustedCertificates certificates trusted by the bootstrap server.
+     * @return the builder for fluent Bootstrap Server creation.
      */
     public <T extends Certificate> LeshanBootstrapServerBuilder setTrustedCertificates(T[] trustedCertificates) {
         this.trustedCertificates = trustedCertificates;
@@ -172,55 +208,120 @@ public class LeshanBootstrapServerBuilder {
     }
 
     /**
+     * Set the {@link BootstrapStore} containing bootstrap configuration to apply to each devices.
      * <p>
-     * Set the address for secured CoAP Server (Using DTLS).
-     * </p>
+     * WARNING: There is not default implementation and this store is mandatory to create a bootstrap server.
+     * <p>
+     * See {@link BootstrapConfig} to see what is could be done during a bootstrap session.
      * 
-     * By default a wildcard address and the default CoAP port(5684) is used.
+     * @param configStore the bootstrap configuration store.
+     * @return the builder for fluent Bootstrap Server creation.
      */
-    public LeshanBootstrapServerBuilder setLocalSecureAddress(InetSocketAddress localSecureAddress) {
-        this.localAddressSecure = localSecureAddress;
-        return this;
-    }
-
     public LeshanBootstrapServerBuilder setConfigStore(BootstrapStore configStore) {
         this.configStore = configStore;
         return this;
     }
 
+    /**
+     * Set the {@link BootstrapSecurityStore} which contains data needed to authenticate devices.
+     * <p>
+     * WARNING: without security store all devices will be accepted which is not really recommended in production
+     * environnement.
+     * <p>
+     * There is not default implementation.
+     * 
+     * @param securityStore the security store used to authenticate devices.
+     * @return the builder for fluent Bootstrap Server creation.
+     */
     public LeshanBootstrapServerBuilder setSecurityStore(BootstrapSecurityStore securityStore) {
         this.securityStore = securityStore;
         return this;
     }
 
+    /**
+     * Advanced setter used to define {@link BootstrapSessionManager}.
+     * <p>
+     * See {@link BootstrapSessionManager} and {@link DefaultBootstrapSessionManager} for more details.
+     * 
+     * @param sessionManager the manager responsible to handle bootstrap session.
+     * @return the builder for fluent Bootstrap Server creation.
+     */
     public LeshanBootstrapServerBuilder setSessionManager(BootstrapSessionManager sessionManager) {
         this.sessionManager = sessionManager;
         return this;
     }
 
+    /**
+     * Advanced setter used to customize default bootstrap server behavior.
+     * <p>
+     * By default Bootstrap Server is only able to write Security, Server and ACL objects, see
+     * {@link #setConfigStore(BootstrapStore)}. If you need more advanced behavior you can create your own
+     * {@link BootstrapHandler} by inspiring yourself from {@link DefaultBootstrapHandler}. You will probably need to
+     * create a custom {@link BootstrapConfig} and {@link BootstrapStore} and/or change LWM2M model to use, see
+     * {@link #setModel(LwM2mModel)}.
+     * 
+     * @param bootstrapHandlerFactory the factory used to create {@link BootstrapHandler}.
+     * @return the builder for fluent Bootstrap Server creation.
+     */
     public LeshanBootstrapServerBuilder setBootstrapHandlerFactory(BootstrapHandlerFactory bootstrapHandlerFactory) {
         this.bootstrapHandlerFactory = bootstrapHandlerFactory;
         return this;
     }
 
+    /**
+     * Advanced setter used to customize default the {@link LwM2mModel}. This model is mainly used for data encoding of
+     * Bootstrap write request.
+     * <p>
+     * By default, LWM2M object models defined in LWM2M v1.0.x are used. Out of the box, Bootstrap Server is only able
+     * to write Security, Server and ACL objects, see {@link #setConfigStore(BootstrapStore)}.
+     * <p>
+     * Set a different LWM2M model if you want to use a different model version of Security, Server and ACL objects, or
+     * if you need to write objects which are not available by default. For the second case, you need to change
+     * {@link BootstrapHandler} behavior as well, using {@link #setBootstrapHandlerFactory(BootstrapHandlerFactory)} and
+     * probably create a custom {@link BootstrapConfig} and {@link BootstrapStore}.
+     * <p>
+     * WARNING: Only 1 version by object is supported for now.
+     * 
+     * @param model the LWM2M Model.
+     * @return the builder for fluent Bootstrap Server creation.
+     */
     public LeshanBootstrapServerBuilder setModel(LwM2mModel model) {
         this.model = model;
         return this;
     }
 
+    /**
+     * Set the CoAP/Californium {@link NetworkConfig}.
+     * <p>
+     * For advanced CoAP setting, see {@link NetworkConfig.Keys} for more details.
+     * 
+     * @param coapConfig the CoAP configuration.
+     * @return the builder for fluent Bootstrap Server creation.
+     */
     public LeshanBootstrapServerBuilder setCoapConfig(NetworkConfig coapConfig) {
         this.coapConfig = coapConfig;
         return this;
     }
 
+    /**
+     * Set the DTLS/Scandium {@link DtlsConnectorConfig}.
+     * <p>
+     * For advanced DTLS setting.
+     * 
+     * @param dtlsConfig the DTLS configuration builder.
+     * @return the builder for fluent Bootstrap Server creation.
+     */
     public LeshanBootstrapServerBuilder setDtlsConfig(DtlsConnectorConfig.Builder dtlsConfig) {
         this.dtlsConfigBuilder = dtlsConfig;
         return this;
     }
 
     /**
-     * Used to create custom CoAP endpoint, this is only for advanced users. <br>
+     * Advanced setter used to create custom CoAP endpoint.
+     * <p>
      * DTLSConnector is expected for secured endpoint.
+     * 
+     * @return the builder for fluent Bootstrap Server creation.
      */
     public LeshanBootstrapServerBuilder setEndpointFactory(EndpointFactory endpointFactory) {
         this.endpointFactory = endpointFactory;
@@ -228,7 +329,9 @@ public class LeshanBootstrapServerBuilder {
     }
 
     /**
-     * deactivate unsecured CoAP endpoint
+     * Deactivate unsecured CoAP endpoint, meaning that <code>coap://</code> communication will be impossible.
+     * 
+     * @return the builder for fluent Bootstrap Server creation.
      */
     public LeshanBootstrapServerBuilder disableUnsecuredEndpoint() {
         this.noUnsecuredEndpoint = true;
@@ -236,7 +339,9 @@ public class LeshanBootstrapServerBuilder {
     }
 
     /**
-     * deactivate secured CoAP endpoint (DTLS)
+     * Deactivate secured CoAP endpoint (DTLS), meaning that <code>coaps://</code> communication will be impossible.
+     * 
+     * @return the builder for fluent Bootstrap Server creation.
      */
     public LeshanBootstrapServerBuilder disableSecuredEndpoint() {
         this.noSecuredEndpoint = true;
@@ -244,17 +349,27 @@ public class LeshanBootstrapServerBuilder {
     }
 
     /**
-     * The default Californium/CoAP {@link NetworkConfig} used by the builder.
+     * Create the default CoAP/Californium {@link NetworkConfig} used by the builder.
+     * <p>
+     * It could be used as a base to create a custom CoAP configuration, then use it with
+     * {@link #setCoapConfig(NetworkConfig)}
+     * 
+     * @return the default CoAP config.
      */
     public NetworkConfig createDefaultNetworkConfig() {
         NetworkConfig networkConfig = new NetworkConfig();
         networkConfig.set(Keys.MID_TRACKER, "NULL");
-        // Workaround for https://github.com/eclipse/leshan/issues/502
-        // TODO remove this line when we will integrate Cf 2.0.0-M10
-        networkConfig.set(Keys.HEALTH_STATUS_INTERVAL, 0);
         return networkConfig;
     }
 
+    /**
+     * Create the {@link LeshanBootstrapServer}.
+     * <p>
+     * Next step will be to start it : {@link LeshanBootstrapServer#start()}.
+     * 
+     * @return the LWM2M Bootstrap server.
+     * @throws IllegalStateException if builder configuration is not consistent.
+     */
     public LeshanBootstrapServer build() {
         if (localAddress == null)
             localAddress = new InetSocketAddress(LwM2m.DEFAULT_COAP_PORT);
@@ -298,7 +413,7 @@ public class LeshanBootstrapServerBuilder {
             // Handle secure address
             if (incompleteConfig.getAddress() == null) {
                 if (localAddressSecure == null) {
-                    localAddressSecure = new InetSocketAddress(0);
+                    localAddressSecure = new InetSocketAddress(LwM2m.DEFAULT_COAP_SECURE_PORT);
                 }
                 dtlsConfigBuilder.setAddress(localAddressSecure);
             } else if (localAddressSecure != null && !localAddressSecure.equals(incompleteConfig.getAddress())) {
@@ -330,8 +445,8 @@ public class LeshanBootstrapServerBuilder {
                 }
             }
 
-            // check conflict for private key
             if (privateKey != null) {
+                // check conflict for private key
                 if (incompleteConfig.getPrivateKey() != null && !incompleteConfig.getPrivateKey().equals(privateKey)) {
                     throw new IllegalStateException(String.format(
                             "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for private key: %s != %s",
@@ -419,11 +534,19 @@ public class LeshanBootstrapServerBuilder {
 
     /**
      * Create the <code>LeshanBootstrapServer</code>.
-     * 
      * <p>
      * You can extend <code>LeshanBootstrapServerBuilder</code> and override this method to create a new builder which
-     * will be able to build custom <code>LeshanBootstrapServer</code>.
-     * </p>
+     * will be able to build an extended <code>LeshanBootstrapServer</code>.
+     * 
+     * @param unsecuredEndpoint CoAP endpoint used for <code>coap://<code> communication.
+     * @param securedEndpoint CoAP endpoint used for <code>coaps://<code> communication.
+     * @param bsStore the bootstrap configuration store.
+     * @param bsSecurityStore the security store used to authenticate devices.
+     * @param bsSessionManager the manager responsible to handle bootstrap session.
+     * @param bsHandlerFactory the factory used to create {@link BootstrapHandler}.
+     * @param model the LWM2M model used mainly used for data encoding.
+     * @param coapConfig the CoAP configuration.
+     * @return the LWM2M Bootstrap server.
      */
     protected LeshanBootstrapServer createBootstrapServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             BootstrapStore bsStore, BootstrapSecurityStore bsSecurityStore, BootstrapSessionManager bsSessionManager,

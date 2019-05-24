@@ -27,16 +27,31 @@ public interface LwM2mBootstrapServer {
     /**
      * Access to the bootstrap configuration store. It's used for sending configuration to the devices initiating a
      * bootstrap.
+     * 
+     * @return the store containing configuration to apply to each devices.
      */
     BootstrapStore getBoostrapStore();
 
     /**
      * security store used for DTLS authentication on the bootstrap resource.
+     * 
+     * @return the security store containing data used to authenticate devices.
      */
     BootstrapSecurityStore getBootstrapSecurityStore();
 
+    /**
+     * Start the LWM2M bootstrap server.
+     */
     void start();
 
+    /**
+     * Stop the LWM2M bootstrap server. Server should be restarted later. All resources are stopped but not released.
+     */
     void stop();
+
+    /**
+     * Destroy the LWM2M bootstrap server. All resources must be released. Server can not be restarted.
+     */
+    void destroy();
 
 }

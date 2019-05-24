@@ -29,21 +29,32 @@ import org.eclipse.leshan.server.security.SecurityInfo;
 
 /**
  * Implementation of a session manager.
- * 
+ * <p>
  * Starting a session only checks credentials from BootstrapSecurityStore.
- * 
+ * <p>
  * Nothing specific is done on session's end.
- *
  */
 public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
 
     private BootstrapSecurityStore bsSecurityStore;
     private SecurityChecker securityChecker;
 
+    /**
+     * Create a {@link DefaultBootstrapSessionManager} using a default {@link SecurityChecker} to accept or refuse new
+     * {@link BootstrapSession}.
+     * 
+     * @param bsSecurityStore the {@link BootstrapSecurityStore} used by default {@link SecurityChecker}.
+     */
     public DefaultBootstrapSessionManager(BootstrapSecurityStore bsSecurityStore) {
         this(bsSecurityStore, new SecurityChecker());
     }
 
+    /**
+     * Create a {@link DefaultBootstrapSessionManager}.
+     * 
+     * @param bsSecurityStore the {@link BootstrapSecurityStore} used by {@link SecurityChecker}.
+     * @param securityChecker used to accept or refuse new {@link BootstrapSession}.
+     */
     public DefaultBootstrapSessionManager(BootstrapSecurityStore bsSecurityStore, SecurityChecker securityChecker) {
         this.bsSecurityStore = bsSecurityStore;
         this.securityChecker = securityChecker;
@@ -70,5 +81,4 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
     public void failed(BootstrapSession bsSession, BootstrapFailureCause cause,
             DownlinkRequest<? extends LwM2mResponse> request) {
     }
-
 }

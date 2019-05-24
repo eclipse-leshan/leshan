@@ -22,6 +22,12 @@ import org.eclipse.leshan.core.request.Identity;
  */
 public interface BootstrapStore {
 
+    /**
+     * Get the bootstrap configuration to apply to the device identified by the given parameters.
+     * 
+     * @param endpoint the endpoint of the device.
+     * @param deviceIdentity the {@link Identity} the device.
+     * @return the {@link BootstrapConfig} to apply.
+     */
     BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity);
-
 }
