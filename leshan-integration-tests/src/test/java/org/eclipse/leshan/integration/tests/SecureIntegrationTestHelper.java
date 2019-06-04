@@ -45,6 +45,7 @@ import org.eclipse.californium.core.observe.ObservationStore;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
+import org.eclipse.californium.scandium.dtls.PskPublicInformation;
 import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.object.Device;
@@ -218,8 +219,8 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
                 CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
                 Builder dtlsConfigBuilder = new Builder(dtlsConfig);
                 if (dtlsConfig.getPskStore() != null) {
-                    String identity = dtlsConfig.getPskStore().getIdentity(null);
-                    byte[] key = dtlsConfig.getPskStore().getKey(null);
+                    PskPublicInformation identity = dtlsConfig.getPskStore().getIdentity(null);
+                    byte[] key = dtlsConfig.getPskStore().getKey(identity);
                     singlePSKStore = new SinglePSKStore(identity, key);
                     dtlsConfigBuilder.setPskStore(singlePSKStore);
                 }
