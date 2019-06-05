@@ -14,19 +14,14 @@
 
 package org.eclipse.leshan.senml;
 
-import java.io.ByteArrayOutputStream;
-
 import org.eclipse.leshan.core.model.ResourceModel.Type;
-import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.util.Base64;
 
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
-import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 
-public class SenMLPackSerDes {
+public class SenMLJsonPackSerDes {
 
     public String serializeToJson(SenMLPack pack) {
         JsonArray jsonArray = new JsonArray();
@@ -130,65 +125,5 @@ public class SenMLPackSerDes {
         }
 
         return pack;
-    }
-
-    public byte[] serializeToCbor(SenMLPack pack) {
-        CBORFactory factory = new CBORFactory();
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-
-        try {
-            CBORGenerator generator = factory.createGenerator(out);
-            generator.writeStartArray();
-
-            for (SenMLRecord record : pack.getRecords()) {
-                generator.writeStartObject();
-
-                if (record.getBaseName() != null && record.getBaseName().length() > 0) {
-                    generator.writeStringField("-2", record.getBaseName());
-                }
-
-                if (record.getBaseTime() != null) {
-                    generator.writeNumberField("-3", record.getBaseTime());
-                }
-
-                if (record.getName() != null && record.getName().length() > 0) {
-                    generator.writeStringField("0", record.getName());
-                }
-
-                if (record.getTime() != null) {
-                    generator.writeNumberField("6", record.getTime());
-                }
-
-                Type type = record.getType();
-                if (type != null) {
-                    switch (record.getType()) {
-                    case FLOAT:
-                        generator.writeNumberField("2", record.getFloatValue().floatValue());
-                        break;
-                    case BOOLEAN:
-                        generator.writeBooleanField("4", record.getBooleanValue());
-                        break;
-                    case OBJLNK:
-                        generator.writeStringField("vlo", record.getObjectLinkValue());
-                        break;
-                    case OPAQUE:
-                        generator.writeStringField("8", Base64.encodeBase64String(record.getOpaqueValue()));
-                    case STRING:
-                        generator.writeStringField("3", record.getStringValue());
-                        break;
-                    default:
-                        break;
-                    }
-                }
-                generator.writeEndObject();
-            }
-
-            generator.writeEndArray();
-            generator.close();
-        } catch (Exception e) {
-            throw new CodecException(e.getLocalizedMessage(), e);
-        }
-
-        return out.toByteArray();
     }
 }

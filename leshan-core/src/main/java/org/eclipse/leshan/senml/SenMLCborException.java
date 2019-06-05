@@ -14,19 +14,19 @@
 
 package org.eclipse.leshan.senml;
 
-import com.eclipsesource.json.Json;
-
 /**
- * Helper for encoding/decoding SenML JSON format
+ * Exception thrown in case of Cbor encoding error
  */
-public class SenMLJson {
-    private static final SenMLJsonPackSerDes serDes = new SenMLJsonPackSerDes();
+public class SenMLCborException extends Exception {
 
-    public static String toSenMLJson(SenMLPack pack) {
-        return serDes.serializeToJson(pack);
+    private static final long serialVersionUID = 1L;
+
+    public SenMLCborException(String message) {
+        super(message);
     }
 
-    public static SenMLPack fromSenMLJson(String jsonString) {
-        return serDes.deserializeFromJson(Json.parse(jsonString).asArray());
+    public SenMLCborException(String message, Exception cause) {
+        super(message, cause);
     }
+
 }

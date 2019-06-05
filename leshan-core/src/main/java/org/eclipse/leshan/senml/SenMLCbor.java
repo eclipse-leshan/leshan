@@ -18,9 +18,9 @@ package org.eclipse.leshan.senml;
  * Helper for encoding/decoding SenML CBOR format
  */
 public class SenMLCbor {
-    private static final SenMLPackSerDes serDes = new SenMLPackSerDes();
+    private static final SenMLCborPackSerDes serDes = new SenMLCborPackSerDes();
 
-    public static byte[] toSenMLCbor(SenMLPack pack) {
+    public static byte[] toSenMLCbor(SenMLPack pack) throws SenMLCborException {
         return serDes.serializeToCbor(pack);
     }
 }
