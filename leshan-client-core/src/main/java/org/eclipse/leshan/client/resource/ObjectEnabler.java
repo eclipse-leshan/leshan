@@ -219,7 +219,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
                 if (instanceEnabler == null) {
                     doCreate(identity, new CreateRequest(path.getObjectId(), instanceNode));
                 } else {
-                    doWrite(identity, new WriteRequest(Mode.REPLACE, path.getObjectId(), path.getObjectInstanceId(),
+                    doWrite(identity, new WriteRequest(Mode.REPLACE, path.getObjectId(), instanceEnabler.getId(),
                             instanceNode.getResources().values()));
                 }
             }
