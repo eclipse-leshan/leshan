@@ -403,6 +403,10 @@ public class RegistrationEngine {
             try {
                 Collection<Server> dmServers = clientInitiatedBootstrap();
                 if (dmServers == null || dmServers.isEmpty()) {
+                    // clientInitiatatedBootstrapTask is considered as finished.
+                    // see https://github.com/eclipse/leshan/issues/701
+                    bootstrapFuture = null;
+                    // last thing to do reschedule a new bootstrap.
                     scheduleClientInitiatedBootstrap(BS_RETRY);
                 } else {
                     Server dmServer = dmServers.iterator().next();
