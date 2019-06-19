@@ -16,19 +16,13 @@ package org.eclipse.leshan.senml;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SenMLJsonDeserializerTest extends AbstractSenMLTest {
-
-    private Logger log = LoggerFactory.getLogger(getClass());
 
     @Test
     public void deserialize_device_object() {
         String dataString = givenSenMLJsonExample();
-        log.debug(dataString.trim());
         SenMLPack pack = SenMLJson.fromSenMLJson(dataString);
-        log.debug(pack.toString());
 
         String outString = SenMLJson.toSenMLJson(pack);
         Assert.assertEquals(dataString.trim(), outString);

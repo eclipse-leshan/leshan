@@ -17,17 +17,12 @@ package org.eclipse.leshan.senml;
 import org.eclipse.leshan.util.Hex;
 import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SenMLCborSerializerTest extends AbstractSenMLTest {
-
-    private Logger LOG = LoggerFactory.getLogger(getClass());
 
     @Test
     public void serialize_device_object_to_senml_cbor() throws Exception {
         byte[] cbor = SenMLCbor.toSenMLCbor(givenDeviceObjectInstance());
-        LOG.debug("CBOR: " + Hex.encodeHexString(cbor));
 
         String expectedValue = "90a321652f332f302f00613003744f70656e204d6f62696c6520416c6c69616e6365a200613103764c696768747765696768"
                 + "74204d324d20436c69656e74a20061320369333435303030313233a20061330363312e30a20063362f300201a20063362f310205a20063372f"
