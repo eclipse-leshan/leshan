@@ -52,6 +52,7 @@ public class BootstrapStoreImpl implements BootstrapStore {
     private final String filename;
     private final Gson gson;
     private final Type gsonType;
+    private final ConfigurationChecker configChecker = new ConfigurationChecker();
 
     public BootstrapStoreImpl() {
         this(DEFAULT_FILE);
@@ -79,7 +80,7 @@ public class BootstrapStoreImpl implements BootstrapStore {
     }
 
     public void addConfig(String endpoint, BootstrapConfig config) throws ConfigurationException {
-        ConfigurationChecker.verify(config);
+        configChecker.verify(config);
         bootstrapByEndpoint.put(endpoint, config);
         saveToFile();
     }

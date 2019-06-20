@@ -29,6 +29,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Map;
 
+import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
 import org.eclipse.leshan.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,9 +42,34 @@ public class ConfigurationChecker {
 
     private static final Logger LOG = LoggerFactory.getLogger(ConfigurationChecker.class);
 
-    private static final String[] KEY_ALGORITHMS = new String[] { "EC", "DiffieHellman", "RSA", "DSA" };
+    protected final String[] algorithms;
 
-    public static void verify(BootstrapConfig config) throws ConfigurationException {
+    /**
+     * Create a new configuration checker supporting "EC", "DiffieHellman", "RSA", "DSA" algorithm for Public and
+     * Private keys
+     */
+    public ConfigurationChecker() {
+        this(new String[] { "EC", "DiffieHellman", "RSA", "DSA" });
+    }
+
+    /**
+     * Create a new configuration checker supporting given algorithms.
+     * 
+     * @param algorithms an array of supported algorithm name. (see {@link KeyFactory#getInstance(String))}
+     */
+    public ConfigurationChecker(String[] algorithms) {
+        this.algorithms = algorithms;
+    }
+
+    /**
+     * Verify if the {@link BootstrapConfig} is valid and consistent.
+     * <p>
+     * Raise a {@link ConfigurationException} if config is not OK.
+     * 
+     * @param config the bootstrap configuration to check.
+     * @throws ConfigurationException if bootstrap configuration is not invalid.
+     */
+    public void verify(BootstrapConfig config) throws ConfigurationException {
         // check security configurations
         for (Map.Entry<Integer, BootstrapConfig.ServerSecurity> e : config.security.entrySet()) {
             BootstrapConfig.ServerSecurity sec = e.getValue();
@@ -51,46 +77,77 @@ public class ConfigurationChecker {
             // checks security config
             switch (sec.securityMode) {
             case NO_SEC:
-                assertIf(!isEmpty(sec.secretKey), "NO-SEC mode, secret key must be empty");
-                assertIf(!isEmpty(sec.publicKeyOrId), "NO-SEC mode, public key or ID must be empty");
-                assertIf(!isEmpty(sec.serverPublicKey), "NO-SEC mode, server public key must be empty");
+                checkNoSec(sec);
                 break;
             case PSK:
-                assertIf(isEmpty(sec.secretKey), "pre-shared-key mode, secret key must not be empty");
-                assertIf(isEmpty(sec.publicKeyOrId), "pre-shared-key mode, public key or id must not be empty");
+                checkPSK(sec);
                 break;
             case RPK:
-                assertIf(isEmpty(sec.secretKey), "raw-public-key mode, secret key must not be empty");
-                assertIf(decodeRfc5958PrivateKey(sec.secretKey) == null,
-                        "raw-public-key mode, secret key must be RFC5958 encoded private key");
-                assertIf(isEmpty(sec.publicKeyOrId), "raw-public-key mode, public key or id must not be empty");
-                assertIf(decodeRfc7250PublicKey(sec.publicKeyOrId) == null,
-                        "raw-public-key mode, public key or id must be RFC7250 encoded public key");
-                assertIf(isEmpty(sec.serverPublicKey), "raw-public-key mode, server public key must not be empty");
-                assertIf(decodeRfc7250PublicKey(sec.serverPublicKey) == null,
-                        "raw-public-key mode, server public key must be RFC7250 encoded public key");
+                checkRPK(sec);
                 break;
             case X509:
-                assertIf(isEmpty(sec.secretKey), "x509 mode, secret key must not be empty");
-                assertIf(decodeRfc5958PrivateKey(sec.secretKey) == null,
-                        "x509 mode, secret key must be RFC5958 encoded private key");
-                assertIf(isEmpty(sec.publicKeyOrId), "x509 mode, public key or id must not be empty");
-                assertIf(decodeCertificate(sec.publicKeyOrId) == null,
-                        "x509 mode, public key or id must be DER encoded X.509 certificate");
-                assertIf(isEmpty(sec.serverPublicKey), "x509 mode, server public key must not be empty");
-                assertIf(decodeCertificate(sec.serverPublicKey) == null,
-                        "x509 mode, server public key must be DER encoded X.509 certificate");
+                checkX509(sec);
                 break;
             }
 
-            // checks mandatory fields
-            if (StringUtils.isEmpty(sec.uri))
-                throw new ConfigurationException("LwM2M Server URI is mandatory");
-            if (sec.securityMode == null)
-                throw new ConfigurationException("Security Mode is mandatory");
+            validateMandatoryField(sec);
         }
 
         // does each server have a corresponding security entry?
+        validateOneSecurityByServer(config);
+    }
+
+    protected void checkNoSec(ServerSecurity sec) throws ConfigurationException {
+        assertIf(!isEmpty(sec.secretKey), "NO-SEC mode, secret key must be empty");
+        assertIf(!isEmpty(sec.publicKeyOrId), "NO-SEC mode, public key or ID must be empty");
+        assertIf(!isEmpty(sec.serverPublicKey), "NO-SEC mode, server public key must be empty");
+    }
+
+    protected void checkPSK(ServerSecurity sec) throws ConfigurationException {
+        assertIf(isEmpty(sec.secretKey), "pre-shared-key mode, secret key must not be empty");
+        assertIf(isEmpty(sec.publicKeyOrId), "pre-shared-key mode, public key or id must not be empty");
+    }
+
+    protected void checkRPK(ServerSecurity sec) throws ConfigurationException {
+        assertIf(isEmpty(sec.secretKey), "raw-public-key mode, secret key must not be empty");
+        assertIf(decodeRfc5958PrivateKey(sec.secretKey) == null,
+                "raw-public-key mode, secret key must be RFC5958 encoded private key");
+        assertIf(isEmpty(sec.publicKeyOrId), "raw-public-key mode, public key or id must not be empty");
+        assertIf(decodeRfc7250PublicKey(sec.publicKeyOrId) == null,
+                "raw-public-key mode, public key or id must be RFC7250 encoded public key");
+        assertIf(isEmpty(sec.serverPublicKey), "raw-public-key mode, server public key must not be empty");
+        assertIf(decodeRfc7250PublicKey(sec.serverPublicKey) == null,
+                "raw-public-key mode, server public key must be RFC7250 encoded public key");
+    }
+
+    protected void checkX509(ServerSecurity sec) throws ConfigurationException {
+        assertIf(isEmpty(sec.secretKey), "x509 mode, secret key must not be empty");
+        assertIf(decodeRfc5958PrivateKey(sec.secretKey) == null,
+                "x509 mode, secret key must be RFC5958 encoded private key");
+        assertIf(isEmpty(sec.publicKeyOrId), "x509 mode, public key or id must not be empty");
+        assertIf(decodeCertificate(sec.publicKeyOrId) == null,
+                "x509 mode, public key or id must be DER encoded X.509 certificate");
+        assertIf(isEmpty(sec.serverPublicKey), "x509 mode, server public key must not be empty");
+        assertIf(decodeCertificate(sec.serverPublicKey) == null,
+                "x509 mode, server public key must be DER encoded X.509 certificate");
+    }
+
+    protected void validateMandatoryField(ServerSecurity sec) throws ConfigurationException {
+        // checks mandatory fields
+        if (StringUtils.isEmpty(sec.uri))
+            throw new ConfigurationException("LwM2M Server URI is mandatory");
+        if (sec.securityMode == null)
+            throw new ConfigurationException("Security Mode is mandatory");
+
+    }
+
+    /**
+     * Each server entry must have 1 security entry.
+     * 
+     * @param config the bootstrap configuration to check.
+     * @throws ConfigurationException if bootstrap configuration is not invalid.
+     */
+    protected void validateOneSecurityByServer(BootstrapConfig config) throws ConfigurationException {
         for (Map.Entry<Integer, BootstrapConfig.ServerConfig> e : config.servers.entrySet()) {
             BootstrapConfig.ServerConfig srvCfg = e.getValue();
 
@@ -113,13 +170,10 @@ public class ConfigurationChecker {
         }
     }
 
-    public static boolean isEmpty(byte[] array) {
-        return array == null || array.length == 0;
-    }
-
-    private static PrivateKey decodeRfc5958PrivateKey(byte[] encodedKey) {
+    // TODO should we reuse org.eclipse.leshan.util.SecurityUtil ?
+    protected PrivateKey decodeRfc5958PrivateKey(byte[] encodedKey) {
         PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encodedKey);
-        for (String algorithm : KEY_ALGORITHMS) {
+        for (String algorithm : algorithms) {
             try {
                 KeyFactory kf = KeyFactory.getInstance(algorithm);
                 return kf.generatePrivate(keySpec);
@@ -134,9 +188,10 @@ public class ConfigurationChecker {
         return null;
     }
 
-    private static PublicKey decodeRfc7250PublicKey(byte[] encodedKey) {
+    // TODO should we reuse org.eclipse.leshan.util.SecurityUtil ?
+    protected PublicKey decodeRfc7250PublicKey(byte[] encodedKey) {
         X509EncodedKeySpec keySpec = new X509EncodedKeySpec(encodedKey);
-        for (String algorithm : KEY_ALGORITHMS) {
+        for (String algorithm : algorithms) {
             try {
                 KeyFactory kf = KeyFactory.getInstance(algorithm);
                 return kf.generatePublic(keySpec);
@@ -151,7 +206,8 @@ public class ConfigurationChecker {
         return null;
     }
 
-    private static Certificate decodeCertificate(byte[] encodedCert) {
+    // TODO should we reuse org.eclipse.leshan.util.SecurityUtil ?
+    protected Certificate decodeCertificate(byte[] encodedCert) {
         try {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             try (ByteArrayInputStream in = new ByteArrayInputStream(encodedCert)) {
@@ -163,14 +219,18 @@ public class ConfigurationChecker {
         }
     }
 
-    private static void assertIf(boolean condition, String message) throws ConfigurationException {
+    protected static void assertIf(boolean condition, String message) throws ConfigurationException {
         if (condition) {
             throw new ConfigurationException(message);
         }
 
     }
 
-    private static BootstrapConfig.ServerSecurity getSecurityEntry(BootstrapConfig config, int shortId) {
+    protected static boolean isEmpty(byte[] array) {
+        return array == null || array.length == 0;
+    }
+
+    protected static BootstrapConfig.ServerSecurity getSecurityEntry(BootstrapConfig config, int shortId) {
         for (Map.Entry<Integer, BootstrapConfig.ServerSecurity> es : config.security.entrySet()) {
             if (es.getValue().serverId == shortId) {
                 return es.getValue();
@@ -179,6 +239,9 @@ public class ConfigurationChecker {
         return null;
     }
 
+    /**
+     * Exception raised when {@link BootstrapConfig} is invalid.
+     */
     public static class ConfigurationException extends Exception {
 
         private static final long serialVersionUID = 1L;
