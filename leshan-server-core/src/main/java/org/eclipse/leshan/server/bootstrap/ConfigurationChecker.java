@@ -238,16 +238,4 @@ public class ConfigurationChecker {
         }
         return null;
     }
-
-    /**
-     * Exception raised when {@link BootstrapConfig} is invalid.
-     */
-    public static class ConfigurationException extends Exception {
-
-        private static final long serialVersionUID = 1L;
-
-        public ConfigurationException(String message) {
-            super(message);
-        }
-    }
 }
