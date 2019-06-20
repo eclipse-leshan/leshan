@@ -18,30 +18,30 @@ package org.eclipse.leshan.server.bootstrap;
 /**
  * Exception raised when {@link BootstrapConfig} is invalid.
  */
-public class ConfigurationException extends Exception {
+public class InvalidConfigurationException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
-    public ConfigurationException() {
+    public InvalidConfigurationException() {
     }
 
-    public ConfigurationException(String m) {
+    public InvalidConfigurationException(String m) {
         super(m);
     }
 
-    public ConfigurationException(String m, Object... args) {
+    public InvalidConfigurationException(String m, Object... args) {
         super(String.format(m, args));
     }
 
-    public ConfigurationException(Throwable e) {
+    public InvalidConfigurationException(Throwable e) {
         super(e);
     }
 
-    public ConfigurationException(String m, Throwable e) {
+    public InvalidConfigurationException(String m, Throwable e) {
         super(m, e);
     }
 
-    public ConfigurationException(Throwable e, String m, Object... args) {
+    public InvalidConfigurationException(Throwable e, String m, Object... args) {
         super(String.format(m, args), e);
     }
 }

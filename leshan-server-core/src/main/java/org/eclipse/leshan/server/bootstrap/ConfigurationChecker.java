@@ -64,12 +64,12 @@ public class ConfigurationChecker {
     /**
      * Verify if the {@link BootstrapConfig} is valid and consistent.
      * <p>
-     * Raise a {@link ConfigurationException} if config is not OK.
+     * Raise a {@link InvalidConfigurationException} if config is not OK.
      * 
      * @param config the bootstrap configuration to check.
-     * @throws ConfigurationException if bootstrap configuration is not invalid.
+     * @throws InvalidConfigurationException if bootstrap configuration is not invalid.
      */
-    public void verify(BootstrapConfig config) throws ConfigurationException {
+    public void verify(BootstrapConfig config) throws InvalidConfigurationException {
         // check security configurations
         for (Map.Entry<Integer, BootstrapConfig.ServerSecurity> e : config.security.entrySet()) {
             BootstrapConfig.ServerSecurity sec = e.getValue();
@@ -97,18 +97,18 @@ public class ConfigurationChecker {
         validateOneSecurityByServer(config);
     }
 
-    protected void checkNoSec(ServerSecurity sec) throws ConfigurationException {
+    protected void checkNoSec(ServerSecurity sec) throws InvalidConfigurationException {
         assertIf(!isEmpty(sec.secretKey), "NO-SEC mode, secret key must be empty");
         assertIf(!isEmpty(sec.publicKeyOrId), "NO-SEC mode, public key or ID must be empty");
         assertIf(!isEmpty(sec.serverPublicKey), "NO-SEC mode, server public key must be empty");
     }
 
-    protected void checkPSK(ServerSecurity sec) throws ConfigurationException {
+    protected void checkPSK(ServerSecurity sec) throws InvalidConfigurationException {
         assertIf(isEmpty(sec.secretKey), "pre-shared-key mode, secret key must not be empty");
         assertIf(isEmpty(sec.publicKeyOrId), "pre-shared-key mode, public key or id must not be empty");
     }
 
-    protected void checkRPK(ServerSecurity sec) throws ConfigurationException {
+    protected void checkRPK(ServerSecurity sec) throws InvalidConfigurationException {
         assertIf(isEmpty(sec.secretKey), "raw-public-key mode, secret key must not be empty");
         assertIf(decodeRfc5958PrivateKey(sec.secretKey) == null,
                 "raw-public-key mode, secret key must be RFC5958 encoded private key");
@@ -120,7 +120,7 @@ public class ConfigurationChecker {
                 "raw-public-key mode, server public key must be RFC7250 encoded public key");
     }
 
-    protected void checkX509(ServerSecurity sec) throws ConfigurationException {
+    protected void checkX509(ServerSecurity sec) throws InvalidConfigurationException {
         assertIf(isEmpty(sec.secretKey), "x509 mode, secret key must not be empty");
         assertIf(decodeRfc5958PrivateKey(sec.secretKey) == null,
                 "x509 mode, secret key must be RFC5958 encoded private key");
@@ -132,12 +132,12 @@ public class ConfigurationChecker {
                 "x509 mode, server public key must be DER encoded X.509 certificate");
     }
 
-    protected void validateMandatoryField(ServerSecurity sec) throws ConfigurationException {
+    protected void validateMandatoryField(ServerSecurity sec) throws InvalidConfigurationException {
         // checks mandatory fields
         if (StringUtils.isEmpty(sec.uri))
-            throw new ConfigurationException("LwM2M Server URI is mandatory");
+            throw new InvalidConfigurationException("LwM2M Server URI is mandatory");
         if (sec.securityMode == null)
-            throw new ConfigurationException("Security Mode is mandatory");
+            throw new InvalidConfigurationException("Security Mode is mandatory");
 
     }
 
@@ -145,26 +145,26 @@ public class ConfigurationChecker {
      * Each server entry must have 1 security entry.
      * 
      * @param config the bootstrap configuration to check.
-     * @throws ConfigurationException if bootstrap configuration is not invalid.
+     * @throws InvalidConfigurationException if bootstrap configuration is not invalid.
      */
-    protected void validateOneSecurityByServer(BootstrapConfig config) throws ConfigurationException {
+    protected void validateOneSecurityByServer(BootstrapConfig config) throws InvalidConfigurationException {
         for (Map.Entry<Integer, BootstrapConfig.ServerConfig> e : config.servers.entrySet()) {
             BootstrapConfig.ServerConfig srvCfg = e.getValue();
 
             // shortId checks
             if (srvCfg.shortId == 0) {
-                throw new ConfigurationException("short ID must not be 0");
+                throw new InvalidConfigurationException("short ID must not be 0");
             }
 
             // look for security entry
             BootstrapConfig.ServerSecurity security = getSecurityEntry(config, srvCfg.shortId);
 
             if (security == null) {
-                throw new ConfigurationException("no security entry for server instance: " + e.getKey());
+                throw new InvalidConfigurationException("no security entry for server instance: " + e.getKey());
             }
 
             if (security.bootstrapServer) {
-                throw new ConfigurationException(
+                throw new InvalidConfigurationException(
                         "the security entry for server  " + e.getKey() + " should not be a bootstrap server");
             }
         }
@@ -219,9 +219,9 @@ public class ConfigurationChecker {
         }
     }
 
-    protected static void assertIf(boolean condition, String message) throws ConfigurationException {
+    protected static void assertIf(boolean condition, String message) throws InvalidConfigurationException {
         if (condition) {
-            throw new ConfigurationException(message);
+            throw new InvalidConfigurationException(message);
         }
 
     }

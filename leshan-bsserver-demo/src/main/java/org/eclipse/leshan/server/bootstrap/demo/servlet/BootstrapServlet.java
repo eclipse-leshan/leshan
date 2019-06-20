@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
-import org.eclipse.leshan.server.bootstrap.ConfigurationChecker.ConfigurationException;
+import org.eclipse.leshan.server.bootstrap.InvalidConfigurationException;
 import org.eclipse.leshan.server.bootstrap.demo.BootstrapStoreImpl;
 
 import com.google.gson.Gson;
@@ -114,7 +114,7 @@ public class BootstrapServlet extends HttpServlet {
                 bsStore.addConfig(endpoint, cfg);
                 resp.setStatus(HttpServletResponse.SC_OK);
             }
-        } catch (JsonSyntaxException | ConfigurationException e) {
+        } catch (JsonSyntaxException | InvalidConfigurationException e) {
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         }
     }
