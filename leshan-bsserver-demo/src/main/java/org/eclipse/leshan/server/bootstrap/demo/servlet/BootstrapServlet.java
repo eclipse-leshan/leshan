@@ -28,8 +28,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
+import org.eclipse.leshan.server.bootstrap.ConfigurationChecker.ConfigurationException;
 import org.eclipse.leshan.server.bootstrap.demo.BootstrapStoreImpl;
-import org.eclipse.leshan.server.bootstrap.demo.ConfigurationChecker.ConfigurationException;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
