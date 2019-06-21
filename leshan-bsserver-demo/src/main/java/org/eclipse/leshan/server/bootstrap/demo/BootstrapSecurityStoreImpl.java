@@ -25,6 +25,7 @@ import java.util.Map;
 import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
+import org.eclipse.leshan.server.bootstrap.EditableBootstrapConfigStore;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.util.SecurityUtil;
@@ -38,9 +39,9 @@ public class BootstrapSecurityStoreImpl implements BootstrapSecurityStore {
 
     private static final Logger LOG = LoggerFactory.getLogger(BootstrapSecurityStoreImpl.class);
 
-    private final BootstrapStoreImpl bsStore;
+    private final EditableBootstrapConfigStore bsStore;
 
-    public BootstrapSecurityStoreImpl(BootstrapStoreImpl bsStore) {
+    public BootstrapSecurityStoreImpl(EditableBootstrapConfigStore bsStore) {
         this.bsStore = bsStore;
     }
 

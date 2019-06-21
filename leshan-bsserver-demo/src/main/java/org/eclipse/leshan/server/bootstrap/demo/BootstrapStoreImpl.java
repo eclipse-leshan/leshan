@@ -22,14 +22,11 @@ import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Type;
-import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
-import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
-import org.eclipse.leshan.server.bootstrap.ConfigurationChecker;
+import org.eclipse.leshan.server.bootstrap.EditableBootstrapConfigStore;
+import org.eclipse.leshan.server.bootstrap.InMemoryBootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.InvalidConfigurationException;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
@@ -40,9 +37,9 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 /**
- * Simple bootstrap store implementation storing bootstrap information in memory
+ * A {@link EditableBootstrapConfigStore} which persist configuration in a file using json format.
  */
-public class BootstrapStoreImpl implements BootstrapConfigStore {
+public class BootstrapStoreImpl extends InMemoryBootstrapConfigStore {
 
     private static final Logger LOG = LoggerFactory.getLogger(BootstrapStoreImpl.class);
 
@@ -52,7 +49,6 @@ public class BootstrapStoreImpl implements BootstrapConfigStore {
     private final String filename;
     private final Gson gson;
     private final Type gsonType;
-    private final ConfigurationChecker configChecker = new ConfigurationChecker();
 
     public BootstrapStoreImpl() {
         this(DEFAULT_FILE);
@@ -72,38 +68,34 @@ public class BootstrapStoreImpl implements BootstrapConfigStore {
         this.loadFromFile();
     }
 
-    private Map<String, BootstrapConfig> bootstrapByEndpoint = new ConcurrentHashMap<>();
+    public void addToStore(String endpoint, BootstrapConfig config) throws InvalidConfigurationException {
+        super.addConfig(endpoint, config);
+    }
 
     @Override
-    public BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity) {
-        return bootstrapByEndpoint.get(endpoint);
-    }
-
     public void addConfig(String endpoint, BootstrapConfig config) throws InvalidConfigurationException {
-        configChecker.verify(config);
-        bootstrapByEndpoint.put(endpoint, config);
+        addToStore(endpoint, config);
         saveToFile();
     }
 
-    public Map<String, BootstrapConfig> getBootstrapConfigs() {
-        return Collections.unmodifiableMap(bootstrapByEndpoint);
-    }
-
-    public boolean deleteConfig(String enpoint) {
-        BootstrapConfig res = bootstrapByEndpoint.remove(enpoint);
+    @Override
+    public BootstrapConfig removeConfig(String enpoint) {
+        BootstrapConfig res = super.removeConfig(enpoint);
         saveToFile();
-        return res != null;
+        return res;
     }
 
     // /////// File persistence
-
     private void loadFromFile() {
         try {
             File file = new File(filename);
             if (file.exists()) {
                 try (InputStreamReader in = new InputStreamReader(new FileInputStream(file))) {
-                    Map<String, BootstrapConfig> config = gson.fromJson(in, gsonType);
-                    bootstrapByEndpoint.putAll(config);
+                    Map<String, BootstrapConfig> configs = gson.fromJson(in, gsonType);
+                    for (Map.Entry<String, BootstrapConfig> config : configs.entrySet()) {
+                        addToStore(config.getKey(), config.getValue());
+                    }
+
                 }
             }
         } catch (Exception e) {

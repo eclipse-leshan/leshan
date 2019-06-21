@@ -28,8 +28,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
+import org.eclipse.leshan.server.bootstrap.EditableBootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.InvalidConfigurationException;
-import org.eclipse.leshan.server.bootstrap.demo.BootstrapStoreImpl;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -63,11 +63,11 @@ public class BootstrapServlet extends HttpServlet {
         }
     }
 
-    private final BootstrapStoreImpl bsStore;
+    private final EditableBootstrapConfigStore bsStore;
 
     private final Gson gson;
 
-    public BootstrapServlet(BootstrapStoreImpl bsStore) {
+    public BootstrapServlet(EditableBootstrapConfigStore bsStore) {
         this.bsStore = bsStore;
 
         this.gson = new GsonBuilder().registerTypeHierarchyAdapter(Byte.class, new SignedByteUnsignedByteAdapter())
@@ -138,7 +138,7 @@ public class BootstrapServlet extends HttpServlet {
 
         String endpoint = path[0];
 
-        if (bsStore.deleteConfig(endpoint)) {
+        if (bsStore.removeConfig(endpoint) == null) {
             resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
         } else {
             sendError(resp, HttpServletResponse.SC_NOT_FOUND, "no config for " + endpoint);
