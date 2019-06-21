@@ -379,18 +379,19 @@ public class LeshanServerBuilder {
 
         // handle dtlsConfig
         DtlsConnectorConfig dtlsConfig = null;
-        if (!noSecuredEndpoint) {
+        if (!noSecuredEndpoint && shouldTryToCreateSecureEndpoint()) {
             if (dtlsConfigBuilder == null) {
                 dtlsConfigBuilder = new DtlsConnectorConfig.Builder();
             }
-            // set default DTLS setting for Leshan unless user change it.
+            // Set default DTLS setting for Leshan unless user change it.
             DtlsConnectorConfig incompleteConfig = dtlsConfigBuilder.getIncompleteConfig();
+
             // Handle PSK Store
-            if (incompleteConfig.getPskStore() == null && securityStore != null) {
-                dtlsConfigBuilder.setPskStore(new LwM2mPskStore(this.securityStore, registrationStore));
-            } else {
+            if (incompleteConfig.getPskStore() != null) {
                 LOG.warn(
                         "PskStore should be automatically set by Leshan. Using a custom implementation is not advised.");
+            } else if (securityStore != null) {
+                dtlsConfigBuilder.setPskStore(new LwM2mPskStore(this.securityStore, registrationStore));
             }
 
             // Handle secure address
@@ -515,5 +516,13 @@ public class LeshanServerBuilder {
 
         return new LeshanServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer,
                 modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider);
+    }
+
+    /**
+     * @return true if we should try to create a secure endpoint on {@link #build()}
+     */
+    protected boolean shouldTryToCreateSecureEndpoint() {
+        return dtlsConfigBuilder != null || certificateChain != null || privateKey != null || publicKey != null
+                || securityStore != null || trustedCertificates != null;
     }
 }
