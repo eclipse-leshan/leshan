@@ -36,11 +36,12 @@ import org.eclipse.leshan.core.californium.Lwm2mEndpointContextMatcher;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapHandler;
+import org.eclipse.leshan.server.bootstrap.InMemoryBootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
 import org.eclipse.leshan.server.californium.impl.LeshanBootstrapServer;
 import org.eclipse.leshan.server.californium.impl.LwM2mBootstrapPskStore;
@@ -210,7 +211,7 @@ public class LeshanBootstrapServerBuilder {
     /**
      * Set the {@link BootstrapConfigStore} containing bootstrap configuration to apply to each devices.
      * <p>
-     * WARNING: There is not default implementation and this store is mandatory to create a bootstrap server.
+     * By default an {@link InMemoryBootstrapConfigStore} is used.
      * <p>
      * See {@link BootstrapConfig} to see what is could be done during a bootstrap session.
      * 
@@ -376,7 +377,7 @@ public class LeshanBootstrapServerBuilder {
 
         // TODO we should have default implementation for BootstrapStore in leshan.server project.
         if (configStore == null)
-            throw new IllegalStateException("BootstrapStore is mandatory");
+            configStore = new InMemoryBootstrapConfigStore();
 
         if (sessionManager == null)
             sessionManager = new DefaultBootstrapSessionManager(securityStore);
@@ -554,8 +555,9 @@ public class LeshanBootstrapServerBuilder {
      * @return the LWM2M Bootstrap server.
      */
     protected LeshanBootstrapServer createBootstrapServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
-            BootstrapConfigStore bsStore, BootstrapSecurityStore bsSecurityStore, BootstrapSessionManager bsSessionManager,
-            BootstrapHandlerFactory bsHandlerFactory, LwM2mModel model, NetworkConfig coapConfig) {
+            BootstrapConfigStore bsStore, BootstrapSecurityStore bsSecurityStore,
+            BootstrapSessionManager bsSessionManager, BootstrapHandlerFactory bsHandlerFactory, LwM2mModel model,
+            NetworkConfig coapConfig) {
         return new LeshanBootstrapServer(unsecuredEndpoint, securedEndpoint, bsStore, bsSecurityStore, bsSessionManager,
                 bsHandlerFactory, model, coapConfig);
     }
