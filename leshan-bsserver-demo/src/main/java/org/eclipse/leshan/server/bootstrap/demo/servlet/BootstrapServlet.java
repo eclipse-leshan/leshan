@@ -83,7 +83,7 @@ public class BootstrapServlet extends HttpServlet {
 
         resp.setStatus(HttpServletResponse.SC_OK);
         resp.setContentType("application/json");
-        resp.getOutputStream().write(gson.toJson(bsStore.getBootstrapConfigs()).getBytes(StandardCharsets.UTF_8));
+        resp.getOutputStream().write(gson.toJson(bsStore.getAll()).getBytes(StandardCharsets.UTF_8));
     }
 
     @Override
@@ -111,7 +111,7 @@ public class BootstrapServlet extends HttpServlet {
             if (cfg == null) {
                 sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "no content");
             } else {
-                bsStore.addConfig(endpoint, cfg);
+                bsStore.add(endpoint, cfg);
                 resp.setStatus(HttpServletResponse.SC_OK);
             }
         } catch (JsonSyntaxException | InvalidConfigurationException e) {
@@ -138,7 +138,7 @@ public class BootstrapServlet extends HttpServlet {
 
         String endpoint = path[0];
 
-        if (bsStore.removeConfig(endpoint) == null) {
+        if (bsStore.remove(endpoint) == null) {
             resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
         } else {
             sendError(resp, HttpServletResponse.SC_NOT_FOUND, "no config for " + endpoint);

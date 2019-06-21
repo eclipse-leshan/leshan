@@ -29,5 +29,5 @@ public interface BootstrapConfigStore {
      * @param deviceIdentity the {@link Identity} the device.
      * @return the {@link BootstrapConfig} to apply.
      */
-    BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity);
+    BootstrapConfig get(String endpoint, Identity deviceIdentity);
 }

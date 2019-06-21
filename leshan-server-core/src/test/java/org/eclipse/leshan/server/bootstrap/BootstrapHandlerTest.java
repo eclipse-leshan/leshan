@@ -56,7 +56,7 @@ public class BootstrapHandlerTest {
 
         final BootstrapConfigStore bsStore = new BootstrapConfigStore() {
             @Override
-            public BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity) {
+            public BootstrapConfig get(String endpoint, Identity deviceIdentity) {
                 return new BootstrapConfig();
             }
         };
@@ -81,7 +81,7 @@ public class BootstrapHandlerTest {
 
         final BootstrapConfigStore bsStore = new BootstrapConfigStore() {
             @Override
-            public BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity) {
+            public BootstrapConfig get(String endpoint, Identity deviceIdentity) {
                 return new BootstrapConfig();
             }
         };

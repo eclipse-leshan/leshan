@@ -233,7 +233,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         return new BootstrapConfigStore() {
 
             @Override
-            public BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity) {
+            public BootstrapConfig get(String endpoint, Identity deviceIdentity) {
 
                 BootstrapConfig bsConfig = new BootstrapConfig();
 
@@ -277,7 +277,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         return new BootstrapConfigStore() {
 
             @Override
-            public BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity) {
+            public BootstrapConfig get(String endpoint, Identity deviceIdentity) {
 
                 BootstrapConfig bsConfig = new BootstrapConfig();
                 bsConfig.toDelete = Arrays.asList(pathToDelete);
@@ -290,7 +290,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         return new BootstrapConfigStore() {
 
             @Override
-            public BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity) {
+            public BootstrapConfig get(String endpoint, Identity deviceIdentity) {
 
                 BootstrapConfig bsConfig = new BootstrapConfig();
 
@@ -341,7 +341,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         return new BootstrapConfigStore() {
 
             @Override
-            public BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity) {
+            public BootstrapConfig get(String endpoint, Identity deviceIdentity) {
 
                 BootstrapConfig bsConfig = new BootstrapConfig();
 
@@ -378,7 +378,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         return new BootstrapConfigStore() {
 
             @Override
-            public BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity) {
+            public BootstrapConfig get(String endpoint, Identity deviceIdentity) {
 
                 BootstrapConfig bsConfig = new BootstrapConfig();
 

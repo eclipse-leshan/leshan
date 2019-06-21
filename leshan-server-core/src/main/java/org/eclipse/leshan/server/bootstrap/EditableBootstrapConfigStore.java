@@ -27,7 +27,7 @@ public interface EditableBootstrapConfigStore extends BootstrapConfigStore {
      * 
      * @return an unmodifiable Map of {@link BootstrapConfig} indexed by endpoint name.
      */
-    Map<String, BootstrapConfig> getBootstrapConfigs();
+    Map<String, BootstrapConfig> getAll();
 
     /**
      * Add a new bootstrap configuration for a client end-point.
@@ -36,7 +36,7 @@ public interface EditableBootstrapConfigStore extends BootstrapConfigStore {
      * @param config The configuration to apply for the given client.
      * @throws InvalidConfigurationException if {@link BootstrapConfig} is not valid.
      */
-    void addConfig(String endpoint, BootstrapConfig config) throws InvalidConfigurationException;
+    void add(String endpoint, BootstrapConfig config) throws InvalidConfigurationException;
 
     /**
      * Removes the bootstrap Configuration for a given end-point.
@@ -44,5 +44,5 @@ public interface EditableBootstrapConfigStore extends BootstrapConfigStore {
      * @param endpoint The client endpoint to which we want to remove the configuration.
      * @return the removed {@link BootstrapConfig} or <code>null</code> if no bootstrap configuration for this client.
      */
-    BootstrapConfig removeConfig(String enpoint);
+    BootstrapConfig remove(String enpoint);
 }

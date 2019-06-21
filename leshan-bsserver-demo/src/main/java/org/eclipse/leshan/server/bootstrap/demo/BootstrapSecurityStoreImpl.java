@@ -48,7 +48,7 @@ public class BootstrapSecurityStoreImpl implements BootstrapSecurityStore {
     @Override
     public SecurityInfo getByIdentity(String identity) {
         byte[] identityBytes = identity.getBytes(StandardCharsets.UTF_8);
-        for (Map.Entry<String, BootstrapConfig> e : bsStore.getBootstrapConfigs().entrySet()) {
+        for (Map.Entry<String, BootstrapConfig> e : bsStore.getAll().entrySet()) {
             BootstrapConfig bsConfig = e.getValue();
             if (bsConfig.security != null) {
                 for (Map.Entry<Integer, BootstrapConfig.ServerSecurity> ec : bsConfig.security.entrySet()) {
@@ -66,7 +66,7 @@ public class BootstrapSecurityStoreImpl implements BootstrapSecurityStore {
     @Override
     public List<SecurityInfo> getAllByEndpoint(String endpoint) {
 
-        BootstrapConfig bsConfig = bsStore.getBootstrap(endpoint, null);
+        BootstrapConfig bsConfig = bsStore.get(endpoint, null);
 
         if (bsConfig == null || bsConfig.security == null)
             return null;

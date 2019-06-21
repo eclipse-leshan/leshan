@@ -30,12 +30,12 @@ public class InMemoryBootstrapConfigStore implements EditableBootstrapConfigStor
     protected final Map<String, BootstrapConfig> bootstrapByEndpoint = new ConcurrentHashMap<>();
 
     @Override
-    public BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity) {
+    public BootstrapConfig get(String endpoint, Identity deviceIdentity) {
         return bootstrapByEndpoint.get(endpoint);
     }
 
     @Override
-    public void addConfig(String endpoint, BootstrapConfig config) throws InvalidConfigurationException {
+    public void add(String endpoint, BootstrapConfig config) throws InvalidConfigurationException {
         checkConfig(endpoint, config);
         bootstrapByEndpoint.put(endpoint, config);
     }
@@ -45,13 +45,13 @@ public class InMemoryBootstrapConfigStore implements EditableBootstrapConfigStor
     }
 
     @Override
-    public BootstrapConfig removeConfig(String enpoint) {
+    public BootstrapConfig remove(String enpoint) {
         return bootstrapByEndpoint.remove(enpoint);
 
     }
 
     @Override
-    public Map<String, BootstrapConfig> getBootstrapConfigs() {
+    public Map<String, BootstrapConfig> getAll() {
         return Collections.unmodifiableMap(bootstrapByEndpoint);
     }
 }

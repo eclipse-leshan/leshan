@@ -95,7 +95,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
         }
 
         // Get the desired bootstrap config for the endpoint
-        final BootstrapConfig cfg = store.getBootstrap(endpoint, sender);
+        final BootstrapConfig cfg = store.get(endpoint, sender);
         if (cfg == null) {
             LOG.debug("No bootstrap config for {}/{}", endpoint, sender);
             this.sessionManager.failed(session, NO_BOOTSTRAP_CONFIG, null);

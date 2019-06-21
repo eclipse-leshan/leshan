@@ -38,7 +38,7 @@ public class LeshanBootstrapServerBuilderTest {
         builder = new LeshanBootstrapServerBuilder();
         builder.setConfigStore(new BootstrapConfigStore() {
             @Override
-            public BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity) {
+            public BootstrapConfig get(String endpoint, Identity deviceIdentity) {
                 return null;
             }
         });

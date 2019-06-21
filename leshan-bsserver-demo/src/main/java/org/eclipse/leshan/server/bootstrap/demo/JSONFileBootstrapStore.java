@@ -77,21 +77,21 @@ public class JSONFileBootstrapStore extends InMemoryBootstrapConfigStore {
     }
 
     @Override
-    public Map<String, BootstrapConfig> getBootstrapConfigs() {
+    public Map<String, BootstrapConfig> getAll() {
         readLock.lock();
         try {
-            return super.getBootstrapConfigs();
+            return super.getAll();
         } finally {
             readLock.unlock();
         }
     }
 
     public void addToStore(String endpoint, BootstrapConfig config) throws InvalidConfigurationException {
-        super.addConfig(endpoint, config);
+        super.add(endpoint, config);
     }
 
     @Override
-    public void addConfig(String endpoint, BootstrapConfig config) throws InvalidConfigurationException {
+    public void add(String endpoint, BootstrapConfig config) throws InvalidConfigurationException {
         writeLock.lock();
         try {
             addToStore(endpoint, config);
@@ -102,10 +102,10 @@ public class JSONFileBootstrapStore extends InMemoryBootstrapConfigStore {
     }
 
     @Override
-    public BootstrapConfig removeConfig(String enpoint) {
+    public BootstrapConfig remove(String enpoint) {
         writeLock.lock();
         try {
-            BootstrapConfig res = super.removeConfig(enpoint);
+            BootstrapConfig res = super.remove(enpoint);
             saveToFile();
             return res;
         } finally {
@@ -145,7 +145,7 @@ public class JSONFileBootstrapStore extends InMemoryBootstrapConfigStore {
 
             // Write file
             try (OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(filename))) {
-                out.write(gson.toJson(getBootstrapConfigs(), gsonType));
+                out.write(gson.toJson(getAll(), gsonType));
             }
         } catch (Exception e) {
             LOG.error("Could not save bootstrap infos to file", e);
