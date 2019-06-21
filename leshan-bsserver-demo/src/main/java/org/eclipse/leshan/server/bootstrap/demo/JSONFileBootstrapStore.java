@@ -23,6 +23,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Type;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.EditableBootstrapConfigStore;
@@ -42,6 +45,11 @@ import com.google.gson.reflect.TypeToken;
 public class JSONFileBootstrapStore extends InMemoryBootstrapConfigStore {
 
     private static final Logger LOG = LoggerFactory.getLogger(JSONFileBootstrapStore.class);
+
+    // lock for the two maps
+    private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+    private final Lock readLock = readWriteLock.readLock();
+    private final Lock writeLock = readWriteLock.writeLock();
 
     // default location for persistence
     public static final String DEFAULT_FILE = "data/bootstrap.json";
@@ -68,21 +76,41 @@ public class JSONFileBootstrapStore extends InMemoryBootstrapConfigStore {
         this.loadFromFile();
     }
 
+    @Override
+    public Map<String, BootstrapConfig> getBootstrapConfigs() {
+        readLock.lock();
+        try {
+            return super.getBootstrapConfigs();
+        } finally {
+            readLock.unlock();
+        }
+    }
+
     public void addToStore(String endpoint, BootstrapConfig config) throws InvalidConfigurationException {
         super.addConfig(endpoint, config);
     }
 
     @Override
     public void addConfig(String endpoint, BootstrapConfig config) throws InvalidConfigurationException {
-        addToStore(endpoint, config);
-        saveToFile();
+        writeLock.lock();
+        try {
+            addToStore(endpoint, config);
+            saveToFile();
+        } finally {
+            writeLock.unlock();
+        }
     }
 
     @Override
     public BootstrapConfig removeConfig(String enpoint) {
-        BootstrapConfig res = super.removeConfig(enpoint);
-        saveToFile();
-        return res;
+        writeLock.lock();
+        try {
+            BootstrapConfig res = super.removeConfig(enpoint);
+            saveToFile();
+            return res;
+        } finally {
+            writeLock.unlock();
+        }
     }
 
     // /////// File persistence
@@ -103,7 +131,7 @@ public class JSONFileBootstrapStore extends InMemoryBootstrapConfigStore {
         }
     }
 
-    private synchronized void saveToFile() {
+    private void saveToFile() {
         try {
             // Create file if it does not exists.
             File file = new File(filename);
