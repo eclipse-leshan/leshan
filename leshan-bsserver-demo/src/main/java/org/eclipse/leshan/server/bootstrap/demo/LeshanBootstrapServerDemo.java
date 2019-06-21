@@ -171,7 +171,7 @@ public class LeshanBootstrapServerDemo {
         LeshanBootstrapServerBuilder builder = new LeshanBootstrapServerBuilder();
         JSONFileBootstrapStore bsStore = new JSONFileBootstrapStore(configFilename);
         builder.setConfigStore(bsStore);
-        builder.setSecurityStore(new BootstrapSecurityStoreImpl(bsStore));
+        builder.setSecurityStore(new BootstrapConfigSecurityStore(bsStore));
         builder.setLocalAddress(localAddress, localPort);
         builder.setLocalSecureAddress(secureLocalAddress, secureLocalPort);
         builder.setModel(new LwM2mModel(models));

@@ -25,6 +25,7 @@ import java.util.Map;
 import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.EditableBootstrapConfigStore;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
@@ -33,22 +34,36 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A DTLS security store using the provisioned bootstrap information for finding the DTLS/PSK credentials.
+ * A {@link BootstrapSecurityStore} which use a {@link BootstrapConfigStore} to device credentials.
+ * <p>
+ * Generally, a {@link BootstrapSecurityStore} contains information about how a device should connect to server (using
+ * psk, rpk or x509 ). And a {@link BootstrapConfigStore} contains configuration which should be written on device
+ * during bootstrap session.
+ * <p>
+ * This {@link BootstrapSecurityStore} will search in {@link BootstrapConfigStore} to find security info.
+ * <p>
+ * 
+ * WARNING : This store is not production ready.
  */
-public class BootstrapSecurityStoreImpl implements BootstrapSecurityStore {
+public class BootstrapConfigSecurityStore implements BootstrapSecurityStore {
 
-    private static final Logger LOG = LoggerFactory.getLogger(BootstrapSecurityStoreImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BootstrapConfigSecurityStore.class);
 
-    private final EditableBootstrapConfigStore bsStore;
+    private final EditableBootstrapConfigStore bootstrapConfigStore;
 
-    public BootstrapSecurityStoreImpl(EditableBootstrapConfigStore bsStore) {
-        this.bsStore = bsStore;
+    /**
+     * @param bootstrapConfigStore in which we search to find how device should authenticate itself.
+     */
+    public BootstrapConfigSecurityStore(EditableBootstrapConfigStore bootstrapConfigStore) {
+        this.bootstrapConfigStore = bootstrapConfigStore;
     }
 
     @Override
     public SecurityInfo getByIdentity(String identity) {
         byte[] identityBytes = identity.getBytes(StandardCharsets.UTF_8);
-        for (Map.Entry<String, BootstrapConfig> e : bsStore.getAll().entrySet()) {
+        // Acceptable for a demo but iterate over all the store to get PSK is not really acceptable for a production
+        // server.
+        for (Map.Entry<String, BootstrapConfig> e : bootstrapConfigStore.getAll().entrySet()) {
             BootstrapConfig bsConfig = e.getValue();
             if (bsConfig.security != null) {
                 for (Map.Entry<Integer, BootstrapConfig.ServerSecurity> ec : bsConfig.security.entrySet()) {
@@ -66,7 +81,7 @@ public class BootstrapSecurityStoreImpl implements BootstrapSecurityStore {
     @Override
     public List<SecurityInfo> getAllByEndpoint(String endpoint) {
 
-        BootstrapConfig bsConfig = bsStore.get(endpoint, null);
+        BootstrapConfig bsConfig = bootstrapConfigStore.get(endpoint, null);
 
         if (bsConfig == null || bsConfig.security == null)
             return null;
