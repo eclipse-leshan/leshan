@@ -47,7 +47,7 @@ import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ACLConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
-import org.eclipse.leshan.server.bootstrap.BootstrapStore;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
 import org.eclipse.leshan.server.californium.LeshanBootstrapServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LeshanBootstrapServer;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
@@ -96,7 +96,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         }
     }
 
-    public void createBootstrapServer(BootstrapSecurityStore securityStore, BootstrapStore bootstrapStore) {
+    public void createBootstrapServer(BootstrapSecurityStore securityStore, BootstrapConfigStore bootstrapStore) {
         if (bootstrapStore == null) {
             bootstrapStore = unsecuredBootstrapStore();
         }
@@ -229,8 +229,8 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         };
     }
 
-    public BootstrapStore unsecuredBootstrapStore() {
-        return new BootstrapStore() {
+    public BootstrapConfigStore unsecuredBootstrapStore() {
+        return new BootstrapConfigStore() {
 
             @Override
             public BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity) {
@@ -264,7 +264,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         };
     }
 
-    public BootstrapStore deleteSecurityStore(Integer... objectToDelete) {
+    public BootstrapConfigStore deleteSecurityStore(Integer... objectToDelete) {
         String[] pathToDelete = new String[objectToDelete.length];
         for (int i = 0; i < pathToDelete.length; i++) {
             pathToDelete[i] = "/" + objectToDelete[i];
@@ -273,8 +273,8 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         return deleteSecurityStore(pathToDelete);
     }
 
-    public BootstrapStore deleteSecurityStore(final String... pathToDelete) {
-        return new BootstrapStore() {
+    public BootstrapConfigStore deleteSecurityStore(final String... pathToDelete) {
+        return new BootstrapConfigStore() {
 
             @Override
             public BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity) {
@@ -286,8 +286,8 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         };
     }
 
-    public BootstrapStore unsecuredWithAclBootstrapStore() {
-        return new BootstrapStore() {
+    public BootstrapConfigStore unsecuredWithAclBootstrapStore() {
+        return new BootstrapConfigStore() {
 
             @Override
             public BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity) {
@@ -337,8 +337,8 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         };
     }
 
-    public BootstrapStore pskBootstrapStore() {
-        return new BootstrapStore() {
+    public BootstrapConfigStore pskBootstrapStore() {
+        return new BootstrapConfigStore() {
 
             @Override
             public BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity) {
@@ -374,8 +374,8 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         };
     }
 
-    public BootstrapStore rpkBootstrapStore() {
-        return new BootstrapStore() {
+    public BootstrapConfigStore rpkBootstrapStore() {
+        return new BootstrapConfigStore() {
 
             @Override
             public BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity) {

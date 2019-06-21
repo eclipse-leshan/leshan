@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
-import org.eclipse.leshan.server.bootstrap.BootstrapStore;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
 import org.eclipse.leshan.server.californium.impl.LeshanBootstrapServer;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
@@ -36,7 +36,7 @@ public class LeshanBootstrapServerBuilderTest {
     @Before
     public void start() {
         builder = new LeshanBootstrapServerBuilder();
-        builder.setConfigStore(new BootstrapStore() {
+        builder.setConfigStore(new BootstrapConfigStore() {
             @Override
             public BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity) {
                 return null;

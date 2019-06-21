@@ -20,7 +20,7 @@ import org.eclipse.leshan.core.request.Identity;
 /**
  * A store containing the bootstrap information to be sent to the devices.
  */
-public interface BootstrapStore {
+public interface BootstrapConfigStore {
 
     /**
      * Get the bootstrap configuration to apply to the device identified by the given parameters.

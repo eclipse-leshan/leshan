@@ -30,7 +30,7 @@ public interface LwM2mBootstrapServer {
      * 
      * @return the store containing configuration to apply to each devices.
      */
-    BootstrapStore getBoostrapStore();
+    BootstrapConfigStore getBoostrapStore();
 
     /**
      * security store used for DTLS authentication on the bootstrap resource.

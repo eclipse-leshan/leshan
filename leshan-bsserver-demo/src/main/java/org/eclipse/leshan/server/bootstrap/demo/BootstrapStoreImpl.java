@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
-import org.eclipse.leshan.server.bootstrap.BootstrapStore;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.ConfigurationChecker;
 import org.eclipse.leshan.server.bootstrap.InvalidConfigurationException;
 import org.eclipse.leshan.util.Validate;
@@ -42,7 +42,7 @@ import com.google.gson.reflect.TypeToken;
 /**
  * Simple bootstrap store implementation storing bootstrap information in memory
  */
-public class BootstrapStoreImpl implements BootstrapStore {
+public class BootstrapStoreImpl implements BootstrapConfigStore {
 
     private static final Logger LOG = LoggerFactory.getLogger(BootstrapStoreImpl.class);
 

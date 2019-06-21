@@ -58,22 +58,22 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
 
     protected final Executor e;
 
-    protected final BootstrapStore store;
+    protected final BootstrapConfigStore store;
     protected final LwM2mBootstrapRequestSender sender;
     protected final BootstrapSessionManager sessionManager;
     protected final long requestTimeout;
 
-    public DefaultBootstrapHandler(BootstrapStore store, LwM2mBootstrapRequestSender sender,
+    public DefaultBootstrapHandler(BootstrapConfigStore store, LwM2mBootstrapRequestSender sender,
             BootstrapSessionManager sessionManager) {
         this(store, sender, sessionManager, Executors.newFixedThreadPool(5), DEFAULT_TIMEOUT);
     }
 
-    public DefaultBootstrapHandler(BootstrapStore store, LwM2mBootstrapRequestSender sender,
+    public DefaultBootstrapHandler(BootstrapConfigStore store, LwM2mBootstrapRequestSender sender,
             BootstrapSessionManager sessionManager, Executor executor) {
         this(store, sender, sessionManager, executor, DEFAULT_TIMEOUT);
     }
 
-    public DefaultBootstrapHandler(BootstrapStore store, LwM2mBootstrapRequestSender sender,
+    public DefaultBootstrapHandler(BootstrapConfigStore store, LwM2mBootstrapRequestSender sender,
             BootstrapSessionManager sessionManager, Executor executor, long requestTimeout) {
         this.store = store;
         this.sender = sender;

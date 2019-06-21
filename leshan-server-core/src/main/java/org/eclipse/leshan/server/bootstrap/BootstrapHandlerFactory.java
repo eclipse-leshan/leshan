@@ -30,6 +30,6 @@ public interface BootstrapHandlerFactory {
      * @param sessionManager the manager responsible to handle bootstrap session.
      * @return the new {@link BootstrapHandler}.
      */
-    BootstrapHandler create(BootstrapStore store, LwM2mBootstrapRequestSender sender,
+    BootstrapHandler create(BootstrapConfigStore store, LwM2mBootstrapRequestSender sender,
             BootstrapSessionManager sessionManager);
 }

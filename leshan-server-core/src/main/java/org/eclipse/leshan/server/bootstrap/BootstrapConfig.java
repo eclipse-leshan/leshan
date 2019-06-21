@@ -36,7 +36,7 @@ import org.eclipse.leshan.core.request.BindingMode;
  * sent.
  * <li>a Map from instanceId to Instance value for ACL object. For each entry a Bootstrap Write Request will be sent.
  * 
- * @see BootstrapStore
+ * @see BootstrapConfigStore
  * @see DefaultBootstrapHandler
  */
 public class BootstrapConfig implements Serializable {

@@ -54,7 +54,7 @@ public class BootstrapHandlerTest {
         final MockBootstrapSessionManager bsSessionManager = new MockBootstrapSessionManager(true);
         final LwM2mBootstrapRequestSender requestSender = new MockRequestSender(true);
 
-        final BootstrapStore bsStore = new BootstrapStore() {
+        final BootstrapConfigStore bsStore = new BootstrapConfigStore() {
             @Override
             public BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity) {
                 return new BootstrapConfig();
@@ -79,7 +79,7 @@ public class BootstrapHandlerTest {
         final MockBootstrapSessionManager bsSessionManager = new MockBootstrapSessionManager(true);
         final LwM2mBootstrapRequestSender requestSender = new MockRequestSender(false);
 
-        final BootstrapStore bsStore = new BootstrapStore() {
+        final BootstrapConfigStore bsStore = new BootstrapConfigStore() {
             @Override
             public BootstrapConfig getBootstrap(String endpoint, Identity deviceIdentity) {
                 return new BootstrapConfig();

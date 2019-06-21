@@ -26,7 +26,7 @@ import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
-import org.eclipse.leshan.server.bootstrap.BootstrapStore;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapServer;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
@@ -48,10 +48,10 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
     private final CoapEndpoint securedEndpoint;
 
     // LWM2M attributes
-    private final BootstrapStore bsStore;
+    private final BootstrapConfigStore bsStore;
     private final BootstrapSecurityStore bsSecurityStore;
 
-    public LeshanBootstrapServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint, BootstrapStore bsStore,
+    public LeshanBootstrapServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint, BootstrapConfigStore bsStore,
             BootstrapSecurityStore bsSecurityStore, BootstrapSessionManager bsSessionManager,
             BootstrapHandlerFactory bsHandlerFactory, LwM2mModel model, NetworkConfig coapConfig) {
 
@@ -104,7 +104,7 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
     }
 
     @Override
-    public BootstrapStore getBoostrapStore() {
+    public BootstrapConfigStore getBoostrapStore() {
         return bsStore;
     }
 

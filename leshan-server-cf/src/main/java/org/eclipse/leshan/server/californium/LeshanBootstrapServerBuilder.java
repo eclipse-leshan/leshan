@@ -39,7 +39,7 @@ import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
-import org.eclipse.leshan.server.bootstrap.BootstrapStore;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
 import org.eclipse.leshan.server.californium.impl.LeshanBootstrapServer;
@@ -61,7 +61,7 @@ public class LeshanBootstrapServerBuilder {
 
     private InetSocketAddress localAddress;
     private InetSocketAddress localAddressSecure;
-    private BootstrapStore configStore;
+    private BootstrapConfigStore configStore;
     private BootstrapSecurityStore securityStore;
     private BootstrapSessionManager sessionManager;
     private BootstrapHandlerFactory bootstrapHandlerFactory;
@@ -208,7 +208,7 @@ public class LeshanBootstrapServerBuilder {
     }
 
     /**
-     * Set the {@link BootstrapStore} containing bootstrap configuration to apply to each devices.
+     * Set the {@link BootstrapConfigStore} containing bootstrap configuration to apply to each devices.
      * <p>
      * WARNING: There is not default implementation and this store is mandatory to create a bootstrap server.
      * <p>
@@ -217,7 +217,7 @@ public class LeshanBootstrapServerBuilder {
      * @param configStore the bootstrap configuration store.
      * @return the builder for fluent Bootstrap Server creation.
      */
-    public LeshanBootstrapServerBuilder setConfigStore(BootstrapStore configStore) {
+    public LeshanBootstrapServerBuilder setConfigStore(BootstrapConfigStore configStore) {
         this.configStore = configStore;
         return this;
     }
@@ -255,9 +255,9 @@ public class LeshanBootstrapServerBuilder {
      * Advanced setter used to customize default bootstrap server behavior.
      * <p>
      * By default Bootstrap Server is only able to write Security, Server and ACL objects, see
-     * {@link #setConfigStore(BootstrapStore)}. If you need more advanced behavior you can create your own
+     * {@link #setConfigStore(BootstrapConfigStore)}. If you need more advanced behavior you can create your own
      * {@link BootstrapHandler} by inspiring yourself from {@link DefaultBootstrapHandler}. You will probably need to
-     * create a custom {@link BootstrapConfig} and {@link BootstrapStore} and/or change LWM2M model to use, see
+     * create a custom {@link BootstrapConfig} and {@link BootstrapConfigStore} and/or change LWM2M model to use, see
      * {@link #setModel(LwM2mModel)}.
      * 
      * @param bootstrapHandlerFactory the factory used to create {@link BootstrapHandler}.
@@ -273,12 +273,12 @@ public class LeshanBootstrapServerBuilder {
      * Bootstrap write request.
      * <p>
      * By default, LWM2M object models defined in LWM2M v1.0.x are used. Out of the box, Bootstrap Server is only able
-     * to write Security, Server and ACL objects, see {@link #setConfigStore(BootstrapStore)}.
+     * to write Security, Server and ACL objects, see {@link #setConfigStore(BootstrapConfigStore)}.
      * <p>
      * Set a different LWM2M model if you want to use a different model version of Security, Server and ACL objects, or
      * if you need to write objects which are not available by default. For the second case, you need to change
      * {@link BootstrapHandler} behavior as well, using {@link #setBootstrapHandlerFactory(BootstrapHandlerFactory)} and
-     * probably create a custom {@link BootstrapConfig} and {@link BootstrapStore}.
+     * probably create a custom {@link BootstrapConfig} and {@link BootstrapConfigStore}.
      * <p>
      * WARNING: Only 1 version by object is supported for now.
      * 
@@ -383,7 +383,7 @@ public class LeshanBootstrapServerBuilder {
         if (bootstrapHandlerFactory == null)
             bootstrapHandlerFactory = new BootstrapHandlerFactory() {
                 @Override
-                public BootstrapHandler create(BootstrapStore store, LwM2mBootstrapRequestSender sender,
+                public BootstrapHandler create(BootstrapConfigStore store, LwM2mBootstrapRequestSender sender,
                         BootstrapSessionManager sessionManager) {
                     return new DefaultBootstrapHandler(store, sender, sessionManager);
                 }
@@ -554,7 +554,7 @@ public class LeshanBootstrapServerBuilder {
      * @return the LWM2M Bootstrap server.
      */
     protected LeshanBootstrapServer createBootstrapServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
-            BootstrapStore bsStore, BootstrapSecurityStore bsSecurityStore, BootstrapSessionManager bsSessionManager,
+            BootstrapConfigStore bsStore, BootstrapSecurityStore bsSecurityStore, BootstrapSessionManager bsSessionManager,
             BootstrapHandlerFactory bsHandlerFactory, LwM2mModel model, NetworkConfig coapConfig) {
         return new LeshanBootstrapServer(unsecuredEndpoint, securedEndpoint, bsStore, bsSecurityStore, bsSessionManager,
                 bsHandlerFactory, model, coapConfig);
