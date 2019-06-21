@@ -57,8 +57,8 @@ public class LeshanClientBuilder {
      * <li><em>local address</em>: a local address and an ephemeral port (picked up during binding)</li>
      * <li><em>object enablers</em>:
      * <ul>
-     * <li>Security(0) with one instance (DM server security): uri=<em>coap://leshan.eclipse.org:5683</em>, mode=NoSec
-     * </li>
+     * <li>Security(0) with one instance (DM server security): uri=<em>coap://leshan.eclipseprojects.io:5683</em>,
+     * mode=NoSec</li>
      * <li>Server(1) with one instance (DM server): id=12345, lifetime=5minutes</li>
      * <li>Device(3): manufacturer=Eclipse Leshan, modelNumber=model12345, serialNumber=12345</li>
      * </ul>
@@ -148,7 +148,7 @@ public class LeshanClientBuilder {
         if (objectEnablers == null) {
             ObjectsInitializer initializer = new ObjectsInitializer();
             initializer.setInstancesForObject(LwM2mId.SECURITY,
-                    Security.noSec("coap://leshan.eclipse.org:5683", 12345));
+                    Security.noSec("coap://leshan.eclipseprojects.io:5683", 12345));
             initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, 5 * 60, BindingMode.U, false));
             initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", "model12345", "12345", "U"));
             objectEnablers = initializer.createAll();
