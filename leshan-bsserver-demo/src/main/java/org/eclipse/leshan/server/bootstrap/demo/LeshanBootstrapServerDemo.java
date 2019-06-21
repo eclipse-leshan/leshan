@@ -82,7 +82,7 @@ public class LeshanBootstrapServerDemo {
         options.addOption("wp", "webport", true, "Set the HTTP port for web server.\nDefault: 8080.");
         options.addOption("m", "modelsfolder", true, "A folder which contains object models in OMA DDF(.xml) format.");
         options.addOption("cfg", "configfile", true,
-                "Set the filename for the configuration.\nDefault: " + BootstrapStoreImpl.DEFAULT_FILE + ".");
+                "Set the filename for the configuration.\nDefault: " + JSONFileBootstrapStore.DEFAULT_FILE + ".");
         HelpFormatter formatter = new HelpFormatter();
         formatter.setOptionComparator(null);
 
@@ -143,7 +143,7 @@ public class LeshanBootstrapServerDemo {
         // Get config file
         String configFilename = cl.getOptionValue("cfg");
         if (configFilename == null) {
-            configFilename = BootstrapStoreImpl.DEFAULT_FILE;
+            configFilename = JSONFileBootstrapStore.DEFAULT_FILE;
         }
 
         try {
@@ -169,7 +169,7 @@ public class LeshanBootstrapServerDemo {
 
         // Prepare and start bootstrap server
         LeshanBootstrapServerBuilder builder = new LeshanBootstrapServerBuilder();
-        BootstrapStoreImpl bsStore = new BootstrapStoreImpl(configFilename);
+        JSONFileBootstrapStore bsStore = new JSONFileBootstrapStore(configFilename);
         builder.setConfigStore(bsStore);
         builder.setSecurityStore(new BootstrapSecurityStoreImpl(bsStore));
         builder.setLocalAddress(localAddress, localPort);

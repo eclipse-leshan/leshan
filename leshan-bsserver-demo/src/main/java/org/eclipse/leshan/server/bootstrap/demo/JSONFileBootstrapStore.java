@@ -39,9 +39,9 @@ import com.google.gson.reflect.TypeToken;
 /**
  * A {@link EditableBootstrapConfigStore} which persist configuration in a file using json format.
  */
-public class BootstrapStoreImpl extends InMemoryBootstrapConfigStore {
+public class JSONFileBootstrapStore extends InMemoryBootstrapConfigStore {
 
-    private static final Logger LOG = LoggerFactory.getLogger(BootstrapStoreImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JSONFileBootstrapStore.class);
 
     // default location for persistence
     public static final String DEFAULT_FILE = "data/bootstrap.json";
@@ -50,14 +50,14 @@ public class BootstrapStoreImpl extends InMemoryBootstrapConfigStore {
     private final Gson gson;
     private final Type gsonType;
 
-    public BootstrapStoreImpl() {
+    public JSONFileBootstrapStore() {
         this(DEFAULT_FILE);
     }
 
     /**
      * @param filename the file path to persist the registry
      */
-    public BootstrapStoreImpl(String filename) {
+    public JSONFileBootstrapStore(String filename) {
         Validate.notEmpty(filename);
         GsonBuilder builder = new GsonBuilder();
         builder.setPrettyPrinting();
