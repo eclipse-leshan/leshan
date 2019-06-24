@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.cluster.serialization;
+package org.eclipse.leshan.server.redis.serialization;
 
 import java.math.BigInteger;
 import java.security.AlgorithmParameters;

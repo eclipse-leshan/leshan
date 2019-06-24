@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.cluster.serialization;
+package org.eclipse.leshan.server.redis.serialization;
 
 import static org.junit.Assert.assertEquals;
 
@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.eclipse.leshan.Link;
 import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.server.redis.serialization.RegistrationSerDes;
 import org.eclipse.leshan.server.registration.Registration;
 import org.junit.Test;
 

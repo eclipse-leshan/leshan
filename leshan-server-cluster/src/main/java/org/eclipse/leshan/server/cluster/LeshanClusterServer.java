@@ -33,6 +33,8 @@ import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StaticModelProvider;
+import org.eclipse.leshan.server.redis.RedisRegistrationStore;
+import org.eclipse.leshan.server.redis.RedisSecurityStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

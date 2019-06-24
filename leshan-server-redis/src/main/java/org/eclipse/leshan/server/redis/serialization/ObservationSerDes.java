@@ -15,7 +15,7 @@
  *     Achim Kraus (Bosch Software Innovations GmbH) - add support for californium
  *                                                     endpoint context
  *******************************************************************************/
-package org.eclipse.leshan.server.cluster.serialization;
+package org.eclipse.leshan.server.redis.serialization;
 
 import java.util.HashMap;
 import java.util.Map;

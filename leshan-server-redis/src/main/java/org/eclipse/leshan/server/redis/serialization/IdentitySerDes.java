@@ -13,7 +13,7 @@
  * Contributors:
  *    Achim Kraus (Bosch Software Innovations GmbH) - initial implementation.
  ******************************************************************************/
-package org.eclipse.leshan.server.cluster.serialization;
+package org.eclipse.leshan.server.redis.serialization;
 
 import java.net.InetSocketAddress;
 import java.security.KeyFactory;

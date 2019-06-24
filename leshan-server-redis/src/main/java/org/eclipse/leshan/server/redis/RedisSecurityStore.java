@@ -13,12 +13,12 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.cluster;
+package org.eclipse.leshan.server.redis;
 
 import java.util.Collection;
 import java.util.LinkedList;
 
-import org.eclipse.leshan.server.cluster.serialization.SecurityInfoSerDes;
+import org.eclipse.leshan.server.redis.serialization.SecurityInfoSerDes;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;

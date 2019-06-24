@@ -16,8 +16,8 @@
 package org.eclipse.leshan.integration.tests;
 
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
-import org.eclipse.leshan.server.cluster.RedisRegistrationStore;
-import org.eclipse.leshan.server.cluster.RedisSecurityStore;
+import org.eclipse.leshan.server.redis.RedisRegistrationStore;
+import org.eclipse.leshan.server.redis.RedisSecurityStore;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
