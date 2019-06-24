@@ -123,16 +123,6 @@ Contributors:
 
     <profiles>
         <profile>
-            <!-- This profile build the all in one jar -->
-            <id>all</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <modules>
-                <module>leshan-all</module>
-            </modules>
-        </profile>
-        <profile>
             <!-- This profile launch all redis integration tests -->
             <id>redis</id>
             <properties>
