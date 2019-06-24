@@ -363,6 +363,20 @@ public class LeshanServer implements LwM2mServer {
         }
 
         /**
+         * @return the {@link CoapEndpoint} used for secured CoAP communication (coaps://)
+         */
+        public CoapEndpoint getSecuredEndpoint() {
+            return securedEndpoint;
+        }
+
+        /**
+         * @return the {@link CoapEndpoint} used for unsecured CoAP communication (coap://)
+         */
+        public CoapEndpoint getUnsecuredEndpoint() {
+            return unsecuredEndpoint;
+        }
+
+        /**
          * Sends a CoAP request synchronously to a registered LWM2M device. Will block until a response is received from
          * the remote client.
          * 
