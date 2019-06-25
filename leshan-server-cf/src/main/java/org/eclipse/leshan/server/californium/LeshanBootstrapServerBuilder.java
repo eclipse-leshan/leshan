@@ -484,6 +484,11 @@ public class LeshanBootstrapServerBuilder {
                 }
             }
 
+            // Bootstrap Server acts as Server only : It does not need to initiate handshake
+            if (incompleteConfig.isServerOnly() == null) {
+                dtlsConfigBuilder.setServerOnly(true);
+            }
+
             // Deactivate SNI by default
             // TODO should we support SNI ?
             if (incompleteConfig.isSniEnabled() == null) {
