@@ -41,7 +41,7 @@ public class Server {
             uri.append("coaps://");
         else
             uri.append("coap://");
-        uri.append(identity.getPeerAddress().getAddress().getHostAddress());
+        uri.append(identity.getPeerAddress().getHostString());
         uri.append(":");
         uri.append(identity.getPeerAddress().getPort());
         return uri.toString();
