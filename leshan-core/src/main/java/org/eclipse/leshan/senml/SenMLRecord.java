@@ -39,7 +39,6 @@ public class SenMLRecord {
             if (floatValue instanceof Integer || floatValue instanceof Long) {
                 return Type.INTEGER;
             }
-
             return Type.FLOAT;
         }
         if (objectLinkValue != null) {

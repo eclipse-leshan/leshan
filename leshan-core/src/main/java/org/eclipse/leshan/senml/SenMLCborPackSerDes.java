@@ -91,7 +91,6 @@ public class SenMLCborPackSerDes {
                         generator.writeFieldId(2);
                         generator.writeNumber(record.getFloatValue().floatValue());
                         break;
-
                     case BOOLEAN:
                         generator.writeFieldId(4);
                         generator.writeBoolean(record.getBooleanValue());
