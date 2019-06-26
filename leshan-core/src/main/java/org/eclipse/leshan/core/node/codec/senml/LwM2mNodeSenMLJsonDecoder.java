@@ -46,7 +46,7 @@ public class LwM2mNodeSenMLJsonDecoder {
     public static <T extends LwM2mNode> T decode(byte[] content, LwM2mPath path, LwM2mModel model, Class<T> nodeClass)
             throws CodecException {
         String jsonStrValue = content != null ? new String(content) : "";
-        SenMLPack pack = SenMLJson.fromJsonSenML(jsonStrValue);
+        SenMLPack pack = SenMLJson.fromSenMLJson(jsonStrValue);
         return parseSenMLPack(pack, path, model, nodeClass);
     }
 
