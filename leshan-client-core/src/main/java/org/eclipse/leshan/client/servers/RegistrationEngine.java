@@ -130,8 +130,8 @@ public class RegistrationEngine {
 
     public Collection<Server> factoryBootstrap() {
         ServersInfo serversInfo = ServersInfoExtractor.getInfo(objectEnablers);
-        if (!serversInfo.deviceMangements.isEmpty()) {
-            Collection<Server> servers = endpointsManager.createEndpoints(serversInfo.deviceMangements.values());
+        if (!serversInfo.deviceManagements.isEmpty()) {
+            Collection<Server> servers = endpointsManager.createEndpoints(serversInfo.deviceManagements.values());
             return servers;
         }
         return null;
@@ -178,8 +178,8 @@ public class RegistrationEngine {
                         LOG.info("Bootstrap finished {}.", bootstrapServerInfo);
                         ServersInfo serverInfos = ServersInfoExtractor.getInfo(objectEnablers);
                         Collection<Server> dmServers = null;
-                        if (!serverInfos.deviceMangements.isEmpty()) {
-                            dmServers = endpointsManager.createEndpoints(serverInfos.deviceMangements.values());
+                        if (!serverInfos.deviceManagements.isEmpty()) {
+                            dmServers = endpointsManager.createEndpoints(serverInfos.deviceManagements.values());
                         }
                         if (observer != null) {
                             observer.onBootstrapSuccess(bootstrapServer);

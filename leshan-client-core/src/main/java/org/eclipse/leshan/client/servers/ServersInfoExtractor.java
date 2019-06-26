@@ -119,7 +119,7 @@ public class ServersInfoExtractor {
                             info.lifetime = (long) server.getResource(SRV_LIFETIME).getValue();
                             info.binding = BindingMode.valueOf((String) server.getResource(SRV_BINDING).getValue());
 
-                            infos.deviceMangements.put(info.serverId, info);
+                            infos.deviceManagements.put(info.serverId, info);
                             break;
                         }
                     }
@@ -136,7 +136,7 @@ public class ServersInfoExtractor {
         if (info == null)
             return null;
 
-        return info.deviceMangements.get(shortID);
+        return info.deviceManagements.get(shortID);
     }
 
     public static ServerInfo getBootstrapServerInfo(Map<Integer, LwM2mObjectEnabler> objectEnablers) {
