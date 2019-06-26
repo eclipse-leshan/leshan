@@ -25,7 +25,6 @@ import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.servers.BootstrapHandler;
-import org.eclipse.leshan.core.californium.LwM2mCoapResource;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.response.BootstrapFinishResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
@@ -33,20 +32,17 @@ import org.eclipse.leshan.core.response.SendableResponse;
 /**
  * A CoAP {@link Resource} in charge of handling the Bootstrap Finish indication from the bootstrap server.
  */
-public class BootstrapResource extends LwM2mCoapResource {
-
-    private final BootstrapHandler bootstrapHandler;
+public class BootstrapResource extends LwM2mClientCoapResource {
 
     public BootstrapResource(BootstrapHandler bootstrapHandler) {
-        super("bs");
+        super("bs", bootstrapHandler);
         this.setVisible(false);
-        this.bootstrapHandler = bootstrapHandler;
     }
 
     @Override
     public void handlePOST(CoapExchange exchange) {
         // Handle bootstrap request
-        ServerIdentity identity = ResourceUtil.extractServerIdentity(exchange, bootstrapHandler);
+        ServerIdentity identity = extractServerIdentity(exchange);
         // Acknowledge bootstrap finished request
         exchange.accept();
         final SendableResponse<BootstrapFinishResponse> sendableResponse = bootstrapHandler.finished(identity,

@@ -31,8 +31,6 @@ import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.elements.auth.X509CertPath;
 import org.eclipse.leshan.core.request.Identity;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Utility class used to handle Californium {@link EndpointContext} in Leshan.
@@ -40,8 +38,6 @@ import org.slf4j.LoggerFactory;
  * Able to translate Californium {@link EndpointContext} to Leshan {@link Identity} and vice-versa.
  */
 public class EndpointContextUtil {
-
-    private static final Logger LOG = LoggerFactory.getLogger(EndpointContextUtil.class);
 
     /**
      * Create Leshan {@link Identity} from Californium {@link EndpointContext}.
@@ -69,21 +65,6 @@ public class EndpointContextUtil {
                             senderIdentity.getClass(), senderIdentity.toString()));
         }
         return Identity.unsecure(peerAddress);
-    }
-
-    /**
-     * Create Leshan {@link Identity} from Californium {@link EndpointContext}.
-     * 
-     * @param context The Californium {@link EndpointContext} to convert.
-     * @return The corresponding Leshan {@link Identity} or <code>null</null> if we didn't succeed to extract Identity.
-     */
-    public static Identity extractIdentitySafely(EndpointContext context) {
-        try {
-            return extractIdentity(context);
-        } catch (RuntimeException e) {
-            LOG.error("Unable to extract identity", e);
-            return null;
-        }
     }
 
     /**

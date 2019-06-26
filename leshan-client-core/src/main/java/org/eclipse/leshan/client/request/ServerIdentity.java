@@ -51,7 +51,7 @@ public class ServerIdentity extends Identity {
      * Identity for system calls.
      */
     public final static ServerIdentity SYSTEM = new ServerIdentity(
-            Identity.unsecure(InetSocketAddress.createUnresolved("system", 1)), Role.SYSTEM);
+            Identity.unsecure(InetSocketAddress.createUnresolved(Role.SYSTEM.toString(), 1)), Role.SYSTEM);
 
     /**
      * Role of the associated identity.
@@ -126,4 +126,13 @@ public class ServerIdentity extends Identity {
         return new ServerIdentity(identity, Role.LWM2M_SERVER);
     }
 
+    @Override
+    public String toString() {
+        if (isSystem()) {
+            return this.role.toString();
+        } else {
+            return String.format("%s[%s]", super.toString(), this.role);
+        }
+
+    }
 }

@@ -19,7 +19,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.impl;
 
-import static org.eclipse.leshan.client.californium.impl.ResourceUtil.extractServerIdentity;
 import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toCoapResponseCode;
 
 import java.util.List;
@@ -34,7 +33,6 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.NotifySender;
 import org.eclipse.leshan.client.servers.BootstrapHandler;
 import org.eclipse.leshan.core.attributes.AttributeSet;
-import org.eclipse.leshan.core.californium.LwM2mCoapResource;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
@@ -69,19 +67,17 @@ import org.eclipse.leshan.core.response.WriteResponse;
 /**
  * A CoAP {@link Resource} in charge of handling requests for of a lwM2M Object.
  */
-public class ObjectResource extends LwM2mCoapResource implements NotifySender {
+public class ObjectResource extends LwM2mClientCoapResource implements NotifySender {
 
     private final LwM2mObjectEnabler nodeEnabler;
-    private final BootstrapHandler bootstrapHandler;
     private final LwM2mNodeEncoder encoder;
     private final LwM2mNodeDecoder decoder;
 
     public ObjectResource(LwM2mObjectEnabler nodeEnabler, BootstrapHandler bootstrapHandler, LwM2mNodeEncoder encoder,
             LwM2mNodeDecoder decoder) {
-        super(Integer.toString(nodeEnabler.getId()));
+        super(Integer.toString(nodeEnabler.getId()), bootstrapHandler);
         this.nodeEnabler = nodeEnabler;
         this.nodeEnabler.setNotifySender(this);
-        this.bootstrapHandler = bootstrapHandler;
         this.encoder = encoder;
         this.decoder = decoder;
         setObservable(true);
@@ -89,7 +85,7 @@ public class ObjectResource extends LwM2mCoapResource implements NotifySender {
 
     @Override
     public void handleGET(CoapExchange exchange) {
-        ServerIdentity identity = extractServerIdentity(exchange, bootstrapHandler);
+        ServerIdentity identity = extractServerIdentity(exchange);
         String URI = exchange.getRequestOptions().getUriPathString();
 
         // Manage Discover Request
@@ -162,7 +158,7 @@ public class ObjectResource extends LwM2mCoapResource implements NotifySender {
 
     @Override
     public void handlePUT(CoapExchange coapExchange) {
-        ServerIdentity identity = extractServerIdentity(coapExchange, bootstrapHandler);
+        ServerIdentity identity = extractServerIdentity(coapExchange);
         String URI = coapExchange.getRequestOptions().getUriPathString();
 
         // get Observe Spec
@@ -230,7 +226,7 @@ public class ObjectResource extends LwM2mCoapResource implements NotifySender {
 
     @Override
     public void handlePOST(CoapExchange exchange) {
-        ServerIdentity identity = extractServerIdentity(exchange, bootstrapHandler);
+        ServerIdentity identity = extractServerIdentity(exchange);
         String URI = exchange.getRequestOptions().getUriPathString();
 
         LwM2mPath path = new LwM2mPath(URI);
@@ -313,7 +309,7 @@ public class ObjectResource extends LwM2mCoapResource implements NotifySender {
     public void handleDELETE(CoapExchange coapExchange) {
         // Manage Delete Request
         String URI = coapExchange.getRequestOptions().getUriPathString();
-        ServerIdentity identity = extractServerIdentity(coapExchange, bootstrapHandler);
+        ServerIdentity identity = extractServerIdentity(coapExchange);
 
         if (identity.isLwm2mBootstrapServer()) {
             BootstrapDeleteResponse response = nodeEnabler.delete(identity, new BootstrapDeleteRequest(URI));

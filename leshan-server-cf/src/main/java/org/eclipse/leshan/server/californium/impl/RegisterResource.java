@@ -15,7 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
-import static org.eclipse.leshan.core.californium.EndpointContextUtil.extractIdentity;
 import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toCoapResponseCode;
 
 import java.net.InetSocketAddress;

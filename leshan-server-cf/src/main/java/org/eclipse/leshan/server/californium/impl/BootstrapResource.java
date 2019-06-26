@@ -20,7 +20,6 @@ import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toCoapRespons
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.server.resources.CoapExchange;
-import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.californium.LwM2mCoapResource;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.Identity;
@@ -64,7 +63,7 @@ public class BootstrapResource extends LwM2mCoapResource {
         }
 
         // Extract client identity
-        Identity clientIdentity = EndpointContextUtil.extractIdentity(request.getSourceContext());
+        Identity clientIdentity = extractIdentity(request.getSourceContext());
 
         // handle bootstrap request
         SendableResponse<BootstrapResponse> sendableResponse = bootstrapHandler.bootstrap(clientIdentity,

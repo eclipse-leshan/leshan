@@ -22,6 +22,8 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.server.resources.CoapExchange;
+import org.eclipse.californium.elements.EndpointContext;
+import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +53,7 @@ public class LwM2mCoapResource extends CoapResource {
         } catch (RuntimeException e) {
             Request request = exchange.getRequest();
             LOG.error("Exception while handling request [{}] on the resource {} from {}", request, getURI(),
-                    EndpointContextUtil.extractIdentitySafely(request.getSourceContext()), e);
+                    extractIdentitySafely(request.getSourceContext()), e);
             exchange.sendResponse(new Response(ResponseCode.INTERNAL_SERVER_ERROR));
         }
     }
@@ -80,10 +82,10 @@ public class LwM2mCoapResource extends CoapResource {
         if (LOG.isDebugEnabled()) {
             if (error != null) {
                 LOG.debug("Invalid request [{}] received on the resource {} from {}", request, getURI(),
-                        EndpointContextUtil.extractIdentitySafely(request.getSourceContext()), error);
+                        extractIdentitySafely(request.getSourceContext()), error);
             } else {
                 LOG.debug("Invalid request [{}] received on the resource {} from {} : {}", request, getURI(),
-                        EndpointContextUtil.extractIdentitySafely(request.getSourceContext()), message);
+                        extractIdentitySafely(request.getSourceContext()), message);
             }
         }
 
@@ -94,5 +96,31 @@ public class LwM2mCoapResource extends CoapResource {
             response.getOptions().setContentFormat(MediaTypeRegistry.TEXT_PLAIN);
         }
         exchange.sendResponse(response);
+    }
+
+    /**
+     * Create Leshan {@link Identity} from Californium {@link EndpointContext}.
+     * 
+     * @param context The Californium {@link EndpointContext} to convert.
+     * @return The corresponding Leshan {@link Identity}.
+     * @throws IllegalStateException if we are not able to extract {@link Identity}.
+     */
+    protected Identity extractIdentity(EndpointContext context) {
+        return EndpointContextUtil.extractIdentity(context);
+    }
+
+    /**
+     * Create Leshan {@link Identity} from Californium {@link EndpointContext}.
+     * 
+     * @param context The Californium {@link EndpointContext} to convert.
+     * @return The corresponding Leshan {@link Identity} or <code>null</null> if we didn't succeed to extract Identity.
+     */
+    protected Identity extractIdentitySafely(EndpointContext context) {
+        try {
+            return extractIdentity(context);
+        } catch (RuntimeException e) {
+            LOG.error("Unable to extract identity", e);
+            return null;
+        }
     }
 }
