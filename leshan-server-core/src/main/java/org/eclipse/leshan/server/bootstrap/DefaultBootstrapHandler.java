@@ -204,7 +204,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             }, new ErrorCallback() {
                 @Override
                 public void onError(Exception e) {
-                    LOG.warn(String.format("Error during bootstrap write of server instance %s on %s", serverInstance,
+                    LOG.debug(String.format("Error during bootstrap write of server instance %s on %s", serverInstance,
                             session.getEndpoint()), e);
                     sessionManager.failed(session, WRITE_SERVER_FAILED, writeServerRequest);
                 }
@@ -240,7 +240,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             }, new ErrorCallback() {
                 @Override
                 public void onError(Exception e) {
-                    LOG.warn(String.format("Error during bootstrap write of acl instance %s on %s", aclInstance,
+                    LOG.debug(String.format("Error during bootstrap write of acl instance %s on %s", aclInstance,
                             session.getEndpoint()), e);
                     sessionManager.failed(session, WRITE_ACL_FAILED, writeACLRequest);
                 }
