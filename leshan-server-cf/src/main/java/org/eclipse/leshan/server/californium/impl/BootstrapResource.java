@@ -17,14 +17,11 @@ package org.eclipse.leshan.server.californium.impl;
 
 import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toCoapResponseCode;
 
-import org.eclipse.californium.core.CoapResource;
-import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Request;
-import org.eclipse.californium.core.coap.Response;
-import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
+import org.eclipse.leshan.core.californium.LwM2mCoapResource;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.BootstrapResponse;
@@ -33,7 +30,7 @@ import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BootstrapResource extends CoapResource {
+public class BootstrapResource extends LwM2mCoapResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(BootstrapResource.class);
     private static final String QUERY_PARAM_ENDPOINT = "ep=";
@@ -46,24 +43,14 @@ public class BootstrapResource extends CoapResource {
     }
 
     @Override
-    public void handleRequest(Exchange exchange) {
-        try {
-            super.handleRequest(exchange);
-        } catch (Exception e) {
-            LOG.error("Exception while handling a request on the /bs resource", e);
-            exchange.sendResponse(new Response(ResponseCode.INTERNAL_SERVER_ERROR));
-        }
-    }
-
-    @Override
     public void handlePOST(CoapExchange exchange) {
         Request request = exchange.advanced().getRequest();
-        LOG.debug("POST received : {}", request);
+        LOG.trace("POST received : {}", request);
 
         // The LW M2M spec (section 8.2) mandates the usage of Confirmable
         // messages
         if (!Type.CON.equals(request.getType())) {
-            exchange.respond(ResponseCode.BAD_REQUEST);
+            handleInvalidRequest(exchange, "CON CoAP type expected");
             return;
         }
 

@@ -23,21 +23,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Request;
-import org.eclipse.californium.core.coap.Response;
-import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.Link;
+import org.eclipse.leshan.core.californium.LwM2mCoapResource;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
-import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.DeregisterResponse;
 import org.eclipse.leshan.core.response.RegisterResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
@@ -54,7 +51,7 @@ import org.slf4j.LoggerFactory;
  * {@link RegistrationService}.
  * </p>
  */
-public class RegisterResource extends CoapResource {
+public class RegisterResource extends LwM2mCoapResource {
 
     private static final String QUERY_PARAM_ENDPOINT = "ep=";
 
@@ -80,36 +77,19 @@ public class RegisterResource extends CoapResource {
     }
 
     @Override
-    public void handleRequest(Exchange exchange) {
-        try {
-            super.handleRequest(exchange);
-        } catch (InvalidRequestException e) {
-            LOG.debug("InvalidRequestException while handling request({}) on the /rd resource", exchange.getRequest(),
-                    e);
-            Response response = new Response(ResponseCode.BAD_REQUEST);
-            response.setPayload(e.getMessage());
-            exchange.sendResponse(response);
-        } catch (RuntimeException e) {
-            LOG.error("Exception while handling request({}) on the /rd resource", exchange.getRequest(), e);
-            exchange.sendResponse(new Response(ResponseCode.INTERNAL_SERVER_ERROR));
-        }
-    }
-
-    @Override
     public void handlePOST(CoapExchange exchange) {
         Request request = exchange.advanced().getRequest();
-
-        LOG.debug("POST received : {}", request);
+        LOG.trace("POST received : {}", request);
 
         // The LWM2M spec (section 8.2) mandates the usage of confirmable messages
         if (!Type.CON.equals(request.getType())) {
-            exchange.respond(ResponseCode.BAD_REQUEST);
+            handleInvalidRequest(exchange, "CON CoAP type expected");
             return;
         }
 
         List<String> uri = exchange.getRequestOptions().getUriPath();
         if (uri == null || uri.size() == 0 || !RESOURCE_NAME.equals(uri.get(0))) {
-            exchange.respond(ResponseCode.BAD_REQUEST);
+            handleInvalidRequest(exchange, "Bad URI");
             return;
         }
 
@@ -120,22 +100,21 @@ public class RegisterResource extends CoapResource {
             handleUpdate(exchange, request, uri.get(1));
             return;
         } else {
-            exchange.respond(ResponseCode.BAD_REQUEST);
+            handleInvalidRequest(exchange, "Bad URI");
             return;
         }
     }
 
     @Override
     public void handleDELETE(CoapExchange exchange) {
-        LOG.debug("DELETE received : {}", exchange.advanced().getRequest());
+        LOG.trace("DELETE received : {}", exchange.advanced().getRequest());
 
         List<String> uri = exchange.getRequestOptions().getUriPath();
 
         if (uri != null && uri.size() == 2 && RESOURCE_NAME.equals(uri.get(0))) {
             handleDeregister(exchange, uri.get(1));
         } else {
-            LOG.debug("Invalid deregistration");
-            exchange.respond(ResponseCode.NOT_FOUND);
+            handleInvalidRequest(exchange, "Bad URI");
         }
     }
 
@@ -272,15 +251,15 @@ public class RegisterResource extends CoapResource {
     public void handlePUT(CoapExchange exchange) {
         Request request = exchange.advanced().getRequest();
 
-        LOG.debug("UPDATE received : {}", request);
+        LOG.trace("UPDATE received : {}", request);
         if (!Type.CON.equals(request.getType())) {
-            exchange.respond(ResponseCode.BAD_REQUEST);
+            handleInvalidRequest(exchange, "CON CoAP type expected");
             return;
         }
 
         List<String> uri = exchange.getRequestOptions().getUriPath();
         if (uri == null || uri.size() != 2 || !RESOURCE_NAME.equals(uri.get(0))) {
-            exchange.respond(ResponseCode.BAD_REQUEST);
+            handleInvalidRequest(exchange, "Bad URI");
             return;
         }
 

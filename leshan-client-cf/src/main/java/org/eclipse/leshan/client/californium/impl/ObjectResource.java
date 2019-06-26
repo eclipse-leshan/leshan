@@ -24,11 +24,8 @@ import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toCoapRespons
 
 import java.util.List;
 
-import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
-import org.eclipse.californium.core.coap.Response;
-import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.Link;
@@ -37,6 +34,7 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.NotifySender;
 import org.eclipse.leshan.client.servers.BootstrapHandler;
 import org.eclipse.leshan.core.attributes.AttributeSet;
+import org.eclipse.leshan.core.californium.LwM2mCoapResource;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
@@ -57,7 +55,6 @@ import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
-import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
 import org.eclipse.leshan.core.response.BootstrapWriteResponse;
 import org.eclipse.leshan.core.response.CreateResponse;
@@ -68,15 +65,11 @@ import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteAttributesResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A CoAP {@link Resource} in charge of handling requests for of a lwM2M Object.
  */
-public class ObjectResource extends CoapResource implements NotifySender {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ObjectResource.class);
+public class ObjectResource extends LwM2mCoapResource implements NotifySender {
 
     private final LwM2mObjectEnabler nodeEnabler;
     private final BootstrapHandler bootstrapHandler;
@@ -92,25 +85,6 @@ public class ObjectResource extends CoapResource implements NotifySender {
         this.encoder = encoder;
         this.decoder = decoder;
         setObservable(true);
-    }
-
-    @Override
-    public void handleRequest(Exchange exchange) {
-        try {
-            super.handleRequest(exchange);
-        } catch (InvalidRequestException e) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format("InvalidRequestException while handling request(%s) on the %s resource",
-                        exchange.getRequest(), getURI()), e);
-            }
-            Response response = new Response(ResponseCode.BAD_REQUEST);
-            response.setPayload(e.getMessage());
-            exchange.sendResponse(response);
-        } catch (Exception e) {
-            LOG.error(String.format("Exception while handling request(%s) on the %s resource", exchange.getRequest(),
-                    getURI()), e);
-            exchange.sendResponse(new Response(ResponseCode.INTERNAL_SERVER_ERROR));
-        }
     }
 
     @Override
@@ -214,7 +188,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
             LwM2mPath path = new LwM2mPath(URI);
 
             if (!coapExchange.getRequestOptions().hasContentFormat()) {
-                coapExchange.respond(ResponseCode.BAD_REQUEST, "Content Format is mandatory");
+                handleInvalidRequest(coapExchange, "Content Format is mandatory");
                 return;
             }
 
@@ -247,8 +221,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
 
                 return;
             } catch (CodecException e) {
-                LOG.warn("Unable to decode payload to write", e);
-                coapExchange.respond(ResponseCode.BAD_REQUEST);
+                handleInvalidRequest(coapExchange.advanced(), "Unable to decode payload on WRITE", e);
                 return;
             }
 
@@ -277,7 +250,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
 
         // handle content format for Write (Update) and Create request
         if (!exchange.getRequestOptions().hasContentFormat()) {
-            exchange.respond(ResponseCode.BAD_REQUEST, "Content Format is mandatory");
+            handleInvalidRequest(exchange, "Content Format is mandatory");
             return;
         }
 
@@ -300,8 +273,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
                     exchange.respond(toCoapResponseCode(response.getCode()));
                 }
             } catch (CodecException e) {
-                LOG.warn("Unable to decode payload to write", e);
-                exchange.respond(ResponseCode.BAD_REQUEST);
+                handleInvalidRequest(exchange.advanced(), "Unable to decode payload on WRITE", e);
             }
             return;
         }
@@ -332,8 +304,7 @@ public class ObjectResource extends CoapResource implements NotifySender {
                 return;
             }
         } catch (CodecException e) {
-            LOG.warn("Unable to decode payload to create", e);
-            exchange.respond(ResponseCode.BAD_REQUEST);
+            handleInvalidRequest(exchange.advanced(), "Unable to decode payload on CREATE", e);
             return;
         }
     }

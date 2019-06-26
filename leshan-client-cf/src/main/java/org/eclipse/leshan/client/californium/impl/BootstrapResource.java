@@ -18,7 +18,6 @@ package org.eclipse.leshan.client.californium.impl;
 
 import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toCoapResponseCode;
 
-import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.MessageObserverAdapter;
 import org.eclipse.californium.core.coap.Response;
@@ -26,6 +25,7 @@ import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.servers.BootstrapHandler;
+import org.eclipse.leshan.core.californium.LwM2mCoapResource;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.response.BootstrapFinishResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
@@ -33,12 +33,13 @@ import org.eclipse.leshan.core.response.SendableResponse;
 /**
  * A CoAP {@link Resource} in charge of handling the Bootstrap Finish indication from the bootstrap server.
  */
-public class BootstrapResource extends CoapResource {
+public class BootstrapResource extends LwM2mCoapResource {
 
     private final BootstrapHandler bootstrapHandler;
 
     public BootstrapResource(BootstrapHandler bootstrapHandler) {
-        super("bs", false);
+        super("bs");
+        this.setVisible(false);
         this.bootstrapHandler = bootstrapHandler;
     }
 

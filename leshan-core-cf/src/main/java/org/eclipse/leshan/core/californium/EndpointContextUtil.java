@@ -31,9 +31,25 @@ import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.elements.auth.X509CertPath;
 import org.eclipse.leshan.core.request.Identity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+/**
+ * Utility class used to handle Californium {@link EndpointContext} in Leshan.
+ * <p>
+ * Able to translate Californium {@link EndpointContext} to Leshan {@link Identity} and vice-versa.
+ */
 public class EndpointContextUtil {
 
+    private static final Logger LOG = LoggerFactory.getLogger(EndpointContextUtil.class);
+
+    /**
+     * Create Leshan {@link Identity} from Californium {@link EndpointContext}.
+     * 
+     * @param context The Californium {@link EndpointContext} to convert.
+     * @return The corresponding Leshan {@link Identity}.
+     * @throws IllegalStateException if we are not able to extract {@link Identity}.
+     */
     public static Identity extractIdentity(EndpointContext context) {
         InetSocketAddress peerAddress = context.getPeerAddress();
         Principal senderIdentity = context.getPeerIdentity();
@@ -48,16 +64,33 @@ public class EndpointContextUtil {
                 String x509CommonName = extractCN(senderIdentity.getName());
                 return Identity.x509(peerAddress, x509CommonName);
             }
-            throw new IllegalStateException("Unable to extract sender identity : unexpected type of Principal");
+            throw new IllegalStateException(
+                    String.format("Unable to extract sender identity : unexpected type of Principal %s [%s]",
+                            senderIdentity.getClass(), senderIdentity.toString()));
         }
         return Identity.unsecure(peerAddress);
     }
 
     /**
-     * Create californium endpoint context from leshan identity.
+     * Create Leshan {@link Identity} from Californium {@link EndpointContext}.
      * 
-     * @param identity leshan identity received on last registration.
-     * @return californium endpoint context for leshan identity
+     * @param context The Californium {@link EndpointContext} to convert.
+     * @return The corresponding Leshan {@link Identity} or <code>null</null> if we didn't succeed to extract Identity.
+     */
+    public static Identity extractIdentitySafely(EndpointContext context) {
+        try {
+            return extractIdentity(context);
+        } catch (RuntimeException e) {
+            LOG.error("Unable to extract identity", e);
+            return null;
+        }
+    }
+
+    /**
+     * Create Californium {@link EndpointContext} from Leshan {@link Identity}.
+     * 
+     * @param identity The Leshan {@link Identity} to convert.
+     * @return The corresponding Californium {@link EndpointContext}.
      */
     public static EndpointContext extractContext(Identity identity) {
         Principal peerIdentity = null;
@@ -77,8 +110,8 @@ public class EndpointContextUtil {
     /**
      * Extract "common name" from "distinguished name".
      * 
-     * @param dn distinguished name
-     * @return common name
+     * @param dn The distinguished name.
+     * @return The extracted common name.
      * @throws IllegalStateException if no CN is contained in DN.
      */
     public static String extractCN(String dn) {
