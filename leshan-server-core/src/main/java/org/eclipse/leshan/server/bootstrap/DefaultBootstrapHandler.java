@@ -97,7 +97,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
         // Get the desired bootstrap config for the endpoint
         final BootstrapConfig cfg = store.getBootstrap(endpoint, sender);
         if (cfg == null) {
-            LOG.debug("No bootstrap config for {}", endpoint);
+            LOG.debug("No bootstrap config for {}/{}", endpoint, sender);
             this.sessionManager.failed(session, NO_BOOTSTRAP_CONFIG, null);
             return BootstrapResponse.badRequest("no bootstrap config");
         }
@@ -133,7 +133,8 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             }, new ErrorCallback() {
                 @Override
                 public void onError(Exception e) {
-                    LOG.debug(String.format("Error during bootstrap delete '/' on %s", session.getEndpoint()), e);
+                    LOG.debug(String.format("Error during bootstrap delete '/' to foreign peer [ep=%s,id=%s]",
+                            session.getEndpoint(), session.getIdentity()), e);
                     sessionManager.failed(session, DELETE_FAILED, deleteRequest);
                 }
             });
@@ -168,8 +169,9 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             }, new ErrorCallback() {
                 @Override
                 public void onError(Exception e) {
-                    LOG.debug(String.format("Error during bootstrap write of security instance %s on %s",
-                            securityInstance, session.getEndpoint()), e);
+                    LOG.debug(String.format(
+                            "Error during bootstrap write of security instance %s to foreign peer [ep=%s,id=%s]",
+                            securityInstance, session.getEndpoint(), session.getIdentity()), e);
                     sessionManager.failed(session, WRITE_SECURITY_FAILED, writeBootstrapRequest);
                 }
             });
@@ -204,8 +206,9 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             }, new ErrorCallback() {
                 @Override
                 public void onError(Exception e) {
-                    LOG.debug(String.format("Error during bootstrap write of server instance %s on %s", serverInstance,
-                            session.getEndpoint()), e);
+                    LOG.debug(String.format(
+                            "Error during bootstrap write of server instance %s to foreign peer [ep=%s,id=%s]",
+                            serverInstance, session.getEndpoint(), session.getIdentity()), e);
                     sessionManager.failed(session, WRITE_SERVER_FAILED, writeServerRequest);
                 }
             });
@@ -240,8 +243,9 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             }, new ErrorCallback() {
                 @Override
                 public void onError(Exception e) {
-                    LOG.debug(String.format("Error during bootstrap write of acl instance %s on %s", aclInstance,
-                            session.getEndpoint()), e);
+                    LOG.debug(String.format(
+                            "Error during bootstrap write of acl instance %s to foreign peer [ep=%s,id=%s]",
+                            aclInstance, session.getEndpoint(), session.getIdentity()), e);
                     sessionManager.failed(session, WRITE_ACL_FAILED, writeACLRequest);
                 }
             });
@@ -267,7 +271,8 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
         }, new ErrorCallback() {
             @Override
             public void onError(Exception e) {
-                LOG.debug(String.format("Error during bootstrap finished on %s", session.getEndpoint()), e);
+                LOG.debug(String.format("Error during bootstrap finished to foreign peer [ep=%s,id=%s]",
+                        session.getEndpoint(), session.getIdentity()), e);
                 sessionManager.failed(session, SEND_FINISH_FAILED, finishBootstrapRequest);
             }
         });
