@@ -36,6 +36,10 @@ public class SenMLRecord {
             return Type.BOOLEAN;
         }
         if (floatValue != null) {
+            if (floatValue instanceof Integer || floatValue instanceof Long) {
+                return Type.INTEGER;
+            }
+
             return Type.FLOAT;
         }
         if (objectLinkValue != null) {

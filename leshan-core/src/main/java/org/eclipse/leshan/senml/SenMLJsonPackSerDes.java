@@ -48,6 +48,7 @@ public class SenMLJsonPackSerDes {
             Type type = record.getType();
             if (type != null) {
                 switch (record.getType()) {
+                case INTEGER:
                 case FLOAT:
                     jsonObj.add("v", record.getFloatValue().floatValue());
                     break;

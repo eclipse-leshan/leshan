@@ -21,7 +21,7 @@ public class SenMLJsonDeserializerTest extends AbstractSenMLTest {
 
     @Test
     public void deserialize_device_object() {
-        String dataString = givenSenMLJsonExample();
+        String dataString = givenSenMLJsonDeviceExample();
         SenMLPack pack = SenMLJson.fromSenMLJson(dataString);
 
         String outString = SenMLJson.toSenMLJson(pack);

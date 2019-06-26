@@ -22,6 +22,12 @@ public class SenMLJsonSerializerTest extends AbstractSenMLTest {
     @Test
     public void serialize_device_object_to_senml_json() {
         String json = SenMLJson.toSenMLJson(givenDeviceObjectInstance());
-        Assert.assertTrue(json.equals(givenSenMLJsonExample()));
+        Assert.assertTrue(json.equals(givenSenMLJsonDeviceExample()));
+    }
+
+    @Test
+    public void serialize_location_object_to_senml_json() {
+        String json = SenMLJson.toSenMLJson(givenLocationObjectInstance());
+        Assert.assertTrue(json.equals(givenSenMLJsonLocationExample()));
     }
 }

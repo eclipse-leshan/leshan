@@ -83,10 +83,15 @@ public class SenMLCborPackSerDes {
                 Type type = record.getType();
                 if (type != null) {
                     switch (record.getType()) {
-                    case FLOAT:
+                    case INTEGER:
                         generator.writeFieldId(2);
                         generator.writeNumber(record.getFloatValue().intValue());
                         break;
+                    case FLOAT:
+                        generator.writeFieldId(2);
+                        generator.writeNumber(record.getFloatValue().floatValue());
+                        break;
+
                     case BOOLEAN:
                         generator.writeFieldId(4);
                         generator.writeBoolean(record.getBooleanValue());

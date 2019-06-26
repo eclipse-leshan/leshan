@@ -31,4 +31,12 @@ public class SenMLCborSerializerTest extends AbstractSenMLTest {
 
         Assert.assertTrue(expectedValue.equals(Hex.encodeHexString(cbor)));
     }
+
+    @Test
+    public void serialize_location_object_to_senml_cbor() throws Exception {
+        byte[] cbor = SenMLCbor.toSenMLCbor(givenLocationObjectInstance());
+
+        String expectedValue = "84a321652f362f302f00613002fa41b4dd69a200613102fa42ec3c13a200613202fa41c80000a200613602fa40600000";
+        Assert.assertTrue(expectedValue.equals(Hex.encodeHexString(cbor)));
+    }
 }

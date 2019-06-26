@@ -15,8 +15,17 @@
 package org.eclipse.leshan.senml;
 
 public abstract class AbstractSenMLTest {
+
     protected void givenResourceWithFloatValue(SenMLPack pack, String n, Number value) {
+        givenResourceWithFloatValue(pack, null, n, value);
+    }
+
+    protected void givenResourceWithFloatValue(SenMLPack pack, String bn, String n, Number value) {
         SenMLRecord elt = new SenMLRecord();
+        if (bn != null) {
+            elt.setBaseName(bn);
+        }
+
         elt.setName(n);
         elt.setFloatValue(value);
         pack.addRecord(elt);
@@ -42,7 +51,7 @@ public abstract class AbstractSenMLTest {
      * 
      * @return JSON payload
      */
-    protected String givenSenMLJsonExample() {
+    protected String givenSenMLJsonDeviceExample() {
         StringBuilder b = new StringBuilder();
         b.append("[{\"bn\":\"/3/0/\",\"n\":\"0\",\"vs\":\"Open Mobile Alliance\"},");
         b.append("{\"n\":\"1\",\"vs\":\"Lightweight M2M Client\"},");
@@ -57,6 +66,15 @@ public abstract class AbstractSenMLTest {
         b.append("{\"n\":\"13\",\"v\":1.3674912E9},");
         b.append("{\"n\":\"14\",\"vs\":\"+02:00\"},");
         b.append("{\"n\":\"16\",\"vs\":\"U\"}]");
+        return b.toString();
+    }
+
+    protected String givenSenMLJsonLocationExample() {
+        StringBuilder b = new StringBuilder();
+        b.append("[{\"bn\":\"/6/0/\",\"n\":\"0\",\"v\":22.60811},");
+        b.append("{\"n\":\"1\",\"v\":118.11733},");
+        b.append("{\"n\":\"2\",\"v\":25},");
+        b.append("{\"n\":\"6\",\"v\":3.5}]");
         return b.toString();
     }
 
@@ -82,6 +100,17 @@ public abstract class AbstractSenMLTest {
 
         givenResourceWithStringValue(pack, "14", "+02:00");
         givenResourceWithStringValue(pack, "16", "U");
+
+        return pack;
+    }
+
+    protected SenMLPack givenLocationObjectInstance() {
+        SenMLPack pack = new SenMLPack();
+
+        givenResourceWithFloatValue(pack, "/6/0/", "0", 22.60811f);
+        givenResourceWithFloatValue(pack, "1", 118.11733f);
+        givenResourceWithFloatValue(pack, "2", 25f);
+        givenResourceWithFloatValue(pack, "6", 3.5f);
 
         return pack;
     }
