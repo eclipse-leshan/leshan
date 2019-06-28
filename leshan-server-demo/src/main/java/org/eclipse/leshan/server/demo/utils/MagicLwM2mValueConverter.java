@@ -16,7 +16,7 @@
  *                                                     javax.xml.bind.DatatypeConverter
  *                                                     which is not available on Android
  *******************************************************************************/
-package org.eclipse.leshan.core.node.codec;
+package org.eclipse.leshan.server.demo.utils;
 
 import java.util.Date;
 
@@ -26,14 +26,19 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.codec.CodecException;
+import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
 import org.eclipse.leshan.util.Hex;
 import org.eclipse.leshan.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DefaultLwM2mValueConverter implements LwM2mValueConverter {
+/**
+ * A {@link LwM2mValueConverter} which will do some magic conversion.
+ */
+public class MagicLwM2mValueConverter implements LwM2mValueConverter {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DefaultLwM2mValueConverter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MagicLwM2mValueConverter.class);
 
     @Override
     public Object convertValue(Object value, Type currentType, Type expectedType, LwM2mPath resourcePath)

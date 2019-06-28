@@ -182,7 +182,7 @@ public class CreateTest {
     public void cannot_create_mandatory_single_object() throws InterruptedException {
         // try to create another instance of device object
         CreateResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new CreateRequest(3, new LwM2mResource[] { LwM2mSingleResource.newIntegerResource(3, 123) }));
+                new CreateRequest(3, new LwM2mResource[] { LwM2mSingleResource.newStringResource(3, "v123") }));
 
         // verify result
         assertEquals(ResponseCode.BAD_REQUEST, response.getCode());

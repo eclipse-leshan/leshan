@@ -54,7 +54,7 @@ public class LwM2mNodeEncoderTest {
     }
 
     @Test
-    public void text_encode_single_resource() {
+    public void text_encode_single_resource_float() {
 
         byte[] encoded = encoder.encode(LwM2mSingleResource.newFloatResource(15, 56.4D), ContentFormat.TEXT,
                 new LwM2mPath("/323/0/15"), model);
@@ -63,19 +63,10 @@ public class LwM2mNodeEncoderTest {
     }
 
     @Test
-    public void text_encode_date_as_long() {
+    public void text_encode_single_resource_date() {
 
-        byte[] encoded = encoder.encode(LwM2mSingleResource.newStringResource(13, "2010-01-01T12:00:00+01:00"),
+        byte[] encoded = encoder.encode(LwM2mSingleResource.newDateResource(13, new Date(1367491215000L)),
                 ContentFormat.TEXT, new LwM2mPath("/3/0/13"), model);
-
-        Assert.assertEquals("1262343600", new String(encoded, StandardCharsets.UTF_8));
-    }
-
-    @Test
-    public void text_encode_date_as_iso_string() {
-
-        byte[] encoded = encoder.encode(LwM2mSingleResource.newIntegerResource(13, 1367491215000L), ContentFormat.TEXT,
-                new LwM2mPath("/3/0/13"), model);
 
         Assert.assertEquals("1367491215", new String(encoded, StandardCharsets.UTF_8));
     }

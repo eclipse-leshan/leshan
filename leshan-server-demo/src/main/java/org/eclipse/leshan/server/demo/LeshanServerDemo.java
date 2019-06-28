@@ -66,6 +66,7 @@ import org.eclipse.leshan.server.demo.servlet.ClientServlet;
 import org.eclipse.leshan.server.demo.servlet.EventServlet;
 import org.eclipse.leshan.server.demo.servlet.ObjectSpecServlet;
 import org.eclipse.leshan.server.demo.servlet.SecurityServlet;
+import org.eclipse.leshan.server.demo.utils.MagicLwM2mValueConverter;
 import org.eclipse.leshan.server.impl.FileSecurityStore;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StaticModelProvider;
@@ -374,6 +375,9 @@ public class LeshanServerDemo {
             builder.setRegistrationStore(new RedisRegistrationStore(jedis));
         }
         builder.setSecurityStore(securityStore);
+
+        // use a magic converter to support bad type send by the UI.
+        builder.setEncoder(new DefaultLwM2mNodeEncoder(new MagicLwM2mValueConverter()));
 
         // Create and start LWM2M server
         LeshanServer lwServer = builder.build();

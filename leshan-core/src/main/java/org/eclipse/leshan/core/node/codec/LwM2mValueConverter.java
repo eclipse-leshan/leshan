@@ -15,11 +15,16 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec;
 
+import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.LwM2mResource;
 
 /**
  * Helper to convert value "magically" from one type to another.
+ * <p>
+ * This is used by {@link LwM2mNodeEncoder} to fix {@link LwM2mResource} which would used a different
+ * {@link ResourceModel.Type} than the one defined in the {@link ResourceModel}.
  */
 public interface LwM2mValueConverter {
 
