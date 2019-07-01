@@ -36,9 +36,40 @@ import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A default {@link LwM2mNodeDecoder} which support default {@link ContentFormat} :
+ * <p>
+ * <ul>
+ * <li>{@link ContentFormat#TLV}</li>
+ * <li>{@link ContentFormat#JSON}</li>
+ * <li>{@link ContentFormat#TEXT}</li>
+ * <li>{@link ContentFormat#OPAQUE}</li>
+ * </ul>
+ */
 public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultLwM2mNodeDecoder.class);
+
+    protected final boolean supportDeprecatedContentFormat;
+
+    /**
+     * Create {@link DefaultLwM2mNodeDecoder} without support of old TLV and JSON code.
+     */
+    public DefaultLwM2mNodeDecoder() {
+        this(false);
+    }
+
+    /**
+     * Create {@link DefaultLwM2mNodeDecoder} allowing to enable support for old TLV and JSON code.
+     * <p>
+     * Those old codes was used by the LWM2M specification before the official v1.0.0 release and could still be needed
+     * for backward compatibility.
+     * 
+     * @param supportDeprecatedContentFormat True to accept to decode old code.
+     */
+    public DefaultLwM2mNodeDecoder(boolean supportDeprecatedContentFormat) {
+        this.supportDeprecatedContentFormat = supportDeprecatedContentFormat;
+    }
 
     @Override
     public LwM2mNode decode(byte[] content, ContentFormat format, LwM2mPath path, LwM2mModel model)
@@ -58,6 +89,10 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
             throw new CodecException("Content format is mandatory. [%s]", path);
         }
 
+        if (!isSupported(format)) {
+            throw new CodecException("Content format %s is not supported [%s]", format, path);
+        }
+
         // Decode content.
         switch (format.getCode()) {
         case ContentFormat.TEXT_CODE:
@@ -70,8 +105,6 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
         case ContentFormat.JSON_CODE:
         case ContentFormat.OLD_JSON_CODE:
             return LwM2mNodeJsonDecoder.decode(content, path, model, nodeClass);
-        case ContentFormat.LINK_CODE:
-            throw new CodecException("Content format %s not yet implemented [%s]", format, path);
         default:
             throw new CodecException("Content format %s is not supported [%s]", format, path);
         }
@@ -87,6 +120,10 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
             throw new CodecException("Content format is mandatory. [%s]", path);
         }
 
+        if (!isSupported(format)) {
+            throw new CodecException("Content format %s is not supported [%s]", format, path);
+        }
+
         // Decode content.
         switch (format.getCode()) {
         case ContentFormat.TEXT_CODE:
@@ -99,8 +136,6 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
         case ContentFormat.JSON_CODE:
         case ContentFormat.OLD_JSON_CODE:
             return LwM2mNodeJsonDecoder.decodeTimestamped(content, path, model, nodeClassFromPath(path));
-        case ContentFormat.LINK_CODE:
-            throw new CodecException("Content format %s not yet implemented [%s]", format, path);
         default:
             throw new CodecException("Content format %s is not supported [%s]", format, path);
         }
@@ -131,11 +166,12 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
         switch (format.getCode()) {
         case ContentFormat.TEXT_CODE:
         case ContentFormat.TLV_CODE:
-        case ContentFormat.OLD_TLV_CODE:
         case ContentFormat.OPAQUE_CODE:
         case ContentFormat.JSON_CODE:
-        case ContentFormat.OLD_JSON_CODE:
             return true;
+        case ContentFormat.OLD_TLV_CODE:
+        case ContentFormat.OLD_JSON_CODE:
+            return supportDeprecatedContentFormat;
         default:
             return false;
         }

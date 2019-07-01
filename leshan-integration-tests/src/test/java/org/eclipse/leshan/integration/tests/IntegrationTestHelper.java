@@ -43,6 +43,8 @@ import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Operations;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
@@ -157,6 +159,7 @@ public class IntegrationTestHelper {
 
         // Build Client
         LeshanClientBuilder builder = new LeshanClientBuilder(currentEndpointIdentifier.get());
+        builder.setDecoder(new DefaultLwM2mNodeDecoder(true));
         builder.setAdditionalAttributes(additionalAttributes);
         builder.setObjects(objects);
         client = builder.build();
@@ -171,6 +174,7 @@ public class IntegrationTestHelper {
 
     protected LeshanServerBuilder createServerBuilder() {
         LeshanServerBuilder builder = new LeshanServerBuilder();
+        builder.setEncoder(new DefaultLwM2mNodeEncoder(true));
         builder.setObjectModelProvider(new StaticModelProvider(createObjectModels()));
         builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));

@@ -31,18 +31,49 @@ import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A default {@link LwM2mNodeEncoder} which support default {@link ContentFormat} :
+ * <p>
+ * <ul>
+ * <li>{@link ContentFormat#TLV}</li>
+ * <li>{@link ContentFormat#JSON}</li>
+ * <li>{@link ContentFormat#TEXT}</li>
+ * <li>{@link ContentFormat#OPAQUE}</li>
+ * </ul>
+ */
 public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultLwM2mNodeEncoder.class);
 
-    private final LwM2mValueConverter converter;
+    protected final LwM2mValueConverter converter;
+    protected final boolean supportDeprecatedContentFormat;
 
+    /**
+     * Create {@link DefaultLwM2mNodeEncoder} without support of old TLV and JSON code.
+     */
     public DefaultLwM2mNodeEncoder() {
         this(new DefaultLwM2mValueConverter());
     }
 
     public DefaultLwM2mNodeEncoder(LwM2mValueConverter converter) {
+        this(converter, false);
+    }
+
+    /**
+     * Create {@link DefaultLwM2mNodeEncoder} allowing to enable support for old TLV and JSON code.
+     * <p>
+     * Those old codes was used by the LWM2M specification before the official v1.0.0 release and could still be needed
+     * for backward compatibility.
+     * 
+     * @param supportDeprecatedContentFormat True to accept to encode old code.
+     */
+    public DefaultLwM2mNodeEncoder(boolean supportDeprecatedContentFormat) {
+        this(new DefaultLwM2mValueConverter(), supportDeprecatedContentFormat);
+    }
+
+    public DefaultLwM2mNodeEncoder(LwM2mValueConverter converter, boolean supportDeprecatedContentFormat) {
         this.converter = converter;
+        this.supportDeprecatedContentFormat = supportDeprecatedContentFormat;
     }
 
     @Override
@@ -53,8 +84,11 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
             throw new CodecException("Content format is mandatory. [%s]", path);
         }
 
-        LOG.debug("Encoding node {} for path {} and format {}", node, path, format);
+        if (!isSupported(format)) {
+            throw new CodecException("Content format %s is not supported [%s]", format, path);
+        }
 
+        LOG.trace("Encoding node {} for path {} and format {}", node, path, format);
         byte[] encoded;
         switch (format.getCode()) {
         case ContentFormat.TLV_CODE:
@@ -72,7 +106,7 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
             encoded = LwM2mNodeJsonEncoder.encode(node, path, model, converter);
             break;
         default:
-            throw new CodecException("Cannot encode %s:%s with format %s.", path, node, format);
+            throw new CodecException("Content format %s is not supported [%s]", format, path);
         }
         LOG.trace("Encoded node {}: {}", node, encoded);
         return encoded;
@@ -86,11 +120,15 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
             throw new CodecException("Content format is mandatory. [%s]", path);
         }
 
-        LOG.debug("Encoding time-stamped nodes for path {} and format {}", timestampedNodes, path, format);
+        if (!isSupported(format)) {
+            throw new CodecException("Content format %s is not supported [%s]", format, path);
+        }
 
+        LOG.trace("Encoding time-stamped nodes for path {} and format {}", timestampedNodes, path, format);
         byte[] encoded;
         switch (format.getCode()) {
         case ContentFormat.JSON_CODE:
+        case ContentFormat.OLD_JSON_CODE:
             encoded = LwM2mNodeJsonEncoder.encodeTimestampedData(timestampedNodes, path, model, converter);
             break;
         default:
@@ -106,11 +144,12 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
         switch (format.getCode()) {
         case ContentFormat.TEXT_CODE:
         case ContentFormat.TLV_CODE:
-        case ContentFormat.OLD_TLV_CODE:
         case ContentFormat.OPAQUE_CODE:
         case ContentFormat.JSON_CODE:
-        case ContentFormat.OLD_JSON_CODE:
             return true;
+        case ContentFormat.OLD_TLV_CODE:
+        case ContentFormat.OLD_JSON_CODE:
+            return supportDeprecatedContentFormat;
         default:
             return false;
         }
