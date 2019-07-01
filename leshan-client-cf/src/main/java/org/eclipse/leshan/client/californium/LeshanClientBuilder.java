@@ -34,6 +34,11 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.californium.EndpointFactory;
+import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
+import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
+import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.util.Validate;
 
@@ -49,6 +54,9 @@ public class LeshanClientBuilder {
 
     private NetworkConfig coapConfig;
     private Builder dtlsConfigBuilder;
+
+    private LwM2mNodeEncoder encoder;
+    private LwM2mNodeDecoder decoder;
 
     private EndpointFactory endpointFactory;
     private Map<String, String> additionalAttributes;
@@ -94,6 +102,26 @@ public class LeshanClientBuilder {
      */
     public LeshanClientBuilder setObjects(List<? extends LwM2mObjectEnabler> objectEnablers) {
         this.objectEnablers = objectEnablers;
+        return this;
+    }
+
+    /**
+     * Set the {@link LwM2mNodeEncoder} which will encode {@link LwM2mNode} with supported content format.
+     * <p>
+     * By default the {@link DefaultLwM2mNodeEncoder} is used. It supports Text, Opaque, TLV and JSON format.
+     */
+    public LeshanClientBuilder setEncoder(LwM2mNodeEncoder encoder) {
+        this.encoder = encoder;
+        return this;
+    }
+
+    /**
+     * Set the {@link LwM2mNodeDecoder} which will decode data in supported content format to create {@link LwM2mNode}.
+     * <p>
+     * By default the {@link DefaultLwM2mNodeDecoder} is used. It supports Text, Opaque, TLV and JSON format.
+     */
+    public LeshanClientBuilder setDecoder(LwM2mNodeDecoder decoder) {
+        this.decoder = decoder;
         return this;
     }
 
@@ -162,6 +190,10 @@ public class LeshanClientBuilder {
             initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", "model12345", "12345", "U"));
             objectEnablers = initializer.createAll();
         }
+        if (encoder == null)
+            encoder = new DefaultLwM2mNodeEncoder();
+        if (decoder == null)
+            decoder = new DefaultLwM2mNodeDecoder();
         if (coapConfig == null) {
             coapConfig = createDefaultNetworkConfig();
         }
@@ -210,6 +242,6 @@ public class LeshanClientBuilder {
         }
 
         return new LeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder, endpointFactory,
-                additionalAttributes);
+                additionalAttributes, encoder, decoder);
     }
 }

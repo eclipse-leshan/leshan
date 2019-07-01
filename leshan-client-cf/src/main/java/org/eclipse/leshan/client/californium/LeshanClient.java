@@ -36,8 +36,8 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.servers.BootstrapHandler;
 import org.eclipse.leshan.client.servers.RegistrationEngine;
 import org.eclipse.leshan.core.californium.EndpointFactory;
-import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
-import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
+import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
+import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +61,8 @@ public class LeshanClient implements LwM2mClient {
 
     public LeshanClient(String endpoint, InetSocketAddress localAddress,
             List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig, Builder dtlsConfigBuilder,
-            EndpointFactory endpointFactory, Map<String, String> additionalAttributes) {
+            EndpointFactory endpointFactory, Map<String, String> additionalAttributes, LwM2mNodeEncoder encoder,
+            LwM2mNodeDecoder decoder) {
 
         Validate.notNull(endpoint);
         Validate.notEmpty(objectEnablers);
@@ -93,8 +94,7 @@ public class LeshanClient implements LwM2mClient {
 
         // Create CoAP resources for each lwm2m Objects.
         for (LwM2mObjectEnabler enabler : objectEnablers) {
-            ObjectResource clientObject = new ObjectResource(enabler, bootstrapHandler, new DefaultLwM2mNodeEncoder(),
-                    new DefaultLwM2mNodeDecoder());
+            ObjectResource clientObject = new ObjectResource(enabler, bootstrapHandler, encoder, decoder);
             clientSideServer.add(clientObject);
         }
 
