@@ -126,8 +126,14 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             send(session, deleteRequest, new ResponseCallback<BootstrapDeleteResponse>() {
                 @Override
                 public void onResponse(BootstrapDeleteResponse response) {
-                    LOG.trace("Bootstrap delete {} return code {}", session.getEndpoint(), response.getCode());
-
+                    if (response.isSuccess()) {
+                        LOG.trace("Bootstrap delete {} return code {}", session.getEndpoint(), response.getCode());
+                        sessionManager.onResponseSuccess(deleteRequest);
+                    } else {
+                        LOG.debug("Bootstrap delete {} return code {}", session.getEndpoint(), response.getCode());
+                        sessionManager.onResponseError(deleteRequest, response);
+                    }
+                    // recursive call until pathToDelete is empty
                     delete(session, cfg, pathToDelete);
                 }
             }, new ErrorCallback() {
@@ -135,6 +141,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                 public void onError(Exception e) {
                     LOG.debug(String.format("Error during bootstrap delete '/' to foreign peer [ep=%s,id=%s]",
                             session.getEndpoint(), session.getIdentity()), e);
+                    sessionManager.onRequestFailure(deleteRequest, e);
                     sessionManager.failed(session, DELETE_FAILED, deleteRequest);
                 }
             });
@@ -162,7 +169,13 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             send(session, writeBootstrapRequest, new ResponseCallback<BootstrapWriteResponse>() {
                 @Override
                 public void onResponse(BootstrapWriteResponse response) {
-                    LOG.trace("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
+                    if (response.isSuccess()) {
+                        LOG.trace("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
+                        sessionManager.onResponseSuccess(writeBootstrapRequest);
+                    } else {
+                        LOG.debug("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
+                        sessionManager.onResponseError(writeBootstrapRequest, response);
+                    }
                     // recursive call until securityInstancesToWrite is empty
                     writeSecurities(session, cfg, securityInstancesToWrite);
                 }
@@ -172,6 +185,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                     LOG.debug(String.format(
                             "Error during bootstrap write of security instance %s to foreign peer [ep=%s,id=%s]",
                             securityInstance, session.getEndpoint(), session.getIdentity()), e);
+                    sessionManager.onRequestFailure(writeBootstrapRequest, e);
                     sessionManager.failed(session, WRITE_SECURITY_FAILED, writeBootstrapRequest);
                 }
             });
@@ -199,7 +213,13 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             send(session, writeServerRequest, new ResponseCallback<BootstrapWriteResponse>() {
                 @Override
                 public void onResponse(BootstrapWriteResponse response) {
-                    LOG.trace("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
+                    if (response.isSuccess()) {
+                        LOG.trace("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
+                        sessionManager.onResponseSuccess(writeServerRequest);
+                    } else {
+                        LOG.debug("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
+                        sessionManager.onResponseError(writeServerRequest, response);
+                    }
                     // recursive call until serverInstancesToWrite is empty
                     writeServers(session, cfg, serverInstancesToWrite);
                 }
@@ -209,6 +229,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                     LOG.debug(String.format(
                             "Error during bootstrap write of server instance %s to foreign peer [ep=%s,id=%s]",
                             serverInstance, session.getEndpoint(), session.getIdentity()), e);
+                    sessionManager.onRequestFailure(writeServerRequest, e);
                     sessionManager.failed(session, WRITE_SERVER_FAILED, writeServerRequest);
                 }
             });
@@ -236,7 +257,14 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             send(session, writeACLRequest, new ResponseCallback<BootstrapWriteResponse>() {
                 @Override
                 public void onResponse(BootstrapWriteResponse response) {
-                    LOG.trace("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
+                    if (response.isSuccess()) {
+                        LOG.trace("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
+                        sessionManager.onResponseSuccess(writeACLRequest);
+                    } else {
+                        LOG.debug("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
+                        sessionManager.onResponseError(writeACLRequest, response);
+                    }
+
                     // recursive call until aclInstancesToWrite is empty
                     writedAcls(session, cfg, aclInstancesToWrite);
                 }
@@ -246,6 +274,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                     LOG.debug(String.format(
                             "Error during bootstrap write of acl instance %s to foreign peer [ep=%s,id=%s]",
                             aclInstance, session.getEndpoint(), session.getIdentity()), e);
+                    sessionManager.onRequestFailure(writeACLRequest, e);
                     sessionManager.failed(session, WRITE_ACL_FAILED, writeACLRequest);
                 }
             });
@@ -261,10 +290,13 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
         send(session, finishBootstrapRequest, new ResponseCallback<BootstrapFinishResponse>() {
             @Override
             public void onResponse(BootstrapFinishResponse response) {
-                LOG.trace("Bootstrap Finished {} return code {}", session.getEndpoint(), response.getCode());
                 if (response.isSuccess()) {
+                    LOG.trace("Bootstrap Finished {} return code {}", session.getEndpoint(), response.getCode());
+                    sessionManager.onResponseSuccess(finishBootstrapRequest);
                     sessionManager.end(session);
                 } else {
+                    LOG.debug("Bootstrap Finished {} return code {}", session.getEndpoint(), response.getCode());
+                    sessionManager.onResponseError(finishBootstrapRequest, response);
                     sessionManager.failed(session, FINISHED_WITH_ERROR, finishBootstrapRequest);
                 }
             }
@@ -273,6 +305,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             public void onError(Exception e) {
                 LOG.debug(String.format("Error during bootstrap finished to foreign peer [ep=%s,id=%s]",
                         session.getEndpoint(), session.getIdentity()), e);
+                sessionManager.onRequestFailure(finishBootstrapRequest, e);
                 sessionManager.failed(session, SEND_FINISH_FAILED, finishBootstrapRequest);
             }
         });

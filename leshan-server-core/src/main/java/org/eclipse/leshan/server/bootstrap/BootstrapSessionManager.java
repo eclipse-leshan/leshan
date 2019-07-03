@@ -17,11 +17,12 @@ package org.eclipse.leshan.server.bootstrap;
 
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.LwM2mRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.server.impl.DefaultBootstrapSessionManager;
 
 /**
- * Manages boundaries of bootstrap process.
+ * Manages life cycle of a bootstrap process.
  * <p>
  * This class is responsible to accept or refuse to start new {@link BootstrapSession}. The session also contain the
  * ContentFormat which will be used to send Bootstrap Write Request.
@@ -41,6 +42,29 @@ public interface BootstrapSessionManager {
      * @return a BootstrapSession, possibly authorized.
      */
     public BootstrapSession begin(String endpoint, Identity clientIdentity);
+
+    /**
+     * Called when we receive a successful response to a request.
+     * 
+     * @param request The request for which we get a successfull response.
+     */
+    public void onResponseSuccess(LwM2mRequest<? extends LwM2mResponse> request);
+
+    /**
+     * Called when we receive a error response to a request.
+     * 
+     * @param request The request for which we get a error response.
+     * @param response The response received.
+     */
+    public void onResponseError(LwM2mRequest<? extends LwM2mResponse> request, LwM2mResponse response);
+
+    /**
+     * Called when a request failed to be sent.
+     * 
+     * @param request The request which failed to be sent.
+     * @param exception The cause of the failure. Can be null.
+     */
+    public void onRequestFailure(LwM2mRequest<? extends LwM2mResponse> request, Throwable cause);
 
     /**
      * Performs any housekeeping related to the successful ending of a Bootstrapping session.

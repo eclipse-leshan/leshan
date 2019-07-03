@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.LwM2mRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.server.bootstrap.BootstrapFailureCause;
 import org.eclipse.leshan.server.bootstrap.BootstrapSession;
@@ -80,5 +81,17 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
     @Override
     public void failed(BootstrapSession bsSession, BootstrapFailureCause cause,
             DownlinkRequest<? extends LwM2mResponse> request) {
+    }
+
+    @Override
+    public void onResponseSuccess(LwM2mRequest<? extends LwM2mResponse> request) {
+    }
+
+    @Override
+    public void onResponseError(LwM2mRequest<? extends LwM2mResponse> request, LwM2mResponse response) {
+    }
+
+    @Override
+    public void onRequestFailure(LwM2mRequest<? extends LwM2mResponse> request, Throwable cause) {
     }
 }

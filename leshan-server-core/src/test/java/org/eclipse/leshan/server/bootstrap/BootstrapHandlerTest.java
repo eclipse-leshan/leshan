@@ -27,6 +27,7 @@ import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.LwM2mRequest;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
 import org.eclipse.leshan.core.response.BootstrapFinishResponse;
 import org.eclipse.leshan.core.response.BootstrapResponse;
@@ -61,13 +62,14 @@ public class BootstrapHandlerTest {
             }
         };
 
-        BootstrapHandler bsHandler = new DefaultBootstrapHandler(bsStore, requestSender, bsSessionManager, new Executor() {
+        BootstrapHandler bsHandler = new DefaultBootstrapHandler(bsStore, requestSender, bsSessionManager,
+                new Executor() {
 
-            @Override
-            public void execute(Runnable command) {
-                command.run();
-            }
-        });
+                    @Override
+                    public void execute(Runnable command) {
+                        command.run();
+                    }
+                });
 
         bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("enpoint"));
 
@@ -86,13 +88,14 @@ public class BootstrapHandlerTest {
             }
         };
 
-        BootstrapHandler bsHandler = new DefaultBootstrapHandler(bsStore, requestSender, bsSessionManager, new Executor() {
+        BootstrapHandler bsHandler = new DefaultBootstrapHandler(bsStore, requestSender, bsSessionManager,
+                new Executor() {
 
-            @Override
-            public void execute(Runnable command) {
-                command.run();
-            }
-        });
+                    @Override
+                    public void execute(Runnable command) {
+                        command.run();
+                    }
+                });
 
         bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("enpoint"));
 
@@ -162,6 +165,19 @@ public class BootstrapHandlerTest {
         @Override
         public void failed(BootstrapSession bsSession, BootstrapFailureCause cause,
                 DownlinkRequest<? extends LwM2mResponse> request) {
+        }
+
+        @Override
+        public void onResponseSuccess(LwM2mRequest<? extends LwM2mResponse> request) {
+
+        }
+
+        @Override
+        public void onResponseError(LwM2mRequest<? extends LwM2mResponse> request, LwM2mResponse response) {
+        }
+
+        @Override
+        public void onRequestFailure(LwM2mRequest<? extends LwM2mResponse> request, Throwable cause) {
         }
     }
 }
