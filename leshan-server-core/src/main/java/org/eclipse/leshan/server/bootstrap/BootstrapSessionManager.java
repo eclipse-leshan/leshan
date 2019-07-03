@@ -15,7 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
-import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.LwM2mRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -31,6 +30,29 @@ import org.eclipse.leshan.server.impl.DefaultBootstrapSessionManager;
  * @see BootstrapSession
  */
 public interface BootstrapSessionManager {
+
+    public enum BootstrapPolicy {
+        /**
+         * Continue bootstrap session ignoring failure.
+         */
+        CONTINUE,
+        /**
+         * Try to resend the failed request.
+         */
+        RETRY,
+        /**
+         * Retry the bootstrap session from the beginning generally.
+         */
+        RETRYALL,
+        /**
+         * Stop to try to write bootstrap config and directly send a "Bootstrap Finished" request.
+         */
+        SEND_FINISHED,
+        /**
+         * Stop the bootstrap session. The session is considered as failure.
+         */
+        STOP
+    }
 
     /**
      * Starts a bootstrapping session for an endpoint. In particular, this is responsible for authorizing the endpoint
@@ -55,16 +77,20 @@ public interface BootstrapSessionManager {
      * 
      * @param request The request for which we get a error response.
      * @param response The response received.
+     * 
+     * @return a {@link BootstrapPolicy} given the way to continue the bootstrap session.
      */
-    public void onResponseError(LwM2mRequest<? extends LwM2mResponse> request, LwM2mResponse response);
+    public BootstrapPolicy onResponseError(LwM2mRequest<? extends LwM2mResponse> request, LwM2mResponse response);
 
     /**
      * Called when a request failed to be sent.
      * 
      * @param request The request which failed to be sent.
      * @param exception The cause of the failure. Can be null.
+     * 
+     * @return a {@link BootstrapPolicy} given the way to continue the bootstrap session.
      */
-    public void onRequestFailure(LwM2mRequest<? extends LwM2mResponse> request, Throwable cause);
+    public BootstrapPolicy onRequestFailure(LwM2mRequest<? extends LwM2mResponse> request, Throwable cause);
 
     /**
      * Performs any housekeeping related to the successful ending of a Bootstrapping session.
@@ -78,8 +104,6 @@ public interface BootstrapSessionManager {
      * 
      * @param bsSession the bootstrap session which failed.
      * @param cause why the bootstrap failed.
-     * @param request last request sent to the device. Can be null.
      */
-    public void failed(BootstrapSession bsSession, BootstrapFailureCause cause,
-            DownlinkRequest<? extends LwM2mResponse> request);
+    public void failed(BootstrapSession bsSession, BootstrapFailureCause cause);
 }

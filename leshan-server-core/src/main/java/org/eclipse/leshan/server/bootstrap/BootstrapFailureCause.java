@@ -46,9 +46,5 @@ public enum BootstrapFailureCause {
     /**
      * 'Bootstrap Finish' message count not be sent to the device
      */
-    SEND_FINISH_FAILED,
-    /**
-     * The device responded to 'Bootstrap Finish' with an error code
-     */
-    FINISHED_WITH_ERROR
+    FINISH_FAILED,
 }

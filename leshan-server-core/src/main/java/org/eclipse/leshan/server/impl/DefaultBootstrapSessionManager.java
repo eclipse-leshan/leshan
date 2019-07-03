@@ -17,7 +17,7 @@ package org.eclipse.leshan.server.impl;
 
 import java.util.List;
 
-import org.eclipse.leshan.core.request.DownlinkRequest;
+import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.LwM2mRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -79,8 +79,7 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
     }
 
     @Override
-    public void failed(BootstrapSession bsSession, BootstrapFailureCause cause,
-            DownlinkRequest<? extends LwM2mResponse> request) {
+    public void failed(BootstrapSession bsSession, BootstrapFailureCause cause) {
     }
 
     @Override
@@ -88,10 +87,15 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
     }
 
     @Override
-    public void onResponseError(LwM2mRequest<? extends LwM2mResponse> request, LwM2mResponse response) {
+    public BootstrapPolicy onResponseError(LwM2mRequest<? extends LwM2mResponse> request, LwM2mResponse response) {
+        if (request instanceof BootstrapFinishRequest) {
+            return BootstrapPolicy.STOP;
+        }
+        return BootstrapPolicy.CONTINUE;
     }
 
     @Override
-    public void onRequestFailure(LwM2mRequest<? extends LwM2mResponse> request, Throwable cause) {
+    public BootstrapPolicy onRequestFailure(LwM2mRequest<? extends LwM2mResponse> request, Throwable cause) {
+        return BootstrapPolicy.STOP;
     }
 }

@@ -40,6 +40,7 @@ import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ACLConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
+import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager.BootstrapPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,7 +91,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
         final BootstrapSession session = this.sessionManager.begin(endpoint, sender);
 
         if (!session.isAuthorized()) {
-            this.sessionManager.failed(session, UNAUTHORIZED, null);
+            sessionManager.failed(session, UNAUTHORIZED);
             return BootstrapResponse.badRequest("Unauthorized");
         }
 
@@ -98,7 +99,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
         final BootstrapConfig cfg = store.get(endpoint, sender);
         if (cfg == null) {
             LOG.debug("No bootstrap config for {}/{}", endpoint, sender);
-            this.sessionManager.failed(session, NO_BOOTSTRAP_CONFIG, null);
+            sessionManager.failed(session, NO_BOOTSTRAP_CONFIG);
             return BootstrapResponse.badRequest("no bootstrap config");
         }
 
@@ -120,7 +121,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
     protected void delete(final BootstrapSession session, final BootstrapConfig cfg, final List<String> pathToDelete) {
         if (!pathToDelete.isEmpty()) {
             // get next Security configuration
-            String path = pathToDelete.remove(0);
+            String path = pathToDelete.get(0);
 
             final BootstrapDeleteRequest deleteRequest = new BootstrapDeleteRequest(path);
             send(session, deleteRequest, new ResponseCallback<BootstrapDeleteResponse>() {
@@ -129,20 +130,20 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                     if (response.isSuccess()) {
                         LOG.trace("Bootstrap delete {} return code {}", session.getEndpoint(), response.getCode());
                         sessionManager.onResponseSuccess(deleteRequest);
+                        afterDelete(session, cfg, pathToDelete, BootstrapPolicy.CONTINUE);
                     } else {
                         LOG.debug("Bootstrap delete {} return code {}", session.getEndpoint(), response.getCode());
-                        sessionManager.onResponseError(deleteRequest, response);
+                        BootstrapPolicy policy = sessionManager.onResponseError(deleteRequest, response);
+                        afterDelete(session, cfg, pathToDelete, policy);
                     }
-                    // recursive call until pathToDelete is empty
-                    delete(session, cfg, pathToDelete);
                 }
             }, new ErrorCallback() {
                 @Override
                 public void onError(Exception e) {
                     LOG.debug(String.format("Error during bootstrap delete '/' to foreign peer [ep=%s,id=%s]",
                             session.getEndpoint(), session.getIdentity()), e);
-                    sessionManager.onRequestFailure(deleteRequest, e);
-                    sessionManager.failed(session, DELETE_FAILED, deleteRequest);
+                    BootstrapPolicy policy = sessionManager.onRequestFailure(deleteRequest, e);
+                    afterDelete(session, cfg, pathToDelete, policy);
                 }
             });
         } else {
@@ -152,11 +153,35 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
         }
     }
 
+    protected void afterDelete(BootstrapSession session, BootstrapConfig cfg, List<String> pathToDelete,
+            BootstrapPolicy policy) {
+        switch (policy) {
+        case CONTINUE:
+            pathToDelete.remove(0);
+            delete(session, cfg, pathToDelete);
+            break;
+        case RETRY:
+            delete(session, cfg, pathToDelete);
+            break;
+        case RETRYALL:
+            startBootstrap(session, cfg);
+            break;
+        case SEND_FINISHED:
+            bootstrapFinished(session, cfg);
+            break;
+        case STOP:
+            sessionManager.failed(session, DELETE_FAILED);
+            break;
+        default:
+            throw new IllegalStateException("unknown policy :" + policy);
+        }
+    }
+
     protected void writeSecurities(final BootstrapSession session, final BootstrapConfig cfg,
             final List<Integer> securityInstancesToWrite) {
         if (!securityInstancesToWrite.isEmpty()) {
             // get next Security configuration
-            Integer key = securityInstancesToWrite.remove(0);
+            Integer key = securityInstancesToWrite.get(0);
             ServerSecurity securityConfig = cfg.security.get(key);
 
             // create write request from it
@@ -172,12 +197,12 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                     if (response.isSuccess()) {
                         LOG.trace("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
                         sessionManager.onResponseSuccess(writeBootstrapRequest);
+                        afterWriteSecurities(session, cfg, securityInstancesToWrite, BootstrapPolicy.CONTINUE);
                     } else {
                         LOG.debug("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
-                        sessionManager.onResponseError(writeBootstrapRequest, response);
+                        BootstrapPolicy policy = sessionManager.onResponseError(writeBootstrapRequest, response);
+                        afterWriteSecurities(session, cfg, securityInstancesToWrite, policy);
                     }
-                    // recursive call until securityInstancesToWrite is empty
-                    writeSecurities(session, cfg, securityInstancesToWrite);
                 }
             }, new ErrorCallback() {
                 @Override
@@ -185,8 +210,8 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                     LOG.debug(String.format(
                             "Error during bootstrap write of security instance %s to foreign peer [ep=%s,id=%s]",
                             securityInstance, session.getEndpoint(), session.getIdentity()), e);
-                    sessionManager.onRequestFailure(writeBootstrapRequest, e);
-                    sessionManager.failed(session, WRITE_SECURITY_FAILED, writeBootstrapRequest);
+                    BootstrapPolicy policy = sessionManager.onRequestFailure(writeBootstrapRequest, e);
+                    afterWriteSecurities(session, cfg, securityInstancesToWrite, policy);
                 }
             });
         } else {
@@ -196,11 +221,35 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
         }
     }
 
+    protected void afterWriteSecurities(BootstrapSession session, BootstrapConfig cfg,
+            List<Integer> securityInstancesToWrite, BootstrapPolicy policy) {
+        switch (policy) {
+        case CONTINUE:
+            securityInstancesToWrite.remove(0);
+            writeSecurities(session, cfg, securityInstancesToWrite);
+            break;
+        case RETRY:
+            writeSecurities(session, cfg, securityInstancesToWrite);
+            break;
+        case RETRYALL:
+            startBootstrap(session, cfg);
+            break;
+        case SEND_FINISHED:
+            bootstrapFinished(session, cfg);
+            break;
+        case STOP:
+            sessionManager.failed(session, WRITE_SECURITY_FAILED);
+            break;
+        default:
+            throw new IllegalStateException("unknown policy :" + policy);
+        }
+    }
+
     protected void writeServers(final BootstrapSession session, final BootstrapConfig cfg,
             final List<Integer> serverInstancesToWrite) {
         if (!serverInstancesToWrite.isEmpty()) {
             // get next Server configuration
-            Integer key = serverInstancesToWrite.remove(0);
+            Integer key = serverInstancesToWrite.get(0);
             ServerConfig serverConfig = cfg.servers.get(key);
 
             // create write request from it
@@ -216,12 +265,12 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                     if (response.isSuccess()) {
                         LOG.trace("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
                         sessionManager.onResponseSuccess(writeServerRequest);
+                        afterWriteServers(session, cfg, serverInstancesToWrite, BootstrapPolicy.CONTINUE);
                     } else {
                         LOG.debug("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
-                        sessionManager.onResponseError(writeServerRequest, response);
+                        BootstrapPolicy policy = sessionManager.onResponseError(writeServerRequest, response);
+                        afterWriteServers(session, cfg, serverInstancesToWrite, policy);
                     }
-                    // recursive call until serverInstancesToWrite is empty
-                    writeServers(session, cfg, serverInstancesToWrite);
                 }
             }, new ErrorCallback() {
                 @Override
@@ -229,8 +278,8 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                     LOG.debug(String.format(
                             "Error during bootstrap write of server instance %s to foreign peer [ep=%s,id=%s]",
                             serverInstance, session.getEndpoint(), session.getIdentity()), e);
-                    sessionManager.onRequestFailure(writeServerRequest, e);
-                    sessionManager.failed(session, WRITE_SERVER_FAILED, writeServerRequest);
+                    BootstrapPolicy policy = sessionManager.onRequestFailure(writeServerRequest, e);
+                    afterWriteServers(session, cfg, serverInstancesToWrite, policy);
                 }
             });
         } else {
@@ -240,11 +289,35 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
         }
     }
 
+    protected void afterWriteServers(BootstrapSession session, BootstrapConfig cfg,
+            List<Integer> serverInstancesToWrite, BootstrapPolicy policy) {
+        switch (policy) {
+        case CONTINUE:
+            serverInstancesToWrite.remove(0);
+            writeServers(session, cfg, serverInstancesToWrite);
+            break;
+        case RETRY:
+            writeServers(session, cfg, serverInstancesToWrite);
+            break;
+        case RETRYALL:
+            startBootstrap(session, cfg);
+            break;
+        case SEND_FINISHED:
+            bootstrapFinished(session, cfg);
+            break;
+        case STOP:
+            sessionManager.failed(session, WRITE_SERVER_FAILED);
+            break;
+        default:
+            throw new IllegalStateException("unknown policy :" + policy);
+        }
+    }
+
     protected void writedAcls(final BootstrapSession session, final BootstrapConfig cfg,
             final List<Integer> aclInstancesToWrite) {
         if (!aclInstancesToWrite.isEmpty()) {
             // get next ACL configuration
-            Integer key = aclInstancesToWrite.remove(0);
+            Integer key = aclInstancesToWrite.get(0);
             ACLConfig aclConfig = cfg.acls.get(key);
 
             // create write request from it
@@ -260,13 +333,12 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                     if (response.isSuccess()) {
                         LOG.trace("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
                         sessionManager.onResponseSuccess(writeACLRequest);
+                        afterWritedAcls(session, cfg, aclInstancesToWrite, BootstrapPolicy.CONTINUE);
                     } else {
                         LOG.debug("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
-                        sessionManager.onResponseError(writeACLRequest, response);
+                        BootstrapPolicy policy = sessionManager.onResponseError(writeACLRequest, response);
+                        afterWritedAcls(session, cfg, aclInstancesToWrite, policy);
                     }
-
-                    // recursive call until aclInstancesToWrite is empty
-                    writedAcls(session, cfg, aclInstancesToWrite);
                 }
             }, new ErrorCallback() {
                 @Override
@@ -274,13 +346,37 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                     LOG.debug(String.format(
                             "Error during bootstrap write of acl instance %s to foreign peer [ep=%s,id=%s]",
                             aclInstance, session.getEndpoint(), session.getIdentity()), e);
-                    sessionManager.onRequestFailure(writeACLRequest, e);
-                    sessionManager.failed(session, WRITE_ACL_FAILED, writeACLRequest);
+                    BootstrapPolicy policy = sessionManager.onRequestFailure(writeACLRequest, e);
+                    afterWritedAcls(session, cfg, aclInstancesToWrite, policy);
                 }
             });
         } else {
             // we are done, send bootstrap finished.
             bootstrapFinished(session, cfg);
+        }
+    }
+
+    protected void afterWritedAcls(BootstrapSession session, BootstrapConfig cfg, List<Integer> aclInstancesToWrite,
+            BootstrapPolicy policy) {
+        switch (policy) {
+        case CONTINUE:
+            aclInstancesToWrite.remove(0);
+            writedAcls(session, cfg, aclInstancesToWrite);
+            break;
+        case RETRY:
+            writedAcls(session, cfg, aclInstancesToWrite);
+            break;
+        case RETRYALL:
+            startBootstrap(session, cfg);
+            break;
+        case SEND_FINISHED:
+            bootstrapFinished(session, cfg);
+            break;
+        case STOP:
+            sessionManager.failed(session, WRITE_ACL_FAILED);
+            break;
+        default:
+            throw new IllegalStateException("unknown policy :" + policy);
         }
     }
 
@@ -293,11 +389,11 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                 if (response.isSuccess()) {
                     LOG.trace("Bootstrap Finished {} return code {}", session.getEndpoint(), response.getCode());
                     sessionManager.onResponseSuccess(finishBootstrapRequest);
-                    sessionManager.end(session);
+                    afterBootstrapFinished(session, cfg, BootstrapPolicy.CONTINUE);
                 } else {
                     LOG.debug("Bootstrap Finished {} return code {}", session.getEndpoint(), response.getCode());
-                    sessionManager.onResponseError(finishBootstrapRequest, response);
-                    sessionManager.failed(session, FINISHED_WITH_ERROR, finishBootstrapRequest);
+                    BootstrapPolicy policy = sessionManager.onResponseError(finishBootstrapRequest, response);
+                    afterBootstrapFinished(session, cfg, policy);
                 }
             }
         }, new ErrorCallback() {
@@ -305,10 +401,32 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             public void onError(Exception e) {
                 LOG.debug(String.format("Error during bootstrap finished to foreign peer [ep=%s,id=%s]",
                         session.getEndpoint(), session.getIdentity()), e);
-                sessionManager.onRequestFailure(finishBootstrapRequest, e);
-                sessionManager.failed(session, SEND_FINISH_FAILED, finishBootstrapRequest);
+                BootstrapPolicy policy = sessionManager.onRequestFailure(finishBootstrapRequest, e);
+                afterBootstrapFinished(session, cfg, policy);
             }
         });
+    }
+
+    protected void afterBootstrapFinished(BootstrapSession session, BootstrapConfig cfg, BootstrapPolicy policy) {
+        switch (policy) {
+        case CONTINUE:
+            sessionManager.end(session);
+            break;
+        case RETRY:
+            bootstrapFinished(session, cfg);
+            break;
+        case RETRYALL:
+            startBootstrap(session, cfg);
+            break;
+        case SEND_FINISHED:
+            bootstrapFinished(session, cfg);
+            break;
+        case STOP:
+            sessionManager.failed(session, FINISH_FAILED);
+            break;
+        default:
+            throw new IllegalStateException("unknown policy :" + policy);
+        }
     }
 
     protected <T extends LwM2mResponse> void send(BootstrapSession session, DownlinkRequest<T> request,
