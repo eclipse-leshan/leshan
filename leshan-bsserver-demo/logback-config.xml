@@ -27,6 +27,6 @@ Contributors:
 
 	<logger name="org.eclipse.leshan" level="INFO" />
 	<logger name="org.eclipse.leshan.server.security.SecurityCheck" level="DEBUG" />
-	<logger name="org.eclipse.leshan.server.bootstrap.BootstrapHandler" level="DEBUG" />
+	<logger name="org.eclipse.leshan.server.bootstrap.DefaultBootstrapHandler" level="DEBUG" />
 	<logger name="org.eclipse.leshan.core.model.LwM2mModel" level="DEBUG" />
 </configuration>

@@ -113,8 +113,8 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             if (oldSession != null) {
                 if (System.currentTimeMillis() - oldSession.getCreationTime() >= sessionLifeTime) {
                     onGoingSession.remove(endpoint, oldSession);
-                    LOG.warn("Session for endpoint {} / identity {} created {} expired.", oldSession.getEndpoint(),
-                            oldSession.getIdentity(), oldSession.getCreationTime());
+                    if (LOG.isWarnEnabled())
+                        LOG.warn("{} expired at {}.", oldSession, System.currentTimeMillis());
                 } else {
                     // Do not start the session if there is already a started one
                     sessionManager.failed(session, ALREADY_STARTED);
@@ -126,7 +126,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
         // Get the desired bootstrap config for the endpoint
         final BootstrapConfig cfg = store.get(endpoint, sender);
         if (cfg == null) {
-            LOG.debug("No bootstrap config for {}/{}", endpoint, sender);
+            LOG.debug("No bootstrap config for {}", session);
             stopSession(session, NO_BOOTSTRAP_CONFIG);
             return BootstrapResponse.badRequest("no bootstrap config");
         }
@@ -148,8 +148,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
 
     protected void stopSession(BootstrapSession session, BootstrapFailureCause cause) {
         if (!onGoingSession.remove(session.getEndpoint(), session)) {
-            LOG.warn("Session for endpoint {} / identity {} was already removed", session.getEndpoint(),
-                    session.getIdentity());
+            LOG.warn("{} was already removed", session);
         }
         // if there is no cause of failure, this is a success
         if (cause == null) {
@@ -169,11 +168,11 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                 @Override
                 public void onResponse(BootstrapDeleteResponse response) {
                     if (response.isSuccess()) {
-                        LOG.trace("Bootstrap delete {} return code {}", session.getEndpoint(), response.getCode());
+                        LOG.trace("{} receives {} for {}", session, response, deleteRequest);
                         sessionManager.onResponseSuccess(deleteRequest);
                         afterDelete(session, cfg, pathToDelete, BootstrapPolicy.CONTINUE);
                     } else {
-                        LOG.debug("Bootstrap delete {} return code {}", session.getEndpoint(), response.getCode());
+                        LOG.debug("{} receives {} for {}", session, response, deleteRequest);
                         BootstrapPolicy policy = sessionManager.onResponseError(deleteRequest, response);
                         afterDelete(session, cfg, pathToDelete, policy);
                     }
@@ -181,8 +180,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             }, new ErrorCallback() {
                 @Override
                 public void onError(Exception e) {
-                    LOG.debug(String.format("Error during bootstrap delete '/' to foreign peer [ep=%s,id=%s]",
-                            session.getEndpoint(), session.getIdentity()), e);
+                    LOG.debug("Error for {} while sending {} ", session, deleteRequest, e);
                     BootstrapPolicy policy = sessionManager.onRequestFailure(deleteRequest, e);
                     afterDelete(session, cfg, pathToDelete, policy);
                 }
@@ -236,11 +234,11 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                 @Override
                 public void onResponse(BootstrapWriteResponse response) {
                     if (response.isSuccess()) {
-                        LOG.trace("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
+                        LOG.trace("{} receives {} for {}", session, response, writeBootstrapRequest);
                         sessionManager.onResponseSuccess(writeBootstrapRequest);
                         afterWriteSecurities(session, cfg, securityInstancesToWrite, BootstrapPolicy.CONTINUE);
                     } else {
-                        LOG.debug("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
+                        LOG.debug("{} receives {} for {}", session, response, writeBootstrapRequest);
                         BootstrapPolicy policy = sessionManager.onResponseError(writeBootstrapRequest, response);
                         afterWriteSecurities(session, cfg, securityInstancesToWrite, policy);
                     }
@@ -248,9 +246,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             }, new ErrorCallback() {
                 @Override
                 public void onError(Exception e) {
-                    LOG.debug(String.format(
-                            "Error during bootstrap write of security instance %s to foreign peer [ep=%s,id=%s]",
-                            securityInstance, session.getEndpoint(), session.getIdentity()), e);
+                    LOG.debug("Error for {} while sending {} ", session, writeBootstrapRequest, e);
                     BootstrapPolicy policy = sessionManager.onRequestFailure(writeBootstrapRequest, e);
                     afterWriteSecurities(session, cfg, securityInstancesToWrite, policy);
                 }
@@ -304,11 +300,11 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                 @Override
                 public void onResponse(BootstrapWriteResponse response) {
                     if (response.isSuccess()) {
-                        LOG.trace("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
+                        LOG.trace("{} receives {} for {}", session, response, writeServerRequest);
                         sessionManager.onResponseSuccess(writeServerRequest);
                         afterWriteServers(session, cfg, serverInstancesToWrite, BootstrapPolicy.CONTINUE);
                     } else {
-                        LOG.debug("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
+                        LOG.debug("{} receives {} for {}", session, response, writeServerRequest);
                         BootstrapPolicy policy = sessionManager.onResponseError(writeServerRequest, response);
                         afterWriteServers(session, cfg, serverInstancesToWrite, policy);
                     }
@@ -316,9 +312,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             }, new ErrorCallback() {
                 @Override
                 public void onError(Exception e) {
-                    LOG.debug(String.format(
-                            "Error during bootstrap write of server instance %s to foreign peer [ep=%s,id=%s]",
-                            serverInstance, session.getEndpoint(), session.getIdentity()), e);
+                    LOG.debug("Error for {} while sending {} ", session, writeServerRequest, e);
                     BootstrapPolicy policy = sessionManager.onRequestFailure(writeServerRequest, e);
                     afterWriteServers(session, cfg, serverInstancesToWrite, policy);
                 }
@@ -372,11 +366,11 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                 @Override
                 public void onResponse(BootstrapWriteResponse response) {
                     if (response.isSuccess()) {
-                        LOG.trace("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
+                        LOG.trace("{} receives {} for {}", session, response, writeACLRequest);
                         sessionManager.onResponseSuccess(writeACLRequest);
                         afterWritedAcls(session, cfg, aclInstancesToWrite, BootstrapPolicy.CONTINUE);
                     } else {
-                        LOG.debug("Bootstrap write {} return code {}", session.getEndpoint(), response.getCode());
+                        LOG.debug("{} receives {} for {}", session, response, writeACLRequest);
                         BootstrapPolicy policy = sessionManager.onResponseError(writeACLRequest, response);
                         afterWritedAcls(session, cfg, aclInstancesToWrite, policy);
                     }
@@ -384,9 +378,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             }, new ErrorCallback() {
                 @Override
                 public void onError(Exception e) {
-                    LOG.debug(String.format(
-                            "Error during bootstrap write of acl instance %s to foreign peer [ep=%s,id=%s]",
-                            aclInstance, session.getEndpoint(), session.getIdentity()), e);
+                    LOG.debug("Error for {} while sending {} ", session, writeACLRequest, e);
                     BootstrapPolicy policy = sessionManager.onRequestFailure(writeACLRequest, e);
                     afterWritedAcls(session, cfg, aclInstancesToWrite, policy);
                 }
@@ -428,11 +420,11 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             @Override
             public void onResponse(BootstrapFinishResponse response) {
                 if (response.isSuccess()) {
-                    LOG.trace("Bootstrap Finished {} return code {}", session.getEndpoint(), response.getCode());
+                    LOG.trace("{} receives {} for {}", session, response, finishBootstrapRequest);
                     sessionManager.onResponseSuccess(finishBootstrapRequest);
                     afterBootstrapFinished(session, cfg, BootstrapPolicy.CONTINUE);
                 } else {
-                    LOG.debug("Bootstrap Finished {} return code {}", session.getEndpoint(), response.getCode());
+                    LOG.debug("{} receives {} for {}", session, response, finishBootstrapRequest);
                     BootstrapPolicy policy = sessionManager.onResponseError(finishBootstrapRequest, response);
                     afterBootstrapFinished(session, cfg, policy);
                 }
@@ -440,8 +432,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
         }, new ErrorCallback() {
             @Override
             public void onError(Exception e) {
-                LOG.debug(String.format("Error during bootstrap finished to foreign peer [ep=%s,id=%s]",
-                        session.getEndpoint(), session.getIdentity()), e);
+                LOG.debug("Error for {} while sending {} ", session, finishBootstrapRequest, e);
                 BootstrapPolicy policy = sessionManager.onRequestFailure(finishBootstrapRequest, e);
                 afterBootstrapFinished(session, cfg, policy);
             }
