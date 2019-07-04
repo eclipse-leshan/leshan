@@ -56,33 +56,42 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
 
     // We choose a default timeout a bit higher to the MAX_TRANSMIT_WAIT(62-93s) which is the time from starting to
     // send a Confirmable message to the time when an acknowledgement is no longer expected.
-    protected static final long DEFAULT_TIMEOUT = 2 * 60 * 1000l; // 2min in ms
+    public static final long DEFAULT_TIMEOUT = 2 * 60 * 1000l; // 2min in ms
+
+    public static final long DEFAULT_LIFETIME = 15 * 60 * 1000l; // 15 minutes
 
     protected final Executor e;
 
     protected final BootstrapConfigStore store;
+
     protected final LwM2mBootstrapRequestSender sender;
-    protected final BootstrapSessionManager sessionManager;
     protected final long requestTimeout;
+
+    // Session should be removed from onGoingSession map when it failed or succeed.
+    // But in case where we are not able to detect a failure we define a maximum lifetime to avoid to completely block a
+    // device
+    protected final long sessionLifeTime;
     protected final ConcurrentHashMap<String, BootstrapSession> onGoingSession = new ConcurrentHashMap<>();
+    protected final BootstrapSessionManager sessionManager;
 
     public DefaultBootstrapHandler(BootstrapConfigStore store, LwM2mBootstrapRequestSender sender,
             BootstrapSessionManager sessionManager) {
-        this(store, sender, sessionManager, Executors.newFixedThreadPool(5), DEFAULT_TIMEOUT);
+        this(store, sender, sessionManager, Executors.newFixedThreadPool(5), DEFAULT_TIMEOUT, DEFAULT_LIFETIME);
     }
 
     public DefaultBootstrapHandler(BootstrapConfigStore store, LwM2mBootstrapRequestSender sender,
             BootstrapSessionManager sessionManager, Executor executor) {
-        this(store, sender, sessionManager, executor, DEFAULT_TIMEOUT);
+        this(store, sender, sessionManager, executor, DEFAULT_TIMEOUT, DEFAULT_LIFETIME);
     }
 
     public DefaultBootstrapHandler(BootstrapConfigStore store, LwM2mBootstrapRequestSender sender,
-            BootstrapSessionManager sessionManager, Executor executor, long requestTimeout) {
+            BootstrapSessionManager sessionManager, Executor executor, long requestTimeout, long sessionLifetime) {
         this.store = store;
         this.sender = sender;
         this.sessionManager = sessionManager;
         this.e = executor;
         this.requestTimeout = requestTimeout;
+        this.sessionLifeTime = sessionLifetime;
     }
 
     @Override
@@ -98,12 +107,21 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
         }
 
         // check if there is not an ongoing session.
-        BootstrapSession oldSession = onGoingSession.putIfAbsent(endpoint, session);
-        if (oldSession != null) {
-            // Do not start the session if there is already a started one
-            sessionManager.failed(session, ALREADY_STARTED);
-            return BootstrapResponse.badRequest("session already started");
-        }
+        BootstrapSession oldSession;
+        do {
+            oldSession = onGoingSession.putIfAbsent(endpoint, session);
+            if (oldSession != null) {
+                if (System.currentTimeMillis() - oldSession.getCreationTime() >= sessionLifeTime) {
+                    onGoingSession.remove(endpoint, oldSession);
+                    LOG.warn("Session for endpoint {} / identity {} created {} expired.", oldSession.getEndpoint(),
+                            oldSession.getIdentity(), oldSession.getCreationTime());
+                } else {
+                    // Do not start the session if there is already a started one
+                    sessionManager.failed(session, ALREADY_STARTED);
+                    return BootstrapResponse.badRequest("session already started");
+                }
+            }
+        } while (oldSession != null);
 
         // Get the desired bootstrap config for the endpoint
         final BootstrapConfig cfg = store.get(endpoint, sender);

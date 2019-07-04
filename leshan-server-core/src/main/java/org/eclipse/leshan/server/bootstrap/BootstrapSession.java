@@ -46,4 +46,10 @@ public interface BootstrapSession {
      */
     ContentFormat getContentFormat();
 
+    /**
+     * @return the create time in milliseconds
+     * @see System#currentTimeMillis()
+     */
+    long getCreationTime();
+
 }
