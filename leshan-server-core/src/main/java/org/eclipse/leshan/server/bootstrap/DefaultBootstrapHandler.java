@@ -135,7 +135,12 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
         e.execute(new Runnable() {
             @Override
             public void run() {
-                startBootstrap(session, cfg);
+                try {
+                    startBootstrap(session, cfg);
+                } catch (RuntimeException e) {
+                    LOG.warn("Unexpected error at bootstrap start-up for {}", session, e);
+                    stopSession(session, INTERNAL_SERVER_ERROR);
+                }
             }
         });
 
@@ -164,9 +169,9 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             String path = pathToDelete.get(0);
 
             final BootstrapDeleteRequest deleteRequest = new BootstrapDeleteRequest(path);
-            send(session, deleteRequest, new ResponseCallback<BootstrapDeleteResponse>() {
+            send(session, deleteRequest, new SafeResponseCallback<BootstrapDeleteResponse>(session) {
                 @Override
-                public void onResponse(BootstrapDeleteResponse response) {
+                public void safeOnResponse(BootstrapDeleteResponse response) {
                     if (response.isSuccess()) {
                         LOG.trace("{} receives {} for {}", session, response, deleteRequest);
                         sessionManager.onResponseSuccess(deleteRequest);
@@ -177,9 +182,9 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                         afterDelete(session, cfg, pathToDelete, policy);
                     }
                 }
-            }, new ErrorCallback() {
+            }, new SafeErrorCallback(session) {
                 @Override
-                public void onError(Exception e) {
+                public void safeOnError(Exception e) {
                     LOG.debug("Error for {} while sending {} ", session, deleteRequest, e);
                     BootstrapPolicy policy = sessionManager.onRequestFailure(deleteRequest, e);
                     afterDelete(session, cfg, pathToDelete, policy);
@@ -230,9 +235,9 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                     session.getContentFormat());
 
             // sent it
-            send(session, writeBootstrapRequest, new ResponseCallback<BootstrapWriteResponse>() {
+            send(session, writeBootstrapRequest, new SafeResponseCallback<BootstrapWriteResponse>(session) {
                 @Override
-                public void onResponse(BootstrapWriteResponse response) {
+                public void safeOnResponse(BootstrapWriteResponse response) {
                     if (response.isSuccess()) {
                         LOG.trace("{} receives {} for {}", session, response, writeBootstrapRequest);
                         sessionManager.onResponseSuccess(writeBootstrapRequest);
@@ -243,9 +248,9 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                         afterWriteSecurities(session, cfg, securityInstancesToWrite, policy);
                     }
                 }
-            }, new ErrorCallback() {
+            }, new SafeErrorCallback(session) {
                 @Override
-                public void onError(Exception e) {
+                public void safeOnError(Exception e) {
                     LOG.debug("Error for {} while sending {} ", session, writeBootstrapRequest, e);
                     BootstrapPolicy policy = sessionManager.onRequestFailure(writeBootstrapRequest, e);
                     afterWriteSecurities(session, cfg, securityInstancesToWrite, policy);
@@ -296,9 +301,9 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                     session.getContentFormat());
 
             // sent it
-            send(session, writeServerRequest, new ResponseCallback<BootstrapWriteResponse>() {
+            send(session, writeServerRequest, new SafeResponseCallback<BootstrapWriteResponse>(session) {
                 @Override
-                public void onResponse(BootstrapWriteResponse response) {
+                public void safeOnResponse(BootstrapWriteResponse response) {
                     if (response.isSuccess()) {
                         LOG.trace("{} receives {} for {}", session, response, writeServerRequest);
                         sessionManager.onResponseSuccess(writeServerRequest);
@@ -309,9 +314,9 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                         afterWriteServers(session, cfg, serverInstancesToWrite, policy);
                     }
                 }
-            }, new ErrorCallback() {
+            }, new SafeErrorCallback(session) {
                 @Override
-                public void onError(Exception e) {
+                public void safeOnError(Exception e) {
                     LOG.debug("Error for {} while sending {} ", session, writeServerRequest, e);
                     BootstrapPolicy policy = sessionManager.onRequestFailure(writeServerRequest, e);
                     afterWriteServers(session, cfg, serverInstancesToWrite, policy);
@@ -362,9 +367,9 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                     session.getContentFormat());
 
             // sent it
-            send(session, writeACLRequest, new ResponseCallback<BootstrapWriteResponse>() {
+            send(session, writeACLRequest, new SafeResponseCallback<BootstrapWriteResponse>(session) {
                 @Override
-                public void onResponse(BootstrapWriteResponse response) {
+                public void safeOnResponse(BootstrapWriteResponse response) {
                     if (response.isSuccess()) {
                         LOG.trace("{} receives {} for {}", session, response, writeACLRequest);
                         sessionManager.onResponseSuccess(writeACLRequest);
@@ -375,9 +380,9 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                         afterWritedAcls(session, cfg, aclInstancesToWrite, policy);
                     }
                 }
-            }, new ErrorCallback() {
+            }, new SafeErrorCallback(session) {
                 @Override
-                public void onError(Exception e) {
+                public void safeOnError(Exception e) {
                     LOG.debug("Error for {} while sending {} ", session, writeACLRequest, e);
                     BootstrapPolicy policy = sessionManager.onRequestFailure(writeACLRequest, e);
                     afterWritedAcls(session, cfg, aclInstancesToWrite, policy);
@@ -416,9 +421,9 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
     protected void bootstrapFinished(final BootstrapSession session, final BootstrapConfig cfg) {
 
         final BootstrapFinishRequest finishBootstrapRequest = new BootstrapFinishRequest();
-        send(session, finishBootstrapRequest, new ResponseCallback<BootstrapFinishResponse>() {
+        send(session, finishBootstrapRequest, new SafeResponseCallback<BootstrapFinishResponse>(session) {
             @Override
-            public void onResponse(BootstrapFinishResponse response) {
+            public void safeOnResponse(BootstrapFinishResponse response) {
                 if (response.isSuccess()) {
                     LOG.trace("{} receives {} for {}", session, response, finishBootstrapRequest);
                     sessionManager.onResponseSuccess(finishBootstrapRequest);
@@ -429,9 +434,9 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                     afterBootstrapFinished(session, cfg, policy);
                 }
             }
-        }, new ErrorCallback() {
+        }, new SafeErrorCallback(session) {
             @Override
-            public void onError(Exception e) {
+            public void safeOnError(Exception e) {
                 LOG.debug("Error for {} while sending {} ", session, finishBootstrapRequest, e);
                 BootstrapPolicy policy = sessionManager.onRequestFailure(finishBootstrapRequest, e);
                 afterBootstrapFinished(session, cfg, policy);
@@ -465,5 +470,47 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         sender.send(session.getEndpoint(), session.getIdentity(), request, requestTimeout, responseCallback,
                 errorCallback);
+    }
+
+    protected abstract class SafeResponseCallback<T extends LwM2mResponse> implements ResponseCallback<T> {
+
+        private BootstrapSession session;
+
+        public SafeResponseCallback(BootstrapSession session) {
+            this.session = session;
+        }
+
+        @Override
+        public void onResponse(T response) {
+            try {
+                safeOnResponse(response);
+            } catch (RuntimeException e) {
+                LOG.warn("Unexpected error on response callback for {}", session, e);
+                stopSession(session, INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        public abstract void safeOnResponse(T response);
+    }
+
+    protected abstract class SafeErrorCallback implements ErrorCallback {
+
+        private BootstrapSession session;
+
+        public SafeErrorCallback(BootstrapSession session) {
+            this.session = session;
+        }
+
+        @Override
+        public void onError(Exception error) {
+            try {
+                safeOnError(error);
+            } catch (RuntimeException e) {
+                LOG.warn("Unexpected error on error callback for {}", session, e);
+                stopSession(session, INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        public abstract void safeOnError(Exception e);
     }
 }

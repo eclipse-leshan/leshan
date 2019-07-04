@@ -32,7 +32,7 @@ public enum BootstrapFailureCause {
      */
     NO_BOOTSTRAP_CONFIG,
     /**
-     * The "/" object could not be deleted on the device
+     * A delete request failed
      */
     DELETE_FAILED,
     /**
@@ -48,7 +48,11 @@ public enum BootstrapFailureCause {
      */
     WRITE_SECURITY_FAILED,
     /**
-     * 'Bootstrap Finish' message count not be sent to the device
+     * 'Bootstrap Finish' failed
      */
     FINISH_FAILED,
+    /**
+     * An unexpected error occured
+     */
+    INTERNAL_SERVER_ERROR,
 }
