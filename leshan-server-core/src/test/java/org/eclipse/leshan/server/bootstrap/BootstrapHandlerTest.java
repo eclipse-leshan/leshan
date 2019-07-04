@@ -35,6 +35,7 @@ import org.eclipse.leshan.core.response.BootstrapWriteResponse;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
+import org.eclipse.leshan.server.bootstrap.BootstrapHandlerTest.MockRequestSender.Mode;
 import org.eclipse.leshan.server.impl.DefaultBootstrapSession;
 import org.junit.Test;
 
@@ -42,72 +43,140 @@ public class BootstrapHandlerTest {
 
     @Test
     public void error_if_not_authorized() {
-        final BootstrapSessionManager bsSessionManager = new MockBootstrapSessionManager(false);
+        // prepare bootstrapHandler with a session manager which does not authorized any session
+        BootstrapSessionManager bsSessionManager = new MockBootstrapSessionManager(false);
+        BootstrapHandler bsHandler = new DefaultBootstrapHandler(null, null, bsSessionManager, new DirectExecutor());
 
-        BootstrapHandler bsHandler = new DefaultBootstrapHandler(null, null, bsSessionManager);
-        BootstrapResponse bootstrapResponse = bsHandler
-                .bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("enpoint"));
-        assertEquals(ResponseCode.BAD_REQUEST, bootstrapResponse.getCode());
+        // Try to bootstrap
+        BootstrapResponse response = bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"),
+                new BootstrapRequest("endpoint"));
+
+        // Ensure bootstrap session is refused
+        assertEquals(ResponseCode.BAD_REQUEST, response.getCode());
     }
 
     @Test
-    public void notifies_at_end_of_successful_bootstrap() {
-        final MockBootstrapSessionManager bsSessionManager = new MockBootstrapSessionManager(true);
-        final LwM2mBootstrapRequestSender requestSender = new MockRequestSender(true);
-
-        final BootstrapConfigStore bsStore = new BootstrapConfigStore() {
-            @Override
-            public BootstrapConfig get(String endpoint, Identity deviceIdentity) {
-                return new BootstrapConfig();
-            }
-        };
-
+    public void bootstrap_success() throws InvalidConfigurationException {
+        // prepare a bootstrap handler with a session manager which authorize all session
+        // and a sender which "obtains" always successful response.
+        // and a config store with and an empty config for the expected endpoint
+        MockBootstrapSessionManager bsSessionManager = new MockBootstrapSessionManager(true);
+        LwM2mBootstrapRequestSender requestSender = new MockRequestSender(Mode.ALWAYS_SUCCESS);
+        EditableBootstrapConfigStore bsStore = new InMemoryBootstrapConfigStore();
+        bsStore.add("endpoint", new BootstrapConfig());
         BootstrapHandler bsHandler = new DefaultBootstrapHandler(bsStore, requestSender, bsSessionManager,
-                new Executor() {
+                new DirectExecutor());
 
-                    @Override
-                    public void execute(Runnable command) {
-                        command.run();
-                    }
-                });
+        // Try to bootstrap
+        bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("endpoint"));
 
-        bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("enpoint"));
-
+        // Ensure bootstrap finished
         assertTrue(bsSessionManager.endWasCalled());
+        assertFalse(bsSessionManager.failedWasCalled());
     }
 
     @Test
-    public void does_not_notifies_at_end_of_failed_bootstrap() {
-        final MockBootstrapSessionManager bsSessionManager = new MockBootstrapSessionManager(true);
-        final LwM2mBootstrapRequestSender requestSender = new MockRequestSender(false);
-
-        final BootstrapConfigStore bsStore = new BootstrapConfigStore() {
-            @Override
-            public BootstrapConfig get(String endpoint, Identity deviceIdentity) {
-                return new BootstrapConfig();
-            }
-        };
-
+    public void bootstrap_failed_because_of_sent_failure() throws InvalidConfigurationException {
+        // prepare a bootstrap handler with a session manager which authorize all session
+        // and a sender which always failed to send request.
+        // and a config store with and an empty config for the expected endpoint
+        MockBootstrapSessionManager bsSessionManager = new MockBootstrapSessionManager(true);
+        LwM2mBootstrapRequestSender requestSender = new MockRequestSender(Mode.ALWAYS_FAILURE);
+        EditableBootstrapConfigStore bsStore = new InMemoryBootstrapConfigStore();
+        bsStore.add("endpoint", new BootstrapConfig());
         BootstrapHandler bsHandler = new DefaultBootstrapHandler(bsStore, requestSender, bsSessionManager,
-                new Executor() {
+                new DirectExecutor());
 
-                    @Override
-                    public void execute(Runnable command) {
-                        command.run();
-                    }
-                });
+        // Try to bootstrap
+        bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("endpoint"));
 
-        bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("enpoint"));
-
+        // Ensure bootstrap failed
         assertFalse(bsSessionManager.endWasCalled());
+        assertTrue(bsSessionManager.failedWasCalled());
+        assertEquals(BootstrapFailureCause.FINISH_FAILED, bsSessionManager.failureCause);
     }
 
-    private class MockRequestSender implements LwM2mBootstrapRequestSender {
+    @Test
+    public void two_bootstrap_at_the_same_time_not_allowed()
+            throws InvalidConfigurationException, InterruptedException {
+        // prepare a bootstrap handler with a session manager which authorize all session
+        // and a sender which never get response.
+        // and a config store with and an empty config for the expected endpoint
+        // and lifetime session of 1s
+        MockBootstrapSessionManager bsSessionManager = new MockBootstrapSessionManager(true);
+        MockRequestSender requestSender = new MockRequestSender(Mode.NO_RESPONSE);
+        EditableBootstrapConfigStore bsStore = new InMemoryBootstrapConfigStore();
+        bsStore.add("endpoint", new BootstrapConfig());
+        BootstrapHandler bsHandler = new DefaultBootstrapHandler(bsStore, requestSender, bsSessionManager,
+                new DirectExecutor(), DefaultBootstrapHandler.DEFAULT_TIMEOUT, 1000);
 
-        private boolean success;
+        // First bootstrap : which will not end (because of sender)
+        BootstrapResponse first_response = bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"),
+                new BootstrapRequest("endpoint"));
+        // Ensure bootstrap is accepted and not finished
+        assertTrue(first_response.isSuccess());
+        assertFalse(bsSessionManager.endWasCalled());
+        assertFalse(bsSessionManager.failedWasCalled());
 
-        public MockRequestSender(boolean success) {
-            this.success = success;
+        // Second bootstrap for same endpoint : must be refused
+        bsSessionManager.reset();
+        BootstrapResponse second_response = bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4243), "pskdentity"),
+                new BootstrapRequest("endpoint"));
+        assertTrue(second_response.isFailure());
+        assertFalse(bsSessionManager.endWasCalled());
+        assertTrue(bsSessionManager.failedWasCalled());
+
+        // Third bootstrap for same endpoint : must be refused
+        bsSessionManager.reset();
+        BootstrapResponse third_response = bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4243), "pskdentity"),
+                new BootstrapRequest("endpoint"));
+        assertTrue(third_response.isFailure());
+        assertFalse(bsSessionManager.endWasCalled());
+        assertTrue(bsSessionManager.failedWasCalled());
+
+        // Wait session lifetime
+        Thread.sleep(1000);
+
+        // Fourth bootstrap for same endpoint : now it should be accepted
+        bsSessionManager.reset();
+        requestSender.setMode(Mode.ALWAYS_SUCCESS);
+        BootstrapResponse fourth_response = bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4243), "pskdentity"),
+                new BootstrapRequest("endpoint"));
+        assertTrue(fourth_response.isSuccess());
+        assertTrue(bsSessionManager.endWasCalled());
+        assertFalse(bsSessionManager.failedWasCalled());
+
+        // ensure that after a finished success bootstrap I don't need to wait session lifetime to retry
+        // fifth bootstrap for same endpoint : it should be accepted too.
+        bsSessionManager.reset();
+        requestSender.setMode(Mode.ALWAYS_FAILURE);
+        BootstrapResponse fifth_response = bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4243), "pskdentity"),
+                new BootstrapRequest("endpoint"));
+        assertTrue(fifth_response.isSuccess());
+        assertFalse(bsSessionManager.endWasCalled());
+        assertTrue(bsSessionManager.failedWasCalled());
+
+        // ensure that after a failed bootstrap I don't need to wait session lifetime to retry
+        // sixth bootstrap for same endpoint : it should be accepted too.
+        bsSessionManager.reset();
+        requestSender.setMode(Mode.ALWAYS_SUCCESS);
+        BootstrapResponse sixth_response = bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4243), "pskdentity"),
+                new BootstrapRequest("endpoint"));
+        assertTrue(sixth_response.isSuccess());
+        assertTrue(bsSessionManager.endWasCalled());
+        assertFalse(bsSessionManager.failedWasCalled());
+    }
+
+    static class MockRequestSender implements LwM2mBootstrapRequestSender {
+
+        public enum Mode {
+            ALWAYS_SUCCESS, ALWAYS_FAILURE, NO_RESPONSE
+        };
+
+        private Mode mode;
+
+        public MockRequestSender(Mode mode) {
+            this.mode = mode;
         }
 
         @Override
@@ -116,33 +185,51 @@ public class BootstrapHandlerTest {
             return null;
         }
 
+        public void setMode(Mode mode) {
+            this.mode = mode;
+        }
+
         @SuppressWarnings("unchecked")
         @Override
         public <T extends LwM2mResponse> void send(String clientEndpoint, Identity destination,
                 DownlinkRequest<T> request, long timeout, ResponseCallback<T> responseCallback,
                 ErrorCallback errorCallback) {
-            if (request instanceof BootstrapDeleteRequest) {
-                ((ResponseCallback<BootstrapDeleteResponse>) responseCallback)
-                        .onResponse(BootstrapDeleteResponse.success());
-            } else if (request instanceof BootstrapWriteRequest) {
-                ((ResponseCallback<BootstrapWriteResponse>) responseCallback)
-                        .onResponse(BootstrapWriteResponse.success());
-            } else if (request instanceof BootstrapFinishRequest) {
-                if (this.success) {
+            // no response, no callback call
+            if (mode == Mode.NO_RESPONSE) {
+                return;
+            }
+
+            if (mode == Mode.ALWAYS_SUCCESS) {
+                if (request instanceof BootstrapDeleteRequest) {
+                    ((ResponseCallback<BootstrapDeleteResponse>) responseCallback)
+                            .onResponse(BootstrapDeleteResponse.success());
+                } else if (request instanceof BootstrapWriteRequest) {
+                    ((ResponseCallback<BootstrapWriteResponse>) responseCallback)
+                            .onResponse(BootstrapWriteResponse.success());
+                } else if (request instanceof BootstrapFinishRequest) {
                     ((ResponseCallback<BootstrapFinishResponse>) responseCallback)
                             .onResponse(BootstrapFinishResponse.success());
-                } else {
+                }
+            } else if (mode == Mode.ALWAYS_FAILURE) {
+                if (request instanceof BootstrapDeleteRequest) {
+                    ((ResponseCallback<BootstrapDeleteResponse>) responseCallback)
+                            .onResponse(BootstrapDeleteResponse.internalServerError("delete failed"));
+                } else if (request instanceof BootstrapWriteRequest) {
+                    ((ResponseCallback<BootstrapWriteResponse>) responseCallback)
+                            .onResponse(BootstrapWriteResponse.internalServerError("write failed"));
+                } else if (request instanceof BootstrapFinishRequest) {
                     ((ResponseCallback<BootstrapFinishResponse>) responseCallback)
-                            .onResponse(BootstrapFinishResponse.internalServerError("failed"));
+                            .onResponse(BootstrapFinishResponse.internalServerError("finished failed"));
                 }
             }
         }
     }
 
-    private class MockBootstrapSessionManager implements BootstrapSessionManager {
+    private static class MockBootstrapSessionManager implements BootstrapSessionManager {
 
         private boolean authorized;
         private BootstrapSession endBsSession = null;
+        private BootstrapFailureCause failureCause = null;
 
         public MockBootstrapSessionManager(boolean authorized) {
             this.authorized = authorized;
@@ -162,8 +249,13 @@ public class BootstrapHandlerTest {
             return this.endBsSession != null;
         }
 
+        public boolean failedWasCalled() {
+            return this.failureCause != null;
+        }
+
         @Override
         public void failed(BootstrapSession bsSession, BootstrapFailureCause cause) {
+            failureCause = cause;
         }
 
         @Override
@@ -182,6 +274,18 @@ public class BootstrapHandlerTest {
         @Override
         public BootstrapPolicy onRequestFailure(LwM2mRequest<? extends LwM2mResponse> request, Throwable cause) {
             return BootstrapPolicy.STOP;
+        }
+
+        public void reset() {
+            endBsSession = null;
+            failureCause = null;
+        }
+    }
+
+    private static class DirectExecutor implements Executor {
+        @Override
+        public void execute(Runnable command) {
+            command.run();
         }
     }
 }
