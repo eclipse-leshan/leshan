@@ -24,6 +24,10 @@ public enum BootstrapFailureCause {
      */
     UNAUTHORIZED,
     /**
+     * A bootstrap session is already started for the given device.
+     */
+    ALREADY_STARTED,
+    /**
      * The Bootstrap Server could not find a configuration to send to the device
      */
     NO_BOOTSTRAP_CONFIG,

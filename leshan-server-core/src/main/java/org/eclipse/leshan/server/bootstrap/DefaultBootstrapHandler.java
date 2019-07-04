@@ -19,6 +19,7 @@ import static org.eclipse.leshan.server.bootstrap.BootstrapFailureCause.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -63,6 +64,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
     protected final LwM2mBootstrapRequestSender sender;
     protected final BootstrapSessionManager sessionManager;
     protected final long requestTimeout;
+    protected final ConcurrentHashMap<String, BootstrapSession> onGoingSession = new ConcurrentHashMap<>();
 
     public DefaultBootstrapHandler(BootstrapConfigStore store, LwM2mBootstrapRequestSender sender,
             BootstrapSessionManager sessionManager) {
@@ -95,11 +97,19 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             return BootstrapResponse.badRequest("Unauthorized");
         }
 
+        // check if there is not an ongoing session.
+        BootstrapSession oldSession = onGoingSession.putIfAbsent(endpoint, session);
+        if (oldSession != null) {
+            // Do not start the session if there is already a started one
+            sessionManager.failed(session, ALREADY_STARTED);
+            return BootstrapResponse.badRequest("session already started");
+        }
+
         // Get the desired bootstrap config for the endpoint
         final BootstrapConfig cfg = store.get(endpoint, sender);
         if (cfg == null) {
             LOG.debug("No bootstrap config for {}/{}", endpoint, sender);
-            sessionManager.failed(session, NO_BOOTSTRAP_CONFIG);
+            stopSession(session, NO_BOOTSTRAP_CONFIG);
             return BootstrapResponse.badRequest("no bootstrap config");
         }
 
@@ -116,6 +126,19 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
 
     protected void startBootstrap(BootstrapSession session, BootstrapConfig cfg) {
         delete(session, cfg, new ArrayList<>(cfg.toDelete));
+    }
+
+    protected void stopSession(BootstrapSession session, BootstrapFailureCause cause) {
+        if (!onGoingSession.remove(session.getEndpoint(), session)) {
+            LOG.warn("Session for endpoint {} / identity {} was already removed", session.getEndpoint(),
+                    session.getIdentity());
+        }
+        // if there is no cause of failure, this is a success
+        if (cause == null) {
+            sessionManager.end(session);
+        } else {
+            sessionManager.failed(session, cause);
+        }
     }
 
     protected void delete(final BootstrapSession session, final BootstrapConfig cfg, final List<String> pathToDelete) {
@@ -170,7 +193,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             bootstrapFinished(session, cfg);
             break;
         case STOP:
-            sessionManager.failed(session, DELETE_FAILED);
+            stopSession(session, DELETE_FAILED);
             break;
         default:
             throw new IllegalStateException("unknown policy :" + policy);
@@ -238,7 +261,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             bootstrapFinished(session, cfg);
             break;
         case STOP:
-            sessionManager.failed(session, WRITE_SECURITY_FAILED);
+            stopSession(session, WRITE_SECURITY_FAILED);
             break;
         default:
             throw new IllegalStateException("unknown policy :" + policy);
@@ -306,7 +329,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             bootstrapFinished(session, cfg);
             break;
         case STOP:
-            sessionManager.failed(session, WRITE_SERVER_FAILED);
+            stopSession(session, WRITE_SERVER_FAILED);
             break;
         default:
             throw new IllegalStateException("unknown policy :" + policy);
@@ -373,7 +396,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             bootstrapFinished(session, cfg);
             break;
         case STOP:
-            sessionManager.failed(session, WRITE_ACL_FAILED);
+            stopSession(session, WRITE_ACL_FAILED);
             break;
         default:
             throw new IllegalStateException("unknown policy :" + policy);
@@ -410,7 +433,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
     protected void afterBootstrapFinished(BootstrapSession session, BootstrapConfig cfg, BootstrapPolicy policy) {
         switch (policy) {
         case CONTINUE:
-            sessionManager.end(session);
+            stopSession(session, null);
             break;
         case RETRY:
             bootstrapFinished(session, cfg);
@@ -422,7 +445,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             bootstrapFinished(session, cfg);
             break;
         case STOP:
-            sessionManager.failed(session, FINISH_FAILED);
+            stopSession(session, FINISH_FAILED);
             break;
         default:
             throw new IllegalStateException("unknown policy :" + policy);
