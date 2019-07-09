@@ -84,9 +84,7 @@ public final class PresenceServiceImpl implements PresenceService {
 
                 // Every time we set the clientAwakeTime, in case it changes dynamically
                 stateChanged = status.setAwake();
-                if (stateChanged) {
-                    startClientAwakeTimer(reg, status, awakeTimeProvider.getClientAwakeTime(reg));
-                }
+                startClientAwakeTimer(reg, status, awakeTimeProvider.getClientAwakeTime(reg));
             }
 
             if (stateChanged) {
