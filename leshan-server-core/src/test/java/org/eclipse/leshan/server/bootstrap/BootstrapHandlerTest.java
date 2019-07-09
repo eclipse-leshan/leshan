@@ -34,6 +34,7 @@ import org.eclipse.leshan.core.response.BootstrapWriteResponse;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
+import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandlerTest.MockRequestSender.Mode;
 import org.eclipse.leshan.server.impl.DefaultBootstrapSession;
 import org.junit.Test;
@@ -47,8 +48,9 @@ public class BootstrapHandlerTest {
         BootstrapHandler bsHandler = new DefaultBootstrapHandler(null, null, bsSessionManager);
 
         // Try to bootstrap
-        BootstrapResponse response = bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"),
-                new BootstrapRequest("endpoint"));
+        BootstrapResponse response = bsHandler
+                .bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("endpoint"))
+                .getResponse();
 
         // Ensure bootstrap session is refused
         assertEquals(ResponseCode.BAD_REQUEST, response.getCode());
@@ -66,7 +68,9 @@ public class BootstrapHandlerTest {
         BootstrapHandler bsHandler = new DefaultBootstrapHandler(bsStore, requestSender, bsSessionManager);
 
         // Try to bootstrap
-        bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("endpoint"));
+        SendableResponse<BootstrapResponse> sendableResponse = bsHandler
+                .bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("endpoint"));
+        sendableResponse.sent();
 
         // Ensure bootstrap finished
         assertTrue(bsSessionManager.endWasCalled());
@@ -85,7 +89,9 @@ public class BootstrapHandlerTest {
         BootstrapHandler bsHandler = new DefaultBootstrapHandler(bsStore, requestSender, bsSessionManager);
 
         // Try to bootstrap
-        bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("endpoint"));
+        SendableResponse<BootstrapResponse> sendableResponse = bsHandler
+                .bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("endpoint"));
+        sendableResponse.sent();
 
         // Ensure bootstrap failed
         assertFalse(bsSessionManager.endWasCalled());
@@ -108,26 +114,29 @@ public class BootstrapHandlerTest {
                 DefaultBootstrapHandler.DEFAULT_TIMEOUT, 1000);
 
         // First bootstrap : which will not end (because of sender)
-        BootstrapResponse first_response = bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"),
-                new BootstrapRequest("endpoint"));
+        SendableResponse<BootstrapResponse> first_response = bsHandler
+                .bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("endpoint"));
+        first_response.sent();
         // Ensure bootstrap is accepted and not finished
-        assertTrue(first_response.isSuccess());
+        assertTrue(first_response.getResponse().isSuccess());
         assertFalse(bsSessionManager.endWasCalled());
         assertFalse(bsSessionManager.failedWasCalled());
 
         // Second bootstrap for same endpoint : must be refused
         bsSessionManager.reset();
-        BootstrapResponse second_response = bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4243), "pskdentity"),
-                new BootstrapRequest("endpoint"));
-        assertTrue(second_response.isFailure());
+        SendableResponse<BootstrapResponse> second_response = bsHandler
+                .bootstrap(Identity.psk(new InetSocketAddress(4243), "pskdentity"), new BootstrapRequest("endpoint"));
+        second_response.sent();
+        assertTrue(second_response.getResponse().isFailure());
         assertFalse(bsSessionManager.endWasCalled());
         assertTrue(bsSessionManager.failedWasCalled());
 
         // Third bootstrap for same endpoint : must be refused
         bsSessionManager.reset();
-        BootstrapResponse third_response = bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4243), "pskdentity"),
-                new BootstrapRequest("endpoint"));
-        assertTrue(third_response.isFailure());
+        SendableResponse<BootstrapResponse> third_response = bsHandler
+                .bootstrap(Identity.psk(new InetSocketAddress(4243), "pskdentity"), new BootstrapRequest("endpoint"));
+        third_response.sent();
+        assertTrue(third_response.getResponse().isFailure());
         assertFalse(bsSessionManager.endWasCalled());
         assertTrue(bsSessionManager.failedWasCalled());
 
@@ -137,9 +146,10 @@ public class BootstrapHandlerTest {
         // Fourth bootstrap for same endpoint : now it should be accepted
         bsSessionManager.reset();
         requestSender.setMode(Mode.ALWAYS_SUCCESS);
-        BootstrapResponse fourth_response = bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4243), "pskdentity"),
-                new BootstrapRequest("endpoint"));
-        assertTrue(fourth_response.isSuccess());
+        SendableResponse<BootstrapResponse> fourth_response = bsHandler
+                .bootstrap(Identity.psk(new InetSocketAddress(4243), "pskdentity"), new BootstrapRequest("endpoint"));
+        fourth_response.sent();
+        assertTrue(fourth_response.getResponse().isSuccess());
         assertTrue(bsSessionManager.endWasCalled());
         assertFalse(bsSessionManager.failedWasCalled());
 
@@ -147,9 +157,10 @@ public class BootstrapHandlerTest {
         // fifth bootstrap for same endpoint : it should be accepted too.
         bsSessionManager.reset();
         requestSender.setMode(Mode.ALWAYS_FAILURE);
-        BootstrapResponse fifth_response = bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4243), "pskdentity"),
-                new BootstrapRequest("endpoint"));
-        assertTrue(fifth_response.isSuccess());
+        SendableResponse<BootstrapResponse> fifth_response = bsHandler
+                .bootstrap(Identity.psk(new InetSocketAddress(4243), "pskdentity"), new BootstrapRequest("endpoint"));
+        fifth_response.sent();
+        assertTrue(fifth_response.getResponse().isSuccess());
         assertFalse(bsSessionManager.endWasCalled());
         assertTrue(bsSessionManager.failedWasCalled());
 
@@ -157,9 +168,10 @@ public class BootstrapHandlerTest {
         // sixth bootstrap for same endpoint : it should be accepted too.
         bsSessionManager.reset();
         requestSender.setMode(Mode.ALWAYS_SUCCESS);
-        BootstrapResponse sixth_response = bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4243), "pskdentity"),
-                new BootstrapRequest("endpoint"));
-        assertTrue(sixth_response.isSuccess());
+        SendableResponse<BootstrapResponse> sixth_response = bsHandler
+                .bootstrap(Identity.psk(new InetSocketAddress(4243), "pskdentity"), new BootstrapRequest("endpoint"));
+        sixth_response.sent();
+        assertTrue(sixth_response.getResponse().isSuccess());
         assertTrue(bsSessionManager.endWasCalled());
         assertFalse(bsSessionManager.failedWasCalled());
     }

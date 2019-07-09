@@ -28,6 +28,7 @@ import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.BootstrapResponse;
+import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,11 +80,14 @@ public class BootstrapResource extends CoapResource {
         Identity clientIdentity = EndpointContextUtil.extractIdentity(request.getSourceContext());
 
         // handle bootstrap request
-        BootstrapResponse response = bootstrapHandler.bootstrap(clientIdentity, new BootstrapRequest(endpoint));
+        SendableResponse<BootstrapResponse> sendableResponse = bootstrapHandler.bootstrap(clientIdentity,
+                new BootstrapRequest(endpoint));
+        BootstrapResponse response = sendableResponse.getResponse();
         if (response.isSuccess()) {
             exchange.respond(toCoapResponseCode(response.getCode()));
         } else {
             exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
         }
+        sendableResponse.sent();
     }
 }

@@ -36,6 +36,7 @@ import org.eclipse.leshan.core.response.BootstrapWriteResponse;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
+import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ACLConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
@@ -85,7 +86,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
     }
 
     @Override
-    public BootstrapResponse bootstrap(Identity sender, BootstrapRequest request) {
+    public SendableResponse<BootstrapResponse> bootstrap(Identity sender, BootstrapRequest request) {
         String endpoint = request.getEndpointName();
 
         // Start session, checking the BS credentials
@@ -93,7 +94,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
 
         if (!session.isAuthorized()) {
             sessionManager.failed(session, UNAUTHORIZED);
-            return BootstrapResponse.badRequest("Unauthorized");
+            return new SendableResponse<>(BootstrapResponse.badRequest("Unauthorized"));
         }
 
         // check if there is not an ongoing session.
@@ -108,7 +109,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                 } else {
                     // Do not start the session if there is already a started one
                     sessionManager.failed(session, ALREADY_STARTED);
-                    return BootstrapResponse.badRequest("session already started");
+                    return new SendableResponse<>(BootstrapResponse.badRequest("session already started"));
                 }
             }
         } while (oldSession != null);
@@ -119,16 +120,22 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             if (cfg == null) {
                 LOG.debug("No bootstrap config for {}", session);
                 stopSession(session, NO_BOOTSTRAP_CONFIG);
-                return BootstrapResponse.badRequest("no bootstrap config");
+                return new SendableResponse<>(BootstrapResponse.badRequest("no bootstrap config"));
             }
 
-            startBootstrap(session, cfg);
-            return BootstrapResponse.success();
+            // Start bootstrap once response is sent.
+            Runnable onSent = new Runnable() {
+                @Override
+                public void run() {
+                    startBootstrap(session, cfg);
+                }
+            };
+            return new SendableResponse<>(BootstrapResponse.success(), onSent);
 
         } catch (RuntimeException e) {
             LOG.warn("Unexpected error at bootstrap start-up for {}", session, e);
             stopSession(session, INTERNAL_SERVER_ERROR);
-            return BootstrapResponse.internalServerError(e.getMessage());
+            return new SendableResponse<>(BootstrapResponse.internalServerError(e.getMessage()));
         }
     }
 

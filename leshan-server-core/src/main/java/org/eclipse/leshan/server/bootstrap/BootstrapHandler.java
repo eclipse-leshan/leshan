@@ -18,8 +18,9 @@ package org.eclipse.leshan.server.bootstrap;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.BootstrapResponse;
+import org.eclipse.leshan.core.response.SendableResponse;
 
 public interface BootstrapHandler {
 
-    BootstrapResponse bootstrap(Identity sender, BootstrapRequest request);
+    SendableResponse<BootstrapResponse> bootstrap(Identity sender, BootstrapRequest request);
 }
