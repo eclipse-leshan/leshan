@@ -20,8 +20,6 @@ import static org.eclipse.leshan.server.bootstrap.BootstrapFailureCause.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -60,8 +58,6 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
 
     public static final long DEFAULT_LIFETIME = 15 * 60 * 1000l; // 15 minutes
 
-    protected final Executor e;
-
     protected final BootstrapConfigStore store;
 
     protected final LwM2mBootstrapRequestSender sender;
@@ -76,20 +72,14 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
 
     public DefaultBootstrapHandler(BootstrapConfigStore store, LwM2mBootstrapRequestSender sender,
             BootstrapSessionManager sessionManager) {
-        this(store, sender, sessionManager, Executors.newFixedThreadPool(5), DEFAULT_TIMEOUT, DEFAULT_LIFETIME);
+        this(store, sender, sessionManager, DEFAULT_TIMEOUT, DEFAULT_LIFETIME);
     }
 
     public DefaultBootstrapHandler(BootstrapConfigStore store, LwM2mBootstrapRequestSender sender,
-            BootstrapSessionManager sessionManager, Executor executor) {
-        this(store, sender, sessionManager, executor, DEFAULT_TIMEOUT, DEFAULT_LIFETIME);
-    }
-
-    public DefaultBootstrapHandler(BootstrapConfigStore store, LwM2mBootstrapRequestSender sender,
-            BootstrapSessionManager sessionManager, Executor executor, long requestTimeout, long sessionLifetime) {
+            BootstrapSessionManager sessionManager, long requestTimeout, long sessionLifetime) {
         this.store = store;
         this.sender = sender;
         this.sessionManager = sessionManager;
-        this.e = executor;
         this.requestTimeout = requestTimeout;
         this.sessionLifeTime = sessionLifetime;
     }
@@ -123,28 +113,23 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             }
         } while (oldSession != null);
 
-        // Get the desired bootstrap config for the endpoint
-        final BootstrapConfig cfg = store.get(endpoint, sender);
-        if (cfg == null) {
-            LOG.debug("No bootstrap config for {}", session);
-            stopSession(session, NO_BOOTSTRAP_CONFIG);
-            return BootstrapResponse.badRequest("no bootstrap config");
-        }
-
-        // Start the bootstrap session
-        e.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    startBootstrap(session, cfg);
-                } catch (RuntimeException e) {
-                    LOG.warn("Unexpected error at bootstrap start-up for {}", session, e);
-                    stopSession(session, INTERNAL_SERVER_ERROR);
-                }
+        try {
+            // Get the desired bootstrap config for the endpoint
+            final BootstrapConfig cfg = store.get(endpoint, sender);
+            if (cfg == null) {
+                LOG.debug("No bootstrap config for {}", session);
+                stopSession(session, NO_BOOTSTRAP_CONFIG);
+                return BootstrapResponse.badRequest("no bootstrap config");
             }
-        });
 
-        return BootstrapResponse.success();
+            startBootstrap(session, cfg);
+            return BootstrapResponse.success();
+
+        } catch (RuntimeException e) {
+            LOG.warn("Unexpected error at bootstrap start-up for {}", session, e);
+            stopSession(session, INTERNAL_SERVER_ERROR);
+            return BootstrapResponse.internalServerError(e.getMessage());
+        }
     }
 
     protected void startBootstrap(BootstrapSession session, BootstrapConfig cfg) {

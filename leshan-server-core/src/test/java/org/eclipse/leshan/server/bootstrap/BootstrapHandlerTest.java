@@ -18,7 +18,6 @@ package org.eclipse.leshan.server.bootstrap;
 import static org.junit.Assert.*;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.Executor;
 
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
@@ -45,7 +44,7 @@ public class BootstrapHandlerTest {
     public void error_if_not_authorized() {
         // prepare bootstrapHandler with a session manager which does not authorized any session
         BootstrapSessionManager bsSessionManager = new MockBootstrapSessionManager(false);
-        BootstrapHandler bsHandler = new DefaultBootstrapHandler(null, null, bsSessionManager, new DirectExecutor());
+        BootstrapHandler bsHandler = new DefaultBootstrapHandler(null, null, bsSessionManager);
 
         // Try to bootstrap
         BootstrapResponse response = bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"),
@@ -64,8 +63,7 @@ public class BootstrapHandlerTest {
         LwM2mBootstrapRequestSender requestSender = new MockRequestSender(Mode.ALWAYS_SUCCESS);
         EditableBootstrapConfigStore bsStore = new InMemoryBootstrapConfigStore();
         bsStore.add("endpoint", new BootstrapConfig());
-        BootstrapHandler bsHandler = new DefaultBootstrapHandler(bsStore, requestSender, bsSessionManager,
-                new DirectExecutor());
+        BootstrapHandler bsHandler = new DefaultBootstrapHandler(bsStore, requestSender, bsSessionManager);
 
         // Try to bootstrap
         bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("endpoint"));
@@ -84,8 +82,7 @@ public class BootstrapHandlerTest {
         LwM2mBootstrapRequestSender requestSender = new MockRequestSender(Mode.ALWAYS_FAILURE);
         EditableBootstrapConfigStore bsStore = new InMemoryBootstrapConfigStore();
         bsStore.add("endpoint", new BootstrapConfig());
-        BootstrapHandler bsHandler = new DefaultBootstrapHandler(bsStore, requestSender, bsSessionManager,
-                new DirectExecutor());
+        BootstrapHandler bsHandler = new DefaultBootstrapHandler(bsStore, requestSender, bsSessionManager);
 
         // Try to bootstrap
         bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("endpoint"));
@@ -108,7 +105,7 @@ public class BootstrapHandlerTest {
         EditableBootstrapConfigStore bsStore = new InMemoryBootstrapConfigStore();
         bsStore.add("endpoint", new BootstrapConfig());
         BootstrapHandler bsHandler = new DefaultBootstrapHandler(bsStore, requestSender, bsSessionManager,
-                new DirectExecutor(), DefaultBootstrapHandler.DEFAULT_TIMEOUT, 1000);
+                DefaultBootstrapHandler.DEFAULT_TIMEOUT, 1000);
 
         // First bootstrap : which will not end (because of sender)
         BootstrapResponse first_response = bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"),
@@ -279,13 +276,6 @@ public class BootstrapHandlerTest {
         public void reset() {
             endBsSession = null;
             failureCause = null;
-        }
-    }
-
-    private static class DirectExecutor implements Executor {
-        @Override
-        public void execute(Runnable command) {
-            command.run();
         }
     }
 }
