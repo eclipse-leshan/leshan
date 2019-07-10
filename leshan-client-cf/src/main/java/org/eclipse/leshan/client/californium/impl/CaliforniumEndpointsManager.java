@@ -153,23 +153,9 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             } else {
                 throw new RuntimeException("Unable to create connector : unsupported security mode");
             }
-            if (endpointFactory != null) {
-                currentEndpoint = endpointFactory.createSecuredEndpoint(newBuilder.build(), coapConfig, null);
-            } else {
-                CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
-                builder.setConnector(new DTLSConnector(newBuilder.build()));
-                builder.setNetworkConfig(coapConfig);
-                currentEndpoint = builder.build();
-            }
+            currentEndpoint = endpointFactory.createSecuredEndpoint(newBuilder.build(), coapConfig, null);
         } else {
-            if (endpointFactory != null) {
-                currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null);
-            } else {
-                CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
-                builder.setInetSocketAddress(localAddress);
-                builder.setNetworkConfig(coapConfig);
-                currentEndpoint = builder.build();
-            }
+            currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null);
             serverIdentity = Identity.unsecure(serverInfo.getAddress());
         }
 

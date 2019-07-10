@@ -26,13 +26,14 @@ import java.util.Arrays;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
+import org.eclipse.californium.elements.UDPConnector;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.californium.scandium.dtls.CertificateType;
 import org.eclipse.leshan.LwM2m;
+import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.californium.EndpointFactory;
-import org.eclipse.leshan.core.californium.Lwm2mEndpointContextMatcher;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
@@ -320,8 +321,10 @@ public class LeshanBootstrapServerBuilder {
     /**
      * Advanced setter used to create custom CoAP endpoint.
      * <p>
-     * DTLSConnector is expected for secured endpoint.
+     * An {@link UDPConnector} is expected for unsecured endpoint and a {@link DTLSConnector} is expected for secured
+     * endpoint.
      * 
+     * @param endpointFactory An {@link EndpointFactory}, you can extends {@link DefaultEndpointFactory}.
      * @return the builder for fluent Bootstrap Server creation.
      */
     public LeshanBootstrapServerBuilder setEndpointFactory(EndpointFactory endpointFactory) {
@@ -374,8 +377,6 @@ public class LeshanBootstrapServerBuilder {
     public LeshanBootstrapServer build() {
         if (localAddress == null)
             localAddress = new InetSocketAddress(LwM2m.DEFAULT_COAP_PORT);
-
-        // TODO we should have default implementation for BootstrapStore in leshan.server project.
         if (configStore == null)
             configStore = new InMemoryBootstrapConfigStore();
 
@@ -393,6 +394,9 @@ public class LeshanBootstrapServerBuilder {
             model = new LwM2mModel(ObjectLoader.loadDefault());
         if (coapConfig == null) {
             coapConfig = createDefaultNetworkConfig();
+        }
+        if (endpointFactory == null) {
+            endpointFactory = new DefaultEndpointFactory();
         }
 
         // handle dtlsConfig
@@ -507,27 +511,12 @@ public class LeshanBootstrapServerBuilder {
 
         CoapEndpoint unsecuredEndpoint = null;
         if (!noUnsecuredEndpoint) {
-            if (endpointFactory != null) {
-                unsecuredEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null);
-            } else {
-                CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
-                builder.setInetSocketAddress(localAddress);
-                builder.setNetworkConfig(coapConfig);
-                unsecuredEndpoint = builder.build();
-            }
+            unsecuredEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null);
         }
 
         CoapEndpoint securedEndpoint = null;
         if (!noSecuredEndpoint && dtlsConfig != null) {
-            if (endpointFactory != null) {
-                securedEndpoint = endpointFactory.createSecuredEndpoint(dtlsConfig, coapConfig, null);
-            } else {
-                CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
-                builder.setConnector(new DTLSConnector(dtlsConfig));
-                builder.setNetworkConfig(coapConfig);
-                builder.setEndpointContextMatcher(new Lwm2mEndpointContextMatcher());
-                securedEndpoint = builder.build();
-            }
+            securedEndpoint = endpointFactory.createSecuredEndpoint(dtlsConfig, coapConfig, null);
         }
 
         if (securedEndpoint == null && unsecuredEndpoint == null) {

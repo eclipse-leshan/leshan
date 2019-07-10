@@ -24,6 +24,8 @@ import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 
 /**
  * Class used to delegate CoAP endpoint creation in all Leshan Builders.
+ * 
+ * @see DefaultEndpointFactory
  */
 public interface EndpointFactory {
 

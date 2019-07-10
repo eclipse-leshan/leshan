@@ -21,6 +21,9 @@ import java.util.Map;
 
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
+import org.eclipse.californium.elements.EndpointContextMatcher;
+import org.eclipse.californium.elements.UDPConnector;
+import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.LwM2mId;
@@ -29,6 +32,7 @@ import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.util.Validate;
@@ -110,8 +114,13 @@ public class LeshanClientBuilder {
     }
 
     /**
-     * Used to create custom CoAP endpoint, this is only for advanced users. <br>
-     * DTLSConnector is expected for secured endpoint.
+     * Advanced setter used to create custom CoAP endpoint.
+     * <p>
+     * An {@link UDPConnector} is expected for unsecured endpoint and a {@link DTLSConnector} is expected for secured
+     * endpoint.
+     * 
+     * @param endpointFactory An {@link EndpointFactory}, you can extends {@link DefaultEndpointFactory}.
+     * @return the builder for fluent Bootstrap Server creation.
      */
     public LeshanClientBuilder setEndpointFactory(EndpointFactory endpointFactory) {
         this.endpointFactory = endpointFactory;
@@ -155,6 +164,14 @@ public class LeshanClientBuilder {
         }
         if (coapConfig == null) {
             coapConfig = createDefaultNetworkConfig();
+        }
+        if (endpointFactory == null) {
+            endpointFactory = new DefaultEndpointFactory() {
+                @Override
+                protected EndpointContextMatcher createSecuredContextMatcher() {
+                    return null; // use default californium one.
+                }
+            };
         }
 
         // handle dtlsConfig
