@@ -333,7 +333,11 @@ public class LeshanServerBuilder {
     }
 
     /**
-     * Sets a new {@link ClientAwakeTimeProvider} object different from the default one (93 seconds).
+     * Sets a new {@link ClientAwakeTimeProvider} object different from the default one.
+     * <p>
+     * By default a {@link StaticClientAwakeTimeProvider} will be used initialized with the
+     * <code>MAX_TRANSMIT_WAIT</code> value available in CoAP {@link NetworkConfig} which should be by default 93s as
+     * defined in <a href="https://tools.ietf.org/html/rfc7252#section-4.8.2">RFC7252</a>.
      * 
      * @param awakeTimeProvider the {@link ClientAwakeTimeProvider} to set.
      */
@@ -378,8 +382,16 @@ public class LeshanServerBuilder {
             decoder = new DefaultLwM2mNodeDecoder();
         if (coapConfig == null)
             coapConfig = createDefaultNetworkConfig();
-        if (awakeTimeProvider == null)
-            awakeTimeProvider = new StaticClientAwakeTimeProvider();
+        if (awakeTimeProvider == null) {
+            int maxTransmitWait = coapConfig.getInt(Keys.MAX_TRANSMIT_WAIT);
+            if (maxTransmitWait == 0) {
+                LOG.warn(
+                        "No value available for MAX_TRANSMIT_WAIT in CoAP NetworkConfig. Fallback with a default 93s value.");
+                awakeTimeProvider = new StaticClientAwakeTimeProvider();
+            } else {
+                awakeTimeProvider = new StaticClientAwakeTimeProvider(maxTransmitWait);
+            }
+        }
         if (registrationIdProvider == null)
             registrationIdProvider = new RandomStringRegistrationIdProvider();
         if (endpointFactory == null) {
