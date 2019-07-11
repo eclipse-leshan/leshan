@@ -102,7 +102,12 @@ angular.module('securityControllers', [])
                     var security = {endpoint: $scope.endpoint, psk : { identity : $scope.pskIdentity , key : $scope.pskValue}};
                 } else if($scope.securityMode == "rpk") {
                     var security = {endpoint: $scope.endpoint, rpk : { key : $scope.rpkValue }};
-                } else {
+                } else if($scope.securityMode == "oscore") {
+                    // Information for OSCORE
+                    var security = {endpoint: $scope.endpoint, oscore : { masterSecret : $scope.masterSecret, masterSalt : $scope.masterSalt,
+                        idContext : $scope.idContext, senderId : $scope.senderId, recipientId : $scope.recipientId,
+                        aeadAlgorithm : $scope.aeadAlgorithm || $scope.defaultAeadAlgorithm, hkdfAlgorithm : $scope.hkdfAlgorithm || $scope.defaultHkdfAlgorithm }};
+                    } else {
                     var security = {endpoint: $scope.endpoint, x509 : true};
                 }
                 if(security) {
@@ -129,6 +134,8 @@ angular.module('securityControllers', [])
             $scope.rpkXValue = '';
             $scope.rpkYValue = '';
             $scope.defaultParams = 'secp256r1';
+            $scope.defaultAeadAlgorithm = 'AES_CCM_16_64_128';
+            $scope.defaultHkdfAlgorithm = 'HKDF_HMAC_SHA_256';
        };
 }])
 

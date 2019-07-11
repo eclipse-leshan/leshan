@@ -38,11 +38,13 @@ public class SecuritySerializer implements JsonSerializer<SecurityInfo> {
         JsonObject element = new JsonObject();
 
         element.addProperty("endpoint", src.getEndpoint());
-
         if (src.getIdentity() != null) {
             JsonObject psk = new JsonObject();
             psk.addProperty("identity", src.getIdentity());
-            psk.addProperty("key", Hex.encodeHexString(src.getPreSharedKey()));
+            // TODO OSCORE : remove this if because oscore should not use identity.
+            if (src.getPreSharedKey() != null) {
+                psk.addProperty("key", Hex.encodeHexString(src.getPreSharedKey()));
+            }
             element.add("psk", psk);
         }
 
@@ -80,6 +82,8 @@ public class SecuritySerializer implements JsonSerializer<SecurityInfo> {
         if (src.useX509Cert()) {
             element.addProperty("x509", true);
         }
+
+        // TODO OSCORE : implement serialization for OSCORE.
 
         return element;
     }
