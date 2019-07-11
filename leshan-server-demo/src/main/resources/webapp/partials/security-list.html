@@ -58,6 +58,17 @@
 				Identity : <code style=display:block;white-space:pre-wrap>{{ wrap(security.psk.identity) }}</code>
 				Key : <code style=display:block;white-space:pre-wrap>{{ wrap(security.psk.key) }}</code>
 			</td>
+			<!-- OSCORE fields -->
+			<td ng-if="security.oscore">OSCORE</td>
+			<td ng-if="security.oscore">
+				Master Secret : <code>{{ security.oscore.masterSecret }}</code><br/>
+				Master Salt : <code>{{ security.oscore.masterSalt }}</code><br/>
+				ID Context : <code>{{ security.oscore.idContext }}</code><br/>
+				Sender ID : <code>{{ security.oscore.senderId }}</code><br/>
+				Recipient ID : <code>{{ security.oscore.recipientId }}</code><br/>
+				AEAD Algorithm : <code>{{ security.oscore.aeadAlgorithm }}</code><br/>
+				HKDF Algorithm : <code>{{ security.oscore.hkdfAlgorithm }}</code>
+			</td>
 			<td ng-if="security.rpk">Raw Public Key <br/><small class="text-muted" >(Elliptic Curve)</small></td>
 			<td ng-if="security.rpk">Public Key : <br/> <code style=display:block;white-space:pre-wrap>{{wrap(security.rpk.key)}}</code><br/> 
 			</td>
@@ -98,6 +109,8 @@
 								<option value="psk">Pre-Shared Key</option>
 								<option value="rpk">Raw Public Key</option>
 								<option value="x509">X.509 Certificate</option>
+								<!-- Drop-down option for OSCORE security context information -->
+								<option value="oscore">OSCORE</option>
 							</select>
 						</div>
 					</div>
@@ -122,6 +135,83 @@
 							<p class="help-block" ng-if="form.pskValue.$error.required">The pre-shared key is required</p>
 							<p class="help-block" ng-if="form.pskValue.$error.pattern">Hexadecimal format is expected</p>
 							<p class="help-block" ng-if="form.pskValue.$error.maxlength">The pre-shared key is too long</p>
+						</div>
+					</div>
+
+					<!-- OSCORE inputs -->
+					<div class="form-group" ng-class="{'hidden': securityMode!='oscore'}" show-errors>
+						<label for="masterSecretValue" class="col-sm-4 control-label">Master Secret</label>
+						<div class="col-sm-8">
+							<textarea class="form-control" style="resize:none" rows="2" id="masterSecretValue" name="masterSecret" 
+							ng-model="masterSecret" ng-required="securityMode=='oscore'" ng-pattern="/^[0-9a-fA-F]+$/" ng-maxlength="64" ></textarea>
+							<p class="text-right text-muted small" style="margin:0">Hexadecimal format</p>
+							<p class="help-block" ng-if="form.masterSecret.$error.required">Master Secret is required</p>
+							<p class="help-block" ng-if="form.masterSecret.$error.pattern">Hexadecimal format is expected</p>
+							<p class="help-block" ng-if="form.masterSecret.$error.maxlength">Master Secret is too long</p>
+						</div>
+					</div>
+
+					<div class="form-group" ng-class="{'hidden': securityMode!='oscore'}" show-errors>
+						<label for="masterSaltValue" class="col-sm-4 control-label">Master Salt</label>
+						<div class="col-sm-8">
+							<textarea class="form-control" style="resize:none" rows="2" id="masterSaltValue" name="masterSalt" 
+							ng-model="masterSalt" ng-pattern="/^[0-9a-fA-F]+$/" ng-maxlength="64" ></textarea>
+							<p class="text-right text-muted small" style="margin:0">Hexadecimal format</p>
+							<p class="help-block" ng-if="form.masterSalt.$error.pattern">Hexadecimal format is expected</p>
+							<p class="help-block" ng-if="form.masterSalt.$error.maxlength">Master Salt is too long</p>
+						</div>
+					</div>
+
+					<div class="form-group" ng-class="{'hidden': securityMode!='oscore'}" show-errors>
+						<label for="idContextValue" class="col-sm-4 control-label">ID Context</label>
+						<div class="col-sm-8">
+							<textarea class="form-control" style="resize:none" rows="1" id="idContextValue" name="idContext" 
+							ng-model="idContext" ng-pattern="/^[0-9a-fA-F]+$/" ng-maxlength="32" ></textarea>
+							<p class="text-right text-muted small" style="margin:0">Hexadecimal format</p>
+							<p class="help-block" ng-if="form.idContext.$error.pattern">Hexadecimal format is expected</p>
+							<p class="help-block" ng-if="form.idContext.$error.maxlength">ID Context is too long</p>
+						</div>
+					</div>
+
+					<div class="form-group" ng-class="{'hidden': securityMode!='oscore'}" show-errors>
+						<label for="senderIdValue" class="col-sm-4 control-label">Sender ID</label>
+						<div class="col-sm-8">
+							<textarea class="form-control" style="resize:none" rows="1" id="senderIdValue" name="senderId" 
+							ng-model="senderId" ng-required="securityMode=='oscore'" ng-pattern="/^[0-9a-fA-F]+$/" ng-maxlength="16" ></textarea>
+							<p class="text-right text-muted small" style="margin:0">Hexadecimal format</p>
+							<p class="help-block" ng-if="form.senderId.$error.required">Sender ID is required</p>
+							<p class="help-block" ng-if="form.senderId.$error.pattern">Hexadecimal format is expected</p>
+							<p class="help-block" ng-if="form.senderId.$error.maxlength">Sender ID is too long</p>
+						</div>
+					</div>
+
+					<div class="form-group" ng-class="{'hidden': securityMode!='oscore'}" show-errors>
+						<label for="recipientIdValue" class="col-sm-4 control-label">Recipient ID</label>
+						<div class="col-sm-8">
+							<textarea class="form-control" style="resize:none" rows="1" id="recipientIdValue" name="recipientId" 
+							ng-model="recipientId" ng-required="securityMode=='oscore'" ng-pattern="/^[0-9a-fA-F]+$/" ng-maxlength="16" ></textarea>
+							<p class="text-right text-muted small" style="margin:0">Hexadecimal format</p>
+							<p class="help-block" ng-if="form.recipientId.$error.required">Recipient ID is required</p>
+							<p class="help-block" ng-if="form.recipientId.$error.pattern">Hexadecimal format is expected</p>
+							<p class="help-block" ng-if="form.recipientId.$error.maxlength">Recipient ID is too long</p>
+						</div>
+					</div>
+
+					<div class="form-group" ng-class="{'hidden': securityMode!='oscore'}" show-errors>
+						<label for="aeadAlgorithmValue" class="col-sm-4 control-label">AEAD Algorithm</label>
+						<div class="col-sm-8">
+							<textarea class="form-control" style="resize:none" rows="1" id="aeadAlgorithmValue" name="aeadAlgorithm" 
+							ng-model="aeadAlgorithm" ng-maxlength="32" placeholder="{{defaultAeadAlgorithm}}" ></textarea>
+							<p class="help-block" ng-if="form.aeadAlgorithm.$error.maxlength">AEAD Algorithm is too long</p>
+						</div>
+					</div>
+
+					<div class="form-group" ng-class="{'hidden': securityMode!='oscore'}" show-errors>
+						<label for="hkdfAlgorithmValue" class="col-sm-4 control-label">HKDF Algorithm</label>
+						<div class="col-sm-8">
+							<textarea class="form-control" style="resize:none" rows="1" id="hkdfAlgorithmValue" name="hkdfAlgorithm" 
+							ng-model="hkdfAlgorithm" ng-maxlength="32" placeholder="{{defaultHkdfAlgorithm}}" ></textarea>
+							<p class="help-block" ng-if="form.hkdfAlgorithm.$error.maxlength">HKDF Algorithm is too long</p>
 						</div>
 					</div>
 
