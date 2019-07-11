@@ -42,7 +42,9 @@ public class SecuritySerializer implements JsonSerializer<SecurityInfo> {
         if (src.getIdentity() != null) {
             JsonObject psk = new JsonObject();
             psk.addProperty("identity", src.getIdentity());
-            psk.addProperty("key", Hex.encodeHexString(src.getPreSharedKey()));
+            if (src.getPreSharedKey() != null) {
+                psk.addProperty("key", Hex.encodeHexString(src.getPreSharedKey()));
+            }
             element.add("psk", psk);
         }
 

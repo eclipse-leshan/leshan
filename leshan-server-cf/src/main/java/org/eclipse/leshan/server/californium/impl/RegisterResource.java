@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
@@ -31,6 +32,9 @@ import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
+import org.eclipse.californium.oscore.HashMapCtxDB;
+import org.eclipse.californium.oscore.OSCoreCtx;
+import org.eclipse.californium.oscore.OSException;
 import org.eclipse.leshan.Link;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.DeregisterRequest;
@@ -81,6 +85,7 @@ public class RegisterResource extends CoapResource {
 
     @Override
     public void handleRequest(Exchange exchange) {
+
         try {
             super.handleRequest(exchange);
         } catch (InvalidRequestException e) {
@@ -140,6 +145,26 @@ public class RegisterResource extends CoapResource {
     }
 
     private void handleRegister(CoapExchange exchange, Request request) {
+
+        // Check if this incoming request is using OSCORE
+        if (exchange.advanced().getRequest().getOptions().getOscore() != null) {
+            LOG.info("Client registered using OSCORE");
+
+            // Update the URI of the associated OSCORE Context with the client's URI
+            // So the server can send requests to the client
+            HashMapCtxDB db = HashMapCtxDB.getInstance();
+            OSCoreCtx clientCtx = db.getContext(exchange.advanced().getCryptographicContextID());
+
+            try {
+                db.addContext(request.getScheme() + "://"
+                        + request.getSourceContext().getPeerAddress().getHostString().toString(), clientCtx);
+            } catch (OSException e) {
+                LOG.error("Failed to update OSCORE Context for registering client.", request, e);
+                e.printStackTrace();
+            }
+
+        }
+
         // Get identity
         // --------------------------------
         Identity sender = extractIdentity(request.getSourceContext());

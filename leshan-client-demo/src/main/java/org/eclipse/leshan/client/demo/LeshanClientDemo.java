@@ -23,6 +23,8 @@ import static org.eclipse.leshan.client.object.Security.*;
 
 import java.io.File;
 import java.net.InetAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -39,6 +41,11 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.cose.AlgorithmID;
+import org.eclipse.californium.oscore.HashMapCtxDB;
+import org.eclipse.californium.oscore.OSCoreCoapStackFactory;
+import org.eclipse.californium.oscore.OSCoreCtx;
+import org.eclipse.californium.oscore.OSException;
 import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
@@ -124,6 +131,7 @@ public class LeshanClientDemo {
                 "The path to your client certificate file.\n The certificate Common Name (CN) should generaly be equal to the client endpoint name (see -n option).\nThe certificate should be in X509v3 format (DER encoding).");
         options.addOption("scert", true,
                 "The path to your server certificate file.\n The certificate should be in X509v3 format (DER encoding).");
+        options.addOption("oscore", false, "Use OSCORE for communication between client and server.");
 
         HelpFormatter formatter = new HelpFormatter();
         formatter.setWidth(90);
@@ -301,6 +309,43 @@ public class LeshanClientDemo {
                 return;
             }
         }
+        // Set up OSCORE Context when using OSCORE
+        boolean useOSCore = false;
+        if (cl.hasOption("oscore")) {
+            System.out.println("Using OSCORE");
+            useOSCore = true;
+
+            HashMapCtxDB db = HashMapCtxDB.getInstance();
+            AlgorithmID alg = AlgorithmID.AES_CCM_16_64_128;
+            AlgorithmID kdf = AlgorithmID.HKDF_HMAC_SHA_256;
+
+            byte[] master_secret = { 0x11, 0x22, 0x33, 0x44 };
+            byte[] sid = new byte[] { (byte) 0xAA };
+            byte[] rid = new byte[] { (byte) 0xBB };
+
+            // Add the OSCORE context associated to the URI of the server
+            OSCoreCtx ctx = null;
+            try {
+                ctx = new OSCoreCtx(master_secret, true, alg, sid, rid, kdf, 32, null, null);
+                db.addContext(serverURI, ctx);
+            } catch (OSException e) {
+                System.err.println("Failed to generate OSCORE Context");
+                e.printStackTrace();
+            }
+
+            // Also add the context by the IP of the server since requests may use that
+            String serverIP = null;
+            try {
+                serverIP = InetAddress.getByName(new URI(serverURI).getHost()).getHostAddress();
+                db.addContext("coap://" + serverIP, ctx);
+            } catch (UnknownHostException | URISyntaxException | OSException e) {
+                System.err.println("Failed to find Server IP");
+                e.printStackTrace();
+            }
+
+            OSCoreCoapStackFactory.useAsDefault();
+
+        }
         try {
             createAndStartClient(endpoint, localAddress, localPort, cl.hasOption("b"), serverURI, pskIdentity, pskKey,
                     clientPrivateKey, clientPublicKey, serverPublicKey, clientCertificate, serverCertificate, latitude,
@@ -357,6 +402,7 @@ public class LeshanClientDemo {
                 initializer.setInstancesForObject(SECURITY, noSec(serverURI, 123));
                 initializer.setInstancesForObject(SERVER, new Server(123, 30, BindingMode.U, false));
             }
+
         }
         initializer.setInstancesForObject(DEVICE, new MyDevice());
         initializer.setInstancesForObject(LOCATION, locationInstance);

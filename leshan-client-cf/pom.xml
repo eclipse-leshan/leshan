@@ -46,6 +46,12 @@ Contributors:
             <groupId>org.eclipse.californium</groupId>
             <artifactId>scandium</artifactId>
         </dependency>
+	<!-- Dependency for OSCORE support -->
+        <dependency>
+                <groupId>org.eclipse.californium</groupId>
+                <artifactId>cf-oscore</artifactId>
+                <version>${californium.version}</version>
+            </dependency>
 
         <!-- test dependencies -->
         <dependency>

@@ -43,6 +43,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.oscore.OSCoreCoapStackFactory;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.californium.scandium.dtls.CertificateMessage;
@@ -125,6 +126,9 @@ public class LeshanServerDemo {
     public static void main(String[] args) {
         // Define options for command line tools
         Options options = new Options();
+
+        // Enable OSCORE stack (fine to do even when using DTLS or only CoAP)
+        OSCoreCoapStackFactory.useAsDefault();
 
         final StringBuilder X509Chapter = new StringBuilder();
         X509Chapter.append("\n .");
