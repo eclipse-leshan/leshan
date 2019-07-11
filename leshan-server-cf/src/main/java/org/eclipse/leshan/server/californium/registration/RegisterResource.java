@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.registration;
 
@@ -26,6 +27,9 @@ import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
+import org.eclipse.californium.oscore.HashMapCtxDB;
+import org.eclipse.californium.oscore.OSCoreCtx;
+import org.eclipse.californium.oscore.OSException;
 import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.californium.LwM2mCoapResource;
 import org.eclipse.leshan.core.request.BindingMode;
@@ -37,6 +41,7 @@ import org.eclipse.leshan.core.response.DeregisterResponse;
 import org.eclipse.leshan.core.response.RegisterResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.core.response.UpdateResponse;
+import org.eclipse.leshan.server.OscoreHandler;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
 import org.eclipse.leshan.server.registration.RegistrationService;
 import org.slf4j.Logger;
@@ -117,6 +122,24 @@ public class RegisterResource extends LwM2mCoapResource {
     }
 
     protected void handleRegister(CoapExchange exchange, Request request) {
+        // TODO OSCORE : should we really need to do this ?
+        // Check if this incoming request is using OSCORE
+        if (exchange.advanced().getRequest().getOptions().getOscore() != null) {
+            LOG.trace("Client registered using OSCORE");
+
+            // Update the URI of the associated OSCORE Context with the client's URI
+            // So the server can send requests to the client
+            HashMapCtxDB db = OscoreHandler.getContextDB();
+            OSCoreCtx clientCtx = db.getContext(exchange.advanced().getCryptographicContextID());
+
+            try {
+                db.addContext(request.getScheme() + "://"
+                        + request.getSourceContext().getPeerAddress().getHostString().toString(), clientCtx);
+            } catch (OSException e) {
+                LOG.error("Failed to update OSCORE Context for registering client.", request, e);
+            }
+        }
+
         // Get identity
         // --------------------------------
         Identity sender = extractIdentity(request.getSourceContext());

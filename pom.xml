@@ -504,7 +504,8 @@ Contributors:
                         </goals>
                         <configuration>
                             <rules>
-                                <dependencyConvergence/>
+                                <!-- TODO OSCORE reactivate dependencyConvergence when fixed in Cf -->
+                                <!-- dependencyConvergence/-->
                                 <requireMavenVersion>
                                     <version>3.0.5</version>
                                 </requireMavenVersion>
