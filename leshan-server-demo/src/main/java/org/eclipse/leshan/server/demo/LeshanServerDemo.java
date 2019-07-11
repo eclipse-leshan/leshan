@@ -14,6 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Bosch Software Innovations - added Redis URL support with authentication
  *     Firis SA - added mDNS services registering 
+ *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.server.demo;
 
@@ -24,7 +25,11 @@ import java.net.BindException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.security.*;
+import java.security.Key;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -43,6 +48,7 @@ import org.apache.commons.cli.ParseException;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
 import org.eclipse.californium.elements.util.SslContextUtil;
+import org.eclipse.californium.oscore.OSCoreCoapStackFactory;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -54,6 +60,7 @@ import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.util.SecurityUtil;
+import org.eclipse.leshan.server.OscoreHandler;
 import org.eclipse.leshan.server.californium.LeshanServer;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.demo.servlet.ClientServlet;
@@ -163,19 +170,20 @@ public class LeshanServerDemo {
 
         final StringBuilder trustStoreChapter = new StringBuilder();
         trustStoreChapter.append("\n .");
-        trustStoreChapter.append("\n URI format: file://<path-to-trust-store-file>#<hex-strore-password>#<alias-pattern>");
+        trustStoreChapter
+                .append("\n URI format: file://<path-to-trust-store-file>#<hex-strore-password>#<alias-pattern>");
         trustStoreChapter.append("\n .");
         trustStoreChapter.append("\n Where:");
         trustStoreChapter.append("\n - path-to-trust-store-file is path to pkcs12 trust store file");
         trustStoreChapter.append("\n - hex-store-password is HEX formatted password for store");
-        trustStoreChapter.append("\n - alias-pattern can be used to filter trusted certificates and can also be empty to get all");
+        trustStoreChapter.append(
+                "\n - alias-pattern can be used to filter trusted certificates and can also be empty to get all");
         trustStoreChapter.append("\n .");
         trustStoreChapter.append("\n Default: All certificates are trusted which is only OK for a demo.");
 
         options.addOption("truststore", true,
                 "The path to a root certificate file to trust or a folder containing all the trusted certificates in X509v3 format (DER encoding) or trust store URI."
-                        + trustStoreChapter
-                        + X509ChapterDeprecated);
+                        + trustStoreChapter + X509ChapterDeprecated);
         options.addOption("ks", "keystore", true,
                 "Set the key store file.\nIf set, X.509 mode is enabled, otherwise built-in RPK credentials are used.");
         options.addOption("ksp", "storepass", true, "Set the key store password.");
@@ -329,7 +337,8 @@ public class LeshanServerDemo {
 
                 // check input exists
                 if (!input.exists()) {
-                    System.err.println("Failed to load trust store - file or directory does not exist : " + input.toString());
+                    System.err.println(
+                            "Failed to load trust store - file or directory does not exist : " + input.toString());
                     formatter.printHelp(USAGE, options);
                     return;
                 }
@@ -385,6 +394,10 @@ public class LeshanServerDemo {
         builder.setEncoder(new DefaultLwM2mNodeEncoder());
         LwM2mNodeDecoder decoder = new DefaultLwM2mNodeDecoder();
         builder.setDecoder(decoder);
+
+        // Enable OSCORE stack (fine to do even when using DTLS or only CoAP)
+        // TODO OSCORE : OSCoreCoapStack should be created in DefaultEndpointFactory.
+        OSCoreCoapStackFactory.useAsDefault(OscoreHandler.getContextDB());
 
         // Create CoAP Config
         NetworkConfig coapConfig;

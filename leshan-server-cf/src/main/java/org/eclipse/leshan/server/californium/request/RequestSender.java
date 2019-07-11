@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.request;
 
@@ -29,6 +30,10 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.elements.EndpointContext;
+import org.eclipse.californium.elements.util.Bytes;
+import org.eclipse.californium.oscore.HashMapCtxDB;
+import org.eclipse.californium.oscore.OSException;
+import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.californium.AsyncRequestObserver;
 import org.eclipse.leshan.core.californium.CoapAsyncRequestObserver;
 import org.eclipse.leshan.core.californium.CoapResponseCallback;
@@ -53,7 +58,7 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
 import org.eclipse.leshan.core.util.Validate;
-import org.eclipse.leshan.core.Destroyable;
+import org.eclipse.leshan.server.OscoreHandler;
 import org.eclipse.leshan.server.request.LowerLayerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -134,6 +139,18 @@ public class RequestSender implements Destroyable {
         request.accept(coapClientRequestBuilder);
         final Request coapRequest = coapClientRequestBuilder.getRequest();
 
+        // Toggle OSCORE use in the request if the target URI of the request has an OSCORE context registered
+        // TODO OSCORE : this should be added in CoapRequestBuilder
+        HashMapCtxDB db = OscoreHandler.getContextDB();
+        try {
+            if (db.getContext(coapRequest.getURI()) != null) {
+                coapRequest.getOptions().setOscore(Bytes.EMPTY);
+            }
+        } catch (OSException e) {
+            System.err.println("Failed to retrieve OSCORE Context for request");
+            e.printStackTrace();
+        }
+
         // Send CoAP request synchronously
         SyncRequestObserver<T> syncMessageObserver = new SyncRequestObserver<T>(coapRequest, timeoutInMs) {
             @Override
@@ -210,6 +227,18 @@ public class RequestSender implements Destroyable {
         request.accept(coapClientRequestBuilder);
         final Request coapRequest = coapClientRequestBuilder.getRequest();
 
+        // Toggle OSCORE use in the request if the target URI of the request has an OSCORE context registered
+        // TODO OSCORE : this should be added in CoapRequestBuilder
+        HashMapCtxDB db = OscoreHandler.getContextDB();
+        try {
+            if (db.getContext(coapRequest.getURI()) != null) {
+                coapRequest.getOptions().setOscore(Bytes.EMPTY);
+            }
+        } catch (OSException e) {
+            System.err.println("Failed to retrieve OSCORE Context for request");
+            e.printStackTrace();
+        }
+
         // Add CoAP request callback
         MessageObserver obs = new AsyncRequestObserver<T>(coapRequest, responseCallback, errorCallback, timeoutInMs,
                 executor) {
@@ -269,6 +298,8 @@ public class RequestSender implements Destroyable {
                     "Destination context was not set by Leshan for this request. The context is used to ensure you talk to the right peer. Bad usage could bring to security issue. {}",
                     coapRequest);
         }
+
+        // TODO OSCORE : should we add the OSCORE option automatically here too ?
 
         // Send CoAP request synchronously
         CoapSyncRequestObserver syncMessageObserver = new CoapSyncRequestObserver(coapRequest, timeoutInMs);
@@ -330,6 +361,8 @@ public class RequestSender implements Destroyable {
                     "Destination context was not set by Leshan for this request. The context is used to ensure you talk to the right peer. Bad usage could bring to security issue.{}",
                     coapRequest);
         }
+
+        // TODO OSCORE : should we add the OSCORE option automatically here too ?
 
         // Add CoAP request callback
         MessageObserver obs = new CoapAsyncRequestObserver(coapRequest, responseCallback, errorCallback, timeoutInMs,

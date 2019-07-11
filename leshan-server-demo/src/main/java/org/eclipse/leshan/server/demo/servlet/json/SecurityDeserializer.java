@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.server.demo.servlet.json;
 
@@ -28,6 +29,9 @@ import java.security.spec.ECPoint;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.KeySpec;
 
+import org.eclipse.californium.cose.AlgorithmID;
+import org.eclipse.californium.oscore.OSCoreCtx;
+import org.eclipse.californium.oscore.OSException;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.SecurityUtil;
 import org.eclipse.leshan.server.security.SecurityInfo;
@@ -63,6 +67,7 @@ public class SecurityDeserializer implements JsonDeserializer<SecurityInfo> {
 
             JsonObject psk = (JsonObject) object.get("psk");
             JsonObject rpk = (JsonObject) object.get("rpk");
+            JsonObject oscore = (JsonObject) object.get("oscore");
             JsonPrimitive x509 = object.getAsJsonPrimitive("x509");
             if (psk != null) {
                 // PSK Deserialization
@@ -108,6 +113,78 @@ public class SecurityDeserializer implements JsonDeserializer<SecurityInfo> {
                 info = SecurityInfo.newRawPublicKeyInfo(endpoint, key);
             } else if (x509 != null && x509.getAsBoolean()) {
                 info = SecurityInfo.newX509CertInfo(endpoint);
+            } else if (oscore != null) {
+                // OSCORE Deserialization
+
+                // Parse hexadecimal context parameters
+                byte[] masterSecret = Hex.decodeHex(oscore.get("masterSecret").getAsString().toCharArray());
+                byte[] senderId = Hex.decodeHex(oscore.get("senderId").getAsString().toCharArray());
+                byte[] recipientId = Hex.decodeHex(oscore.get("recipientId").getAsString().toCharArray());
+
+                // Check parameters that are allowed to be empty
+                byte[] masterSalt = null;
+                if (oscore.get("masterSalt") != null) {
+                    masterSalt = Hex.decodeHex(oscore.get("masterSalt").getAsString().toCharArray());
+
+                    if (masterSalt.length == 0) {
+                        masterSalt = null;
+                    }
+                }
+
+                byte[] idContext = null;
+                if (oscore.get("idContext") != null) {
+                    idContext = Hex.decodeHex(oscore.get("idContext").getAsString().toCharArray());
+
+                    if (idContext.length == 0) {
+                        idContext = null;
+                    }
+                }
+
+                // Parse AEAD Algorithm
+                AlgorithmID aeadAlgorithm = null;
+                try {
+                    String aeadAlgorithmStr = oscore.get("aeadAlgorithm").getAsString();
+                    aeadAlgorithm = AlgorithmID.valueOf(aeadAlgorithmStr);
+                } catch (IllegalArgumentException e) {
+                    throw new JsonParseException("Invalid AEAD algorithm", e);
+                }
+                if (aeadAlgorithm != AlgorithmID.AES_CCM_16_64_128) {
+                    throw new JsonParseException("Unsupported AEAD algorithm");
+                }
+
+                // Parse HKDF Algorithm
+                AlgorithmID hkdfAlgorithm = null;
+                try {
+                    String hkdfAlgorithmStr = oscore.get("hkdfAlgorithm").getAsString();
+                    hkdfAlgorithm = AlgorithmID.valueOf(hkdfAlgorithmStr);
+                } catch (IllegalArgumentException e) {
+                    throw new JsonParseException("Invalid HKDF algorithm", e);
+                }
+                if (hkdfAlgorithm != AlgorithmID.HKDF_HMAC_SHA_256) {
+                    throw new JsonParseException("Unsupported HKDF algorithm");
+                }
+
+                OSCoreCtx ctx = null;
+                // Attempt to generate OSCORE Context from parsed parameters
+                // Note that the sender and recipient IDs are inverted here
+                try {
+                    ctx = new OSCoreCtx(masterSecret, true, aeadAlgorithm, recipientId, senderId, hkdfAlgorithm, 32,
+                            masterSalt, idContext);
+                } catch (OSException e) {
+                    throw new JsonParseException("Failed to generate OSCORE context", e);
+                }
+
+                // Create an identity string from the OSCORE context information
+                StringBuilder b = new StringBuilder();
+                if (ctx.getIdContext() != null) {
+                    b.append(Hex.encodeHex(ctx.getIdContext()));
+                    b.append(":");
+                }
+                b.append(Hex.encodeHex(ctx.getRecipientId()));
+                String identity = b.toString();
+
+                // TODO OSCORE : identity is for PSK and should not be used for OSCORE
+                info = SecurityInfo.newOSCoreInfo(endpoint, identity, ctx);
             } else {
                 throw new JsonParseException("Invalid security info content");
             }
