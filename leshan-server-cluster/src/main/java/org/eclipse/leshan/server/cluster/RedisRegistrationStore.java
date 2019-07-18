@@ -743,4 +743,9 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     public void setExpirationListener(ExpirationListener listener) {
         expirationListener = listener;
     }
+
+    @Override
+    public void setExecutor(ScheduledExecutorService executor) {
+        // TODO we could reuse californium executor ?
+    }
 }

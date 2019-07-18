@@ -504,4 +504,9 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
         } else
             return false;
     }
+
+    @Override
+    public void setExecutor(ScheduledExecutorService executor) {
+        // TODO we could reuse californium executor ?
+    }
 }
