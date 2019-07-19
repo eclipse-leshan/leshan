@@ -48,6 +48,7 @@ import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ACLConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
+import org.eclipse.leshan.server.bootstrap.BootstrapSession;
 import org.eclipse.leshan.server.californium.LeshanBootstrapServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LeshanBootstrapServer;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
@@ -233,7 +234,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         return new BootstrapConfigStore() {
 
             @Override
-            public BootstrapConfig get(String endpoint, Identity deviceIdentity) {
+            public BootstrapConfig get(String endpoint, Identity deviceIdentity, BootstrapSession session) {
 
                 BootstrapConfig bsConfig = new BootstrapConfig();
 
@@ -277,7 +278,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         return new BootstrapConfigStore() {
 
             @Override
-            public BootstrapConfig get(String endpoint, Identity deviceIdentity) {
+            public BootstrapConfig get(String endpoint, Identity deviceIdentity, BootstrapSession session) {
 
                 BootstrapConfig bsConfig = new BootstrapConfig();
                 bsConfig.toDelete = Arrays.asList(pathToDelete);
@@ -290,7 +291,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         return new BootstrapConfigStore() {
 
             @Override
-            public BootstrapConfig get(String endpoint, Identity deviceIdentity) {
+            public BootstrapConfig get(String endpoint, Identity deviceIdentity, BootstrapSession session) {
 
                 BootstrapConfig bsConfig = new BootstrapConfig();
 
@@ -341,7 +342,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         return new BootstrapConfigStore() {
 
             @Override
-            public BootstrapConfig get(String endpoint, Identity deviceIdentity) {
+            public BootstrapConfig get(String endpoint, Identity deviceIdentity, BootstrapSession session) {
 
                 BootstrapConfig bsConfig = new BootstrapConfig();
 
@@ -378,7 +379,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         return new BootstrapConfigStore() {
 
             @Override
-            public BootstrapConfig get(String endpoint, Identity deviceIdentity) {
+            public BootstrapConfig get(String endpoint, Identity deviceIdentity, BootstrapSession session) {
 
                 BootstrapConfig bsConfig = new BootstrapConfig();
 

@@ -30,7 +30,7 @@ public class InMemoryBootstrapConfigStore implements EditableBootstrapConfigStor
     protected final Map<String, BootstrapConfig> bootstrapByEndpoint = new ConcurrentHashMap<>();
 
     @Override
-    public BootstrapConfig get(String endpoint, Identity deviceIdentity) {
+    public BootstrapConfig get(String endpoint, Identity deviceIdentity, BootstrapSession session) {
         return bootstrapByEndpoint.get(endpoint);
     }
 

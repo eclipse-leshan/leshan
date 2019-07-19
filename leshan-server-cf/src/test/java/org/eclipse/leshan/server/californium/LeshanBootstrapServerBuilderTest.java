@@ -22,6 +22,7 @@ import java.util.List;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
+import org.eclipse.leshan.server.bootstrap.BootstrapSession;
 import org.eclipse.leshan.server.californium.impl.LeshanBootstrapServer;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
@@ -38,7 +39,7 @@ public class LeshanBootstrapServerBuilderTest {
         builder = new LeshanBootstrapServerBuilder();
         builder.setConfigStore(new BootstrapConfigStore() {
             @Override
-            public BootstrapConfig get(String endpoint, Identity deviceIdentity) {
+            public BootstrapConfig get(String endpoint, Identity deviceIdentity, BootstrapSession session) {
                 return null;
             }
         });
