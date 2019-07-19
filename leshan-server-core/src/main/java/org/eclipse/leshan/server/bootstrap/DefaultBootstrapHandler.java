@@ -166,11 +166,11 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                 public void safeOnResponse(BootstrapDeleteResponse response) {
                     if (response.isSuccess()) {
                         LOG.trace("{} receives {} for {}", session, response, deleteRequest);
-                        sessionManager.onResponseSuccess(deleteRequest);
+                        sessionManager.onResponseSuccess(session, deleteRequest);
                         afterDelete(session, cfg, pathToDelete, BootstrapPolicy.CONTINUE);
                     } else {
                         LOG.debug("{} receives {} for {}", session, response, deleteRequest);
-                        BootstrapPolicy policy = sessionManager.onResponseError(deleteRequest, response);
+                        BootstrapPolicy policy = sessionManager.onResponseError(session, deleteRequest, response);
                         afterDelete(session, cfg, pathToDelete, policy);
                     }
                 }
@@ -178,7 +178,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                 @Override
                 public void safeOnError(Exception e) {
                     LOG.debug("Error for {} while sending {} ", session, deleteRequest, e);
-                    BootstrapPolicy policy = sessionManager.onRequestFailure(deleteRequest, e);
+                    BootstrapPolicy policy = sessionManager.onRequestFailure(session, deleteRequest, e);
                     afterDelete(session, cfg, pathToDelete, policy);
                 }
             });
@@ -232,11 +232,12 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                 public void safeOnResponse(BootstrapWriteResponse response) {
                     if (response.isSuccess()) {
                         LOG.trace("{} receives {} for {}", session, response, writeBootstrapRequest);
-                        sessionManager.onResponseSuccess(writeBootstrapRequest);
+                        sessionManager.onResponseSuccess(session, writeBootstrapRequest);
                         afterWriteSecurities(session, cfg, securityInstancesToWrite, BootstrapPolicy.CONTINUE);
                     } else {
                         LOG.debug("{} receives {} for {}", session, response, writeBootstrapRequest);
-                        BootstrapPolicy policy = sessionManager.onResponseError(writeBootstrapRequest, response);
+                        BootstrapPolicy policy = sessionManager.onResponseError(session, writeBootstrapRequest,
+                                response);
                         afterWriteSecurities(session, cfg, securityInstancesToWrite, policy);
                     }
                 }
@@ -244,7 +245,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                 @Override
                 public void safeOnError(Exception e) {
                     LOG.debug("Error for {} while sending {} ", session, writeBootstrapRequest, e);
-                    BootstrapPolicy policy = sessionManager.onRequestFailure(writeBootstrapRequest, e);
+                    BootstrapPolicy policy = sessionManager.onRequestFailure(session, writeBootstrapRequest, e);
                     afterWriteSecurities(session, cfg, securityInstancesToWrite, policy);
                 }
             });
@@ -298,11 +299,11 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                 public void safeOnResponse(BootstrapWriteResponse response) {
                     if (response.isSuccess()) {
                         LOG.trace("{} receives {} for {}", session, response, writeServerRequest);
-                        sessionManager.onResponseSuccess(writeServerRequest);
+                        sessionManager.onResponseSuccess(session, writeServerRequest);
                         afterWriteServers(session, cfg, serverInstancesToWrite, BootstrapPolicy.CONTINUE);
                     } else {
                         LOG.debug("{} receives {} for {}", session, response, writeServerRequest);
-                        BootstrapPolicy policy = sessionManager.onResponseError(writeServerRequest, response);
+                        BootstrapPolicy policy = sessionManager.onResponseError(session, writeServerRequest, response);
                         afterWriteServers(session, cfg, serverInstancesToWrite, policy);
                     }
                 }
@@ -310,7 +311,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                 @Override
                 public void safeOnError(Exception e) {
                     LOG.debug("Error for {} while sending {} ", session, writeServerRequest, e);
-                    BootstrapPolicy policy = sessionManager.onRequestFailure(writeServerRequest, e);
+                    BootstrapPolicy policy = sessionManager.onRequestFailure(session, writeServerRequest, e);
                     afterWriteServers(session, cfg, serverInstancesToWrite, policy);
                 }
             });
@@ -364,11 +365,11 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                 public void safeOnResponse(BootstrapWriteResponse response) {
                     if (response.isSuccess()) {
                         LOG.trace("{} receives {} for {}", session, response, writeACLRequest);
-                        sessionManager.onResponseSuccess(writeACLRequest);
+                        sessionManager.onResponseSuccess(session, writeACLRequest);
                         afterWritedAcls(session, cfg, aclInstancesToWrite, BootstrapPolicy.CONTINUE);
                     } else {
                         LOG.debug("{} receives {} for {}", session, response, writeACLRequest);
-                        BootstrapPolicy policy = sessionManager.onResponseError(writeACLRequest, response);
+                        BootstrapPolicy policy = sessionManager.onResponseError(session, writeACLRequest, response);
                         afterWritedAcls(session, cfg, aclInstancesToWrite, policy);
                     }
                 }
@@ -376,7 +377,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                 @Override
                 public void safeOnError(Exception e) {
                     LOG.debug("Error for {} while sending {} ", session, writeACLRequest, e);
-                    BootstrapPolicy policy = sessionManager.onRequestFailure(writeACLRequest, e);
+                    BootstrapPolicy policy = sessionManager.onRequestFailure(session, writeACLRequest, e);
                     afterWritedAcls(session, cfg, aclInstancesToWrite, policy);
                 }
             });
@@ -418,11 +419,11 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             public void safeOnResponse(BootstrapFinishResponse response) {
                 if (response.isSuccess()) {
                     LOG.trace("{} receives {} for {}", session, response, finishBootstrapRequest);
-                    sessionManager.onResponseSuccess(finishBootstrapRequest);
+                    sessionManager.onResponseSuccess(session, finishBootstrapRequest);
                     afterBootstrapFinished(session, cfg, BootstrapPolicy.CONTINUE);
                 } else {
                     LOG.debug("{} receives {} for {}", session, response, finishBootstrapRequest);
-                    BootstrapPolicy policy = sessionManager.onResponseError(finishBootstrapRequest, response);
+                    BootstrapPolicy policy = sessionManager.onResponseError(session, finishBootstrapRequest, response);
                     afterBootstrapFinished(session, cfg, policy);
                 }
             }
@@ -430,7 +431,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             @Override
             public void safeOnError(Exception e) {
                 LOG.debug("Error for {} while sending {} ", session, finishBootstrapRequest, e);
-                BootstrapPolicy policy = sessionManager.onRequestFailure(finishBootstrapRequest, e);
+                BootstrapPolicy policy = sessionManager.onRequestFailure(session, finishBootstrapRequest, e);
                 afterBootstrapFinished(session, cfg, policy);
             }
         });

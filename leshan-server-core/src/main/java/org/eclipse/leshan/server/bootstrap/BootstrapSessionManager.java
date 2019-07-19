@@ -68,29 +68,34 @@ public interface BootstrapSessionManager {
     /**
      * Called when we receive a successful response to a request.
      * 
+     * @param bsSession the bootstrap session concerned.
      * @param request The request for which we get a successfull response.
      */
-    public void onResponseSuccess(LwM2mRequest<? extends LwM2mResponse> request);
+    public void onResponseSuccess(BootstrapSession bsSession, LwM2mRequest<? extends LwM2mResponse> request);
 
     /**
      * Called when we receive a error response to a request.
      * 
+     * @param bsSession the bootstrap session concerned.
      * @param request The request for which we get a error response.
      * @param response The response received.
      * 
      * @return a {@link BootstrapPolicy} given the way to continue the bootstrap session.
      */
-    public BootstrapPolicy onResponseError(LwM2mRequest<? extends LwM2mResponse> request, LwM2mResponse response);
+    public BootstrapPolicy onResponseError(BootstrapSession bsSession, LwM2mRequest<? extends LwM2mResponse> request,
+            LwM2mResponse response);
 
     /**
      * Called when a request failed to be sent.
      * 
+     * @param bsSession the bootstrap session concerned.
      * @param request The request which failed to be sent.
      * @param exception The cause of the failure. Can be null.
      * 
      * @return a {@link BootstrapPolicy} given the way to continue the bootstrap session.
      */
-    public BootstrapPolicy onRequestFailure(LwM2mRequest<? extends LwM2mResponse> request, Throwable cause);
+    public BootstrapPolicy onRequestFailure(BootstrapSession bsSession, LwM2mRequest<? extends LwM2mResponse> request,
+            Throwable cause);
 
     /**
      * Performs any housekeeping related to the successful ending of a Bootstrapping session.

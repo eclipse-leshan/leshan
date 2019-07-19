@@ -268,12 +268,13 @@ public class BootstrapHandlerTest {
         }
 
         @Override
-        public void onResponseSuccess(LwM2mRequest<? extends LwM2mResponse> request) {
+        public void onResponseSuccess(BootstrapSession bsSession, LwM2mRequest<? extends LwM2mResponse> request) {
 
         }
 
         @Override
-        public BootstrapPolicy onResponseError(LwM2mRequest<? extends LwM2mResponse> request, LwM2mResponse response) {
+        public BootstrapPolicy onResponseError(BootstrapSession bsSession,
+                LwM2mRequest<? extends LwM2mResponse> request, LwM2mResponse response) {
             if (request instanceof BootstrapFinishRequest) {
                 return BootstrapPolicy.STOP;
             }
@@ -281,7 +282,8 @@ public class BootstrapHandlerTest {
         }
 
         @Override
-        public BootstrapPolicy onRequestFailure(LwM2mRequest<? extends LwM2mResponse> request, Throwable cause) {
+        public BootstrapPolicy onRequestFailure(BootstrapSession bsSession,
+                LwM2mRequest<? extends LwM2mResponse> request, Throwable cause) {
             return BootstrapPolicy.STOP;
         }
 
