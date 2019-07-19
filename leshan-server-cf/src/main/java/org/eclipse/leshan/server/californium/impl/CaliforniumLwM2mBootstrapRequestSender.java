@@ -22,8 +22,6 @@ import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.core.californium.AsyncRequestObserver;
 import org.eclipse.leshan.core.californium.SyncRequestObserver;
 import org.eclipse.leshan.core.model.LwM2mModel;
-import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
-import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.request.DownlinkRequest;
@@ -42,14 +40,16 @@ public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapReq
     private final Endpoint nonSecureEndpoint;
     private final Endpoint secureEndpoint;
     private final LwM2mModel model;
-    private final LwM2mNodeDecoder decoder = new DefaultLwM2mNodeDecoder();
-    private final LwM2mNodeEncoder encoder = new DefaultLwM2mNodeEncoder();
+    private final LwM2mNodeDecoder decoder;
+    private final LwM2mNodeEncoder encoder;
 
-    public CaliforniumLwM2mBootstrapRequestSender(Endpoint secureEndpoint, Endpoint nonSecureEndpoint,
-            LwM2mModel model) {
+    public CaliforniumLwM2mBootstrapRequestSender(Endpoint secureEndpoint, Endpoint nonSecureEndpoint, LwM2mModel model,
+            LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
         this.secureEndpoint = secureEndpoint;
         this.nonSecureEndpoint = nonSecureEndpoint;
         this.model = model;
+        this.encoder = encoder;
+        this.decoder = decoder;
     }
 
     @Override

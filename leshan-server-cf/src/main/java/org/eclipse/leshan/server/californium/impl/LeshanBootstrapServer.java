@@ -23,6 +23,8 @@ import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
+import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
@@ -53,7 +55,8 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
 
     public LeshanBootstrapServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint, BootstrapConfigStore bsStore,
             BootstrapSecurityStore bsSecurityStore, BootstrapSessionManager bsSessionManager,
-            BootstrapHandlerFactory bsHandlerFactory, LwM2mModel model, NetworkConfig coapConfig) {
+            BootstrapHandlerFactory bsHandlerFactory, LwM2mModel model, NetworkConfig coapConfig,
+            LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
 
         Validate.notNull(bsStore, "bootstrap store must not be null");
         Validate.notNull(bsSessionManager, "session manager must not be null");
@@ -77,7 +80,8 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
             coapServer.addEndpoint(securedEndpoint);
 
         // create request sender
-        LwM2mBootstrapRequestSender requestSender = createRequestSender(securedEndpoint, unsecuredEndpoint, model);
+        LwM2mBootstrapRequestSender requestSender = createRequestSender(securedEndpoint, unsecuredEndpoint, model,
+                encoder, decoder);
 
         // create bootstrap resource
         CoapResource bsResource = createBootstrapResource(
@@ -90,8 +94,8 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
     }
 
     protected LwM2mBootstrapRequestSender createRequestSender(Endpoint securedEndpoint, Endpoint unsecuredEndpoint,
-            LwM2mModel model) {
-        return new CaliforniumLwM2mBootstrapRequestSender(securedEndpoint, unsecuredEndpoint, model);
+            LwM2mModel model, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
+        return new CaliforniumLwM2mBootstrapRequestSender(securedEndpoint, unsecuredEndpoint, model, encoder, decoder);
     }
 
     protected CoapResource createBootstrapResource(BootstrapHandler handler) {
