@@ -13,10 +13,9 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-
 angular.module('resourceDirectives', [])
 
-.directive('resource', function ($compile, $routeParams, $http, dialog, $filter, lwResources, helper) {
+.directive('resource', function ($compile, $routeParams, $http, dialog, $filter, lwResources, $modal, helper) {
     return {
         restrict: "E",
         replace: true,
@@ -64,8 +63,8 @@ angular.module('resourceDirectives', [])
                 var uri = "api/clients/" + $routeParams.clientId + scope.resource.path+"/observe";
                 $http.post(uri, null,{params:{format:format}})
                 .success(function(data, status, headers, config) {
-                	helper.handleResponse(data, scope.resource.observe, function (formattedDate){
-                		if (data.success) {
+                    helper.handleResponse(data, scope.resource.observe, function (formattedDate){
+                        if (data.success) {
                             scope.resource.observed = true;
                             if("value" in data.content) {
                                 // single value
@@ -110,8 +109,8 @@ angular.module('resourceDirectives', [])
                 $http.get(uri, {params:{format:format}})
                 .success(function(data, status, headers, config) {
                     // manage request information
-                	helper.handleResponse(data, scope.resource.read, function (formattedDate){
-                		if (data.success && data.content) {
+                    helper.handleResponse(data, scope.resource.read, function (formattedDate){
+                        if (data.success && data.content) {
                             if("value" in data.content) {
                                 // single value
                                 scope.resource.value = data.content.value;
@@ -126,8 +125,8 @@ angular.module('resourceDirectives', [])
                             }
                             scope.resource.valuesupposed = false;
                             scope.resource.tooltip = formattedDate;
-                        }                		
-                	});
+                        }
+                    });
                 }).error(function(data, status, headers, config) {
                     errormessage = "Unable to read resource " + scope.resource.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
                     dialog.open(errormessage);
@@ -136,40 +135,40 @@ angular.module('resourceDirectives', [])
             };
 
             scope.write = function() {
-                $('#writeModalLabel').text(scope.resource.def.name);
-                $('#writeInputValue').val(scope.resource.value);
-                $('#writeSubmit').unbind();
-                $('#writeSubmit').click(function(e){
-                    e.preventDefault();
-                    var value = $('#writeInputValue').val();
+                var modalResource = $modal.open({
+                    templateUrl: 'partials/modal-resource.html',
+                    controller: 'modalResourceController',
+                    resolve: {
+                      instance: function() {return scope.parent;},
+                      resource: function() {return scope.resource;},
+                    }
+                  });
 
-                    if(value != undefined) {
-                        $('#writeModal').modal('hide');
+                modalResource.result.then(function (resource) {
+                    resource.getPromisedValue().then(function(resourceValue){
+                        // Build payload
+                        var payload = {};
+                        payload["id"] = resource.id;
+                        payload["value"] = lwResources.getTypedValue(resourceValue, resource.def.type);
 
-                        var rsc = {};
-                        rsc["id"] = scope.resource.def.id;
-                        value = lwResources.getTypedValue(value, scope.resource.def.type);
-                        rsc["value"] = value;
-
-                        var format = scope.settings.single.format;
-                        $http({method: 'PUT', url: "api/clients/" + $routeParams.clientId + scope.resource.path, data: rsc, headers:{'Content-Type': 'application/json'},params:{format:format}})
+                        // Send request
+                        var format = scope.settings.multi.format;
+                        $http({method: 'PUT', url: "api/clients/" + $routeParams.clientId + scope.resource.path, data: payload, headers:{'Content-Type': 'application/json'},params:{format:format}})
                         .success(function(data, status, headers, config) {
-                        	helper.handleResponse(data, scope.resource.write, function (formattedDate){
-                        		if (data.success) {
-                                    scope.resource.value = value;
+                            helper.handleResponse(data, scope.resource.write, function (formattedDate){
+                                if (data.success) {
+                                    scope.resource.value = payload["value"];
                                     scope.resource.valuesupposed = true;
                                     scope.resource.tooltip = formattedDate;
                                 }
-                        	});
+                            });
                         }).error(function(data, status, headers, config) {
                             errormessage = "Unable to write resource " + scope.resource.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
                             dialog.open(errormessage);
                             console.error(errormessage);
                         });
-                    }
+                    });
                 });
-
-                $('#writeModal').modal('show');
             };
 
             scope.exec = function() {

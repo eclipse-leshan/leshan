@@ -44,41 +44,45 @@ angular.module('objectDirectives', [])
                 });
             
                 modalInstance.result.then(function (instance) {
-                    // Build payload
-                    var payload = {};
-                    payload["id"] = instance.id;
-                    payload["resources"] = [];
+                    promisedValues = instance.resources.map(r => r.getPromisedValue())
+                    Promise.all(promisedValues).then(function(resourceValues) {
+                        // Build payload
+                        var payload = {};
+                        payload["id"] = instance.id;
+                        payload["resources"] = [];
 
-                    for(i in instance.resources){
-                        var resource = instance.resources[i];
-                        if (resource.value != undefined){
-                            payload.resources.push({
-                                id:resource.id,
-                                value:lwResources.getTypedValue(resource.value, resource.def.type)
+                        for(i in instance.resources){
+                            var resource = instance.resources[i];
+                            var resourceValue = resourceValues[i];
+                            if (resourceValue != undefined){
+                                payload.resources.push({
+                                    id:resource.id,
+                                    value:lwResources.getTypedValue(resourceValue, resource.def.type)
+                                });
+                            }
+                        }
+                        // Send request
+                        var format = scope.settings.multi.format;
+                        var instancepath  = scope.object.path;
+                        $http({method: 'POST', url: "api/clients/" + $routeParams.clientId + instancepath, data: payload, headers:{'Content-Type': 'application/json'}, params:{format:format}})
+                        .success(function(data, status, headers, config) {
+                            helper.handleResponse(data, scope.object.create, function (formattedDate) {
+                                if (data.success) {
+                                    var newinstance = lwResources.addInstance(scope.object, instance.id, null);
+                                    for (var i in payload.resources) {
+                                        var tlvresource = payload.resources[i];
+                                        resource = lwResources.addResource(scope.object, newinstance, tlvresource.id, null);
+                                        resource.value = tlvresource.value;
+                                        resource.valuesupposed = true;
+                                        resource.tooltip = formattedDate;
+                                    }
+                                }
                             });
-                        } 
-                    }
-                    // Send request
-                    var format = scope.settings.multi.format;
-                    var instancepath  = scope.object.path;
-                    $http({method: 'POST', url: "api/clients/" + $routeParams.clientId + instancepath, data: payload, headers:{'Content-Type': 'application/json'}, params:{format:format}})
-                    .success(function(data, status, headers, config) {
-                    	helper.handleResponse(data, scope.object.create, function (formattedDate) {
-	                        if (data.success) {
-	                            var newinstance = lwResources.addInstance(scope.object, instance.id, null);
-	                            for (var i in payload.resources) {
-	                                var tlvresource = payload.resources[i];
-	                                resource = lwResources.addResource(scope.object, newinstance, tlvresource.id, null);
-	                                resource.value = tlvresource.value;
-	                                resource.valuesupposed = true;
-	                                resource.tooltip = formattedDate;
-	                            }
-	                        }
-                    	});
-                    }).error(function(data, status, headers, config) {
-                        errormessage = "Unable to create instance " + instancepath + " for "+ $routeParams.clientId + " : " + status +" "+ data;
-                        dialog.open(errormessage);
-                        console.error(errormessage);
+                        }).error(function(data, status, headers, config) {
+                            errormessage = "Unable to create instance " + instancepath + " for "+ $routeParams.clientId + " : " + status +" "+ data;
+                            dialog.open(errormessage);
+                            console.error(errormessage);
+                        });
                     });
                 });
             };

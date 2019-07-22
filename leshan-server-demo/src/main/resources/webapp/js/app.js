@@ -29,8 +29,10 @@ var leshanApp = angular.module('leshanApp',[
         'securityControllers',
         'uiDialogServices',
         'modalInstanceControllers',
+        'modalResourceControllers',
         'ui.bootstrap',
         'helperServices',
+        'fileModelDirectives',
 ]);
 
 leshanApp.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {

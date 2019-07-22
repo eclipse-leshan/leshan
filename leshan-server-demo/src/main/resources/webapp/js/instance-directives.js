@@ -101,41 +101,44 @@ angular.module('instanceDirectives', [])
                 });
 
                 modalInstance.result.then(function (instance) {
-                    // Build payload
-                    var payload = {};
-                    payload["id"] = scope.instance.id;
-                    payload["resources"] = [];
+                    promisedValues = instance.resources.map(r => r.getPromisedValue())
+                    Promise.all(promisedValues).then(function(resourceValues) {
+                        // Build payload
+                        var payload = {};
+                        payload["id"] = scope.instance.id;
+                        payload["resources"] = [];
 
-                    for(i in instance.resources){
-                        var resource = instance.resources[i];
-                        if (resource.value != undefined){
-                            payload.resources.push({
-                                id:resource.id,
-                                value:lwResources.getTypedValue(resource.value, resource.def.type)
-                            });
+                        for(i in instance.resources){
+                            var resource = instance.resources[i];
+                            var resourceValue = resourceValues[i];
+                            if (resourceValue != undefined){
+                                payload.resources.push({
+                                    id:resource.id,
+                                    value:lwResources.getTypedValue(resourceValue, resource.def.type)
+                                });
+                            }
                         }
-                    }
-                    // Send request
-                    var format = scope.settings.multi.format;
-                    $http({method: 'PUT', url: "api/clients/" + $routeParams.clientId + scope.instance.path, data: payload, headers:{'Content-Type': 'application/json'}, params:{format:format}})
-                    .success(function(data, status, headers, config) {
-                    	helper.handleResponse(data, scope.instance.write, function (formattedDate) {
-	                        if (data.success) {
-	                            for (var i in payload.resources) {
-	                                var tlvresource = payload.resources[i];
-	                                resource = lwResources.addResource(scope.parent, scope.instance, tlvresource.id, null);
-	                                resource.value = tlvresource.value;
-	                                resource.valuesupposed = true;
-	                                resource.tooltip = formattedDate;
-	                            }
-	                        }
-                    	});
-                    }).error(function(data, status, headers, config) {
-                        errormessage = "Unable to write resource " + scope.instance.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
-                        dialog.open(errormessage);
-                        console.error(errormessage);
+                        // Send request
+                        var format = scope.settings.multi.format;
+                        $http({method: 'PUT', url: "api/clients/" + $routeParams.clientId + scope.instance.path, data: payload, headers:{'Content-Type': 'application/json'}, params:{format:format}})
+                        .success(function(data, status, headers, config) {
+                            helper.handleResponse(data, scope.instance.write, function (formattedDate) {
+                                if (data.success) {
+                                    for (var i in payload.resources) {
+                                        var tlvresource = payload.resources[i];
+                                        resource = lwResources.addResource(scope.parent, scope.instance, tlvresource.id, null);
+                                        resource.value = tlvresource.value;
+                                        resource.valuesupposed = true;
+                                        resource.tooltip = formattedDate;
+                                    }
+                                }
+                        	});
+                        }).error(function(data, status, headers, config) {
+                            errormessage = "Unable to write resource " + scope.instance.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
+                            dialog.open(errormessage);
+                            console.error(errormessage);
+                        });
                     });
-
                 });
             };
 
