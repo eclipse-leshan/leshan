@@ -16,6 +16,7 @@
 package org.eclipse.leshan.server.demo.servlet.json;
 
 import java.lang.reflect.Type;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -34,6 +35,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
+
+import com.github.ooxi.jdatauri.DataUri;
 
 public class LwM2mNodeDeserializer implements JsonDeserializer<LwM2mNode> {
 
@@ -79,6 +82,13 @@ public class LwM2mNodeDeserializer implements JsonDeserializer<LwM2mNode> {
                 JsonPrimitive val = object.get("value").getAsJsonPrimitive();
                 org.eclipse.leshan.core.model.ResourceModel.Type expectedType = getTypeFor(val);
                 node = LwM2mSingleResource.newResource(id, deserializeValue(val, expectedType), expectedType);
+            } else if (object.has("base64Value")) {
+                // single value resource
+                String val = object.get("base64Value").getAsJsonPrimitive().getAsString();
+                org.eclipse.leshan.core.model.ResourceModel.Type expectedType =
+                        org.eclipse.leshan.core.model.ResourceModel.Type.OPAQUE;
+                DataUri dataUri = DataUri.parse(val, Charset.defaultCharset());
+                node = LwM2mSingleResource.newResource(id, dataUri.getData(), expectedType);
             } else if (object.has("values")) {
                 // multi-instances resource
                 Map<Integer, Object> values = new HashMap<>();

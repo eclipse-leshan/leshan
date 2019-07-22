@@ -14,6 +14,15 @@
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
 
+function getBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
+}
+
 angular.module('resourceDirectives', [])
 
 .directive('resource', function ($compile, $routeParams, $http, dialog, $filter, lwResources, helper) {
@@ -136,38 +145,80 @@ angular.module('resourceDirectives', [])
             };
 
             scope.write = function() {
-                $('#writeModalLabel').text(scope.resource.def.name);
-                $('#writeInputValue').val(scope.resource.value);
                 $('#writeSubmit').unbind();
-                $('#writeSubmit').click(function(e){
-                    e.preventDefault();
-                    var value = $('#writeInputValue').val();
+                $('#writeModalLabel').text(scope.resource.def.name);
 
-                    if(value != undefined) {
-                        $('#writeModal').modal('hide');
+                if(scope.resource.def.type === 'opaque') {
+                    $('#writeModalTextInput').hide();
+                    $('#writeModalFileInput').show();
 
-                        var rsc = {};
-                        rsc["id"] = scope.resource.def.id;
-                        value = lwResources.getTypedValue(value, scope.resource.def.type);
-                        rsc["value"] = value;
+                    $('#writeInputFile').val(null);
+                    $('#writeSubmit').click(function(e){
+                        e.preventDefault();
+                        var file = $('#writeInputFile').prop('files')[0];
 
-                        var format = scope.settings.single.format;
-                        $http({method: 'PUT', url: "api/clients/" + $routeParams.clientId + scope.resource.path, data: rsc, headers:{'Content-Type': 'application/json'},params:{format:format}})
-                        .success(function(data, status, headers, config) {
-                        	helper.handleResponse(data, scope.resource.write, function (formattedDate){
-                        		if (data.success) {
-                                    scope.resource.value = value;
-                                    scope.resource.valuesupposed = true;
-                                    scope.resource.tooltip = formattedDate;
-                                }
-                        	});
-                        }).error(function(data, status, headers, config) {
-                            errormessage = "Unable to write resource " + scope.resource.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
-                            dialog.open(errormessage);
-                            console.error(errormessage);
+                        getBase64(file).then(function (value) {
+                            if (value != undefined) {
+                                $('#writeModal').modal('hide');
+
+                                var rsc = {};
+                                rsc["id"] = scope.resource.def.id;
+                                value = lwResources.getTypedValue(value, scope.resource.def.type);
+                                rsc["base64Value"] = value;
+
+                                var format = scope.settings.single.format;
+                                $http({ method: 'PUT', url: "api/clients/" + $routeParams.clientId + scope.resource.path, data: rsc, headers: { 'Content-Type': 'application/json' }, params: { format: format } })
+                                    .success(function (data, status, headers, config) {
+                                        helper.handleResponse(data, scope.resource.write, function (formattedDate) {
+                                            if (data.success) {
+                                                scope.resource.value = "";
+                                                scope.resource.valuesupposed = true;
+                                                scope.resource.tooltip = formattedDate;
+                                            }
+                                        });
+                                    }).error(function (data, status, headers, config) {
+                                        errormessage = "Unable to write resource " + scope.resource.path + " for " + $routeParams.clientId + " : " + status + " " + data;
+                                        dialog.open(errormessage);
+                                        console.error(errormessage);
+                                    });
+                            }
                         });
-                    }
-                });
+                    });
+                } else {
+                    $('#writeModalTextInput').show();
+                    $('#writeModalFileInput').hide();
+
+                    $('#writeInputValue').val(scope.resource.value);
+                    $('#writeSubmit').click(function(e){
+                        e.preventDefault();
+                        var value = $('#writeInputValue').val();
+
+                        if(value != undefined) {
+                            $('#writeModal').modal('hide');
+
+                            var rsc = {};
+                            rsc["id"] = scope.resource.def.id;
+                            value = lwResources.getTypedValue(value, scope.resource.def.type);
+                            rsc["value"] = value;
+
+                            var format = scope.settings.single.format;
+                            $http({method: 'PUT', url: "api/clients/" + $routeParams.clientId + scope.resource.path, data: rsc, headers:{'Content-Type': 'application/json'},params:{format:format}})
+                            .success(function(data, status, headers, config) {
+                                helper.handleResponse(data, scope.resource.write, function (formattedDate){
+                                    if (data.success) {
+                                        scope.resource.value = value;
+                                        scope.resource.valuesupposed = true;
+                                        scope.resource.tooltip = formattedDate;
+                                    }
+                                });
+                            }).error(function(data, status, headers, config) {
+                                errormessage = "Unable to write resource " + scope.resource.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
+                                dialog.open(errormessage);
+                                console.error(errormessage);
+                            });
+                        }
+                    });
+                }
 
                 $('#writeModal').modal('show');
             };

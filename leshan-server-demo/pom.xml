@@ -68,6 +68,11 @@ Contributors:
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.github.ooxi</groupId>
+            <artifactId>jdatauri</artifactId>
+            <version>1.0</version>
+        </dependency>
 
         <!-- runtime dependencies -->
        <dependency>
