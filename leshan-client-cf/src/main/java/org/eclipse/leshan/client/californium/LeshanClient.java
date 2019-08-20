@@ -88,7 +88,7 @@ public class LeshanClient implements LwM2mClient {
             @Override
             protected Resource createRoot() {
                 // Use to handle Delete on "/"
-                return new org.eclipse.leshan.client.californium.impl.RootResource(bootstrapHandler);
+                return new org.eclipse.leshan.client.californium.impl.RootResource(bootstrapHandler, this);
             }
         };
 

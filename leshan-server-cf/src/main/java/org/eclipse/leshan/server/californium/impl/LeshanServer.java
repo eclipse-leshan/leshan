@@ -19,18 +19,14 @@ package org.eclipse.leshan.server.californium.impl;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
-import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
-import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.core.californium.CoapResponseCallback;
 import org.eclipse.leshan.core.node.codec.CodecException;
@@ -179,7 +175,7 @@ public class LeshanServer implements LwM2mServer {
         coapServer = new CoapServer(coapConfig) {
             @Override
             protected Resource createRoot() {
-                return new RootResource();
+                return new RootResource(this);
             }
         };
 
@@ -501,25 +497,5 @@ public class LeshanServer implements LwM2mServer {
     @Deprecated
     public CoapServer getCoapServer() {
         return coapServer;
-    }
-
-    /**
-     * The Leshan Root Resource.
-     */
-    private class RootResource extends CoapResource {
-
-        public RootResource() {
-            super("");
-        }
-
-        @Override
-        public void handleGET(CoapExchange exchange) {
-            exchange.respond(ResponseCode.NOT_FOUND);
-        }
-
-        @Override
-        public List<Endpoint> getEndpoints() {
-            return coapServer.getEndpoints();
-        }
     }
 }
