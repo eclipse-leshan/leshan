@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.impl;
 
@@ -215,6 +216,16 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse, request,
                     registration.getEndpoint());
             if (coapResponse.getOptions().hasObserve()) {
+            	
+                /* Note: When using OSCORE and Observe the first coapRequest sent to register an observation
+                can have its Token missing here. Is this because OSCORE re-creates the request before sending?
+                When looking in Wireshark all messages have a Token as they should. The lines below fixes this
+                by taking the Token from the response that came to the request (since the request actually has
+                a Token when going out the response will have the same correct Token. */
+                if (coapRequest.getTokenBytes() == null) {
+                    coapRequest.setToken(coapResponse.getTokenBytes());
+                }
+            	
                 // observe request successful
                 Observation observation = ObserveUtil.createLwM2mObservation(coapRequest);
                 observationService.addObservation(registration, observation);

@@ -18,6 +18,7 @@ package org.eclipse.leshan.server.californium.impl;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 
+import org.eclipse.californium.scandium.dtls.PskPublicInformation;
 import org.eclipse.californium.scandium.dtls.pskstore.PskStore;
 import org.eclipse.californium.scandium.util.ServerNames;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
@@ -38,8 +39,8 @@ public class LwM2mBootstrapPskStore implements PskStore {
     }
 
     @Override
-    public byte[] getKey(String identity) {
-        SecurityInfo info = bsSecurityStore.getByIdentity(identity);
+    public byte[] getKey(PskPublicInformation identity) {
+        SecurityInfo info = bsSecurityStore.getByIdentity(identity.getPublicInfoAsString());
         if (info == null || info.getPreSharedKey() == null) {
             return null;
         } else {
@@ -49,18 +50,18 @@ public class LwM2mBootstrapPskStore implements PskStore {
     }
 
     @Override
-    public byte[] getKey(ServerNames serverNames, String identity) {
+    public byte[] getKey(ServerNames serverNames, PskPublicInformation identity) {
         // serverNames is not supported
         return getKey(identity);
     }
 
     @Override
-    public String getIdentity(InetSocketAddress inetAddress) {
+    public PskPublicInformation getIdentity(InetSocketAddress inetAddress) {
         throw new UnsupportedOperationException("Getting PSK Id by IP addresss dos not make sense on BS server side.");
     }
 
     @Override
-    public String getIdentity(InetSocketAddress peerAddress, ServerNames virtualHost) {
+    public PskPublicInformation getIdentity(InetSocketAddress peerAddress, ServerNames virtualHost) {
         // TODO should we support SNI ?
         throw new UnsupportedOperationException();
     }
