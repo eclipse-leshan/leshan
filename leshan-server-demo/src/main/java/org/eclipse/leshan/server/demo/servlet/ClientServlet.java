@@ -32,6 +32,7 @@ import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.codec.CodecException;
+import org.eclipse.leshan.core.attributes.AttributeSet;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
@@ -41,6 +42,7 @@ import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
+import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.exception.ClientSleepingException;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
@@ -54,6 +56,8 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
+import org.eclipse.leshan.core.response.WriteAttributesResponse;
+
 import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.demo.servlet.json.LwM2mNodeDeserializer;
 import org.eclipse.leshan.server.demo.servlet.json.LwM2mNodeSerializer;
@@ -230,17 +234,25 @@ public class ClientServlet extends HttpServlet {
             String target = StringUtils.removeStart(req.getPathInfo(), "/" + clientEndpoint);
             Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
             if (registration != null) {
-                // get content format
-                String contentFormatParam = req.getParameter(FORMAT_PARAM);
-                ContentFormat contentFormat = contentFormatParam != null
-                        ? ContentFormat.fromName(contentFormatParam.toUpperCase())
-                        : null;
-
-                // create & process request
-                LwM2mNode node = extractLwM2mNode(target, req);
-                WriteRequest request = new WriteRequest(Mode.REPLACE, contentFormat, target, node);
-                WriteResponse cResponse = server.send(registration, request, TIMEOUT);
-                processDeviceResponse(req, resp, cResponse);
+                if(path.length >= 3 && "attributes".equals(path[path.length - 1])){
+                    // create & process request WriteAttributes request
+                    target = StringUtils.removeEnd(target, path[path.length - 1]);
+                    AttributeSet attributes = AttributeSet.parse(req.getQueryString());
+                    WriteAttributesRequest request = new WriteAttributesRequest(target, attributes);
+                    WriteAttributesResponse cResponse = server.send(registration, request, TIMEOUT);
+                    processDeviceResponse(req, resp, cResponse);
+                } else {
+                    // get content format
+                    String contentFormatParam = req.getParameter(FORMAT_PARAM);
+                    ContentFormat contentFormat = contentFormatParam != null
+                            ? ContentFormat.fromName(contentFormatParam.toUpperCase())
+                            : null;
+                    // create & process request
+                    LwM2mNode node = extractLwM2mNode(target, req);
+                    WriteRequest request = new WriteRequest(Mode.REPLACE, contentFormat, target, node);
+                    WriteResponse cResponse = server.send(registration, request, TIMEOUT);
+                    processDeviceResponse(req, resp, cResponse);
+                }
             } else {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().format("No registered client with id '%s'", clientEndpoint).flush();
