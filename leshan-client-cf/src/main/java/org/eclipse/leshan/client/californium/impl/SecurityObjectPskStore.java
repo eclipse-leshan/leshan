@@ -24,6 +24,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 
+import org.eclipse.californium.scandium.dtls.PskPublicInformation;
 import org.eclipse.californium.scandium.dtls.pskstore.PskStore;
 import org.eclipse.californium.scandium.util.ServerNames;
 import org.eclipse.leshan.SecurityMode;
@@ -52,7 +53,7 @@ public class SecurityObjectPskStore implements PskStore {
     }
 
     @Override
-    public byte[] getKey(String identity) {
+    public byte[] getKey(PskPublicInformation identity) {
         if (identity == null)
             return null;
 
@@ -81,13 +82,13 @@ public class SecurityObjectPskStore implements PskStore {
     }
 
     @Override
-    public byte[] getKey(ServerNames serverNames, String identity) {
+    public byte[] getKey(ServerNames serverNames, PskPublicInformation identity) {
         // serverNames is not supported
         return getKey(identity);
     }
 
     @Override
-    public String getIdentity(InetSocketAddress inetAddress) {
+    public PskPublicInformation getIdentity(InetSocketAddress inetAddress) {
         if (inetAddress == null)
             return null;
 
@@ -99,7 +100,7 @@ public class SecurityObjectPskStore implements PskStore {
                     URI uri = new URI((String) security.getResource(SEC_SERVER_URI).getValue());
                     if (inetAddress.equals(ServerInfo.getAddress(uri))) {
                         byte[] pskIdentity = (byte[]) security.getResource(SEC_PUBKEY_IDENTITY).getValue();
-                        return new String(pskIdentity);
+                        return new PskPublicInformation(new String(pskIdentity));
                     }
                 } catch (URISyntaxException e) {
                     LOG.error(String.format("Invalid URI %s", (String) security.getResource(SEC_SERVER_URI).getValue()),
@@ -111,7 +112,7 @@ public class SecurityObjectPskStore implements PskStore {
     }
 
     @Override
-    public String getIdentity(InetSocketAddress peerAddress, ServerNames virtualHost) {
+    public PskPublicInformation getIdentity(InetSocketAddress peerAddress, ServerNames virtualHost) {
         // TODO should we support SNI ?
         throw new UnsupportedOperationException();
     }

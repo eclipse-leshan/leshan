@@ -18,6 +18,7 @@ package org.eclipse.leshan.server.californium.impl;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 
+import org.eclipse.californium.scandium.dtls.PskPublicInformation;
 import org.eclipse.californium.scandium.dtls.pskstore.PskStore;
 import org.eclipse.californium.scandium.util.ServerNames;
 import org.eclipse.leshan.server.registration.Registration;
@@ -40,11 +41,11 @@ public class LwM2mPskStore implements PskStore {
     }
 
     @Override
-    public byte[] getKey(String identity) {
+    public byte[] getKey(PskPublicInformation identity) {
         if (securityStore == null)
             return null;
 
-        SecurityInfo info = securityStore.getByIdentity(identity);
+        SecurityInfo info = securityStore.getByIdentity(identity.getPublicInfoAsString());
         if (info == null || info.getPreSharedKey() == null) {
             return null;
         } else {
@@ -54,13 +55,13 @@ public class LwM2mPskStore implements PskStore {
     }
 
     @Override
-    public byte[] getKey(ServerNames serverNames, String identity) {
+    public byte[] getKey(ServerNames serverNames, PskPublicInformation identity) {
         // serverNames is not supported
         return getKey(identity);
     }
 
     @Override
-    public String getIdentity(InetSocketAddress inetAddress) {
+    public PskPublicInformation getIdentity(InetSocketAddress inetAddress) {
         if (registrationStore == null)
             return null;
 
@@ -68,7 +69,7 @@ public class LwM2mPskStore implements PskStore {
         if (registration != null) {
             SecurityInfo securityInfo = securityStore.getByEndpoint(registration.getEndpoint());
             if (securityInfo != null) {
-                return securityInfo.getIdentity();
+                return new PskPublicInformation(securityInfo.getIdentity());
             }
             return null;
         }
@@ -76,7 +77,7 @@ public class LwM2mPskStore implements PskStore {
     }
 
     @Override
-    public String getIdentity(InetSocketAddress peerAddress, ServerNames virtualHost) {
+    public PskPublicInformation getIdentity(InetSocketAddress peerAddress, ServerNames virtualHost) {
         // TODO should we support SNI ?
         throw new UnsupportedOperationException();
     }
