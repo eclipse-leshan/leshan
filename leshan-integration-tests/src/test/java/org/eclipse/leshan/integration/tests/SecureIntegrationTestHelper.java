@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Zebra Technologies - initial API and implementation
+ *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 
 package org.eclipse.leshan.integration.tests;
@@ -42,6 +43,7 @@ import java.util.List;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.observe.ObservationStore;
+import org.eclipse.californium.oscore.HashMapCtxDB;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
@@ -225,6 +227,15 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
                     dtlsConfigBuilder.setPskStore(singlePSKStore);
                 }
                 builder.setConnector(new DTLSConnector(dtlsConfigBuilder.build()));
+                builder.setNetworkConfig(coapConfig);
+                return builder.build();
+            }
+
+            @Override
+            public CoapEndpoint createOSCoreEndpoint(InetSocketAddress address, NetworkConfig coapConfig,
+                    ObservationStore store, HashMapCtxDB db) {
+                CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
+                builder.setInetSocketAddress(address);
                 builder.setNetworkConfig(coapConfig);
                 return builder.build();
             }

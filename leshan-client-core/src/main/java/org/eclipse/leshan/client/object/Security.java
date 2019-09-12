@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.client.object;
 
@@ -106,6 +107,14 @@ public class Security extends BaseInstanceEnabler {
      */
     public static Security noSec(String serverUri, int shortServerId) {
         return new Security(serverUri, false, SecurityMode.NO_SEC.code, new byte[0], new byte[0], new byte[0],
+                shortServerId);
+    }
+    
+    /**
+     * Returns a new security instance (OSCORE) for a device management server.
+     */
+    public static Security secOSCore(String serverUri, int shortServerId) {
+        return new Security(serverUri, false, SecurityMode.OSCORE.code, new byte[0], new byte[0], new byte[0],
                 shortServerId);
     }
 
