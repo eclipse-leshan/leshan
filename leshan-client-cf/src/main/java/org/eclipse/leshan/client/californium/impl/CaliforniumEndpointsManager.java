@@ -12,11 +12,16 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.impl;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -27,8 +32,13 @@ import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.cose.AlgorithmID;
+import org.eclipse.californium.cose.CoseException;
 import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
+import org.eclipse.californium.oscore.HashMapCtxDB;
+import org.eclipse.californium.oscore.OSCoreCtx;
+import org.eclipse.californium.oscore.OSException;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.californium.scandium.dtls.AlertMessage;
@@ -49,6 +59,8 @@ import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.request.Identity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.upokecenter.cbor.CBORObject;
 
 public class CaliforniumEndpointsManager implements EndpointsManager {
 
@@ -153,17 +165,63 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             } else {
                 throw new RuntimeException("Unable to create connector : unsupported security mode");
             }
+            if (currentEndpoint == null) {
+                if (endpointFactory != null) {
+                    currentEndpoint = endpointFactory.createSecuredEndpoint(newBuilder.build(), coapConfig, null, null);
+                } else {
+                    CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
+                    builder.setConnector(new DTLSConnector(newBuilder.build()));
+                    builder.setNetworkConfig(coapConfig);
+                    currentEndpoint = builder.build();
+                }
+            }
+        } else if (serverInfo.useOscore) {
+            // oscore only mode
+            LOG.info("Adding OSCORE context for " + serverInfo.getFullUri().toASCIIString());
+            HashMapCtxDB db = HashMapCtxDB.getInstance(); // TODO: Do not use singleton here but give it to endpoint
+                                                          // builder (for Cf-M16)
+
+            AlgorithmID hkdfAlg = null;
+            try {
+                hkdfAlg = AlgorithmID.FromCBOR(CBORObject.FromObject(serverInfo.hkdfAlgorithm));
+            } catch (CoseException e) {
+                LOG.error("Failed to decode OSCORE HMAC algorithm");
+            }
+
+            AlgorithmID aeadAlg = null;
+            try {
+                aeadAlg = AlgorithmID.FromCBOR(CBORObject.FromObject(serverInfo.aeadAlgorithm));
+            } catch (CoseException e) {
+                LOG.error("Failed to decode OSCORE AEAD algorithm");
+            }
+
+            try {
+                OSCoreCtx ctx = new OSCoreCtx(serverInfo.masterSecret, true, aeadAlg, serverInfo.senderId,
+                        serverInfo.recipientId, hkdfAlg, 32, serverInfo.masterSalt, serverInfo.idContext);
+                db.addContext(serverInfo.getFullUri().toASCIIString(), ctx);
+
+                // Also add the context by the IP of the server since requests may use that
+                String serverIP = InetAddress.getByName(serverInfo.getFullUri().getHost()).getHostAddress();
+                db.addContext("coap://" + serverIP, ctx);
+
+            } catch (OSException | UnknownHostException e) {
+                LOG.error("Failed to generate OSCORE context information");
+                return null;
+            }
+            
             if (endpointFactory != null) {
-                currentEndpoint = endpointFactory.createSecuredEndpoint(newBuilder.build(), coapConfig, null);
+                currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null, db);
             } else {
                 CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
-                builder.setConnector(new DTLSConnector(newBuilder.build()));
+                builder.setInetSocketAddress(localAddress);
                 builder.setNetworkConfig(coapConfig);
                 currentEndpoint = builder.build();
             }
+            serverIdentity = Identity.unsecure(serverInfo.getAddress()); // TODO: FIX?
+        
         } else {
             if (endpointFactory != null) {
-                currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null);
+                currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null, null);
             } else {
                 CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
                 builder.setInetSocketAddress(localAddress);

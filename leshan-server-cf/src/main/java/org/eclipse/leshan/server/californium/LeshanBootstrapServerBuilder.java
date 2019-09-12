@@ -367,7 +367,7 @@ public class LeshanBootstrapServerBuilder {
         CoapEndpoint unsecuredEndpoint = null;
         if (!noUnsecuredEndpoint) {
             if (endpointFactory != null) {
-                unsecuredEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null);
+                unsecuredEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null, null);
             } else {
                 CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
                 builder.setInetSocketAddress(localAddress);
@@ -379,7 +379,7 @@ public class LeshanBootstrapServerBuilder {
         CoapEndpoint securedEndpoint = null;
         if (!noSecuredEndpoint && dtlsConfig != null) {
             if (endpointFactory != null) {
-                securedEndpoint = endpointFactory.createSecuredEndpoint(dtlsConfig, coapConfig, null);
+                securedEndpoint = endpointFactory.createSecuredEndpoint(dtlsConfig, coapConfig, null, null);
             } else {
                 CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
                 builder.setConnector(new DTLSConnector(dtlsConfig));

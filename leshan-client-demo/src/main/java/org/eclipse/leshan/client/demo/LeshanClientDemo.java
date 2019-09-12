@@ -14,6 +14,7 @@
  *     Zebra Technologies - initial API and implementation
  *     Sierra Wireless, - initial API and implementation
  *     Bosch Software Innovations GmbH, - initial API and implementation
+ *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 
 package org.eclipse.leshan.client.demo;
@@ -49,6 +50,7 @@ import org.eclipse.californium.oscore.OSException;
 import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
+import org.eclipse.leshan.client.object.Oscore;
 import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
@@ -309,39 +311,11 @@ public class LeshanClientDemo {
                 return;
             }
         }
-        // Set up OSCORE Context when using OSCORE
+        // Set boolean controlling OSCORE usage
         boolean useOSCore = false;
         if (cl.hasOption("oscore")) {
             System.out.println("Using OSCORE");
             useOSCore = true;
-
-            HashMapCtxDB db = HashMapCtxDB.getInstance();
-            AlgorithmID alg = AlgorithmID.AES_CCM_16_64_128;
-            AlgorithmID kdf = AlgorithmID.HKDF_HMAC_SHA_256;
-
-            byte[] master_secret = { 0x11, 0x22, 0x33, 0x44 };
-            byte[] sid = new byte[] { (byte) 0xAA };
-            byte[] rid = new byte[] { (byte) 0xBB };
-
-            // Add the OSCORE context associated to the URI of the server
-            OSCoreCtx ctx = null;
-            try {
-                ctx = new OSCoreCtx(master_secret, true, alg, sid, rid, kdf, 32, null, null);
-                db.addContext(serverURI, ctx);
-            } catch (OSException e) {
-                System.err.println("Failed to generate OSCORE Context");
-                e.printStackTrace();
-            }
-
-            // Also add the context by the IP of the server since requests may use that
-            String serverIP = null;
-            try {
-                serverIP = InetAddress.getByName(new URI(serverURI).getHost()).getHostAddress();
-                db.addContext("coap://" + serverIP, ctx);
-            } catch (UnknownHostException | URISyntaxException | OSException e) {
-                System.err.println("Failed to find Server IP");
-                e.printStackTrace();
-            }
 
             OSCoreCoapStackFactory.useAsDefault();
 
@@ -349,7 +323,7 @@ public class LeshanClientDemo {
         try {
             createAndStartClient(endpoint, localAddress, localPort, cl.hasOption("b"), serverURI, pskIdentity, pskKey,
                     clientPrivateKey, clientPublicKey, serverPublicKey, clientCertificate, serverCertificate, latitude,
-                    longitude, scaleFactor);
+                    longitude, scaleFactor, useOSCore);
         } catch (Exception e) {
             System.err.println("Unable to create and start client ...");
             e.printStackTrace();
@@ -360,7 +334,7 @@ public class LeshanClientDemo {
     public static void createAndStartClient(String endpoint, String localAddress, int localPort, boolean needBootstrap,
             String serverURI, byte[] pskIdentity, byte[] pskKey, PrivateKey clientPrivateKey, PublicKey clientPublicKey,
             PublicKey serverPublicKey, X509Certificate clientCertificate, X509Certificate serverCertificate,
-            Float latitude, Float longitude, float scaleFactor) throws CertificateEncodingException {
+            Float latitude, Float longitude, float scaleFactor, boolean useOSCore) throws CertificateEncodingException {
 
         locationInstance = new MyLocation(latitude, longitude, scaleFactor);
 
@@ -397,6 +371,12 @@ public class LeshanClientDemo {
             } else if (clientCertificate != null) {
                 initializer.setInstancesForObject(SECURITY, x509(serverURI, 123, clientCertificate.getEncoded(),
                         clientPrivateKey.getEncoded(), serverCertificate.getEncoded()));
+                initializer.setInstancesForObject(SERVER, new Server(123, 30, BindingMode.U, false));
+            } else if (useOSCore) {
+                String clientName = Hex.encodeHexString(endpoint.getBytes());
+                Oscore oscoreObject = new Oscore(12345, "11223344", clientName, "BB"); // Partially hardcoded values
+                initializer.setInstancesForObject(SECURITY, oscoreOnly(serverURI, 123, oscoreObject.getId()));
+                initializer.setInstancesForObject(OSCORE, oscoreObject);
                 initializer.setInstancesForObject(SERVER, new Server(123, 30, BindingMode.U, false));
             } else {
                 initializer.setInstancesForObject(SECURITY, noSec(serverURI, 123));
