@@ -29,7 +29,7 @@ import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
-import org.eclipse.leshan.server.LwM2mServer;
+import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.cluster.serialization.DownlinkRequestSerDes;
 import org.eclipse.leshan.server.cluster.serialization.ResponseSerDes;
 import org.eclipse.leshan.server.observation.ObservationListener;
@@ -59,7 +59,7 @@ public class RedisRequestResponseHandler {
     private static final String REQUEST_CHANNEL = "LESHAN_REQ";
     private static final String RESPONSE_CHANNEL = "LESHAN_RESP";
 
-    private final LwM2mServer server;
+    private final LeshanServer server;
     private final Pool<Jedis> pool;
     private final RegistrationService registrationService;
     private final ExecutorService executorService;
@@ -67,7 +67,7 @@ public class RedisRequestResponseHandler {
     private final ObservationService observationService;
     private final Map<KeyId, String> observatioIdToTicket = new ConcurrentHashMap<>();
 
-    public RedisRequestResponseHandler(Pool<Jedis> p, LwM2mServer server, RegistrationService registrationService,
+    public RedisRequestResponseHandler(Pool<Jedis> p, LeshanServer server, RegistrationService registrationService,
             RedisTokenHandler tokenHandler, ObservationService observationService) {
         // Listen LWM2M response
         this.server = server;

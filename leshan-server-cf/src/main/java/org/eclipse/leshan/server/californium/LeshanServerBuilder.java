@@ -42,7 +42,6 @@ import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.exception.ClientSleepingException;
-import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.californium.impl.InMemoryRegistrationStore;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.californium.impl.LwM2mPskStore;
@@ -65,7 +64,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Class helping you to build and configure a Californium based Leshan Lightweight M2M server. Usage: create it, call
  * the different setters for changing the configuration and then call the {@link #build()} method for creating the
- * {@link LwM2mServer} ready to operate.
+ * {@link LeshanServer} ready to operate.
  */
 public class LeshanServerBuilder {
 

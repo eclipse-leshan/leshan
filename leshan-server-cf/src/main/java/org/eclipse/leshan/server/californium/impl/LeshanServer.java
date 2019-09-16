@@ -44,7 +44,6 @@ import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.server.Destroyable;
-import org.eclipse.leshan.server.LwM2mServer;
 import org.eclipse.leshan.server.Startable;
 import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
@@ -85,7 +84,7 @@ import org.slf4j.LoggerFactory;
  * The {@link LeshanServerBuilder} should be the preferred way to build an instance of {@link LeshanServer}.
  * </p>
  */
-public class LeshanServer implements LwM2mServer {
+public class LeshanServer {
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanServer.class);
 
@@ -261,7 +260,6 @@ public class LeshanServer implements LwM2mServer {
         return requestSender;
     }
 
-    @Override
     public void start() {
 
         // Start stores
@@ -282,7 +280,6 @@ public class LeshanServer implements LwM2mServer {
         }
     }
 
-    @Override
     public void stop() {
         // Stop server
         coapServer.stop();
@@ -298,7 +295,6 @@ public class LeshanServer implements LwM2mServer {
         LOG.info("LWM2M server stopped.");
     }
 
-    @Override
     public void destroy() {
         // Destroy server
         coapServer.destroy();
@@ -319,50 +315,41 @@ public class LeshanServer implements LwM2mServer {
         LOG.info("LWM2M server destroyed.");
     }
 
-    @Override
     public RegistrationService getRegistrationService() {
         return this.registrationService;
     }
 
-    @Override
     public ObservationService getObservationService() {
         return this.observationService;
     }
 
-    @Override
     public PresenceService getPresenceService() {
         return this.presenceService;
     }
 
-    @Override
     public SecurityStore getSecurityStore() {
         return this.securityStore;
     }
 
-    @Override
     public LwM2mModelProvider getModelProvider() {
         return this.modelProvider;
     }
 
-    @Override
     public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request)
             throws InterruptedException {
         return requestSender.send(destination, request, DEFAULT_TIMEOUT);
     }
 
-    @Override
     public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request, long timeout)
             throws InterruptedException {
         return requestSender.send(destination, request, timeout);
     }
 
-    @Override
     public <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         requestSender.send(destination, request, DEFAULT_TIMEOUT, responseCallback, errorCallback);
     }
 
-    @Override
     public <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request, long timeout,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         requestSender.send(destination, request, timeout, responseCallback, errorCallback);
