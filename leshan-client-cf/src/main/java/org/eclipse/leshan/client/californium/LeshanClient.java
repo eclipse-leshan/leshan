@@ -25,7 +25,6 @@ import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
-import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.californium.impl.BootstrapResource;
 import org.eclipse.leshan.client.californium.impl.CaliforniumEndpointsManager;
 import org.eclipse.leshan.client.californium.impl.CaliforniumLwM2mRequestSender;
@@ -45,7 +44,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A Lightweight M2M client.
  */
-public class LeshanClient implements LwM2mClient {
+public class LeshanClient {
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanClient.class);
 
@@ -114,7 +113,6 @@ public class LeshanClient implements LwM2mClient {
 
     }
 
-    @Override
     public void start() {
         LOG.info("Starting Leshan client ...");
         endpointsManager.start();
@@ -124,7 +122,6 @@ public class LeshanClient implements LwM2mClient {
         }
     }
 
-    @Override
     public void stop(boolean deregister) {
         LOG.info("Stopping Leshan Client ...");
         engine.stop(deregister);
@@ -132,7 +129,6 @@ public class LeshanClient implements LwM2mClient {
         LOG.info("Leshan client stopped.");
     }
 
-    @Override
     public void destroy(boolean deregister) {
         LOG.info("Destroying Leshan client ...");
         engine.destroy(deregister);
@@ -144,7 +140,6 @@ public class LeshanClient implements LwM2mClient {
         engine.triggerRegistrationUpdate();
     }
 
-    @Override
     public Map<Integer, LwM2mObjectEnabler> getObjectEnablers() {
         return Collections.unmodifiableMap(objectEnablers);
     }
