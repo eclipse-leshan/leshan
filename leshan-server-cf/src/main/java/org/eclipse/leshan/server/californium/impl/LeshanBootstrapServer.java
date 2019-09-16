@@ -31,7 +31,6 @@ import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
-import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapServer;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
@@ -40,7 +39,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A Lightweight M2M server, serving bootstrap information on /bs.
  */
-public class LeshanBootstrapServer implements LwM2mBootstrapServer {
+public class LeshanBootstrapServer {
 
     private final static Logger LOG = LoggerFactory.getLogger(LeshanBootstrapServer.class);
 
@@ -108,12 +107,10 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
         return new BootstrapResource(handler);
     }
 
-    @Override
     public BootstrapSecurityStore getBootstrapSecurityStore() {
         return bsSecurityStore;
     }
 
-    @Override
     public BootstrapConfigStore getBoostrapStore() {
         return bsStore;
     }
@@ -121,7 +118,6 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
     /**
      * Starts the server and binds it to the specified port.
      */
-    @Override
     public void start() {
         coapServer.start();
 
@@ -135,7 +131,6 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
     /**
      * Stops the server and unbinds it from assigned ports (can be restarted).
      */
-    @Override
     public void stop() {
         coapServer.stop();
         LOG.info("Bootstrap server stopped.");
@@ -144,7 +139,6 @@ public class LeshanBootstrapServer implements LwM2mBootstrapServer {
     /**
      * Stops the server and unbinds it from assigned ports.
      */
-    @Override
     public void destroy() {
         coapServer.destroy();
         LOG.info("Bootstrap server destroyed.");
