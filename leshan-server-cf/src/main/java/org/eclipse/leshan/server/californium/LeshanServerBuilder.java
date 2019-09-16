@@ -517,7 +517,7 @@ public class LeshanServerBuilder {
                     "All CoAP enpoints are deactivated, at least one endpoint should be activated");
         }
 
-        return new LeshanServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer,
+        return createServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer,
                 modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider);
     }
 
@@ -527,5 +527,36 @@ public class LeshanServerBuilder {
     protected boolean shouldTryToCreateSecureEndpoint() {
         return dtlsConfigBuilder != null || certificateChain != null || privateKey != null || publicKey != null
                 || securityStore != null || trustedCertificates != null;
+    }
+
+    /**
+     * Create the <code>LeshanServer</code>.
+     * <p>
+     * You can extend <code>LeshanServerBuilder</code> and override this method to create a new builder which will be
+     * able to build an extended <code>LeshanServer</code>.
+     * 
+     * @param unsecuredEndpoint CoAP endpoint used for <code>coap://<code> communication.
+     * @param securedEndpoint CoAP endpoint used for <code>coaps://<code> communication.
+     * @param registrationStore the {@link Registration} store.
+     * @param securityStore the {@link SecurityInfo} store.
+     * @param authorizer define which devices is allow to register on this server.
+     * @param modelProvider provides the objects description for each client.
+     * @param decoder decoder used to decode response payload.
+     * @param encoder encode used to encode request payload.
+     * @param coapConfig the CoAP {@link NetworkConfig}.
+     * @param noQueueMode true to disable presenceService.
+     * @param awakeTimeProvider to set the client awake time if queue mode is used.
+     * @param registrationIdProvider to provide registrationId using for location-path option values on response of
+     *        Register operation.
+     * 
+     * @return the LWM2M server
+     */
+    protected LeshanServer createServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
+            CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
+            LwM2mModelProvider modelProvider, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
+            NetworkConfig coapConfig, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
+            RegistrationIdProvider registrationIdProvider) {
+        return new LeshanServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer,
+                modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider);
     }
 }
