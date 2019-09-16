@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
@@ -61,6 +62,7 @@ import org.eclipse.leshan.server.registration.RegistrationHandler;
 import org.eclipse.leshan.server.registration.RegistrationIdProvider;
 import org.eclipse.leshan.server.registration.RegistrationListener;
 import org.eclipse.leshan.server.registration.RegistrationService;
+import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
 import org.eclipse.leshan.server.security.Authorizer;
@@ -85,39 +87,32 @@ import org.slf4j.LoggerFactory;
  */
 public class LeshanServer implements LwM2mServer {
 
-    private final CoapServer coapServer;
-
     private static final Logger LOG = LoggerFactory.getLogger(LeshanServer.class);
 
     // We choose a default timeout a bit higher to the MAX_TRANSMIT_WAIT(62-93s) which is the time from starting to
     // send a Confirmable message to the time when an acknowledgement is no longer expected.
     private static final long DEFAULT_TIMEOUT = 2 * 60 * 1000l; // 2min in ms
 
-    private final LwM2mRequestSender requestSender;
-
-    private final RegistrationServiceImpl registrationService;
-
-    private final ObservationServiceImpl observationService;
-
-    private final SecurityStore securityStore;
-
-    private final LwM2mModelProvider modelProvider;
-
+    // CoAP/Californium attributes
+    private final CoapAPI coapApi;
+    private final CoapServer coapServer;
     private final CoapEndpoint unsecuredEndpoint;
-
     private final CoapEndpoint securedEndpoint;
 
-    private final PresenceServiceImpl presenceService;
-
+    // LWM2M attributes
+    private final RegistrationServiceImpl registrationService;
     private final CaliforniumRegistrationStore registrationStore;
-
-    private final CoapAPI coapApi;
+    private final ObservationServiceImpl observationService;
+    private final SecurityStore securityStore;
+    private final LwM2mModelProvider modelProvider;
+    private final PresenceServiceImpl presenceService;
+    private final LwM2mRequestSender requestSender;
 
     /**
      * Initialize a server which will bind to the specified address and port.
      *
-     * @param unsecuredEndpoint the unsecure coap endpoint.
-     * @param securedEndpoint the secure coap endpoint.
+     * @param unsecuredEndpoint CoAP endpoint used for <code>coap://<code> communication.
+     * @param securedEndpoint CoAP endpoint used for <code>coaps://<code> communication.
      * @param registrationStore the {@link Registration} store.
      * @param securityStore the {@link SecurityInfo} store.
      * @param authorizer define which devices is allow to register on this server.
@@ -142,13 +137,106 @@ public class LeshanServer implements LwM2mServer {
         Validate.notNull(encoder, "encoder cannot be null");
         Validate.notNull(decoder, "decoder cannot be null");
         Validate.notNull(coapConfig, "coapConfig cannot be null");
+        Validate.notNull(registrationIdProvider, "registrationIdProvider cannot be null");
 
-        // Init services and stores
+        // Create CoAP server
+        Set<Endpoint> endpoints = new HashSet<>();
+        coapServer = createCoapServer(coapConfig);
+
+        // unsecured endpoint
+        this.unsecuredEndpoint = unsecuredEndpoint;
+        if (unsecuredEndpoint != null) {
+            coapServer.addEndpoint(unsecuredEndpoint);
+            endpoints.add(unsecuredEndpoint);
+        }
+
+        // secure endpoint
+        this.securedEndpoint = securedEndpoint;
+        if (securedEndpoint != null) {
+            coapServer.addEndpoint(securedEndpoint);
+            endpoints.add(securedEndpoint);
+        }
+
+        // init services and stores
         this.registrationStore = registrationStore;
-        registrationService = new RegistrationServiceImpl(registrationStore);
+        registrationService = createRegistrationService(registrationStore);
         this.securityStore = securityStore;
-        observationService = new ObservationServiceImpl(registrationStore, modelProvider, decoder);
         this.modelProvider = modelProvider;
+        observationService = createObservationService(registrationStore, modelProvider, decoder, unsecuredEndpoint,
+                securedEndpoint);
+        if (noQueueMode) {
+            presenceService = null;
+        } else {
+            presenceService = createPresenceService(registrationService, awakeTimeProvider);
+        }
+
+        // define /rd resource
+        coapServer.add(createRegisterResource(registrationService, authorizer, registrationIdProvider));
+
+        // create request sender
+        requestSender = createRequestSender(endpoints, registrationService, observationService, this.modelProvider,
+                encoder, decoder, presenceService);
+
+        coapApi = new CoapAPI();
+    }
+
+    protected CoapServer createCoapServer(NetworkConfig coapConfig) {
+        return new CoapServer(coapConfig) {
+            @Override
+            protected Resource createRoot() {
+                return new RootResource(this);
+            }
+        };
+    }
+
+    protected RegistrationServiceImpl createRegistrationService(RegistrationStore registrationStore) {
+        return new RegistrationServiceImpl(registrationStore);
+    }
+
+    protected ObservationServiceImpl createObservationService(CaliforniumRegistrationStore registrationStore,
+            LwM2mModelProvider modelProvider, LwM2mNodeDecoder decoder, CoapEndpoint unsecuredEndpoint,
+            CoapEndpoint securedEndpoint) {
+
+        ObservationServiceImpl observationService = new ObservationServiceImpl(registrationStore, modelProvider,
+                decoder);
+
+        if (unsecuredEndpoint != null) {
+            unsecuredEndpoint.addNotificationListener(observationService);
+            observationService.setNonSecureEndpoint(unsecuredEndpoint);
+        }
+
+        if (securedEndpoint != null) {
+            securedEndpoint.addNotificationListener(observationService);
+            observationService.setSecureEndpoint(securedEndpoint);
+        }
+        return observationService;
+    }
+
+    protected PresenceServiceImpl createPresenceService(RegistrationService registrationService,
+            ClientAwakeTimeProvider awakeTimeProvider) {
+        PresenceServiceImpl presenceService = new PresenceServiceImpl(awakeTimeProvider);
+        registrationService.addListener(new PresenceStateListener(presenceService));
+        return presenceService;
+    }
+
+    protected CoapResource createRegisterResource(RegistrationServiceImpl registrationService, Authorizer authorizer,
+            RegistrationIdProvider registrationIdProvider) {
+        return new RegisterResource(new RegistrationHandler(registrationService, authorizer, registrationIdProvider));
+    }
+
+    protected LwM2mRequestSender createRequestSender(Set<Endpoint> endpoints,
+            RegistrationServiceImpl registrationService, ObservationServiceImpl observationService,
+            LwM2mModelProvider modelProvider, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
+            PresenceServiceImpl presenceService) {
+
+        // if no queue mode, create a "simple" sender
+        final LwM2mRequestSender requestSender;
+        if (presenceService == null)
+            requestSender = new CaliforniumLwM2mRequestSender(endpoints, observationService, modelProvider, encoder,
+                    decoder);
+        else
+            requestSender = new CaliforniumQueueModeRequestSender(presenceService,
+                    new CaliforniumLwM2mRequestSender(endpoints, observationService, modelProvider, encoder, decoder));
 
         // Cancel observations on client unregistering
         registrationService.addListener(new RegistrationListener() {
@@ -170,53 +258,7 @@ public class LeshanServer implements LwM2mServer {
             }
         });
 
-        // define a set of endpoints
-        Set<Endpoint> endpoints = new HashSet<>();
-        coapServer = new CoapServer(coapConfig) {
-            @Override
-            protected Resource createRoot() {
-                return new RootResource(this);
-            }
-        };
-
-        // default endpoint
-        this.unsecuredEndpoint = unsecuredEndpoint;
-        if (unsecuredEndpoint != null) {
-            unsecuredEndpoint.addNotificationListener(observationService);
-            observationService.setNonSecureEndpoint(unsecuredEndpoint);
-            coapServer.addEndpoint(unsecuredEndpoint);
-            endpoints.add(unsecuredEndpoint);
-        }
-
-        // secure endpoint
-        this.securedEndpoint = securedEndpoint;
-        if (securedEndpoint != null) {
-            securedEndpoint.addNotificationListener(observationService);
-            observationService.setSecureEndpoint(securedEndpoint);
-            coapServer.addEndpoint(securedEndpoint);
-            endpoints.add(securedEndpoint);
-        }
-
-        // define /rd resource
-        RegisterResource rdResource = new RegisterResource(
-                new RegistrationHandler(this.registrationService, authorizer, registrationIdProvider));
-        coapServer.add(rdResource);
-
-        // create sender
-        // notify applications of LWM2M client coming online/offline
-        if (noQueueMode) {
-            // if no queue mode, create a "simple" sender
-            requestSender = new CaliforniumLwM2mRequestSender(endpoints, observationService, modelProvider, encoder,
-                    decoder);
-            presenceService = null;
-        } else {
-            presenceService = new PresenceServiceImpl(awakeTimeProvider);
-            registrationService.addListener(new PresenceStateListener(presenceService));
-            requestSender = new CaliforniumQueueModeRequestSender(presenceService,
-                    new CaliforniumLwM2mRequestSender(endpoints, observationService, modelProvider, encoder, decoder));
-        }
-
-        coapApi = new CoapAPI();
+        return requestSender;
     }
 
     @Override
