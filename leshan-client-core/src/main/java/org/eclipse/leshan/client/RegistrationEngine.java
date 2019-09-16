@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.servers;
+package org.eclipse.leshan.client;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -27,9 +27,15 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.ResponseCode;
+import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.request.LwM2mRequestSender;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
+import org.eclipse.leshan.client.servers.DmServerInfo;
+import org.eclipse.leshan.client.servers.Server;
+import org.eclipse.leshan.client.servers.ServerInfo;
+import org.eclipse.leshan.client.servers.ServersInfo;
+import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.DeregisterRequest;

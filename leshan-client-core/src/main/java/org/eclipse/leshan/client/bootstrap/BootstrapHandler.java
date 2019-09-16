@@ -14,7 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - use ServerIdentity
  *******************************************************************************/
-package org.eclipse.leshan.client.servers;
+package org.eclipse.leshan.client.bootstrap;
 
 import static org.eclipse.leshan.LwM2mId.*;
 
@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
+import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;

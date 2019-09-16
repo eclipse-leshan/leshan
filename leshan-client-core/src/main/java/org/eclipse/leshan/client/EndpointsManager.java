@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Sierra Wireless and others.
+ * Copyright (c) 2017 Sierra Wireless and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -13,18 +13,24 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.servers;
+package org.eclipse.leshan.client;
 
-/**
- * Listen for bootstrap session event.
- */
-public interface BootstrapListener {
+import java.util.Collection;
 
-    /**
-     * Invoked when a bootstrap session is closed.<br/>
-     * 
-     * Generally when we receive a bootstrap finished request or when the bootstrap session ends in an unexpected
-     * way.(e.g. bootstrap server is not responding anymore)
-     */
-    void bootstrapFinished();
+import org.eclipse.leshan.client.servers.Server;
+import org.eclipse.leshan.client.servers.ServerInfo;
+
+public interface EndpointsManager {
+
+    Server createEndpoint(ServerInfo serverInfo);
+
+    Collection<Server> createEndpoints(Collection<? extends ServerInfo> serverInfo);
+
+    void forceReconnection(Server server);
+
+    void start();
+
+    void stop();
+
+    void destroy();
 }

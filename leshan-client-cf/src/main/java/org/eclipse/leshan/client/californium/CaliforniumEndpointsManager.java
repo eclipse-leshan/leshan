@@ -41,7 +41,7 @@ import org.eclipse.californium.scandium.dtls.pskstore.StaticPskStore;
 import org.eclipse.californium.scandium.dtls.rpkstore.TrustedRpkStore;
 import org.eclipse.californium.scandium.dtls.x509.CertificateVerifier;
 import org.eclipse.leshan.SecurityMode;
-import org.eclipse.leshan.client.servers.EndpointsManager;
+import org.eclipse.leshan.client.EndpointsManager;
 import org.eclipse.leshan.client.servers.Server;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
