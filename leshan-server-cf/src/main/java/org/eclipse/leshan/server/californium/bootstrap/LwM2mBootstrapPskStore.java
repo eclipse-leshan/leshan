@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.impl;
+package org.eclipse.leshan.server.californium.bootstrap;
 
 import java.net.InetSocketAddress;
 
@@ -23,31 +23,26 @@ import org.eclipse.californium.scandium.dtls.PskPublicInformation;
 import org.eclipse.californium.scandium.dtls.pskstore.PskStore;
 import org.eclipse.californium.scandium.util.SecretUtil;
 import org.eclipse.californium.scandium.util.ServerNames;
-import org.eclipse.leshan.server.registration.Registration;
-import org.eclipse.leshan.server.registration.RegistrationStore;
+import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
-import org.eclipse.leshan.server.security.SecurityStore;
 
-public class LwM2mPskStore implements PskStore {
+/**
+ * PSK Store to feed a Bootstrap server.
+ * 
+ * Only supports getting the PSK key for a given identity. (Getting identity from IP only makes sense on the client
+ * side.)
+ */
+public class LwM2mBootstrapPskStore implements PskStore {
 
-    private SecurityStore securityStore;
-    private RegistrationStore registrationStore;
+    private BootstrapSecurityStore bsSecurityStore;
 
-    public LwM2mPskStore(SecurityStore securityStore) {
-        this(securityStore, null);
-    }
-
-    public LwM2mPskStore(SecurityStore securityStore, RegistrationStore registrationStore) {
-        this.securityStore = securityStore;
-        this.registrationStore = registrationStore;
+    public LwM2mBootstrapPskStore(BootstrapSecurityStore bsSecurityStore) {
+        this.bsSecurityStore = bsSecurityStore;
     }
 
     @Override
     public SecretKey getKey(PskPublicInformation identity) {
-        if (securityStore == null)
-            return null;
-
-        SecurityInfo info = securityStore.getByIdentity(identity.getPublicInfoAsString());
+        SecurityInfo info = bsSecurityStore.getByIdentity(identity.getPublicInfoAsString());
         if (info == null || info.getPreSharedKey() == null) {
             return null;
         } else {
@@ -64,18 +59,7 @@ public class LwM2mPskStore implements PskStore {
 
     @Override
     public PskPublicInformation getIdentity(InetSocketAddress inetAddress) {
-        if (registrationStore == null)
-            return null;
-
-        Registration registration = registrationStore.getRegistrationByAdress(inetAddress);
-        if (registration != null) {
-            SecurityInfo securityInfo = securityStore.getByEndpoint(registration.getEndpoint());
-            if (securityInfo != null) {
-                return new PskPublicInformation(securityInfo.getIdentity());
-            }
-            return null;
-        }
-        return null;
+        throw new UnsupportedOperationException("Getting PSK Id by IP addresss dos not make sense on BS server side.");
     }
 
     @Override

@@ -22,7 +22,7 @@
  *     Achim Kraus (Bosch Software Innovations GmbH) - update to modified 
  *                                                     ObservationStore API
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.impl;
+package org.eclipse.leshan.server.californium.registration;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -47,8 +47,7 @@ import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.Startable;
 import org.eclipse.leshan.server.Stoppable;
-import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
-import org.eclipse.leshan.server.californium.ObserveUtil;
+import org.eclipse.leshan.server.californium.observation.ObserveUtil;
 import org.eclipse.leshan.server.registration.Deregistration;
 import org.eclipse.leshan.server.registration.ExpirationListener;
 import org.eclipse.leshan.server.registration.Registration;

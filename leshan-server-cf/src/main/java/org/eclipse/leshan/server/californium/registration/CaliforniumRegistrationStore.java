@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.californium;
+package org.eclipse.leshan.server.californium.registration;
 
 import org.eclipse.californium.core.observe.ObservationStore;
 import org.eclipse.leshan.server.registration.RegistrationStore;

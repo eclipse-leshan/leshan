@@ -16,7 +16,7 @@
  *                                                     and transform them to 
  *                                                     EndpointContext for requests
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.impl;
+package org.eclipse.leshan.server.californium.request;
 
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
@@ -41,7 +41,7 @@ import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
-import org.eclipse.leshan.server.californium.ObserveUtil;
+import org.eclipse.leshan.server.californium.observation.ObserveUtil;
 import org.eclipse.leshan.util.StringUtils;
 
 public class CoapRequestBuilder implements DownlinkRequestVisitor {

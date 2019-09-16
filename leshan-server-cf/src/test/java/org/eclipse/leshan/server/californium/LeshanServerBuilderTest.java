@@ -17,7 +17,6 @@ package org.eclipse.leshan.server.californium;
 
 import static org.junit.Assert.*;
 
-import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.security.InMemorySecurityStore;
 import org.junit.Before;
 import org.junit.Test;

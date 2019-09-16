@@ -14,7 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     RISE SICS AB - added Queue Mode operation
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.impl;
+package org.eclipse.leshan.server.californium;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
@@ -46,9 +46,12 @@ import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.server.Destroyable;
 import org.eclipse.leshan.server.Startable;
 import org.eclipse.leshan.server.Stoppable;
-import org.eclipse.leshan.server.californium.CaliforniumRegistrationStore;
-import org.eclipse.leshan.server.californium.CoapRequestSender;
-import org.eclipse.leshan.server.californium.LeshanServerBuilder;
+import org.eclipse.leshan.server.californium.observation.ObservationServiceImpl;
+import org.eclipse.leshan.server.californium.registration.CaliforniumRegistrationStore;
+import org.eclipse.leshan.server.californium.registration.RegisterResource;
+import org.eclipse.leshan.server.californium.request.CaliforniumLwM2mRequestSender;
+import org.eclipse.leshan.server.californium.request.CaliforniumQueueModeRequestSender;
+import org.eclipse.leshan.server.californium.request.CoapRequestSender;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationService;
 import org.eclipse.leshan.server.queue.ClientAwakeTimeProvider;

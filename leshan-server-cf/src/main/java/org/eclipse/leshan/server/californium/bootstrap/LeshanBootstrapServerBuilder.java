@@ -14,7 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - use CoapEndpointBuilder
  *******************************************************************************/
-package org.eclipse.leshan.server.californium;
+package org.eclipse.leshan.server.californium.bootstrap;
 
 import java.net.InetSocketAddress;
 import java.security.PrivateKey;
@@ -51,8 +51,7 @@ import org.eclipse.leshan.server.bootstrap.DefaultBootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.InMemoryBootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
-import org.eclipse.leshan.server.californium.impl.LeshanBootstrapServer;
-import org.eclipse.leshan.server.californium.impl.LwM2mBootstrapPskStore;
+import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
