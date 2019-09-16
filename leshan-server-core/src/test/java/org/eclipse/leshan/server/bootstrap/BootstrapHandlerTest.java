@@ -36,7 +36,6 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandlerTest.MockRequestSender.Mode;
-import org.eclipse.leshan.server.impl.DefaultBootstrapSession;
 import org.junit.Test;
 
 public class BootstrapHandlerTest {

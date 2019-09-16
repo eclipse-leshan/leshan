@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.impl;
+package org.eclipse.leshan.server.security;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,11 +23,6 @@ import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import org.eclipse.leshan.server.security.EditableSecurityStore;
-import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
-import org.eclipse.leshan.server.security.SecurityInfo;
-import org.eclipse.leshan.server.security.SecurityStore;
 
 /**
  * A {@link SecurityStore} which store {@link SecurityInfo} in memory.

@@ -18,7 +18,6 @@ package org.eclipse.leshan.server.bootstrap;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.LwM2mRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.server.impl.DefaultBootstrapSessionManager;
 
 /**
  * Manages life cycle of a bootstrap process.

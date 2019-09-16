@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.impl;
+package org.eclipse.leshan.server.bootstrap;
 
 import java.util.List;
 
@@ -21,9 +21,6 @@ import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.LwM2mRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.server.bootstrap.BootstrapFailureCause;
-import org.eclipse.leshan.server.bootstrap.BootstrapSession;
-import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityChecker;
 import org.eclipse.leshan.server.security.SecurityInfo;

@@ -49,10 +49,10 @@ import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
-import org.eclipse.leshan.server.impl.InMemorySecurityStore;
-import org.eclipse.leshan.server.impl.RegistrationServiceImpl;
 import org.eclipse.leshan.server.model.StaticModelProvider;
 import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.RegistrationServiceImpl;
+import org.eclipse.leshan.server.security.InMemorySecurityStore;
 
 /**
  * Helper for running a server and executing a client against it.

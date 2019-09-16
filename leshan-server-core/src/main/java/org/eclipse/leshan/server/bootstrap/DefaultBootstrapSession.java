@@ -13,11 +13,10 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.impl;
+package org.eclipse.leshan.server.bootstrap;
 
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
-import org.eclipse.leshan.server.bootstrap.BootstrapSession;
 
 /**
  * A default implementation for {@link BootstrapSession}

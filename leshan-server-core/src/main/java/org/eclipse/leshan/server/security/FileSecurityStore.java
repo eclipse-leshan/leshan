@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.impl;
+package org.eclipse.leshan.server.security;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,9 +22,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
-import org.eclipse.leshan.server.security.SecurityInfo;
-import org.eclipse.leshan.server.security.SecurityStore;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
