@@ -17,7 +17,7 @@
  *     Achim Kraus (Bosch Software Innovations GmbH) - implement POST "/oid/iid" 
  *                                                     as UPDATE instance
  *******************************************************************************/
-package org.eclipse.leshan.client.californium.impl;
+package org.eclipse.leshan.client.californium.object;
 
 import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toCoapResponseCode;
 
@@ -28,6 +28,7 @@ import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.Link;
+import org.eclipse.leshan.client.californium.LwM2mClientCoapResource;
 import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.NotifySender;

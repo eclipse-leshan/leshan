@@ -14,7 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - use ServerIdentity.SYSTEM
  *******************************************************************************/
-package org.eclipse.leshan.client.californium.impl;
+package org.eclipse.leshan.client.californium;
 
 import static org.eclipse.leshan.LwM2mId.*;
 import static org.eclipse.leshan.client.request.ServerIdentity.SYSTEM;

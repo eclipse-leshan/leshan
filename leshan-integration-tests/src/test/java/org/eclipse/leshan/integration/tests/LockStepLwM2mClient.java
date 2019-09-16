@@ -22,7 +22,7 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.network.serialization.UdpDataSerializer;
 import org.eclipse.californium.core.test.lockstep.LockstepEndpoint;
 import org.eclipse.californium.elements.RawData;
-import org.eclipse.leshan.client.californium.impl.CoapRequestBuilder;
+import org.eclipse.leshan.client.californium.request.CoapRequestBuilder;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 

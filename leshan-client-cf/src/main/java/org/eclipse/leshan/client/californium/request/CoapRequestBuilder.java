@@ -13,7 +13,7 @@
  * Contributors:
  *     Zebra Technologies - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.californium.impl;
+package org.eclipse.leshan.client.californium.request;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;

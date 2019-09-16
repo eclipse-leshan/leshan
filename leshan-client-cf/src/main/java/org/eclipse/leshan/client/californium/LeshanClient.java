@@ -25,10 +25,9 @@ import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
-import org.eclipse.leshan.client.californium.impl.BootstrapResource;
-import org.eclipse.leshan.client.californium.impl.CaliforniumEndpointsManager;
-import org.eclipse.leshan.client.californium.impl.CaliforniumLwM2mRequestSender;
-import org.eclipse.leshan.client.californium.impl.ObjectResource;
+import org.eclipse.leshan.client.californium.bootstrap.BootstrapResource;
+import org.eclipse.leshan.client.californium.object.ObjectResource;
+import org.eclipse.leshan.client.californium.request.CaliforniumLwM2mRequestSender;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverDispatcher;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
@@ -87,7 +86,7 @@ public class LeshanClient {
             @Override
             protected Resource createRoot() {
                 // Use to handle Delete on "/"
-                return new org.eclipse.leshan.client.californium.impl.RootResource(bootstrapHandler, this);
+                return new org.eclipse.leshan.client.californium.RootResource(bootstrapHandler, this);
             }
         };
 

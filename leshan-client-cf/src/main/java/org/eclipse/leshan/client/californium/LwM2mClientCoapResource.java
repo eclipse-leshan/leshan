@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.californium.impl;
+package org.eclipse.leshan.client.californium;
 
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.network.Exchange;
