@@ -13,11 +13,12 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.model.json;
+package org.eclipse.leshan.server.demo.model;
 
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Operations;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.model.json.JsonSerDes;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;

@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.model;
+package org.eclipse.leshan.server.demo.model;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,7 +27,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.eclipse.leshan.core.model.json.ObjectModelSerDes;
+import org.eclipse.leshan.core.model.DDFFileParser;
+import org.eclipse.leshan.core.model.ObjectModel;
 
 public class Ddf2JsonGenerator {
 

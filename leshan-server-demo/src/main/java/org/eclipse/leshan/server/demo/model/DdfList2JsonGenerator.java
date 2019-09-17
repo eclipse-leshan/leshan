@@ -13,7 +13,7 @@
  * Contributors:
  *     Ville Skyttä - initial implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.model;
+package org.eclipse.leshan.server.demo.model;
 
 import java.io.File;
 import java.io.FileOutputStream;

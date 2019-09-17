@@ -25,13 +25,9 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.leshan.core.model.json.ObjectModelSerDes;
 import org.eclipse.leshan.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonValue;
 
 public class ObjectLoader {
 
@@ -73,22 +69,6 @@ public class ObjectLoader {
     public static List<ObjectModel> loadDdfFile(InputStream input, String streamName) {
         DDFFileParser ddfFileParser = new DDFFileParser();
         return ddfFileParser.parse(input, streamName);
-    }
-
-    /**
-     * Load object definitions from JSON stream.
-     * 
-     * @param input An inputStream to a JSON stream.
-     */
-    public static List<ObjectModel> loadJsonStream(InputStream input) {
-        try {
-            Reader reader = new InputStreamReader(input);
-            JsonValue json = Json.parse(reader);
-            return new ObjectModelSerDes().deserialize(json.asArray());
-        } catch (IOException e) {
-            LOG.error("Cannot load json model from inputstream");
-        }
-        return null;
     }
 
     /**
@@ -168,15 +148,6 @@ public class ObjectLoader {
                                 e);
                     }
 
-                } else if (file.getName().endsWith(".json")) {
-                    // from JSON file
-                    LOG.debug("Loading object models from JSON file {}", file.getAbsolutePath());
-                    try (FileInputStream input = new FileInputStream(file)) {
-                        models.addAll(loadJsonStream(input));
-                    } catch (IOException e) {
-                        LOG.warn(MessageFormat.format("Unable to load object models for {0}", file.getAbsolutePath()),
-                                e);
-                    }
                 }
             }
         }
