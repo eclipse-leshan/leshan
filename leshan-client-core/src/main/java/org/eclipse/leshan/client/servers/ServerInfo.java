@@ -23,7 +23,6 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 
-import org.eclipse.californium.cose.AlgorithmID;
 import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.SecurityMode;
 import org.slf4j.Logger;
@@ -52,8 +51,8 @@ public class ServerInfo {
     public byte[] masterSecret;
     public byte[] senderId;
     public byte[] recipientId;
-    public AlgorithmID aeadAlgorithm;
-    public AlgorithmID hkdfAlgorithm;
+    public long aeadAlgorithm;
+    public long hkdfAlgorithm;
     public byte[] masterSalt;
     public byte[] idContext;
 

@@ -32,6 +32,8 @@ import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.cose.AlgorithmID;
+import org.eclipse.californium.cose.CoseException;
 import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.oscore.HashMapCtxDB;
@@ -57,6 +59,8 @@ import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.request.Identity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.upokecenter.cbor.CBORObject;
 
 public class CaliforniumEndpointsManager implements EndpointsManager {
 
@@ -124,8 +128,23 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             } else if (serverInfo.secureMode == SecurityMode.OSCORE) {
                 System.out.println("Adding OSCORE CTX " + serverInfo.getFullUri().toASCIIString());
                 HashMapCtxDB db = HashMapCtxDB.getInstance(); //TODO: Do not use singleton here but give it to endpoint builder (for Cf-M16)
+
+            	AlgorithmID hkdfAlg = null;
                 try {
-                    OSCoreCtx ctx = new OSCoreCtx(serverInfo.masterSecret, true, serverInfo.aeadAlgorithm, serverInfo.senderId, serverInfo.recipientId, serverInfo.hkdfAlgorithm, 32, serverInfo.masterSalt, serverInfo.idContext);
+                    hkdfAlg = AlgorithmID.FromCBOR(CBORObject.FromObject(serverInfo.hkdfAlgorithm));
+                } catch (CoseException e) {
+                    LOG.error("Failed to decode OSCORE HMAC algorithm");
+                }
+                
+                AlgorithmID aeadAlg = null;
+                try {
+                    aeadAlg = AlgorithmID.FromCBOR(CBORObject.FromObject(serverInfo.aeadAlgorithm));
+                } catch (CoseException e) {
+                    LOG.error("Failed to decode OSCORE AEAD algorithm");
+                }
+                
+                try {                    
+                    OSCoreCtx ctx = new OSCoreCtx(serverInfo.masterSecret, true, aeadAlg, serverInfo.senderId, serverInfo.recipientId, hkdfAlg, 32, serverInfo.masterSalt, serverInfo.idContext);
                     db.addContext(serverInfo.getFullUri().toASCIIString(), ctx);
                     
                     // Also add the context by the IP of the server since requests may use that

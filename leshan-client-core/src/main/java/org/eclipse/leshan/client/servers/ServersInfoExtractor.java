@@ -36,10 +36,6 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Map;
 
-import org.eclipse.californium.core.Utils;
-import org.eclipse.californium.cose.AlgorithmID;
-import org.eclipse.californium.cose.CoseException;
-import org.eclipse.californium.elements.util.StringUtil;
 import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.client.request.ServerIdentity;
@@ -54,8 +50,6 @@ import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.upokecenter.cbor.CBORObject;
 
 /**
  * Extract from LwM2m tree servers information like server uri, security mode, ...
@@ -264,39 +258,23 @@ public class ServersInfoExtractor {
     //OSCORE related methods below
     
     public static byte[] getMasterSecret(LwM2mObjectInstance oscoreInstance) {
-        return StringUtil.hex2ByteArray((String)oscoreInstance.getResource(OSCORE_Master_Secret).getValue());
+        return hex2ByteArray((String)oscoreInstance.getResource(OSCORE_Master_Secret).getValue());
     }
     
     public static byte[] getSenderId(LwM2mObjectInstance oscoreInstance) {
-        return StringUtil.hex2ByteArray((String)oscoreInstance.getResource(OSCORE_Sender_ID).getValue());
+        return hex2ByteArray((String)oscoreInstance.getResource(OSCORE_Sender_ID).getValue());
     }
     
     public static byte[] getRecipientId(LwM2mObjectInstance oscoreInstance) {
-        return StringUtil.hex2ByteArray((String)oscoreInstance.getResource(OSCORE_Recipient_ID).getValue());
+        return hex2ByteArray((String)oscoreInstance.getResource(OSCORE_Recipient_ID).getValue());
     }
     
-    public static AlgorithmID getAeadAlgorithm(LwM2mObjectInstance oscoreInstance) {
-        AlgorithmID aeadAlg = null;
-        
-        try {
-            aeadAlg = AlgorithmID.FromCBOR(CBORObject.FromObject((Long)oscoreInstance.getResource(OSCORE_AEAD_Algorithm).getValue()));
-        } catch (CoseException e) {
-            LOG.error("Failed to decode OSCORE AEAD algorithm");
-        }
-        
-        return aeadAlg;
+    public static long getAeadAlgorithm(LwM2mObjectInstance oscoreInstance) {
+        return (long)oscoreInstance.getResource(OSCORE_AEAD_Algorithm).getValue();
     }
     
-    public static AlgorithmID getHkdfAlgorithm(LwM2mObjectInstance oscoreInstance) {
-        AlgorithmID hkdfAlg = null;
-        
-        try {
-            hkdfAlg = AlgorithmID.FromCBOR(CBORObject.FromObject((Long)oscoreInstance.getResource(OSCORE_HMAC_Algorithm).getValue()));
-        } catch (CoseException e) {
-            LOG.error("Failed to decode OSCORE HMAC algorithm");
-        }
-        
-        return hkdfAlg;
+    public static long getHkdfAlgorithm(LwM2mObjectInstance oscoreInstance) {
+        return (long)oscoreInstance.getResource(OSCORE_HMAC_Algorithm).getValue();
     }
     
     public static byte[] getMasterSalt(LwM2mObjectInstance oscoreInstance) {
@@ -305,11 +283,48 @@ public class ServersInfoExtractor {
         if(value.equals("")) {
             return null;
         } else {
-            return StringUtil.hex2ByteArray(value);
+            return hex2ByteArray(value);
         }
     }
     
     public static byte[] getIdContext(LwM2mObjectInstance oscoreInstance) {
         return null;
     }
+    
+    /**
+	 * Convert hexadecimal String into decoded byte array.
+	 * From Californium StringUtil.java
+	 * 
+	 * @param hex hexadecimal string. e.g. "4130010A"
+	 * @return byte array with decoded hexadecimal input parameter.
+	 * @throws IllegalArgumentException if the parameter length is odd or
+	 *             contains non hexadecimal characters.
+	 * @see #byteArray2Hex(byte[])
+	 */
+	public static byte[] hex2ByteArray(String hex) {
+		if (hex == null) {
+			return null;
+		}
+		int length = hex.length();
+		if ((1 & length) != 0) {
+			throw new IllegalArgumentException("'" + hex + "' has odd length!");
+		}
+		length /= 2;
+		byte[] result = new byte[length];
+		for (int indexDest = 0, indexSrc = 0; indexDest < length; ++indexDest) {
+			int digit = Character.digit(hex.charAt(indexSrc), 16);
+			if (digit < 0) {
+				throw new IllegalArgumentException("'" + hex + "' digit " + indexSrc + " is not hexadecimal!");
+			}
+			result[indexDest] = (byte) (digit << 4);
+			++indexSrc;
+			digit = Character.digit(hex.charAt(indexSrc), 16);
+			if (digit < 0) {
+				throw new IllegalArgumentException("'" + hex + "' digit " + indexSrc + " is not hexadecimal!");
+			}
+			result[indexDest] |= (byte) digit;
+			++indexSrc;
+		}
+		return result;
+	}
 }
