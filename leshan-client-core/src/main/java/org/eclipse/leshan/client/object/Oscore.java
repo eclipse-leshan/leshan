@@ -62,23 +62,8 @@ public class Oscore extends BaseInstanceEnabler {
     }
 
     /**
-     * Returns a new OSCORE instance.
+     * Default constructor.
      */
-    public static Oscore set(String masterSecret, String senderId, String recipientId, int aeadAlgorithm, int hkdfAlgorithm, String masterSalt) {
-        return new Oscore(masterSecret, senderId, recipientId, aeadAlgorithm, hkdfAlgorithm, masterSalt);
-    }
-    
-    /**
-     * Returns a new OSCORE instance (less parameters and using default values).
-     */
-    public static Oscore set(String masterSecret, String senderId, String recipientId) {
-        int defaultAeadAlgorithm = 10; //AES_CCM_16_64_128
-        int defaultHmacAlgorithm = -10; //HKDF_HMAC_SHA_256
-        
-        return new Oscore(masterSecret, senderId, recipientId, defaultAeadAlgorithm, defaultHmacAlgorithm, "");
-    }
-    
-    
     public Oscore(String masterSecret, String senderId, String recipientId, int aeadAlgorithm, int hkdfAlgorithm, String masterSalt) {
         this.masterSecret = masterSecret;
         this.senderId = senderId;
@@ -87,6 +72,18 @@ public class Oscore extends BaseInstanceEnabler {
         this.hkdfAlgorithm = hkdfAlgorithm;
         this.masterSalt = masterSalt;
         this.idContext = "";
+    }
+    
+    /**
+     * Constructor providing some default values.
+     *
+     * aeadAlgorithm = 10; //AES_CCM_16_64_128
+     * hmacAlgorithm = -10; //HKDF_HMAC_SHA_256
+     * masterSalt = "";
+     *
+     */
+    public Oscore(String masterSecret, String senderId, String recipientId) {
+        this(masterSecret, senderId, recipientId, 10, -10, "");
     }
 
     @Override

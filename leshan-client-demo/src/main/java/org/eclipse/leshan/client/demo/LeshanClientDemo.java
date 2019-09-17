@@ -374,7 +374,7 @@ public class LeshanClientDemo {
                 initializer.setInstancesForObject(SERVER, new Server(123, 30, BindingMode.U, false));
             } else if (useOSCore) {
                 initializer.setInstancesForObject(SECURITY, secOSCore(serverURI, 123));
-                initializer.setInstancesForObject(OSCORE, Oscore.set("11223344", "AA", "BB")); //Hardcoded values
+                initializer.setInstancesForObject(OSCORE, new Oscore("11223344", "AA", "BB")); //Hardcoded values
                 initializer.setInstancesForObject(SERVER, new Server(123, 30, BindingMode.U, false));
             } else {
                 initializer.setInstancesForObject(SECURITY, noSec(serverURI, 123));
