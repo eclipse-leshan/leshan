@@ -111,9 +111,9 @@ public class Security extends BaseInstanceEnabler {
     }
     
     /**
-     * Returns a new security instance (OSCORE) for a device management server.
+     * Returns a new security instance (OSCORE only) for a device management server.
      */
-    public static Security secOSCore(String serverUri, int shortServerId) {
+    public static Security oscoreOnly(String serverUri, int shortServerId) {
         return new Security(serverUri, false, SecurityMode.OSCORE.code, new byte[0], new byte[0], new byte[0],
                 shortServerId);
     }
