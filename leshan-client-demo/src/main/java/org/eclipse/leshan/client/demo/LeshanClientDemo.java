@@ -374,7 +374,7 @@ public class LeshanClientDemo {
                 initializer.setInstancesForObject(SERVER, new Server(123, 30, BindingMode.U, false));
             } else if (useOSCore) {
             	Oscore oscoreObject = new Oscore("11223344", "AA", "BB"); //Hardcoded values
-            	oscoreObject.setId(12345);
+            	oscoreObject.setId(12346);
             	initializer.setInstancesForObject(SECURITY, oscoreOnly(serverURI, 123, oscoreObject.getId()));
                 initializer.setInstancesForObject(OSCORE, oscoreObject);
                 initializer.setInstancesForObject(SERVER, new Server(123, 30, BindingMode.U, false));

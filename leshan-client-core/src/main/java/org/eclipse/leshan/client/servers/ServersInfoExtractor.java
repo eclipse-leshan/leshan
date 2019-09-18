@@ -110,7 +110,34 @@ public class ServersInfoExtractor {
                     info.serverUri = new URI((String) security.getResource(SEC_SERVER_URI).getValue());
                     info.serverId = (long) security.getResource(SEC_SERVER_ID).getValue();
                     info.secureMode = getSecurityMode(security);
-                    if (info.secureMode == SecurityMode.PSK) {
+
+                    // find instance id of the associated oscore object (if any)
+                    ObjectLink oscoreObjectLink = (ObjectLink) security.getResource(SEC_OSCORE_SECURITY_MODE).getValue();
+                    int oscoreObjectInstanceId = oscoreObjectLink.getObjectInstanceId();
+                    int oscoreObjectId = oscoreObjectLink.getObjectId();
+                    boolean useOscore = false;
+                    if(oscoreObjectId == OSCORE) {
+                    	useOscore = true;
+                    }
+
+                    if(useOscore) {
+                    	// search corresponding oscore object
+                    	LwM2mObjectInstance oscoreInstance = null;
+                        for (LwM2mObjectInstance oscore : oscores.getInstances().values()) {
+                            if (oscore.getId() == oscoreObjectInstanceId) {
+                            	oscoreInstance = oscore;
+                                break;
+                            }
+                        }
+                    	
+                    	info.masterSecret = getMasterSecret(oscoreInstance);
+                        info.senderId = getSenderId(oscoreInstance);
+                        info.recipientId = getRecipientId(oscoreInstance);
+                        info.aeadAlgorithm = getAeadAlgorithm(oscoreInstance);
+                        info.hkdfAlgorithm = getHkdfAlgorithm(oscoreInstance);
+                        info.masterSalt = getMasterSalt(oscoreInstance);
+                        info.idContext = getIdContext(oscoreInstance);
+                    } else if (info.secureMode == SecurityMode.PSK) {
                         info.pskId = getPskIdentity(security);
                         info.pskKey = getPskKey(security);
                     } else if (info.secureMode == SecurityMode.RPK) {
@@ -121,18 +148,8 @@ public class ServersInfoExtractor {
                         info.clientCertificate = getClientCertificate(security);
                         info.serverCertificate = getServerCertificate(security);
                         info.privateKey = getPrivateKey(security);
-                    } else if (info.secureMode == SecurityMode.OSCORE) {
-                        //FIXME: Need proper way to find correct oscore instance corresponding to this security instance
-                        LwM2mObjectInstance oscoreInstance = (LwM2mObjectInstance)oscores.getInstances().values().toArray()[0];
-                        info.masterSecret = getMasterSecret(oscoreInstance);
-                        info.senderId = getSenderId(oscoreInstance);
-                        info.recipientId = getRecipientId(oscoreInstance);
-                        info.aeadAlgorithm = getAeadAlgorithm(oscoreInstance);
-                        info.hkdfAlgorithm = getHkdfAlgorithm(oscoreInstance);
-                        info.masterSalt = getMasterSalt(oscoreInstance);
-                        info.idContext = getIdContext(oscoreInstance);
-                        
                     }
+                    
                     // search corresponding device management server
                     for (LwM2mObjectInstance server : servers.getInstances().values()) {
                         if (info.serverId == (Long) server.getResource(SRV_SERVER_ID).getValue()) {
