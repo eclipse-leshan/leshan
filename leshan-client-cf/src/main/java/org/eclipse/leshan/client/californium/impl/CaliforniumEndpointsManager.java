@@ -94,52 +94,10 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
 
         // Create new endpoint
         Identity serverIdentity;
-        if (serverInfo.isSecure() || serverInfo.useOscore) {
+        if (serverInfo.isSecure()) {
             Builder newBuilder = new Builder(dtlsConfigbuilder.getIncompleteConfig());
 
-            // oscore only mode
-            if(serverInfo.useOscore) {
-            	LOG.info("Adding OSCORE context for " + serverInfo.getFullUri().toASCIIString());
-                HashMapCtxDB db = HashMapCtxDB.getInstance(); //TODO: Do not use singleton here but give it to endpoint builder (for Cf-M16)
-
-            	AlgorithmID hkdfAlg = null;
-                try {
-                    hkdfAlg = AlgorithmID.FromCBOR(CBORObject.FromObject(serverInfo.hkdfAlgorithm));
-                } catch (CoseException e) {
-                    LOG.error("Failed to decode OSCORE HMAC algorithm");
-                }
-                
-                AlgorithmID aeadAlg = null;
-                try {
-                    aeadAlg = AlgorithmID.FromCBOR(CBORObject.FromObject(serverInfo.aeadAlgorithm));
-                } catch (CoseException e) {
-                    LOG.error("Failed to decode OSCORE AEAD algorithm");
-                }
-                
-                try {                    
-                    OSCoreCtx ctx = new OSCoreCtx(serverInfo.masterSecret, true, aeadAlg, serverInfo.senderId, serverInfo.recipientId, hkdfAlg, 32, serverInfo.masterSalt, serverInfo.idContext);
-                    db.addContext(serverInfo.getFullUri().toASCIIString(), ctx);
-                    
-                    // Also add the context by the IP of the server since requests may use that
-                    String  serverIP = InetAddress.getByName(serverInfo.getFullUri().getHost()).getHostAddress();
-                    db.addContext("coap://" + serverIP, ctx);
-                    
-                } catch (OSException | UnknownHostException e) {
-                    LOG.error("Failed to generate OSCORE context information");
-                    return null;
-                }
-                
-                if (endpointFactory != null) {
-                    currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null, db);
-                } else {
-                    CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
-                    builder.setInetSocketAddress(localAddress);
-                    builder.setNetworkConfig(coapConfig);
-                    currentEndpoint = builder.build();
-                }
-                serverIdentity = Identity.unsecure(serverInfo.getAddress()); //TODO: FIX?
-            
-            } else if (serverInfo.secureMode == SecurityMode.PSK) {
+            if (serverInfo.secureMode == SecurityMode.PSK) {
             	// Support PSK
                 StaticPskStore staticPskStore = new StaticPskStore(serverInfo.pskId, serverInfo.pskKey);
                 newBuilder.setPskStore(staticPskStore);
@@ -217,6 +175,48 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                     currentEndpoint = builder.build();
                 }
             }
+        } else if (serverInfo.useOscore) {
+        	// oscore only mode
+        	LOG.info("Adding OSCORE context for " + serverInfo.getFullUri().toASCIIString());
+            HashMapCtxDB db = HashMapCtxDB.getInstance(); //TODO: Do not use singleton here but give it to endpoint builder (for Cf-M16)
+
+        	AlgorithmID hkdfAlg = null;
+            try {
+                hkdfAlg = AlgorithmID.FromCBOR(CBORObject.FromObject(serverInfo.hkdfAlgorithm));
+            } catch (CoseException e) {
+                LOG.error("Failed to decode OSCORE HMAC algorithm");
+            }
+            
+            AlgorithmID aeadAlg = null;
+            try {
+                aeadAlg = AlgorithmID.FromCBOR(CBORObject.FromObject(serverInfo.aeadAlgorithm));
+            } catch (CoseException e) {
+                LOG.error("Failed to decode OSCORE AEAD algorithm");
+            }
+            
+            try {                    
+                OSCoreCtx ctx = new OSCoreCtx(serverInfo.masterSecret, true, aeadAlg, serverInfo.senderId, serverInfo.recipientId, hkdfAlg, 32, serverInfo.masterSalt, serverInfo.idContext);
+                db.addContext(serverInfo.getFullUri().toASCIIString(), ctx);
+                
+                // Also add the context by the IP of the server since requests may use that
+                String  serverIP = InetAddress.getByName(serverInfo.getFullUri().getHost()).getHostAddress();
+                db.addContext("coap://" + serverIP, ctx);
+                
+            } catch (OSException | UnknownHostException e) {
+                LOG.error("Failed to generate OSCORE context information");
+                return null;
+            }
+            
+            if (endpointFactory != null) {
+                currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null, db);
+            } else {
+                CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
+                builder.setInetSocketAddress(localAddress);
+                builder.setNetworkConfig(coapConfig);
+                currentEndpoint = builder.build();
+            }
+            serverIdentity = Identity.unsecure(serverInfo.getAddress()); //TODO: FIX?
+        
         } else {
             if (endpointFactory != null) {
                 currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null, null);
