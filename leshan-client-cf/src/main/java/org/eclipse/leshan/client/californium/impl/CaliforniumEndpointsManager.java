@@ -99,7 +99,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
 
             // oscore only mode
             if(serverInfo.useOscore) {
-            	System.out.println("Adding OSCORE CTX " + serverInfo.getFullUri().toASCIIString());
+            	LOG.info("Adding OSCORE context for " + serverInfo.getFullUri().toASCIIString());
                 HashMapCtxDB db = HashMapCtxDB.getInstance(); //TODO: Do not use singleton here but give it to endpoint builder (for Cf-M16)
 
             	AlgorithmID hkdfAlg = null;
