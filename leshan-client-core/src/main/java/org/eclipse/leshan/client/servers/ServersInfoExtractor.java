@@ -118,14 +118,8 @@ public class ServersInfoExtractor {
                     boolean useOscore = oscoreObjectId == OSCORE;
 
                     if(useOscore) {
-                    	// search corresponding oscore object
-                    	LwM2mObjectInstance oscoreInstance = null;
-                        for (LwM2mObjectInstance oscore : oscores.getInstances().values()) {
-                            if (oscore.getId() == oscoreObjectInstanceId) {
-                            	oscoreInstance = oscore;
-                                break;
-                            }
-                        }
+                    	// get corresponding oscore object
+                    	LwM2mObjectInstance oscoreInstance = oscores.getInstance(oscoreObjectInstanceId);
                     	
                     	info.masterSecret = getMasterSecret(oscoreInstance);
                         info.senderId = getSenderId(oscoreInstance);
