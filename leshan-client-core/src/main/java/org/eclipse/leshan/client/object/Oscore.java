@@ -65,7 +65,7 @@ public class Oscore extends BaseInstanceEnabler {
      * Default constructor.
      */
     public Oscore(int instanceId, String masterSecret, String senderId, String recipientId, int aeadAlgorithm, int hkdfAlgorithm, String masterSalt) {
-        this.setId(instanceId);
+        super(instanceId);
     	this.masterSecret = masterSecret;
         this.senderId = senderId;
         this.recipientId = recipientId;

@@ -115,10 +115,7 @@ public class ServersInfoExtractor {
                     ObjectLink oscoreObjectLink = (ObjectLink) security.getResource(SEC_OSCORE_SECURITY_MODE).getValue();
                     int oscoreObjectInstanceId = oscoreObjectLink.getObjectInstanceId();
                     int oscoreObjectId = oscoreObjectLink.getObjectId();
-                    boolean useOscore = false;
-                    if(oscoreObjectId == OSCORE) {
-                    	useOscore = true;
-                    }
+                    boolean useOscore = oscoreObjectId == OSCORE;
 
                     if(useOscore) {
                     	// search corresponding oscore object
