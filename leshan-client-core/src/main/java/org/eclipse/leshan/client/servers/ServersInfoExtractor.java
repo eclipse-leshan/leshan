@@ -121,6 +121,7 @@ public class ServersInfoExtractor {
                     	// get corresponding oscore object
                     	LwM2mObjectInstance oscoreInstance = oscores.getInstance(oscoreObjectInstanceId);
                     	
+                    	info.useOscore = true;
                     	info.masterSecret = getMasterSecret(oscoreInstance);
                         info.senderId = getSenderId(oscoreInstance);
                         info.recipientId = getRecipientId(oscoreInstance);

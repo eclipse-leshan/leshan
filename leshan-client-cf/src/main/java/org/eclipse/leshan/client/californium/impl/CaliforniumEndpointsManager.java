@@ -97,36 +97,9 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
         if (serverInfo.isSecure()) {
             Builder newBuilder = new Builder(dtlsConfigbuilder.getIncompleteConfig());
 
-            // Support PSK
-            if (serverInfo.secureMode == SecurityMode.PSK) {
-                StaticPskStore staticPskStore = new StaticPskStore(serverInfo.pskId, serverInfo.pskKey);
-                newBuilder.setPskStore(staticPskStore);
-                serverIdentity = Identity.psk(serverInfo.getAddress(), serverInfo.pskId);
-            } else if (serverInfo.secureMode == SecurityMode.RPK) {
-                // set identity
-                newBuilder.setIdentity(serverInfo.privateKey, serverInfo.publicKey);
-                // set RPK truststore
-                final PublicKey expectedKey = serverInfo.serverPublicKey;
-                newBuilder.setRpkTrustStore(new TrustedRpkStore() {
-                    @Override
-                    public boolean isTrusted(RawPublicKeyIdentity id) {
-                        PublicKey receivedKey = id.getKey();
-                        if (receivedKey == null) {
-                            LOG.warn("The server public key is null {}", id);
-                            return false;
-                        }
-                        if (!receivedKey.equals(expectedKey)) {
-                            LOG.debug(
-                                    "Server public key received does match with the expected one.\nReceived: {}\nExpected: {}",
-                                    receivedKey, expectedKey);
-                            return false;
-                        }
-                        return true;
-                    }
-                });
-                serverIdentity = Identity.rpk(serverInfo.getAddress(), expectedKey);
-            } else if (serverInfo.secureMode == SecurityMode.OSCORE) {
-                System.out.println("Adding OSCORE CTX " + serverInfo.getFullUri().toASCIIString());
+            // oscore only mode
+            if(serverInfo.useOscore) {
+            	System.out.println("Adding OSCORE CTX " + serverInfo.getFullUri().toASCIIString());
                 HashMapCtxDB db = HashMapCtxDB.getInstance(); //TODO: Do not use singleton here but give it to endpoint builder (for Cf-M16)
 
             	AlgorithmID hkdfAlg = null;
@@ -165,6 +138,35 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                     currentEndpoint = builder.build();
                 }
                 serverIdentity = Identity.unsecure(serverInfo.getAddress()); //TODO: FIX?
+            
+            } else if (serverInfo.secureMode == SecurityMode.PSK) {
+            	// Support PSK
+                StaticPskStore staticPskStore = new StaticPskStore(serverInfo.pskId, serverInfo.pskKey);
+                newBuilder.setPskStore(staticPskStore);
+                serverIdentity = Identity.psk(serverInfo.getAddress(), serverInfo.pskId);
+            } else if (serverInfo.secureMode == SecurityMode.RPK) {
+                // set identity
+                newBuilder.setIdentity(serverInfo.privateKey, serverInfo.publicKey);
+                // set RPK truststore
+                final PublicKey expectedKey = serverInfo.serverPublicKey;
+                newBuilder.setRpkTrustStore(new TrustedRpkStore() {
+                    @Override
+                    public boolean isTrusted(RawPublicKeyIdentity id) {
+                        PublicKey receivedKey = id.getKey();
+                        if (receivedKey == null) {
+                            LOG.warn("The server public key is null {}", id);
+                            return false;
+                        }
+                        if (!receivedKey.equals(expectedKey)) {
+                            LOG.debug(
+                                    "Server public key received does match with the expected one.\nReceived: {}\nExpected: {}",
+                                    receivedKey, expectedKey);
+                            return false;
+                        }
+                        return true;
+                    }
+                });
+                serverIdentity = Identity.rpk(serverInfo.getAddress(), expectedKey);
             } else if (serverInfo.secureMode == SecurityMode.X509) {
                 // set identity
                 newBuilder.setIdentity(serverInfo.privateKey, new Certificate[] { serverInfo.clientCertificate });

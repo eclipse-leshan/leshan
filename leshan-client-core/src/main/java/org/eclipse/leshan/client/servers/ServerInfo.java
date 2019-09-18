@@ -48,6 +48,7 @@ public class ServerInfo {
     public PrivateKey privateKey;
     
     //OSCORE parameters
+    public boolean useOscore;
     public byte[] masterSecret;
     public byte[] senderId;
     public byte[] recipientId;
@@ -65,7 +66,7 @@ public class ServerInfo {
     }
 
     public boolean isSecure() {
-        return secureMode != SecurityMode.NO_SEC;
+        return secureMode != SecurityMode.NO_SEC || useOscore == true;
     }
 
     @Override
