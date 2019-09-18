@@ -44,6 +44,7 @@ import org.eclipse.leshan.client.resource.DummyInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
+import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ACLConfig;
@@ -127,7 +128,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         // Create Security Object (with bootstrap server only)
         String bsUrl = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
                 + bootstrapServer.getUnsecuredAddress().getPort();
-        Security security = new Security(bsUrl, true, 3, new byte[0], new byte[0], new byte[0], 12345);
+        Security security = new Security(bsUrl, true, 3, new byte[0], new byte[0], new byte[0], 12345, new ObjectLink());
 
         createClient(security);
     }

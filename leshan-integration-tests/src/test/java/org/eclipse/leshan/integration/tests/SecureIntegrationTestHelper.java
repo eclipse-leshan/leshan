@@ -208,7 +208,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
 
             @Override
             public CoapEndpoint createUnsecuredEndpoint(InetSocketAddress address, NetworkConfig coapConfig,
-                    ObservationStore store) {
+                    ObservationStore store, HashMapCtxDB db) {
                 CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
                 builder.setInetSocketAddress(address);
                 builder.setNetworkConfig(coapConfig);
@@ -217,7 +217,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
 
             @Override
             public CoapEndpoint createSecuredEndpoint(DtlsConnectorConfig dtlsConfig, NetworkConfig coapConfig,
-                    ObservationStore store) {
+                    ObservationStore store, HashMapCtxDB db) {
                 CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
                 Builder dtlsConfigBuilder = new Builder(dtlsConfig);
                 if (dtlsConfig.getPskStore() != null) {
@@ -231,14 +231,6 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
                 return builder.build();
             }
 
-            @Override
-            public CoapEndpoint createOSCoreEndpoint(InetSocketAddress address, NetworkConfig coapConfig,
-                    ObservationStore store, HashMapCtxDB db) {
-                CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
-                builder.setInetSocketAddress(address);
-                builder.setNetworkConfig(coapConfig);
-                return builder.build();
-            }
         });
 
         // create client;

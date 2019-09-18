@@ -157,7 +157,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                 }
                 
                 if (endpointFactory != null) {
-                    currentEndpoint = endpointFactory.createOSCoreEndpoint(localAddress, coapConfig, null, db);
+                    currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null, db);
                 } else {
                     CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
                     builder.setInetSocketAddress(localAddress);
@@ -207,7 +207,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             }
             if (currentEndpoint == null) {
                 if (endpointFactory != null) {
-                    currentEndpoint = endpointFactory.createSecuredEndpoint(newBuilder.build(), coapConfig, null);
+                    currentEndpoint = endpointFactory.createSecuredEndpoint(newBuilder.build(), coapConfig, null, null);
                 } else {
                     CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
                     builder.setConnector(new DTLSConnector(newBuilder.build()));
@@ -217,7 +217,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             }
         } else {
             if (endpointFactory != null) {
-                currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null);
+                currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null, null);
             } else {
                 CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
                 builder.setInetSocketAddress(localAddress);
