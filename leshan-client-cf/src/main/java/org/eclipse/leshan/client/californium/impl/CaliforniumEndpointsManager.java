@@ -94,7 +94,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
 
         // Create new endpoint
         Identity serverIdentity;
-        if (serverInfo.isSecure()) {
+        if (serverInfo.isSecure() || serverInfo.useOscore) {
             Builder newBuilder = new Builder(dtlsConfigbuilder.getIncompleteConfig());
 
             // oscore only mode

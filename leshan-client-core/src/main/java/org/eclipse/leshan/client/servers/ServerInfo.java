@@ -66,7 +66,7 @@ public class ServerInfo {
     }
 
     public boolean isSecure() {
-        return secureMode != SecurityMode.NO_SEC || useOscore == true;
+        return secureMode != SecurityMode.NO_SEC;
     }
 
     @Override
