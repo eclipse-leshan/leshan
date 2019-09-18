@@ -373,8 +373,10 @@ public class LeshanClientDemo {
                         clientPrivateKey.getEncoded(), serverCertificate.getEncoded()));
                 initializer.setInstancesForObject(SERVER, new Server(123, 30, BindingMode.U, false));
             } else if (useOSCore) {
-                initializer.setInstancesForObject(SECURITY, oscoreOnly(serverURI, 123));
-                initializer.setInstancesForObject(OSCORE, new Oscore("11223344", "AA", "BB")); //Hardcoded values
+            	Oscore oscoreObject = new Oscore("11223344", "AA", "BB"); //Hardcoded values
+            	oscoreObject.setId(12345);
+            	initializer.setInstancesForObject(SECURITY, oscoreOnly(serverURI, 123, oscoreObject.getId()));
+                initializer.setInstancesForObject(OSCORE, oscoreObject);
                 initializer.setInstancesForObject(SERVER, new Server(123, 30, BindingMode.U, false));
             } else {
                 initializer.setInstancesForObject(SECURITY, noSec(serverURI, 123));

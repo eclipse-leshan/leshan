@@ -44,6 +44,7 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ReadResponse;
@@ -68,8 +69,12 @@ public class ServersInfoExtractor {
         ServersInfo infos = new ServersInfo();
         LwM2mObject securities = (LwM2mObject) securityEnabler.read(SYSTEM, new ReadRequest(SECURITY)).getContent();
         LwM2mObject servers = (LwM2mObject) serverEnabler.read(SYSTEM, new ReadRequest(SERVER)).getContent();
-        LwM2mObject oscores = (LwM2mObject) oscoreEnabler.read(SYSTEM, new ReadRequest(OSCORE)).getContent();
-
+        
+        LwM2mObject oscores = null;
+        if(oscoreEnabler != null) {
+        	oscores = (LwM2mObject) oscoreEnabler.read(SYSTEM, new ReadRequest(OSCORE)).getContent();
+        }
+        
         for (LwM2mObjectInstance security : securities.getInstances().values()) {
             try {
                 if ((boolean) security.getResource(SEC_BOOTSTRAP).getValue()) {
@@ -126,6 +131,7 @@ public class ServersInfoExtractor {
                         info.hkdfAlgorithm = getHkdfAlgorithm(oscoreInstance);
                         info.masterSalt = getMasterSalt(oscoreInstance);
                         info.idContext = getIdContext(oscoreInstance);
+                        
                     }
                     // search corresponding device management server
                     for (LwM2mObjectInstance server : servers.getInstances().values()) {
