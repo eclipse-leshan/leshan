@@ -30,8 +30,6 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
 
-import javax.xml.bind.DatatypeConverter;
-
 import org.eclipse.californium.cose.AlgorithmID;
 import org.eclipse.californium.oscore.OSCoreCtx;
 import org.eclipse.californium.oscore.OSException;
@@ -173,10 +171,10 @@ public class SecurityDeserializer implements JsonDeserializer<SecurityInfo> {
                 // Create an identity string from the OSCORE context information
                 StringBuilder b = new StringBuilder();
                 if (ctx.getIdContext() != null) {
-                    b.append(DatatypeConverter.printHexBinary(ctx.getIdContext()));
+                    b.append(Hex.encodeHex(ctx.getIdContext()));
                     b.append(":");
                 }
-                b.append(DatatypeConverter.printHexBinary(ctx.getRecipientId()));
+                b.append(Hex.encodeHex(ctx.getRecipientId()));
                 String identity = b.toString();
 
                 info = SecurityInfo.newOSCoreInfo(endpoint, identity, ctx);

@@ -56,9 +56,10 @@ public class Security extends BaseInstanceEnabler {
 
     private Integer shortServerId;
     private ObjectLink oscoreSecurityMode;
-    
+
     public Security() {
         // should only be used at bootstrap time
+        oscoreSecurityMode = new ObjectLink();
     }
 
     public Security(String serverUri, boolean bootstrapServer, int securityMode, byte[] publicKeyOrIdentity,
@@ -114,7 +115,7 @@ public class Security extends BaseInstanceEnabler {
         return new Security(serverUri, false, SecurityMode.NO_SEC.code, new byte[0], new byte[0], new byte[0],
                 shortServerId, new ObjectLink());
     }
-    
+
     /**
      * Returns a new security instance (OSCORE only) for a device management server.
      */
@@ -202,14 +203,13 @@ public class Security extends BaseInstanceEnabler {
             }
             shortServerId = ((Long) value.getValue()).intValue();
             return WriteResponse.success();
-            
+
         case SEC_OSCORE_SECURITY_MODE: // oscore security mode
             if (value.getType() != Type.OBJLNK) {
                 return WriteResponse.badRequest("invalid type");
             }
             oscoreSecurityMode = (ObjectLink) value.getValue();
             return WriteResponse.success();
-
 
         default:
             return super.write(identity, resourceId, value);
@@ -242,7 +242,7 @@ public class Security extends BaseInstanceEnabler {
 
         case SEC_SERVER_ID: // short server id
             return ReadResponse.success(resourceid, shortServerId);
-            
+
         case SEC_OSCORE_SECURITY_MODE: // oscore security mode
             return ReadResponse.success(resourceid, oscoreSecurityMode);
 

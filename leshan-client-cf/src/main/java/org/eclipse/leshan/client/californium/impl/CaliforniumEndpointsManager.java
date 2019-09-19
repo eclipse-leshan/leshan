@@ -19,8 +19,6 @@ package org.eclipse.leshan.client.californium.impl;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
@@ -165,15 +163,13 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             } else {
                 throw new RuntimeException("Unable to create connector : unsupported security mode");
             }
-            if (currentEndpoint == null) {
-                if (endpointFactory != null) {
-                    currentEndpoint = endpointFactory.createSecuredEndpoint(newBuilder.build(), coapConfig, null, null);
-                } else {
-                    CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
-                    builder.setConnector(new DTLSConnector(newBuilder.build()));
-                    builder.setNetworkConfig(coapConfig);
-                    currentEndpoint = builder.build();
-                }
+            if (endpointFactory != null) {
+                currentEndpoint = endpointFactory.createSecuredEndpoint(newBuilder.build(), coapConfig, null, null);
+            } else {
+                CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
+                builder.setConnector(new DTLSConnector(newBuilder.build()));
+                builder.setNetworkConfig(coapConfig);
+                currentEndpoint = builder.build();
             }
         } else if (serverInfo.useOscore) {
             // oscore only mode
@@ -208,7 +204,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                 LOG.error("Failed to generate OSCORE context information");
                 return null;
             }
-            
+
             if (endpointFactory != null) {
                 currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null, db);
             } else {
@@ -218,7 +214,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                 currentEndpoint = builder.build();
             }
             serverIdentity = Identity.unsecure(serverInfo.getAddress()); // TODO: FIX?
-        
+
         } else {
             if (endpointFactory != null) {
                 currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null, null);
