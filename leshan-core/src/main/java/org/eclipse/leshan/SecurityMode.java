@@ -12,7 +12,6 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
- *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan;
 

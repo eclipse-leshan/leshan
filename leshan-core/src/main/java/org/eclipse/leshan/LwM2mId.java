@@ -44,9 +44,9 @@ public interface LwM2mId {
     public static final int SEC_SECRET_KEY = 5;
     public static final int SEC_SERVER_ID = 10;
     public static final int SEC_OSCORE_SECURITY_MODE = 17;
-    
+
     /* OSCORE RESOURCES */
-    
+
     public static final int OSCORE_Master_Secret = 0;
     public static final int OSCORE_Sender_ID = 1;
     public static final int OSCORE_Recipient_ID = 2;

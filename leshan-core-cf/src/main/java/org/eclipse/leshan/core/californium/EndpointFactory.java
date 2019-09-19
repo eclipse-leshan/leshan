@@ -29,8 +29,9 @@ import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
  */
 public interface EndpointFactory {
 
-    CoapEndpoint createUnsecuredEndpoint(InetSocketAddress address, NetworkConfig coapConfig, ObservationStore store, HashMapCtxDB db);
+    CoapEndpoint createUnsecuredEndpoint(InetSocketAddress address, NetworkConfig coapConfig, ObservationStore store,
+            HashMapCtxDB db);
 
-    CoapEndpoint createSecuredEndpoint(DtlsConnectorConfig dtlsConfig, NetworkConfig coapConfig,
-            ObservationStore store, HashMapCtxDB db);
+    CoapEndpoint createSecuredEndpoint(DtlsConnectorConfig dtlsConfig, NetworkConfig coapConfig, ObservationStore store,
+            HashMapCtxDB db);
 }

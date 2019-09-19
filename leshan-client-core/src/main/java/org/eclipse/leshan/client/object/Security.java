@@ -70,7 +70,7 @@ public class Security extends BaseInstanceEnabler {
         this.serverPublicKey = serverPublicKey;
         this.secretKey = secretKey;
         this.shortServerId = shortServerId;
-        this.oscoreSecurityMode = oscoreSecurityMode; 
+        this.oscoreSecurityMode = oscoreSecurityMode;
     }
 
     /**
@@ -78,7 +78,7 @@ public class Security extends BaseInstanceEnabler {
      */
     public static Security noSecBootstap(String serverUri) {
         return new Security(serverUri, true, SecurityMode.NO_SEC.code, new byte[0], new byte[0], new byte[0], 0,
-        		new ObjectLink());
+                new ObjectLink());
     }
 
     /**
@@ -204,12 +204,12 @@ public class Security extends BaseInstanceEnabler {
             return WriteResponse.success();
             
         case SEC_OSCORE_SECURITY_MODE: // oscore security mode
-        	if (value.getType() != Type.OBJLNK) {
+            if (value.getType() != Type.OBJLNK) {
                 return WriteResponse.badRequest("invalid type");
             }
             oscoreSecurityMode = (ObjectLink) value.getValue();
             return WriteResponse.success();
-            
+
 
         default:
             return super.write(identity, resourceId, value);
@@ -243,8 +243,8 @@ public class Security extends BaseInstanceEnabler {
         case SEC_SERVER_ID: // short server id
             return ReadResponse.success(resourceid, shortServerId);
             
-        case SEC_OSCORE_SECURITY_MODE: //oscore security mode
-        	return ReadResponse.success(resourceid, oscoreSecurityMode);
+        case SEC_OSCORE_SECURITY_MODE: // oscore security mode
+            return ReadResponse.success(resourceid, oscoreSecurityMode);
 
         default:
             return super.read(identity, resourceid);

@@ -47,7 +47,7 @@ public class ServerInfo {
 
     public PrivateKey privateKey;
     
-    //OSCORE parameters
+    // OSCORE parameters
     public boolean useOscore;
     public byte[] masterSecret;
     public byte[] senderId;
