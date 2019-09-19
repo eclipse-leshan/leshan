@@ -267,7 +267,7 @@ public class ServersInfoExtractor {
         LwM2mResource isBootstrap = (LwM2mResource) response.getContent();
         return (Boolean) isBootstrap.getValue();
     }
-    
+
     // OSCORE related methods below
 
     public static byte[] getMasterSecret(LwM2mObjectInstance oscoreInstance) {

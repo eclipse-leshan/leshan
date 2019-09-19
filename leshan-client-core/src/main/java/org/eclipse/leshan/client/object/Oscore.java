@@ -74,7 +74,7 @@ public class Oscore extends BaseInstanceEnabler {
         this.masterSalt = masterSalt;
         this.idContext = "";
     }
-    
+
     /**
      * Constructor providing some default values.
      *
@@ -174,5 +174,5 @@ public class Oscore extends BaseInstanceEnabler {
     public List<Integer> getAvailableResourceIds(ObjectModel model) {
         return supportedResources;
     }
-    
+
 }

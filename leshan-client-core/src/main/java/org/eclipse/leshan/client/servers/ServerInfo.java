@@ -46,7 +46,7 @@ public class ServerInfo {
     public Certificate serverCertificate;
 
     public PrivateKey privateKey;
-    
+
     // OSCORE parameters
     public boolean useOscore;
     public byte[] masterSecret;
