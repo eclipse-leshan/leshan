@@ -18,8 +18,6 @@ package org.eclipse.leshan.server.californium;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
@@ -142,21 +140,18 @@ public class LeshanServer {
         Validate.notNull(registrationIdProvider, "registrationIdProvider cannot be null");
 
         // Create CoAP server
-        Set<Endpoint> endpoints = new HashSet<>();
         coapServer = createCoapServer(coapConfig);
 
         // unsecured endpoint
         this.unsecuredEndpoint = unsecuredEndpoint;
         if (unsecuredEndpoint != null) {
             coapServer.addEndpoint(unsecuredEndpoint);
-            endpoints.add(unsecuredEndpoint);
         }
 
         // secure endpoint
         this.securedEndpoint = securedEndpoint;
         if (securedEndpoint != null) {
             coapServer.addEndpoint(securedEndpoint);
-            endpoints.add(securedEndpoint);
         }
 
         // init services and stores
@@ -176,8 +171,8 @@ public class LeshanServer {
         coapServer.add(createRegisterResource(registrationService, authorizer, registrationIdProvider));
 
         // create request sender
-        requestSender = createRequestSender(endpoints, registrationService, observationService, this.modelProvider,
-                encoder, decoder, presenceService);
+        requestSender = createRequestSender(securedEndpoint, unsecuredEndpoint, registrationService, observationService,
+                this.modelProvider, encoder, decoder, presenceService);
 
         coapApi = new CoapAPI();
     }
@@ -226,7 +221,7 @@ public class LeshanServer {
         return new RegisterResource(new RegistrationHandler(registrationService, authorizer, registrationIdProvider));
     }
 
-    protected LwM2mRequestSender createRequestSender(Set<Endpoint> endpoints,
+    protected LwM2mRequestSender createRequestSender(Endpoint securedEndpoint, Endpoint unsecuredEndpoint,
             RegistrationServiceImpl registrationService, ObservationServiceImpl observationService,
             LwM2mModelProvider modelProvider, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
             PresenceServiceImpl presenceService) {
@@ -234,11 +229,11 @@ public class LeshanServer {
         // if no queue mode, create a "simple" sender
         final LwM2mRequestSender requestSender;
         if (presenceService == null)
-            requestSender = new CaliforniumLwM2mRequestSender(endpoints, observationService, modelProvider, encoder,
-                    decoder);
+            requestSender = new CaliforniumLwM2mRequestSender(securedEndpoint, unsecuredEndpoint, observationService,
+                    modelProvider, encoder, decoder);
         else
-            requestSender = new CaliforniumQueueModeRequestSender(presenceService,
-                    new CaliforniumLwM2mRequestSender(endpoints, observationService, modelProvider, encoder, decoder));
+            requestSender = new CaliforniumQueueModeRequestSender(presenceService, new CaliforniumLwM2mRequestSender(
+                    securedEndpoint, unsecuredEndpoint, observationService, modelProvider, encoder, decoder));
 
         // Cancel observations on client unregistering
         registrationService.addListener(new RegistrationListener() {

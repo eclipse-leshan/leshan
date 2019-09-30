@@ -16,8 +16,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.request;
 
-import java.net.InetSocketAddress;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -51,7 +49,8 @@ import org.eclipse.leshan.util.Validate;
 
 public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRequestSender {
 
-    private final Set<Endpoint> endpoints;
+    private final Endpoint nonSecureEndpoint;
+    private final Endpoint secureEndpoint;
     private final ObservationServiceImpl observationService;
     private final LwM2mModelProvider modelProvider;
     private final LwM2mNodeDecoder decoder;
@@ -61,17 +60,17 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
     private final ConcurrentNavigableMap<String/* registrationId#requestId */, Request /* pending coap Request */> pendingRequests = new ConcurrentSkipListMap<>();
 
     /**
-     * @param endpoints the CoAP endpoints to use for sending requests
      * @param observationService the service for keeping track of observed resources
      * @param modelProvider provides the supported objects definitions
      */
-    public CaliforniumLwM2mRequestSender(Set<Endpoint> endpoints, ObservationServiceImpl observationService,
-            LwM2mModelProvider modelProvider, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
-        Validate.notNull(endpoints);
+    public CaliforniumLwM2mRequestSender(Endpoint secureEndpoint, Endpoint nonSecureEndpoint,
+            ObservationServiceImpl observationService, LwM2mModelProvider modelProvider, LwM2mNodeEncoder encoder,
+            LwM2mNodeDecoder decoder) {
         Validate.notNull(observationService);
         Validate.notNull(modelProvider);
         this.observationService = observationService;
-        this.endpoints = endpoints;
+        this.secureEndpoint = secureEndpoint;
+        this.nonSecureEndpoint = nonSecureEndpoint;
         this.modelProvider = modelProvider;
         this.encoder = encoder;
         this.decoder = decoder;
@@ -285,22 +284,10 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
         }
     }
 
-    /**
-     * Gets the CoAP endpoint that should be used to communicate with a given client.
-     *
-     * @param registration the client
-     * @return the CoAP endpoint bound to the same network address and port that the client connected to during
-     *         registration. If no such CoAP endpoint is available, the first CoAP endpoint from the list of registered
-     *         endpoints is returned
-     */
     private Endpoint getEndpointForClient(Registration registration) {
-        for (Endpoint ep : endpoints) {
-            InetSocketAddress endpointAddress = ep.getAddress();
-            if (endpointAddress.equals(registration.getRegistrationEndpointAddress())) {
-                return ep;
-            }
-        }
-        throw new IllegalStateException(
-                "can't find the client endpoint for address : " + registration.getRegistrationEndpointAddress());
+        if (registration.getIdentity().isSecure())
+            return secureEndpoint;
+        else
+            return nonSecureEndpoint;
     }
 }
