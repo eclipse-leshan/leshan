@@ -244,17 +244,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             // handle success response:
             LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse, request,
                     registration.getEndpoint());
-            if (coapResponse.getOptions().hasObserve()) {
-                // observe request successful
-                Observation observation = ObserveUtil.createLwM2mObservation(coapRequest);
-                observationService.addObservation(registration, observation);
-                // add the observation to an ObserveResponse instance
-                lwM2mresponse = new CancelObservationResponse(toLwM2mResponseCode(coapResponse.getCode()), content,
-                        null, observation, null, coapResponse);
-            } else {
-                lwM2mresponse = new CancelObservationResponse(toLwM2mResponseCode(coapResponse.getCode()), content,
-                        null, null, null, coapResponse);
-            }
+            lwM2mresponse = new CancelObservationResponse(toLwM2mResponseCode(coapResponse.getCode()), content, null,
+                    null, null, coapResponse);
         } else {
             // handle unexpected response:
             handleUnexpectedResponseCode(registration.getEndpoint(), request, coapResponse);
