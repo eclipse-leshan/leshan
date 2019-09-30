@@ -15,7 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.redis.serialization;
 
-import java.net.InetSocketAddress;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,8 +37,6 @@ public class RegistrationSerDes {
         JsonObject o = Json.object();
         o.add("regDate", r.getRegistrationDate().getTime());
         o.add("identity", IdentitySerDes.serialize(r.getIdentity()));
-        o.add("regAddr", r.getRegistrationEndpointAddress().getHostString());
-        o.add("regPort", r.getRegistrationEndpointAddress().getPort());
         o.add("lt", r.getLifeTimeInSec());
         if (r.getSmsNumber() != null) {
             o.add("sms", r.getSmsNumber());
@@ -87,8 +84,7 @@ public class RegistrationSerDes {
 
     public static Registration deserialize(JsonObject jObj) {
         Registration.Builder b = new Registration.Builder(jObj.getString("regId", null), jObj.getString("ep", null),
-                IdentitySerDes.deserialize(jObj.get("identity").asObject()),
-                new InetSocketAddress(jObj.getString("regAddr", null), jObj.getInt("regPort", 0)));
+                IdentitySerDes.deserialize(jObj.get("identity").asObject()));
         b.bindingMode(BindingMode.valueOf(jObj.getString("bnd", null)));
         b.lastUpdate(new Date(jObj.getLong("lastUp", 0)));
         b.lifeTimeInSec(jObj.getLong("lt", 0));

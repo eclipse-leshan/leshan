@@ -18,7 +18,6 @@ package org.eclipse.leshan.server.californium.impl;
 import static org.junit.Assert.*;
 
 import java.net.Inet4Address;
-import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -77,7 +76,7 @@ public class CoapRequestBuilderTest {
 
     private Registration newRegistration(String rootpath) throws UnknownHostException {
         Builder b = new Registration.Builder("regid", "endpoint",
-                Identity.unsecure(Inet4Address.getLoopbackAddress(), 12354), new InetSocketAddress(0));
+                Identity.unsecure(Inet4Address.getLoopbackAddress(), 12354));
         if (rootpath != null) {
             Map<String, String> attr = new HashMap<>();
             attr.put("rt", "oma.lwm2m");

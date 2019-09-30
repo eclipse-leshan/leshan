@@ -17,7 +17,6 @@ package org.eclipse.leshan.server.californium.registration;
 
 import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toCoapResponseCode;
 
-import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -162,9 +161,8 @@ public class RegisterResource extends LwM2mCoapResource {
 
         // Handle request
         // -------------------------------
-        InetSocketAddress serverEndpoint = exchange.advanced().getEndpoint().getAddress();
         final SendableResponse<RegisterResponse> sendableResponse = registrationHandler.register(sender,
-                registerRequest, serverEndpoint);
+                registerRequest);
         RegisterResponse response = sendableResponse.getResponse();
 
         // Create CoAP Response from LwM2m request

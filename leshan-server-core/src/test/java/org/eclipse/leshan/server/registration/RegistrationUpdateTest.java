@@ -16,7 +16,6 @@
 package org.eclipse.leshan.server.registration;
 
 import java.net.Inet4Address;
-import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,7 +33,7 @@ public class RegistrationUpdateTest {
     @Test
     public void testAdditionalAttributesUpdate() throws Exception {
         Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
-                Identity.unsecure(Inet4Address.getLocalHost(), 1), new InetSocketAddress(212));
+                Identity.unsecure(Inet4Address.getLocalHost(), 1));
 
         Map<String, String> additionalAttributes = new HashMap<String, String>();
         additionalAttributes.put("x", "1");

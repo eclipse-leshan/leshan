@@ -37,7 +37,7 @@ public class CaliforniumTestSupport {
         registrationAddress = InetSocketAddress.createUnresolved("localhost", LwM2m.DEFAULT_COAP_PORT);
 
         Registration.Builder builder = new Registration.Builder("ID", "urn:client",
-                Identity.unsecure(Inet4Address.getLoopbackAddress(), 1000), registrationAddress);
+                Identity.unsecure(Inet4Address.getLoopbackAddress(), 1000));
 
         registration = builder.build();
     }

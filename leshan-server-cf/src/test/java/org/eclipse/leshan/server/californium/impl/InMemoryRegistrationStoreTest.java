@@ -16,11 +16,9 @@
 package org.eclipse.leshan.server.californium.impl;
 
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 
 import org.eclipse.leshan.Link;
-import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.californium.registration.InMemoryRegistrationStore;
@@ -95,8 +93,7 @@ public class InMemoryRegistrationStoreTest {
 
     private void givenASimpleRegistration(Long lifetime) {
 
-        Registration.Builder builder = new Registration.Builder(registrationId, ep, Identity.unsecure(address, port),
-                InetSocketAddress.createUnresolved("localhost", LwM2m.DEFAULT_COAP_PORT));
+        Registration.Builder builder = new Registration.Builder(registrationId, ep, Identity.unsecure(address, port));
 
         registration = builder.lifeTimeInSec(lifetime).smsNumber(sms).bindingMode(binding).objectLinks(objectLinks)
                 .build();

@@ -18,7 +18,6 @@ package org.eclipse.leshan.server.queue;
 import static org.junit.Assert.*;
 
 import java.net.Inet4Address;
-import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
 import org.eclipse.leshan.core.request.BindingMode;
@@ -62,9 +61,8 @@ public class PresenceServiceTest {
     }
 
     private Registration givenASimpleClient() throws UnknownHostException {
-        InetSocketAddress address = InetSocketAddress.createUnresolved("localhost", 5683);
         Registration.Builder builder = new Registration.Builder("ID", "urn:client",
-                Identity.unsecure(Inet4Address.getLoopbackAddress(), 12354), address);
+                Identity.unsecure(Inet4Address.getLoopbackAddress(), 12354));
 
         Registration reg = builder.build();
         presenceService.setAwake(reg);
@@ -72,10 +70,9 @@ public class PresenceServiceTest {
     }
 
     private Registration givenASimpleClientWithQueueMode() throws UnknownHostException {
-        InetSocketAddress address = InetSocketAddress.createUnresolved("localhost", 5683);
 
         Registration.Builder builder = new Registration.Builder("ID", "urn:client",
-                Identity.unsecure(Inet4Address.getLoopbackAddress(), 12354), address);
+                Identity.unsecure(Inet4Address.getLoopbackAddress(), 12354));
 
         Registration reg = builder.bindingMode(BindingMode.UQ).build();
         presenceService.setAwake(reg);

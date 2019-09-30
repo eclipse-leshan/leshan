@@ -16,13 +16,11 @@
 package org.eclipse.leshan.server.californium.impl;
 
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.californium.core.coap.Request;
-import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
@@ -157,12 +155,10 @@ public class ObservationServiceTest {
     }
 
     public Registration givenASimpleClient(String registrationId) {
-        InetSocketAddress registrationAddress = InetSocketAddress.createUnresolved("localhost",
-                LwM2m.DEFAULT_COAP_PORT);
         Registration.Builder builder;
         try {
             builder = new Registration.Builder(registrationId, registrationId + "_ep",
-                    Identity.unsecure(InetAddress.getLocalHost(), 10000), registrationAddress);
+                    Identity.unsecure(InetAddress.getLocalHost(), 10000));
             return builder.build();
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);

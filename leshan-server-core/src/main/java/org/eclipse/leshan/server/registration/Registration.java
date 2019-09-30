@@ -52,11 +52,6 @@ public class Registration implements Serializable {
 
     private final Identity identity;
 
-    /*
-     * The address of the LWM2M Server's CoAP end point the client used to register.
-     */
-    private final InetSocketAddress registrationEndpointAddress;
-
     private final long lifeTimeInSec;
 
     private final String smsNumber;
@@ -86,20 +81,17 @@ public class Registration implements Serializable {
     private final Date lastUpdate;
 
     protected Registration(String id, String endpoint, Identity identity, String lwM2mVersion, Long lifetimeInSec,
-            String smsNumber, BindingMode bindingMode, Link[] objectLinks,
-            InetSocketAddress registrationEndpointAddress, Date registrationDate, Date lastUpdate,
+            String smsNumber, BindingMode bindingMode, Link[] objectLinks, Date registrationDate, Date lastUpdate,
             Map<String, String> additionalRegistrationAttributes, Map<Integer, String> supportedObjects) {
 
         Validate.notNull(id);
         Validate.notEmpty(endpoint);
         Validate.notNull(identity);
-        Validate.notNull(registrationEndpointAddress);
 
         this.id = id;
         this.identity = identity;
         this.endpoint = endpoint;
         this.smsNumber = smsNumber;
-        this.registrationEndpointAddress = registrationEndpointAddress;
 
         this.objectLinks = objectLinks;
         // Parse object link to extract root path.
@@ -173,23 +165,6 @@ public class Registration implements Serializable {
      */
     public int getPort() {
         return identity.getPeerAddress().getPort();
-    }
-
-    /**
-     * Gets the network address and port number of LWM2M Server's CoAP endpoint the client originally registered at.
-     * 
-     * A LWM2M Server may listen on multiple CoAP end points, e.g. a non-secure and a secure one. Clients are often
-     * behind a firewall which will only let incoming UDP packets pass if they originate from the same address:port that
-     * the client has initiated communication with, e.g. by means of registering with the LWM2M Server. It is therefore
-     * important to know, which of the server's CoAP end points the client contacted for registration.
-     * 
-     * This information can be used to uniquely identify the CoAP endpoint that should be used to access resources on
-     * the client.
-     * 
-     * @return the network address and port number
-     */
-    public InetSocketAddress getRegistrationEndpointAddress() {
-        return registrationEndpointAddress;
     }
 
     public Link[] getObjectLinks() {
@@ -338,9 +313,9 @@ public class Registration implements Serializable {
     @Override
     public String toString() {
         return String.format(
-                "Registration [registrationDate=%s, identity=%s, registrationEndpoint=%s, lifeTimeInSec=%s, smsNumber=%s, lwM2mVersion=%s, bindingMode=%s, endpoint=%s, registrationId=%s, objectLinks=%s, lastUpdate=%s]",
-                registrationDate, identity, registrationEndpointAddress, lifeTimeInSec, smsNumber, lwM2mVersion,
-                bindingMode, endpoint, id, Arrays.toString(objectLinks), lastUpdate);
+                "Registration [registrationDate=%s, identity=%s, lifeTimeInSec=%s, smsNumber=%s, lwM2mVersion=%s, bindingMode=%s, endpoint=%s, registrationId=%s, objectLinks=%s, lastUpdate=%s]",
+                registrationDate, identity, lifeTimeInSec, smsNumber, lwM2mVersion, bindingMode, endpoint, id,
+                Arrays.toString(objectLinks), lastUpdate);
     }
 
     /**
@@ -413,7 +388,6 @@ public class Registration implements Serializable {
         private final String registrationId;
         private final String endpoint;
         private final Identity identity;
-        private final InetSocketAddress registrationEndpointAddress;
 
         private Date registrationDate;
         private Date lastUpdate;
@@ -425,18 +399,14 @@ public class Registration implements Serializable {
         private Map<Integer, String> supportedObjects;
         private Map<String, String> additionalRegistrationAttributes;
 
-        public Builder(String registrationId, String endpoint, Identity identity,
-                InetSocketAddress registrationEndpointAddress) {
+        public Builder(String registrationId, String endpoint, Identity identity) {
 
             Validate.notNull(registrationId);
             Validate.notEmpty(endpoint);
             Validate.notNull(identity);
-            Validate.notNull(registrationEndpointAddress);
             this.registrationId = registrationId;
             this.endpoint = endpoint;
             this.identity = identity;
-            this.registrationEndpointAddress = registrationEndpointAddress;
-
         }
 
         public Builder registrationDate(Date registrationDate) {
@@ -487,8 +457,8 @@ public class Registration implements Serializable {
         public Registration build() {
             return new Registration(Builder.this.registrationId, Builder.this.endpoint, Builder.this.identity,
                     Builder.this.lwM2mVersion, Builder.this.lifeTimeInSec, Builder.this.smsNumber, this.bindingMode,
-                    this.objectLinks, this.registrationEndpointAddress, this.registrationDate, this.lastUpdate,
-                    this.additionalRegistrationAttributes, this.supportedObjects);
+                    this.objectLinks, this.registrationDate, this.lastUpdate, this.additionalRegistrationAttributes,
+                    this.supportedObjects);
         }
 
     }
