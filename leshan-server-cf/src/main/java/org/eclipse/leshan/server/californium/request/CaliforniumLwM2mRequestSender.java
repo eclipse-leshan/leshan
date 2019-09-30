@@ -41,6 +41,7 @@ import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.server.californium.observation.ObservationServiceImpl;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
@@ -95,9 +96,14 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
             public T buildResponse(Response coapResponse) {
                 // Build LwM2m response
                 LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<>(coapRequest, coapResponse,
-                        destination, model, observationService, decoder);
+                        destination.getEndpoint(), model, decoder);
                 request.accept(lwm2mResponseBuilder);
-                return lwm2mResponseBuilder.getResponse();
+
+                T lwm2mResponse = lwm2mResponseBuilder.getResponse();
+                if (lwm2mResponse.getClass() == ObserveResponse.class && lwm2mResponse.isSuccess()) {
+                    observationService.addObservation(destination, ((ObserveResponse) lwm2mResponse).getObservation());
+                }
+                return lwm2mResponse;
             }
         };
         coapRequest.addMessageObserver(syncMessageObserver);
@@ -131,9 +137,14 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
             public T buildResponse(Response coapResponse) {
                 // Build LwM2m response
                 LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<>(coapRequest, coapResponse,
-                        destination, model, observationService, decoder);
+                        destination.getEndpoint(), model, decoder);
                 request.accept(lwm2mResponseBuilder);
-                return lwm2mResponseBuilder.getResponse();
+
+                T lwm2mResponse = lwm2mResponseBuilder.getResponse();
+                if (lwm2mResponse.getClass() == ObserveResponse.class && lwm2mResponse.isSuccess()) {
+                    observationService.addObservation(destination, ((ObserveResponse) lwm2mResponse).getObservation());
+                }
+                return lwm2mResponse;
             }
         };
         coapRequest.addMessageObserver(obs);

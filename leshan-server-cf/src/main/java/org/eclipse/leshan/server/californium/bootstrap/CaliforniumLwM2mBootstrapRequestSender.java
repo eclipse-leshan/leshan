@@ -32,11 +32,11 @@ import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
 import org.eclipse.leshan.server.californium.request.CoapRequestBuilder;
 import org.eclipse.leshan.server.californium.request.LwM2mResponseBuilder;
-import org.eclipse.leshan.server.registration.Registration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapRequestSender {
+
     static final Logger LOG = LoggerFactory.getLogger(CaliforniumLwM2mBootstrapRequestSender.class);
 
     private final Endpoint nonSecureEndpoint;
@@ -67,13 +67,9 @@ public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapReq
         SyncRequestObserver<T> syncMessageObserver = new SyncRequestObserver<T>(coapRequest, timeout) {
             @Override
             public T buildResponse(Response coapResponse) {
-                // TODO we need to fix that by removing the Client dependency from LwM2MResponseBuilder or by creating a
-                // LwM2mBootstrapResponseBuilder
-                Registration registration = new Registration.Builder("fakeregistrationid", endpointName, destination,
-                        destination.isSecure() ? secureEndpoint.getAddress() : nonSecureEndpoint.getAddress()).build();
                 // Build LwM2m response
                 LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<>(coapRequest, coapResponse,
-                        registration, model, null, decoder);
+                        endpointName, model, decoder);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }
@@ -103,14 +99,9 @@ public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapReq
         MessageObserver obs = new AsyncRequestObserver<T>(coapRequest, responseCallback, errorCallback, timeout) {
             @Override
             public T buildResponse(Response coapResponse) {
-                // TODO we need to fix that by removing the Client dependency from LwM2MResponseBuilder or by creating a
-                // LwM2mBootstrapResponseBuilder
-                Registration registration = new Registration.Builder("fakeregistrationid", endpointName, destination,
-                        destination.isSecure() ? secureEndpoint.getAddress() : nonSecureEndpoint.getAddress()).build();
-
                 // Build LwM2m response
                 LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<>(coapRequest, coapResponse,
-                        registration, model, null, decoder);
+                        endpointName, model, decoder);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }
