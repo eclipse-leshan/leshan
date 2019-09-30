@@ -16,7 +16,6 @@
 package org.eclipse.leshan.server.bootstrap;
 
 import org.eclipse.leshan.core.request.DownlinkRequest;
-import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
@@ -28,12 +27,19 @@ public interface LwM2mBootstrapRequestSender {
      * @return the LWM2M response. The response can be <code>null</code> if the timeout (given parameter or CoAP
      *         timeout) expires.
      */
-    <T extends LwM2mResponse> T send(String clientEndpoint, Identity client, DownlinkRequest<T> request, long timeout)
+    <T extends LwM2mResponse> T send(BootstrapSession destination, DownlinkRequest<T> request, long timeout)
             throws InterruptedException;
 
     /**
      * Send a Lightweight M2M request asynchronously.
      */
-    <T extends LwM2mResponse> void send(String clientEndpoint, Identity client, DownlinkRequest<T> request,
-            long timeout, ResponseCallback<T> responseCallback, ErrorCallback errorCallback);
+    <T extends LwM2mResponse> void send(BootstrapSession destination, DownlinkRequest<T> request, long timeout,
+            ResponseCallback<T> responseCallback, ErrorCallback errorCallback);
+
+    /**
+     * cancel all ongoing requests for a given bootstrap session.
+     * 
+     * @param session the bootstrap session for which we need to cancel requests.
+     */
+    void cancelOngoingRequests(BootstrapSession session);
 }

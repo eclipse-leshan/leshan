@@ -461,8 +461,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
 
     protected <T extends LwM2mResponse> void send(BootstrapSession session, DownlinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
-        sender.send(session.getEndpoint(), session.getIdentity(), request, requestTimeout, responseCallback,
-                errorCallback);
+        sender.send(session, request, requestTimeout, responseCallback, errorCallback);
     }
 
     protected abstract class SafeResponseCallback<T extends LwM2mResponse> implements ResponseCallback<T> {

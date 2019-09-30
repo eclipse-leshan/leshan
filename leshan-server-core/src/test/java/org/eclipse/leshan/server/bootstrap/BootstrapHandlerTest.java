@@ -188,8 +188,8 @@ public class BootstrapHandlerTest {
         }
 
         @Override
-        public <T extends LwM2mResponse> T send(String clientEndpoint, Identity destination, DownlinkRequest<T> request,
-                long timeout) throws InterruptedException {
+        public <T extends LwM2mResponse> T send(BootstrapSession session, DownlinkRequest<T> request, long timeout)
+                throws InterruptedException {
             return null;
         }
 
@@ -199,9 +199,8 @@ public class BootstrapHandlerTest {
 
         @SuppressWarnings("unchecked")
         @Override
-        public <T extends LwM2mResponse> void send(String clientEndpoint, Identity destination,
-                DownlinkRequest<T> request, long timeout, ResponseCallback<T> responseCallback,
-                ErrorCallback errorCallback) {
+        public <T extends LwM2mResponse> void send(BootstrapSession session, DownlinkRequest<T> request, long timeout,
+                ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
             // no response, no callback call
             if (mode == Mode.NO_RESPONSE) {
                 return;
@@ -230,6 +229,10 @@ public class BootstrapHandlerTest {
                             .onResponse(BootstrapFinishResponse.internalServerError("finished failed"));
                 }
             }
+        }
+
+        @Override
+        public void cancelOngoingRequests(BootstrapSession destination) {
         }
     }
 

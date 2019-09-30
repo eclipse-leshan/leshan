@@ -20,10 +20,10 @@ import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.request.DownlinkRequest;
-import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
+import org.eclipse.leshan.server.bootstrap.BootstrapSession;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
 import org.eclipse.leshan.server.californium.request.RequestSender;
 import org.slf4j.Logger;
@@ -44,16 +44,21 @@ public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapReq
     }
 
     @Override
-    public <T extends LwM2mResponse> T send(final String endpointName, final Identity destination,
-            final DownlinkRequest<T> request, long timeout) throws InterruptedException {
-        return sender.sendLwm2mRequest(endpointName, destination, null, model, null, request, timeout);
+    public <T extends LwM2mResponse> T send(BootstrapSession destination, DownlinkRequest<T> request, long timeout)
+            throws InterruptedException {
+        return sender.sendLwm2mRequest(destination.getEndpoint(), destination.getIdentity(), destination.getId(), model,
+                null, request, timeout);
     }
 
     @Override
-    public <T extends LwM2mResponse> void send(final String endpointName, final Identity destination,
-            final DownlinkRequest<T> request, final long timeout, ResponseCallback<T> responseCallback,
-            ErrorCallback errorCallback) {
-        sender.sendLwm2mRequest(endpointName, destination, null, model, null, request, timeout, responseCallback,
-                errorCallback);
+    public <T extends LwM2mResponse> void send(BootstrapSession destination, DownlinkRequest<T> request, long timeout,
+            ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
+        sender.sendLwm2mRequest(destination.getEndpoint(), destination.getIdentity(), destination.getId(), model, null,
+                request, timeout, responseCallback, errorCallback);
+    }
+
+    @Override
+    public void cancelOngoingRequests(BootstrapSession destination) {
+        sender.cancelRequests(destination.getId());
     }
 }
