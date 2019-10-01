@@ -27,6 +27,11 @@ import org.eclipse.leshan.core.request.Identity;
 public interface BootstrapSession {
 
     /**
+     * @Return the identifier for this session
+     */
+    String getId();
+
+    /**
      * @return the endpoint of the LwM2M client.
      */
     String getEndpoint();
@@ -37,7 +42,7 @@ public interface BootstrapSession {
     Identity getIdentity();
 
     /**
-     * @return true if the LwM2M client is authorized to start a bootstrap session.
+     * @return <code>true</code> if the LwM2M client is authorized to start a bootstrap session.
      */
     boolean isAuthorized();
 
@@ -52,4 +57,13 @@ public interface BootstrapSession {
      */
     long getCreationTime();
 
+    /**
+     * Cancel the current session
+     */
+    void cancel();
+
+    /**
+     * @return True if this session was cancellled
+     */
+    boolean isCancelled();
 }

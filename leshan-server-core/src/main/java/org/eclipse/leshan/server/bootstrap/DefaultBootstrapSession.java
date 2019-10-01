@@ -17,17 +17,21 @@ package org.eclipse.leshan.server.bootstrap;
 
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.util.RandomStringUtils;
 
 /**
  * A default implementation for {@link BootstrapSession}
  */
 public class DefaultBootstrapSession implements BootstrapSession {
 
+    private final String id;
     private final String endpoint;
     private final Identity identity;
     private final boolean authorized;
     private final ContentFormat contentFormat;
     private final long creationTime;
+
+    private volatile boolean cancelled = false;
 
     /**
      * Create a {@link DefaultBootstrapSession} using default {@link ContentFormat#TLV} content format and using
@@ -65,11 +69,17 @@ public class DefaultBootstrapSession implements BootstrapSession {
      */
     public DefaultBootstrapSession(String endpoint, Identity identity, boolean authorized, ContentFormat contentFormat,
             long creationTime) {
+        this.id = RandomStringUtils.random(10, true, true);
         this.endpoint = endpoint;
         this.identity = identity;
         this.authorized = authorized;
         this.contentFormat = contentFormat;
         this.creationTime = creationTime;
+    }
+
+    @Override
+    public String getId() {
+        return id;
     }
 
     @Override
@@ -98,10 +108,19 @@ public class DefaultBootstrapSession implements BootstrapSession {
     }
 
     @Override
-    public String toString() {
-        return String.format(
-                "BootstrapSession [endpoint=%s, identity=%s, authorized=%s, contentFormat=%s, creationTime=%dms]",
-                endpoint, identity, authorized, contentFormat, creationTime);
+    public void cancel() {
+        cancelled = true;
     }
 
+    @Override
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "BootstrapSession [id=%s, endpoint=%s, identity=%s, authorized=%s, contentFormat=%s, creationTime=%dms, cancelled=%s]",
+                id, endpoint, identity, authorized, contentFormat, creationTime, cancelled);
+    }
 }
