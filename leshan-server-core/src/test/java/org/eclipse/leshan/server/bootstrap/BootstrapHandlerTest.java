@@ -18,6 +18,10 @@ package org.eclipse.leshan.server.bootstrap;
 import static org.junit.Assert.*;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
@@ -27,6 +31,7 @@ import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.LwM2mRequest;
+import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
 import org.eclipse.leshan.core.response.BootstrapFinishResponse;
 import org.eclipse.leshan.core.response.BootstrapResponse;
@@ -95,7 +100,7 @@ public class BootstrapHandlerTest {
         // Ensure bootstrap failed
         assertFalse(bsSessionManager.endWasCalled());
         assertTrue(bsSessionManager.failedWasCalled());
-        assertEquals(BootstrapFailureCause.FINISH_FAILED, bsSessionManager.failureCause);
+        assertEquals(BootstrapFailureCause.FINISH_FAILED, bsSessionManager.lastFailureCause);
     }
 
     @Test
@@ -104,75 +109,37 @@ public class BootstrapHandlerTest {
         // prepare a bootstrap handler with a session manager which authorize all session
         // and a sender which never get response.
         // and a config store with and an empty config for the expected endpoint
-        // and lifetime session of 1s
         MockBootstrapSessionManager bsSessionManager = new MockBootstrapSessionManager(true);
         MockRequestSender requestSender = new MockRequestSender(Mode.NO_RESPONSE);
         EditableBootstrapConfigStore bsStore = new InMemoryBootstrapConfigStore();
         bsStore.add("endpoint", new BootstrapConfig());
         BootstrapHandler bsHandler = new DefaultBootstrapHandler(bsStore, requestSender, bsSessionManager,
-                DefaultBootstrapHandler.DEFAULT_TIMEOUT, 1000);
+                DefaultBootstrapHandler.DEFAULT_TIMEOUT);
 
         // First bootstrap : which will not end (because of sender)
         SendableResponse<BootstrapResponse> first_response = bsHandler
                 .bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("endpoint"));
         first_response.sent();
         // Ensure bootstrap is accepted and not finished
+        BootstrapSession firstSession = bsSessionManager.lastSession;
         assertTrue(first_response.getResponse().isSuccess());
+        assertNotNull(firstSession);
         assertFalse(bsSessionManager.endWasCalled());
         assertFalse(bsSessionManager.failedWasCalled());
 
-        // Second bootstrap for same endpoint : must be refused
+        // Second bootstrap : for the same endpoint it must be accepted and previous one should be cancelled
         bsSessionManager.reset();
+        requestSender.setMode(Mode.ALWAYS_SUCCESS);
         SendableResponse<BootstrapResponse> second_response = bsHandler
                 .bootstrap(Identity.psk(new InetSocketAddress(4243), "pskdentity"), new BootstrapRequest("endpoint"));
         second_response.sent();
-        assertTrue(second_response.getResponse().isFailure());
-        assertFalse(bsSessionManager.endWasCalled());
-        assertTrue(bsSessionManager.failedWasCalled());
-
-        // Third bootstrap for same endpoint : must be refused
-        bsSessionManager.reset();
-        SendableResponse<BootstrapResponse> third_response = bsHandler
-                .bootstrap(Identity.psk(new InetSocketAddress(4243), "pskdentity"), new BootstrapRequest("endpoint"));
-        third_response.sent();
-        assertTrue(third_response.getResponse().isFailure());
-        assertFalse(bsSessionManager.endWasCalled());
-        assertTrue(bsSessionManager.failedWasCalled());
-
-        // Wait session lifetime
-        Thread.sleep(1000);
-
-        // Fourth bootstrap for same endpoint : now it should be accepted
-        bsSessionManager.reset();
-        requestSender.setMode(Mode.ALWAYS_SUCCESS);
-        SendableResponse<BootstrapResponse> fourth_response = bsHandler
-                .bootstrap(Identity.psk(new InetSocketAddress(4243), "pskdentity"), new BootstrapRequest("endpoint"));
-        fourth_response.sent();
-        assertTrue(fourth_response.getResponse().isSuccess());
+        // ensure last session is accepted
+        assertTrue(second_response.getResponse().isSuccess());
         assertTrue(bsSessionManager.endWasCalled());
         assertFalse(bsSessionManager.failedWasCalled());
-
-        // ensure that after a finished success bootstrap I don't need to wait session lifetime to retry
-        // fifth bootstrap for same endpoint : it should be accepted too.
-        bsSessionManager.reset();
-        requestSender.setMode(Mode.ALWAYS_FAILURE);
-        SendableResponse<BootstrapResponse> fifth_response = bsHandler
-                .bootstrap(Identity.psk(new InetSocketAddress(4243), "pskdentity"), new BootstrapRequest("endpoint"));
-        fifth_response.sent();
-        assertTrue(fifth_response.getResponse().isSuccess());
-        assertFalse(bsSessionManager.endWasCalled());
-        assertTrue(bsSessionManager.failedWasCalled());
-
-        // ensure that after a failed bootstrap I don't need to wait session lifetime to retry
-        // sixth bootstrap for same endpoint : it should be accepted too.
-        bsSessionManager.reset();
-        requestSender.setMode(Mode.ALWAYS_SUCCESS);
-        SendableResponse<BootstrapResponse> sixth_response = bsHandler
-                .bootstrap(Identity.psk(new InetSocketAddress(4243), "pskdentity"), new BootstrapRequest("endpoint"));
-        sixth_response.sent();
-        assertTrue(sixth_response.getResponse().isSuccess());
-        assertTrue(bsSessionManager.endWasCalled());
-        assertFalse(bsSessionManager.failedWasCalled());
+        // and previous one cancelled
+        assertFalse(bsSessionManager.endWasCalled(firstSession));
+        assertTrue(bsSessionManager.failedWasCalled(firstSession, BootstrapFailureCause.CANCELLED));
     }
 
     static class MockRequestSender implements LwM2mBootstrapRequestSender {
@@ -182,6 +149,7 @@ public class BootstrapHandlerTest {
         };
 
         private Mode mode;
+        private ErrorCallback errorCallback;
 
         public MockRequestSender(Mode mode) {
             this.mode = mode;
@@ -190,6 +158,7 @@ public class BootstrapHandlerTest {
         @Override
         public <T extends LwM2mResponse> T send(BootstrapSession session, DownlinkRequest<T> request, long timeout)
                 throws InterruptedException {
+            // Not Implemented
             return null;
         }
 
@@ -203,6 +172,7 @@ public class BootstrapHandlerTest {
                 ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
             // no response, no callback call
             if (mode == Mode.NO_RESPONSE) {
+                this.errorCallback = errorCallback;
                 return;
             }
 
@@ -233,14 +203,20 @@ public class BootstrapHandlerTest {
 
         @Override
         public void cancelOngoingRequests(BootstrapSession destination) {
+            // we cancel just the last ongoing request.
+            if (errorCallback != null) {
+                errorCallback.onError(new RequestCanceledException("cancelled"));
+            }
         }
     }
 
     private static class MockBootstrapSessionManager implements BootstrapSessionManager {
 
         private boolean authorized;
-        private BootstrapSession endBsSession = null;
-        private BootstrapFailureCause failureCause = null;
+        private BootstrapSession lastSession;
+        private BootstrapFailureCause lastFailureCause;
+        private List<BootstrapSession> endedSession = new ArrayList<BootstrapSession>();
+        private Map<BootstrapSession, BootstrapFailureCause> failureCauses = new HashMap<>();
 
         public MockBootstrapSessionManager(boolean authorized) {
             this.authorized = authorized;
@@ -248,25 +224,35 @@ public class BootstrapHandlerTest {
 
         @Override
         public BootstrapSession begin(String endpoint, Identity clientIdentity) {
-            return new DefaultBootstrapSession(endpoint, clientIdentity, authorized);
+            lastSession = new DefaultBootstrapSession(endpoint, clientIdentity, authorized);
+            return lastSession;
+        }
+
+        public boolean endWasCalled() {
+            return endedSession.contains(lastSession);
+        }
+
+        public boolean endWasCalled(BootstrapSession session) {
+            return endedSession.contains(session);
+        }
+
+        public boolean failedWasCalled() {
+            return failureCauses.get(lastSession) != null && this.failureCauses.get(lastSession) == lastFailureCause;
+        }
+
+        public boolean failedWasCalled(BootstrapSession session, BootstrapFailureCause cause) {
+            return failureCauses.get(session) == cause;
         }
 
         @Override
         public void end(BootstrapSession bsSession) {
-            endBsSession = bsSession;
-        }
-
-        public boolean endWasCalled() {
-            return this.endBsSession != null;
-        }
-
-        public boolean failedWasCalled() {
-            return this.failureCause != null;
+            endedSession.add(bsSession);
         }
 
         @Override
         public void failed(BootstrapSession bsSession, BootstrapFailureCause cause) {
-            failureCause = cause;
+            lastFailureCause = cause;
+            failureCauses.put(bsSession, cause);
         }
 
         @Override
@@ -290,8 +276,8 @@ public class BootstrapHandlerTest {
         }
 
         public void reset() {
-            endBsSession = null;
-            failureCause = null;
+            lastSession = null;
+            lastFailureCause = null;
         }
     }
 }

@@ -57,32 +57,25 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
     // send a Confirmable message to the time when an acknowledgement is no longer expected.
     public static final long DEFAULT_TIMEOUT = 2 * 60 * 1000l; // 2min in ms
 
-    public static final long DEFAULT_LIFETIME = 15 * 60 * 1000l; // 15 minutes
-
     protected final BootstrapConfigStore store;
 
     protected final LwM2mBootstrapRequestSender sender;
     protected final long requestTimeout;
 
-    // Session should be removed from onGoingSession map when it failed or succeed.
-    // But in case where we are not able to detect a failure we define a maximum lifetime to avoid to completely block a
-    // device
-    protected final long sessionLifeTime;
     protected final ConcurrentHashMap<String, BootstrapSession> onGoingSession = new ConcurrentHashMap<>();
     protected final BootstrapSessionManager sessionManager;
 
     public DefaultBootstrapHandler(BootstrapConfigStore store, LwM2mBootstrapRequestSender sender,
             BootstrapSessionManager sessionManager) {
-        this(store, sender, sessionManager, DEFAULT_TIMEOUT, DEFAULT_LIFETIME);
+        this(store, sender, sessionManager, DEFAULT_TIMEOUT);
     }
 
     public DefaultBootstrapHandler(BootstrapConfigStore store, LwM2mBootstrapRequestSender sender,
-            BootstrapSessionManager sessionManager, long requestTimeout, long sessionLifetime) {
+            BootstrapSessionManager sessionManager, long requestTimeout) {
         this.store = store;
         this.sender = sender;
         this.sessionManager = sessionManager;
         this.requestTimeout = requestTimeout;
-        this.sessionLifeTime = sessionLifetime;
     }
 
     @Override
@@ -98,21 +91,14 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
         }
 
         // check if there is not an ongoing session.
-        BootstrapSession oldSession;
-        do {
-            oldSession = onGoingSession.putIfAbsent(endpoint, session);
-            if (oldSession != null) {
-                if (System.currentTimeMillis() - oldSession.getCreationTime() >= sessionLifeTime) {
-                    onGoingSession.remove(endpoint, oldSession);
-                    if (LOG.isWarnEnabled())
-                        LOG.warn("{} expired at {}.", oldSession, System.currentTimeMillis());
-                } else {
-                    // Do not start the session if there is already a started one
-                    sessionManager.failed(session, ALREADY_STARTED);
-                    return new SendableResponse<>(BootstrapResponse.badRequest("session already started"));
-                }
+        BootstrapSession oldSession = onGoingSession.put(endpoint, session);
+        if (oldSession != null) {
+            // stop previous ongoing session.
+            synchronized (oldSession) {
+                oldSession.cancel();
+                this.sender.cancelOngoingRequests(oldSession);
             }
-        } while (oldSession != null);
+        }
 
         try {
             // Get the desired bootstrap config for the endpoint
@@ -145,7 +131,9 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
 
     protected void stopSession(BootstrapSession session, BootstrapFailureCause cause) {
         if (!onGoingSession.remove(session.getEndpoint(), session)) {
-            LOG.warn("{} was already removed", session);
+            if (!session.isCancelled()) {
+                LOG.warn("{} was already removed", session);
+            }
         }
         // if there is no cause of failure, this is a success
         if (cause == null) {
@@ -191,6 +179,10 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
 
     protected void afterDelete(BootstrapSession session, BootstrapConfig cfg, List<String> pathToDelete,
             BootstrapPolicy policy) {
+        if (session.isCancelled()) {
+            stopSession(session, CANCELLED);
+            return;
+        }
         switch (policy) {
         case CONTINUE:
             pathToDelete.remove(0);
@@ -258,6 +250,10 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
 
     protected void afterWriteSecurities(BootstrapSession session, BootstrapConfig cfg,
             List<Integer> securityInstancesToWrite, BootstrapPolicy policy) {
+        if (session.isCancelled()) {
+            stopSession(session, CANCELLED);
+            return;
+        }
         switch (policy) {
         case CONTINUE:
             securityInstancesToWrite.remove(0);
@@ -324,6 +320,10 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
 
     protected void afterWriteServers(BootstrapSession session, BootstrapConfig cfg,
             List<Integer> serverInstancesToWrite, BootstrapPolicy policy) {
+        if (session.isCancelled()) {
+            stopSession(session, CANCELLED);
+            return;
+        }
         switch (policy) {
         case CONTINUE:
             serverInstancesToWrite.remove(0);
@@ -389,6 +389,10 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
 
     protected void afterWritedAcls(BootstrapSession session, BootstrapConfig cfg, List<Integer> aclInstancesToWrite,
             BootstrapPolicy policy) {
+        if (session.isCancelled()) {
+            stopSession(session, CANCELLED);
+            return;
+        }
         switch (policy) {
         case CONTINUE:
             aclInstancesToWrite.remove(0);
@@ -438,6 +442,10 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
     }
 
     protected void afterBootstrapFinished(BootstrapSession session, BootstrapConfig cfg, BootstrapPolicy policy) {
+        if (session.isCancelled()) {
+            stopSession(session, CANCELLED);
+            return;
+        }
         switch (policy) {
         case CONTINUE:
             stopSession(session, null);
@@ -461,7 +469,13 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
 
     protected <T extends LwM2mResponse> void send(BootstrapSession session, DownlinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
-        sender.send(session, request, requestTimeout, responseCallback, errorCallback);
+        synchronized (session) {
+            if (!session.isCancelled()) {
+                sender.send(session, request, requestTimeout, responseCallback, errorCallback);
+            } else {
+                stopSession(session, CANCELLED);
+            }
+        }
     }
 
     protected abstract class SafeResponseCallback<T extends LwM2mResponse> implements ResponseCallback<T> {
