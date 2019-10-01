@@ -242,14 +242,14 @@ public class LeshanServer {
             public void updated(RegistrationUpdate update, Registration updatedRegistration, Registration previousReg) {
                 if (!update.getAddress().equals(previousReg.getAddress())
                         || update.getPort() != previousReg.getPort()) {
-                    requestSender.cancelPendingRequests(previousReg);
+                    requestSender.cancelOngoingRequests(previousReg);
                 }
             }
 
             @Override
             public void unregistered(Registration registration, Collection<Observation> observations, boolean expired,
                     Registration newReg) {
-                requestSender.cancelPendingRequests(registration);
+                requestSender.cancelOngoingRequests(registration);
             }
 
             @Override

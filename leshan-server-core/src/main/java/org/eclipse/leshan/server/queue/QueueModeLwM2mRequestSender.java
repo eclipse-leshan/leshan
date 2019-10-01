@@ -117,7 +117,7 @@ public class QueueModeLwM2mRequestSender implements LwM2mRequestSender {
     }
 
     @Override
-    public void cancelPendingRequests(Registration registration) {
-        delegatedSender.cancelPendingRequests(registration);
+    public void cancelOngoingRequests(Registration registration) {
+        delegatedSender.cancelOngoingRequests(registration);
     }
 }

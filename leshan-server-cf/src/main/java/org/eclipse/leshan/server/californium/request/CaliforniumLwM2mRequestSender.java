@@ -106,7 +106,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
     }
 
     @Override
-    public void cancelPendingRequests(Registration registration) {
+    public void cancelOngoingRequests(Registration registration) {
         Validate.notNull(registration);
         sender.cancelRequests(registration.getId());
     }
