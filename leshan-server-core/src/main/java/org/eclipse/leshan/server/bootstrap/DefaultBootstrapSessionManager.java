@@ -24,6 +24,8 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityChecker;
 import org.eclipse.leshan.server.security.SecurityInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of a session manager.
@@ -33,6 +35,8 @@ import org.eclipse.leshan.server.security.SecurityInfo;
  * Nothing specific is done on session's end.
  */
 public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultBootstrapSessionManager.class);
 
     private BootstrapSecurityStore bsSecurityStore;
     private SecurityChecker securityChecker;
@@ -67,25 +71,35 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
         } else {
             authorized = true;
         }
-
-        return new DefaultBootstrapSession(endpoint, clientIdentity, authorized);
+        DefaultBootstrapSession session = new DefaultBootstrapSession(endpoint, clientIdentity, authorized);
+        LOG.trace("Bootstrap session started : {}", session);
+        return session;
     }
 
     @Override
     public void end(BootstrapSession bsSession) {
+        LOG.trace("Bootstrap session finished : {}", bsSession);
     }
 
     @Override
     public void failed(BootstrapSession bsSession, BootstrapFailureCause cause) {
+        LOG.trace("Bootstrap session failed by {}: {}", cause, bsSession);
     }
 
     @Override
     public void onResponseSuccess(BootstrapSession bsSession, DownlinkRequest<? extends LwM2mResponse> request) {
+        if (LOG.isTraceEnabled())
+            LOG.trace("{} {} receives success response for {} : {}", request.getClass().getSimpleName(),
+                    request.getPath(), bsSession, request);
     }
 
     @Override
     public BootstrapPolicy onResponseError(BootstrapSession bsSession, DownlinkRequest<? extends LwM2mResponse> request,
             LwM2mResponse response) {
+        if (LOG.isTraceEnabled())
+            LOG.trace("{} {} receives error response {} for {} : {}", request.getClass().getSimpleName(),
+                    request.getPath(), response, bsSession, request);
+
         if (request instanceof BootstrapFinishRequest) {
             return BootstrapPolicy.STOP;
         }
@@ -95,6 +109,10 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
     @Override
     public BootstrapPolicy onRequestFailure(BootstrapSession bsSession,
             DownlinkRequest<? extends LwM2mResponse> request, Throwable cause) {
+        if (LOG.isTraceEnabled())
+            LOG.trace("{} {} failed because of {} for {} : {}", request.getClass().getSimpleName(), request.getPath(),
+                    cause, bsSession, request);
+
         return BootstrapPolicy.STOP;
     }
 }
