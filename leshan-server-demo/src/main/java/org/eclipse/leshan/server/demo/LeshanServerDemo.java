@@ -43,6 +43,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.oscore.HashMapCtxDB;
 import org.eclipse.californium.oscore.OSCoreCoapStackFactory;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
@@ -59,6 +60,7 @@ import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
+import org.eclipse.leshan.server.OscoreHandler;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.cluster.RedisRegistrationStore;
@@ -128,7 +130,8 @@ public class LeshanServerDemo {
         Options options = new Options();
 
         // Enable OSCORE stack (fine to do even when using DTLS or only CoAP)
-        OSCoreCoapStackFactory.useAsDefault();
+        HashMapCtxDB db = OscoreHandler.getContextDB();
+        OSCoreCoapStackFactory.useAsDefault(db);
 
         final StringBuilder X509Chapter = new StringBuilder();
         X509Chapter.append("\n .");

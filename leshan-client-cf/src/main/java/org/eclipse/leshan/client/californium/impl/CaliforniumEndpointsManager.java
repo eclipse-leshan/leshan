@@ -49,6 +49,7 @@ import org.eclipse.californium.scandium.dtls.pskstore.StaticPskStore;
 import org.eclipse.californium.scandium.dtls.rpkstore.TrustedRpkStore;
 import org.eclipse.californium.scandium.dtls.x509.CertificateVerifier;
 import org.eclipse.leshan.SecurityMode;
+import org.eclipse.leshan.client.californium.OscoreHandler;
 import org.eclipse.leshan.client.servers.EndpointsManager;
 import org.eclipse.leshan.client.servers.Server;
 import org.eclipse.leshan.client.servers.ServerInfo;
@@ -174,7 +175,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
         } else if (serverInfo.useOscore) {
             // oscore only mode
             LOG.info("Adding OSCORE context for " + serverInfo.getFullUri().toASCIIString());
-            HashMapCtxDB db = HashMapCtxDB.getInstance(); // TODO: Do not use singleton here but give it to endpoint
+            HashMapCtxDB db = OscoreHandler.getContextDB(); // TODO: Do not use singleton here but give it to endpoint
                                                           // builder (for Cf-M16)
 
             AlgorithmID hkdfAlg = null;

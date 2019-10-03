@@ -46,6 +46,7 @@ import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
+import org.eclipse.leshan.server.OscoreHandler;
 import org.eclipse.leshan.server.californium.CoapRequestSender;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.registration.Registration;
@@ -94,7 +95,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
         final Request coapRequest = coapRequestBuilder.getRequest();
 
         // Toggle OSCORE use in the request if the target URI of the request has an OSCORE context registered
-        HashMapCtxDB db = HashMapCtxDB.getInstance();
+        HashMapCtxDB db = OscoreHandler.getContextDB();
         try {
             if (db.getContext(coapRequest.getURI()) != null) {
                 coapRequest.getOptions().setOscore(Bytes.EMPTY);
@@ -141,7 +142,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
         final Request coapRequest = coapRequestBuilder.getRequest();
 
         // Toggle OSCORE use in the request if the target URI of the request has an OSCORE context registered
-        HashMapCtxDB db = HashMapCtxDB.getInstance();
+        HashMapCtxDB db = OscoreHandler.getContextDB();
         try {
             if (db.getContext(coapRequest.getURI()) != null) {
                 coapRequest.getOptions().setOscore(Bytes.EMPTY);

@@ -50,6 +50,7 @@ import org.eclipse.californium.oscore.OSException;
 import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
+import org.eclipse.leshan.client.californium.OscoreHandler;
 import org.eclipse.leshan.client.object.Oscore;
 import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
@@ -317,7 +318,8 @@ public class LeshanClientDemo {
             System.out.println("Using OSCORE");
             useOSCore = true;
 
-            OSCoreCoapStackFactory.useAsDefault();
+            HashMapCtxDB db = OscoreHandler.getContextDB();
+            OSCoreCoapStackFactory.useAsDefault(db);
 
         }
         try {

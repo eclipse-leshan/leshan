@@ -22,7 +22,7 @@ import java.util.Arrays;
 
 import org.eclipse.californium.oscore.HashMapCtxDB;
 import org.eclipse.californium.oscore.OSCoreCtx;
-
+import org.eclipse.leshan.server.OscoreHandler;
 import org.eclipse.leshan.util.Validate;
 
 /**
@@ -98,7 +98,7 @@ public class SecurityInfo implements Serializable {
         Validate.notNull(oscoreCtx);
 
         // Add the OSCORE Context to the context database
-        HashMapCtxDB db = HashMapCtxDB.getInstance();
+        HashMapCtxDB db = OscoreHandler.getContextDB();
         db.addContext(oscoreCtx);
 
         return new SecurityInfo(endpoint, identity, null, null, false, oscoreCtx);
