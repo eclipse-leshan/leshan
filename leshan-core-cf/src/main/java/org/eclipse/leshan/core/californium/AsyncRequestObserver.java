@@ -24,13 +24,18 @@ import org.eclipse.leshan.core.response.ResponseCallback;
 public abstract class AsyncRequestObserver<T extends LwM2mResponse> extends CoapAsyncRequestObserver {
 
     public AsyncRequestObserver(Request coapRequest, final ResponseCallback<T> responseCallback,
-            ErrorCallback errorCallback, long timeoutInMs) {
+            final ErrorCallback errorCallback, long timeoutInMs) {
         super(coapRequest, null, errorCallback, timeoutInMs);
         this.responseCallback = new CoapResponseCallback() {
 
             @Override
             public void onResponse(Response coapResponse) {
-                T lwM2mResponseT = buildResponse(coapResponse);
+                T lwM2mResponseT = null;
+                try {
+                    lwM2mResponseT = buildResponse(coapResponse);
+                } catch (Exception e) {
+                    errorCallback.onError(e);
+                }
                 if (lwM2mResponseT != null) {
                     responseCallback.onResponse(lwM2mResponseT);
                 }
