@@ -75,6 +75,16 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
         listeners.remove(listener);
     }
 
+    /**
+     * To be used to notify that 1 or several resources change.
+     * <p>
+     * This method SHOULD NOT be called in a synchronize block or any thread synchronization tools to avoid any risk of
+     * deadlock.
+     * <p>
+     * Calling this method is needed to trigger NOTIFICATION when an observe relation is established.
+     * 
+     * @param resourceIds
+     */
     public void fireResourcesChange(int... resourceIds) {
         for (ResourceChangedListener listener : listeners) {
             listener.resourcesChanged(resourceIds);

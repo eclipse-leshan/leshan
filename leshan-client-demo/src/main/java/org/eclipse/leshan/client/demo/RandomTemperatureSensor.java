@@ -75,7 +75,7 @@ public class RandomTemperatureSensor extends BaseInstanceEnabler {
         return toBeTruncated.setScale(2, RoundingMode.HALF_UP).doubleValue();
     }
 
-    private synchronized void adjustTemperature() {
+    private void adjustTemperature() {
         float delta = (rng.nextInt(20) - 10) / 10f;
         currentTemp += delta;
         Integer changedResource = adjustMinMaxMeasuredValue(currentTemp);
@@ -86,8 +86,7 @@ public class RandomTemperatureSensor extends BaseInstanceEnabler {
         }
     }
 
-    private Integer adjustMinMaxMeasuredValue(double newTemperature) {
-
+    private synchronized Integer adjustMinMaxMeasuredValue(double newTemperature) {
         if (newTemperature > maxMeasuredValue) {
             maxMeasuredValue = newTemperature;
             return MAX_MEASURED_VALUE;
