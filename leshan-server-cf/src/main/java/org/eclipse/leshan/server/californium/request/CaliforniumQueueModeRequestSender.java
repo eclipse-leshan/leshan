@@ -21,17 +21,29 @@ import org.eclipse.leshan.core.californium.CoapResponseCallback;
 import org.eclipse.leshan.core.request.exception.ClientSleepingException;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.response.ErrorCallback;
+import org.eclipse.leshan.server.queue.Presence;
 import org.eclipse.leshan.server.queue.PresenceServiceImpl;
 import org.eclipse.leshan.server.queue.QueueModeLwM2mRequestSender;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
 
+/**
+ * A {@link LwM2mRequestSender} and {@link CoapRequestSender} which supports LWM2M Queue Mode.
+ */
 public class CaliforniumQueueModeRequestSender extends QueueModeLwM2mRequestSender implements CoapRequestSender {
 
+    /**
+     * @param presenceService the presence service object for setting the client into {@link Presence#SLEEPING} when
+     *        request Timeout expires and into {@link Presence#Awake} when a response arrives.
+     * @param delegatedSender internal sender that it is used for sending the requests, using delegation.
+     */
     public CaliforniumQueueModeRequestSender(PresenceServiceImpl presenceService, LwM2mRequestSender delegatedSender) {
         super(presenceService, delegatedSender);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Response sendCoapRequest(Registration destination, Request coapRequest, long timeout)
             throws InterruptedException {
@@ -67,6 +79,9 @@ public class CaliforniumQueueModeRequestSender extends QueueModeLwM2mRequestSend
         return response;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void sendCoapRequest(final Registration destination, Request coapRequest, long timeout,
             final CoapResponseCallback responseCallback, final ErrorCallback errorCallback) {

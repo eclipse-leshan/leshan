@@ -33,10 +33,15 @@ import org.eclipse.leshan.core.californium.CoapSyncRequestObserver;
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.californium.SyncRequestObserver;
 import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.exception.InvalidResponseException;
+import org.eclipse.leshan.core.request.exception.RequestRejectedException;
+import org.eclipse.leshan.core.request.exception.SendFailedException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
@@ -49,7 +54,6 @@ import org.slf4j.LoggerFactory;
  * This sender is able to send LWM2M or CoAP request in a synchronous or asynchronous way.
  * <p>
  * It can also link requests to a kind of "session" and cancel all ongoing requests associated to a given "session".
- *
  */
 public class RequestSender {
     static final Logger LOG = LoggerFactory.getLogger(CaliforniumLwM2mBootstrapRequestSender.class);
@@ -63,6 +67,12 @@ public class RequestSender {
     // This is used to be able to cancel request
     private final ConcurrentNavigableMap<String/* sessionId#requestId */, Request /* ongoing coap Request */> ongoingRequests = new ConcurrentSkipListMap<>();
 
+    /**
+     * @param secureEndpoint The endpoint used to send coaps request.
+     * @param nonSecureEndpoint The endpoint used to send coap request.
+     * @param encoder The {@link LwM2mNodeEncoder} used to encode {@link LwM2mNode}.
+     * @param decoder The {@link LwM2mNodeDecoder} used to encode {@link LwM2mNode}.
+     */
     public RequestSender(Endpoint secureEndpoint, Endpoint nonSecureEndpoint, LwM2mNodeEncoder encoder,
             LwM2mNodeDecoder decoder) {
         this.secureEndpoint = secureEndpoint;
@@ -71,9 +81,36 @@ public class RequestSender {
         this.decoder = decoder;
     }
 
+    /**
+     * Sends a Lightweight M2M {@link DownlinkRequest} synchronously to a LWM2M client. Will block until a response is
+     * received from the remote client.
+     * <p>
+     * The synchronous way could block a thread during a long time so it is more recommended to use the asynchronous
+     * way.
+     * 
+     * @param endpointName the LWM2M client endpoint name.
+     * @param destination the LWM2M client {@link Identity}.
+     * @param sessionId A session Identifier which could be reused to cancel all ongoing request related to this
+     *        sessionId. See {@link #cancelRequests(String)}.
+     * @param model The {@link LwM2mModel} used to encode payload in request and decode payload in response.
+     * @param rootPath a rootpath to prefix to the LWM2M path to create the CoAP path. (see 8.2.2 Alternate Path in
+     *        LWM2M specification)
+     * @param request The request to send to the client.
+     * @param timeoutInMs The response timeout to wait in milliseconds (see
+     *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
+     * @return the response or <code>null</code> if the timeout expires (see
+     *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
+     * 
+     * @throws CodecException if request payload can not be encoded.
+     * @throws InterruptedException if the thread was interrupted.
+     * @throws RequestRejectedException if the request is rejected by foreign peer.
+     * @throws RequestCanceledException if the request is cancelled.
+     * @throws SendFailedException if the request can not be sent. E.g. error at CoAP or DTLS/UDP layer.
+     * @throws InvalidResponseException if the response received is malformed.
+     */
     public <T extends LwM2mResponse> T sendLwm2mRequest(final String endpointName, Identity destination,
-            String sessionId, final LwM2mModel model, String rootPath, final DownlinkRequest<T> request, long timeout)
-            throws InterruptedException {
+            String sessionId, final LwM2mModel model, String rootPath, final DownlinkRequest<T> request,
+            long timeoutInMs) throws InterruptedException {
 
         // Create the CoAP request from LwM2m request
         CoapRequestBuilder coapClientRequestBuilder = new CoapRequestBuilder(destination, rootPath, sessionId,
@@ -82,7 +119,7 @@ public class RequestSender {
         final Request coapRequest = coapClientRequestBuilder.getRequest();
 
         // Send CoAP request synchronously
-        SyncRequestObserver<T> syncMessageObserver = new SyncRequestObserver<T>(coapRequest, timeout) {
+        SyncRequestObserver<T> syncMessageObserver = new SyncRequestObserver<T>(coapRequest, timeoutInMs) {
             @Override
             public T buildResponse(Response coapResponse) {
                 // Build LwM2m response
@@ -107,9 +144,45 @@ public class RequestSender {
         return syncMessageObserver.waitForResponse();
     }
 
+    /**
+     * Send a Lightweight M2M {@link DownlinkRequest} asynchronously to a LWM2M client.
+     * 
+     * The Californium API does not ensure that message callback are exclusive. E.g. In some race condition, you can get
+     * a onReponse call and a onCancel one. This method ensures that you will receive only one event. Meaning, you get
+     * either 1 response or 1 error.
+     * 
+     * @param endpointName the LWM2M client endpoint name.
+     * @param destination the LWM2M client {@link Identity}.
+     * @param sessionId A session Identifier which could be reused to cancel all ongoing request related to this
+     *        sessionId. See {@link #cancelRequests(String)}.
+     * @param model The {@link LwM2mModel} used to encode payload in request and decode payload in response.
+     * @param rootPath a rootpath to prefix to the LWM2M path to create the CoAP path. (see 8.2.2 Alternate Path in
+     *        LWM2M specification)
+     * @param request The request to send to the client.
+     * @param timeoutInMs The response timeout to wait in milliseconds (see
+     *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
+     * @param responseCallback a callback called when a response is received (successful or error response). This
+     *        callback MUST NOT be null.
+     * @param errorCallback a callback called when an error or exception occurred when response is received. It can be :
+     *        <ul>
+     *        <li>{@link RequestRejectedException} if the request is rejected by foreign peer.</li>
+     *        <li>{@link RequestCanceledException} if the request is cancelled.</li>
+     *        <li>{@link SendFailedException} if the request can not be sent. E.g. error at CoAP or DTLS/UDP layer.</li>
+     *        <li>{@link InvalidResponseException} if the response received is malformed.</li>
+     *        <li>{@link TimeoutException} if the timeout expires (see
+     *        https://github.com/eclipse/leshan/wiki/Request-Timeout).</li>
+     *        <li>or any other RuntimeException for unexpected issue.
+     *        </ul>
+     *        This callback MUST NOT be null.
+     * @throws CodecException if request payload can not be encoded.
+     */
     public <T extends LwM2mResponse> void sendLwm2mRequest(final String endpointName, Identity destination,
-            String sessionId, final LwM2mModel model, String rootPath, final DownlinkRequest<T> request, long timeout,
-            ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
+            String sessionId, final LwM2mModel model, String rootPath, final DownlinkRequest<T> request,
+            long timeoutInMs, ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
+
+        Validate.notNull(responseCallback);
+        Validate.notNull(errorCallback);
+
         // Create the CoAP request from LwM2m request
         CoapRequestBuilder coapClientRequestBuilder = new CoapRequestBuilder(destination, rootPath, sessionId,
                 endpointName, model, encoder);
@@ -117,7 +190,7 @@ public class RequestSender {
         final Request coapRequest = coapClientRequestBuilder.getRequest();
 
         // Add CoAP request callback
-        MessageObserver obs = new AsyncRequestObserver<T>(coapRequest, responseCallback, errorCallback, timeout) {
+        MessageObserver obs = new AsyncRequestObserver<T>(coapRequest, responseCallback, errorCallback, timeoutInMs) {
             @Override
             public T buildResponse(Response coapResponse) {
                 // Build LwM2m response
@@ -139,7 +212,28 @@ public class RequestSender {
             nonSecureEndpoint.sendRequest(coapRequest);
     }
 
-    public Response sendCoapRequest(Identity destination, String sessionId, Request coapRequest, long timeout)
+    /**
+     * Send a CoAP {@link Request} synchronously to a LWM2M client. Will block until a response is received from the
+     * remote client.
+     * <p>
+     * The synchronous way could block a thread during a long time so it is more recommended to use the asynchronous
+     * way.
+     * 
+     * @param destination the LWM2M client {@link Identity}.
+     * @param sessionId A session Identifier which could be reused to cancel all ongoing request related to this one.
+     *        See {@link #cancelRequests(String)}.
+     * @param coapRequest The request to send to the client.
+     * @param timeoutInMs The response timeout to wait in milliseconds (see
+     *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
+     * @return the response or <code>null</code> if the timeout expires (see
+     *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
+     * 
+     * @throws InterruptedException if the thread was interrupted.
+     * @throws RequestRejectedException if the request is rejected by foreign peer.
+     * @throws RequestCanceledException if the request is cancelled.
+     * @throws SendFailedException if the request can not be sent. E.g. error at CoAP or DTLS/UDP layer.
+     */
+    public Response sendCoapRequest(Identity destination, String sessionId, Request coapRequest, long timeoutInMs)
             throws InterruptedException {
 
         // Define destination
@@ -147,7 +241,7 @@ public class RequestSender {
         coapRequest.setDestinationContext(context);
 
         // Send CoAP request synchronously
-        CoapSyncRequestObserver syncMessageObserver = new CoapSyncRequestObserver(coapRequest, timeout);
+        CoapSyncRequestObserver syncMessageObserver = new CoapSyncRequestObserver(coapRequest, timeoutInMs);
         coapRequest.addMessageObserver(syncMessageObserver);
 
         // Store pending request to be able to cancel it later
@@ -163,15 +257,44 @@ public class RequestSender {
         return syncMessageObserver.waitForCoapResponse();
     }
 
-    public void sendCoapRequest(Identity destination, String sessionId, Request coapRequest, long timeout,
+    /**
+     * Sends a CoAP {@link Request} asynchronously to a LWM2M client.
+     * 
+     * The Californium API does not ensure that message callback are exclusive. E.g. In some race condition, you can get
+     * a onReponse call and a onCancel one. This method ensures that you will receive only one event. Meaning, you get
+     * either 1 response or 1 error.
+     * 
+     * @param destination the LWM2M client {@link Identity}.
+     * @param sessionId A session Identifier which could be reused to cancel all ongoing request related to this one.
+     *        See {@link #cancelRequests(String)}.
+     * @param request The request to send to the client.
+     * @param timeoutInMs The response timeout to wait in milliseconds (see
+     *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
+     * @param responseCallback a callback called when a response is received (successful or error response). This
+     *        callback MUST NOT be null.
+     * @param errorCallback a callback called when an error or exception occurred when response is received. It can be :
+     *        <ul>
+     *        <li>{@link RequestRejectedException} if the request is rejected by foreign peer.</li>
+     *        <li>{@link RequestCanceledException} if the request is cancelled.</li>
+     *        <li>{@link SendFailedException} if the request can not be sent. E.g. error at CoAP or DTLS/UDP layer.</li>
+     *        <li>{@link TimeoutException} if the timeout expires (see
+     *        https://github.com/eclipse/leshan/wiki/Request-Timeout).</li>
+     *        <li>or any other RuntimeException for unexpected issue.
+     *        </ul>
+     *        This callback MUST NOT be null.
+     */
+    public void sendCoapRequest(Identity destination, String sessionId, Request coapRequest, long timeoutInMs,
             CoapResponseCallback responseCallback, ErrorCallback errorCallback) {
+
+        Validate.notNull(responseCallback);
+        Validate.notNull(errorCallback);
 
         // Define destination
         EndpointContext context = EndpointContextUtil.extractContext(destination);
         coapRequest.setDestinationContext(context);
 
         // Add CoAP request callback
-        MessageObserver obs = new CoapAsyncRequestObserver(coapRequest, responseCallback, errorCallback, timeout);
+        MessageObserver obs = new CoapAsyncRequestObserver(coapRequest, responseCallback, errorCallback, timeoutInMs);
         coapRequest.addMessageObserver(obs);
 
         // Store pending request to be able to cancel it later
@@ -184,6 +307,13 @@ public class RequestSender {
             nonSecureEndpoint.sendRequest(coapRequest);
     }
 
+    /**
+     * Cancel all ongoing requests for the given sessionID.
+     * 
+     * @param sessionID the Id associated to the ongoing requests you want to cancel.
+     * 
+     * @see all others send methods.
+     */
     public void cancelRequests(String sessionID) {
         Validate.notNull(sessionID);
         SortedMap<String, Request> requests = ongoingRequests.subMap(getFloorKey(sessionID), getCeilingKey(sessionID));

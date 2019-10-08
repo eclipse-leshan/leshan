@@ -34,6 +34,15 @@ import org.eclipse.leshan.util.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A Californium message observer for a CoAP request.
+ * <p>
+ * Either a response or an error is raised. Results are available via callbacks.
+ * <p>
+ * This class also provides response timeout facility.
+ * 
+ * @see https://github.com/eclipse/leshan/wiki/Request-Timeout for more details.
+ */
 public class CoapAsyncRequestObserver extends AbstractRequestObserver {
 
     private static final Logger LOG = LoggerFactory.getLogger(CoapAsyncRequestObserver.class);
@@ -54,6 +63,19 @@ public class CoapAsyncRequestObserver extends AbstractRequestObserver {
 
     private final AtomicBoolean responseTimedOut = new AtomicBoolean(false);
 
+    /**
+     * A Californium message observer for a CoAP request helping to get results asynchronously.
+     * <p>
+     * The Californium API does not ensure that message callback are exclusive. E.g. In some race condition, you can get
+     * a onReponse call and a onCancel one. The CoapAsyncRequestObserver ensure that you will receive only one event.
+     * Meaning, you get either 1 response or 1 error.
+     * 
+     * @param coapRequest The CoAP request to observe.
+     * @param responseCallback This is called when a response is received. This MUST NOT be null.
+     * @param errorCallback This is called when an error happens. This MUST NOT be null.
+     * @param timeoutInMs A response timeout(in millisecond) which is raised if neither a response or error happens (see
+     *        https://github.com/eclipse/leshan/wiki/Request-Timeout).
+     */
     public CoapAsyncRequestObserver(Request coapRequest, CoapResponseCallback responseCallback,
             ErrorCallback errorCallback, long timeoutInMs) {
         super(coapRequest);

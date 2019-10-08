@@ -25,6 +25,9 @@ import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
 import org.eclipse.leshan.util.Validate;
 
+/**
+ * A {@link LwM2mRequestSender} which supports LWM2M Queue Mode.
+ */
 public class QueueModeLwM2mRequestSender implements LwM2mRequestSender {
 
     protected PresenceServiceImpl presenceService;
@@ -43,6 +46,9 @@ public class QueueModeLwM2mRequestSender implements LwM2mRequestSender {
         this.delegatedSender = delegatedSender;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <T extends LwM2mResponse> T send(final Registration destination, DownlinkRequest<T> request, long timeout)
             throws InterruptedException {
@@ -74,6 +80,9 @@ public class QueueModeLwM2mRequestSender implements LwM2mRequestSender {
         return response;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <T extends LwM2mResponse> void send(final Registration destination, DownlinkRequest<T> request, long timeout,
             final ResponseCallback<T> responseCallback, final ErrorCallback errorCallback) {

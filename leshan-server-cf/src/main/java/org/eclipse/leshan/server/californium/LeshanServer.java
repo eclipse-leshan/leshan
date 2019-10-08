@@ -37,6 +37,7 @@ import org.eclipse.leshan.core.request.exception.ClientSleepingException;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.request.exception.RequestRejectedException;
+import org.eclipse.leshan.core.request.exception.SendFailedException;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -75,8 +76,8 @@ import org.slf4j.LoggerFactory;
 /**
  * A Lightweight M2M server.
  * <p>
- * This implementation starts a Californium {@link CoapServer} with a non-secure and secure endpoint. This CoAP server
- * defines a <i>/rd</i> resource as described in the CoRE RD specification.
+ * This implementation starts a Californium {@link CoapServer} with a unsecured (for coap://) and secured endpoint (for
+ * coaps://). This CoAP server defines a <i>/rd</i> resource as described in the LWM2M specification.
  * </p>
  * <p>
  * This class is the entry point to send synchronous and asynchronous requests to registered clients.
@@ -336,21 +337,124 @@ public class LeshanServer {
         return this.modelProvider;
     }
 
+    /**
+     * Send a Lightweight M2M request synchronously using a default 2min timeout. Will block until a response is
+     * received from the remote server.
+     * <p>
+     * The synchronous way could block a thread during a long time so it is more recommended to use the asynchronous
+     * way.
+     * <p>
+     * We choose a default timeout a bit higher to the MAX_TRANSMIT_WAIT(62-93s) which is the time from starting to send
+     * a Confirmable message to the time when an acknowledgement is no longer expected.
+     * 
+     * @param destination The {@link Registration} associate to the device we want to sent the request.
+     * @param request The request to send to the client.
+     * @param timeoutInMs The global timeout to wait in milliseconds (see
+     *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
+     * @return the LWM2M response. The response can be <code>null</code> if the timeout expires (see
+     *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
+     * 
+     * @throws CodecException if request payload can not be encoded.
+     * @throws InterruptedException if the thread was interrupted.
+     * @throws RequestRejectedException if the request is rejected by foreign peer.
+     * @throws RequestCanceledException if the request is cancelled.
+     * @throws SendFailedException if the request can not be sent. E.g. error at CoAP or DTLS/UDP layer.
+     * @throws InvalidResponseException if the response received is malformed.
+     * @throws ClientSleepingException if client is currently sleeping.
+     */
     public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request)
             throws InterruptedException {
         return requestSender.send(destination, request, DEFAULT_TIMEOUT);
     }
 
+    /**
+     * Send a Lightweight M2M request synchronously. Will block until a response is received from the remote server.
+     * <p>
+     * The synchronous way could block a thread during a long time so it is more recommended to use the asynchronous
+     * way.
+     * 
+     * @param destination The {@link Registration} associate to the device we want to sent the request.
+     * @param request The request to send to the client.
+     * @param timeoutInMs The global timeout to wait in milliseconds (see
+     *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
+     * @return the LWM2M response. The response can be <code>null</code> if the timeout expires (see
+     *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
+     * 
+     * @throws CodecException if request payload can not be encoded.
+     * @throws InterruptedException if the thread was interrupted.
+     * @throws RequestRejectedException if the request is rejected by foreign peer.
+     * @throws RequestCanceledException if the request is cancelled.
+     * @throws SendFailedException if the request can not be sent. E.g. error at CoAP or DTLS/UDP layer.
+     * @throws InvalidResponseException if the response received is malformed.
+     * @throws ClientSleepingException if client is currently sleeping.
+     */
     public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request, long timeout)
             throws InterruptedException {
         return requestSender.send(destination, request, timeout);
     }
 
+    /**
+     * Send a Lightweight M2M {@link DownlinkRequest} asynchronously to a LWM2M client using a default 2min timeout.
+     * <p>
+     * The Californium API does not ensure that message callback are exclusive. E.g. In some race condition, you can get
+     * a onReponse call and a onCancel one. This method ensures that you will receive only one event. Meaning, you get
+     * either 1 response or 1 error.
+     * <p>
+     * We choose a default timeout a bit higher to the MAX_TRANSMIT_WAIT(62-93s) which is the time from starting to send
+     * a Confirmable message to the time when an acknowledgement is no longer expected.
+     * 
+     * @param destination The {@link Registration} associate to the device we want to sent the request.
+     * @param request The request to send to the client.
+     * @param timeoutInMs The global timeout to wait in milliseconds (see
+     *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
+     * @param responseCallback a callback called when a response is received (successful or error response). This
+     *        callback MUST NOT be null.
+     * @param errorCallback a callback called when an error or exception occurred when response is received. It can be :
+     *        <ul>
+     *        <li>{@link RequestRejectedException} if the request is rejected by foreign peer.</li>
+     *        <li>{@link RequestCanceledException} if the request is cancelled.</li>
+     *        <li>{@link SendFailedException} if the request can not be sent. E.g. error at CoAP or DTLS/UDP layer.</li>
+     *        <li>{@link InvalidResponseException} if the response received is malformed.</li>
+     *        <li>{@link ClientSleepingException} if client is currently sleeping.</li>
+     *        <li>{@link TimeoutException} if the timeout expires (see
+     *        https://github.com/eclipse/leshan/wiki/Request-Timeout).</li>
+     *        <li>or any other RuntimeException for unexpected issue.
+     *        </ul>
+     *        This callback MUST NOT be null.
+     * @throws CodecException if request payload can not be encoded.
+     */
     public <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         requestSender.send(destination, request, DEFAULT_TIMEOUT, responseCallback, errorCallback);
     }
 
+    /**
+     * Send a Lightweight M2M {@link DownlinkRequest} asynchronously to a LWM2M client.
+     * <p>
+     * The Californium API does not ensure that message callback are exclusive. E.g. In some race condition, you can get
+     * a onReponse call and a onCancel one. This method ensures that you will receive only one event. Meaning, you get
+     * either 1 response or 1 error.
+     * 
+     * @param destination The {@link Registration} associate to the device we want to sent the request.
+     * @param request The request to send to the client.
+     * @param timeoutInMs The global timeout to wait in milliseconds (see
+     *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
+     * @param responseCallback a callback called when a response is received (successful or error response). This
+     *        callback MUST NOT be null.
+     * @param errorCallback a callback called when an error or exception occurred when response is received. It can be :
+     *        <ul>
+     *        <li>{@link RequestRejectedException} if the request is rejected by foreign peer.</li>
+     *        <li>{@link RequestCanceledException} if the request is cancelled.</li>
+     *        <li>{@link SendFailedException} if the request can not be sent. E.g. error at CoAP or DTLS/UDP layer.</li>
+     *        <li>{@link InvalidResponseException} if the response received is malformed.</li>
+     *        <li>{@link ClientSleepingException} if client is currently sleeping.</li>
+     *        <li>{@link TimeoutException} if the timeout expires (see
+     *        https://github.com/eclipse/leshan/wiki/Request-Timeout).</li>
+     *        <li>or any other RuntimeException for unexpected issue.
+     *        </ul>
+     *        This callback MUST NOT be null.
+     * @throws CodecException if request payload can not be encoded.
+     */
     public <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request, long timeout,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         requestSender.send(destination, request, timeout, responseCallback, errorCallback);
@@ -403,21 +507,25 @@ public class LeshanServer {
         }
 
         /**
-         * Sends a CoAP request synchronously to a registered LWM2M device. Will block until a response is received from
-         * the remote client.
+         * Send a CoAP {@link Request} synchronously to a LWM2M client using a default 2min timeout. Will block until a
+         * response is received from the remote client.
+         * <p>
+         * The synchronous way could block a thread during a long time so it is more recommended to use the asynchronous
+         * way.
+         * <p>
+         * We choose a default timeout a bit higher to the MAX_TRANSMIT_WAIT(62-93s) which is the time from starting to
+         * send a Confirmable message to the time when an acknowledgement is no longer expected.
          * 
-         * @param destination the remote client
-         * @param request the request to the client
-         * @return the response or <code>null</code> if the CoAP timeout expires ( see
-         *         http://tools.ietf.org/html/rfc7252#section-4.2 ).
+         * @param destination The registration linked to the LWM2M client to which the request must be sent.
+         * @param coapRequest The request to send to the client.
+         * @return the response or <code>null</code> if the timeout expires (see
+         *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
          * 
-         * @throws CodecException if request payload can not be encoded.
          * @throws InterruptedException if the thread was interrupted.
          * @throws RequestRejectedException if the request is rejected by foreign peer.
          * @throws RequestCanceledException if the request is cancelled.
-         * @throws InvalidResponseException if the response received is malformed.
-         * @throws ClientSleepingException if the client is sleeping and then the request cannot be sent. This exception
-         *         will never be raised if Queue Mode support is deactivate.
+         * @throws SendFailedException if the request can not be sent. E.g. error at CoAP or DTLS/UDP layer.
+         * @throws ClientSleepingException if client is currently sleeping.
          */
         public Response send(Registration destination, Request request) throws InterruptedException {
             // Ensure that delegated sender is able to send CoAP request
@@ -430,21 +538,27 @@ public class LeshanServer {
         }
 
         /**
-         * Sends a CoAP request synchronously to a registered LWM2M device. Will block until a response is received from
-         * the remote client.
+         * Send a CoAP {@link Request} synchronously to a LWM2M client. Will block until a response is received from the
+         * remote client.
+         * <p>
+         * The synchronous way could block a thread during a long time so it is more recommended to use the asynchronous
+         * way.
+         * <p>
+         * We choose a default timeout a bit higher to the MAX_TRANSMIT_WAIT(62-93s) which is the time from starting to
+         * send a Confirmable message to the time when an acknowledgement is no longer expected.
          * 
-         * @param destination the remote client
-         * @param request the request to send to the client
-         * @param timeout the request timeout in millisecond
-         * @return the response or <code>null</code> if the timeout expires (given parameter or CoAP timeout).
+         * @param destination The registration linked to the LWM2M client to which the request must be sent.
+         * @param coapRequest The request to send to the client.
+         * @param timeoutInMs The response timeout to wait in milliseconds (see
+         *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
+         * @return the response or <code>null</code> if the timeout expires (see
+         *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
          * 
-         * @throws CodecException if request payload can not be encoded.
          * @throws InterruptedException if the thread was interrupted.
          * @throws RequestRejectedException if the request is rejected by foreign peer.
          * @throws RequestCanceledException if the request is cancelled.
-         * @throws InvalidResponseException if the response received is malformed.
-         * @throws ClientSleepingException if the client is sleeping and then the request cannot be sent. This exception
-         *         will never be raised if Queue Mode support is deactivate.
+         * @throws SendFailedException if the request can not be sent. E.g. error at CoAP or DTLS/UDP layer.
+         * @throws ClientSleepingException if client is currently sleeping.
          */
         public Response send(Registration destination, Request request, long timeout) throws InterruptedException {
             // Ensure that delegated sender is able to send CoAP request
@@ -457,24 +571,29 @@ public class LeshanServer {
         }
 
         /**
-         * Sends a CoAP request asynchronously to a registered LWM2M device.
+         * Sends a CoAP {@link Request} asynchronously to a LWM2M client using a default 2min timeout.
+         * <p>
+         * {@link ResponseCallback} and {@link ErrorCallback} are exclusively called.
          * 
-         * @param destination the remote client
-         * @param request the request to send to the client
-         * @param responseCallback a callback called when a response is received (successful or error response)
+         * @param destination The registration linked to the LWM2M client to which the request must be sent.
+         * @param request The request to send to the client.
+         * @param timeoutInMs The response timeout to wait in milliseconds (see
+         *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
+         * @param responseCallback a callback called when a response is received (successful or error response). This
+         *        callback MUST NOT be null.
          * @param errorCallback a callback called when an error or exception occurred when response is received. It can
          *        be :
          *        <ul>
          *        <li>{@link RequestRejectedException} if the request is rejected by foreign peer.</li>
          *        <li>{@link RequestCanceledException} if the request is cancelled.</li>
-         *        <li>{@link InvalidResponseException} if the response received is malformed.</li>
-         *        <li>{@link TimeoutException} if the CoAP timeout expires ( see
-         *        http://tools.ietf.org/html/rfc7252#section-4.2 ).</li>
+         *        <li>{@link SendFailedException} if the request can not be sent. E.g. error at CoAP or DTLS/UDP
+         *        layer.</li>
+         *        <li>{@link ClientSleepingException} if client is currently sleeping.</li>
+         *        <li>{@link TimeoutException} if the timeout expires (see
+         *        https://github.com/eclipse/leshan/wiki/Request-Timeout).</li>
          *        <li>or any other RuntimeException for unexpected issue.
          *        </ul>
-         * @throws CodecException if request payload can not be encoded.
-         * @throws ClientSleepingException if the client is sleeping and then the request cannot be sent. This exception
-         *         will never be raised if Queue Mode support is deactivate.
+         *        This callback MUST NOT be null.
          */
         public void send(Registration destination, Request request, CoapResponseCallback responseCallback,
                 ErrorCallback errorCallback) {
@@ -488,25 +607,29 @@ public class LeshanServer {
         }
 
         /**
-         * Sends a CoAP request asynchronously to a registered LWM2M device.
+         * Sends a CoAP {@link Request} asynchronously to a LWM2M client.
+         * <p>
+         * {@link ResponseCallback} and {@link ErrorCallback} are exclusively called.
          * 
-         * @param destination the remote client
-         * @param request the request to send to the client
-         * @param timeout the request timeout in millisecond
-         * @param responseCallback a callback called when a response is received (successful or error response)
+         * @param destination The registration linked to the LWM2M client to which the request must be sent.
+         * @param request The request to send to the client.
+         * @param timeoutInMs The response timeout to wait in milliseconds (see
+         *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
+         * @param responseCallback a callback called when a response is received (successful or error response). This
+         *        callback MUST NOT be null.
          * @param errorCallback a callback called when an error or exception occurred when response is received. It can
          *        be :
          *        <ul>
          *        <li>{@link RequestRejectedException} if the request is rejected by foreign peer.</li>
          *        <li>{@link RequestCanceledException} if the request is cancelled.</li>
-         *        <li>{@link InvalidResponseException} if the response received is malformed.</li>
-         *        <li>{@link TimeoutException} if the CoAP timeout expires ( see
-         *        http://tools.ietf.org/html/rfc7252#section-4.2 ).</li>
+         *        <li>{@link SendFailedException} if the request can not be sent. E.g. error at CoAP or DTLS/UDP
+         *        layer.</li>
+         *        <li>{@link ClientSleepingException} if client is currently sleeping.</li>
+         *        <li>{@link TimeoutException} if the timeout expires (see
+         *        https://github.com/eclipse/leshan/wiki/Request-Timeout).</li>
          *        <li>or any other RuntimeException for unexpected issue.
          *        </ul>
-         * @throws CodecException if request payload can not be encoded.
-         * @throws ClientSleepingException if the client is sleeping and then the request cannot be sent. This exception
-         *         will never be raised if Queue Mode support is deactivate.
+         *        This callback MUST NOT be null.
          */
         public void send(Registration destination, Request request, long timeout, CoapResponseCallback responseCallback,
                 ErrorCallback errorCallback) {

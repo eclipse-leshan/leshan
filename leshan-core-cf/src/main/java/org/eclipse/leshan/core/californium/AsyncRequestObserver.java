@@ -21,8 +21,30 @@ import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 
+/**
+ * A dedicated {@link CoapAsyncRequestObserver} for LWM2M.
+ * <p>
+ * A {@link LwM2mResponse} is created from the CoAP Response received. This behavior is not implemented and should be
+ * provided by overriding {@link #buildResponse(Response)}.
+ * 
+ * @param <T> the type of the {@link LwM2mResponse} to build from the CoAP response
+ */
 public abstract class AsyncRequestObserver<T extends LwM2mResponse> extends CoapAsyncRequestObserver {
 
+    /**
+     * A Californium message observer for a CoAP request helping to get results asynchronously dedicated for LWM2M
+     * requests.
+     * <p>
+     * The Californium API does not ensure that message callback are exclusive. E.g. In some race condition, you can get
+     * a onReponse call and a onCancel one. The CoapAsyncRequestObserver ensure that you will receive only one event.
+     * Meaning, you get either 1 response or 1 error.
+     * 
+     * @param coapRequest The CoAP request to observe.
+     * @param responseCallback This is called when a response is received. This MUST NOT be null.
+     * @param errorCallback This is called when an error happens. This MUST NOT be null.
+     * @param timeoutInMs A response timeout(in millisecond) which is raised if neither a response or error happens (see
+     *        https://github.com/eclipse/leshan/wiki/Request-Timeout).
+     */
     public AsyncRequestObserver(Request coapRequest, final ResponseCallback<T> responseCallback,
             final ErrorCallback errorCallback, long timeoutInMs) {
         super(coapRequest, null, errorCallback, timeoutInMs);
@@ -43,5 +65,11 @@ public abstract class AsyncRequestObserver<T extends LwM2mResponse> extends Coap
         };
     }
 
+    /**
+     * Build the {@link LwM2mResponse} from the CoAP {@link Response}.
+     * 
+     * @param coapResponse The CoAP response received.
+     * @return the corresponding {@link LwM2mResponse}.
+     */
     protected abstract T buildResponse(Response coapResponse);
 }
