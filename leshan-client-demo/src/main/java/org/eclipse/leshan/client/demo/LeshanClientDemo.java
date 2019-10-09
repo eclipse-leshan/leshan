@@ -47,7 +47,10 @@ import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.cose.AlgorithmID;
+import org.eclipse.californium.cose.CoseException;
 import org.eclipse.californium.elements.Connector;
+import org.eclipse.californium.oscore.HashMapCtxDB;
 import org.eclipse.californium.oscore.OSCoreCoapStackFactory;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
@@ -83,6 +86,8 @@ import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.SecurityUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.upokecenter.cbor.CBORObject;
 
 public class LeshanClientDemo {
 
@@ -179,6 +184,14 @@ public class LeshanClientDemo {
         X509Chapter.append("\n | See https://github.com/eclipse/leshan/wiki/Credential-files-format   |");
         X509Chapter.append("\n ------------------------------------------------------------------------");
 
+        final StringBuilder OSCOREChapter = new StringBuilder();
+        OSCOREChapter.append("\n .");
+        OSCOREChapter.append("\n .");
+        OSCOREChapter.append("\n ===============================[OSCORE]=================================");
+        OSCOREChapter.append("\n | By default Leshan demo use non secure connection.                    |");
+        OSCOREChapter.append("\n | To use OSCORE, -msec -sid -rid options should be used together       |");
+        OSCOREChapter.append("\n ------------------------------------------------------------------------");
+
         options.addOption("h", "help", false, "Display help information.");
         options.addOption("n", true, String.format(
                 "Set the endpoint name of the Client.\nDefault: the local hostname or '%s' if any.", DEFAULT_ENDPOINT));
@@ -226,8 +239,22 @@ public class LeshanClientDemo {
         options.addOption("ccert", true,
                 "The path to your client certificate file.\n The certificate Common Name (CN) should generaly be equal to the client endpoint name (see -n option).\nThe certificate should be in X509v3 format (DER encoding).");
         options.addOption("scert", true,
-                "The path to your server certificate file.\n The certificate should be in X509v3 format (DER encoding).");
-        options.addOption("oscore", false, "Use OSCORE for communication between client and server.");
+                "The path to your server certificate file.\n The certificate should be in X509v3 format (DER encoding)."
+                        + OSCOREChapter);
+        options.addOption("msec", true,
+                "The OSCORE pre-shared key used between the Client and LwM2M Server/Bootstrap Server.");
+        options.addOption("msalt", true,
+                "The OSCORE master salt used between the Client and LwM2M Server or Bootstrap Server.\nDefault: Empty");
+        options.addOption("idctx", true,
+                "The OSCORE ID Context used between the Client and LwM2M Server or Bootstrap Server.\nDefault: Empty");
+        options.addOption("sid", true,
+                "The OSCORE Sender ID used by the client to the LwM2M Server or Bootstrap Server.");
+        options.addOption("rid", true,
+                "The OSCORE Recipient ID used by the client to the LwM2M Server or Bootstrap Server.");
+        options.addOption("aead", true,
+                "The OSCORE AEAD algorithm used between the Client and LwM2M Server or Bootstrap Server.\nDefault: AES_CCM_16_64_128");
+        options.addOption("hkdf", true,
+                "The OSCORE HKDF algorithm used between the Client and LwM2M Server or Bootstrap Server.\nDefault: HKDF_HMAC_SHA_256");
 
         HelpFormatter formatter = new HelpFormatter();
         formatter.setWidth(90);
@@ -293,6 +320,15 @@ public class LeshanClientDemo {
             if (!x509config && !rpkConfig) {
                 System.err.println(
                         "cprik should be used with ccert and scert for X509 config OR cpubk and spubk for RPK config");
+                formatter.printHelp(USAGE, options);
+                return;
+            }
+        }
+
+        // Abort if all OSCORE config is not complete
+        if (cl.hasOption("msec")) {
+            if (!cl.hasOption("sid") || !cl.hasOption("rid")) {
+                System.err.println("msec, sid and rid should be used together to connect using OSCORE");
                 formatter.printHelp(USAGE, options);
                 return;
             }
@@ -505,20 +541,101 @@ public class LeshanClientDemo {
         // Get models folder
         String modelsFolderPath = cl.getOptionValue("m");
 
-        // Set boolean controlling OSCORE usage
-        // TODO OSCORE : we should define a wording for OSCORE class : Oscore or OSCore or OSCORE
-        boolean useOSCore = false;
-        if (cl.hasOption("oscore")) {
-            System.out.println("Using OSCORE");
-            // TODO OSCORE : this should be done in DefaultEndpointFactory
-            OSCoreCoapStackFactory.useAsDefault(OscoreHandler.getContextDB());
+        // Set parameters controlling OSCORE usage
+        OSCoreSettings oscoreSettings = null;
+        if (cl.hasOption("msec")) {
+
+            HashMapCtxDB db = OscoreHandler.getContextDB();
+            // TODO OSCORE : OSCoreCoapStack should be create in Default endpoint factory
+            OSCoreCoapStackFactory.useAsDefault(db);
+
+            // Parse OSCORE related command line parameters
+
+            String mastersecretStr = cl.getOptionValue("msec");
+            if (mastersecretStr == null) {
+                System.err.println("The OSCORE master secret must be indicated");
+                formatter.printHelp(USAGE, options);
+                return;
+            }
+
+            // Set salt to empty string if not indicated
+            String mastersaltStr = cl.getOptionValue("msalt");
+            if (mastersaltStr == null) {
+                mastersaltStr = "";
+            }
+
+            String idcontextStr = cl.getOptionValue("idctx");
+            if (idcontextStr != null) {
+                System.err.println("The OSCORE ID Context parameter is not yet supported");
+                formatter.printHelp(USAGE, options);
+                return;
+            }
+
+            String senderidStr = cl.getOptionValue("sid");
+            if (senderidStr == null) {
+                System.err.println("The OSCORE Sender ID must be indicated");
+                formatter.printHelp(USAGE, options);
+                return;
+            }
+
+            String recipientidStr = cl.getOptionValue("rid");
+            if (recipientidStr == null) {
+                System.err.println("The OSCORE Recipient ID must be indicated");
+                formatter.printHelp(USAGE, options);
+                return;
+            }
+
+            // Parse AEAD Algorithm (set to default if not indicated)
+            String aeadStr = cl.getOptionValue("aead");
+            String defaultAeadAlgorithm = "AES_CCM_16_64_128";
+            if (aeadStr == null) {
+                aeadStr = defaultAeadAlgorithm;
+            }
+
+            int aeadInt;
+            try {
+                if (aeadStr.matches("-?\\d+")) { // Indicated as integer
+                    aeadInt = AlgorithmID.FromCBOR(CBORObject.FromObject(Integer.parseInt(aeadStr))).AsCBOR().AsInt32();
+                } else { // Indicated as string
+                    aeadInt = AlgorithmID.valueOf(aeadStr).AsCBOR().AsInt32();
+                }
+            } catch (IllegalArgumentException | CoseException e) {
+                System.err.println("The AEAD algorithm is not supported (" + defaultAeadAlgorithm + " recommended)");
+                formatter.printHelp(USAGE, options);
+                return;
+            }
+
+            // Parse HKDF Algorithm (set to default if not indicated)
+            String hkdfStr = cl.getOptionValue("hkdf");
+            String defaultHkdfAlgorithm = "HKDF_HMAC_SHA_256";
+            if (hkdfStr == null) {
+                hkdfStr = defaultHkdfAlgorithm;
+            }
+
+            int hkdfInt;
+            try {
+                if (hkdfStr.matches("-?\\d+")) { // Indicated as integer
+                    hkdfInt = AlgorithmID.FromCBOR(CBORObject.FromObject(Integer.parseInt(hkdfStr))).AsCBOR().AsInt32();
+                } else { // Indicated as string
+                    hkdfInt = AlgorithmID.valueOf(hkdfStr).AsCBOR().AsInt32();
+                }
+            } catch (IllegalArgumentException | CoseException e) {
+                System.err.println("The HKDF algorithm is not supported (" + defaultHkdfAlgorithm + " recommended)");
+                formatter.printHelp(USAGE, options);
+                return;
+            }
+
+            // Save the configured OSCORE parameters
+            oscoreSettings = new OSCoreSettings(mastersecretStr, mastersaltStr, idcontextStr, senderidStr,
+                    recipientidStr, aeadInt, hkdfInt);
         }
+
         try {
             createAndStartClient(endpoint, localAddress, localPort, cl.hasOption("b"), additionalAttributes,
                     bsAdditionalAttributes, lifetime, communicationPeriod, serverURI, pskIdentity, pskKey,
                     clientPrivateKey, clientPublicKey, serverPublicKey, clientCertificate, serverCertificate, latitude,
                     longitude, scaleFactor, cl.hasOption("ocf"), cl.hasOption("oc"), cl.hasOption("r"),
-                    cl.hasOption("f"), modelsFolderPath, ciphers, useOSCore);
+                    cl.hasOption("f"), modelsFolderPath, ciphers, oscoreSettings);
         } catch (Exception e) {
             System.err.println("Unable to create and start client ...");
             e.printStackTrace();
@@ -532,8 +649,8 @@ public class LeshanClientDemo {
             PrivateKey clientPrivateKey, PublicKey clientPublicKey, PublicKey serverPublicKey,
             X509Certificate clientCertificate, X509Certificate serverCertificate, Float latitude, Float longitude,
             float scaleFactor, boolean supportOldFormat, boolean supportDeprecatedCiphers, boolean reconnectOnUpdate,
-            boolean forceFullhandshake, String modelsFolderPath, List<CipherSuite> ciphers, boolean useOSCore)
-            throws Exception {
+            boolean forceFullhandshake, String modelsFolderPath, List<CipherSuite> ciphers,
+            OSCoreSettings oscoreSettings) throws Exception {
 
         locationInstance = new MyLocation(latitude, longitude, scaleFactor);
 
@@ -575,9 +692,10 @@ public class LeshanClientDemo {
                 initializer.setInstancesForObject(SECURITY, x509(serverURI, 123, clientCertificate.getEncoded(),
                         clientPrivateKey.getEncoded(), serverCertificate.getEncoded()));
                 initializer.setInstancesForObject(SERVER, new Server(123, lifetime, BindingMode.U, false));
-            } else if (useOSCore) {
-                String clientName = Hex.encodeHexString(endpoint.getBytes());
-                Oscore oscoreObject = new Oscore(12345, "11223344", clientName, "BB"); // Partially hardcoded values
+            } else if (oscoreSettings != null) {
+                Oscore oscoreObject = new Oscore(12345, oscoreSettings.masterSecret, oscoreSettings.senderId,
+                        oscoreSettings.recipientId, oscoreSettings.aeadAlgorithm, oscoreSettings.hkdfAlgorithm,
+                        oscoreSettings.masterSalt);
                 initializer.setInstancesForObject(SECURITY, oscoreOnly(serverURI, 123, oscoreObject.getId()));
                 initializer.setInstancesForObject(OSCORE, oscoreObject);
                 initializer.setInstancesForObject(SERVER, new Server(123, lifetime, BindingMode.U, false));
@@ -754,6 +872,21 @@ public class LeshanClientDemo {
                     Hex.encodeHexString(clientPrivateKey.getEncoded()));
         }
 
+        // Display OSCORE settings
+        if (oscoreSettings != null) {
+            try {
+                LOG.info(
+                        "Client uses OSCORE : \n Master Secret (Hex): {} \n Master Salt (Hex): {} \n Sender ID (Hex): {} \n Recipient ID (Hex) {} \n AEAD Algorithm: {} ({}) \n HKDF Algorithm: {} ({})",
+                        oscoreSettings.masterSecret, oscoreSettings.masterSalt, oscoreSettings.senderId,
+                        oscoreSettings.recipientId, oscoreSettings.aeadAlgorithm,
+                        AlgorithmID.FromCBOR(CBORObject.FromObject(oscoreSettings.aeadAlgorithm)),
+                        oscoreSettings.hkdfAlgorithm,
+                        AlgorithmID.FromCBOR(CBORObject.FromObject(oscoreSettings.hkdfAlgorithm)));
+            } catch (CoseException e) {
+                throw new IllegalStateException("Invalid agorithm used for OSCORE.");
+            }
+        }
+
         // Print commands help
         StringBuilder commandsHelp = new StringBuilder("Commands available :");
         commandsHelp.append(System.lineSeparator());
@@ -832,6 +965,26 @@ public class LeshanClientDemo {
                     LOG.info("Unknown command '{}'", command);
                 }
             }
+        }
+    }
+
+    // Class for holding OSCORE related information
+    private static class OSCoreSettings {
+        public String masterSecret;
+        public String masterSalt;
+        public String senderId;
+        public String recipientId;
+        public int aeadAlgorithm;
+        public int hkdfAlgorithm;
+
+        public OSCoreSettings(String masterSecret, String masterSalt, String idContext, String senderId,
+                String recipientId, int aeadAlgorithm, int hkdfAlgorithm) {
+            this.masterSecret = masterSecret;
+            this.masterSalt = masterSalt;
+            this.senderId = senderId;
+            this.recipientId = recipientId;
+            this.aeadAlgorithm = aeadAlgorithm;
+            this.hkdfAlgorithm = hkdfAlgorithm;
         }
     }
 }
