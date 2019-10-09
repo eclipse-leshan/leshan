@@ -24,8 +24,6 @@ import static org.eclipse.leshan.client.object.Security.*;
 
 import java.io.File;
 import java.net.InetAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -42,11 +40,8 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.eclipse.californium.core.network.config.NetworkConfig;
-import org.eclipse.californium.cose.AlgorithmID;
 import org.eclipse.californium.oscore.HashMapCtxDB;
 import org.eclipse.californium.oscore.OSCoreCoapStackFactory;
-import org.eclipse.californium.oscore.OSCoreCtx;
-import org.eclipse.californium.oscore.OSException;
 import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
@@ -135,6 +130,20 @@ public class LeshanClientDemo {
         options.addOption("scert", true,
                 "The path to your server certificate file.\n The certificate should be in X509v3 format (DER encoding).");
         options.addOption("oscore", false, "Use OSCORE for communication between client and server.");
+        options.addOption("mastersecret", true,
+                "The OSCORE pre-shared key used between the Client and LwM2M Server/Bootstrap-Server.");
+        options.addOption("mastersalt", true,
+                "The OSCORE master salt used between the Client and LwM2M Server/Bootstrap-Server.");
+        options.addOption("idcontext", true,
+                "The OSCORE ID Context used between the Client and LwM2M Server/Bootstrap-Server.");
+        options.addOption("senderid", true,
+                "The OSCORE Sender ID used by the client to the LwM2M Server/Bootstrap-Server.");
+        options.addOption("recipientid", true,
+                "The OSCORE Recipient ID used by the client to the LwM2M Server/Bootstrap-Server.");
+        options.addOption("aead", true,
+                "The OSCORE AEAD algorithm used between the Client and LwM2M Server/Bootstrap-Server.");
+        options.addOption("hkdf", true,
+                "The OSCORE HKDF algorithm used between the Client and LwM2M Server/Bootstrap-Server.");
 
         HelpFormatter formatter = new HelpFormatter();
         formatter.setWidth(90);
@@ -312,20 +321,100 @@ public class LeshanClientDemo {
                 return;
             }
         }
+
         // Set boolean controlling OSCORE usage
-        boolean useOSCore = false;
+        OSCoreSettings oscoreSettings = null;
         if (cl.hasOption("oscore")) {
             System.out.println("Using OSCORE");
-            useOSCore = true;
 
             HashMapCtxDB db = OscoreHandler.getContextDB();
             OSCoreCoapStackFactory.useAsDefault(db);
 
+            // Parse OSCORE related command line parameters
+
+            String mastersecretStr = cl.getOptionValue("mastersecret");
+            String mastersaltStr = cl.getOptionValue("mastersalt");
+            String idcontextStr = cl.getOptionValue("idcontext");
+            String senderidStr = cl.getOptionValue("senderid");
+            String recipientidStr = cl.getOptionValue("recipientid");
+            String aeadStr = cl.getOptionValue("aead");
+            String hkdfStr = cl.getOptionValue("hkdf");
+
+            if (mastersecretStr == null) {
+                System.err.println("The OSCORE master secret must be indicated");
+                formatter.printHelp(USAGE, options);
+                return;
+            }
+
+            // Set salt to empty string if not indicated
+            if (mastersaltStr == null) {
+                mastersaltStr = "";
+            }
+
+            if (idcontextStr != null) {
+                System.err.println("The OSCORE ID Context parameter is not yet supported");
+                formatter.printHelp(USAGE, options);
+                return;
+            }
+
+            if (senderidStr == null) {
+                System.err.println("The OSCORE Sender ID must be indicated");
+                formatter.printHelp(USAGE, options);
+                return;
+            }
+
+            // Check that the Sender ID matches the client name
+            // http://www.openmobilealliance.org/release/LightweightM2M/V1_1-20180710-A/HTML-Version/OMA-TS-LightweightM2M_Transport-V1_1-20180710-A.html#5-5-5-0-555-Endpoint-Client-Name
+            if (!Arrays.equals(endpoint.getBytes(), Hex.decodeHex(senderidStr.toCharArray()))) {
+                System.err.println(
+                        "The endpoint client name (" + endpoint + ") must be equal to the OSCORE Sender ID (use '"
+                                + Hex.encodeHexString(endpoint.getBytes()).toUpperCase() + "')");
+                formatter.printHelp(USAGE, options);
+                return;
+            }
+
+            if (recipientidStr == null) {
+                System.err.println("The OSCORE Recipient ID must be indicated");
+                formatter.printHelp(USAGE, options);
+                return;
+            }
+
+            // Parse AEAD Algorithm (set default if not indicated)
+            if (aeadStr == null) {
+                aeadStr = "AES_CCM_16_64_128";
+            }
+
+            int aeadInt;
+            if (aeadStr.equals("AES_CCM_16_64_128") || aeadStr.equals("10")) {
+                aeadInt = 10;
+            } else {
+                System.err.println("The AEAD algorithm set is not supported (AES_CCM_16_64_128 recommended)");
+                formatter.printHelp(USAGE, options);
+                return;
+            }
+
+            // Parse HKDF Algorithm (set default if not indicated)
+            if (hkdfStr == null) {
+                hkdfStr = "HKDF_HMAC_SHA_256";
+            }
+
+            int hkdfInt;
+            if (hkdfStr.equals("HKDF_HMAC_SHA_256") || hkdfStr.equals("-10")) {
+                hkdfInt = -10;
+            } else {
+                System.err.println("The HKDF algorithm set is not supported (HKDF_HMAC_SHA_256 recommended)");
+                formatter.printHelp(USAGE, options);
+                return;
+            }
+
+            oscoreSettings = new OSCoreSettings(mastersecretStr, mastersaltStr, idcontextStr,
+                    senderidStr, recipientidStr, aeadInt, hkdfInt);
         }
+
         try {
             createAndStartClient(endpoint, localAddress, localPort, cl.hasOption("b"), serverURI, pskIdentity, pskKey,
                     clientPrivateKey, clientPublicKey, serverPublicKey, clientCertificate, serverCertificate, latitude,
-                    longitude, scaleFactor, useOSCore);
+                    longitude, scaleFactor, oscoreSettings);
         } catch (Exception e) {
             System.err.println("Unable to create and start client ...");
             e.printStackTrace();
@@ -336,7 +425,8 @@ public class LeshanClientDemo {
     public static void createAndStartClient(String endpoint, String localAddress, int localPort, boolean needBootstrap,
             String serverURI, byte[] pskIdentity, byte[] pskKey, PrivateKey clientPrivateKey, PublicKey clientPublicKey,
             PublicKey serverPublicKey, X509Certificate clientCertificate, X509Certificate serverCertificate,
-            Float latitude, Float longitude, float scaleFactor, boolean useOSCore) throws CertificateEncodingException {
+            Float latitude, Float longitude, float scaleFactor, OSCoreSettings oscoreSettings)
+            throws CertificateEncodingException {
 
         locationInstance = new MyLocation(latitude, longitude, scaleFactor);
 
@@ -374,9 +464,10 @@ public class LeshanClientDemo {
                 initializer.setInstancesForObject(SECURITY, x509(serverURI, 123, clientCertificate.getEncoded(),
                         clientPrivateKey.getEncoded(), serverCertificate.getEncoded()));
                 initializer.setInstancesForObject(SERVER, new Server(123, 30, BindingMode.U, false));
-            } else if (useOSCore) {
-                String clientName = Hex.encodeHexString(endpoint.getBytes());
-                Oscore oscoreObject = new Oscore(12345, "11223344", clientName, "BB"); // Partially hardcoded values
+            } else if (oscoreSettings != null) {
+                Oscore oscoreObject = new Oscore(12345, oscoreSettings.masterSecret, oscoreSettings.senderId,
+                        oscoreSettings.recipientId, oscoreSettings.aeadAlgorithm, oscoreSettings.hkdfAlgorithm,
+                        oscoreSettings.masterSalt);
                 initializer.setInstancesForObject(SECURITY, oscoreOnly(serverURI, 123, oscoreObject.getId()));
                 initializer.setInstancesForObject(OSCORE, oscoreObject);
                 initializer.setInstancesForObject(SERVER, new Server(123, 30, BindingMode.U, false));
@@ -464,6 +555,28 @@ public class LeshanClientDemo {
                 String nextMove = scanner.next();
                 locationInstance.moveLocation(nextMove);
             }
+        }
+    }
+
+    // Class for holding OSCORE related information
+    private static class OSCoreSettings {
+        public String masterSecret;
+        public String masterSalt;
+        public String idContext;
+        public String senderId;
+        public String recipientId;
+        public int aeadAlgorithm;
+        public int hkdfAlgorithm;
+
+        public OSCoreSettings(String masterSecret, String masterSalt, String idContext, String senderId,
+                String recipientId, int aeadAlgorithm, int hkdfAlgorithm) {
+            this.masterSecret = masterSecret;
+            this.masterSalt = masterSalt;
+            this.idContext = idContext;
+            this.senderId = senderId;
+            this.recipientId = recipientId;
+            this.aeadAlgorithm = aeadAlgorithm;
+            this.hkdfAlgorithm = hkdfAlgorithm;
         }
     }
 }
