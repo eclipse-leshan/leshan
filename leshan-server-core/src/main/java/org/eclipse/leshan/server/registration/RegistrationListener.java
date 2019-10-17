@@ -21,6 +21,9 @@ import org.eclipse.leshan.core.observation.Observation;
 
 /**
  * Listen for client registration events.
+ * <p>
+ * Those methods are called by the protocol stage thread pool, this means that execution MUST be done in a short delay,
+ * if you need to do long time processing use a dedicated thread pool.
  */
 public interface RegistrationListener {
 

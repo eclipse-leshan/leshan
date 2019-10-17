@@ -19,10 +19,27 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.registration.Registration;
 
+/**
+ * Monitor observation lifetime.
+ * <p>
+ * Those methods are called by the protocol stage thread pool, this means that execution MUST be done in a short delay,
+ * if you need to do long time processing use a dedicated thread pool.
+ */
 public interface ObservationListener {
 
+    /**
+     * Called when a new observation is created.
+     * 
+     * @param observation the new observation.
+     * @param registration the related registration
+     */
     void newObservation(Observation observation, Registration registration);
 
+    /**
+     * Called when an observation is cancelled.
+     * 
+     * @param observation the cancelled observation.
+     */
     void cancelled(Observation observation);
 
     /**
