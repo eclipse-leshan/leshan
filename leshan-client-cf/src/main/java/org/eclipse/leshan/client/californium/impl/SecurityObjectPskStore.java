@@ -24,8 +24,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 
+import javax.crypto.SecretKey;
+
 import org.eclipse.californium.scandium.dtls.PskPublicInformation;
 import org.eclipse.californium.scandium.dtls.pskstore.PskStore;
+import org.eclipse.californium.scandium.util.SecretUtil;
 import org.eclipse.californium.scandium.util.ServerNames;
 import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
@@ -53,7 +56,7 @@ public class SecurityObjectPskStore implements PskStore {
     }
 
     @Override
-    public byte[] getKey(PskPublicInformation identity) {
+    public SecretKey getKey(PskPublicInformation identity) {
         if (identity == null)
             return null;
 
@@ -73,16 +76,21 @@ public class SecurityObjectPskStore implements PskStore {
                         LOG.warn("There is several security object instance with the same psk identity : '{}'",
                                 identity);
                         // we find 1 duplication and warn for it no need to continue.
-                        return res;
+                        return SecretUtil.create(res, "PSK");
                     }
                 }
             }
         }
-        return res;
+        if (res != null) {
+            return SecretUtil.create(res, "PSK");
+        } else {
+            return null;
+        }
+
     }
 
     @Override
-    public byte[] getKey(ServerNames serverNames, PskPublicInformation identity) {
+    public SecretKey getKey(ServerNames serverNames, PskPublicInformation identity) {
         // serverNames is not supported
         return getKey(identity);
     }

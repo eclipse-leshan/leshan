@@ -17,28 +17,37 @@ package org.eclipse.leshan.integration.tests;
 
 import java.net.InetSocketAddress;
 
+import javax.crypto.SecretKey;
+
 import org.eclipse.californium.scandium.dtls.PskPublicInformation;
 import org.eclipse.californium.scandium.dtls.pskstore.PskStore;
+import org.eclipse.californium.scandium.util.SecretUtil;
 import org.eclipse.californium.scandium.util.ServerNames;
 
 public class SinglePSKStore implements PskStore {
 
     private PskPublicInformation identity;
-    private byte[] key;
+    private SecretKey key;
 
     public SinglePSKStore(PskPublicInformation identity, byte[] key) {
+        this.identity = identity;
+        this.key = SecretUtil.create(key, "PSK");
+    }
+
+    public SinglePSKStore(PskPublicInformation identity, SecretKey key) {
         this.identity = identity;
         this.key = key;
     }
 
     @Override
-    public byte[] getKey(PskPublicInformation identity) {
-        return key;
+    public SecretKey getKey(PskPublicInformation identity) {
+        return SecretUtil.create(key);
     }
 
     @Override
-    public byte[] getKey(ServerNames serverName, PskPublicInformation identity) {
-        throw new UnsupportedOperationException();
+    public SecretKey getKey(ServerNames serverName, PskPublicInformation identity) {
+        // we do not support SNI
+        return getKey(identity);
     }
 
     @Override
@@ -52,7 +61,7 @@ public class SinglePSKStore implements PskStore {
     }
 
     public void setKey(byte[] key) {
-        this.key = key;
+        this.key = SecretUtil.create(key, "PSK");
     }
 
     public void setIdentity(String identity) {

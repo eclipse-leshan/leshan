@@ -39,6 +39,8 @@ import java.security.spec.ECPublicKeySpec;
 import java.security.spec.KeySpec;
 import java.util.List;
 
+import javax.crypto.SecretKey;
+
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.observe.ObservationStore;
@@ -220,7 +222,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
                 Builder dtlsConfigBuilder = new Builder(dtlsConfig);
                 if (dtlsConfig.getPskStore() != null) {
                     PskPublicInformation identity = dtlsConfig.getPskStore().getIdentity(null);
-                    byte[] key = dtlsConfig.getPskStore().getKey(identity);
+                    SecretKey key = dtlsConfig.getPskStore().getKey(identity);
                     singlePSKStore = new SinglePSKStore(identity, key);
                     dtlsConfigBuilder.setPskStore(singlePSKStore);
                 }
