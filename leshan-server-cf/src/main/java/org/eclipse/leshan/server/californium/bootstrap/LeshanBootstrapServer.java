@@ -54,6 +54,22 @@ public class LeshanBootstrapServer {
     private final BootstrapConfigStore bsStore;
     private final BootstrapSecurityStore bsSecurityStore;
 
+    /**
+     * /** Initialize a server which will bind to the specified address and port.
+     * <p>
+     * {@link LeshanBootstrapServerBuilder} is the priviledged way to create a {@link LeshanBootstrapServer}.
+     * 
+     * @param unsecuredEndpoint CoAP endpoint used for <code>coap://<code> communication.
+     * @param securedEndpoint CoAP endpoint used for <code>coaps://<code> communication.
+     * @param bsStore the store containing bootstrap configuration to apply during a bootstrap session.
+     * @param bsSecurityStore the store containing security information needed to authenticate a client.
+     * @param bsSessionManager manages life cycle of a bootstrap process
+     * @param bsHandlerFactory responsible to create the {@link BootstrapHandler}
+     * @param model the {@link LwM2mModel} used mainly to decode an encode LWM2M payload.
+     * @param coapConfig the CoAP {@link NetworkConfig}.
+     * @param encoder encode used to encode request payload.
+     * @param decoder decoder used to decode response payload.
+     */
     public LeshanBootstrapServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             BootstrapConfigStore bsStore, BootstrapSecurityStore bsSecurityStore,
             BootstrapSessionManager bsSessionManager, BootstrapHandlerFactory bsHandlerFactory, LwM2mModel model,
@@ -108,10 +124,21 @@ public class LeshanBootstrapServer {
         return new BootstrapResource(handler);
     }
 
+    /**
+     * Security store used for DTLS authentication on the bootstrap resource.
+     * 
+     * @return the {@link BootstrapSecurityStore} containing data used to authenticate devices.
+     */
     public BootstrapSecurityStore getBootstrapSecurityStore() {
         return bsSecurityStore;
     }
 
+    /**
+     * Access to the bootstrap configuration store. It's used for sending configuration to the devices initiating a
+     * bootstrap.
+     * 
+     * @return the {@link BootstrapConfigStore} containing configuration to apply to each devices.
+     */
     public BootstrapConfigStore getBoostrapStore() {
         return bsStore;
     }
@@ -138,13 +165,18 @@ public class LeshanBootstrapServer {
     }
 
     /**
-     * Stops the server and unbinds it from assigned ports.
+     * Destroys the server, unbinds from all ports and frees all system resources.
+     * <p>
+     * Server can not be restarted anymore.
      */
     public void destroy() {
         coapServer.destroy();
         LOG.info("Bootstrap server destroyed.");
     }
 
+    /**
+     * @return the {@link InetSocketAddress} used for <code>coap://</code>
+     */
     public InetSocketAddress getUnsecuredAddress() {
         if (unsecuredEndpoint != null) {
             return unsecuredEndpoint.getAddress();
@@ -153,6 +185,9 @@ public class LeshanBootstrapServer {
         }
     }
 
+    /**
+     * @return the {@link InetSocketAddress} used for <code>coaps://</code>
+     */
     public InetSocketAddress getSecuredAddress() {
         if (securedEndpoint != null) {
             return securedEndpoint.getAddress();

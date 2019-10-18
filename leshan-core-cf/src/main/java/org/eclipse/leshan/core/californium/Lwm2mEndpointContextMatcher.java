@@ -26,8 +26,10 @@ import org.eclipse.californium.elements.PrincipalEndpointContextMatcher;
  * 
  * Matches DTLS based on the used principal. Requires unique credentials.
  * 
- * For x.509, only the CN is checked, because the other parts of the
- * distinguished names are removed when converting it into a {@Link Identity}.
+ * For x.509, only the CN is checked, because the other parts of the distinguished names are removed when converting it
+ * into a {@Link Identity}.
+ * 
+ * For more detailed about why this is needed, see https://github.com/eclipse/leshan/wiki/LWM2M-Observe#for-dtls
  */
 public class Lwm2mEndpointContextMatcher extends PrincipalEndpointContextMatcher {
 

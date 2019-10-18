@@ -34,6 +34,7 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.DiscoverRequest;
+import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.DownlinkRequestVisitor;
 import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.request.Identity;
@@ -44,6 +45,11 @@ import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.server.californium.observation.ObserveUtil;
 import org.eclipse.leshan.util.StringUtils;
 
+/**
+ * This class is able to create CoAP request from LWM2M {@link DownlinkRequest}.
+ * <p>
+ * Call <code>CoapRequestBuilder#visit(lwm2mRequest)</code>, then get the result using {@link #getRequest()}
+ */
 public class CoapRequestBuilder implements DownlinkRequestVisitor {
 
     private Request coapRequest;

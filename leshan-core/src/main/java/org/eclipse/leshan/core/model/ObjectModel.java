@@ -26,7 +26,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * An object description
+ * An object description.
+ * 
+ * @see Lwm2M specification D.1 Object Template
+ * @see http://openmobilealliance.org/tech/profiles/LWM2M.xsd
  */
 public class ObjectModel {
 

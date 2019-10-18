@@ -17,6 +17,7 @@ package org.eclipse.leshan.server.californium.bootstrap;
 
 import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toCoapResponseCode;
 
+import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.server.resources.CoapExchange;
@@ -29,6 +30,9 @@ import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The {@link CoapResource} used to handle /bs request sent to {@link LeshanBootstrapServer}.
+ */
 public class BootstrapResource extends LwM2mCoapResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(BootstrapResource.class);

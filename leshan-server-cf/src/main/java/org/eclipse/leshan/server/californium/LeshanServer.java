@@ -54,6 +54,7 @@ import org.eclipse.leshan.server.californium.request.CoapRequestSender;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationService;
 import org.eclipse.leshan.server.queue.ClientAwakeTimeProvider;
+import org.eclipse.leshan.server.queue.PresenceListener;
 import org.eclipse.leshan.server.queue.PresenceService;
 import org.eclipse.leshan.server.queue.PresenceServiceImpl;
 import org.eclipse.leshan.server.queue.PresenceStateListener;
@@ -78,13 +79,10 @@ import org.slf4j.LoggerFactory;
  * <p>
  * This implementation starts a Californium {@link CoapServer} with a unsecured (for coap://) and secured endpoint (for
  * coaps://). This CoAP server defines a <i>/rd</i> resource as described in the LWM2M specification.
- * </p>
  * <p>
  * This class is the entry point to send synchronous and asynchronous requests to registered clients.
- * </p>
  * <p>
  * The {@link LeshanServerBuilder} should be the preferred way to build an instance of {@link LeshanServer}.
- * </p>
  */
 public class LeshanServer {
 
@@ -111,6 +109,8 @@ public class LeshanServer {
 
     /**
      * Initialize a server which will bind to the specified address and port.
+     * <p>
+     * {@link LeshanServerBuilder} is the priviledged way to create a {@link LeshanServer}.
      *
      * @param unsecuredEndpoint CoAP endpoint used for <code>coap://<code> communication.
      * @param securedEndpoint CoAP endpoint used for <code>coaps://<code> communication.
@@ -262,6 +262,9 @@ public class LeshanServer {
         return requestSender;
     }
 
+    /**
+     * Starts the server and binds it to the specified port.
+     */
     public void start() {
 
         // Start stores
@@ -282,6 +285,9 @@ public class LeshanServer {
         }
     }
 
+    /**
+     * Stops the server and unbinds it from assigned ports (can be restarted).
+     */
     public void stop() {
         // Stop server
         coapServer.stop();
@@ -297,6 +303,11 @@ public class LeshanServer {
         LOG.info("LWM2M server stopped.");
     }
 
+    /**
+     * Destroys the server, unbinds from all ports and frees all system resources.
+     * <p>
+     * Server can not be restarted anymore.
+     */
     public void destroy() {
         // Destroy server
         coapServer.destroy();
@@ -317,22 +328,44 @@ public class LeshanServer {
         LOG.info("LWM2M server destroyed.");
     }
 
+    /**
+     * Get the {@link RegistrationService} to access to registered clients.
+     * <p>
+     * You can use this object for listening client registration lifecycle.
+     */
     public RegistrationService getRegistrationService() {
         return this.registrationService;
     }
 
+    /**
+     * Get the {@link ObservationService} to access current observations.
+     * <p>
+     * You can use this object for listening resource observation or cancel it.
+     */
     public ObservationService getObservationService() {
         return this.observationService;
     }
 
+    /**
+     * Get the {@link PresenceService} to get status of LWM2M clients connected with binding mode 'Q'.
+     * <p>
+     * You can use this object to add {@link PresenceListener} to get notified when a device comes online or offline.
+     * 
+     */
     public PresenceService getPresenceService() {
         return this.presenceService;
     }
 
+    /**
+     * Get the SecurityStore containing of security information.
+     */
     public SecurityStore getSecurityStore() {
         return this.securityStore;
     }
 
+    /**
+     * Get the provider in charge of retrieving the object definitions for each client.
+     */
     public LwM2mModelProvider getModelProvider() {
         return this.modelProvider;
     }
@@ -460,6 +493,9 @@ public class LeshanServer {
         requestSender.send(destination, request, timeout, responseCallback, errorCallback);
     }
 
+    /**
+     * @return the {@link InetSocketAddress} used for <code>coap://</code>
+     */
     public InetSocketAddress getUnsecuredAddress() {
         if (unsecuredEndpoint != null) {
             return unsecuredEndpoint.getAddress();
@@ -468,6 +504,9 @@ public class LeshanServer {
         }
     }
 
+    /**
+     * @return the {@link InetSocketAddress} used for <code>coaps://</code>
+     */
     public InetSocketAddress getSecuredAddress() {
         if (securedEndpoint != null) {
             return securedEndpoint.getAddress();
@@ -641,14 +680,5 @@ public class LeshanServer {
 
             sender.sendCoapRequest(destination, request, timeout, responseCallback, errorCallback);
         }
-    }
-
-    /**
-     * @return the underlying {@link CoapServer}
-     * @Deprecated use coap().{@link CoapAPI#getServer() getServer()} instead
-     */
-    @Deprecated
-    public CoapServer getCoapServer() {
-        return coapServer;
     }
 }

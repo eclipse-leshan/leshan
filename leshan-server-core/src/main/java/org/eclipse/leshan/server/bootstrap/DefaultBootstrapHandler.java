@@ -45,9 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Handle the bootstrap logic at Server side. Check if the client is allowed to bootstrap, with the wanted security
- * scheme. Then send delete and write request to bootstrap the client, then close the bootstrap session by sending a
- * bootstrap finished request.
+ * A default implementation for {@link BootstrapHandler.
  */
 public class DefaultBootstrapHandler implements BootstrapHandler {
 

@@ -28,6 +28,9 @@ import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.SecurityStore;
 
+/**
+ * A {@link PskStore} which retrieve PSK information from Leshan {@link SecurityStore}.
+ */
 public class LwM2mPskStore implements PskStore {
 
     private SecurityStore securityStore;

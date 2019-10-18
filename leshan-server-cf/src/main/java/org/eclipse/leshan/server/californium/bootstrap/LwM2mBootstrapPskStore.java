@@ -29,8 +29,8 @@ import org.eclipse.leshan.server.security.SecurityInfo;
 /**
  * PSK Store to feed a Bootstrap server.
  * 
- * Only supports getting the PSK key for a given identity. (Getting identity from IP only makes sense on the client
- * side.)
+ * Only supports getting the PSK key for a given identity. (Getting identity from IP only makes sense when we initiate
+ * DTLS Connection) side.)
  */
 public class LwM2mBootstrapPskStore implements PskStore {
 
@@ -64,7 +64,6 @@ public class LwM2mBootstrapPskStore implements PskStore {
 
     @Override
     public PskPublicInformation getIdentity(InetSocketAddress peerAddress, ServerNames virtualHost) {
-        // TODO should we support SNI ?
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("Getting PSK Id by IP addresss dos not make sense on BS server side.");
     }
 }

@@ -62,6 +62,13 @@ import org.eclipse.leshan.util.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class is able to create a {@link LwM2mResponse} from a CoAP {@link Response}.
+ * <p>
+ * Call <code>LwM2mResponseBuilder#visit(coapResponse)</code>, then get the result using {@link #getResponse()}
+ * 
+ * @param <T>
+ */
 public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRequestVisitor {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mResponseBuilder.class);
