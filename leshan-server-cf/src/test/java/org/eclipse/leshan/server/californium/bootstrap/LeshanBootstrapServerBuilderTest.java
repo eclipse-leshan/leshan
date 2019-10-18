@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.californium;
+package org.eclipse.leshan.server.californium.bootstrap;
 
 import static org.junit.Assert.*;
 

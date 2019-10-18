@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.impl;
+package org.eclipse.leshan.server.californium;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
