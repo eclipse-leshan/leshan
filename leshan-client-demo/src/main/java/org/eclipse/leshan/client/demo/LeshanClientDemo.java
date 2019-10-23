@@ -108,6 +108,14 @@ public class LeshanClientDemo {
         X509Chapter.append("\n | See https://github.com/eclipse/leshan/wiki/Credential-files-format   |");
         X509Chapter.append("\n ------------------------------------------------------------------------");
 
+        final StringBuilder OSCOREChapter = new StringBuilder();
+        OSCOREChapter.append("\n .");
+        OSCOREChapter.append("\n .");
+        OSCOREChapter.append("\n ===============================[OSCORE]=================================");
+        OSCOREChapter.append("\n | By default Leshan demo use non secure connection.                    |");
+        OSCOREChapter.append("\n | To use OSCORE, -msec -sid -rid options should be used together       |");
+        OSCOREChapter.append("\n ------------------------------------------------------------------------");
+
         options.addOption("h", "help", false, "Display help information.");
         options.addOption("n", true, String.format(
                 "Set the endpoint name of the Client.\nDefault: the local hostname or '%s' if any.", DEFAULT_ENDPOINT));
@@ -132,21 +140,22 @@ public class LeshanClientDemo {
         options.addOption("ccert", true,
                 "The path to your client certificate file.\n The certificate Common Name (CN) should generaly be equal to the client endpoint name (see -n option).\nThe certificate should be in X509v3 format (DER encoding).");
         options.addOption("scert", true,
-                "The path to your server certificate file.\n The certificate should be in X509v3 format (DER encoding).");
-        options.addOption("mastersecret", true,
-                "The OSCORE pre-shared key used between the Client and LwM2M Server/Bootstrap-Server.");
-        options.addOption("mastersalt", true,
-                "The OSCORE master salt used between the Client and LwM2M Server/Bootstrap-Server.");
-        options.addOption("idcontext", true,
-                "The OSCORE ID Context used between the Client and LwM2M Server/Bootstrap-Server.");
-        options.addOption("senderid", true,
-                "The OSCORE Sender ID used by the client to the LwM2M Server/Bootstrap-Server.");
-        options.addOption("recipientid", true,
-                "The OSCORE Recipient ID used by the client to the LwM2M Server/Bootstrap-Server.");
+                "The path to your server certificate file.\n The certificate should be in X509v3 format (DER encoding)."
+                        + OSCOREChapter);
+        options.addOption("msec", true,
+                "The OSCORE pre-shared key used between the Client and LwM2M Server/Bootstrap Server.");
+        options.addOption("msalt", true,
+                "The OSCORE master salt used between the Client and LwM2M Server or Bootstrap Server.\nDefault: Empty");
+        options.addOption("idctx", true,
+                "The OSCORE ID Context used between the Client and LwM2M Server or Bootstrap Server.\nDefault: Empty");
+        options.addOption("sid", true,
+                "The OSCORE Sender ID used by the client to the LwM2M Server or Bootstrap Server.");
+        options.addOption("rid", true,
+                "The OSCORE Recipient ID used by the client to the LwM2M Server or Bootstrap Server.");
         options.addOption("aead", true,
-                "The OSCORE AEAD algorithm used between the Client and LwM2M Server/Bootstrap-Server.");
+                "The OSCORE AEAD algorithm used between the Client and LwM2M Server or Bootstrap Server.\nDefault: AES_CCM_16_64_128");
         options.addOption("hkdf", true,
-                "The OSCORE HKDF algorithm used between the Client and LwM2M Server/Bootstrap-Server.");
+                "The OSCORE HKDF algorithm used between the Client and LwM2M Server or Bootstrap Server.\nDefault: HKDF_HMAC_SHA_256");
 
         HelpFormatter formatter = new HelpFormatter();
         formatter.setWidth(90);
@@ -218,8 +227,8 @@ public class LeshanClientDemo {
         }
 
         // Abort if all OSCORE config is not complete
-        if (cl.hasOption("mastersecret")) {
-            if (!cl.hasOption("senderid") || !cl.hasOption("recipientid")) {
+        if (cl.hasOption("msec")) {
+            if (!cl.hasOption("sid") || !cl.hasOption("rid")) {
                 System.err.println(
                         "mastersecret, senderid and recipientid should be used together to connect using OSCORE");
                 formatter.printHelp(USAGE, options);
@@ -337,14 +346,14 @@ public class LeshanClientDemo {
 
         // Set parameters controlling OSCORE usage
         OSCoreSettings oscoreSettings = null;
-        if (cl.hasOption("mastersecret")) {
+        if (cl.hasOption("msec")) {
 
             HashMapCtxDB db = OscoreHandler.getContextDB();
             OSCoreCoapStackFactory.useAsDefault(db);
 
             // Parse OSCORE related command line parameters
 
-            String mastersecretStr = cl.getOptionValue("mastersecret");
+            String mastersecretStr = cl.getOptionValue("msec");
             if (mastersecretStr == null) {
                 System.err.println("The OSCORE master secret must be indicated");
                 formatter.printHelp(USAGE, options);
@@ -352,26 +361,26 @@ public class LeshanClientDemo {
             }
 
             // Set salt to empty string if not indicated
-            String mastersaltStr = cl.getOptionValue("mastersalt");
+            String mastersaltStr = cl.getOptionValue("msalt");
             if (mastersaltStr == null) {
                 mastersaltStr = "";
             }
 
-            String idcontextStr = cl.getOptionValue("idcontext");
+            String idcontextStr = cl.getOptionValue("idctx");
             if (idcontextStr != null) {
                 System.err.println("The OSCORE ID Context parameter is not yet supported");
                 formatter.printHelp(USAGE, options);
                 return;
             }
 
-            String senderidStr = cl.getOptionValue("senderid");
+            String senderidStr = cl.getOptionValue("sid");
             if (senderidStr == null) {
                 System.err.println("The OSCORE Sender ID must be indicated");
                 formatter.printHelp(USAGE, options);
                 return;
             }
 
-            String recipientidStr = cl.getOptionValue("recipientid");
+            String recipientidStr = cl.getOptionValue("rid");
             if (recipientidStr == null) {
                 System.err.println("The OSCORE Recipient ID must be indicated");
                 formatter.printHelp(USAGE, options);
