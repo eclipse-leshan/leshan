@@ -133,7 +133,6 @@ public class LeshanClientDemo {
                 "The path to your client certificate file.\n The certificate Common Name (CN) should generaly be equal to the client endpoint name (see -n option).\nThe certificate should be in X509v3 format (DER encoding).");
         options.addOption("scert", true,
                 "The path to your server certificate file.\n The certificate should be in X509v3 format (DER encoding).");
-        options.addOption("oscore", false, "Use OSCORE for communication between client and server.");
         options.addOption("mastersecret", true,
                 "The OSCORE pre-shared key used between the Client and LwM2M Server/Bootstrap-Server.");
         options.addOption("mastersalt", true,
@@ -328,7 +327,7 @@ public class LeshanClientDemo {
 
         // Set parameters controlling OSCORE usage
         OSCoreSettings oscoreSettings = null;
-        if (cl.hasOption("oscore")) {
+        if (cl.hasOption("mastersecret")) {
 
             HashMapCtxDB db = OscoreHandler.getContextDB();
             OSCoreCoapStackFactory.useAsDefault(db);
