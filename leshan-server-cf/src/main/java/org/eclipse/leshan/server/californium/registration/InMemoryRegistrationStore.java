@@ -37,6 +37,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -45,6 +46,7 @@ import org.eclipse.californium.core.coap.Token;
 import org.eclipse.californium.core.observe.ObservationUtil;
 import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.server.Destroyable;
 import org.eclipse.leshan.server.Startable;
 import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.californium.observation.ObserveUtil;
@@ -60,7 +62,7 @@ import org.slf4j.LoggerFactory;
 /**
  * An in memory store for registration and observation.
  */
-public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, Startable, Stoppable {
+public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, Startable, Stoppable, Destroyable {
     private final Logger LOG = LoggerFactory.getLogger(InMemoryRegistrationStore.class);
 
     // Data structure
@@ -76,6 +78,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     private ExpirationListener expirationListener;
 
     private final ScheduledExecutorService schedExecutor;
+    private ScheduledFuture<?> cleanerTask;
     private boolean started = false;
     private final long cleanPeriod; // in seconds
 
@@ -447,7 +450,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     public synchronized void start() {
         if (!started) {
             started = true;
-            schedExecutor.scheduleAtFixedRate(new Cleaner(), cleanPeriod, cleanPeriod, TimeUnit.SECONDS);
+            cleanerTask = schedExecutor.scheduleAtFixedRate(new Cleaner(), cleanPeriod, cleanPeriod, TimeUnit.SECONDS);
         }
     }
 
@@ -458,12 +461,24 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     public synchronized void stop() {
         if (started) {
             started = false;
-            schedExecutor.shutdownNow();
-            try {
-                schedExecutor.awaitTermination(5, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                LOG.warn("Clean up registration thread was interrupted.", e);
+            if (cleanerTask != null) {
+                cleanerTask.cancel(false);
+                cleanerTask = null;
             }
+        }
+    }
+
+    /**
+     * Destroy "cleanup" scheduler.
+     */
+    @Override
+    public synchronized void destroy() {
+        started = false;
+        schedExecutor.shutdownNow();
+        try {
+            schedExecutor.awaitTermination(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            LOG.warn("Destroying InMemoryRegistrationStore was interrupted.", e);
         }
     }
 

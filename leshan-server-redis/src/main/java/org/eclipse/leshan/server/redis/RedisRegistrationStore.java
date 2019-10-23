@@ -32,11 +32,13 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.californium.core.coap.Token;
 import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.server.Destroyable;
 import org.eclipse.leshan.server.Startable;
 import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.californium.observation.ObserveUtil;
@@ -61,7 +63,7 @@ import redis.clients.util.Pool;
 /**
  * A RegistrationStore which stores registrations and observations in Redis.
  */
-public class RedisRegistrationStore implements CaliforniumRegistrationStore, Startable, Stoppable {
+public class RedisRegistrationStore implements CaliforniumRegistrationStore, Startable, Stoppable, Destroyable {
 
     /** Default time in seconds between 2 cleaning tasks (used to remove expired registration). */
     public static final long DEFAULT_CLEAN_PERIOD = 60;
@@ -87,6 +89,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     private ExpirationListener expirationListener;
 
     private final ScheduledExecutorService schedExecutor;
+    private ScheduledFuture<?> cleanerTask;
     private boolean started = false;
 
     private final long cleanPeriod; // in seconds
@@ -696,7 +699,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     public synchronized void start() {
         if (!started) {
             started = true;
-            schedExecutor.scheduleAtFixedRate(new Cleaner(), cleanPeriod, cleanPeriod, TimeUnit.SECONDS);
+            cleanerTask = schedExecutor.scheduleAtFixedRate(new Cleaner(), cleanPeriod, cleanPeriod, TimeUnit.SECONDS);
         }
     }
 
@@ -707,12 +710,24 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     public synchronized void stop() {
         if (started) {
             started = false;
-            schedExecutor.shutdownNow();
-            try {
-                schedExecutor.awaitTermination(5, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                LOG.warn("Clean up registration thread was interrupted.", e);
+            if (cleanerTask != null) {
+                cleanerTask.cancel(false);
+                cleanerTask = null;
             }
+        }
+    }
+
+    /**
+     * Destroy "cleanup" scheduler.
+     */
+    @Override
+    public synchronized void destroy() {
+        started = false;
+        schedExecutor.shutdownNow();
+        try {
+            schedExecutor.awaitTermination(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            LOG.warn("Destroying RedisRegistrationStore was interrupted.", e);
         }
     }
 
