@@ -366,16 +366,6 @@ public class LeshanClientDemo {
                 return;
             }
 
-            // Check that the Sender ID matches the client name
-            // http://www.openmobilealliance.org/release/LightweightM2M/V1_1-20180710-A/HTML-Version/OMA-TS-LightweightM2M_Transport-V1_1-20180710-A.html#5-5-5-0-555-Endpoint-Client-Name
-            if (!Arrays.equals(endpoint.getBytes(), Hex.decodeHex(senderidStr.toCharArray()))) {
-                System.err.println(
-                        "The endpoint client name (" + endpoint + ") must be equal to the OSCORE Sender ID (use '"
-                                + Hex.encodeHexString(endpoint.getBytes()).toUpperCase() + "')");
-                formatter.printHelp(USAGE, options);
-                return;
-            }
-
             if (recipientidStr == null) {
                 System.err.println("The OSCORE Recipient ID must be indicated");
                 formatter.printHelp(USAGE, options);
