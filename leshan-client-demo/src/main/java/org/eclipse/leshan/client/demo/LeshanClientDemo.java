@@ -40,6 +40,8 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.cose.AlgorithmID;
+import org.eclipse.californium.cose.CoseException;
 import org.eclipse.californium.oscore.HashMapCtxDB;
 import org.eclipse.californium.oscore.OSCoreCoapStackFactory;
 import org.eclipse.leshan.LwM2m;
@@ -58,6 +60,8 @@ import org.eclipse.leshan.util.Hex;
 import org.eclipse.leshan.util.SecurityUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.upokecenter.cbor.CBORObject;
 
 public class LeshanClientDemo {
 
@@ -322,10 +326,9 @@ public class LeshanClientDemo {
             }
         }
 
-        // Set boolean controlling OSCORE usage
+        // Set parameters controlling OSCORE usage
         OSCoreSettings oscoreSettings = null;
         if (cl.hasOption("oscore")) {
-            System.out.println("Using OSCORE");
 
             HashMapCtxDB db = OscoreHandler.getContextDB();
             OSCoreCoapStackFactory.useAsDefault(db);
@@ -533,6 +536,21 @@ public class LeshanClientDemo {
             LOG.info("Client uses X509 : \n X509 Certificate (Hex): {} \n Private Key (Hex): {}",
                     Hex.encodeHexString(clientCertificate.getEncoded()),
                     Hex.encodeHexString(clientPrivateKey.getEncoded()));
+        }
+
+        // Display OSCORE settings
+        if (oscoreSettings != null) {
+            try {
+                LOG.info(
+                        "Client uses OSCORE : \n Master Secret (Hex): {} \n Master Salt (Hex): {} \n Sender ID (Hex): {} \n Recipient ID (Hex) {} \n AEAD Algorithm: {} ({}) \n HKDF Algorithm: {} ({})",
+                        oscoreSettings.masterSecret, oscoreSettings.masterSalt, oscoreSettings.senderId,
+                        oscoreSettings.recipientId, oscoreSettings.aeadAlgorithm,
+                        AlgorithmID.FromCBOR(CBORObject.FromObject(oscoreSettings.aeadAlgorithm)),
+                        oscoreSettings.hkdfAlgorithm,
+                        AlgorithmID.FromCBOR(CBORObject.FromObject(oscoreSettings.hkdfAlgorithm)));
+            } catch (CoseException e) {
+                throw new IllegalStateException("Invalid agorithm used for OSCORE.");
+            }
         }
 
         LOG.info("Press 'w','a','s','d' to change reported Location ({},{}).", locationInstance.getLatitude(),
