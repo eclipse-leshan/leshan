@@ -28,6 +28,7 @@ import org.eclipse.leshan.core.request.exception.SendFailedException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
+import org.eclipse.leshan.server.Destroyable;
 import org.eclipse.leshan.server.bootstrap.BootstrapSession;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
 import org.eclipse.leshan.server.californium.request.RequestSender;
@@ -37,7 +38,7 @@ import org.slf4j.LoggerFactory;
 /**
  * An implementation of {@link LwM2mBootstrapRequestSender} based on Californium.
  */
-public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapRequestSender {
+public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapRequestSender, Destroyable {
 
     static final Logger LOG = LoggerFactory.getLogger(CaliforniumLwM2mBootstrapRequestSender.class);
 
@@ -125,5 +126,10 @@ public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapReq
     @Override
     public void cancelOngoingRequests(BootstrapSession destination) {
         sender.cancelRequests(destination.getId());
+    }
+
+    @Override
+    public void destroy() {
+        sender.destroy();
     }
 }

@@ -274,6 +274,9 @@ public class LeshanServer {
         if (securityStore instanceof Startable) {
             ((Startable) securityStore).start();
         }
+        if (requestSender instanceof Startable) {
+            ((Startable) requestSender).start();
+        }
 
         // Start server
         coapServer.start();
@@ -298,6 +301,9 @@ public class LeshanServer {
         }
         if (securityStore instanceof Stoppable) {
             ((Stoppable) securityStore).stop();
+        }
+        if (requestSender instanceof Stoppable) {
+            ((Stoppable) requestSender).stop();
         }
 
         LOG.info("LWM2M server stopped.");
@@ -325,6 +331,11 @@ public class LeshanServer {
             ((Stoppable) securityStore).stop();
         }
 
+        if (requestSender instanceof Destroyable) {
+            ((Destroyable) requestSender).destroy();
+        } else if (requestSender instanceof Stoppable) {
+            ((Stoppable) requestSender).stop();
+        }
         LOG.info("LWM2M server destroyed.");
     }
 

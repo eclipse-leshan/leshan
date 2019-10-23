@@ -26,6 +26,9 @@ import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
+import org.eclipse.leshan.server.Destroyable;
+import org.eclipse.leshan.server.Startable;
+import org.eclipse.leshan.server.Stoppable;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
@@ -53,6 +56,8 @@ public class LeshanBootstrapServer {
     // LWM2M attributes
     private final BootstrapConfigStore bsStore;
     private final BootstrapSecurityStore bsSecurityStore;
+
+    private LwM2mBootstrapRequestSender requestSender;
 
     /**
      * /** Initialize a server which will bind to the specified address and port.
@@ -97,8 +102,7 @@ public class LeshanBootstrapServer {
             coapServer.addEndpoint(securedEndpoint);
 
         // create request sender
-        LwM2mBootstrapRequestSender requestSender = createRequestSender(securedEndpoint, unsecuredEndpoint, model,
-                encoder, decoder);
+        requestSender = createRequestSender(securedEndpoint, unsecuredEndpoint, model, encoder, decoder);
 
         // create bootstrap resource
         CoapResource bsResource = createBootstrapResource(
@@ -147,6 +151,9 @@ public class LeshanBootstrapServer {
      * Starts the server and binds it to the specified port.
      */
     public void start() {
+        if (requestSender instanceof Startable) {
+            ((Startable) requestSender).start();
+        }
         coapServer.start();
 
         if (LOG.isInfoEnabled()) {
@@ -161,6 +168,9 @@ public class LeshanBootstrapServer {
      */
     public void stop() {
         coapServer.stop();
+        if (requestSender instanceof Stoppable) {
+            ((Stoppable) requestSender).stop();
+        }
         LOG.info("Bootstrap server stopped.");
     }
 
@@ -171,6 +181,12 @@ public class LeshanBootstrapServer {
      */
     public void destroy() {
         coapServer.destroy();
+
+        if (requestSender instanceof Destroyable) {
+            ((Destroyable) requestSender).destroy();
+        } else if (requestSender instanceof Stoppable) {
+            ((Stoppable) requestSender).stop();
+        }
         LOG.info("Bootstrap server destroyed.");
     }
 

@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.californium;
 
+import java.util.concurrent.ScheduledExecutorService;
+
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.response.ErrorCallback;
@@ -44,10 +46,11 @@ public abstract class AsyncRequestObserver<T extends LwM2mResponse> extends Coap
      * @param errorCallback This is called when an error happens. This MUST NOT be null.
      * @param timeoutInMs A response timeout(in millisecond) which is raised if neither a response or error happens (see
      *        https://github.com/eclipse/leshan/wiki/Request-Timeout).
+     * @param executor used to scheduled timeout tasks.
      */
     public AsyncRequestObserver(Request coapRequest, final ResponseCallback<T> responseCallback,
-            final ErrorCallback errorCallback, long timeoutInMs) {
-        super(coapRequest, null, errorCallback, timeoutInMs);
+            final ErrorCallback errorCallback, long timeoutInMs, ScheduledExecutorService executor) {
+        super(coapRequest, null, errorCallback, timeoutInMs, executor);
         this.responseCallback = new CoapResponseCallback() {
 
             @Override

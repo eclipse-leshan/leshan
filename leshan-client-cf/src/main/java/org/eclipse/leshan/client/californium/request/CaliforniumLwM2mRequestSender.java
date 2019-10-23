@@ -16,6 +16,8 @@
 package org.eclipse.leshan.client.californium.request;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.eclipse.californium.core.coap.MessageObserver;
 import org.eclipse.californium.core.coap.Request;
@@ -28,9 +30,12 @@ import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
+import org.eclipse.leshan.util.NamedThreadFactory;
 
 public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
+    private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1,
+            new NamedThreadFactory("Leshan Async Request timeout"));
     private final CaliforniumEndpointsManager endpointsManager;
 
     public CaliforniumLwM2mRequestSender(CaliforniumEndpointsManager endpointsManager) {
@@ -74,7 +79,8 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         Request coapRequest = coapClientRequestBuilder.getRequest();
 
         // Add CoAP request callback
-        MessageObserver obs = new AsyncRequestObserver<T>(coapRequest, responseCallback, errorCallback, timeout) {
+        MessageObserver obs = new AsyncRequestObserver<T>(coapRequest, responseCallback, errorCallback, timeout,
+                executor) {
             @Override
             public T buildResponse(Response coapResponse) {
                 // Build LwM2m response

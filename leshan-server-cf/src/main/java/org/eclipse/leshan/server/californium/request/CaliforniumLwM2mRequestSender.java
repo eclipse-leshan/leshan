@@ -33,6 +33,7 @@ import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
+import org.eclipse.leshan.server.Destroyable;
 import org.eclipse.leshan.server.californium.observation.ObservationServiceImpl;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.registration.Registration;
@@ -42,7 +43,7 @@ import org.eclipse.leshan.util.Validate;
 /**
  * An implementation of {@link LwM2mRequestSender} and {@link CoapRequestSender} based on Californium.
  */
-public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRequestSender {
+public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRequestSender, Destroyable {
 
     private final ObservationServiceImpl observationService;
     private final LwM2mModelProvider modelProvider;
@@ -217,5 +218,10 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
     public void cancelOngoingRequests(Registration registration) {
         Validate.notNull(registration);
         sender.cancelRequests(registration.getId());
+    }
+
+    @Override
+    public void destroy() {
+        sender.destroy();
     }
 }

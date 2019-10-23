@@ -21,6 +21,7 @@ import org.eclipse.leshan.core.californium.CoapResponseCallback;
 import org.eclipse.leshan.core.request.exception.ClientSleepingException;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.response.ErrorCallback;
+import org.eclipse.leshan.server.Destroyable;
 import org.eclipse.leshan.server.queue.Presence;
 import org.eclipse.leshan.server.queue.PresenceServiceImpl;
 import org.eclipse.leshan.server.queue.QueueModeLwM2mRequestSender;
@@ -30,7 +31,8 @@ import org.eclipse.leshan.server.request.LwM2mRequestSender;
 /**
  * A {@link LwM2mRequestSender} and {@link CoapRequestSender} which supports LWM2M Queue Mode.
  */
-public class CaliforniumQueueModeRequestSender extends QueueModeLwM2mRequestSender implements CoapRequestSender {
+public class CaliforniumQueueModeRequestSender extends QueueModeLwM2mRequestSender
+        implements CoapRequestSender, Destroyable {
 
     /**
      * @param presenceService the presence service object for setting the client into {@link Presence#SLEEPING} when
@@ -127,5 +129,12 @@ public class CaliforniumQueueModeRequestSender extends QueueModeLwM2mRequestSend
                 errorCallback.onError(e);
             }
         });
+    }
+
+    @Override
+    public void destroy() {
+        if (delegatedSender instanceof Destroyable) {
+            ((Destroyable) delegatedSender).destroy();
+        }
     }
 }

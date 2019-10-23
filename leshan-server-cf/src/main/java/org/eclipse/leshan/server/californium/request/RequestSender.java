@@ -18,6 +18,9 @@ package org.eclipse.leshan.server.californium.request;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.californium.core.coap.MessageObserver;
@@ -45,7 +48,9 @@ import org.eclipse.leshan.core.request.exception.SendFailedException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
+import org.eclipse.leshan.server.Destroyable;
 import org.eclipse.leshan.server.californium.bootstrap.CaliforniumLwM2mBootstrapRequestSender;
+import org.eclipse.leshan.util.NamedThreadFactory;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,8 +60,12 @@ import org.slf4j.LoggerFactory;
  * <p>
  * It can also link requests to a kind of "session" and cancel all ongoing requests associated to a given "session".
  */
-public class RequestSender {
+public class RequestSender implements Destroyable {
+
     static final Logger LOG = LoggerFactory.getLogger(CaliforniumLwM2mBootstrapRequestSender.class);
+
+    private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1,
+            new NamedThreadFactory("Leshan Async Request timeout"));
 
     private final Endpoint nonSecureEndpoint;
     private final Endpoint secureEndpoint;
@@ -190,7 +199,8 @@ public class RequestSender {
         final Request coapRequest = coapClientRequestBuilder.getRequest();
 
         // Add CoAP request callback
-        MessageObserver obs = new AsyncRequestObserver<T>(coapRequest, responseCallback, errorCallback, timeoutInMs) {
+        MessageObserver obs = new AsyncRequestObserver<T>(coapRequest, responseCallback, errorCallback, timeoutInMs,
+                executor) {
             @Override
             public T buildResponse(Response coapResponse) {
                 // Build LwM2m response
@@ -294,7 +304,8 @@ public class RequestSender {
         coapRequest.setDestinationContext(context);
 
         // Add CoAP request callback
-        MessageObserver obs = new CoapAsyncRequestObserver(coapRequest, responseCallback, errorCallback, timeoutInMs);
+        MessageObserver obs = new CoapAsyncRequestObserver(coapRequest, responseCallback, errorCallback, timeoutInMs,
+                executor);
         coapRequest.addMessageObserver(obs);
 
         // Store pending request to be able to cancel it later
@@ -388,6 +399,16 @@ public class RequestSender {
         @Override
         public void onCancel() {
             removeOngoingRequest(requestKey, coapRequest);
+        }
+    }
+
+    @Override
+    public void destroy() {
+        executor.shutdownNow();
+        try {
+            executor.awaitTermination(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            LOG.warn("Destroying RequestSender was interrupted.", e);
         }
     }
 }

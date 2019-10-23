@@ -18,7 +18,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.californium;
 
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -30,7 +29,6 @@ import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.request.exception.RequestRejectedException;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
 import org.eclipse.leshan.core.response.ErrorCallback;
-import org.eclipse.leshan.util.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,13 +44,13 @@ import org.slf4j.LoggerFactory;
 public class CoapAsyncRequestObserver extends AbstractRequestObserver {
 
     private static final Logger LOG = LoggerFactory.getLogger(CoapAsyncRequestObserver.class);
-    private static volatile ScheduledExecutorService executor;
 
     protected CoapResponseCallback responseCallback;
     private final ErrorCallback errorCallback;
     private final long timeoutInMs;
     private ScheduledFuture<?> cleaningTask;
     private boolean cancelled = false;
+    private ScheduledExecutorService executor;
 
     // The Californium API does not ensure that message callback are exclusive
     // meaning that you can get a onReponse call and a onCancel one.
@@ -75,13 +73,15 @@ public class CoapAsyncRequestObserver extends AbstractRequestObserver {
      * @param errorCallback This is called when an error happens. This MUST NOT be null.
      * @param timeoutInMs A response timeout(in millisecond) which is raised if neither a response or error happens (see
      *        https://github.com/eclipse/leshan/wiki/Request-Timeout).
+     * @param executor used to scheduled timeout tasks.
      */
     public CoapAsyncRequestObserver(Request coapRequest, CoapResponseCallback responseCallback,
-            ErrorCallback errorCallback, long timeoutInMs) {
+            ErrorCallback errorCallback, long timeoutInMs, ScheduledExecutorService executor) {
         super(coapRequest);
         this.responseCallback = responseCallback;
         this.errorCallback = errorCallback;
         this.timeoutInMs = timeoutInMs;
+        this.executor = executor;
     }
 
     @Override
@@ -161,7 +161,7 @@ public class CoapAsyncRequestObserver extends AbstractRequestObserver {
         if (!cancelled)
             if (cleaningTask == null) {
                 LOG.trace("Schedule Cleaning Task for {}", coapRequest);
-                cleaningTask = getExecutor().schedule(new Runnable() {
+                cleaningTask = executor.schedule(new Runnable() {
                     @Override
                     public void run() {
                         responseTimedOut.set(true);
@@ -176,17 +176,5 @@ public class CoapAsyncRequestObserver extends AbstractRequestObserver {
             cleaningTask.cancel(false);
         }
         cancelled = true;
-    }
-
-    private ScheduledExecutorService getExecutor() {
-        if (executor == null) {
-            synchronized (this.getClass()) {
-                if (executor == null) {
-                    executor = Executors.newScheduledThreadPool(1,
-                            new NamedThreadFactory("Leshan Async Request timeout"));
-                }
-            }
-        }
-        return executor;
     }
 }
