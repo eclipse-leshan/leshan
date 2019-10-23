@@ -382,30 +382,40 @@ public class LeshanClientDemo {
                 return;
             }
 
-            // Parse AEAD Algorithm (set default if not indicated)
+            // Parse AEAD Algorithm (set to default if not indicated)
+            String defaultAeadAlgorithm = "AES_CCM_16_64_128";
             if (aeadStr == null) {
-                aeadStr = "AES_CCM_16_64_128";
+                aeadStr = defaultAeadAlgorithm;
             }
-
+            
             int aeadInt;
-            if (aeadStr.equals("AES_CCM_16_64_128") || aeadStr.equals("10")) {
-                aeadInt = 10;
-            } else {
-                System.err.println("The AEAD algorithm set is not supported (AES_CCM_16_64_128 recommended)");
+            try {
+                if (aeadStr.matches("-?\\d+")) { // Indicated as integer
+                    aeadInt = AlgorithmID.FromCBOR(CBORObject.FromObject(Integer.parseInt(aeadStr))).AsCBOR().AsInt32();
+                } else { // Indicated as string
+                    aeadInt = AlgorithmID.valueOf(aeadStr).AsCBOR().AsInt32();
+                }
+            } catch (IllegalArgumentException | CoseException e) {
+                System.err.println("The AEAD algorithm is not supported (" + defaultAeadAlgorithm + " recommended)");
                 formatter.printHelp(USAGE, options);
                 return;
             }
 
-            // Parse HKDF Algorithm (set default if not indicated)
+            // Parse HKDF Algorithm (set to default if not indicated)
+            String defaultHkdfAlgorithm = "HKDF_HMAC_SHA_256";
             if (hkdfStr == null) {
-                hkdfStr = "HKDF_HMAC_SHA_256";
+                hkdfStr = defaultHkdfAlgorithm;
             }
 
             int hkdfInt;
-            if (hkdfStr.equals("HKDF_HMAC_SHA_256") || hkdfStr.equals("-10")) {
-                hkdfInt = -10;
-            } else {
-                System.err.println("The HKDF algorithm set is not supported (HKDF_HMAC_SHA_256 recommended)");
+            try {
+                if (hkdfStr.matches("-?\\d+")) { // Indicated as integer
+                    hkdfInt = AlgorithmID.FromCBOR(CBORObject.FromObject(Integer.parseInt(hkdfStr))).AsCBOR().AsInt32();
+                } else { // Indicated as string
+                    hkdfInt = AlgorithmID.valueOf(hkdfStr).AsCBOR().AsInt32();
+                }
+            } catch (IllegalArgumentException | CoseException e) {
+                System.err.println("The HKDF algorithm is not supported (" + defaultHkdfAlgorithm + " recommended)");
                 formatter.printHelp(USAGE, options);
                 return;
             }
