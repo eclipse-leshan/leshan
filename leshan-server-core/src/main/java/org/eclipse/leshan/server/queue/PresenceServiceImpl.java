@@ -25,7 +25,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.leshan.server.Destroyable;
 import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.util.NamedThreadFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Tracks the status of each LWM2M client registered with Queue mode binding. Also ensures that the
@@ -34,12 +38,14 @@ import org.eclipse.leshan.server.registration.Registration;
  * 
  * @see Presence
  */
-public final class PresenceServiceImpl implements PresenceService {
+public final class PresenceServiceImpl implements PresenceService, Destroyable {
+    private final Logger LOG = LoggerFactory.getLogger(PresenceServiceImpl.class);
 
     private final ConcurrentMap<String, PresenceStatus> clientStatusList = new ConcurrentHashMap<>();
     private final List<PresenceListener> listeners = new CopyOnWriteArrayList<>();
     private final ClientAwakeTimeProvider awakeTimeProvider;
-    private final ScheduledExecutorService clientTimersExecutor = Executors.newSingleThreadScheduledExecutor();
+    private final ScheduledExecutorService clientTimersExecutor = Executors
+            .newSingleThreadScheduledExecutor(new NamedThreadFactory("Presence Service"));
 
     public PresenceServiceImpl(ClientAwakeTimeProvider awakeTimeProvider) {
         this.awakeTimeProvider = awakeTimeProvider;
@@ -184,6 +190,16 @@ public final class PresenceServiceImpl implements PresenceService {
     public void clientNotResponding(Registration reg) {
         if (isClientAwake(reg)) {
             setSleeping(reg);
+        }
+    }
+
+    @Override
+    public void destroy() {
+        clientTimersExecutor.shutdownNow();
+        try {
+            clientTimersExecutor.awaitTermination(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            LOG.warn("Destroying presence service was interrupted.", e);
         }
     }
 }
