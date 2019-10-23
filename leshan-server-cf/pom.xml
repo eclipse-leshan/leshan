@@ -73,6 +73,14 @@ Contributors:
                     </instructions>
                 </configuration>
             </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- We need to launch each tests in its own JVM to be able to check number 
+                         of active threads in LeshanBootstrapServerTest and LeshanServerTest -->
+                    <reuseForks>false</reuseForks>
+                </configuration>
+             </plugin>
         </plugins>
     </build>
 </project>
