@@ -336,13 +336,6 @@ public class LeshanClientDemo {
             // Parse OSCORE related command line parameters
 
             String mastersecretStr = cl.getOptionValue("mastersecret");
-            String mastersaltStr = cl.getOptionValue("mastersalt");
-            String idcontextStr = cl.getOptionValue("idcontext");
-            String senderidStr = cl.getOptionValue("senderid");
-            String recipientidStr = cl.getOptionValue("recipientid");
-            String aeadStr = cl.getOptionValue("aead");
-            String hkdfStr = cl.getOptionValue("hkdf");
-
             if (mastersecretStr == null) {
                 System.err.println("The OSCORE master secret must be indicated");
                 formatter.printHelp(USAGE, options);
@@ -350,22 +343,26 @@ public class LeshanClientDemo {
             }
 
             // Set salt to empty string if not indicated
+            String mastersaltStr = cl.getOptionValue("mastersalt");
             if (mastersaltStr == null) {
                 mastersaltStr = "";
             }
 
+            String idcontextStr = cl.getOptionValue("idcontext");
             if (idcontextStr != null) {
                 System.err.println("The OSCORE ID Context parameter is not yet supported");
                 formatter.printHelp(USAGE, options);
                 return;
             }
 
+            String senderidStr = cl.getOptionValue("senderid");
             if (senderidStr == null) {
                 System.err.println("The OSCORE Sender ID must be indicated");
                 formatter.printHelp(USAGE, options);
                 return;
             }
 
+            String recipientidStr = cl.getOptionValue("recipientid");
             if (recipientidStr == null) {
                 System.err.println("The OSCORE Recipient ID must be indicated");
                 formatter.printHelp(USAGE, options);
@@ -373,6 +370,7 @@ public class LeshanClientDemo {
             }
 
             // Parse AEAD Algorithm (set to default if not indicated)
+            String aeadStr = cl.getOptionValue("aead");
             String defaultAeadAlgorithm = "AES_CCM_16_64_128";
             if (aeadStr == null) {
                 aeadStr = defaultAeadAlgorithm;
@@ -392,6 +390,7 @@ public class LeshanClientDemo {
             }
 
             // Parse HKDF Algorithm (set to default if not indicated)
+            String hkdfStr = cl.getOptionValue("hkdf");
             String defaultHkdfAlgorithm = "HKDF_HMAC_SHA_256";
             if (hkdfStr == null) {
                 hkdfStr = defaultHkdfAlgorithm;
