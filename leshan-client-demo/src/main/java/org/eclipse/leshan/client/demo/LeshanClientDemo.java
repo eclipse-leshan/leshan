@@ -387,7 +387,7 @@ public class LeshanClientDemo {
             if (aeadStr == null) {
                 aeadStr = defaultAeadAlgorithm;
             }
-            
+
             int aeadInt;
             try {
                 if (aeadStr.matches("-?\\d+")) { // Indicated as integer
@@ -590,7 +590,6 @@ public class LeshanClientDemo {
     private static class OSCoreSettings {
         public String masterSecret;
         public String masterSalt;
-        public String idContext;
         public String senderId;
         public String recipientId;
         public int aeadAlgorithm;
@@ -600,7 +599,6 @@ public class LeshanClientDemo {
                 String recipientId, int aeadAlgorithm, int hkdfAlgorithm) {
             this.masterSecret = masterSecret;
             this.masterSalt = masterSalt;
-            this.idContext = idContext;
             this.senderId = senderId;
             this.recipientId = recipientId;
             this.aeadAlgorithm = aeadAlgorithm;
