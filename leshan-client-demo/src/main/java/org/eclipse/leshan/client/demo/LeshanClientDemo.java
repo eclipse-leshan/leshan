@@ -217,6 +217,16 @@ public class LeshanClientDemo {
             }
         }
 
+        // Abort if all OSCORE config is not complete
+        if (cl.hasOption("mastersecret")) {
+            if (!cl.hasOption("senderid") || !cl.hasOption("recipientid")) {
+                System.err.println(
+                        "mastersecret, senderid and recipientid should be used together to connect using OSCORE");
+                formatter.printHelp(USAGE, options);
+                return;
+            }
+        }
+
         // Get endpoint name
         String endpoint;
         if (cl.hasOption("n")) {
@@ -408,6 +418,7 @@ public class LeshanClientDemo {
                 return;
             }
 
+            // Save the configured OSCORE parameters
             oscoreSettings = new OSCoreSettings(mastersecretStr, mastersaltStr, idcontextStr,
                     senderidStr, recipientidStr, aeadInt, hkdfInt);
         }
