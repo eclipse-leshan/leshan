@@ -229,8 +229,7 @@ public class LeshanClientDemo {
         // Abort if all OSCORE config is not complete
         if (cl.hasOption("msec")) {
             if (!cl.hasOption("sid") || !cl.hasOption("rid")) {
-                System.err.println(
-                        "mastersecret, senderid and recipientid should be used together to connect using OSCORE");
+                System.err.println("msec, sid and rid should be used together to connect using OSCORE");
                 formatter.printHelp(USAGE, options);
                 return;
             }
