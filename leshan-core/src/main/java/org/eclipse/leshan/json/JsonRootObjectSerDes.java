@@ -52,6 +52,8 @@ public class JsonRootObjectSerDes extends JsonSerDes<JsonRootObject> {
         JsonValue e = o.get("e");
         if (e != null)
             jro.setResourceList(serDes.deserialize(e.asArray()));
+        else
+            throw new LwM2mJsonException("'e' field is missing for %s", o.toString());
 
         JsonValue bn = o.get("bn");
         if (bn != null && bn.isString())

@@ -26,7 +26,8 @@ public class JsonArrayEntrySerDes extends JsonSerDes<JsonArrayEntry> {
     @Override
     public JsonObject jSerialize(JsonArrayEntry jae) {
         JsonObject o = new JsonObject();
-        o.add("n", jae.getName());
+        if (jae.getName() != null)
+            o.add("n", jae.getName());
         Type type = jae.getType();
         if (type != null) {
             switch (jae.getType()) {
@@ -43,7 +44,7 @@ public class JsonArrayEntrySerDes extends JsonSerDes<JsonArrayEntry> {
                 o.add("sv", jae.getStringValue());
                 break;
             default:
-                break;
+                throw new LwM2mJsonException("JsonArrayEntry MUST have a value : %s", jae);
             }
         }
         if (jae.getTime() != null)
@@ -78,6 +79,10 @@ public class JsonArrayEntrySerDes extends JsonSerDes<JsonArrayEntry> {
         JsonValue ov = o.get("ov");
         if (ov != null && ov.isString())
             jae.setObjectLinkValue(ov.asString());
+
+        if (jae.getType() == null) {
+            throw new LwM2mJsonException("Missing value(v,bv,ov,sv) field for entry %s", o.toString());
+        }
 
         return jae;
     }

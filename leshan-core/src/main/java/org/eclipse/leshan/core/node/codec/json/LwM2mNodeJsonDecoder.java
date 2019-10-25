@@ -80,18 +80,16 @@ public class LwM2mNodeJsonDecoder {
         }
     }
 
-    private static List<TimestampedLwM2mNode> parseJSON(JsonRootObject jsonObject, LwM2mPath path, LwM2mModel model,
-            Class<? extends LwM2mNode> nodeClass) throws CodecException {
+    private static List<TimestampedLwM2mNode> parseJSON(JsonRootObject jsonObject, LwM2mPath requestPath,
+            LwM2mModel model, Class<? extends LwM2mNode> nodeClass) throws CodecException {
 
-        LOG.trace("Parsing JSON content for path {}: {}", path, jsonObject);
+        LOG.trace("Parsing JSON content for path {}: {}", requestPath, jsonObject);
 
         // Group JSON entry by time-stamp
         Map<Long, Collection<JsonArrayEntry>> jsonEntryByTimestamp = groupJsonEntryByTimestamp(jsonObject);
 
         // Extract baseName
-        LwM2mPath baseName = extractAndValidateBaseName(jsonObject, path);
-        if (baseName == null)
-            baseName = path; // if no base name, use request path as base name
+        String baseName = jsonObject.getBaseName() == null ? "" : jsonObject.getBaseName();
 
         // fill time-stamped nodes collection
         List<TimestampedLwM2mNode> timestampedNodes = new ArrayList<>();
@@ -99,7 +97,7 @@ public class LwM2mNodeJsonDecoder {
 
             // Group JSON entry by instance
             Map<Integer, Collection<JsonArrayEntry>> jsonEntryByInstanceId = groupJsonEntryByInstanceId(
-                    entryByTimestamp.getValue(), baseName);
+                    entryByTimestamp.getValue(), baseName, requestPath);
 
             // Create lwm2m node
             LwM2mNode node;
@@ -107,37 +105,37 @@ public class LwM2mNodeJsonDecoder {
                 Collection<LwM2mObjectInstance> instances = new ArrayList<>();
                 for (Entry<Integer, Collection<JsonArrayEntry>> entryByInstanceId : jsonEntryByInstanceId.entrySet()) {
                     Map<Integer, LwM2mResource> resourcesMap = extractLwM2mResources(entryByInstanceId.getValue(),
-                            baseName, model);
+                            baseName, model, requestPath);
 
                     instances.add(new LwM2mObjectInstance(entryByInstanceId.getKey(), resourcesMap.values()));
                 }
 
-                node = new LwM2mObject(baseName.getObjectId(), instances);
+                node = new LwM2mObject(requestPath.getObjectId(), instances);
             } else if (nodeClass == LwM2mObjectInstance.class) {
                 // validate we have resources for only 1 instance
                 if (jsonEntryByInstanceId.size() != 1)
-                    throw new CodecException("One instance expected in the payload [path:%s]", path);
+                    throw new CodecException("One instance expected in the payload [path:%s]", requestPath);
 
                 // Extract resources
                 Entry<Integer, Collection<JsonArrayEntry>> instanceEntry = jsonEntryByInstanceId.entrySet().iterator()
                         .next();
                 Map<Integer, LwM2mResource> resourcesMap = extractLwM2mResources(instanceEntry.getValue(), baseName,
-                        model);
+                        model, requestPath);
 
                 // Create instance
                 node = new LwM2mObjectInstance(instanceEntry.getKey(), resourcesMap.values());
             } else if (nodeClass == LwM2mResource.class) {
                 // validate we have resources for only 1 instance
                 if (jsonEntryByInstanceId.size() > 1)
-                    throw new CodecException("Only one instance expected in the payload [path:%s]", path);
+                    throw new CodecException("Only one instance expected in the payload [path:%s]", requestPath);
 
                 // Extract resources
                 Map<Integer, LwM2mResource> resourcesMap = extractLwM2mResources(
-                        jsonEntryByInstanceId.values().iterator().next(), baseName, model);
+                        jsonEntryByInstanceId.values().iterator().next(), baseName, model, requestPath);
 
                 // validate there is only 1 resource
                 if (resourcesMap.size() != 1)
-                    throw new CodecException("One resource should be present in the payload [path:%s]", path);
+                    throw new CodecException("One resource should be present in the payload [path:%s]", requestPath);
 
                 node = resourcesMap.values().iterator().next();
             } else {
@@ -221,12 +219,12 @@ public class LwM2mNodeJsonDecoder {
      * @return a map (instanceId => collection of JsonArrayEntry)
      */
     private static Map<Integer, Collection<JsonArrayEntry>> groupJsonEntryByInstanceId(
-            Collection<JsonArrayEntry> jsonEntries, LwM2mPath baseName) throws CodecException {
+            Collection<JsonArrayEntry> jsonEntries, String baseName, LwM2mPath requestPath) throws CodecException {
         Map<Integer, Collection<JsonArrayEntry>> result = new HashMap<>();
 
         for (JsonArrayEntry e : jsonEntries) {
             // Build resource path
-            LwM2mPath nodePath = baseName.append(e.getName());
+            LwM2mPath nodePath = extractAndValidatePath(baseName, e.getName() == null ? "" : e.getName(), requestPath);
 
             // Validate path
             if (!nodePath.isResourceInstance() && !nodePath.isResource()) {
@@ -247,45 +245,49 @@ public class LwM2mNodeJsonDecoder {
         }
 
         // Create an entry for an empty instance if possible
-        if (result.isEmpty() && baseName.getObjectInstanceId() != null) {
-            result.put(baseName.getObjectInstanceId(), new ArrayList<JsonArrayEntry>());
+        if (result.isEmpty()) {
+            if (baseName.isEmpty()) {
+                // search object instance id in request path
+                if (requestPath.getObjectInstanceId() != null) {
+                    result.put(requestPath.getObjectInstanceId(), new ArrayList<JsonArrayEntry>());
+                }
+            } else {
+                // search object instance id in basename
+                LwM2mPath basePath = extractAndValidatePath(baseName, "", requestPath);
+                if (basePath.getObjectInstanceId() != null)
+                    result.put(basePath.getObjectInstanceId(), new ArrayList<JsonArrayEntry>());
+            }
         }
         return result;
     }
 
-    private static LwM2mPath extractAndValidateBaseName(JsonRootObject jsonObject, LwM2mPath requestPath)
+    private static LwM2mPath extractAndValidatePath(String baseName, String name, LwM2mPath requestPath)
             throws CodecException {
-        // Check baseName is valid
-        if (jsonObject.getBaseName() != null && !jsonObject.getBaseName().isEmpty()) {
-            LwM2mPath bnPath = new LwM2mPath(jsonObject.getBaseName());
+        LwM2mPath path = new LwM2mPath(baseName + name);
 
-            // check returned base name path is under requested path
-            if (requestPath.getObjectId() != null && bnPath.getObjectId() != null) {
-                if (!bnPath.getObjectId().equals(requestPath.getObjectId())) {
-                    throw new CodecException("Basename path [%s] does not match requested path [%s].", bnPath,
+        // check returned path is under requested path
+        if (requestPath.getObjectId() != null && path.getObjectId() != null) {
+            if (!path.getObjectId().equals(requestPath.getObjectId())) {
+                throw new CodecException("resource path [%s] does not match requested path [%s].", path, requestPath);
+            }
+            if (requestPath.getObjectInstanceId() != null && path.getObjectInstanceId() != null) {
+                if (!path.getObjectInstanceId().equals(requestPath.getObjectInstanceId())) {
+                    throw new CodecException("Basename path [%s] does not match requested path [%s].", path,
                             requestPath);
                 }
-                if (requestPath.getObjectInstanceId() != null && bnPath.getObjectInstanceId() != null) {
-                    if (!bnPath.getObjectInstanceId().equals(requestPath.getObjectInstanceId())) {
-                        throw new CodecException("Basename path [%s] does not match requested path [%s].", bnPath,
+                if (requestPath.getResourceId() != null && path.getResourceId() != null) {
+                    if (!path.getResourceId().equals(requestPath.getResourceId())) {
+                        throw new CodecException("Basename path [%s] does not match requested path [%s].", path,
                                 requestPath);
-                    }
-                    if (requestPath.getResourceId() != null && bnPath.getResourceId() != null) {
-                        if (!bnPath.getResourceId().equals(requestPath.getResourceId())) {
-                            throw new CodecException("Basename path [%s] does not match requested path [%s].", bnPath,
-                                    requestPath);
-                        }
                     }
                 }
             }
-            return bnPath;
         }
-        return null;
-
+        return path;
     }
 
     private static Map<Integer, LwM2mResource> extractLwM2mResources(Collection<JsonArrayEntry> jsonArrayEntries,
-            LwM2mPath baseName, LwM2mModel model) throws CodecException {
+            String baseName, LwM2mModel model, LwM2mPath requestPath) throws CodecException {
         if (jsonArrayEntries == null)
             return Collections.emptyMap();
 
@@ -294,8 +296,13 @@ public class LwM2mNodeJsonDecoder {
         Map<LwM2mPath, Map<Integer, JsonArrayEntry>> multiResourceMap = new HashMap<>();
         for (JsonArrayEntry resourceElt : jsonArrayEntries) {
 
-            // Build resource path
-            LwM2mPath nodePath = baseName.append(resourceElt.getName());
+            // Build resource path (path validation was already done in groupJsonEntryByInstanceId
+            LwM2mPath nodePath;
+            if (resourceElt.getName() == null) {
+                nodePath = new LwM2mPath(baseName);
+            } else {
+                nodePath = new LwM2mPath(baseName + resourceElt.getName());
+            }
 
             // handle LWM2M resources
             if (nodePath.isResourceInstance()) {
@@ -356,13 +363,21 @@ public class LwM2mNodeJsonDecoder {
         }
 
         // If we found nothing, we try to create an empty multi-instance resource
-        if (lwM2mResourceMap.isEmpty() && baseName.isResource()) {
-            ResourceModel resourceModel = model.getResourceModel(baseName.getObjectId(), baseName.getResourceId());
-            // We create it only if this respect the model
-            if (resourceModel == null || resourceModel.multiple) {
-                Type resourceType = getResourceType(baseName, model, null);
-                lwM2mResourceMap.put(baseName.getResourceId(), LwM2mMultipleResource
-                        .newResource(baseName.getResourceId(), new HashMap<Integer, Object>(), resourceType));
+        if (lwM2mResourceMap.isEmpty()) {
+            LwM2mPath path;
+            if (baseName.isEmpty()) {
+                path = requestPath;
+            } else {
+                path = extractAndValidatePath(baseName, "", requestPath);
+            }
+            if (path.getObjectId() != null && path.getResourceId() != null) {
+                ResourceModel resourceModel = model.getResourceModel(path.getObjectId(), path.getResourceId());
+                // We create it only if this respect the model
+                if (resourceModel == null || resourceModel.multiple) {
+                    Type resourceType = getResourceType(path, model, null);
+                    lwM2mResourceMap.put(path.getResourceId(), LwM2mMultipleResource.newResource(path.getResourceId(),
+                            new HashMap<Integer, Object>(), resourceType));
+                }
             }
         }
 

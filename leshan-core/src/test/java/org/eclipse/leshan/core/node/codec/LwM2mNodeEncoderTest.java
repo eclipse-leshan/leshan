@@ -180,7 +180,7 @@ public class LwM2mNodeEncoderTest {
         byte[] encoded = encoder.encode(oInstance, ContentFormat.JSON, new LwM2mPath("/3/0"), model);
 
         StringBuilder b = new StringBuilder();
-        b.append("{\"bn\":\"/3/0\",\"e\":[");
+        b.append("{\"bn\":\"/3/0/\",\"e\":[");
         b.append("{\"n\":\"0\",\"sv\":\"Open Mobile Alliance\"},");
         b.append("{\"n\":\"1\",\"sv\":\"Lightweight M2M Client\"},");
         b.append("{\"n\":\"2\",\"sv\":\"345000123\"},");
@@ -213,9 +213,9 @@ public class LwM2mNodeEncoderTest {
 
         StringBuilder b = new StringBuilder();
         b.append("{\"bn\":\"/1024/0/1\",\"e\":[");
-        b.append("{\"n\":\"\",\"v\":22.9,\"t\":500},");
-        b.append("{\"n\":\"\",\"v\":22.4,\"t\":510},");
-        b.append("{\"n\":\"\",\"v\":24.1,\"t\":520}]}");
+        b.append("{\"v\":22.9,\"t\":500},");
+        b.append("{\"v\":22.4,\"t\":510},");
+        b.append("{\"v\":24.1,\"t\":520}]}");
 
         String expected = b.toString();
         Assert.assertEquals(expected, new String(encoded));
@@ -237,7 +237,7 @@ public class LwM2mNodeEncoderTest {
         byte[] encoded = encoder.encodeTimestampedData(data, ContentFormat.JSON, new LwM2mPath(1024, 0), model);
 
         StringBuilder b = new StringBuilder();
-        b.append("{\"bn\":\"/1024/0\",\"e\":[");
+        b.append("{\"bn\":\"/1024/0/\",\"e\":[");
         b.append("{\"n\":\"1\",\"v\":22.9,\"t\":110},");
         b.append("{\"n\":\"0\",\"sv\":\"a string\",\"t\":120},");
         b.append("{\"n\":\"1\",\"v\":22.4,\"t\":120},");
@@ -269,7 +269,7 @@ public class LwM2mNodeEncoderTest {
         byte[] encoded = encoder.encodeTimestampedData(data, ContentFormat.JSON, new LwM2mPath(1024), model);
 
         StringBuilder b = new StringBuilder();
-        b.append("{\"bn\":\"/1024\",\"e\":[");
+        b.append("{\"bn\":\"/1024/\",\"e\":[");
         b.append("{\"n\":\"0/1\",\"v\":22.9,\"t\":210},");
         b.append("{\"n\":\"0/0\",\"sv\":\"a string\",\"t\":220},");
         b.append("{\"n\":\"0/1\",\"v\":22.4,\"t\":220},");

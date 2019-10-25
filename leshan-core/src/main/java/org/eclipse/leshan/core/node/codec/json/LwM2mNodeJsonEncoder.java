@@ -58,7 +58,7 @@ public class LwM2mNodeJsonEncoder {
         node.accept(internalEncoder);
         JsonRootObject jsonObject = new JsonRootObject();
         jsonObject.setResourceList(internalEncoder.resourceList);
-        jsonObject.setBaseName(path.toString());
+        jsonObject.setBaseName(internalEncoder.baseName);
         return LwM2mJson.toJsonLwM2m(jsonObject).getBytes();
     }
 
@@ -70,6 +70,7 @@ public class LwM2mNodeJsonEncoder {
 
         InternalEncoder internalEncoder = new InternalEncoder();
         ArrayList<JsonArrayEntry> entries = new ArrayList<>();
+        String baseName = null;
         for (TimestampedLwM2mNode timestampedLwM2mNode : timestampedNodes) {
             internalEncoder.objectId = path.getObjectId();
             internalEncoder.model = model;
@@ -79,10 +80,19 @@ public class LwM2mNodeJsonEncoder {
             internalEncoder.timestamp = timestampedLwM2mNode.getTimestamp();
             timestampedLwM2mNode.getNode().accept(internalEncoder);
             entries.addAll(internalEncoder.resourceList);
+            if (baseName != null) {
+                if (!baseName.equals(internalEncoder.baseName)) {
+                    throw new CodecException(
+                            "Unexpected baseName %s (%s expected) when encoding timestamped nodes for request %s",
+                            internalEncoder.baseName, baseName, path);
+                }
+            } else {
+                baseName = internalEncoder.baseName;
+            }
         }
         JsonRootObject jsonObject = new JsonRootObject();
         jsonObject.setResourceList(entries);
-        jsonObject.setBaseName(path.toString());
+        jsonObject.setBaseName(internalEncoder.baseName);
         return LwM2mJson.toJsonLwM2m(jsonObject).getBytes();
     }
 
@@ -96,6 +106,7 @@ public class LwM2mNodeJsonEncoder {
 
         // visitor output
         private ArrayList<JsonArrayEntry> resourceList = null;
+        private String baseName = null;
 
         @Override
         public void visit(LwM2mObject object) {
@@ -104,6 +115,7 @@ public class LwM2mNodeJsonEncoder {
             if (!requestPath.isObject()) {
                 throw new CodecException("Invalid request path %s for JSON object encoding", requestPath);
             }
+            baseName = requestPath.toString() + "/";
 
             // Create resources
             resourceList = new ArrayList<>();
@@ -129,6 +141,7 @@ public class LwM2mNodeJsonEncoder {
                 } else {
                     throw new CodecException("Invalid request path %s for JSON instance encoding", requestPath);
                 }
+                baseName = requestPath + "/";
                 // Create resources
                 resourceList.addAll(lwM2mResourceToJsonArrayEntry(prefixPath, timestamp, resource));
             }
@@ -140,8 +153,12 @@ public class LwM2mNodeJsonEncoder {
             if (!requestPath.isResource()) {
                 throw new CodecException("Invalid request path %s for JSON resource encoding", requestPath);
             }
-
-            resourceList = lwM2mResourceToJsonArrayEntry("", timestamp, resource);
+            if (resource.isMultiInstances()) {
+                baseName = requestPath.toString() + "/";
+            } else {
+                baseName = requestPath.toString();
+            }
+            resourceList = lwM2mResourceToJsonArrayEntry(null, timestamp, resource);
         }
 
         private ArrayList<JsonArrayEntry> lwM2mResourceToJsonArrayEntry(String resourcePath, Long timestamp,
@@ -183,7 +200,7 @@ public class LwM2mNodeJsonEncoder {
                 jsonResourceElt.setTime(timestamp);
 
                 // Convert value using expected type
-                LwM2mPath lwM2mResourcePath = new LwM2mPath(resourcePath);
+                LwM2mPath lwM2mResourcePath = resourcePath != null ? new LwM2mPath(resourcePath) : null;
                 this.setResourceValue(converter.convertValue(resource.getValue(), resource.getType(), expectedType,
                         lwM2mResourcePath), expectedType, jsonResourceElt, lwM2mResourcePath);
 
