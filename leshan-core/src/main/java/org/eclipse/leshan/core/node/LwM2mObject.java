@@ -42,7 +42,12 @@ public class LwM2mObject implements LwM2mNode {
         this.id = id;
         HashMap<Integer, LwM2mObjectInstance> instancesMap = new HashMap<>(instances.size());
         for (LwM2mObjectInstance instance : instances) {
-            instancesMap.put(instance.getId(), instance);
+            LwM2mObjectInstance previous = instancesMap.put(instance.getId(), instance);
+            if (previous != null) {
+                throw new IllegalArgumentException(
+                        String.format("Unable to create LwM2mObject : there is several instances with the same id %d",
+                                instance.getId()));
+            }
         }
         this.instances = Collections.unmodifiableMap(instancesMap);
     }
