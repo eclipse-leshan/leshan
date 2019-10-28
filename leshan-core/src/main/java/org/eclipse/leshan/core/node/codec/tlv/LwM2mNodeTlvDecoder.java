@@ -26,6 +26,7 @@ import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mIncompletePath;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mNodeException;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -49,7 +50,7 @@ public class LwM2mNodeTlvDecoder {
         try {
             Tlv[] tlvs = TlvDecoder.decode(ByteBuffer.wrap(content != null ? content : new byte[0]));
             return parseTlv(tlvs, path, model, nodeClass);
-        } catch (TlvException | IllegalArgumentException e) {
+        } catch (TlvException | LwM2mNodeException e) {
             throw new CodecException(String.format("Unable to decode tlv for path [%s]", path), e);
         }
     }

@@ -118,22 +118,22 @@ public class LwM2MResourceTest {
                 LwM2mMultipleResource.newBinaryResource(10, values2));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = LwM2mNodeException.class)
     public void string_resource_with_null_value() {
         LwM2mSingleResource.newStringResource(1, null);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = LwM2mNodeException.class)
     public void generic_resource_with_null_value() {
         LwM2mSingleResource.newResource(1, null, Type.INTEGER);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = LwM2mNodeException.class)
     public void generic_instance_with_incompatible_value_and_type() {
         LwM2mSingleResource.newResource(0, "a string", Type.BOOLEAN);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = LwM2mNodeException.class)
     public void integer_multi_instances_resource_with_null_value() {
         Map<Integer, Long> values = new HashMap<>();
         values.put(2, 2L);
@@ -141,7 +141,7 @@ public class LwM2MResourceTest {
         LwM2mMultipleResource.newIntegerResource(0, values);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = LwM2mNodeException.class)
     public void generic_multi_instances_resource_with_null_value() {
         Map<Integer, String> values = new HashMap<>();
         values.put(2, "value");
@@ -149,7 +149,7 @@ public class LwM2MResourceTest {
         LwM2mMultipleResource.newResource(0, values, Type.STRING);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = LwM2mNodeException.class)
     public void generic_multi_instance_with_incompatible_value_and_type() {
         Map<Integer, String> values = new HashMap<>();
         values.put(2, "value");

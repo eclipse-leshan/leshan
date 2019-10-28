@@ -21,8 +21,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.leshan.util.Validate;
-
 /**
  * The top level element in the LWM2M resource tree.
  * <p>
@@ -36,7 +34,7 @@ public class LwM2mObject implements LwM2mNode {
     private final Map<Integer, LwM2mObjectInstance> instances;
 
     public LwM2mObject(int id, Collection<LwM2mObjectInstance> instances) {
-        Validate.notNull(instances);
+        LwM2mNodeUtil.validateNotNull(instances, "instances MUST NOT be null");
         LwM2mNodeUtil.validateObjectId(id);
 
         this.id = id;
@@ -44,9 +42,9 @@ public class LwM2mObject implements LwM2mNode {
         for (LwM2mObjectInstance instance : instances) {
             LwM2mObjectInstance previous = instancesMap.put(instance.getId(), instance);
             if (previous != null) {
-                throw new IllegalArgumentException(
-                        String.format("Unable to create LwM2mObject : there is several instances with the same id %d",
-                                instance.getId()));
+                throw new LwM2mNodeException(
+                        "Unable to create LwM2mObject : there is several instances with the same id %d",
+                        instance.getId());
             }
         }
         this.instances = Collections.unmodifiableMap(instancesMap);

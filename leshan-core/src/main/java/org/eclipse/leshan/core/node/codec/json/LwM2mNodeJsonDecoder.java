@@ -32,6 +32,7 @@ import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mNodeException;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -64,7 +65,7 @@ public class LwM2mNodeJsonDecoder {
                 // return the most recent value
                 return (T) timestampedNodes.get(0).getNode();
             }
-        } catch (LwM2mJsonException | IllegalArgumentException e) {
+        } catch (LwM2mJsonException | LwM2mNodeException e) {
             throw new CodecException(e, "Unable to deserialize json [path:%s]", path);
         }
     }

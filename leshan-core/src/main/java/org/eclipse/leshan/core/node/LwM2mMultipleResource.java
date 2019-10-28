@@ -27,7 +27,6 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 import org.eclipse.leshan.core.model.ResourceModel.Type;
-import org.eclipse.leshan.util.Validate;
 
 /**
  * A resource which contains several resource instances.
@@ -43,7 +42,7 @@ public class LwM2mMultipleResource implements LwM2mResource {
     private final Type type;
 
     protected LwM2mMultipleResource(int id, Map<Integer, ?> values, Type type) {
-        Validate.notNull(values);
+        LwM2mNodeUtil.validateNotNull(values, "values MUST NOT be null");
         LwM2mNodeUtil.validateResourceId(id);
 
         for (Integer instanceId : values.keySet()) {
@@ -55,66 +54,67 @@ public class LwM2mMultipleResource implements LwM2mResource {
     }
 
     public static LwM2mMultipleResource newResource(int id, Map<Integer, ?> values, Type type) {
+        LwM2mNodeUtil.validateNotNull(values, "values MUST NOT be null");
         switch (type) {
         case INTEGER:
-            Validate.allElementsOfType(values.values(), Long.class);
+            LwM2mNodeUtil.allElementsOfType(values.values(), Long.class);
             break;
         case FLOAT:
-            Validate.allElementsOfType(values.values(), Double.class);
+            LwM2mNodeUtil.allElementsOfType(values.values(), Double.class);
             break;
         case BOOLEAN:
-            Validate.allElementsOfType(values.values(), Boolean.class);
+            LwM2mNodeUtil.allElementsOfType(values.values(), Boolean.class);
             break;
         case OPAQUE:
-            Validate.allElementsOfType(values.values(), byte[].class);
+            LwM2mNodeUtil.allElementsOfType(values.values(), byte[].class);
             break;
         case STRING:
-            Validate.allElementsOfType(values.values(), String.class);
+            LwM2mNodeUtil.allElementsOfType(values.values(), String.class);
             break;
         case TIME:
-            Validate.allElementsOfType(values.values(), Date.class);
+            LwM2mNodeUtil.allElementsOfType(values.values(), Date.class);
             break;
         case OBJLNK:
-            Validate.allElementsOfType(values.values(), ObjectLink.class);
+            LwM2mNodeUtil.allElementsOfType(values.values(), ObjectLink.class);
             break;
         default:
-            throw new IllegalArgumentException(String.format("Type %s is not supported", type.name()));
+            throw new LwM2mNodeException(String.format("Type %s is not supported", type.name()));
         }
         return new LwM2mMultipleResource(id, values, type);
     }
 
     public static LwM2mMultipleResource newStringResource(int id, Map<Integer, String> values) {
-        Validate.noNullElements(values.values());
+        LwM2mNodeUtil.noNullElements(values.values());
         return new LwM2mMultipleResource(id, values, Type.STRING);
     }
 
     public static LwM2mMultipleResource newIntegerResource(int id, Map<Integer, Long> values) {
-        Validate.noNullElements(values.values());
+        LwM2mNodeUtil.noNullElements(values.values());
         return new LwM2mMultipleResource(id, values, Type.INTEGER);
     }
 
     public static LwM2mMultipleResource newBooleanResource(int id, Map<Integer, Boolean> values) {
-        Validate.noNullElements(values.values());
+        LwM2mNodeUtil.noNullElements(values.values());
         return new LwM2mMultipleResource(id, values, Type.BOOLEAN);
     }
 
     public static LwM2mMultipleResource newFloatResource(int id, Map<Integer, Double> values) {
-        Validate.noNullElements(values.values());
+        LwM2mNodeUtil.noNullElements(values.values());
         return new LwM2mMultipleResource(id, values, Type.FLOAT);
     }
 
     public static LwM2mMultipleResource newDateResource(int id, Map<Integer, Date> values) {
-        Validate.noNullElements(values.values());
+        LwM2mNodeUtil.noNullElements(values.values());
         return new LwM2mMultipleResource(id, values, Type.TIME);
     }
 
     public static LwM2mMultipleResource newObjectLinkResource(int id, Map<Integer, ObjectLink> values) {
-        Validate.noNullElements(values.values());
+        LwM2mNodeUtil.noNullElements(values.values());
         return new LwM2mMultipleResource(id, values, Type.OBJLNK);
     }
 
     public static LwM2mMultipleResource newBinaryResource(int id, Map<Integer, byte[]> values) {
-        Validate.noNullElements(values.values());
+        LwM2mNodeUtil.noNullElements(values.values());
         return new LwM2mMultipleResource(id, values, Type.OPAQUE);
     }
 

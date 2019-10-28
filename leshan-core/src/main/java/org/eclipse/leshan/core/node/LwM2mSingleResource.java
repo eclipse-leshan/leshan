@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.eclipse.leshan.core.model.ResourceModel.Type;
-import org.eclipse.leshan.util.Validate;
 
 /**
  * A resource with a single value.
@@ -35,7 +34,7 @@ public class LwM2mSingleResource implements LwM2mResource {
     private final Type type;
 
     protected LwM2mSingleResource(int id, Object value, Type type) {
-        Validate.notNull(value);
+        LwM2mNodeUtil.validateNotNull(value, "value MUST NOT be null");
         LwM2mNodeUtil.validateResourceId(id);
 
         this.id = id;
@@ -48,34 +47,34 @@ public class LwM2mSingleResource implements LwM2mResource {
         switch (type) {
         case INTEGER:
             if (!(value instanceof Long))
-                throw new IllegalArgumentException(doesNotMatchMessage);
+                throw new LwM2mNodeException(doesNotMatchMessage);
             break;
         case FLOAT:
             if (!(value instanceof Double))
-                throw new IllegalArgumentException(doesNotMatchMessage);
+                throw new LwM2mNodeException(doesNotMatchMessage);
             break;
         case BOOLEAN:
             if (!(value instanceof Boolean))
-                throw new IllegalArgumentException(doesNotMatchMessage);
+                throw new LwM2mNodeException(doesNotMatchMessage);
             break;
         case OPAQUE:
             if (!(value instanceof byte[]))
-                throw new IllegalArgumentException(doesNotMatchMessage);
+                throw new LwM2mNodeException(doesNotMatchMessage);
             break;
         case STRING:
             if (!(value instanceof String))
-                throw new IllegalArgumentException(doesNotMatchMessage);
+                throw new LwM2mNodeException(doesNotMatchMessage);
             break;
         case TIME:
             if (!(value instanceof Date))
-                throw new IllegalArgumentException(doesNotMatchMessage);
+                throw new LwM2mNodeException(doesNotMatchMessage);
             break;
         case OBJLNK:
             if (!(value instanceof ObjectLink))
-                throw new IllegalArgumentException(doesNotMatchMessage);
+                throw new LwM2mNodeException(doesNotMatchMessage);
             break;
         default:
-            throw new IllegalArgumentException(String.format("Type %s is not supported", type.name()));
+            throw new LwM2mNodeException(String.format("Type %s is not supported", type.name()));
         }
         return new LwM2mSingleResource(id, value, type);
     }
