@@ -23,6 +23,7 @@ import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.node.LwM2mIncompletePath;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
@@ -116,12 +117,13 @@ public class LwM2mNodeTlvDecoder {
                     // single instance object?
                     ObjectModel oModel = model.getObjectModel(path.getObjectId());
                     if (oModel != null && !oModel.multiple) {
-                        instanceId = 0;
+                        return (T) parseObjectInstanceTlv(tlvs, path.getObjectId(), 0, model);
                     } else {
-                        instanceId = LwM2mObjectInstance.UNDEFINED;
+                        return (T) parseObjectInstanceTlvWithoutId(tlvs, path.getObjectId(), model);
                     }
+                } else {
+                    return (T) parseObjectInstanceTlv(tlvs, path.getObjectId(), instanceId, model);
                 }
-                return (T) parseObjectInstanceTlv(tlvs, path.getObjectId(), instanceId, model);
             }
         }
 
@@ -166,7 +168,6 @@ public class LwM2mNodeTlvDecoder {
 
     private static LwM2mObjectInstance parseObjectInstanceTlv(Tlv[] rscTlvs, int objectId, int instanceId,
             LwM2mModel model) throws CodecException {
-        // read resources
         Map<Integer, LwM2mResource> resources = new HashMap<>(rscTlvs.length);
         for (Tlv rscTlv : rscTlvs) {
             LwM2mPath resourcePath = new LwM2mPath(objectId, instanceId, rscTlv.getIdentifier());
@@ -177,11 +178,23 @@ public class LwM2mNodeTlvDecoder {
                         previousResource, resource, resource.getId(), resourcePath);
             }
         }
-        if (instanceId == LwM2mObjectInstance.UNDEFINED) {
-            return new LwM2mObjectInstance(resources.values());
-        } else {
-            return new LwM2mObjectInstance(instanceId, resources.values());
+        return new LwM2mObjectInstance(instanceId, resources.values());
+
+    }
+
+    private static LwM2mObjectInstance parseObjectInstanceTlvWithoutId(Tlv[] rscTlvs, int objectId, LwM2mModel model)
+            throws CodecException {
+        Map<Integer, LwM2mResource> resources = new HashMap<>(rscTlvs.length);
+        for (Tlv rscTlv : rscTlvs) {
+            LwM2mPath resourcePath = new LwM2mIncompletePath(objectId, rscTlv.getIdentifier());
+            LwM2mResource resource = parseResourceTlv(rscTlv, resourcePath, model);
+            LwM2mResource previousResource = resources.put(resource.getId(), resource);
+            if (previousResource != null) {
+                throw new CodecException("2 RESOURCE nodes (%s,%s) with the same identifier %d for path %s",
+                        previousResource, resource, resource.getId(), resourcePath);
+            }
         }
+        return new LwM2mObjectInstance(resources.values());
     }
 
     private static LwM2mResource parseResourceTlv(Tlv tlv, LwM2mPath resourcePath, LwM2mModel model)

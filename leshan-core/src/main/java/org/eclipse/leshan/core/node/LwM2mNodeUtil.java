@@ -15,6 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
+/**
+ * Utility class about {@link LwM2mNode} and {@link LwM2mPath}.
+ */
 public class LwM2mNodeUtil {
 
     public static boolean isUnsignedInt(Integer id) {
@@ -62,6 +65,52 @@ public class LwM2mNodeUtil {
         if (!isValidResourceInstanceId(id)) {
             throw new IllegalArgumentException(
                     String.format("Invalid resource instance id %d, It MUST be an unsigned int.", id));
+        }
+    }
+
+    public static void validatePath(LwM2mPath path) {
+        if (path.isObject()) {
+            LwM2mNodeUtil.validateObjectId(path.getObjectId());
+        } else if (path.isObjectInstance()) {
+            LwM2mNodeUtil.validateObjectId(path.getObjectId());
+            LwM2mNodeUtil.validateObjectInstanceId(path.getObjectInstanceId());
+        } else if (path.isResource()) {
+            LwM2mNodeUtil.validateObjectId(path.getObjectId());
+            LwM2mNodeUtil.validateObjectInstanceId(path.getObjectInstanceId());
+            LwM2mNodeUtil.validateResourceId(path.getResourceId());
+        } else if (path.isResourceInstance()) {
+            LwM2mNodeUtil.validateObjectId(path.getObjectId());
+            LwM2mNodeUtil.validateObjectInstanceId(path.getObjectInstanceId());
+            LwM2mNodeUtil.validateResourceId(path.getResourceId());
+            LwM2mNodeUtil.validateResourceInstanceId(path.getResourceInstanceId());
+        } else if (!path.isRoot()) {
+            throw new IllegalArgumentException(String.format("Invalide LWM2M path (%d,%d,%d,%d)", path.getObjectId(),
+                    path.getObjectInstanceId(), path.getResourceId(), path.getResourceInstanceId()));
+        }
+    }
+
+    public static void validateIncompletePath(LwM2mPath path) {
+        if (path.isObjectInstance()) {
+            LwM2mNodeUtil.validateObjectId(path.getObjectId());
+            LwM2mNodeUtil.validateUndefinedObjecInstanceId(path.getObjectInstanceId());
+        } else if (path.isResource()) {
+            LwM2mNodeUtil.validateObjectId(path.getObjectId());
+            LwM2mNodeUtil.validateUndefinedObjecInstanceId(path.getObjectInstanceId());
+            LwM2mNodeUtil.validateResourceId(path.getResourceId());
+        } else if (path.isResourceInstance()) {
+            LwM2mNodeUtil.validateObjectId(path.getObjectId());
+            LwM2mNodeUtil.validateUndefinedObjecInstanceId(path.getObjectInstanceId());
+            LwM2mNodeUtil.validateResourceId(path.getResourceId());
+            LwM2mNodeUtil.validateResourceInstanceId(path.getResourceInstanceId());
+        } else if (!path.isRoot()) {
+            throw new IllegalArgumentException(String.format("Invalide LWM2M path (%d,%d,%d,%d)", path.getObjectId(),
+                    path.getObjectInstanceId(), path.getResourceId(), path.getResourceInstanceId()));
+        }
+    }
+
+    public static void validateUndefinedObjecInstanceId(int id) {
+        if (id != LwM2mObjectInstance.UNDEFINED) {
+            throw new IllegalArgumentException("Instance id should be undefined");
         }
     }
 }

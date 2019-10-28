@@ -30,10 +30,7 @@ public class LwM2mPath {
     public final static LwM2mPath ROOTPATH = new LwM2mPath();
 
     private LwM2mPath() {
-        this.objectId = null;
-        this.objectInstanceId = null;
-        this.resourceId = null;
-        this.resourceInstanceId = null;
+        this(null, null, null, null);
     }
 
     /**
@@ -42,10 +39,8 @@ public class LwM2mPath {
      * @param objectId the object identifier
      */
     public LwM2mPath(int objectId) {
-        this.objectId = objectId;
-        this.objectInstanceId = null;
-        this.resourceId = null;
-        this.resourceInstanceId = null;
+        this(objectId, null, null, null);
+        validate();
     }
 
     /**
@@ -55,10 +50,8 @@ public class LwM2mPath {
      * @param objectInstanceId the instance identifier
      */
     public LwM2mPath(int objectId, int objectInstanceId) {
-        this.objectId = objectId;
-        this.objectInstanceId = objectInstanceId;
-        this.resourceId = null;
-        this.resourceInstanceId = null;
+        this(objectId, objectInstanceId, null, null);
+        validate();
     }
 
     /**
@@ -69,10 +62,8 @@ public class LwM2mPath {
      * @param resourceId the resource identifier
      */
     public LwM2mPath(int objectId, int objectInstanceId, int resourceId) {
-        this.objectId = objectId;
-        this.objectInstanceId = objectInstanceId;
-        this.resourceId = resourceId;
-        this.resourceInstanceId = null;
+        this(objectId, objectInstanceId, resourceId, null);
+        validate();
     }
 
     /**
@@ -84,10 +75,8 @@ public class LwM2mPath {
      * @param resourceInstanceId the resource instance identifier
      */
     public LwM2mPath(int objectId, int objectInstanceId, int resourceId, int resourceInstanceId) {
-        this.objectId = objectId;
-        this.objectInstanceId = objectInstanceId;
-        this.resourceId = resourceId;
-        this.resourceInstanceId = resourceInstanceId;
+        this((Integer) objectId, (Integer) objectInstanceId, (Integer) resourceId, (Integer) resourceInstanceId);
+        validate();
     }
 
     /**
@@ -112,9 +101,26 @@ public class LwM2mPath {
             this.objectInstanceId = (p.length >= 2) ? Integer.valueOf(p[1]) : null;
             this.resourceId = (p.length >= 3) ? Integer.valueOf(p[2]) : null;
             this.resourceInstanceId = (p.length == 4) ? Integer.valueOf(p[3]) : null;
+            validate();
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Invalid elements in path: " + path, e);
         }
+    }
+
+    protected LwM2mPath(Integer objectId, Integer objectInstanceId, Integer resourceId, Integer resourceInstanceId) {
+        this.objectId = objectId;
+        this.objectInstanceId = objectInstanceId;
+        this.resourceId = resourceId;
+        this.resourceInstanceId = resourceInstanceId;
+    }
+
+    /**
+     * Validate the current path and raise {@link IllegalArgumentException} is path is not valid
+     * 
+     * @see LwM2mNodeUtil#validatePath(LwM2mPath)
+     */
+    protected void validate() {
+        LwM2mNodeUtil.validatePath(this);
     }
 
     /**
@@ -135,7 +141,18 @@ public class LwM2mPath {
      * @return a new path which is the concatenation of this path and the given one in parameter.
      */
     public LwM2mPath append(int end) {
-        return append(String.valueOf(end));
+        if (isRoot()) {
+            return new LwM2mPath(end);
+        } else if (isObject()) {
+            return new LwM2mPath(getObjectId(), end);
+        } else if (isObjectInstance()) {
+            return new LwM2mPath(getObjectId(), getObjectInstanceId(), end);
+        } else if (isResource()) {
+            return new LwM2mPath((int) getObjectId(), (int) getObjectInstanceId(), (int) getResourceId(), end);
+        } else {
+            throw new IllegalArgumentException(String.format(
+                    "Unable to append Id(%d) to path %s. Resource instance level is the deeper one.", end, this));
+        }
     }
 
     /**

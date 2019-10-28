@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.node.LwM2mIncompletePath;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mNodeVisitor;
 import org.eclipse.leshan.core.node.LwM2mObject;
@@ -103,8 +104,7 @@ public class LwM2mNodeTlvEncoder {
                 // the instanceId is part of the request path or is undefined
                 // so the instance TLV layer is not needed.
                 // encoded as an array of resource TLVs
-                tlvs = encodeResources(instance.getResources().values(),
-                        new LwM2mPath(path.getObjectId(), instance.getId()));
+                tlvs = encodeResources(instance.getResources().values(), new LwM2mIncompletePath(path.getObjectId()));
             } else {
                 // encoded as an instance TLV
                 Tlv[] resources = encodeResources(instance.getResources().values(),
