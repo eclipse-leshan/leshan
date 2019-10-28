@@ -36,6 +36,8 @@ public class LwM2mSingleResource implements LwM2mResource {
 
     protected LwM2mSingleResource(int id, Object value, Type type) {
         Validate.notNull(value);
+        LwM2mNodeUtil.validateResourceId(id);
+
         this.id = id;
         this.value = value;
         this.type = type;
@@ -192,8 +194,8 @@ public class LwM2mSingleResource implements LwM2mResource {
                 return false;
         } else {
             // Custom equals to handle byte arrays
-            return type == Type.OPAQUE ? Arrays.equals((byte[]) value, (byte[]) other.value) : value
-                    .equals(other.value);
+            return type == Type.OPAQUE ? Arrays.equals((byte[]) value, (byte[]) other.value)
+                    : value.equals(other.value);
         }
         return true;
     }

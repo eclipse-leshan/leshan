@@ -149,7 +149,7 @@ public class LwM2mNodeEncoderTest {
 
     @Test
     public void tlv_encode_device_object_instance_as_resources_array__undefined_instance_id() {
-        LwM2mObjectInstance oInstance = new LwM2mObjectInstance(LwM2mObjectInstance.UNDEFINED, getDeviceResources());
+        LwM2mObjectInstance oInstance = new LwM2mObjectInstance(getDeviceResources());
         byte[] encoded = encoder.encode(oInstance, ContentFormat.TLV, new LwM2mPath("/3"), model);
 
         Assert.assertArrayEquals(ENCODED_DEVICE_WITHOUT_INSTANCE, encoded);

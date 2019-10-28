@@ -127,9 +127,13 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         coapRequest = Request.newPost();
         coapRequest.getOptions().setContentFormat(request.getContentFormat().getCode());
         // if no instance id, the client will assign it.
-        int instanceId = request.getInstanceId() != null ? request.getInstanceId() : LwM2mObjectInstance.UNDEFINED;
-        coapRequest.setPayload(encoder.encode(new LwM2mObjectInstance(instanceId, request.getResources()),
-                request.getContentFormat(), request.getPath(), model));
+        LwM2mObjectInstance instance;
+        if (request.getInstanceId() == null) {
+            instance = new LwM2mObjectInstance(request.getResources());
+        } else {
+            instance = new LwM2mObjectInstance(request.getInstanceId(), request.getResources());
+        }
+        coapRequest.setPayload(encoder.encode(instance, request.getContentFormat(), request.getPath(), model));
         setTarget(coapRequest, request.getPath());
     }
 

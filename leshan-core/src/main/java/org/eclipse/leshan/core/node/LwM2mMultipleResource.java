@@ -43,6 +43,12 @@ public class LwM2mMultipleResource implements LwM2mResource {
     private final Type type;
 
     protected LwM2mMultipleResource(int id, Map<Integer, ?> values, Type type) {
+        Validate.notNull(values);
+        LwM2mNodeUtil.validateResourceId(id);
+
+        for (Integer instanceId : values.keySet()) {
+            LwM2mNodeUtil.validateResourceInstanceId(instanceId);
+        }
         this.id = id;
         this.values = Collections.unmodifiableMap(new HashMap<>(values));
         this.type = type;
@@ -241,8 +247,8 @@ public class LwM2mMultipleResource implements LwM2mResource {
                         return false;
                 } else {
                     // Custom equals to handle byte arrays
-                    return type == Type.OPAQUE ? Arrays.equals((byte[]) value, (byte[]) m2.get(key)) : value.equals(m2
-                            .get(key));
+                    return type == Type.OPAQUE ? Arrays.equals((byte[]) value, (byte[]) m2.get(key))
+                            : value.equals(m2.get(key));
                 }
             }
         } catch (ClassCastException | NullPointerException unused) {

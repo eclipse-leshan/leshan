@@ -48,7 +48,7 @@ public class LwM2mNodeTlvDecoder {
         try {
             Tlv[] tlvs = TlvDecoder.decode(ByteBuffer.wrap(content != null ? content : new byte[0]));
             return parseTlv(tlvs, path, model, nodeClass);
-        } catch (TlvException e) {
+        } catch (TlvException | IllegalArgumentException e) {
             throw new CodecException(String.format("Unable to decode tlv for path [%s]", path), e);
         }
     }
@@ -177,7 +177,11 @@ public class LwM2mNodeTlvDecoder {
                         previousResource, resource, resource.getId(), resourcePath);
             }
         }
-        return new LwM2mObjectInstance(instanceId, resources.values());
+        if (instanceId == LwM2mObjectInstance.UNDEFINED) {
+            return new LwM2mObjectInstance(resources.values());
+        } else {
+            return new LwM2mObjectInstance(instanceId, resources.values());
+        }
     }
 
     private static LwM2mResource parseResourceTlv(Tlv tlv, LwM2mPath resourcePath, LwM2mModel model)

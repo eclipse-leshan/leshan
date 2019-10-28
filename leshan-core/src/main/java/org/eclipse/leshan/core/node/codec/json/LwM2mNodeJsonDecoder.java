@@ -64,7 +64,7 @@ public class LwM2mNodeJsonDecoder {
                 // return the most recent value
                 return (T) timestampedNodes.get(0).getNode();
             }
-        } catch (LwM2mJsonException e) {
+        } catch (LwM2mJsonException | IllegalArgumentException e) {
             throw new CodecException(e, "Unable to deserialize json [path:%s]", path);
         }
     }
