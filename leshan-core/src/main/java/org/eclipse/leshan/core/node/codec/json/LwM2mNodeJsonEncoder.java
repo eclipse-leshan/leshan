@@ -131,6 +131,9 @@ public class LwM2mNodeJsonEncoder {
         public void visit(LwM2mObjectInstance instance) {
             LOG.trace("Encoding object instance {} into JSON", instance);
             resourceList = new ArrayList<>();
+            if (instance.getId() == LwM2mObjectInstance.UNDEFINED) {
+                throw new CodecException("Unable to use JSON format without to give the object instance Id");
+            }
             for (LwM2mResource resource : instance.getResources().values()) {
                 // Validate request path & compute resource path
                 String prefixPath;

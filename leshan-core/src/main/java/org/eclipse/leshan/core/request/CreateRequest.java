@@ -232,6 +232,11 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
         this.instanceId = instanceId;
         this.resources = Collections.unmodifiableList(Arrays.asList(resources));
         this.contentFormat = format != null ? format : ContentFormat.TLV; // default to TLV
+
+        if (this.contentFormat == ContentFormat.JSON && instanceId == null) {
+            throw new InvalidRequestException(
+                    "Missing object instance id for CREATE request (%s) using JSON content format.", target);
+        }
     }
 
     @Override
