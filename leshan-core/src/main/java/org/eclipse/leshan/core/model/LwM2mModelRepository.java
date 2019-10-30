@@ -49,7 +49,8 @@ public class LwM2mModelRepository {
             for (ObjectModel model : objectModels) {
                 String key = getKey(model);
                 if (key == null) {
-                    new IllegalArgumentException(String.format("Model %s is invalid : object id is missing.", model));
+                    throw new IllegalArgumentException(
+                            String.format("Model %s is invalid : object id is missing.", model));
                 }
                 ObjectModel old = map.put(key, model);
                 if (old != null) {
