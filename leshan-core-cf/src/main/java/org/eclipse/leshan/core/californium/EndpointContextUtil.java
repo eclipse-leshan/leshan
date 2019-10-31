@@ -14,6 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - add support for californium
  *                                                     endpoint context
+ *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.core.californium;
 
@@ -32,6 +33,7 @@ import org.eclipse.californium.elements.MapBasedEndpointContext;
 import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.elements.auth.X509CertPath;
+import org.eclipse.californium.oscore.OSCoreEndpointContextInfo;
 import org.eclipse.leshan.core.request.Identity;
 
 /**
@@ -65,12 +67,22 @@ public class EndpointContextUtil {
             throw new IllegalStateException(
                     String.format("Unable to extract sender identity : unexpected type of Principal %s [%s]",
                             senderIdentity.getClass(), senderIdentity.toString()));
+        } else {
+            // Build identity for OSCORE if it is used
+            if (context.get(OSCoreEndpointContextInfo.OSCORE_SENDER_ID) != null) {
+                String oscoreIdentity = "sid=" + context.get(OSCoreEndpointContextInfo.OSCORE_SENDER_ID) + ",rid="
+                        + context.get(OSCoreEndpointContextInfo.OSCORE_RECIPIENT_ID);
+                return Identity.oscoreOnly(peerAddress, oscoreIdentity.toLowerCase());
+            }
         }
         return Identity.unsecure(peerAddress);
     }
 
     /**
      * Create Californium {@link EndpointContext} from Leshan {@link Identity}.
+     * <p>
+     * OSCORE does not use a Principal but automatically sets properties in the endpoint context at message
+     * transmission/reception.
      * 
      * @param identity The Leshan {@link Identity} to convert.
      * @param allowConnectionInitiation This request can initiate a Handshake if there is no DTLS connection.
@@ -89,6 +101,8 @@ public class EndpointContextUtil {
                 peerIdentity = new X500Principal("CN=" + identity.getX509CommonName());
             }
         }
+
+        // TODO OSCORE : should we add properties to endpoint context ?
 
         if (peerIdentity != null && allowConnectionInitiation) {
             return new MapBasedEndpointContext(identity.getPeerAddress(), peerIdentity,
