@@ -168,16 +168,7 @@ public class SecurityDeserializer implements JsonDeserializer<SecurityInfo> {
                     throw new JsonParseException("Failed to generate OSCORE context", e);
                 }
 
-                // Create an identity string from the OSCORE context information
-                StringBuilder b = new StringBuilder();
-                if (ctx.getIdContext() != null) {
-                    b.append(Hex.encodeHex(ctx.getIdContext()));
-                    b.append(":");
-                }
-                b.append(Hex.encodeHex(ctx.getRecipientId()));
-                String identity = b.toString();
-
-                info = SecurityInfo.newOSCoreInfo(endpoint, identity, ctx);
+                info = SecurityInfo.newOSCoreInfo(endpoint, ctx);
             } else {
                 throw new JsonParseException("Invalid security info content");
             }
