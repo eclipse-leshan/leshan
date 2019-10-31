@@ -14,6 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - add support for californium
  *                                                     endpoint context
+ *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.core.californium;
 
@@ -30,6 +31,7 @@ import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.elements.auth.X509CertPath;
+import org.eclipse.californium.oscore.OSCoreEndpointContextInfo;
 import org.eclipse.leshan.core.request.Identity;
 
 public class EndpointContextUtil {
@@ -49,12 +51,20 @@ public class EndpointContextUtil {
                 return Identity.x509(peerAddress, x509CommonName);
             }
             throw new IllegalStateException("Unable to extract sender identity : unexpected type of Principal");
+        } else {
+            // Build identity for OSCORE if it is used
+            if (context.get(OSCoreEndpointContextInfo.OSCORE_SENDER_ID) != null) {
+                String oscoreIdentity = "sid=" + context.get(OSCoreEndpointContextInfo.OSCORE_SENDER_ID) + ",rid="
+                        + context.get(OSCoreEndpointContextInfo.OSCORE_RECIPIENT_ID);
+                return Identity.oscoreOnly(peerAddress, oscoreIdentity.toLowerCase());
+            }
         }
         return Identity.unsecure(peerAddress);
     }
 
     /**
-     * Create californium endpoint context from leshan identity.
+     * Create californium endpoint context from leshan identity. OSCORE does not use a Principal but automatically sets
+     * properties in the endpoint context at message transmission/reception.
      * 
      * @param identity leshan identity received on last registration.
      * @return californium endpoint context for leshan identity
