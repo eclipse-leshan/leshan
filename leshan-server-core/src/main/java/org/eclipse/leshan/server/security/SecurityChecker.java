@@ -98,7 +98,9 @@ public class SecurityChecker {
                 return false;
             }
         } else {
-            if (securityInfo != null && securityInfo.useOSCore == false) {
+            if (clientIdentity.isOSCORE()) {
+                return checkOscoreIdentity(endpoint, clientIdentity, securityInfo);
+            } else if (securityInfo != null) {
                 LOG.debug("Client '{}' must connect using DTLS", endpoint);
                 return false;
             }
@@ -185,7 +187,28 @@ public class SecurityChecker {
     }
 
     protected boolean checkOscoreIdentity(String endpoint, Identity clientIdentity, SecurityInfo securityInfo) {
-        // TODO: Add comprehensive checks here
+        // Manage OSCORE authentication
+        // ----------------------------------------------------
+        if (!securityInfo.useOSCORE()) {
+            LOG.debug("Client '{}' is not supposed to use OSCORE to authenticate", endpoint);
+            return false;
+        }
+
+        if (!matchOscoreIdentity(endpoint, clientIdentity.getOscoreIdentity(), securityInfo.getOscoreIdentity())) {
+            return false;
+        }
+
+        LOG.trace("Authenticated client '{}' using OSCORE", endpoint);
+        return true;
+    }
+
+    protected boolean matchOscoreIdentity(String endpoint, String receivedOscoreIdentity,
+            String expectedOscoreIdentity) {
+        if (!receivedOscoreIdentity.equals(expectedOscoreIdentity)) {
+            LOG.debug("Invalid identity for client '{}': expected '{}' but was '{}'", endpoint, expectedOscoreIdentity,
+                    receivedOscoreIdentity);
+            return false;
+        }
         return true;
     }
 }
