@@ -13,6 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - add protected constructor for sub-classing
+ *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
@@ -35,13 +36,16 @@ public class Identity implements Serializable {
     private final String pskIdentity;
     private final PublicKey rawPublicKey;
     private final String x509CommonName;
+    private final String oscoreIdentity;
 
-    private Identity(InetSocketAddress peerAddress, String pskIdentity, PublicKey rawPublicKey, String x509CommonName) {
+    private Identity(InetSocketAddress peerAddress, String pskIdentity, PublicKey rawPublicKey, String x509CommonName,
+            String oscoreIdentity) {
         Validate.notNull(peerAddress);
         this.peerAddress = peerAddress;
         this.pskIdentity = pskIdentity;
         this.rawPublicKey = rawPublicKey;
         this.x509CommonName = x509CommonName;
+        this.oscoreIdentity = oscoreIdentity;
     }
 
     protected Identity(Identity identity) {
@@ -49,6 +53,7 @@ public class Identity implements Serializable {
         this.pskIdentity = identity.pskIdentity;
         this.rawPublicKey = identity.rawPublicKey;
         this.x509CommonName = identity.x509CommonName;
+        this.oscoreIdentity = identity.oscoreIdentity;
     }
 
     public InetSocketAddress getPeerAddress() {
@@ -67,6 +72,10 @@ public class Identity implements Serializable {
         return x509CommonName;
     }
 
+    public String getOscoreIdentity() {
+        return oscoreIdentity;
+    }
+
     public boolean isPSK() {
         return pskIdentity != null && !pskIdentity.isEmpty();
     }
@@ -79,40 +88,52 @@ public class Identity implements Serializable {
         return x509CommonName != null && !x509CommonName.isEmpty();
     }
 
+    public boolean isOSCORE() {
+        return oscoreIdentity != null && !oscoreIdentity.isEmpty();
+    }
+
     public boolean isSecure() {
         return isPSK() || isRPK() || isX509();
     }
 
     public static Identity unsecure(InetSocketAddress peerAddress) {
-        return new Identity(peerAddress, null, null, null);
+        return new Identity(peerAddress, null, null, null, null);
     }
 
     public static Identity unsecure(InetAddress address, int port) {
-        return new Identity(new InetSocketAddress(address, port), null, null, null);
+        return new Identity(new InetSocketAddress(address, port), null, null, null, null);
     }
 
     public static Identity psk(InetSocketAddress peerAddress, String identity) {
-        return new Identity(peerAddress, identity, null, null);
+        return new Identity(peerAddress, identity, null, null, null);
     }
 
     public static Identity psk(InetAddress address, int port, String identity) {
-        return new Identity(new InetSocketAddress(address, port), identity, null, null);
+        return new Identity(new InetSocketAddress(address, port), identity, null, null, null);
     }
 
     public static Identity rpk(InetSocketAddress peerAddress, PublicKey publicKey) {
-        return new Identity(peerAddress, null, publicKey, null);
+        return new Identity(peerAddress, null, publicKey, null, null);
     }
 
     public static Identity rpk(InetAddress address, int port, PublicKey publicKey) {
-        return new Identity(new InetSocketAddress(address, port), null, publicKey, null);
+        return new Identity(new InetSocketAddress(address, port), null, publicKey, null, null);
     }
 
     public static Identity x509(InetSocketAddress peerAddress, String commonName) {
-        return new Identity(peerAddress, null, null, commonName);
+        return new Identity(peerAddress, null, null, commonName, null);
     }
 
     public static Identity x509(InetAddress address, int port, String commonName) {
-        return new Identity(new InetSocketAddress(address, port), null, null, commonName);
+        return new Identity(new InetSocketAddress(address, port), null, null, commonName, null);
+    }
+
+    public static Identity oscoreOnly(InetSocketAddress peerAddress, String oscoreIdentity) {
+        return new Identity(peerAddress, null, null, null, oscoreIdentity);
+    }
+
+    public static Identity oscoreOnly(InetAddress address, int port, String oscoreIdentity) {
+        return new Identity(new InetSocketAddress(address, port), null, null, null, oscoreIdentity);
     }
 
     @Override
@@ -123,6 +144,8 @@ public class Identity implements Serializable {
             return String.format("Identity %s[rpk=%s]", peerAddress, rawPublicKey);
         else if (x509CommonName != null)
             return String.format("Identity %s[x509=%s]", peerAddress, x509CommonName);
+        else if (oscoreIdentity != null)
+            return String.format("Identity %s[oscore=%s]", peerAddress, oscoreIdentity);
         else
             return String.format("Identity %s[unsecure]", peerAddress);
     }
@@ -135,6 +158,7 @@ public class Identity implements Serializable {
         result = prime * result + ((pskIdentity == null) ? 0 : pskIdentity.hashCode());
         result = prime * result + ((rawPublicKey == null) ? 0 : rawPublicKey.hashCode());
         result = prime * result + ((x509CommonName == null) ? 0 : x509CommonName.hashCode());
+        result = prime * result + ((oscoreIdentity == null) ? 0 : oscoreIdentity.hashCode());
         return result;
     }
 
@@ -166,6 +190,11 @@ public class Identity implements Serializable {
             if (other.x509CommonName != null)
                 return false;
         } else if (!x509CommonName.equals(other.x509CommonName))
+            return false;
+        if (oscoreIdentity == null) {
+            if (other.oscoreIdentity != null)
+                return false;
+        } else if (!oscoreIdentity.equals(other.oscoreIdentity))
             return false;
         return true;
     }
