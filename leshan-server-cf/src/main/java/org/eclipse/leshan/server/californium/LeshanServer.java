@@ -244,8 +244,11 @@ public class LeshanServer {
         registrationService.addListener(new RegistrationListener() {
 
             @Override
-            public void updated(RegistrationUpdate update, Registration updatedRegistration,
-                    Registration previousRegistration) {
+            public void updated(RegistrationUpdate update, Registration updatedRegistration, Registration previousReg) {
+                if (!update.getAddress().equals(previousReg.getAddress())
+                        || update.getPort() != previousReg.getPort()) {
+                    requestSender.cancelPendingRequests(previousReg);
+                }
             }
 
             @Override
