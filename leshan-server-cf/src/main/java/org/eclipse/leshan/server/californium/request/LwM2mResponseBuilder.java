@@ -182,7 +182,9 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                     coapResponse.getPayloadString(), coapResponse);
         } else if (coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.CREATED) {
             // handle success response:
-            lwM2mresponse = new CreateResponse(ResponseCode.CREATED, coapResponse.getOptions().getLocationPathString(),
+            lwM2mresponse = new CreateResponse(ResponseCode.CREATED,
+                    coapResponse.getOptions().getLocationPathCount() == 0 ? null
+                            : coapResponse.getOptions().getLocationPathString(),
                     null, coapResponse);
         } else {
             // handle unexpected response:

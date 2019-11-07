@@ -76,10 +76,10 @@ public class LwM2mNodeTlvDecoder {
                 } else if (!oModel.multiple) {
                     instances.put(0, parseObjectInstanceTlv(tlvs, path.getObjectId(), 0, model));
                 } else {
-                    throw new CodecException("Object instance TLV is mandatory for multiple instances object [path:%s]",
-                            path);
+                    // this is strange "create without instance ID" case ...
+                    instances.put(LwM2mObjectInstance.UNDEFINED,
+                            parseObjectInstanceTlvWithoutId(tlvs, path.getObjectId(), model));
                 }
-
             } else {
                 for (Tlv tlv : tlvs) {
                     if (tlv.getType() != TlvType.OBJECT_INSTANCE)
@@ -120,7 +120,8 @@ public class LwM2mNodeTlvDecoder {
                     if (oModel != null && !oModel.multiple) {
                         return (T) parseObjectInstanceTlv(tlvs, path.getObjectId(), 0, model);
                     } else {
-                        return (T) parseObjectInstanceTlvWithoutId(tlvs, path.getObjectId(), model);
+                        throw new CodecException(
+                                "Object instance id is mandatory for multiple instances object [path:%s]", path);
                     }
                 } else {
                     return (T) parseObjectInstanceTlv(tlvs, path.getObjectId(), instanceId, model);

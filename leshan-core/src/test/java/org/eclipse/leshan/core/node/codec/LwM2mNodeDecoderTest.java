@@ -358,15 +358,17 @@ public class LwM2mNodeDecoderTest {
         assertEquals(5L, resource.getValue(1));
     }
 
-    @Test(expected = CodecException.class)
-    public void tlv_multi_instance_object__missing_instance_tlv() throws CodecException {
-
+    @Test
+    public void tlv_instance_without_id_tlv() throws CodecException {
+        // this is "special" case where instance ID is not defined ...
         byte[] content = TlvEncoder
                 .encode(new Tlv[] { new Tlv(TlvType.RESOURCE_VALUE, null, TlvEncoder.encodeInteger(11), 1),
                                         new Tlv(TlvType.RESOURCE_VALUE, null, TlvEncoder.encodeInteger(10), 2) })
                 .array();
 
-        decoder.decode(content, ContentFormat.TLV, new LwM2mPath(2), model);
+        LwM2mObject object = (LwM2mObject) decoder.decode(content, ContentFormat.TLV, new LwM2mPath(2), model);
+        assertEquals(object.getInstances().size(), 1);
+        assertEquals(object.getInstances().values().iterator().next().getId(), LwM2mObjectInstance.UNDEFINED);
     }
 
     @Test

@@ -18,6 +18,7 @@
 
 package org.eclipse.leshan.integration.tests;
 
+import static org.eclipse.leshan.core.request.ContentFormat.*;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.*;
@@ -26,12 +27,14 @@ import java.util.Arrays;
 
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.ResponseCode;
+import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
+import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.CreateResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.junit.After;
@@ -61,10 +64,19 @@ public class CreateTest {
     }
 
     @Test
-    public void can_create_instance_of_object_without_instance_id() throws InterruptedException {
+    public void can_create_instance_without_instance_id_tlv() throws InterruptedException {
+        can_create_instance_without_instance_id(TLV);
+    }
+
+    @Test(expected = InvalidRequestException.class)
+    public void can_create_instance_without_instance_id_json() throws InterruptedException {
+        can_create_instance_without_instance_id(JSON);
+    }
+
+    public void can_create_instance_without_instance_id(ContentFormat format) throws InterruptedException {
         // create ACL instance
         CreateResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new CreateRequest(2, new LwM2mResource[] { LwM2mSingleResource.newIntegerResource(0, 123) }));
+                new CreateRequest(format, 2, LwM2mSingleResource.newIntegerResource(0, 123)));
 
         // verify result
         assertEquals(ResponseCode.CREATED, response.getCode());
@@ -74,7 +86,7 @@ public class CreateTest {
 
         // create a second ACL instance
         response = helper.server.send(helper.getCurrentRegistration(),
-                new CreateRequest(2, new LwM2mResource[] { LwM2mSingleResource.newIntegerResource(0, 123) }));
+                new CreateRequest(format, 2, LwM2mSingleResource.newIntegerResource(0, 124)));
 
         // verify result
         assertEquals(ResponseCode.CREATED, response.getCode());
@@ -82,39 +94,76 @@ public class CreateTest {
         assertNotNull(response.getCoapResponse());
         assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
+        // read object 2
+        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(2));
+        assertEquals(ResponseCode.CONTENT, readResponse.getCode());
+        LwM2mObject object = (LwM2mObject) readResponse.getContent();
+        assertEquals(object.getInstance(0).getResource(0).getValue(), 123l);
+        assertEquals(object.getInstance(1).getResource(0).getValue(), 124l);
     }
 
     @Test
-    public void can_create_specific_instance_of_object() throws InterruptedException {
-        // create ACL instance
-        LwM2mObjectInstance instance = new LwM2mObjectInstance(12,
-                Arrays.<LwM2mResource> asList(LwM2mSingleResource.newIntegerResource(3, 123)));
-        CreateResponse response = helper.server.send(helper.getCurrentRegistration(), new CreateRequest(2, instance));
-
-        // verify result
-        assertEquals(ResponseCode.CREATED, response.getCode());
-        assertEquals("2/12", response.getLocation());
-        assertNotNull(response.getCoapResponse());
-        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
+    public void can_create_instance_with_id_tlv() throws InterruptedException {
+        can_create_instance_with_id(TLV);
     }
 
     @Test
-    public void can_create_specific_instance_of_object_with_json() throws InterruptedException {
+    public void can_create_instance_with_id_json() throws InterruptedException {
+        can_create_instance_with_id(JSON);
+    }
+
+    public void can_create_instance_with_id(ContentFormat format) throws InterruptedException {
         // create ACL instance
-        LwM2mObjectInstance instance = new LwM2mObjectInstance(12,
-                Arrays.<LwM2mResource> asList(LwM2mSingleResource.newIntegerResource(3, 123)));
+        LwM2mObjectInstance instance = new LwM2mObjectInstance(12, LwM2mSingleResource.newIntegerResource(3, 123));
         CreateResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new CreateRequest(ContentFormat.JSON, 2, instance));
+                new CreateRequest(format, 2, instance));
 
         // verify result
         assertEquals(ResponseCode.CREATED, response.getCode());
-        assertEquals("2/12", response.getLocation());
+        assertEquals(null, response.getLocation());
         assertNotNull(response.getCoapResponse());
         assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
+
+        // read object 2
+        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(2));
+        assertEquals(ResponseCode.CONTENT, readResponse.getCode());
+        LwM2mObject object = (LwM2mObject) readResponse.getContent();
+        assertEquals(object.getInstance(12).getResource(3).getValue(), 123l);
     }
 
     @Test
-    public void cannot_create_instance_of_object() throws InterruptedException {
+    public void can_create_2_instances_of_object_tlv() throws InterruptedException {
+        can_create_2_instances_of_object(TLV);
+    }
+
+    @Test
+    public void can_create_2_instances_of_object_json() throws InterruptedException {
+        can_create_2_instances_of_object(JSON);
+    }
+
+    public void can_create_2_instances_of_object(ContentFormat format) throws InterruptedException {
+        // create ACL instance
+        LwM2mObjectInstance instance1 = new LwM2mObjectInstance(12, LwM2mSingleResource.newIntegerResource(3, 123));
+        LwM2mObjectInstance instance2 = new LwM2mObjectInstance(13, LwM2mSingleResource.newIntegerResource(3, 124));
+        CreateResponse response = helper.server.send(helper.getCurrentRegistration(),
+                new CreateRequest(format, 2, instance1, instance2));
+
+        // verify result
+        assertEquals(ResponseCode.CREATED, response.getCode());
+        assertEquals(null, response.getLocation());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
+
+        // read object 2
+        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(2));
+        assertEquals(ResponseCode.CONTENT, readResponse.getCode());
+        LwM2mObject object = (LwM2mObject) readResponse.getContent();
+        assertEquals(object.getInstance(12).getResource(3).getValue(), 123l);
+        assertEquals(object.getInstance(13).getResource(3).getValue(), 124l);
+    }
+
+    @Test
+    public void cannot_create_instance_of_absent_object() throws InterruptedException {
         // try to create an instance of object 50
         CreateResponse response = helper.server.send(helper.getCurrentRegistration(),
                 new CreateRequest(50, new LwM2mResource[0]));

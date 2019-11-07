@@ -64,6 +64,9 @@ public class CreateResponse extends AbstractLwM2mResponse {
     }
 
     // Syntactic sugar static constructors :
+    public static CreateResponse success() {
+        return new CreateResponse(ResponseCode.CREATED, null, null);
+    }
 
     public static CreateResponse success(String location) {
         return new CreateResponse(ResponseCode.CREATED, location, null);

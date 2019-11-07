@@ -18,6 +18,7 @@
 package org.eclipse.leshan.client.resource;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -101,36 +102,65 @@ public class ObjectEnabler extends BaseObjectEnabler {
 
     @Override
     protected CreateResponse doCreate(ServerIdentity identity, CreateRequest request) {
-        Integer instanceId = request.getInstanceId(); // instanceId CAN be NULL
-
-        // check instance id is valid
-        if (instanceId != null) {
-            if (instances.containsKey(instanceId)) {
-                return CreateResponse.badRequest("Target already exists");
-            }
-            if (!getObjectModel().multiple && instanceId != 0) {
-                return CreateResponse.badRequest("id must be 0 for single instance");
-            }
-        } else {
-            // default 0 instance id for single instance object
-            if (!getObjectModel().multiple) {
-                instanceId = 0;
-            }
+        if (!getObjectModel().multiple && instances.size() > 0) {
+            return CreateResponse.badRequest("an instance already exist for this single instance object");
         }
 
+        if (request.unknownObjectInstanceId()) {
+            // create instance
+            LwM2mInstanceEnabler newInstance = createInstance(identity, getObjectModel().multiple ? null : 0,
+                    request.getResources());
+
+            // add new instance to this object
+            instances.put(newInstance.getId(), newInstance);
+            listenInstance(newInstance, newInstance.getId());
+
+            return CreateResponse
+                    .success(new LwM2mPath(request.getPath().getObjectId(), newInstance.getId()).toString());
+        } else {
+            List<LwM2mObjectInstance> instanceNodes = request.getObjectInstances();
+
+            // checks single object instances
+            if (!getObjectModel().multiple) {
+                if (request.getObjectInstances().size() > 1) {
+                    return CreateResponse.badRequest("can not create several instances on this single instance object");
+                }
+                if (request.getObjectInstances().get(0).getId() != 0) {
+                    return CreateResponse.badRequest("single instance object must use 0 as ID");
+                }
+            }
+            // ensure instance does not already exists
+            for (LwM2mObjectInstance instance : instanceNodes) {
+                if (instances.containsKey(instance.getId())) {
+                    return CreateResponse.badRequest(String.format("instance %d already exists", instance.getId()));
+                }
+            }
+
+            // create the new instances
+            for (LwM2mObjectInstance instance : request.getObjectInstances()) {
+                // create instance
+                LwM2mInstanceEnabler newInstance = createInstance(identity, instance.getId(),
+                        instance.getResources().values());
+
+                // add new instance to this object
+                instances.put(newInstance.getId(), newInstance);
+                listenInstance(newInstance, newInstance.getId());
+            }
+            return CreateResponse.success();
+        }
+    }
+
+    protected LwM2mInstanceEnabler createInstance(ServerIdentity identity, Integer instanceId,
+            Collection<LwM2mResource> resources) {
         // create the new instance
         LwM2mInstanceEnabler newInstance = instanceFactory.create(getObjectModel(), instanceId, instances.keySet());
 
         // add/write resource
-        for (LwM2mResource resource : request.getResources()) {
+        for (LwM2mResource resource : resources) {
             newInstance.write(identity, resource.getId(), resource);
         }
 
-        // add new instance to this object
-        instances.put(newInstance.getId(), newInstance);
-        listenInstance(newInstance, newInstance.getId());
-
-        return CreateResponse.success(new LwM2mPath(request.getPath().getObjectId(), newInstance.getId()).toString());
+        return newInstance;
     }
 
     @Override

@@ -37,6 +37,7 @@ import org.eclipse.leshan.core.attributes.AttributeSet;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.CodecException;
@@ -279,22 +280,26 @@ public class ObjectResource extends LwM2mClientCoapResource implements NotifySen
         // Manage Create Request
         try {
             // decode the payload as an instance
-            LwM2mObjectInstance newInstance = decoder.decode(exchange.getRequestPayload(), contentFormat,
-                    new LwM2mPath(path.getObjectId()), model, LwM2mObjectInstance.class);
+            LwM2mObject object = decoder.decode(exchange.getRequestPayload(), contentFormat,
+                    new LwM2mPath(path.getObjectId()), model, LwM2mObject.class);
 
             CreateRequest createRequest;
-            if (newInstance.getId() != LwM2mObjectInstance.UNDEFINED) {
-                createRequest = new CreateRequest(contentFormat, path.getObjectId(), newInstance);
-            } else {
+            // check if this is the "special" case where instance ID is not defined ...
+            LwM2mObjectInstance newInstance = object.getInstance(LwM2mObjectInstance.UNDEFINED);
+            if (object.getInstances().size() == 1 && newInstance != null) {
                 // the instance Id was not part of the create request payload.
                 // will be assigned by the client.
                 createRequest = new CreateRequest(contentFormat, path.getObjectId(),
                         newInstance.getResources().values());
+            } else {
+                createRequest = new CreateRequest(contentFormat, path.getObjectId(), object.getInstances().values()
+                        .toArray(new LwM2mObjectInstance[object.getInstances().values().size()]));
             }
 
             CreateResponse response = nodeEnabler.create(identity, createRequest);
             if (response.getCode() == org.eclipse.leshan.ResponseCode.CREATED) {
-                exchange.setLocationPath(response.getLocation());
+                if (response.getLocation() != null)
+                    exchange.setLocationPath(response.getLocation());
                 exchange.respond(toCoapResponseCode(response.getCode()));
                 return;
             } else {

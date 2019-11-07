@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.leshan.core.node.codec.tlv.LwM2mNodeTlvDecoder;
 import org.eclipse.leshan.util.Validate;
 
 /**
@@ -35,6 +36,13 @@ public class LwM2mObjectInstance implements LwM2mNode {
 
     private final Map<Integer, LwM2mResource> resources;
 
+    /**
+     * This constructor is only for internal purpose.
+     * <p>
+     * It SHOULD NOT be used. It only exist to support the "special" use case where instance id is not defined on create
+     * request. The rare case where it should make sense to use it, is implementing a decoder which support this special
+     * use case like {@link LwM2mNodeTlvDecoder}.
+     */
     public LwM2mObjectInstance(Collection<LwM2mResource> resources) {
         LwM2mNodeUtil.validateNotNull(resources, "resource MUST NOT be null");
         this.id = UNDEFINED;

@@ -23,6 +23,8 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
@@ -127,13 +129,13 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         coapRequest = Request.newPost();
         coapRequest.getOptions().setContentFormat(request.getContentFormat().getCode());
         // if no instance id, the client will assign it.
-        LwM2mObjectInstance instance;
-        if (request.getInstanceId() == null) {
-            instance = new LwM2mObjectInstance(request.getResources());
+        LwM2mNode node;
+        if (request.unknownObjectInstanceId()) {
+            node = new LwM2mObjectInstance(request.getResources());
         } else {
-            instance = new LwM2mObjectInstance(request.getInstanceId(), request.getResources());
+            node = new LwM2mObject(request.getPath().getObjectId(), request.getObjectInstances());
         }
-        coapRequest.setPayload(encoder.encode(instance, request.getContentFormat(), request.getPath(), model));
+        coapRequest.setPayload(encoder.encode(node, request.getContentFormat(), request.getPath(), model));
         setTarget(coapRequest, request.getPath());
     }
 
