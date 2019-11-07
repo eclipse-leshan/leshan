@@ -393,7 +393,7 @@ public class LeshanServerBuilder {
         if (registrationIdProvider == null)
             registrationIdProvider = new RandomStringRegistrationIdProvider();
         if (endpointFactory == null) {
-            endpointFactory = new DefaultEndpointFactory();
+            endpointFactory = new DefaultEndpointFactory("LWM2M Server");
         }
 
         // handle dtlsConfig

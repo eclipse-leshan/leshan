@@ -426,7 +426,7 @@ public class LeshanBootstrapServerBuilder {
             coapConfig = createDefaultNetworkConfig();
         }
         if (endpointFactory == null) {
-            endpointFactory = new DefaultEndpointFactory();
+            endpointFactory = new DefaultEndpointFactory("LWM2M BS Server");
         }
         if (encoder == null)
             encoder = new DefaultLwM2mNodeEncoder();

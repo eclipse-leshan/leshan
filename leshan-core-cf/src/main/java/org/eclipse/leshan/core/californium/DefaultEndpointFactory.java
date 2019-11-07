@@ -38,10 +38,18 @@ public class DefaultEndpointFactory implements EndpointFactory {
 
     protected EndpointContextMatcher securedContextMatcher;
     protected EndpointContextMatcher unsecuredContextMatcher;
+    protected String loggingTag;
 
     public DefaultEndpointFactory() {
+        this(null);
+    }
+
+    public DefaultEndpointFactory(String loggingTag) {
         securedContextMatcher = createSecuredContextMatcher();
         unsecuredContextMatcher = createUnsecuredContextMatcher();
+        if (loggingTag != null) {
+            this.loggingTag = loggingTag;
+        }
     }
 
     /**
@@ -82,6 +90,11 @@ public class DefaultEndpointFactory implements EndpointFactory {
         CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
         builder.setConnector(createUnsecuredConnector(address));
         builder.setNetworkConfig(coapConfig);
+        if (loggingTag != null) {
+            builder.setLoggingTag("[" + loggingTag + "-coap://]");
+        } else {
+            builder.setLoggingTag("[coap://]");
+        }
         if (unsecuredContextMatcher != null) {
             builder.setEndpointContextMatcher(unsecuredContextMatcher);
         }
@@ -118,6 +131,11 @@ public class DefaultEndpointFactory implements EndpointFactory {
         CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
         builder.setConnector(createSecuredConnector(dtlsConfig));
         builder.setNetworkConfig(coapConfig);
+        if (loggingTag != null) {
+            builder.setLoggingTag("[" + loggingTag + "-coaps://]");
+        } else {
+            builder.setLoggingTag("[coaps://]");
+        }
         if (securedContextMatcher != null) {
             builder.setEndpointContextMatcher(securedContextMatcher);
         }

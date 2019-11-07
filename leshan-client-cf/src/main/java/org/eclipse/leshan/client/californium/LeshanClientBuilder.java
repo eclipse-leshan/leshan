@@ -198,7 +198,7 @@ public class LeshanClientBuilder {
             coapConfig = createDefaultNetworkConfig();
         }
         if (endpointFactory == null) {
-            endpointFactory = new DefaultEndpointFactory() {
+            endpointFactory = new DefaultEndpointFactory("LWM2M Client") {
                 @Override
                 protected EndpointContextMatcher createSecuredContextMatcher() {
                     return null; // use default californium one.
