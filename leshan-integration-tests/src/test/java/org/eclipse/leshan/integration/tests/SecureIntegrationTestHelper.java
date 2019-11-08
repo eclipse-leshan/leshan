@@ -48,6 +48,7 @@ import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.californium.scandium.dtls.PskPublicInformation;
+import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.object.Device;
@@ -187,13 +188,22 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
     }
 
     public void createPSKClient() {
+        createPSKClient(false);
+    }
+
+    public void createPSKClientUsingQueueMode() {
+        createPSKClient(true);
+    }
+
+    public void createPSKClient(boolean queueMode) {
         ObjectsInitializer initializer = new ObjectsInitializer();
         initializer.setInstancesForObject(LwM2mId.SECURITY,
                 Security.psk(
                         "coaps://" + server.getSecuredAddress().getHostString() + ":"
                                 + server.getSecuredAddress().getPort(),
                         12345, GOOD_PSK_ID.getBytes(StandardCharsets.UTF_8), GOOD_PSK_KEY));
-        initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.U, false));
+        initializer.setInstancesForObject(LwM2mId.SERVER,
+                new Server(12345, LIFETIME, queueMode ? BindingMode.UQ : BindingMode.U, false));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345", "U"));
         initializer.setDummyInstancesForObject(LwM2mId.ACCESS_CONTROL);
         List<LwM2mObjectEnabler> objects = initializer.createAll();
@@ -202,6 +212,8 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         LeshanClientBuilder builder = new LeshanClientBuilder(getCurrentEndpoint());
         builder.setLocalAddress(clientAddress.getHostString(), clientAddress.getPort());
         builder.setObjects(objects);
+        builder.setDtlsConfig(
+                new DtlsConnectorConfig.Builder().setSupportedCipherSuites(CipherSuite.TLS_PSK_WITH_AES_128_CCM_8));
 
         // set an editable PSK store for tests
         builder.setEndpointFactory(new EndpointFactory() {

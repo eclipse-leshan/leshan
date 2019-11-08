@@ -36,5 +36,17 @@ public enum BindingMode {
     US,
 
     /** UDP with Queue Mode and SMS */
-    UQS
+    UQS;
+
+    public boolean useSMS() {
+        return equals(S) || equals(SQ) || equals(UQS);
+    }
+
+    public boolean useQueueMode() {
+        return equals(UQ) || equals(SQ) || equals(UQS);
+    }
+
+    public boolean useUDP() {
+        return equals(U) || equals(UQ) || equals(UQS);
+    }
 }

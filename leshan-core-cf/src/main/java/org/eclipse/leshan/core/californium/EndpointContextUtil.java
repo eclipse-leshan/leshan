@@ -26,7 +26,9 @@ import java.util.regex.Pattern;
 import javax.security.auth.x500.X500Principal;
 
 import org.eclipse.californium.elements.AddressEndpointContext;
+import org.eclipse.californium.elements.DtlsEndpointContext;
 import org.eclipse.californium.elements.EndpointContext;
+import org.eclipse.californium.elements.MapBasedEndpointContext;
 import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.elements.auth.X509CertPath;
@@ -71,9 +73,11 @@ public class EndpointContextUtil {
      * Create Californium {@link EndpointContext} from Leshan {@link Identity}.
      * 
      * @param identity The Leshan {@link Identity} to convert.
+     * @param preventConnectionInitiation prevent to initiate a Handshake if there is no DTLS connection.
+     * 
      * @return The corresponding Californium {@link EndpointContext}.
      */
-    public static EndpointContext extractContext(Identity identity) {
+    public static EndpointContext extractContext(Identity identity, boolean preventConnectionInitiation) {
         Principal peerIdentity = null;
         if (identity != null) {
             if (identity.isPSK()) {
@@ -84,6 +88,11 @@ public class EndpointContextUtil {
                 /* simplify distinguished name to CN= part */
                 peerIdentity = new X500Principal("CN=" + identity.getX509CommonName());
             }
+        }
+
+        if (peerIdentity != null && preventConnectionInitiation) {
+                return new MapBasedEndpointContext(identity.getPeerAddress(), peerIdentity,
+                        DtlsEndpointContext.KEY_HANDSHAKE_MODE, DtlsEndpointContext.HANDSHAKE_MODE_NONE);
         }
         return new AddressEndpointContext(identity.getPeerAddress(), peerIdentity);
     }

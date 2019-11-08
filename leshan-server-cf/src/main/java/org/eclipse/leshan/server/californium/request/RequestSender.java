@@ -107,6 +107,7 @@ public class RequestSender implements Destroyable {
      * @param request The request to send to the client.
      * @param timeoutInMs The response timeout to wait in milliseconds (see
      *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
+     * @param preventConnectionInitiation prevent to initiate a Handshake if there is no DTLS connection.
      * @return the response or <code>null</code> if the timeout expires (see
      *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
      * 
@@ -119,11 +120,11 @@ public class RequestSender implements Destroyable {
      */
     public <T extends LwM2mResponse> T sendLwm2mRequest(final String endpointName, Identity destination,
             String sessionId, final LwM2mModel model, String rootPath, final DownlinkRequest<T> request,
-            long timeoutInMs) throws InterruptedException {
+            long timeoutInMs, boolean preventConnectionInitiation) throws InterruptedException {
 
         // Create the CoAP request from LwM2m request
         CoapRequestBuilder coapClientRequestBuilder = new CoapRequestBuilder(destination, rootPath, sessionId,
-                endpointName, model, encoder);
+                endpointName, model, encoder, preventConnectionInitiation);
         request.accept(coapClientRequestBuilder);
         final Request coapRequest = coapClientRequestBuilder.getRequest();
 
@@ -183,18 +184,20 @@ public class RequestSender implements Destroyable {
      *        <li>or any other RuntimeException for unexpected issue.
      *        </ul>
      *        This callback MUST NOT be null.
+     * @param preventConnectionInitiation prevent to initiate a Handshake if there is no DTLS connection.
      * @throws CodecException if request payload can not be encoded.
      */
     public <T extends LwM2mResponse> void sendLwm2mRequest(final String endpointName, Identity destination,
             String sessionId, final LwM2mModel model, String rootPath, final DownlinkRequest<T> request,
-            long timeoutInMs, ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
+            long timeoutInMs, ResponseCallback<T> responseCallback, ErrorCallback errorCallback,
+            boolean preventConnectionInitiation) {
 
         Validate.notNull(responseCallback);
         Validate.notNull(errorCallback);
 
         // Create the CoAP request from LwM2m request
         CoapRequestBuilder coapClientRequestBuilder = new CoapRequestBuilder(destination, rootPath, sessionId,
-                endpointName, model, encoder);
+                endpointName, model, encoder, preventConnectionInitiation);
         request.accept(coapClientRequestBuilder);
         final Request coapRequest = coapClientRequestBuilder.getRequest();
 
@@ -235,6 +238,7 @@ public class RequestSender implements Destroyable {
      * @param coapRequest The request to send to the client.
      * @param timeoutInMs The response timeout to wait in milliseconds (see
      *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
+     * @param preventConnectionInitiation prevent to initiate a Handshake if there is no DTLS connection.
      * @return the response or <code>null</code> if the timeout expires (see
      *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
      * 
@@ -243,11 +247,11 @@ public class RequestSender implements Destroyable {
      * @throws RequestCanceledException if the request is cancelled.
      * @throws SendFailedException if the request can not be sent. E.g. error at CoAP or DTLS/UDP layer.
      */
-    public Response sendCoapRequest(Identity destination, String sessionId, Request coapRequest, long timeoutInMs)
-            throws InterruptedException {
+    public Response sendCoapRequest(Identity destination, String sessionId, Request coapRequest, long timeoutInMs,
+            boolean preventConnectionInitiation) throws InterruptedException {
 
         // Define destination
-        EndpointContext context = EndpointContextUtil.extractContext(destination);
+        EndpointContext context = EndpointContextUtil.extractContext(destination, preventConnectionInitiation);
         coapRequest.setDestinationContext(context);
 
         // Send CoAP request synchronously
@@ -292,15 +296,16 @@ public class RequestSender implements Destroyable {
      *        <li>or any other RuntimeException for unexpected issue.
      *        </ul>
      *        This callback MUST NOT be null.
+     * @param preventConnectionInitiation prevent to initiate a Handshake if there is no DTLS connection.
      */
     public void sendCoapRequest(Identity destination, String sessionId, Request coapRequest, long timeoutInMs,
-            CoapResponseCallback responseCallback, ErrorCallback errorCallback) {
+            CoapResponseCallback responseCallback, ErrorCallback errorCallback, boolean preventConnectionInitiation) {
 
         Validate.notNull(responseCallback);
         Validate.notNull(errorCallback);
 
         // Define destination
-        EndpointContext context = EndpointContextUtil.extractContext(destination);
+        EndpointContext context = EndpointContextUtil.extractContext(destination, preventConnectionInitiation);
         coapRequest.setDestinationContext(context);
 
         // Add CoAP request callback

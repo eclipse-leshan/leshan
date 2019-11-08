@@ -97,7 +97,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
 
         // Send requests synchronously
         T response = sender.sendLwm2mRequest(destination.getEndpoint(), destination.getIdentity(), destination.getId(),
-                model, destination.getRootPath(), request, timeout);
+                model, destination.getRootPath(), request, timeout, destination.preventServerToInitiateConnection());
 
         // Handle special observe case
         if (response != null && response.getClass() == ObserveResponse.class && response.isSuccess()) {
@@ -149,7 +149,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
                         }
                         responseCallback.onResponse(response);
                     }
-                }, errorCallback);
+                }, errorCallback, destination.preventServerToInitiateConnection());
     }
 
     /**
@@ -174,7 +174,8 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
     @Override
     public Response sendCoapRequest(Registration destination, Request coapRequest, long timeoutInMs)
             throws InterruptedException {
-        return sender.sendCoapRequest(destination.getIdentity(), destination.getId(), coapRequest, timeoutInMs);
+        return sender.sendCoapRequest(destination.getIdentity(), destination.getId(), coapRequest, timeoutInMs,
+                destination.preventServerToInitiateConnection());
     }
 
     /**
@@ -205,7 +206,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
     public void sendCoapRequest(Registration destination, Request coapRequest, long timeoutInMs,
             CoapResponseCallback responseCallback, ErrorCallback errorCallback) {
         sender.sendCoapRequest(destination.getIdentity(), destination.getId(), coapRequest, timeoutInMs,
-                responseCallback, errorCallback);
+                responseCallback, errorCallback, destination.preventServerToInitiateConnection());
     }
 
     /**

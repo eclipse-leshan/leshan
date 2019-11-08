@@ -267,6 +267,15 @@ public class Registration implements Serializable {
     }
 
     /**
+     * @return True if no DTLS handshake must be initiated by the Server for this registration.
+     */
+    public boolean preventServerToInitiateConnection() {
+        // We consider that initiates a connection (act as DTLS client to initiate a handshake) does not make sense for
+        // QueueMode as if we lost connection device is probably absent.
+        return bindingMode.useQueueMode() && bindingMode.useUDP();
+    }
+
+    /**
      * @return true if the last registration update was done less than lifetime seconds ago.
      */
     public boolean isAlive() {
@@ -287,7 +296,7 @@ public class Registration implements Serializable {
     }
 
     public boolean usesQueueMode() {
-        return bindingMode.equals(BindingMode.UQ) || bindingMode.equals(BindingMode.UQS);
+        return bindingMode.useQueueMode() && bindingMode.useUDP();
     }
 
     /**

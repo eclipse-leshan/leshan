@@ -28,8 +28,6 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.server.californium.CaliforniumTestSupport;
-import org.eclipse.leshan.server.californium.observation.ObservationServiceImpl;
-import org.eclipse.leshan.server.californium.observation.ObserveUtil;
 import org.eclipse.leshan.server.californium.registration.CaliforniumRegistrationStore;
 import org.eclipse.leshan.server.californium.registration.InMemoryRegistrationStore;
 import org.eclipse.leshan.server.model.StandardModelProvider;
@@ -142,7 +140,8 @@ public class ObservationServiceTest {
         coapRequest.getOptions().addUriPath(String.valueOf(target.getObjectInstanceId()));
         coapRequest.getOptions().addUriPath(String.valueOf(target.getResourceId()));
         coapRequest.setObserve();
-        coapRequest.setDestinationContext(EndpointContextUtil.extractContext(support.registration.getIdentity()));
+        coapRequest
+                .setDestinationContext(EndpointContextUtil.extractContext(support.registration.getIdentity(), false));
         Map<String, String> context = ObserveUtil.createCoapObserveRequestContext(registration.getEndpoint(),
                 registrationId, new ObserveRequest(target.toString()));
         coapRequest.setUserContext(context);
