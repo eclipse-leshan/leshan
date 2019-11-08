@@ -116,7 +116,7 @@ public class RegisterResource extends LwM2mCoapResource {
         }
     }
 
-    private void handleRegister(CoapExchange exchange, Request request) {
+    protected void handleRegister(CoapExchange exchange, Request request) {
         // Get identity
         // --------------------------------
         Identity sender = extractIdentity(request.getSourceContext());
@@ -176,7 +176,7 @@ public class RegisterResource extends LwM2mCoapResource {
         sendableResponse.sent();
     }
 
-    private void handleUpdate(CoapExchange exchange, Request request, String registrationId) {
+    protected void handleUpdate(CoapExchange exchange, Request request, String registrationId) {
         // Get identity
         Identity sender = extractIdentity(request.getSourceContext());
 
@@ -220,7 +220,7 @@ public class RegisterResource extends LwM2mCoapResource {
         sendableResponse.sent();
     }
 
-    private void handleDeregister(CoapExchange exchange, String registrationId) {
+    protected void handleDeregister(CoapExchange exchange, String registrationId) {
         // Get identity
         Identity sender = extractIdentity(exchange.advanced().getRequest().getSourceContext());
 
@@ -239,31 +239,6 @@ public class RegisterResource extends LwM2mCoapResource {
             exchange.respond(toCoapResponseCode(deregisterResponse.getCode()));
         }
         sendableResponse.sent();
-    }
-
-    // Since the V1_0-20150615-D version of specification, the registration update should be a CoAP POST.
-    // To keep compatibility with older version, we still accept CoAP PUT.
-    // TODO remove this backward compatibility when the version 1.0.0 of the spec will be released.
-    @Override
-    public void handlePUT(CoapExchange exchange) {
-        Request request = exchange.advanced().getRequest();
-
-        LOG.trace("UPDATE received : {}", request);
-        if (!Type.CON.equals(request.getType())) {
-            handleInvalidRequest(exchange, "CON CoAP type expected");
-            return;
-        }
-
-        List<String> uri = exchange.getRequestOptions().getUriPath();
-        if (uri == null || uri.size() != 2 || !RESOURCE_NAME.equals(uri.get(0))) {
-            handleInvalidRequest(exchange, "Bad URI");
-            return;
-        }
-
-        LOG.debug(
-                "Warning a client made a registration update using a CoAP PUT, a POST must be used since version V1_0-20150615-D of the specification. Request: {}",
-                request);
-        handleUpdate(exchange, request, uri.get(1));
     }
 
     /*
