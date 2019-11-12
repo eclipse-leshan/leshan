@@ -15,51 +15,22 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
+import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.Map;
 
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
+import org.eclipse.leshan.util.SecurityUtil;
 import org.eclipse.leshan.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Check a BootstrapConfig is correct. This is a complex process, we need to check if the different objects are in
  * coherence with each other.
  */
 public class ConfigurationChecker {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ConfigurationChecker.class);
-
-    protected final String[] algorithms;
-
-    /**
-     * Create a new configuration checker supporting "EC", "DiffieHellman", "RSA", "DSA" algorithm for Public and
-     * Private keys
-     */
-    public ConfigurationChecker() {
-        this(new String[] { "EC", "DiffieHellman", "RSA", "DSA" });
-    }
-
-    /**
-     * Create a new configuration checker supporting given algorithms.
-     * 
-     * @param algorithms an array of supported algorithm name. (see {@link KeyFactory#getInstance(String))}
-     */
-    public ConfigurationChecker(String[] algorithms) {
-        this.algorithms = algorithms;
-    }
 
     /**
      * Verify if the {@link BootstrapConfig} is valid and consistent.
@@ -170,52 +141,27 @@ public class ConfigurationChecker {
         }
     }
 
-    // TODO should we reuse org.eclipse.leshan.util.SecurityUtil ?
-    protected PrivateKey decodeRfc5958PrivateKey(byte[] encodedKey) {
-        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encodedKey);
-        for (String algorithm : algorithms) {
-            try {
-                KeyFactory kf = KeyFactory.getInstance(algorithm);
-                return kf.generatePrivate(keySpec);
-            } catch (NoSuchAlgorithmException e) {
-                LOG.debug("Failed to instantiate key factory for algorithm " + algorithm, e);
-                continue;
-            } catch (InvalidKeySpecException e) {
-                LOG.debug("Failed to decode RFC5958 private key with algorithm " + algorithm, e);
-                continue;
-            }
-        }
-        return null;
-    }
-
-    // TODO should we reuse org.eclipse.leshan.util.SecurityUtil ?
-    protected PublicKey decodeRfc7250PublicKey(byte[] encodedKey) {
-        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(encodedKey);
-        for (String algorithm : algorithms) {
-            try {
-                KeyFactory kf = KeyFactory.getInstance(algorithm);
-                return kf.generatePublic(keySpec);
-            } catch (NoSuchAlgorithmException e) {
-                LOG.debug("Failed to instantiate key factory for algorithm " + algorithm, e);
-                continue;
-            } catch (InvalidKeySpecException e) {
-                LOG.debug("Failed to decode RFC7250 public key with algorithm " + algorithm, e);
-                continue;
-            }
-        }
-        return null;
-    }
-
-    // TODO should we reuse org.eclipse.leshan.util.SecurityUtil ?
-    protected Certificate decodeCertificate(byte[] encodedCert) {
+    protected PrivateKey decodeRfc5958PrivateKey(byte[] encodedKey) throws InvalidConfigurationException {
         try {
-            CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            try (ByteArrayInputStream in = new ByteArrayInputStream(encodedCert)) {
-                return cf.generateCertificate(in);
-            }
-        } catch (CertificateException | IOException e) {
-            LOG.debug("Failed to decode X.509 certificate", e);
-            return null;
+            return SecurityUtil.privateKey.decode(encodedKey);
+        } catch (IOException | GeneralSecurityException e) {
+            throw new InvalidConfigurationException("Failed to decode RFC5958 private key", e);
+        }
+    }
+
+    protected PublicKey decodeRfc7250PublicKey(byte[] encodedKey) throws InvalidConfigurationException {
+        try {
+            return SecurityUtil.publicKey.decode(encodedKey);
+        } catch (IOException | GeneralSecurityException e) {
+            throw new InvalidConfigurationException("Failed to decode RFC7250 public key", e);
+        }
+    }
+
+    protected Certificate decodeCertificate(byte[] encodedCert) throws InvalidConfigurationException {
+        try {
+            return SecurityUtil.certificate.decode(encodedCert);
+        } catch (IOException | GeneralSecurityException e) {
+            throw new InvalidConfigurationException("Failed to decode X.509 certificate", e);
         }
     }
 
@@ -223,7 +169,6 @@ public class ConfigurationChecker {
         if (condition) {
             throw new InvalidConfigurationException(message);
         }
-
     }
 
     protected static boolean isEmpty(byte[] array) {

@@ -55,12 +55,21 @@ public class SecurityUtil {
         public X509Certificate decode(InputStream inputStream) throws CertificateException {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             Certificate certificate = cf.generateCertificate(inputStream);
-            if (certificate instanceof X509Certificate) {
+
+            // we support only EC algorithm
+            if (!"EC".equals(certificate.getPublicKey().getAlgorithm())) {
+                throw new CertificateException(String.format(
+                        "%s algorithm is not supported, Only EC algorithm is supported", certificate.getType()));
+            }
+
+            // we support only X509 certificate
+            if (!(certificate instanceof X509Certificate)) {
+                throw new CertificateException(
+                        String.format("%s certificate format is not supported, Only X.509 certificate is supported",
+                                certificate.getType()));
+            } else {
                 return (X509Certificate) certificate;
             }
-            throw new CertificateException(
-                    String.format("%s certificate format is not supported, Only X.509 certificate is supported",
-                            certificate.getType()));
         }
     };
 }
