@@ -89,7 +89,7 @@ public class Identity {
     }
 
     public boolean isSecure() {
-        return isPSK() || isRPK() || isX509() || isOSCORE();
+        return isPSK() || isRPK() || isX509();
     }
 
     public static Identity unsecure(InetSocketAddress peerAddress) {

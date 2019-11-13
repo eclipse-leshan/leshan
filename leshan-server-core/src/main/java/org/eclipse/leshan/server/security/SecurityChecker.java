@@ -88,16 +88,14 @@ public class SecurityChecker {
 
                 return checkX509Identity(endpoint, clientIdentity, securityInfo);
 
-            } else if (clientIdentity.isOSCORE()) {
-
-                return checkOscoreIdentity(endpoint, clientIdentity, securityInfo);
-
             } else {
                 LOG.debug("Unable to authenticate client '{}': unknown authentication mode", endpoint);
                 return false;
             }
         } else {
-            if (securityInfo != null) {
+            if (clientIdentity.isOSCORE()) {
+                return checkOscoreIdentity(endpoint, clientIdentity, securityInfo);
+            } else if (securityInfo != null) {
                 LOG.debug("Client '{}' must connect using DTLS", endpoint);
                 return false;
             }

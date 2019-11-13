@@ -38,12 +38,6 @@ public class EndpointContextUtil {
 
     public static Identity extractIdentity(EndpointContext context) {
         InetSocketAddress peerAddress = context.getPeerAddress();
-        // Build identity for OSCORE if it is used
-        if (context.get(OSCoreEndpointContextInfo.OSCORE_SENDER_ID) != null) {
-            String oscoreIdentity = "sid=" + context.get(OSCoreEndpointContextInfo.OSCORE_SENDER_ID) + ",rid="
-                    + context.get(OSCoreEndpointContextInfo.OSCORE_RECIPIENT_ID);
-            return Identity.oscoreOnly(peerAddress, oscoreIdentity.toLowerCase());
-        }
         Principal senderIdentity = context.getPeerIdentity();
         if (senderIdentity != null) {
             if (senderIdentity instanceof PreSharedKeyIdentity) {
@@ -57,6 +51,13 @@ public class EndpointContextUtil {
                 return Identity.x509(peerAddress, x509CommonName);
             }
             throw new IllegalStateException("Unable to extract sender identity : unexpected type of Principal");
+        } else {
+            // Build identity for OSCORE if it is used
+            if (context.get(OSCoreEndpointContextInfo.OSCORE_SENDER_ID) != null) {
+                String oscoreIdentity = "sid=" + context.get(OSCoreEndpointContextInfo.OSCORE_SENDER_ID) + ",rid="
+                        + context.get(OSCoreEndpointContextInfo.OSCORE_RECIPIENT_ID);
+                return Identity.oscoreOnly(peerAddress, oscoreIdentity.toLowerCase());
+            }
         }
         return Identity.unsecure(peerAddress);
     }

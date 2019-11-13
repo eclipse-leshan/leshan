@@ -53,7 +53,6 @@ public class SecurityInfo implements Serializable {
     private final boolean useX509Cert;
 
     // OSCORE (FIXME: Save content properly information here. Must be serializable.)
-    boolean useOSCore;
     private final String oscoreIdentity;
 
     private SecurityInfo(String endpoint, String identity, byte[] preSharedKey, PublicKey rawPublicKey,
@@ -64,7 +63,6 @@ public class SecurityInfo implements Serializable {
         this.preSharedKey = preSharedKey;
         this.rawPublicKey = rawPublicKey;
         this.useX509Cert = useX509Cert;
-        this.useOSCore = oscoreCtx != null;
         this.oscoreIdentity = generateOscoreIdentity(oscoreCtx);
     }
 
