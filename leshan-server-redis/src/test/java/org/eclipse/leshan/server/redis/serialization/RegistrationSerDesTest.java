@@ -36,7 +36,7 @@ public class RegistrationSerDesTest {
         att.put("ts", 12);
         att.put("rt", "test");
         att.put("hb", null);
-        objs[0] = new Link("/0/1024/2", att);
+        objs[0] = new Link("/0/1024/2", att, Object.class);
         objs[1] = new Link("/0/2");
 
         Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",

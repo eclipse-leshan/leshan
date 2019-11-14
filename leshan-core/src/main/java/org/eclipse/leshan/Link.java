@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.eclipse.leshan.util.StringUtils;
+import org.eclipse.leshan.util.Validate;
 
 /**
  * A Link as defined in http://tools.ietf.org/html/rfc6690.
@@ -46,7 +47,7 @@ public class Link implements Serializable {
 
     private final String url;
 
-    private final Map<String, Object> attributes;
+    private final Map<String, String> attributes;
 
     /**
      * Creates a new Link without attributes.
@@ -54,7 +55,7 @@ public class Link implements Serializable {
      * @param url the object link URL
      */
     public Link(String url) {
-        this(url, null);
+        this(url, (Map<String, String>) null);
     }
 
     /**
@@ -63,12 +64,68 @@ public class Link implements Serializable {
      * @param url the link URL
      * @param attributes the object link attributes or <code>null</code> if the link has no attributes
      */
-    public Link(String url, Map<String, ?> attributes) {
+    public <T> Link(String url, Map<String, String> attributes) {
+        Validate.notNull(url);
         this.url = url;
         if (attributes != null) {
             this.attributes = Collections.unmodifiableMap(new HashMap<>(attributes));
         } else {
             this.attributes = Collections.emptyMap();
+        }
+    }
+
+    /**
+     * Creates a new link and with its attributes.
+     * 
+     * @param url the link URL
+     * @param attributes the object link attributes or <code>null</code> if the link has no attributes
+     */
+    @SuppressWarnings("unchecked")
+    public <T> Link(String url, Map<String, T> attributes, Class<T> clazz) {
+        Validate.notNull(url);
+        this.url = url;
+        if (attributes == null || attributes.isEmpty()) {
+            this.attributes = Collections.emptyMap();
+        } else {
+            if (String.class.equals(clazz)) {
+                this.attributes = Collections.unmodifiableMap((Map<String, String>) new HashMap<>(attributes));
+            } else {
+                HashMap<String, String> attributesMap = new HashMap<>();
+                for (Entry<String, T> attr : attributes.entrySet()) {
+                    if (attr.getValue() == null) {
+                        attributesMap.put(attr.getKey(), null);
+                    } else {
+                        attributesMap.put(attr.getKey(), attr.getValue().toString());
+                    }
+
+                }
+                this.attributes = Collections.unmodifiableMap(attributesMap);
+            }
+        }
+    }
+
+    /**
+     * Creates a new link and with its attributes.
+     * 
+     * @param url the link URL
+     * @param attributes the object link attributes. The format is attributeKey1, attributeValue1, attributeKey2,
+     *        attributeValue2. For empty attributes null value should be used.
+     */
+    public Link(String url, String... attributes) {
+        Validate.notNull(url);
+        this.url = url;
+        if (attributes == null || attributes.length == 0) {
+            this.attributes = Collections.emptyMap();
+        } else {
+            if (attributes.length % 2 != 0) {
+                throw new IllegalArgumentException("Each attributes key must have a value");
+            }
+
+            HashMap<String, String> attributesMap = new HashMap<>();
+            for (int i = 0; i < attributes.length; i = i + 2) {
+                attributesMap.put(attributes[i], attributes[i + 1]);
+            }
+            this.attributes = Collections.unmodifiableMap(attributesMap);
         }
     }
 
@@ -81,7 +138,7 @@ public class Link implements Serializable {
      * 
      * @return an unmodifiable map containing the link attributes
      */
-    public Map<String, Object> getAttributes() {
+    public Map<String, String> getAttributes() {
         return attributes;
     }
 
@@ -92,18 +149,14 @@ public class Link implements Serializable {
         builder.append(getUrl());
         builder.append('>');
 
-        Map<String, Object> attributes = getAttributes();
+        Map<String, String> attributes = getAttributes();
         if (attributes != null && !attributes.isEmpty()) {
-            for (Entry<String, Object> entry : attributes.entrySet()) {
+            for (Entry<String, String> entry : attributes.entrySet()) {
                 builder.append(";");
                 builder.append(entry.getKey());
                 if (entry.getValue() != null) {
                     builder.append("=");
-                    if (entry.getValue() instanceof String) {
-                        builder.append("\"").append(entry.getValue()).append("\"");
-                    } else {
-                        builder.append(entry.getValue());
-                    }
+                    builder.append(entry.getValue());
                 }
             }
         }
@@ -132,22 +185,16 @@ public class Link implements Serializable {
             url = StringUtils.removeStart(StringUtils.removeEnd(url, ">"), "<");
 
             // parse attributes
-            Map<String, Object> attributes = new HashMap<>();
+            Map<String, String> attributes = new HashMap<>();
 
             if (linkParts.length > 1) {
                 for (int i = 1; i < linkParts.length; i++) {
                     String[] attParts = linkParts[i].split("=");
                     if (attParts.length > 0) {
                         String key = attParts[0];
-                        Object value = null;
+                        String value = null;
                         if (attParts.length > 1) {
-                            String rawvalue = attParts[1];
-                            try {
-                                value = Integer.valueOf(rawvalue);
-                            } catch (NumberFormatException e) {
-
-                                value = rawvalue.replaceFirst("^\"(.*)\"$", "$1");
-                            }
+                            value = attParts[1];
                         }
                         attributes.put(key, value);
                     }
@@ -209,5 +256,19 @@ public class Link implements Serializable {
         } else if (!url.equals(other.url))
             return false;
         return true;
+    }
+
+    /**
+     * remove quote from string, only if it begins and ends by a quote.
+     * 
+     * @param string to unquote
+     * @return unquoted string or the original string if there no quote to remove.
+     */
+    public static String unquote(String string) {
+        if (string != null && string.length() >= 2 && string.charAt(0) == '"'
+                && string.charAt(string.length() - 1) == '"') {
+            string = string.substring(1, string.length() - 1);
+        }
+        return string;
     }
 }

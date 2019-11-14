@@ -98,7 +98,7 @@ public class Registration implements Serializable {
         String rootPath = "/";
         if (objectLinks != null) {
             for (Link link : objectLinks) {
-                if (link != null && "oma.lwm2m".equals(link.getAttributes().get("rt"))) {
+                if (link != null && "oma.lwm2m".equals(Link.unquote(link.getAttributes().get("rt")))) {
                     rootPath = link.getUrl();
                     break;
                 }
@@ -366,21 +366,23 @@ public class Registration implements Serializable {
                     try {
                         // extract object id and version
                         int objectId = Integer.parseInt(m.group(1));
-                        Object version = link.getAttributes().get(Attribute.OBJECT_VERSION);
+                        String version = link.getAttributes().get(Attribute.OBJECT_VERSION);
+                        // un-quote version (see https://github.com/eclipse/leshan/issues/732)
+                        version = Link.unquote(version);
                         String currentVersion = objects.get(objectId);
 
                         // store it in map
                         if (currentVersion == null) {
                             // we never find version for this object add it
-                            if (version instanceof String) {
-                                objects.put(objectId, (String) version);
+                            if (version != null) {
+                                objects.put(objectId, version);
                             } else {
                                 objects.put(objectId, ObjectModel.DEFAULT_VERSION);
                             }
                         } else {
                             // if version is already set, we override it only if new version is not DEFAULT_VERSION
-                            if (version instanceof String && !version.equals(ObjectModel.DEFAULT_VERSION)) {
-                                objects.put(objectId, (String) version);
+                            if (version != null && !version.equals(ObjectModel.DEFAULT_VERSION)) {
+                                objects.put(objectId, version);
                             }
                         }
                     } catch (NumberFormatException e) {

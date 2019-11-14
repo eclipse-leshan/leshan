@@ -78,7 +78,7 @@ public class CoapRequestBuilderTest {
                 Identity.unsecure(Inet4Address.getLoopbackAddress(), 12354));
         if (rootpath != null) {
             Map<String, String> attr = new HashMap<>();
-            attr.put("rt", "oma.lwm2m");
+            attr.put("rt", "\"oma.lwm2m\"");
             b.objectLinks(new Link[] { new Link(rootpath, attr) });
         }
         return b.build();

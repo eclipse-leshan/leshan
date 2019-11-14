@@ -51,11 +51,9 @@ public class RegistrationSerDes {
             JsonObject ol = Json.object();
             ol.add("url", l.getUrl());
             JsonObject at = Json.object();
-            for (Map.Entry<String, Object> e : l.getAttributes().entrySet()) {
+            for (Map.Entry<String, String> e : l.getAttributes().entrySet()) {
                 if (e.getValue() == null) {
                     at.add(e.getKey(), Json.NULL);
-                } else if (e.getValue() instanceof Integer) {
-                    at.add(e.getKey(), (int) e.getValue());
                 } else {
                     at.add(e.getKey(), e.getValue().toString());
                 }
@@ -99,14 +97,15 @@ public class RegistrationSerDes {
         for (int i = 0; i < links.size(); i++) {
             JsonObject ol = (JsonObject) links.get(i);
 
-            Map<String, Object> attMap = new HashMap<>();
+            Map<String, String> attMap = new HashMap<>();
             JsonObject att = (JsonObject) ol.get("at");
             for (String k : att.names()) {
                 JsonValue jsonValue = att.get(k);
                 if (jsonValue.isNull()) {
                     attMap.put(k, null);
                 } else if (jsonValue.isNumber()) {
-                    attMap.put(k, jsonValue.asInt());
+                    // This else block is just needed for retro-compatibility
+                    attMap.put(k, Integer.toString(jsonValue.asInt()));
                 } else {
                     attMap.put(k, jsonValue.asString());
                 }

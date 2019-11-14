@@ -53,6 +53,17 @@ public class RegistrationTest {
     }
 
     @Test
+    public void test_supported_object_given_an_object_link_with_unquoted_rootpath() {
+        Registration reg = given_a_registration_with_object_link_like("</root>;rt=oma.lwm2m, </root/1/0>,</3/0>");
+
+        // Ensure supported objects are correct
+        Map<Integer, String> supportedObject = reg.getSupportedObject();
+        assertEquals(1, supportedObject.size());
+        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
+        assertNull(supportedObject.get(3));
+    }
+
+    @Test
     public void test_supported_object_given_an_object_link_with_regexp_rootpath() {
         Registration reg = given_a_registration_with_object_link_like(
                 "</r(\\d+)oot>;rt=\"oma.lwm2m\", </r(\\d+)oot/1/0>,</3/0>");

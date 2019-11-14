@@ -85,8 +85,7 @@ public class LinkFormatHelperTest {
         Link[] links = LinkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), "/");
         String strLinks = Link.serialize(links);
 
-        assertEquals("</6>;ver=\"2.0\",</6/0>,</6/0/0>,</6/0/1>,</6/0/2>,</6/0/3>,</6/0/4>,</6/0/5>,</6/0/6>",
-                strLinks);
+        assertEquals("</6>;ver=2.0,</6/0>,</6/0/0>,</6/0/1>,</6/0/2>,</6/0/3>,</6/0/4>,</6/0/5>,</6/0/6>", strLinks);
     }
 
     @Test
@@ -128,7 +127,7 @@ public class LinkFormatHelperTest {
         Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null);
         String strLinks = Link.serialize(links);
 
-        assertEquals("</>;rt=\"oma.lwm2m\",</6>;ver=\"2.0\",</6/0>,</6/1>", strLinks);
+        assertEquals("</>;rt=\"oma.lwm2m\",</6>;ver=2.0,</6/0>,</6/1>", strLinks);
     }
 
     @Test
@@ -142,7 +141,7 @@ public class LinkFormatHelperTest {
         Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null);
         String strLinks = Link.serialize(links);
 
-        assertEquals("</>;rt=\"oma.lwm2m\",</6>;ver=\"2.0\"", strLinks);
+        assertEquals("</>;rt=\"oma.lwm2m\",</6>;ver=2.0", strLinks);
     }
 
     private ObjectModel getObjectModel(int id) {
