@@ -26,8 +26,7 @@ public class LinkObjectTest {
 
     @Test
     public void parse_with_some_attributes() {
-        Link[] parse = Link
-                .parse("</>;rt=\"oma.lwm2m\";ct=100, </1/101>,</1/102>, </2/0>, </2/1> ;empty".getBytes());
+        Link[] parse = Link.parse("</>;rt=\"oma.lwm2m\";ct=100, </1/101>,</1/102>, </2/0>, </2/1> ;empty".getBytes());
         Assert.assertEquals(5, parse.length);
         Assert.assertEquals("/", parse[0].getUrl());
 
@@ -74,7 +73,7 @@ public class LinkObjectTest {
 
         String res = Link.serialize(obj1, obj2, obj3);
 
-        Assert.assertEquals("</1/0/1>, </2/1>, </3>", res);
+        Assert.assertEquals("</1/0/1>,</2/1>,</3>", res);
 
     }
 
@@ -94,7 +93,7 @@ public class LinkObjectTest {
 
         String res = Link.serialize(obj1, obj2, obj3);
 
-        Assert.assertEquals("</1/0/1>;number=12, </2/1>;string=\"stringval\", </3>;empty", res);
+        Assert.assertEquals("</1/0/1>;number=12,</2/1>;string=\"stringval\",</3>;empty", res);
 
     }
 
@@ -132,7 +131,7 @@ public class LinkObjectTest {
 
     @Test
     public void parse_then_serialyse_with_rt_attribute() {
-        String input = "</lwm2m>;rt=\"oma.lwm2m\", </lwm2m/1/101>, </lwm2m/1/102>, </lwm2m/2/0>";
+        String input = "</lwm2m>;rt=\"oma.lwm2m\",</lwm2m/1/101>,</lwm2m/1/102>,</lwm2m/2/0>";
         Link[] objs = Link.parse(input.getBytes());
         String output = Link.serialize(objs);
         Assert.assertEquals(input, output);

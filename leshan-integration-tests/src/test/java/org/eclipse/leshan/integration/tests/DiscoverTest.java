@@ -61,7 +61,7 @@ public class DiscoverTest {
         assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         Link[] payload = response.getObjectLinks();
-        assertEquals("</3>, </3/0>, </3/0/0>, </3/0/1>, </3/0/2>, </3/0/11>, </3/0/14>, </3/0/15>, </3/0/16>",
+        assertEquals("</3>,</3/0>,</3/0/0>,</3/0/1>,</3/0/2>,</3/0/11>,</3/0/14>,</3/0/15>,</3/0/16>",
                 Link.serialize(payload));
     }
 
@@ -87,7 +87,7 @@ public class DiscoverTest {
         assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         Link[] payload = response.getObjectLinks();
-        assertEquals("</3/0>, </3/0/0>, </3/0/1>, </3/0/2>, </3/0/11>, </3/0/14>, </3/0/15>, </3/0/16>",
+        assertEquals("</3/0>,</3/0/0>,</3/0/1>,</3/0/2>,</3/0/11>,</3/0/14>,</3/0/15>,</3/0/16>",
                 Link.serialize(payload));
     }
 

@@ -159,7 +159,7 @@ public class Link implements Serializable {
         return linksResult;
     }
 
-    private static final String TRAILER = ", ";
+    private static final String TRAILER = ",";
 
     /***
      * Serialize severals {@code Link} to {@code String} as defined in http://tools.ietf.org/html/rfc6690.
