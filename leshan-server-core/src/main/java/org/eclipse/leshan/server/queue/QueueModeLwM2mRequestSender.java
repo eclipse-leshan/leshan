@@ -68,13 +68,11 @@ public class QueueModeLwM2mRequestSender implements LwM2mRequestSender {
         // Use delegation to send the request
         T response = delegatedSender.send(destination, request, timeout);
         if (response != null) {
-
             // Set the client awake. This will restart the timer.
             presenceService.setAwake(destination);
         } else {
-
             // If the timeout expires, this means the client does not respond.
-            presenceService.clientNotResponding(destination);
+            presenceService.setSleeping(destination);
         }
         // Wait for response, then return it
         return response;
@@ -115,7 +113,7 @@ public class QueueModeLwM2mRequestSender implements LwM2mRequestSender {
             public void onError(Exception e) {
                 if (e instanceof TimeoutException) {
                     // If the timeout expires, this means the client does not respond.
-                    presenceService.clientNotResponding(destination);
+                    presenceService.setSleeping(destination);
                 }
 
                 // Call the user's callback

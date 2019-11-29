@@ -24,6 +24,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.leshan.server.Destroyable;
 import org.eclipse.leshan.server.registration.Registration;
@@ -41,7 +42,7 @@ import org.slf4j.LoggerFactory;
 public final class PresenceServiceImpl implements PresenceService, Destroyable {
     private final Logger LOG = LoggerFactory.getLogger(PresenceServiceImpl.class);
 
-    private final ConcurrentMap<String, PresenceStatus> clientStatusList = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String /* endpoint */, AtomicReference<ScheduledFuture<?>>> clientPresences = new ConcurrentHashMap<>();
     private final List<PresenceListener> listeners = new CopyOnWriteArrayList<>();
     private final ClientAwakeTimeProvider awakeTimeProvider;
     private final ScheduledExecutorService clientTimersExecutor = Executors
@@ -63,36 +64,58 @@ public final class PresenceServiceImpl implements PresenceService, Destroyable {
 
     @Override
     public boolean isClientAwake(Registration registration) {
-        PresenceStatus presenceStatus = clientStatusList.get(registration.getEndpoint());
-        if (presenceStatus == null) {
-            return false;
-        }
-        return presenceStatus.isClientAwake();
-
+        return clientPresences.containsKey(registration.getEndpoint());
     }
 
     /**
-     * Set the state of the client identified by registration as {@link Presence#AWAKE}
+     * Set the client identified by registration as awake. Listeners are notified if that client state changed to awake
+     * state.
      * 
      * @param reg the client's registration object
      */
-    public void setAwake(Registration reg) {
+    public void setAwake(final Registration reg) {
         if (reg.usesQueueMode()) {
-            PresenceStatus status = new PresenceStatus();
-            PresenceStatus previous = clientStatusList.putIfAbsent(reg.getEndpoint(), status);
+            boolean stateChanged;
+            final AtomicReference<ScheduledFuture<?>> timerFuture = new AtomicReference<>();
+            // set this device as awake
+            AtomicReference<ScheduledFuture<?>> previous = clientPresences.put(reg.getEndpoint(), timerFuture);
             if (previous != null) {
-                // We already have a status for this reg.
-                status = previous;
+                stateChanged = false;
+                // cancel previous timer
+                if (previous.get() != null) {
+                    previous.get().cancel(false);
+                }
+            } else {
+                stateChanged = true;
             }
 
-            boolean stateChanged = false;
-            synchronized (status) {
+            // Every time we set the clientAwakeTime, in case it changes dynamically
+            int clientAwakeTime = awakeTimeProvider.getClientAwakeTime(reg);
+            if (clientAwakeTime != 0) {
+                timerFuture.set(clientTimersExecutor.schedule(new Runnable() {
+                    @Override
+                    public void run() {
+                        boolean removed = clientPresences.remove(reg.getEndpoint(), timerFuture);
+                        if (removed) {
+                            // success remove means we go in sleeping mode.
+                            for (PresenceListener listener : listeners) {
+                                listener.onSleeping(reg);
+                            }
+                        }
+                    }
+                }, clientAwakeTime, TimeUnit.MILLISECONDS));
 
-                // Every time we set the clientAwakeTime, in case it changes dynamically
-                stateChanged = status.setAwake();
-                startClientAwakeTimer(reg, status, awakeTimeProvider.getClientAwakeTime(reg));
+                // There is some rare race conditions (several quick call to setAwake)
+                // where the timerFuture could have been already removed but not cancelled.
+                // So to be sure to not keep useless cleaning task we cancel it if this is not the current timerFuture
+                // anymore.
+                // (This make the code a bit more complex but the is a cost of the non-blocking implementation)
+                if (clientPresences.get(reg.getEndpoint()) != timerFuture) {
+                    timerFuture.get().cancel(false);
+                }
             }
 
+            // notify if state changed
             if (stateChanged) {
                 for (PresenceListener listener : listeners) {
                     listener.onAwake(reg);
@@ -102,95 +125,36 @@ public final class PresenceServiceImpl implements PresenceService, Destroyable {
     }
 
     /**
-     * Notify the listeners that the client state changed to {@link Presence#SLEEPING}. The state changes is produced
-     * inside {@link PresenceStatus} when the timer expires or when the client doesn't respond to a request.
+     * Set the client in a sleeping state. Nothing is done if it already in sleeping state. Listeners are notified if
+     * that client state changed to sleeping state.
+     * <p>
+     * Going in sleeping state should happen when the timer expires or when the client doesn't respond to a request.
      * 
      * @param reg the client's registration object
      */
     public void setSleeping(Registration reg) {
         if (reg.usesQueueMode()) {
-            PresenceStatus status = clientStatusList.get(reg.getEndpoint());
-
-            if (status != null) {
-                boolean stateChanged = false;
-                synchronized (status) {
-                    stateChanged = status.setSleeping();
-                    stopClientAwakeTimer(reg);
+            AtomicReference<ScheduledFuture<?>> timerFuture = clientPresences.remove(reg.getEndpoint());
+            if (timerFuture != null) {
+                if (timerFuture.get() != null) {
+                    // we can not be sure timerFuture is set but this is not a big deal as timer is only able to removed
+                    // itself.
+                    timerFuture.get().cancel(false);
                 }
-                if (stateChanged) {
-                    for (PresenceListener listener : listeners) {
-                        listener.onSleeping(reg);
-                    }
+                for (PresenceListener listener : listeners) {
+                    listener.onSleeping(reg);
                 }
             }
         }
     }
 
     /**
-     * Removes the {@link PresenceStatus} object associated with the client from the list.
+     * Stop to track presence for the given registration. No event is raised.
      * 
      * @param reg the client's registration object.
      */
-    public void removePresenceStatusObject(Registration reg) {
-        clientStatusList.remove(reg.getEndpoint());
-    }
-
-    /**
-     * Returns the {@link PresenceStatus} object associated with the given endpoint name.
-     * 
-     * @param reg The client's registration object.
-     * @return The {@link PresenceStatus} object.
-     */
-    private PresenceStatus getPresenceStatusObject(Registration reg) {
-        return clientStatusList.get(reg.getEndpoint());
-    }
-
-    /**
-     * Start or restart (if already started) the timer that handles the client wait before sleep time.
-     * 
-     * @param status
-     */
-    public void startClientAwakeTimer(final Registration reg, PresenceStatus clientPresenceStatus,
-            int clientAwakeTime) {
-
-        ScheduledFuture<?> clientScheduledFuture = clientPresenceStatus.getClientScheduledFuture();
-
-        if (clientAwakeTime != 0) {
-            if (clientScheduledFuture != null) {
-                clientScheduledFuture.cancel(true);
-            }
-            clientScheduledFuture = clientTimersExecutor.schedule(new Runnable() {
-
-                @Override
-                public void run() {
-                    if (isClientAwake(reg)) {
-                        setSleeping(reg);
-                    }
-                }
-            }, clientAwakeTime, TimeUnit.MILLISECONDS);
-            clientPresenceStatus.setClientExecutorFuture(clientScheduledFuture);
-        }
-
-    }
-
-    /**
-     * Stop the timer that handles the client wait before sleep time.
-     */
-    private void stopClientAwakeTimer(Registration reg) {
-        PresenceStatus clientPresenceStatus = getPresenceStatusObject(reg);
-        ScheduledFuture<?> clientScheduledFuture = clientPresenceStatus.getClientScheduledFuture();
-        if (clientScheduledFuture != null) {
-            clientScheduledFuture.cancel(false);
-        }
-    }
-
-    /**
-     * Called when the client doesn't respond to a request, for changing its state to SLEEPING
-     */
-    public void clientNotResponding(Registration reg) {
-        if (isClientAwake(reg)) {
-            setSleeping(reg);
-        }
+    public void stopPresenceTracking(Registration reg) {
+        clientPresences.remove(reg.getEndpoint());
     }
 
     @Override

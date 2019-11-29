@@ -22,7 +22,6 @@ import org.eclipse.leshan.core.request.exception.ClientSleepingException;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.server.Destroyable;
-import org.eclipse.leshan.server.queue.Presence;
 import org.eclipse.leshan.server.queue.PresenceServiceImpl;
 import org.eclipse.leshan.server.queue.QueueModeLwM2mRequestSender;
 import org.eclipse.leshan.server.registration.Registration;
@@ -75,7 +74,7 @@ public class CaliforniumQueueModeRequestSender extends QueueModeLwM2mRequestSend
             presenceService.setAwake(destination);
         } else {
             // If the timeout expires, this means the client does not respond.
-            presenceService.clientNotResponding(destination);
+            presenceService.setSleeping(destination);
         }
         // Wait for response, then return it
         return response;
@@ -122,7 +121,7 @@ public class CaliforniumQueueModeRequestSender extends QueueModeLwM2mRequestSend
             public void onError(Exception e) {
                 if (e instanceof TimeoutException) {
                     // If the timeout expires, this means the client does not respond.
-                    presenceService.clientNotResponding(destination);
+                    presenceService.setSleeping(destination);
                 }
 
                 // Call the user's callback
