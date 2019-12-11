@@ -96,12 +96,12 @@ public class BootstrapTest {
         helper.waitForBootstrapFinishedAtClientSide(1);
 
         // ensure instances are deleted
-        ReadResponse response = helper.client.getObjectEnablers().get(LwM2mId.ACCESS_CONTROL)
+        ReadResponse response = helper.client.getObjectTree().getObjectEnabler(LwM2mId.ACCESS_CONTROL)
                 .read(ServerIdentity.SYSTEM, new ReadRequest(LwM2mId.ACCESS_CONTROL));
         assertTrue("ACL instance is not deleted", ((LwM2mObject) response.getContent()).getInstances().isEmpty());
 
-        response = helper.client.getObjectEnablers().get(LwM2mId.CONNECTIVITY_STATISTICS).read(ServerIdentity.SYSTEM,
-                new ReadRequest(LwM2mId.CONNECTIVITY_STATISTICS));
+        response = helper.client.getObjectTree().getObjectEnabler(LwM2mId.CONNECTIVITY_STATISTICS)
+                .read(ServerIdentity.SYSTEM, new ReadRequest(LwM2mId.CONNECTIVITY_STATISTICS));
         assertTrue("Connectvity instance is not deleted",
                 ((LwM2mObject) response.getContent()).getInstances().isEmpty());
     }
@@ -130,7 +130,7 @@ public class BootstrapTest {
         helper.assertClientRegisterered();
 
         // ensure ACL is correctly set
-        ReadResponse response = helper.client.getObjectEnablers().get(2).read(ServerIdentity.SYSTEM,
+        ReadResponse response = helper.client.getObjectTree().getObjectEnabler(2).read(ServerIdentity.SYSTEM,
                 new ReadRequest(2));
         LwM2mObject acl = (LwM2mObject) response.getContent();
         assertThat(acl.getInstances().keySet(), hasItems(0, 1));

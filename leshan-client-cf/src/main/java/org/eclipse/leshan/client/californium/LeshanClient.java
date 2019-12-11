@@ -16,10 +16,8 @@
 package org.eclipse.leshan.client.californium;
 
 import java.net.InetSocketAddress;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.config.NetworkConfig;
@@ -33,6 +31,8 @@ import org.eclipse.leshan.client.californium.request.CaliforniumLwM2mRequestSend
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverDispatcher;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
+import org.eclipse.leshan.client.resource.LwM2mObjectTree;
+import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
@@ -47,39 +47,31 @@ public class LeshanClient {
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanClient.class);
 
-    private final ConcurrentHashMap<Integer, LwM2mObjectEnabler> objectEnablers;
-
     private final CoapServer clientSideServer;
     private final CaliforniumLwM2mRequestSender requestSender;
     private final RegistrationEngine engine;
     private final BootstrapHandler bootstrapHandler;
     private final LwM2mClientObserverDispatcher observers;
+    private LwM2mObjectTree objectTree;
 
     private final CaliforniumEndpointsManager endpointsManager;
 
     public LeshanClient(String endpoint, InetSocketAddress localAddress,
             List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig, Builder dtlsConfigBuilder,
-            EndpointFactory endpointFactory, Map<String, String> additionalAttributes, LwM2mNodeEncoder encoder,
-            LwM2mNodeDecoder decoder) {
+            EndpointFactory endpointFactory, Map<String, String> additionalAttributes, final LwM2mNodeEncoder encoder,
+            final LwM2mNodeDecoder decoder) {
 
         Validate.notNull(endpoint);
         Validate.notEmpty(objectEnablers);
         Validate.notNull(coapConfig);
 
-        // Create Object enablers
-        this.objectEnablers = new ConcurrentHashMap<>();
-        for (LwM2mObjectEnabler enabler : objectEnablers) {
-            if (this.objectEnablers.containsKey(enabler.getId())) {
-                throw new IllegalArgumentException(
-                        String.format("There is several objectEnablers with the same id %d.", enabler.getId()));
-            }
-            this.objectEnablers.put(enabler.getId(), enabler);
-        }
+        // create ObjectTree
+        objectTree = new LwM2mObjectTree(objectEnablers);
 
         // Create Client Observers
         observers = new LwM2mClientObserverDispatcher();
 
-        bootstrapHandler = new BootstrapHandler(this.objectEnablers);
+        bootstrapHandler = new BootstrapHandler(objectTree.getObjectEnablers());
 
         // Create CoAP Server
         clientSideServer = new CoapServer(coapConfig) {
@@ -95,6 +87,19 @@ public class LeshanClient {
             ObjectResource clientObject = new ObjectResource(enabler, bootstrapHandler, encoder, decoder);
             clientSideServer.add(clientObject);
         }
+        objectTree.addListener(new ObjectsListenerAdapter() {
+            @Override
+            public void objectAdded(LwM2mObjectEnabler object) {
+                ObjectResource clientObject = new ObjectResource(object, bootstrapHandler, encoder, decoder);
+                clientSideServer.add(clientObject);
+            }
+
+            @Override
+            public void objectRemoved(LwM2mObjectEnabler object) {
+                Resource resource = clientSideServer.getRoot().getChild(Integer.toString(object.getId()));
+                clientSideServer.remove(resource);
+            }
+        });
 
         // Create CoAP resources needed for the bootstrap sequence
         clientSideServer.add(new BootstrapResource(bootstrapHandler));
@@ -107,7 +112,7 @@ public class LeshanClient {
         requestSender = new CaliforniumLwM2mRequestSender(endpointsManager);
 
         // Create registration engine
-        engine = new RegistrationEngine(endpoint, this.objectEnablers, endpointsManager, requestSender,
+        engine = new RegistrationEngine(endpoint, objectTree.getObjectEnablers(), endpointsManager, requestSender,
                 bootstrapHandler, observers, additionalAttributes);
 
     }
@@ -139,8 +144,8 @@ public class LeshanClient {
         engine.triggerRegistrationUpdate();
     }
 
-    public Map<Integer, LwM2mObjectEnabler> getObjectEnablers() {
-        return Collections.unmodifiableMap(objectEnablers);
+    public LwM2mObjectTree getObjectTree() {
+        return objectTree;
     }
 
     public CoapServer getCoapServer() {

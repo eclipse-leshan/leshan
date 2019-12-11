@@ -66,7 +66,8 @@ public class ObjectEnabler extends BaseObjectEnabler {
         this.instanceFactory = instanceFactory;
         this.defaultContentFormat = defaultContentFormat;
         for (Entry<Integer, LwM2mInstanceEnabler> entry : this.instances.entrySet()) {
-            addInstance(entry.getKey(), entry.getValue());
+            instances.put(entry.getKey(), entry.getValue());
+            listenInstance(entry.getValue(), entry.getKey());
         }
     }
 
@@ -90,6 +91,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
     public synchronized void addInstance(int instanceId, LwM2mInstanceEnabler newInstance) {
         instances.put(instanceId, newInstance);
         listenInstance(newInstance, instanceId);
+        fireInstancesAdded(instanceId);
     }
 
     public synchronized LwM2mInstanceEnabler getInstance(int instanceId) {
@@ -97,7 +99,11 @@ public class ObjectEnabler extends BaseObjectEnabler {
     }
 
     public synchronized LwM2mInstanceEnabler removeInstance(int instanceId) {
-        return instances.remove(instanceId);
+        LwM2mInstanceEnabler removedInstance = instances.remove(instanceId);
+        if (removedInstance != null) {
+            fireInstancesRemoved(removedInstance.getId());
+        }
+        return removedInstance;
     }
 
     @Override
@@ -114,6 +120,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
             // add new instance to this object
             instances.put(newInstance.getId(), newInstance);
             listenInstance(newInstance, newInstance.getId());
+            fireInstancesAdded(newInstance.getId());
 
             return CreateResponse
                     .success(new LwM2mPath(request.getPath().getObjectId(), newInstance.getId()).toString());
@@ -137,6 +144,8 @@ public class ObjectEnabler extends BaseObjectEnabler {
             }
 
             // create the new instances
+            int[] instanceIds = new int[request.getObjectInstances().size()];
+            int i = 0;
             for (LwM2mObjectInstance instance : request.getObjectInstances()) {
                 // create instance
                 LwM2mInstanceEnabler newInstance = createInstance(identity, instance.getId(),
@@ -145,7 +154,12 @@ public class ObjectEnabler extends BaseObjectEnabler {
                 // add new instance to this object
                 instances.put(newInstance.getId(), newInstance);
                 listenInstance(newInstance, newInstance.getId());
+
+                // store instance ids
+                instanceIds[i] = newInstance.getId();
+                i++;
             }
+            fireInstancesAdded(instanceIds);
             return CreateResponse.success();
         }
     }
@@ -296,6 +310,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
         LwM2mInstanceEnabler deletedInstance = instances.remove(request.getPath().getObjectInstanceId());
         if (deletedInstance != null) {
             deletedInstance.onDelete(identity);
+            fireInstancesRemoved(deletedInstance.getId());
             return DeleteResponse.success();
         }
         return DeleteResponse.notFound();
@@ -307,18 +322,34 @@ public class ObjectEnabler extends BaseObjectEnabler {
             if (id == LwM2mId.SECURITY) {
                 // For security object, we clean everything except bootstrap Server account.
                 Entry<Integer, LwM2mInstanceEnabler> bootstrapServerAccount = null;
+                int[] instanceIds = new int[instances.size()];
+                int i = 0;
                 for (Entry<Integer, LwM2mInstanceEnabler> instance : instances.entrySet()) {
                     if (ServersInfoExtractor.isBootstrapServer(instance.getValue())) {
                         bootstrapServerAccount = instance;
+                    } else {
+                        // store instance ids
+                        instanceIds[i] = instance.getKey();
+                        i++;
                     }
                 }
                 instances.clear();
                 if (bootstrapServerAccount != null) {
                     instances.put(bootstrapServerAccount.getKey(), bootstrapServerAccount.getValue());
                 }
+                fireInstancesRemoved(instanceIds);
                 return BootstrapDeleteResponse.success();
             } else {
                 instances.clear();
+                // fired instances removed
+                int[] instanceIds = new int[instances.size()];
+                int i = 0;
+                for (Entry<Integer, LwM2mInstanceEnabler> instance : instances.entrySet()) {
+                    instanceIds[i] = instance.getKey();
+                    i++;
+                }
+                fireInstancesRemoved(instanceIds);
+
                 return BootstrapDeleteResponse.success();
             }
         } else if (request.getPath().isObjectInstance()) {
@@ -330,6 +361,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
                 }
             }
             if (null != instances.remove(request.getPath().getObjectInstanceId())) {
+                fireInstancesRemoved(request.getPath().getObjectInstanceId());
                 return BootstrapDeleteResponse.success();
             } else {
                 return BootstrapDeleteResponse.badRequest(String.format("Instance %s not found", request.getPath()));
