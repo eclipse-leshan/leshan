@@ -85,7 +85,7 @@ public class RegistrationTest {
 
         // Check client is well registered
         helper.assertClientRegisterered();
-        assertArrayEquals(Link.parse("</>;rt=\"oma.lwm2m\",</1/0>,</2>,</3/0>,</2000/0>".getBytes()),
+        assertArrayEquals(Link.parse("</>;rt=\"oma.lwm2m\",</1/0>,</2>,</3/0>,</2000/0>,</2000/1>".getBytes()),
                 helper.getCurrentRegistration().getObjectLinks());
 
         // Check for update
@@ -109,7 +109,7 @@ public class RegistrationTest {
 
         // Check client is well registered
         helper.assertClientRegisterered();
-        assertArrayEquals(Link.parse("</>;rt=\"oma.lwm2m\",</1/0>,</2>,</3/0>,</2000/0>".getBytes()),
+        assertArrayEquals(Link.parse("</>;rt=\"oma.lwm2m\",</1/0>,</2>,</3/0>,</2000/0>,</2000/1>".getBytes()),
                 helper.getCurrentRegistration().getObjectLinks());
 
         // Stop client with out de-registration
@@ -271,7 +271,7 @@ public class RegistrationTest {
         helper.assertClientRegisterered();
         assertNotNull(helper.getLastRegistration());
         assertEquals(additionalAttributes, helper.getLastRegistration().getAdditionalRegistrationAttributes());
-        assertArrayEquals(Link.parse("</>;rt=\"oma.lwm2m\",</1/0>,</2>,</3/0>,</2000/0>".getBytes()),
+        assertArrayEquals(Link.parse("</>;rt=\"oma.lwm2m\",</1/0>,</2>,</3/0>,</2000/0>,</2000/1>".getBytes()),
                 helper.getCurrentRegistration().getObjectLinks());
     }
 

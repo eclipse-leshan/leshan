@@ -19,14 +19,17 @@
 package org.eclipse.leshan.integration.tests;
 
 import static org.eclipse.leshan.ResponseCode.*;
+import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.*;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.*;
 
 import org.eclipse.californium.core.coap.Response;
+import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.junit.After;
@@ -113,6 +116,22 @@ public class ReadTest {
         LwM2mResource resource = (LwM2mResource) response.getContent();
         assertEquals(1, resource.getId());
         assertEquals(IntegrationTestHelper.MODEL_NUMBER, resource.getValue());
+    }
+
+    @Test
+    public void can_read_empty_opaque_resource() throws InterruptedException {
+        // read device model number
+        ReadResponse response = helper.server.send(helper.getCurrentRegistration(),
+                new ReadRequest(ContentFormat.OPAQUE, TEST_OBJECT_ID, 1, OPAQUE_RESOURCE_ID));
+
+        // verify result
+        assertEquals(CONTENT, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
+
+        LwM2mResource resource = (LwM2mResource) response.getContent();
+        assertEquals(Type.OPAQUE, resource.getType());
+        assertEquals(0, ((byte[]) resource.getValue()).length);
     }
 
     @Test

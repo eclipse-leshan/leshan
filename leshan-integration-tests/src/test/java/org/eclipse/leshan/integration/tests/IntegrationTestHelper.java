@@ -37,6 +37,7 @@ import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.resource.DummyInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
@@ -106,7 +107,7 @@ public class IntegrationTestHelper {
                 false, Type.OBJLNK, null, null, null);
         ResourceModel objlnkSinglefield = new ResourceModel(OBJLNK_SINGLE_INSTANCE_RESOURCE_ID, "objlnk", Operations.RW,
                 false, false, Type.OBJLNK, null, null, null);
-        objectModels.add(new ObjectModel(TEST_OBJECT_ID, "testobject", null, ObjectModel.DEFAULT_VERSION, false, false,
+        objectModels.add(new ObjectModel(TEST_OBJECT_ID, "testobject", null, ObjectModel.DEFAULT_VERSION, true, false,
                 stringfield, booleanfield, integerfield, floatfield, timefield, opaquefield, objlnkfield,
                 objlnkSinglefield));
 
@@ -154,7 +155,8 @@ public class IntegrationTestHelper {
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.U, false));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new TestDevice("Eclipse Leshan", MODEL_NUMBER, "12345", "U"));
         initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, DummyInstanceEnabler.class);
-        initializer.setDummyInstancesForObject(2000);
+        initializer.setInstancesForObject(TEST_OBJECT_ID, new DummyInstanceEnabler(0),
+                new SimpleInstanceEnabler(1, OPAQUE_RESOURCE_ID, new byte[0]));
         List<LwM2mObjectEnabler> objects = initializer.createAll();
 
         // Build Client
