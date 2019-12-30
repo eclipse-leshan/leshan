@@ -36,12 +36,30 @@ import org.eclipse.leshan.core.response.WriteResponse;
 public class SimpleInstanceEnabler extends BaseInstanceEnabler {
 
     protected Map<Integer, LwM2mResource> resources = new HashMap<>();
+    protected Map<Integer, Object> initialValues;
 
     public SimpleInstanceEnabler() {
     }
 
     public SimpleInstanceEnabler(int id) {
         super(id);
+    }
+
+    public SimpleInstanceEnabler(int id, Map<Integer, Object> initialValues) {
+        super(id);
+        this.initialValues = initialValues;
+    }
+
+    public SimpleInstanceEnabler(int id, Object... initialValues) {
+        super(id);
+        if (initialValues.length % 2 == 1)
+            throw new IllegalArgumentException("initialValues length must be even, as this is a list of ID/value");
+        if (initialValues.length > 0) {
+            this.initialValues = new HashMap<>(initialValues.length / 2);
+            for (int i = 0; i < initialValues.length; i = i + 2) {
+                this.initialValues.put((Integer) initialValues[i], initialValues[i + 1]);
+            }
+        }
     }
 
     @Override
@@ -94,35 +112,50 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
     }
 
     protected LwM2mSingleResource initializeSingleResource(ObjectModel objectModel, ResourceModel resourceModel) {
-        switch (resourceModel.type) {
-        case STRING:
-            return LwM2mSingleResource.newStringResource(resourceModel.id,
-                    createDefaultStringValueFor(objectModel, resourceModel));
-        case BOOLEAN:
-            return LwM2mSingleResource.newBooleanResource(resourceModel.id,
-                    createDefaultBooleanValueFor(objectModel, resourceModel));
-        case INTEGER:
-            return LwM2mSingleResource.newIntegerResource(resourceModel.id,
-                    createDefaultIntegerValueFor(objectModel, resourceModel));
-        case FLOAT:
-            return LwM2mSingleResource.newFloatResource(resourceModel.id,
-                    createDefaultFloatValueFor(objectModel, resourceModel));
-        case TIME:
-            return LwM2mSingleResource.newDateResource(resourceModel.id,
-                    createDefaultDateValueFor(objectModel, resourceModel));
-        case OPAQUE:
-            return LwM2mSingleResource.newBinaryResource(resourceModel.id,
-                    createDefaultOpaqueValueFor(objectModel, resourceModel));
-        default:
-            // this should not happened
-            return null;
+        if (initialValues != null) {
+            Object initialValue = initialValues.get(resourceModel.id);
+            if (initialValue == null)
+                return null;
+            return LwM2mSingleResource.newResource(resourceModel.id, initialValue, resourceModel.type);
+        } else {
+            switch (resourceModel.type) {
+            case STRING:
+                return LwM2mSingleResource.newStringResource(resourceModel.id,
+                        createDefaultStringValueFor(objectModel, resourceModel));
+            case BOOLEAN:
+                return LwM2mSingleResource.newBooleanResource(resourceModel.id,
+                        createDefaultBooleanValueFor(objectModel, resourceModel));
+            case INTEGER:
+                return LwM2mSingleResource.newIntegerResource(resourceModel.id,
+                        createDefaultIntegerValueFor(objectModel, resourceModel));
+            case FLOAT:
+                return LwM2mSingleResource.newFloatResource(resourceModel.id,
+                        createDefaultFloatValueFor(objectModel, resourceModel));
+            case TIME:
+                return LwM2mSingleResource.newDateResource(resourceModel.id,
+                        createDefaultDateValueFor(objectModel, resourceModel));
+            case OPAQUE:
+                return LwM2mSingleResource.newBinaryResource(resourceModel.id,
+                        createDefaultOpaqueValueFor(objectModel, resourceModel));
+            default:
+                // this should not happened
+                return null;
+            }
         }
     }
 
     protected LwM2mMultipleResource initializeMultipleResource(ObjectModel objectModel, ResourceModel resourceModel) {
-        // no default value
-        Map<Integer, ?> emptyMap = Collections.emptyMap();
-        return LwM2mMultipleResource.newResource(resourceModel.id, emptyMap, resourceModel.type);
+        if (initialValues != null) {
+            @SuppressWarnings("unchecked")
+            Map<Integer, ?> initialValue = (Map<Integer, ?>) initialValues.get(resourceModel.id);
+            if (initialValue == null)
+                return null;
+            return LwM2mMultipleResource.newResource(resourceModel.id, initialValue, resourceModel.type);
+        } else {
+            // no default value
+            Map<Integer, ?> emptyMap = Collections.emptyMap();
+            return LwM2mMultipleResource.newResource(resourceModel.id, emptyMap, resourceModel.type);
+        }
     }
 
     protected String createDefaultStringValueFor(ObjectModel objectModel, ResourceModel resourceModel) {
