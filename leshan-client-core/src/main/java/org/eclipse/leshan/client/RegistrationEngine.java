@@ -252,7 +252,7 @@ public class RegistrationEngine {
 
                 // Update every lifetime period
                 long delay = calculateNextUpdate(dmInfo.lifetime);
-                scheduleUpdate(server, registrationID, delay);
+                scheduleUpdate(server, registrationID, new RegistrationUpdate(), delay);
 
                 if (observer != null) {
                     observer.onRegistrationSuccess(server, registrationID);
@@ -319,19 +319,21 @@ public class RegistrationEngine {
         }
     }
 
-    private boolean updateWithRetry(Server server, String registrationId) throws InterruptedException {
+    private boolean updateWithRetry(Server server, String registrationId, RegistrationUpdate registrationUpdate)
+            throws InterruptedException {
 
-        Status updateStatus = update(server, registrationId);
+        Status updateStatus = update(server, registrationId, registrationUpdate);
         if (updateStatus == Status.TIMEOUT) {
             // if register timeout maybe server lost the session,
             // so we reconnect (new handshake) and retry
             endpointsManager.forceReconnection(server);
-            updateStatus = update(server, registrationId);
+            updateStatus = update(server, registrationId, registrationUpdate);
         }
         return updateStatus == Status.SUCCESS;
     }
 
-    private Status update(Server server, String registrationID) throws InterruptedException {
+    private Status update(Server server, String registrationID, RegistrationUpdate registrationUpdate)
+            throws InterruptedException {
         DmServerInfo dmInfo = ServersInfoExtractor.getDMServerInfo(objectEnablers, server.getId());
         if (dmInfo == null) {
             LOG.error("Trying to update registration but there is no LWM2M server config.");
@@ -342,7 +344,10 @@ public class RegistrationEngine {
         LOG.info("Trying to update registration to {} ...", server.getUri());
         try {
             UpdateResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(),
-                    new UpdateRequest(registrationID, null, null, null, null, null), DEFAULT_TIMEOUT);
+                    new UpdateRequest(registrationID, registrationUpdate.getLifeTimeInSec(),
+                            registrationUpdate.getSmsNumber(), registrationUpdate.getBindingMode(),
+                            registrationUpdate.getObjectLinks(), registrationUpdate.getAdditionalAttributes()),
+                    DEFAULT_TIMEOUT);
             if (response == null) {
                 registrationID = null;
                 LOG.error("Registration update failed: Timeout.");
@@ -354,7 +359,7 @@ public class RegistrationEngine {
                 // Update successful, so we reschedule new update
                 LOG.info("Registration update succeed.");
                 long delay = calculateNextUpdate(dmInfo.lifetime);
-                scheduleUpdate(server, registrationID, delay);
+                scheduleUpdate(server, registrationID, new RegistrationUpdate(), delay);
                 if (observer != null) {
                     observer.onUpdateSuccess(server, registrationID);
                 }
@@ -464,32 +469,36 @@ public class RegistrationEngine {
 
     }
 
-    private synchronized void scheduleUpdate(Server server, String registrationId, long timeInMs) {
+    private synchronized void scheduleUpdate(Server server, String registrationId,
+            RegistrationUpdate registrationUpdate, long timeInMs) {
         if (!started)
             return;
 
         if (timeInMs > 0) {
             LOG.info("Next registration update to {} in {}s...", server.getUri(), timeInMs / 1000);
-            updateFuture = schedExecutor.schedule(new UpdateRegistrationTask(server, registrationId), timeInMs,
+            updateFuture = schedExecutor.schedule(
+                    new UpdateRegistrationTask(server, registrationId, registrationUpdate), timeInMs,
                     TimeUnit.MILLISECONDS);
         } else {
-            updateFuture = schedExecutor.submit(new UpdateRegistrationTask(server, registrationId));
+            updateFuture = schedExecutor.submit(new UpdateRegistrationTask(server, registrationId, registrationUpdate));
         }
     }
 
     private class UpdateRegistrationTask implements Runnable {
-        private Server server;
+        private final Server server;
         private final String registrationId;
+        private final RegistrationUpdate registrationUpdate;
 
-        public UpdateRegistrationTask(Server server, String registrationId) {
+        public UpdateRegistrationTask(Server server, String registrationId, RegistrationUpdate registrationUpdate) {
             this.server = server;
             this.registrationId = registrationId;
+            this.registrationUpdate = registrationUpdate;
         }
 
         @Override
         public void run() {
             try {
-                if (!updateWithRetry(server, registrationId)) {
+                if (!updateWithRetry(server, registrationId, registrationUpdate)) {
                     if (!registerWithRetry(server)) {
                         if (!scheduleClientInitiatedBootstrap(NOW)) {
                             scheduleRegistrationTask(server, BS_RETRY);
@@ -566,6 +575,10 @@ public class RegistrationEngine {
     }
 
     public void triggerRegistrationUpdate() {
+        triggerRegistrationUpdate(new RegistrationUpdate());
+    }
+
+    public void triggerRegistrationUpdate(RegistrationUpdate registrationUpdate) {
         synchronized (this) {
             if (started) {
                 LOG.info("Triggering registration update...");
@@ -575,7 +588,7 @@ public class RegistrationEngine {
                     cancelUpdateTask(true);
                     // TODO we currently support only one dm server.
                     Entry<String, Server> currentServer = registeredServers.entrySet().iterator().next();
-                    scheduleUpdate(currentServer.getValue(), currentServer.getKey(), NOW);
+                    scheduleUpdate(currentServer.getValue(), currentServer.getKey(), registrationUpdate, NOW);
                 }
             }
         }

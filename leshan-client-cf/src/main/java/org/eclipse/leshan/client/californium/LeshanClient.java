@@ -24,6 +24,7 @@ import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.client.RegistrationEngine;
+import org.eclipse.leshan.client.RegistrationUpdateHandler;
 import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.client.californium.bootstrap.BootstrapResource;
 import org.eclipse.leshan.client.californium.object.ObjectResource;
@@ -115,6 +116,8 @@ public class LeshanClient {
         engine = new RegistrationEngine(endpoint, objectTree.getObjectEnablers(), endpointsManager, requestSender,
                 bootstrapHandler, observers, additionalAttributes);
 
+        RegistrationUpdateHandler registrationUpdateHandler = new RegistrationUpdateHandler(engine, bootstrapHandler);
+        registrationUpdateHandler.listen(objectTree);
     }
 
     public void start() {

@@ -110,6 +110,10 @@ public class BootstrapHandler {
         return false;
     }
 
+    public synchronized boolean isBootstrapping() {
+        return bootstrapping;
+    }
+
     public boolean waitBoostrapFinished(long timeInSeconds) throws InterruptedException {
         return bootstrappingLatch.await(timeInSeconds, TimeUnit.SECONDS);
     }
