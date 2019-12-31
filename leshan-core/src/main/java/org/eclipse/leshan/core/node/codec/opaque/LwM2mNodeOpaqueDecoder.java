@@ -35,7 +35,7 @@ public class LwM2mNodeOpaqueDecoder {
                     "Invalid content format [%s] for path [%s], OPAQUE can only be used for single OPAQUE resource",
                     desc.type, path);
         }
-        return LwM2mSingleResource.newBinaryResource(path.getResourceId(), content);
+        return LwM2mSingleResource.newBinaryResource(path.getResourceId(), content != null ? content : new byte[0]);
     }
 
 }
