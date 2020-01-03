@@ -16,6 +16,7 @@
 package org.eclipse.leshan.json;
 
 import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.util.json.JsonException;
 import org.eclipse.leshan.util.json.JsonSerDes;
 
 import com.eclipsesource.json.JsonObject;
@@ -24,7 +25,7 @@ import com.eclipsesource.json.JsonValue;
 public class JsonArrayEntrySerDes extends JsonSerDes<JsonArrayEntry> {
 
     @Override
-    public JsonObject jSerialize(JsonArrayEntry jae) {
+    public JsonObject jSerialize(JsonArrayEntry jae) throws JsonException {
         JsonObject o = new JsonObject();
         if (jae.getName() != null)
             o.add("n", jae.getName());
@@ -44,7 +45,7 @@ public class JsonArrayEntrySerDes extends JsonSerDes<JsonArrayEntry> {
                 o.add("sv", jae.getStringValue());
                 break;
             default:
-                throw new LwM2mJsonException("JsonArrayEntry MUST have a value : %s", jae);
+                throw new JsonException("JsonArrayEntry MUST have a value : %s", jae);
             }
         }
         if (jae.getTime() != null)
@@ -53,7 +54,7 @@ public class JsonArrayEntrySerDes extends JsonSerDes<JsonArrayEntry> {
     };
 
     @Override
-    public JsonArrayEntry deserialize(JsonObject o) {
+    public JsonArrayEntry deserialize(JsonObject o) throws JsonException {
         if (o == null)
             return null;
 
@@ -81,7 +82,7 @@ public class JsonArrayEntrySerDes extends JsonSerDes<JsonArrayEntry> {
             jae.setObjectLinkValue(ov.asString());
 
         if (jae.getType() == null) {
-            throw new LwM2mJsonException("Missing value(v,bv,ov,sv) field for entry %s", o.toString());
+            throw new JsonException("Missing value(v,bv,ov,sv) field for entry %s", o.toString());
         }
 
         return jae;

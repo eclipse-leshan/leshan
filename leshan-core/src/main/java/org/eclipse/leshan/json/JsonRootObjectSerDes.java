@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.json;
 
+import org.eclipse.leshan.util.json.JsonException;
 import org.eclipse.leshan.util.json.JsonSerDes;
 
 import com.eclipsesource.json.JsonArray;
@@ -26,7 +27,7 @@ public class JsonRootObjectSerDes extends JsonSerDes<JsonRootObject> {
     private JsonArrayEntrySerDes serDes = new JsonArrayEntrySerDes();
 
     @Override
-    public JsonObject jSerialize(JsonRootObject jro) {
+    public JsonObject jSerialize(JsonRootObject jro) throws JsonException {
         JsonObject o = new JsonObject();
 
         if (jro.getBaseName() != null)
@@ -43,7 +44,7 @@ public class JsonRootObjectSerDes extends JsonSerDes<JsonRootObject> {
     };
 
     @Override
-    public JsonRootObject deserialize(JsonObject o) {
+    public JsonRootObject deserialize(JsonObject o) throws JsonException {
         if (o == null)
             return null;
 
@@ -53,7 +54,7 @@ public class JsonRootObjectSerDes extends JsonSerDes<JsonRootObject> {
         if (e != null)
             jro.setResourceList(serDes.deserialize(e.asArray()));
         else
-            throw new LwM2mJsonException("'e' field is missing for %s", o.toString());
+            throw new JsonException("'e' field is missing for %s", o.toString());
 
         JsonValue bn = o.get("bn");
         if (bn != null && bn.isString())

@@ -23,19 +23,24 @@ import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
+/**
+ * An abstract class to easily create serializer/deserializer class based on "minimal-json".
+ * 
+ * @param <T>
+ */
 public abstract class JsonSerDes<T> {
 
-    public abstract JsonObject jSerialize(T t);
+    public abstract JsonObject jSerialize(T t) throws JsonException;
 
-    public String sSerialize(T t) {
+    public String sSerialize(T t) throws JsonException {
         return jSerialize(t).toString();
     }
 
-    public byte[] bSerialize(T t) {
+    public byte[] bSerialize(T t) throws JsonException {
         return jSerialize(t).toString().getBytes();
     }
 
-    public JsonArray jSerialize(Collection<T> ts) {
+    public JsonArray jSerialize(Collection<T> ts) throws JsonException {
         JsonArray o = new JsonArray();
         if (ts != null) {
             for (T t : ts) {
@@ -47,17 +52,17 @@ public abstract class JsonSerDes<T> {
         return o;
     }
 
-    public String sSerialize(Collection<T> ts) {
+    public String sSerialize(Collection<T> ts) throws JsonException {
         return jSerialize(ts).toString();
     }
 
-    public byte[] bSerialize(Collection<T> ts) {
+    public byte[] bSerialize(Collection<T> ts) throws JsonException {
         return jSerialize(ts).toString().getBytes();
     }
 
-    public abstract T deserialize(JsonObject o);
+    public abstract T deserialize(JsonObject o) throws JsonException;
 
-    public List<T> deserialize(JsonArray a) {
+    public List<T> deserialize(JsonArray a) throws JsonException {
         ArrayList<T> res = new ArrayList<>(a.size());
         for (JsonValue v : a) {
             res.add(deserialize(v.asObject()));

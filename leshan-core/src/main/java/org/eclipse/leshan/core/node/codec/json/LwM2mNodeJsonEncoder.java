@@ -35,6 +35,7 @@ import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
 import org.eclipse.leshan.json.JsonArrayEntry;
 import org.eclipse.leshan.json.JsonRootObject;
 import org.eclipse.leshan.json.LwM2mJson;
+import org.eclipse.leshan.json.LwM2mJsonException;
 import org.eclipse.leshan.util.Base64;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
@@ -59,7 +60,11 @@ public class LwM2mNodeJsonEncoder {
         JsonRootObject jsonObject = new JsonRootObject();
         jsonObject.setResourceList(internalEncoder.resourceList);
         jsonObject.setBaseName(internalEncoder.baseName);
-        return LwM2mJson.toJsonLwM2m(jsonObject).getBytes();
+        try {
+            return LwM2mJson.toJsonLwM2m(jsonObject).getBytes();
+        } catch (LwM2mJsonException e) {
+            throw new CodecException(e, "Unable to encode node[path:%s] : %s", path, node);
+        }
     }
 
     public static byte[] encodeTimestampedData(List<TimestampedLwM2mNode> timestampedNodes, LwM2mPath path,
@@ -93,7 +98,12 @@ public class LwM2mNodeJsonEncoder {
         JsonRootObject jsonObject = new JsonRootObject();
         jsonObject.setResourceList(entries);
         jsonObject.setBaseName(internalEncoder.baseName);
-        return LwM2mJson.toJsonLwM2m(jsonObject).getBytes();
+        try {
+            return LwM2mJson.toJsonLwM2m(jsonObject).getBytes();
+        } catch (LwM2mJsonException e) {
+            throw new CodecException(e, "Unable to encode timestamped nodes[path:%s] : %s", path, timestampedNodes);
+        }
+
     }
 
     private static class InternalEncoder implements LwM2mNodeVisitor {
