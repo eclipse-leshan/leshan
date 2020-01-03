@@ -18,8 +18,8 @@ package org.eclipse.leshan.server.demo.servlet.json;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 
-import org.eclipse.leshan.core.model.json.JsonSerDes;
 import org.eclipse.leshan.util.Base64;
+import org.eclipse.leshan.util.json.JsonSerDes;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;

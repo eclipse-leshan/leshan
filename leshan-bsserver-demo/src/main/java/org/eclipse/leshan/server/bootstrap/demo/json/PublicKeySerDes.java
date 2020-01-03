@@ -19,9 +19,9 @@ import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.util.Arrays;
 
-import org.eclipse.leshan.core.model.json.JsonSerDes;
 import org.eclipse.leshan.util.Base64;
 import org.eclipse.leshan.util.Hex;
+import org.eclipse.leshan.util.json.JsonSerDes;
 
 import com.eclipsesource.json.JsonObject;
 
