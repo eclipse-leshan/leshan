@@ -29,19 +29,20 @@ import java.util.List;
 
 import org.eclipse.leshan.core.model.DDFFileParser;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.util.json.JsonException;
 
 public class Ddf2JsonGenerator {
 
     static final String DEFAULT_DDF_FILES_PATH = "ddffiles";
     static final String DEFAULT_OUTPUT_PATH = "src/main/resources/objectspec.json";
 
-    private void generate(Collection<ObjectModel> objectModels, OutputStream output) throws IOException {
+    private void generate(Collection<ObjectModel> objectModels, OutputStream output) throws IOException, JsonException {
         try (OutputStreamWriter outputStreamWriter = new OutputStreamWriter(output)) {
             outputStreamWriter.write(new ObjectModelSerDes().sSerialize(objectModels));
         }
     }
 
-    public void generate(File input, OutputStream output) throws IOException {
+    public void generate(File input, OutputStream output) throws IOException, JsonException {
         // check input exists
         if (!input.exists())
             throw new FileNotFoundException(input.toString());
@@ -75,7 +76,7 @@ public class Ddf2JsonGenerator {
         generate(objectModels, output);
     }
 
-    public static void main(String[] args) throws FileNotFoundException, IOException {
+    public static void main(String[] args) throws FileNotFoundException, IOException, JsonException {
         // default value
         String ddfFilesPath = DEFAULT_DDF_FILES_PATH;
         String outputPath = DEFAULT_OUTPUT_PATH;

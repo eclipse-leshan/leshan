@@ -28,6 +28,7 @@ import org.eclipse.leshan.server.demo.model.ObjectModelSerDes;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationService;
+import org.eclipse.leshan.util.json.JsonException;
 
 public class ObjectSpecServlet extends HttpServlet {
 
@@ -68,10 +69,14 @@ public class ObjectSpecServlet extends HttpServlet {
         }
 
         // Get Model for this registration
-        LwM2mModel model = modelProvider.getObjectModel(registration);
-        resp.setContentType("application/json");
-        resp.getOutputStream().write(serializer.bSerialize(model.getObjectModels()));
-        resp.setStatus(HttpServletResponse.SC_OK);
+        try {
+            LwM2mModel model = modelProvider.getObjectModel(registration);
+            resp.setContentType("application/json");
+            resp.getOutputStream().write(serializer.bSerialize(model.getObjectModels()));
+            resp.setStatus(HttpServletResponse.SC_OK);
+        } catch (JsonException e) {
+            throw new ServletException(e);
+        }
         return;
 
     }

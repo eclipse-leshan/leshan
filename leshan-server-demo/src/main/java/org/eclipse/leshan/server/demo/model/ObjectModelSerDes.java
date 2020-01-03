@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
+import org.eclipse.leshan.util.json.JsonException;
 import org.eclipse.leshan.util.json.JsonSerDes;
 
 import com.eclipsesource.json.Json;
@@ -62,7 +63,7 @@ public class ObjectModelSerDes extends JsonSerDes<ObjectModel> {
     }
 
     @Override
-    public ObjectModel deserialize(JsonObject o) {
+    public ObjectModel deserialize(JsonObject o) throws JsonException {
         if (o == null)
             return null;
 
