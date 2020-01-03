@@ -97,8 +97,6 @@ public class RegistrationHandler {
         }
 
         if (authorizer.isAuthorized(updateRequest, registration, sender) == null) {
-            // TODO replace by Forbidden if https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/181 is
-            // closed.
             return new SendableResponse<>(UpdateResponse.badRequest("forbidden"));
         }
 
@@ -134,8 +132,6 @@ public class RegistrationHandler {
             return new SendableResponse<>(DeregisterResponse.notFound());
         }
         if (authorizer.isAuthorized(deregisterRequest, registration, sender) == null) {
-            // TODO replace by Forbidden if https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/181 is
-            // closed.
             return new SendableResponse<>(DeregisterResponse.badRequest("forbidden"));
         }
 

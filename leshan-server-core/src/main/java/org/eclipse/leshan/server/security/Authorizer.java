@@ -25,9 +25,6 @@ import org.eclipse.leshan.server.registration.Registration;
  */
 public interface Authorizer {
 
-    // TODO remove the BAD_REQUEST code if https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/181 is
-    // closed.
-
     /**
      * Return the registration if this request should be handle by the LWM2M Server. When <code>null</code> is returned
      * the LWM2M server will stop to handle this request and will respond with a {@link ResponseCode#FORBIDDEN} or
