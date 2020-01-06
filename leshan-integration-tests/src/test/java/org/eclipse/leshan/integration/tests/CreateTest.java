@@ -23,8 +23,6 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.*;
 
-import java.util.Arrays;
-
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mObject;
@@ -195,36 +193,6 @@ public class CreateTest {
         assertEquals(ResponseCode.NOT_FOUND, readResponse.getCode());
         assertNotNull(response.getCoapResponse());
         assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
-    }
-
-    // TODO we must probably implement this.
-    @Ignore
-    @Test
-    public void cannot_create_instance_with_extraneous_resources() throws InterruptedException {
-        // create ACL instance
-        LwM2mObjectInstance instance = new LwM2mObjectInstance(0, Arrays.<LwM2mResource> asList(
-                LwM2mSingleResource.newIntegerResource(3, 123), LwM2mSingleResource.newIntegerResource(50, 123)));
-        CreateRequest request = new CreateRequest(2, instance);
-        CreateResponse response = helper.server.send(helper.getCurrentRegistration(), request);
-
-        // verify result
-        assertEquals(ResponseCode.BAD_REQUEST, response.getCode());
-        assertNotNull(response.getCoapResponse());
-        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
-
-        // try to read to check if the instance is not created
-        // client registration
-        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(2, 0));
-        assertEquals(ResponseCode.NOT_FOUND, readResponse.getCode());
-        assertNotNull(response.getCoapResponse());
-        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
-    }
-
-    // TODO I'm not sure we can do use only writable resource on create
-    // see https://github.com/OpenMobileAlliance/OMA-LwM2M-Public-Review/issues/30
-    @Ignore
-    @Test
-    public void cannot_create_instance_with_non_writable_resource() {
     }
 
     @Test
