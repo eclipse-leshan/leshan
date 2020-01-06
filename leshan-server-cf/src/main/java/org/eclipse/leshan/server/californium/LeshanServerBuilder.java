@@ -359,9 +359,6 @@ public class LeshanServerBuilder {
     public static NetworkConfig createDefaultNetworkConfig() {
         NetworkConfig networkConfig = new NetworkConfig();
         networkConfig.set(Keys.MID_TRACKER, "NULL");
-        // Workaround for https://github.com/eclipse/leshan/issues/502
-        // TODO remove this line when we will integrate Cf 2.0.0-M10
-        // networkConfig.set(Keys.HEALTH_STATUS_INTERVAL, 0);
         return networkConfig;
     }
 
