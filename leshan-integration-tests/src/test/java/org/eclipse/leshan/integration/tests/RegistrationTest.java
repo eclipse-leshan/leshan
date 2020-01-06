@@ -37,10 +37,6 @@ import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.leshan.Link;
 import org.eclipse.leshan.ResponseCode;
-import org.eclipse.leshan.client.californium.LeshanClientBuilder;
-import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
-import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
-import org.eclipse.leshan.client.resource.ObjectEnabler;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -237,19 +233,6 @@ public class RegistrationTest {
             return;
         }
         fail("Observe request should be sent");
-    }
-
-    // TODO not really a registration test
-    @Test(expected = IllegalArgumentException.class)
-    public void fail_to_create_client_with_same_object_twice() {
-        ObjectEnabler objectEnabler = new ObjectEnabler(1, null, new HashMap<Integer, LwM2mInstanceEnabler>(), null,
-                ContentFormat.DEFAULT);
-        ObjectEnabler objectEnabler2 = new ObjectEnabler(1, null, new HashMap<Integer, LwM2mInstanceEnabler>(), null,
-                ContentFormat.DEFAULT);
-        ArrayList<LwM2mObjectEnabler> objects = new ArrayList<>();
-        objects.add(objectEnabler);
-        objects.add(objectEnabler2);
-        helper.client = new LeshanClientBuilder("test").setObjects(objects).build();
     }
 
     @Test
