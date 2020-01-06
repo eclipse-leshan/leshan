@@ -28,7 +28,7 @@ public class SerializationTests {
 
     @Test
     public void ensure_Registration_is_serializable() {
-        // TODO we excludes "org.eclipse.leshan.Link.attributes" because we can not be sure it is serializable in a
+        // We exclude "org.eclipse.leshan.Link.attributes" because we can not be sure it is serializable in a
         // reliable way.
         assertIsSerializable(Registration.class, "org.eclipse.leshan.Link.attributes");
     }

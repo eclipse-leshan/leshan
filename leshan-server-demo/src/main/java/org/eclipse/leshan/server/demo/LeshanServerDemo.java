@@ -271,7 +271,7 @@ public class LeshanServerDemo {
         // Connect to redis if needed
         Pool<Jedis> jedis = null;
         if (redisUrl != null) {
-            // TODO: support sentinel pool and make pool configurable
+            // TODO support sentinel pool and make pool configurable
             jedis = new JedisPool(new URI(redisUrl));
         }
 

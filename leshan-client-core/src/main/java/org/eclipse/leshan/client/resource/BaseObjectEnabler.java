@@ -127,7 +127,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
         return doRead(identity, request);
 
-        // TODO we could do a validation of response.getContent by comparing with the spec.
+        // TODO we could do a validation of response.getContent by comparing with resourceSpec information
     }
 
     protected ReadResponse doRead(ServerIdentity identity, ReadRequest request) {

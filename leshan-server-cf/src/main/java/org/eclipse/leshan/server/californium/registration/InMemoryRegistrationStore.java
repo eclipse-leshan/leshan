@@ -521,6 +521,6 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
 
     @Override
     public void setExecutor(ScheduledExecutorService executor) {
-        // TODO we could reuse californium executor ?
+        // TODO sould we reuse californium executor ?
     }
 }

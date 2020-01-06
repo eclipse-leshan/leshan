@@ -140,7 +140,7 @@ public class MagicLwM2mValueConverter implements LwM2mValueConverter {
             if (currentType == Type.STRING) {
                 // let's assume we received an hexadecimal string
                 LOG.debug("Trying to convert hexadecimal string {} to byte array", value);
-                // TODO: check if we shouldn't instead assume that the string contains Base64 encoded data
+                // TODO check if we shouldn't instead assume that the string contains Base64 encoded data
                 try {
                     return Hex.decodeHex(((String) value).toCharArray());
                 } catch (IllegalArgumentException e) {

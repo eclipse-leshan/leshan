@@ -181,7 +181,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
         if (serverInfo == null || serverInfo.isEmpty())
             return null;
         else {
-            // TODO support multi server;
+            // TODO support multi server
             ServerInfo firstServer = serverInfo.iterator().next();
             Collection<Server> servers = new ArrayList<>(1);
             servers.add(createEndpoint(firstServer));
@@ -200,7 +200,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
     }
 
     public synchronized Endpoint getEndpoint(Identity server) {
-        // TODO support multi server;
+        // TODO support multi server
         if (currentEndpoint.isStarted())
             return currentEndpoint;
         return null;

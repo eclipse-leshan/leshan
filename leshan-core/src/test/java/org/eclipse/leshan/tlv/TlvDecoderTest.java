@@ -58,7 +58,6 @@ public class TlvDecoderTest {
         } catch (TlvException ex) {
             // this is very weak assertion since the format of the exception's message could
             // be changed any time
-            // TODO: replace with more robust assertion or simply check for TlvException being thrown
             assertEquals("Impossible to parse TLV: \n0011223344556677889900", ex.getMessage());
         }
     }

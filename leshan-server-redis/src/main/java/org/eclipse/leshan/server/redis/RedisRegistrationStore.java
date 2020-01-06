@@ -672,7 +672,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
 
     @Override
     public void setContext(Token token, EndpointContext correlationContext) {
-        // TODO should be implemented
+        // In Leshan we always set context when we send the request, so this should not be needed to implement this.
     }
 
     private byte[] serializeObs(org.eclipse.californium.core.observe.Observation obs) {
@@ -761,6 +761,6 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
 
     @Override
     public void setExecutor(ScheduledExecutorService executor) {
-        // TODO we could reuse californium executor ?
+        // TODO should we reuse californium executor ?
     }
 }
