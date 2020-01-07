@@ -211,6 +211,26 @@ public class CoapRequestBuilderTest {
     }
 
     @Test
+    public void build_unset_write_attribute_request() throws Exception {
+        Registration reg = newRegistration();
+
+        // test
+        CoapRequestBuilder builder = new CoapRequestBuilder(reg.getIdentity(), reg.getRootPath(), reg.getId(),
+                reg.getEndpoint(), model, encoder, false);
+        AttributeSet attributes = new AttributeSet(new Attribute(Attribute.MINIMUM_PERIOD),
+                new Attribute(Attribute.MAXIMUM_PERIOD));
+        WriteAttributesRequest request = new WriteAttributesRequest(3, 0, 14, attributes);
+        builder.visit(request);
+
+        // verify
+        Request coapRequest = builder.getRequest();
+        assertEquals(CoAP.Code.PUT, coapRequest.getCode());
+        assertEquals("127.0.0.1", coapRequest.getDestinationContext().getPeerAddress().getAddress().getHostAddress());
+        assertEquals(12354, coapRequest.getDestinationContext().getPeerAddress().getPort());
+        assertEquals("coap://127.0.0.1:12354/3/0/14?pmin&pmax", coapRequest.getURI());
+    }
+
+    @Test
     public void build_execute_request() throws Exception {
         Registration reg = newRegistration();
 

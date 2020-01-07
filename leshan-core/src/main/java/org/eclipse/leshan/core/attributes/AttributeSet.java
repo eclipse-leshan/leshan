@@ -124,7 +124,11 @@ public class AttributeSet {
     public String[] toQueryParams() {
         List<String> queries = new LinkedList<>();
         for (Attribute attr : attributeMap.values()) {
-            queries.add(String.format("%s=%s", attr.getCoRELinkParam(), attr.getValue()));
+            if (attr.getValue() != null) {
+                queries.add(String.format("%s=%s", attr.getCoRELinkParam(), attr.getValue()));
+            } else {
+                queries.add(attr.getCoRELinkParam());
+            }
         }
         return queries.toArray(new String[queries.size()]);
     }
@@ -200,10 +204,14 @@ public class AttributeSet {
 
         for (String param : queryParams) {
             String[] keyAndValue = param.split("=");
-            if (keyAndValue.length != 2) {
+            if (keyAndValue.length == 1) {
+                attributes.add(new Attribute(keyAndValue[0]));
+            } else if (keyAndValue.length == 2) {
+                attributes.add(new Attribute(keyAndValue[0], keyAndValue[1]));
+            } else {
                 throw new IllegalArgumentException(String.format("Cannot parse query param '%s'", param));
             }
-            attributes.add(Attribute.create(keyAndValue[0], keyAndValue[1]));
+
         }
         return new AttributeSet(attributes);
     }
