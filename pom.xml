@@ -61,6 +61,14 @@ Contributors:
         <tag>HEAD</tag>
     </scm>
 
+    <pluginRepositories>
+        <pluginRepository>
+            <id>github-maven-parent</id>
+            <url>https://raw.github.com/glhez/maven-repository/master/releases/</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+
     <developers>
         <developer>
             <id>jvermillard</id>
@@ -312,6 +320,31 @@ Contributors:
                                 <location>${basedir}/../eclipse/settings/org.eclipse.jdt.ui.prefs</location>
                             </file>
                         </additionalConfig>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>com.github.glhez</groupId>
+                    <artifactId>eclipse-settings-maven-plugin</artifactId>
+                    <version>3.1.0</version>
+                    <configuration>
+                        <localAdditionalConfig>
+                            <file>
+                                <name>.settings/org.eclipse.jdt.core.prefs</name>
+                                <location>../eclipse/settings/org.eclipse.jdt.core.prefs</location>
+                            </file>
+                            <file>
+                                <name>.settings/org.eclipse.core.resources.prefs</name>
+                                <location>../eclipse/settings/org.eclipse.core.resources.prefs</location>
+                            </file>
+                            <file>
+                                <name>.settings/org.eclipse.core.runtime.prefs</name>
+                                <location>../eclipse/settings/org.eclipse.core.runtime.prefs</location>
+                            </file>
+                            <file>
+                                <name>.settings/org.eclipse.jdt.ui.prefs</name>
+                                <location>../eclipse/settings/org.eclipse.jdt.ui.prefs</location>
+                            </file>
+                        </localAdditionalConfig>
                     </configuration>
                 </plugin>
                 <plugin>
