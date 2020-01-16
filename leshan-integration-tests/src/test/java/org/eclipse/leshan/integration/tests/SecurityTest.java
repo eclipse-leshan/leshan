@@ -24,8 +24,12 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
 
+import org.eclipse.californium.core.coap.CoAP.Type;
+import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.coap.Token;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
+import org.eclipse.californium.core.network.serialization.UdpDataSerializer;
 import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.RawData;
@@ -129,8 +133,13 @@ public class SecurityTest {
         connector.start();
         // send and empty message to force a new handshake with new credentials
         SimpleMessageCallback callback = new SimpleMessageCallback();
-        connector.send(RawData.outbound(new byte[0], new AddressEndpointContext(helper.server.getSecuredAddress()),
-                callback, false));
+        // create a ping message
+        Request request = new Request(null, Type.CON);
+        request.setToken(Token.EMPTY);
+        byte[] ping = new UdpDataSerializer().getByteArray(request);
+        // sent it
+        connector.send(
+                RawData.outbound(ping, new AddressEndpointContext(helper.server.getSecuredAddress()), callback, false));
         // Wait until new handshake DTLS is done
         EndpointContext endpointContext = callback.getEndpointContext(1000);
         assertEquals(((PreSharedKeyIdentity) endpointContext.getPeerIdentity()).getIdentity(), "anotherPSK");
