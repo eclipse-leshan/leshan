@@ -257,7 +257,7 @@ Contributors:
                     <version>3.0.0-M1</version>
                     <configuration>
                         <systemPropertyVariables>
-                             <logback.configurationFile>logback-test.xml</logback.configurationFile>
+                             <logback.configurationFile>logback-leshan-test.xml</logback.configurationFile>
                         </systemPropertyVariables>
                         <parallel>classes</parallel>
                         <threadCount>4</threadCount>
