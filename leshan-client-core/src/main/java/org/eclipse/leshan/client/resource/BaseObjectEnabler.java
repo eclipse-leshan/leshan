@@ -405,6 +405,12 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         }
     }
 
+    protected void fireResourcesChanged(int instanceid, int... resourceIds) {
+        if (listener != null) {
+            listener.resourceChanged(this, instanceid, resourceIds);
+        }
+    }
+
     @Override
     public ContentFormat getDefaultEncodingFormat(DownlinkRequest<?> request) {
         return ContentFormat.DEFAULT;

@@ -17,7 +17,7 @@ package org.eclipse.leshan.client.resource.listener;
 
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 
-public interface ObjectListener {
+public interface ObjectListener extends ResourceListener {
 
     void objectInstancesAdded(LwM2mObjectEnabler object, int... instanceIds);
 

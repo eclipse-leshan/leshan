@@ -15,11 +15,14 @@
  *******************************************************************************/
 package org.eclipse.leshan.client;
 
+import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.resource.listener.ObjectsListener;
+import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
+import org.eclipse.leshan.core.request.BindingMode;
 
 public class RegistrationUpdateHandler {
 
@@ -59,6 +62,24 @@ public class RegistrationUpdateHandler {
                 if (!bsHandler.isBootstrapping())
                     engine.triggerRegistrationUpdate(new RegistrationUpdate(
                             LinkFormatHelper.getClientDescription(objecTree.getObjectEnablers().values(), null)));
+            }
+
+            @Override
+            public void resourceChanged(LwM2mObjectEnabler object, int instanceId, int... resourceIds) {
+                if (!bsHandler.isBootstrapping())
+                    if (object.getId() == LwM2mId.SERVER) {
+                        Long lifetime = null;
+                        BindingMode bindingMode = null;
+                        for (int i = 0; i < resourceIds.length; i++) {
+                            if (resourceIds[i] == LwM2mId.SRV_LIFETIME) {
+                                lifetime = ServersInfoExtractor.getLifeTime(object, instanceId);
+                            } else if (resourceIds[i] == LwM2mId.SRV_BINDING) {
+                                bindingMode = ServersInfoExtractor.getBindingMode(object, instanceId);
+                            }
+                        }
+                        engine.triggerRegistrationUpdate(
+                                new RegistrationUpdate(lifetime, null, bindingMode, null, null));
+                    }
             }
         });
     }

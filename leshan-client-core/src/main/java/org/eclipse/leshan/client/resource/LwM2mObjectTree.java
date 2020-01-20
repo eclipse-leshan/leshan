@@ -100,5 +100,12 @@ public class LwM2mObjectTree {
                 listener.objectInstancesRemoved(object, instanceIds);
             }
         }
+
+        @Override
+        public void resourceChanged(LwM2mObjectEnabler object, int instanceId, int... resourcesIds) {
+            for (ObjectsListener listener : listeners) {
+                listener.resourceChanged(object, instanceId, resourcesIds);
+            }
+        }
     }
 }

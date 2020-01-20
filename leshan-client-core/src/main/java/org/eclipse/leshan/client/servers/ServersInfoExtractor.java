@@ -148,6 +148,26 @@ public class ServersInfoExtractor {
         return info.bootstrap;
     }
 
+    public static Long getLifeTime(LwM2mObjectEnabler serverEnabler, int instanceId) {
+        ReadResponse response = serverEnabler.read(ServerIdentity.SYSTEM,
+                new ReadRequest(SERVER, instanceId, SRV_LIFETIME));
+        if (response.isSuccess()) {
+            return (Long) ((LwM2mResource) response.getContent()).getValue();
+        } else {
+            return null;
+        }
+    }
+
+    public static BindingMode getBindingMode(LwM2mObjectEnabler serverEnabler, int instanceId) {
+        ReadResponse response = serverEnabler.read(ServerIdentity.SYSTEM,
+                new ReadRequest(SERVER, instanceId, SRV_BINDING));
+        if (response.isSuccess()) {
+            return BindingMode.valueOf((String) ((LwM2mResource) response.getContent()).getValue());
+        } else {
+            return null;
+        }
+    }
+
     public static SecurityMode getSecurityMode(LwM2mObjectInstance securityInstance) {
         return SecurityMode.fromCode((long) securityInstance.getResource(SEC_SECURITY_MODE).getValue());
     }

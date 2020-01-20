@@ -17,25 +17,6 @@ package org.eclipse.leshan.client.resource.listener;
 
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 
-public class ObjectsListenerAdapter implements ObjectsListener {
-
-    @Override
-    public void objectInstancesAdded(LwM2mObjectEnabler object, int... instanceIds) {
-    }
-
-    @Override
-    public void objectInstancesRemoved(LwM2mObjectEnabler object, int... instanceIds) {
-    }
-
-    @Override
-    public void objectAdded(LwM2mObjectEnabler object) {
-    }
-
-    @Override
-    public void objectRemoved(LwM2mObjectEnabler object) {
-    }
-
-    @Override
-    public void resourceChanged(LwM2mObjectEnabler object, int instanceId, int... resourcesIds) {
-    }
+public interface ResourceListener {
+    void resourceChanged(LwM2mObjectEnabler object, int instanceId, int... resourcesIds);
 }

@@ -375,6 +375,9 @@ public class ObjectEnabler extends BaseObjectEnabler {
 
             @Override
             public void resourcesChanged(int... resourceIds) {
+                fireResourcesChanged(instanceId, resourceIds);
+
+                // TODO remove Notify sender
                 NotifySender sender = getNotifySender();
                 if (null != sender) {
                     // check, if sender is available

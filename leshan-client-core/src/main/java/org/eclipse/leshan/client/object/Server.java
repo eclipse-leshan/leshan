@@ -19,6 +19,7 @@ package org.eclipse.leshan.client.object;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
@@ -91,40 +92,54 @@ public class Server extends BaseInstanceEnabler {
     public WriteResponse write(ServerIdentity identity, int resourceid, LwM2mResource value) {
 
         switch (resourceid) {
-
         case 0:
             if (value.getType() != Type.INTEGER) {
                 return WriteResponse.badRequest("invalid type");
             }
+            int previousShortServerId = shortServerId;
             shortServerId = ((Long) value.getValue()).intValue();
+            if (previousShortServerId != shortServerId)
+                fireResourcesChange(resourceid);
             return WriteResponse.success();
 
         case 1:
             if (value.getType() != Type.INTEGER) {
                 return WriteResponse.badRequest("invalid type");
             }
+            long previousLifetime = lifetime;
             lifetime = (Long) value.getValue();
+            if (previousLifetime != lifetime)
+                fireResourcesChange(resourceid);
             return WriteResponse.success();
 
         case 2:
             if (value.getType() != Type.INTEGER) {
                 return WriteResponse.badRequest("invalid type");
             }
+            Long previousDefaultMinPeriod = defaultMinPeriod;
             defaultMinPeriod = (Long) value.getValue();
+            if (!Objects.equals(previousDefaultMinPeriod, defaultMinPeriod))
+                fireResourcesChange(resourceid);
             return WriteResponse.success();
 
         case 3:
             if (value.getType() != Type.INTEGER) {
                 return WriteResponse.badRequest("invalid type");
             }
+            Long previousDefaultMaxPeriod = defaultMaxPeriod;
             defaultMaxPeriod = (Long) value.getValue();
+            if (!Objects.equals(previousDefaultMaxPeriod, defaultMaxPeriod))
+                fireResourcesChange(resourceid);
             return WriteResponse.success();
 
         case 6: // notification storing when disable or offline
             if (value.getType() != Type.BOOLEAN) {
                 return WriteResponse.badRequest("invalid type");
             }
+            boolean previousNotifyWhenDisable = notifyWhenDisable;
             notifyWhenDisable = (boolean) value.getValue();
+            if (previousNotifyWhenDisable != notifyWhenDisable)
+                fireResourcesChange(resourceid);
             return WriteResponse.success();
 
         case 7: // binding
@@ -132,7 +147,10 @@ public class Server extends BaseInstanceEnabler {
                 return WriteResponse.badRequest("invalid type");
             }
             try {
+                BindingMode previousBinding = binding;
                 binding = BindingMode.valueOf((String) value.getValue());
+                if (!Objects.equals(previousBinding, binding))
+                    fireResourcesChange(resourceid);
                 return WriteResponse.success();
             } catch (IllegalArgumentException e) {
                 return WriteResponse.badRequest("invalid value");
