@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.eclipse.leshan.Link;
 import org.eclipse.leshan.LwM2mId;
+import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
@@ -64,6 +65,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     private NotifySender notifySender;
     private ObjectListener listener;
     private ObjectModel objectModel;
+    private LwM2mClient lwm2mClient;
 
     public BaseObjectEnabler(int id, ObjectModel objectModel) {
         this.id = id;
@@ -391,6 +393,15 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
     protected ObjectListener getListener() {
         return listener;
+    }
+
+    @Override
+    public void setLwM2mClient(LwM2mClient client) {
+        this.lwm2mClient = client;
+    }
+
+    public LwM2mClient getLwm2mClient() {
+        return lwm2mClient;
     }
 
     protected void fireInstancesAdded(int... instanceIds) {

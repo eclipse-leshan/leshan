@@ -23,6 +23,7 @@ import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
+import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.RegistrationEngine;
 import org.eclipse.leshan.client.RegistrationUpdateHandler;
 import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
@@ -42,9 +43,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A Lightweight M2M client.
+ * A Lightweight M2M client based on Californium (CoAP implementation).
  */
-public class LeshanClient {
+public class LeshanClient implements LwM2mClient {
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanClient.class);
 
@@ -67,7 +68,7 @@ public class LeshanClient {
         Validate.notNull(coapConfig);
 
         // create ObjectTree
-        objectTree = new LwM2mObjectTree(objectEnablers);
+        objectTree = new LwM2mObjectTree(this, objectEnablers);
 
         // Create Client Observers
         observers = new LwM2mClientObserverDispatcher();
@@ -120,6 +121,7 @@ public class LeshanClient {
         registrationUpdateHandler.listen(objectTree);
     }
 
+    @Override
     public void start() {
         LOG.info("Starting Leshan client ...");
         endpointsManager.start();
@@ -129,6 +131,7 @@ public class LeshanClient {
         }
     }
 
+    @Override
     public void stop(boolean deregister) {
         LOG.info("Stopping Leshan Client ...");
         engine.stop(deregister);
@@ -136,6 +139,7 @@ public class LeshanClient {
         LOG.info("Leshan client stopped.");
     }
 
+    @Override
     public void destroy(boolean deregister) {
         LOG.info("Destroying Leshan client ...");
         engine.destroy(deregister);
@@ -143,10 +147,12 @@ public class LeshanClient {
         LOG.info("Leshan client destroyed.");
     }
 
+    @Override
     public void triggerRegistrationUpdate() {
         engine.triggerRegistrationUpdate();
     }
 
+    @Override
     public LwM2mObjectTree getObjectTree() {
         return objectTree;
     }

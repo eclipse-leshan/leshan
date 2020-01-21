@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
@@ -38,6 +39,7 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     protected List<ResourceChangedListener> listeners = new ArrayList<>();
     protected Integer id = null;
     protected ObjectModel model;
+    protected LwM2mClient lwm2mClient;
 
     public BaseInstanceEnabler() {
     }
@@ -63,6 +65,15 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
 
     public ObjectModel getModel() {
         return model;
+    }
+
+    @Override
+    public void setLwM2mClient(LwM2mClient client) {
+        this.lwm2mClient = client;
+    }
+
+    public LwM2mClient getLwM2mClient() {
+        return lwm2mClient;
     }
 
     @Override

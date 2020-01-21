@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.eclipse.leshan.LwM2mId;
+import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -168,6 +169,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
             Collection<LwM2mResource> resources) {
         // create the new instance
         LwM2mInstanceEnabler newInstance = instanceFactory.create(getObjectModel(), instanceId, instances.keySet());
+        newInstance.setLwM2mClient(getLwm2mClient());
 
         // add/write resource
         for (LwM2mResource resource : resources) {
@@ -394,5 +396,12 @@ public class ObjectEnabler extends BaseObjectEnabler {
     @Override
     public ContentFormat getDefaultEncodingFormat(DownlinkRequest<?> request) {
         return defaultContentFormat;
+    }
+
+    @Override
+    public void setLwM2mClient(LwM2mClient client) {
+        for (LwM2mInstanceEnabler instanceEnabler : instances.values()) {
+            instanceEnabler.setLwM2mClient(client);
+        }
     }
 }

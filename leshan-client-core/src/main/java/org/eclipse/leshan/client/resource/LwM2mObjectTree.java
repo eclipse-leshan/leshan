@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.resource.listener.ObjectsListener;
 
@@ -31,11 +32,11 @@ public class LwM2mObjectTree {
     private CopyOnWriteArrayList<ObjectsListener> listeners = new CopyOnWriteArrayList<>();
     private ConcurrentHashMap<Integer, LwM2mObjectEnabler> objectEnablers = new ConcurrentHashMap<>();
 
-    public LwM2mObjectTree(LwM2mObjectEnabler... enablers) {
-        this(Arrays.asList(enablers));
+    public LwM2mObjectTree(LwM2mClient client, LwM2mObjectEnabler... enablers) {
+        this(client, Arrays.asList(enablers));
     }
 
-    public LwM2mObjectTree(Collection<? extends LwM2mObjectEnabler> enablers) {
+    public LwM2mObjectTree(LwM2mClient client, Collection<? extends LwM2mObjectEnabler> enablers) {
         for (LwM2mObjectEnabler enabler : enablers) {
             LwM2mObjectEnabler previousEnabler = objectEnablers.putIfAbsent(enabler.getId(), enabler);
             if (previousEnabler != null) {
@@ -45,6 +46,7 @@ public class LwM2mObjectTree {
         }
         for (LwM2mObjectEnabler enabler : enablers) {
             enabler.setListener(dispatcher);
+            enabler.setLwM2mClient(client);
         }
     }
 
