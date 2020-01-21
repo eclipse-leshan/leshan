@@ -164,9 +164,10 @@ public class Server extends BaseInstanceEnabler {
     @Override
     public ExecuteResponse execute(ServerIdentity identity, int resourceid, String params) {
 
-        if (resourceid == 8) { // registration update trigger
-            // TODO implement registration update trigger executable resource
-            return ExecuteResponse.internalServerError("not implemented");
+        if (resourceid == 8) {
+            // TODO we currently support only one dm server.
+            getLwM2mClient().triggerRegistrationUpdate();
+            return ExecuteResponse.success();
         } else {
             return super.execute(identity, resourceid, params);
         }
