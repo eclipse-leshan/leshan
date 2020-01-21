@@ -61,10 +61,10 @@ import org.eclipse.leshan.core.response.WriteResponse;
 
 public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
-    final int id;
-    private NotifySender notifySender;
-    private TransactionalObjectListener listener;
-    private ObjectModel objectModel;
+    protected final int id;
+    private final TransactionalObjectListener transactionalListener = new TransactionalObjectListener(this);
+    private final ObjectModel objectModel;
+
     private LwM2mClient lwm2mClient;
 
     public BaseObjectEnabler(int id, ObjectModel objectModel) {
@@ -392,29 +392,21 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public void setNotifySender(NotifySender sender) {
-        notifySender = sender;
-    }
-
-    public NotifySender getNotifySender() {
-        return notifySender;
+    public void addListener(ObjectListener listener) {
+        transactionalListener.addListener(listener);
     }
 
     @Override
-    public void setListener(ObjectListener listener) {
-        this.listener = new TransactionalObjectListener(this, listener);
+    public void removeListener(ObjectListener listener) {
+        transactionalListener.removeListener(listener);
     }
 
     protected void beginTransaction() {
-        if (listener != null) {
-            listener.beginTransaction();
-        }
+        transactionalListener.beginTransaction();
     }
 
     protected void endTransaction() {
-        if (listener != null) {
-            listener.endTransaction();
-        }
+        transactionalListener.endTransaction();
     }
 
     @Override
@@ -427,21 +419,15 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     protected void fireInstancesAdded(int... instanceIds) {
-        if (listener != null) {
-            listener.objectInstancesAdded(this, instanceIds);
-        }
+        transactionalListener.objectInstancesAdded(this, instanceIds);
     }
 
     protected void fireInstancesRemoved(int... instanceIds) {
-        if (listener != null) {
-            listener.objectInstancesRemoved(this, instanceIds);
-        }
+        transactionalListener.objectInstancesRemoved(this, instanceIds);
     }
 
     protected void fireResourcesChanged(int instanceid, int... resourceIds) {
-        if (listener != null) {
-            listener.resourceChanged(this, instanceid, resourceIds);
-        }
+        transactionalListener.resourceChanged(this, instanceid, resourceIds);
     }
 
     @Override

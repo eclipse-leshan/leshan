@@ -35,11 +35,18 @@ public class TransactionalObjectListener implements ObjectListener {
     private Map<Integer, List<Integer>> resourcesChangedByInstance = new HashMap<>();
 
     private LwM2mObjectEnabler objectEnabler;
-    private ObjectListener innerListener;
+    private List<ObjectListener> innerListeners = new ArrayList<ObjectListener>();
 
-    public TransactionalObjectListener(LwM2mObjectEnabler objectEnabler, ObjectListener listener) {
+    public TransactionalObjectListener(LwM2mObjectEnabler objectEnabler) {
         this.objectEnabler = objectEnabler;
-        this.innerListener = listener;
+    }
+
+    public void addListener(ObjectListener listener) {
+        innerListeners.add(listener);
+    }
+
+    public void removeListener(ObjectListener listener) {
+        innerListeners.remove(listener);
     }
 
     public void beginTransaction() {
@@ -56,19 +63,19 @@ public class TransactionalObjectListener implements ObjectListener {
 
     private void fireStoredEvents() {
         if (!instancesAdded.isEmpty())
-            innerListener.objectInstancesAdded(objectEnabler, toIntArray(instancesAdded));
+            fireObjectInstancesAdded(toIntArray(instancesAdded));
         if (!instancesRemoved.isEmpty())
-            innerListener.objectInstancesRemoved(objectEnabler, toIntArray(instancesRemoved));
+            fireObjectInstancesRemoved(toIntArray(instancesRemoved));
 
         for (Map.Entry<Integer, List<Integer>> entry : resourcesChangedByInstance.entrySet()) {
-            innerListener.resourceChanged(objectEnabler, entry.getKey(), toIntArray(entry.getValue()));
+            fireResourcesChanged(entry.getKey(), toIntArray(entry.getValue()));
         }
     }
 
     @Override
     public void objectInstancesAdded(LwM2mObjectEnabler object, int... instanceIds) {
         if (!inTransaction) {
-            innerListener.objectInstancesAdded(object, instanceIds);
+            fireObjectInstancesAdded(instanceIds);
         } else {
             // store additions
             for (int instanceId : instanceIds) {
@@ -84,7 +91,7 @@ public class TransactionalObjectListener implements ObjectListener {
     @Override
     public void objectInstancesRemoved(LwM2mObjectEnabler object, int... instanceIds) {
         if (!inTransaction) {
-            innerListener.objectInstancesRemoved(object, instanceIds);
+            fireObjectInstancesRemoved(instanceIds);
         } else {
             // store deletion
             for (int instanceId : instanceIds) {
@@ -100,7 +107,7 @@ public class TransactionalObjectListener implements ObjectListener {
     @Override
     public void resourceChanged(LwM2mObjectEnabler object, int instanceId, int... resourcesIds) {
         if (!inTransaction) {
-            innerListener.resourceChanged(object, instanceId, resourcesIds);
+            fireResourcesChanged(instanceId, resourcesIds);
         } else {
             List<Integer> resourcesChanged = resourcesChangedByInstance.get(instanceId);
             if (resourcesChanged == null) {
@@ -119,5 +126,23 @@ public class TransactionalObjectListener implements ObjectListener {
         for (Integer e : list)
             ret[i++] = e;
         return ret;
+    }
+
+    protected void fireObjectInstancesAdded(int... instanceIds) {
+        for (ObjectListener listener : innerListeners) {
+            listener.objectInstancesAdded(objectEnabler, instanceIds);
+        }
+    }
+
+    protected void fireObjectInstancesRemoved(int... instanceIds) {
+        for (ObjectListener listener : innerListeners) {
+            listener.objectInstancesRemoved(objectEnabler, instanceIds);
+        }
+    }
+
+    protected void fireResourcesChanged(int instanceid, int... resourceIds) {
+        for (ObjectListener listener : innerListeners) {
+            listener.resourceChanged(objectEnabler, instanceid, resourceIds);
+        }
     }
 }

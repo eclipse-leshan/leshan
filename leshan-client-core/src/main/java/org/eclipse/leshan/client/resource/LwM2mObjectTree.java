@@ -45,7 +45,7 @@ public class LwM2mObjectTree {
             }
         }
         for (LwM2mObjectEnabler enabler : enablers) {
-            enabler.setListener(dispatcher);
+            enabler.addListener(dispatcher);
             enabler.setLwM2mClient(client);
         }
     }
@@ -68,7 +68,7 @@ public class LwM2mObjectTree {
 
     public void addObjectEnabler(LwM2mObjectEnabler enabler) {
         LwM2mObjectEnabler previousEnabler = objectEnablers.putIfAbsent(enabler.getId(), enabler);
-        enabler.setListener(dispatcher);
+        enabler.addListener(dispatcher);
         if (previousEnabler != null) {
             throw new IllegalArgumentException(
                     String.format("Can not add 2 enablers for the same id %d", enabler.getId()));
@@ -81,7 +81,7 @@ public class LwM2mObjectTree {
     public void removeObjectEnabler(int objectId) {
         LwM2mObjectEnabler removedEnabler = objectEnablers.remove(objectId);
         if (removedEnabler != null) {
-            removedEnabler.setListener(null);
+            removedEnabler.removeListener(dispatcher);
             for (ObjectsListener listener : listeners) {
                 listener.objectRemoved(removedEnabler);
             }

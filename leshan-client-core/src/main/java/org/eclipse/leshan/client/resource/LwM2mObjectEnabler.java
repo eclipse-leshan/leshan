@@ -75,9 +75,9 @@ public interface LwM2mObjectEnabler {
 
     ObserveResponse observe(ServerIdentity identity, ObserveRequest request);
 
-    void setNotifySender(NotifySender sender);
+    void addListener(ObjectListener listener);
 
-    void setListener(ObjectListener listener);
+    void removeListener(ObjectListener listener);
 
     void setLwM2mClient(LwM2mClient client);
 

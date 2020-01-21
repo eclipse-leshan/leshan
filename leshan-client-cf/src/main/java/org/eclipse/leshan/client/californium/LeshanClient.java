@@ -34,6 +34,7 @@ import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverDispatcher;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
+import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
@@ -99,6 +100,9 @@ public class LeshanClient implements LwM2mClient {
             @Override
             public void objectRemoved(LwM2mObjectEnabler object) {
                 Resource resource = clientSideServer.getRoot().getChild(Integer.toString(object.getId()));
+                if (resource instanceof ObjectListener) {
+                    object.removeListener((ObjectListener) (resource));
+                }
                 clientSideServer.remove(resource);
             }
         });
