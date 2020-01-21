@@ -90,6 +90,19 @@ public class MyDevice extends BaseInstanceEnabler {
         LOG.info("Execute on Device resource " + resourceid);
         if (params != null && params.length() != 0)
             System.out.println("\t params " + params);
+        if (resourceid == 4) {
+            new Timer("Reboot Lwm2mClient").schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    getLwM2mClient().stop(true);
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                    }
+                    getLwM2mClient().start();
+                }
+            }, 500);
+        }
         return ExecuteResponse.success();
     }
 
