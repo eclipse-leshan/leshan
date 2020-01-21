@@ -63,7 +63,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
     final int id;
     private NotifySender notifySender;
-    private ObjectListener listener;
+    private TransactionalObjectListener listener;
     private ObjectModel objectModel;
     private LwM2mClient lwm2mClient;
 
@@ -92,12 +92,19 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
     @Override
     public synchronized CreateResponse create(ServerIdentity identity, CreateRequest request) {
-        if (!identity.isSystem()) {
-            if (id == LwM2mId.SECURITY) {
-                return CreateResponse.notFound();
+        try {
+            beginTransaction();
+
+            if (!identity.isSystem()) {
+                if (id == LwM2mId.SECURITY) {
+                    return CreateResponse.notFound();
+                }
             }
+            return doCreate(identity, request);
+
+        } finally {
+            endTransaction();
         }
-        return doCreate(identity, request);
     }
 
     protected CreateResponse doCreate(ServerIdentity identity, CreateRequest request) {
@@ -141,62 +148,69 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
     @Override
     public synchronized WriteResponse write(ServerIdentity identity, WriteRequest request) {
-        LwM2mPath path = request.getPath();
+        try {
+            beginTransaction();
 
-        // write is not supported for bootstrap, use bootstrap write
-        if (identity.isLwm2mBootstrapServer()) {
-            return WriteResponse.methodNotAllowed();
-        }
+            LwM2mPath path = request.getPath();
 
-        // write the security object is forbidden
-        if (LwM2mId.SECURITY == id && !identity.isSystem()) {
-            return WriteResponse.notFound();
-        }
-
-        if (path.isResource()) {
-            // resource write:
-            // check if the resource is writable
-            if (LwM2mId.SECURITY != id) { // security resources are writable by SYSTEM
-                ResourceModel resourceModel = objectModel.resources.get(path.getResourceId());
-                if (resourceModel != null && !resourceModel.operations.isWritable()) {
-                    return WriteResponse.methodNotAllowed();
-                }
+            // write is not supported for bootstrap, use bootstrap write
+            if (identity.isLwm2mBootstrapServer()) {
+                return WriteResponse.methodNotAllowed();
             }
-        } else if (path.isObjectInstance()) {
-            // instance write:
-            // check if all resources are writable
-            if (LwM2mId.SECURITY != id) { // security resources are writable by SYSTEM
-                ObjectModel model = getObjectModel();
-                for (Integer writeResourceId : ((LwM2mObjectInstance) request.getNode()).getResources().keySet()) {
-                    ResourceModel resourceModel = model.resources.get(writeResourceId);
-                    if (null != resourceModel && !resourceModel.operations.isWritable()) {
+
+            // write the security object is forbidden
+            if (LwM2mId.SECURITY == id && !identity.isSystem()) {
+                return WriteResponse.notFound();
+            }
+
+            if (path.isResource()) {
+                // resource write:
+                // check if the resource is writable
+                if (LwM2mId.SECURITY != id) { // security resources are writable by SYSTEM
+                    ResourceModel resourceModel = objectModel.resources.get(path.getResourceId());
+                    if (resourceModel != null && !resourceModel.operations.isWritable()) {
                         return WriteResponse.methodNotAllowed();
+                    }
+                }
+            } else if (path.isObjectInstance()) {
+                // instance write:
+                // check if all resources are writable
+                if (LwM2mId.SECURITY != id) { // security resources are writable by SYSTEM
+                    ObjectModel model = getObjectModel();
+                    for (Integer writeResourceId : ((LwM2mObjectInstance) request.getNode()).getResources().keySet()) {
+                        ResourceModel resourceModel = model.resources.get(writeResourceId);
+                        if (null != resourceModel && !resourceModel.operations.isWritable()) {
+                            return WriteResponse.methodNotAllowed();
+                        }
+                    }
+                }
+
+                if (request.isReplaceRequest()) {
+                    // REPLACE
+                    // check, if all mandatory writable resources are provided
+                    // Collect all mandatory writable resource IDs from the model
+                    Set<Integer> mandatoryResources = new HashSet<>();
+                    for (ResourceModel resourceModel : getObjectModel().resources.values()) {
+                        if (resourceModel.mandatory
+                                && (LwM2mId.SECURITY == id || resourceModel.operations.isWritable()))
+                            mandatoryResources.add(resourceModel.id);
+                    }
+                    // Afterwards remove the provided resource IDs from that set
+                    for (Integer writeResourceId : ((LwM2mObjectInstance) request.getNode()).getResources().keySet()) {
+                        mandatoryResources.remove(writeResourceId);
+                    }
+                    if (!mandatoryResources.isEmpty()) {
+                        return WriteResponse.badRequest("mandatory writable resources missing!");
                     }
                 }
             }
 
-            if (request.isReplaceRequest()) {
-                // REPLACE
-                // check, if all mandatory writable resources are provided
-                // Collect all mandatory writable resource IDs from the model
-                Set<Integer> mandatoryResources = new HashSet<>();
-                for (ResourceModel resourceModel : getObjectModel().resources.values()) {
-                    if (resourceModel.mandatory && (LwM2mId.SECURITY == id || resourceModel.operations.isWritable()))
-                        mandatoryResources.add(resourceModel.id);
-                }
-                // Afterwards remove the provided resource IDs from that set
-                for (Integer writeResourceId : ((LwM2mObjectInstance) request.getNode()).getResources().keySet()) {
-                    mandatoryResources.remove(writeResourceId);
-                }
-                if (!mandatoryResources.isEmpty()) {
-                    return WriteResponse.badRequest("mandatory writable resources missing!");
-                }
-            }
+            // TODO we could do a validation of request.getNode() by comparing with resourceSpec information
+
+            return doWrite(identity, request);
+        } finally {
+            endTransaction();
         }
-
-        // TODO we could do a validation of request.getNode() by comparing with resourceSpec information
-
-        return doWrite(identity, request);
     }
 
     protected WriteResponse doWrite(ServerIdentity identity, WriteRequest request) {
@@ -388,11 +402,19 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
     @Override
     public void setListener(ObjectListener listener) {
-        this.listener = listener;
+        this.listener = new TransactionalObjectListener(this, listener);
     }
 
-    protected ObjectListener getListener() {
-        return listener;
+    protected void beginTransaction() {
+        if (listener != null) {
+            listener.beginTransaction();
+        }
+    }
+
+    protected void endTransaction() {
+        if (listener != null) {
+            listener.endTransaction();
+        }
     }
 
     @Override
