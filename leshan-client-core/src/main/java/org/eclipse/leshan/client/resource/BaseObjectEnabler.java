@@ -21,6 +21,7 @@
 package org.eclipse.leshan.client.resource;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -36,6 +37,7 @@ import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -100,6 +102,19 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
                     return CreateResponse.notFound();
                 }
             }
+
+            if (request.unknownObjectInstanceId()) {
+                if (missingMandatoryResource(request.getResources())) {
+                    return CreateResponse.badRequest("mandatory writable resources missing!");
+                }
+            } else {
+                for (LwM2mObjectInstance instance : request.getObjectInstances()) {
+                    if (missingMandatoryResource(instance.getResources().values())) {
+                        return CreateResponse.badRequest("mandatory writable resources missing!");
+                    }
+                }
+            }
+
             return doCreate(identity, request);
 
         } finally {
@@ -186,20 +201,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
                 }
 
                 if (request.isReplaceRequest()) {
-                    // REPLACE
-                    // check, if all mandatory writable resources are provided
-                    // Collect all mandatory writable resource IDs from the model
-                    Set<Integer> mandatoryResources = new HashSet<>();
-                    for (ResourceModel resourceModel : getObjectModel().resources.values()) {
-                        if (resourceModel.mandatory
-                                && (LwM2mId.SECURITY == id || resourceModel.operations.isWritable()))
-                            mandatoryResources.add(resourceModel.id);
-                    }
-                    // Afterwards remove the provided resource IDs from that set
-                    for (Integer writeResourceId : ((LwM2mObjectInstance) request.getNode()).getResources().keySet()) {
-                        mandatoryResources.remove(writeResourceId);
-                    }
-                    if (!mandatoryResources.isEmpty()) {
+                    if (missingMandatoryResource(((LwM2mObjectInstance) request.getNode()).getResources().values())) {
                         return WriteResponse.badRequest("mandatory writable resources missing!");
                     }
                 }
@@ -389,6 +391,21 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         ReadResponse readResponse = this.read(identity, new ReadRequest(request.getPath().toString()));
         return new ObserveResponse(readResponse.getCode(), readResponse.getContent(), null, null,
                 readResponse.getErrorMessage());
+    }
+
+    protected boolean missingMandatoryResource(Collection<LwM2mResource> resources) {
+        // check, if all mandatory writable resources are provided
+        // Collect all mandatory writable resource IDs from the model
+        Set<Integer> mandatoryResources = new HashSet<>();
+        for (ResourceModel resourceModel : getObjectModel().resources.values()) {
+            if (resourceModel.mandatory && (LwM2mId.SECURITY == id || resourceModel.operations.isWritable()))
+                mandatoryResources.add(resourceModel.id);
+        }
+        // Afterwards remove the provided resource IDs from that set
+        for (LwM2mResource resource : resources) {
+            mandatoryResources.remove(resource.getId());
+        }
+        return !mandatoryResources.isEmpty();
     }
 
     @Override

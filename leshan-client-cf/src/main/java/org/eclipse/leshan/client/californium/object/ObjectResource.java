@@ -40,6 +40,7 @@ import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
@@ -286,7 +287,11 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
             CreateRequest createRequest;
             // check if this is the "special" case where instance ID is not defined ...
             LwM2mObjectInstance newInstance = object.getInstance(LwM2mObjectInstance.UNDEFINED);
-            if (object.getInstances().size() == 1 && newInstance != null) {
+            if (object.getInstances().isEmpty()) {
+                // This is probably the pretty strange use case where
+                // instance ID is not defined an no resources available.
+                createRequest = new CreateRequest(contentFormat, path.getObjectId(), new LwM2mResource[0]);
+            } else if (object.getInstances().size() == 1 && newInstance != null) {
                 // the instance Id was not part of the create request payload.
                 // will be assigned by the client.
                 createRequest = new CreateRequest(contentFormat, path.getObjectId(),

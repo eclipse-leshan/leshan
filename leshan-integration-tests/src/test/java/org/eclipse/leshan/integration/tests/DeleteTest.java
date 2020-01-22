@@ -62,8 +62,8 @@ public class DeleteTest {
     @Test
     public void delete_created_object_instance() throws InterruptedException {
         // create ACL instance
-        helper.server.send(helper.getCurrentRegistration(), new CreateRequest(2, new LwM2mObjectInstance(0,
-                Arrays.asList(new LwM2mResource[] { LwM2mSingleResource.newIntegerResource(0, 123) }))));
+        helper.server.send(helper.getCurrentRegistration(),
+                new CreateRequest(2, new LwM2mObjectInstance(0, LwM2mSingleResource.newIntegerResource(3, 33))));
 
         // try to delete this instance
         DeleteResponse response = helper.server.send(helper.getCurrentRegistration(), new DeleteRequest(2, 0));
