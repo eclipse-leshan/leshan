@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
+import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.request.exception.RequestRejectedException;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
 import org.slf4j.Logger;
@@ -79,6 +80,9 @@ public class CoapSyncRequestObserver extends AbstractRequestObserver {
     @Override
     public void onCancel() {
         LOG.debug(String.format("Synchronous request cancelled %s", coapRequest));
+        if (!coapTimeout.get()) {
+            exception.set(new RequestCanceledException("Request %s canceled", coapRequest.getURI()));
+        }
         latch.countDown();
     }
 
@@ -110,6 +114,7 @@ public class CoapSyncRequestObserver extends AbstractRequestObserver {
             boolean timeElapsed = false;
             timeElapsed = !latch.await(timeout, TimeUnit.MILLISECONDS);
             if (timeElapsed || coapTimeout.get()) {
+                coapTimeout.set(true);
                 coapRequest.cancel();
             }
         } finally {
