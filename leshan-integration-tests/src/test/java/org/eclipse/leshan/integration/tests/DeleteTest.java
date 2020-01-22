@@ -23,13 +23,10 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.*;
 
-import java.util.Arrays;
-
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
-import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
@@ -77,8 +74,8 @@ public class DeleteTest {
     @Test
     public void cannot_delete_resource() throws InterruptedException {
         // create ACL instance
-        helper.server.send(helper.getCurrentRegistration(), new CreateRequest(2, new LwM2mObjectInstance(0,
-                Arrays.asList(new LwM2mResource[] { LwM2mSingleResource.newIntegerResource(0, 123) }))));
+        helper.server.send(helper.getCurrentRegistration(),
+                new CreateRequest(2, new LwM2mObjectInstance(0, LwM2mSingleResource.newIntegerResource(0, 123))));
 
         // try to delete this resource using coap API as lwm2m API does not allow it.
         Request delete = Request.newDelete();
