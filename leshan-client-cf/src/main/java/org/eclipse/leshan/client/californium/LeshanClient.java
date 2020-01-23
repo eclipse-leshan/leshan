@@ -18,6 +18,7 @@ package org.eclipse.leshan.client.californium;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.config.NetworkConfig;
@@ -62,7 +63,7 @@ public class LeshanClient implements LwM2mClient {
     public LeshanClient(String endpoint, InetSocketAddress localAddress,
             List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig, Builder dtlsConfigBuilder,
             EndpointFactory endpointFactory, Map<String, String> additionalAttributes, final LwM2mNodeEncoder encoder,
-            final LwM2mNodeDecoder decoder) {
+            final LwM2mNodeDecoder decoder, ScheduledExecutorService sharedExecutor) {
 
         Validate.notNull(endpoint);
         Validate.notEmpty(objectEnablers);
@@ -84,6 +85,9 @@ public class LeshanClient implements LwM2mClient {
                 return new org.eclipse.leshan.client.californium.RootResource(bootstrapHandler, this);
             }
         };
+        if (sharedExecutor != null) {
+            clientSideServer.setExecutors(sharedExecutor, sharedExecutor, true);
+        }
 
         // Create CoAP resources for each lwm2m Objects.
         for (LwM2mObjectEnabler enabler : objectEnablers) {
@@ -119,7 +123,7 @@ public class LeshanClient implements LwM2mClient {
 
         // Create registration engine
         engine = new RegistrationEngine(endpoint, objectTree.getObjectEnablers(), endpointsManager, requestSender,
-                bootstrapHandler, observers, additionalAttributes);
+                bootstrapHandler, observers, additionalAttributes, sharedExecutor);
 
         RegistrationUpdateHandler registrationUpdateHandler = new RegistrationUpdateHandler(engine, bootstrapHandler);
         registrationUpdateHandler.listen(objectTree);

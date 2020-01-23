@@ -18,9 +18,11 @@ package org.eclipse.leshan.client.californium;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
+import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.elements.EndpointContextMatcher;
 import org.eclipse.californium.elements.UDPConnector;
 import org.eclipse.californium.scandium.DTLSConnector;
@@ -60,6 +62,8 @@ public class LeshanClientBuilder {
 
     private EndpointFactory endpointFactory;
     private Map<String, String> additionalAttributes;
+
+    private ScheduledExecutorService executor;
 
     /**
      * Creates a new instance for setting the configuration options for a {@link LeshanClient} instance.
@@ -163,6 +167,25 @@ public class LeshanClientBuilder {
         return this;
     }
 
+    /**
+     * Set a shared executor. This executor will be used everywhere it is possible. This is generally used when you want
+     * to limit the number of thread to use or if you want to simulate a lot of clients sharing the same thread pool.
+     * <p>
+     * Currently UDP and DTLS receiver and sender thread could not be share meaning that you will at least consume 2
+     * thread by client + the number of thread available in the shared executor (see <a
+     * href=https://github.com/eclipse/californium/issues/1203>californium#1203 issue</a>)
+     * <p>
+     * Executor will not be shutdown automatically on {@link LeshanClient#destroy(boolean)}, this should be done
+     * manually.
+     * 
+     * @param executor the executor to share.
+     * @return the builder for fluent client creation.
+     */
+    public LeshanClientBuilder setSharedExecutor(ScheduledExecutorService executor) {
+        this.executor = executor;
+        return this;
+    }
+
     public static NetworkConfig createDefaultNetworkConfig() {
         NetworkConfig networkConfig = new NetworkConfig();
         networkConfig.set(Keys.MID_TRACKER, "NULL");
@@ -199,6 +222,15 @@ public class LeshanClientBuilder {
                 @Override
                 protected EndpointContextMatcher createSecuredContextMatcher() {
                     return null; // use default californium one.
+                }
+
+                @Override
+                protected Connector createSecuredConnector(DtlsConnectorConfig dtlsConfig) {
+                    DTLSConnector dtlsConnector = new DTLSConnector(dtlsConfig);
+                    if (executor != null) {
+                        dtlsConnector.setExecutor(executor);
+                    }
+                    return dtlsConnector;
                 }
             };
         }
@@ -239,6 +271,6 @@ public class LeshanClientBuilder {
         }
 
         return new LeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder, endpointFactory,
-                additionalAttributes, encoder, decoder);
+                additionalAttributes, encoder, decoder, executor);
     }
 }

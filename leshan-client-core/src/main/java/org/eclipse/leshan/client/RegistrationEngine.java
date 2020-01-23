@@ -97,12 +97,12 @@ public class RegistrationEngine {
     private Future<?> bootstrapFuture;
     private Future<?> registerFuture;
     private Future<?> updateFuture;
-    private final ScheduledExecutorService schedExecutor = Executors
-            .newSingleThreadScheduledExecutor(new NamedThreadFactory("RegistrationEngine#%d"));
+    private final ScheduledExecutorService schedExecutor;
+    private final boolean attachedExecutor;
 
     public RegistrationEngine(String endpoint, Map<Integer, LwM2mObjectEnabler> objectEnablers,
             EndpointsManager endpointsManager, LwM2mRequestSender requestSender, BootstrapHandler bootstrapState,
-            LwM2mClientObserver observer, Map<String, String> additionalAttributes) {
+            LwM2mClientObserver observer, Map<String, String> additionalAttributes, ScheduledExecutorService executor) {
         this.endpoint = endpoint;
         this.objectEnablers = objectEnablers;
         this.bootstrapHandler = bootstrapState;
@@ -111,7 +111,19 @@ public class RegistrationEngine {
         this.additionalAttributes = additionalAttributes;
         this.registeredServers = new ConcurrentHashMap<>();
 
+        if (executor == null) {
+            schedExecutor = createScheduledExecutor();
+            attachedExecutor = true;
+        } else {
+            schedExecutor = executor;
+            attachedExecutor = false;
+        }
+
         sender = requestSender;
+    }
+
+    protected ScheduledExecutorService createScheduledExecutor() {
+        return Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("RegistrationEngine#%d"));
     }
 
     public void start() {
@@ -559,10 +571,17 @@ public class RegistrationEngine {
             wasStarted = started;
             started = false;
         }
-        // TODO we should manage the case where we stop in the middle of a bootstrap session ...
-        schedExecutor.shutdownNow();
         try {
-            schedExecutor.awaitTermination(BS_TIMEOUT, TimeUnit.SECONDS);
+            // TODO we should manage the case where we stop in the middle of a bootstrap session ...
+            if (attachedExecutor) {
+                schedExecutor.shutdownNow();
+                schedExecutor.awaitTermination(BS_TIMEOUT, TimeUnit.SECONDS);
+            } else {
+                cancelUpdateTask(true);
+                cancelRegistrationTask();
+                // TODO we should manage the case where we stop in the middle of a bootstrap session ...
+                cancelBootstrapTask();
+            }
             if (wasStarted && deregister) {
                 // TODO we currently support only one dm server.
                 if (!registeredServers.isEmpty()) {
