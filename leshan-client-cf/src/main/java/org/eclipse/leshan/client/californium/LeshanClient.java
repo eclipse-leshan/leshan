@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.eclipse.californium.core.CoapServer;
+import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.elements.util.ExecutorsUtil;
@@ -47,20 +48,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A Lightweight M2M client based on Californium (CoAP implementation).
+ * A Lightweight M2M client based on Californium (CoAP implementation) which supports only 1 LWM2M server.
  */
 public class LeshanClient implements LwM2mClient {
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanClient.class);
 
+    private final CoapAPI coapApi;
     private final CoapServer clientSideServer;
     private final CaliforniumLwM2mRequestSender requestSender;
-    private final RegistrationEngine engine;
-    private final BootstrapHandler bootstrapHandler;
-    private final LwM2mClientObserverDispatcher observers;
-    private LwM2mObjectTree objectTree;
-
     private final CaliforniumEndpointsManager endpointsManager;
+
+    private LwM2mObjectTree objectTree;
+    private final BootstrapHandler bootstrapHandler;
+    private final RegistrationEngine engine;
+    private final LwM2mClientObserverDispatcher observers;
 
     public LeshanClient(String endpoint, InetSocketAddress localAddress,
             List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig, Builder dtlsConfigBuilder,
@@ -135,6 +137,8 @@ public class LeshanClient implements LwM2mClient {
 
         RegistrationUpdateHandler registrationUpdateHandler = new RegistrationUpdateHandler(engine, bootstrapHandler);
         registrationUpdateHandler.listen(objectTree);
+
+        coapApi = new CoapAPI();
     }
 
     @Override
@@ -164,38 +168,78 @@ public class LeshanClient implements LwM2mClient {
     }
 
     @Override
-    public void triggerRegistrationUpdate() {
-        engine.triggerRegistrationUpdate();
-    }
-
-    @Override
     public LwM2mObjectTree getObjectTree() {
         return objectTree;
     }
 
-    public CoapServer getCoapServer() {
-        return clientSideServer;
+    @Override
+    public void triggerRegistrationUpdate() {
+        engine.triggerRegistrationUpdate();
     }
 
-    public InetSocketAddress getAddress() {
-        return endpointsManager.getEndpoint(null).getAddress();
+    /**
+     * A CoAP API, generally needed if you want to access to underlying CoAP layer.
+     */
+    public CoapAPI coap() {
+        return coapApi;
     }
 
+    public class CoapAPI {
+        /**
+         * @return the underlying {@link CoapServer}
+         */
+        public CoapServer getServer() {
+            return clientSideServer;
+        }
+
+        /**
+         * Returns the current {@link CoapEndpoint} used to communicate with the server.
+         * <p>
+         * A different endpoint address should be used by connected server, so this method only make sense as this
+         * current implementation supports only one LWM2M server.
+         * 
+         * @return the {@link CoapEndpoint} used to communicate to LWM2M server.
+         */
+        public CoapEndpoint getEndpoint() {
+            return (CoapEndpoint) endpointsManager.getEndpoint(null);
+        }
+    }
+
+    /**
+     * Add listener to observe client lifecycle (bootstrap, register, update, deregister).
+     */
     public void addObserver(LwM2mClientObserver observer) {
         observers.addObserver(observer);
     }
 
+    /**
+     * Remove the given {@link LwM2mClientObserver}.
+     */
     public void removeObserver(LwM2mClientObserver observer) {
         observers.removeObserver(observer);
     }
 
     /**
-     * Returns the current registration Id (meaningful only because this client implementation supports only one LWM2M
-     * server).
+     * Returns the current registration Id.
+     * <p>
+     * Client should have 1 registration Id by connected server, so this method only make sense current implementation
+     * supports only one LWM2M server.
      * 
      * @return the client registration Id or <code>null</code> if the client is not registered
      */
     public String getRegistrationId() {
         return engine.getRegistrationId();
+    }
+
+    /**
+     * Returns the current {@link InetSocketAddress} use to communicate with the server.
+     * <p>
+     * A different endpoint/socket address should be used by connected server, so this method only make sense as this
+     * current implementation supports only one LWM2M server.
+     * 
+     * @return the address used to connect to the server or <code>null</code> if the client is not started.
+     */
+    public InetSocketAddress getAddress() {
+        return endpointsManager.getEndpoint(null).getAddress();
     }
 }
