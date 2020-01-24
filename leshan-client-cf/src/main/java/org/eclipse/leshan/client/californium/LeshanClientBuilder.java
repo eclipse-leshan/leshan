@@ -263,6 +263,10 @@ public class LeshanClientBuilder {
         if (incompleteConfig.getConnectionThreadCount() == null) {
             dtlsConfigBuilder.setConnectionThreadCount(1);
         }
+        // Use only 1 thread to receive DTLS data by default
+        if (incompleteConfig.getReceiverThreadCount() == null) {
+            dtlsConfigBuilder.setReceiverThreadCount(1);
+        }
 
         // Deactivate SNI by default
         // TODO should we support SNI ?
