@@ -23,6 +23,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.server.resources.Resource;
+import org.eclipse.californium.elements.util.ExecutorsUtil;
+import org.eclipse.californium.elements.util.NamedThreadFactory;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.RegistrationEngine;
@@ -87,6 +89,12 @@ public class LeshanClient implements LwM2mClient {
         };
         if (sharedExecutor != null) {
             clientSideServer.setExecutors(sharedExecutor, sharedExecutor, true);
+        } else {
+            // use same executor as main and secondary one.
+            ScheduledExecutorService executor = ExecutorsUtil.newScheduledThreadPool(
+                    coapConfig.getInt(NetworkConfig.Keys.PROTOCOL_STAGE_THREAD_COUNT),
+                    new NamedThreadFactory("CoapServer(main)#"));
+            clientSideServer.setExecutors(executor, executor, false);
         }
 
         // Create CoAP resources for each lwm2m Objects.
