@@ -29,13 +29,13 @@ import org.eclipse.leshan.client.resource.listener.ObjectListener;
  * This class is not threadsafe.
  */
 public class TransactionalObjectListener implements ObjectListener {
-    private boolean inTransaction = false;
-    private List<Integer> instancesAdded = new ArrayList<>();
-    private List<Integer> instancesRemoved = new ArrayList<>();
-    private Map<Integer, List<Integer>> resourcesChangedByInstance = new HashMap<>();
+    protected boolean inTransaction = false;
+    protected List<Integer> instancesAdded = new ArrayList<>();
+    protected List<Integer> instancesRemoved = new ArrayList<>();
+    protected Map<Integer, List<Integer>> resourcesChangedByInstance = new HashMap<>();
 
-    private LwM2mObjectEnabler objectEnabler;
-    private List<ObjectListener> innerListeners = new ArrayList<ObjectListener>();
+    protected LwM2mObjectEnabler objectEnabler;
+    protected List<ObjectListener> innerListeners = new ArrayList<ObjectListener>();
 
     public TransactionalObjectListener(LwM2mObjectEnabler objectEnabler) {
         this.objectEnabler = objectEnabler;
@@ -61,7 +61,7 @@ public class TransactionalObjectListener implements ObjectListener {
         inTransaction = false;
     }
 
-    private void fireStoredEvents() {
+    protected void fireStoredEvents() {
         if (!instancesAdded.isEmpty())
             fireObjectInstancesAdded(toIntArray(instancesAdded));
         if (!instancesRemoved.isEmpty())
@@ -120,7 +120,7 @@ public class TransactionalObjectListener implements ObjectListener {
         }
     }
 
-    private int[] toIntArray(List<Integer> list) {
+    protected int[] toIntArray(List<Integer> list) {
         int[] ret = new int[list.size()];
         int i = 0;
         for (Integer e : list)

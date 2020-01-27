@@ -73,9 +73,9 @@ import org.eclipse.leshan.core.response.WriteResponse;
  */
 public class ObjectResource extends LwM2mClientCoapResource implements ObjectListener {
 
-    private final LwM2mObjectEnabler nodeEnabler;
-    private final LwM2mNodeEncoder encoder;
-    private final LwM2mNodeDecoder decoder;
+    protected final LwM2mObjectEnabler nodeEnabler;
+    protected final LwM2mNodeEncoder encoder;
+    protected final LwM2mNodeDecoder decoder;
 
     public ObjectResource(LwM2mObjectEnabler nodeEnabler, BootstrapHandler bootstrapHandler, LwM2mNodeEncoder encoder,
             LwM2mNodeDecoder decoder) {
@@ -150,7 +150,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
         }
     }
 
-    private ContentFormat getContentFormat(DownlinkRequest<?> request, ContentFormat requestedContentFormat) {
+    protected ContentFormat getContentFormat(DownlinkRequest<?> request, ContentFormat requestedContentFormat) {
         if (requestedContentFormat != null) {
             // we already check before this content format is supported.
             return requestedContentFormat;

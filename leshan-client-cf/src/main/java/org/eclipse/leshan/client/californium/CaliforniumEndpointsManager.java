@@ -54,14 +54,14 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(CaliforniumEndpointsManager.class);
 
-    private boolean started = false;
+    protected boolean started = false;
 
-    private CoapEndpoint currentEndpoint;
-    private Builder dtlsConfigbuilder;
-    private NetworkConfig coapConfig;
-    private InetSocketAddress localAddress;
-    private CoapServer coapServer;
-    private EndpointFactory endpointFactory;
+    protected CoapEndpoint currentEndpoint;
+    protected Builder dtlsConfigbuilder;
+    protected NetworkConfig coapConfig;
+    protected InetSocketAddress localAddress;
+    protected CoapServer coapServer;
+    protected EndpointFactory endpointFactory;
 
     public CaliforniumEndpointsManager(CoapServer coapServer, InetSocketAddress localAddress, NetworkConfig coapConfig,
             Builder dtlsConfigBuilder, EndpointFactory endpointFactory) {

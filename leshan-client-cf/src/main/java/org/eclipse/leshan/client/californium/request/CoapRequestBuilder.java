@@ -32,8 +32,8 @@ import org.eclipse.leshan.core.request.UplinkRequestVisitor;
 
 public class CoapRequestBuilder implements UplinkRequestVisitor {
 
-    private Request coapRequest;
-    private final InetSocketAddress serverAddress;
+    protected Request coapRequest;
+    protected final InetSocketAddress serverAddress;
 
     public CoapRequestBuilder(InetSocketAddress serverAddress) {
         this.serverAddress = serverAddress;
@@ -121,7 +121,7 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
         return coapRequest;
     }
 
-    private void buildRequestSettings() {
+    protected void buildRequestSettings() {
         coapRequest.setDestinationContext(new AddressEndpointContext(serverAddress));
     }
 }

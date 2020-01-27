@@ -33,9 +33,9 @@ import org.eclipse.leshan.core.response.UpdateResponse;
 
 public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements UplinkRequestVisitor {
 
-    private final Response coapResponse;
+    protected final Response coapResponse;
 
-    private LwM2mResponse lwM2mresponse;
+    protected LwM2mResponse lwM2mresponse;
 
     public LwM2mClientResponseBuilder(Response coapResponse) {
         this.coapResponse = coapResponse;
@@ -106,7 +106,7 @@ public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements Upli
         return (T) lwM2mresponse;
     }
 
-    private void handleUnexpectedResponseCode(LwM2mRequest<?> request, Response coapResponse) {
+    protected void handleUnexpectedResponseCode(LwM2mRequest<?> request, Response coapResponse) {
         throw new InvalidResponseException("Server returned unexpected response code [%s] for [%s]",
                 coapResponse.getCode(), request);
     }

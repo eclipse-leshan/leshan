@@ -56,9 +56,9 @@ import org.eclipse.leshan.core.response.WriteResponse;
 
 public class ObjectEnabler extends BaseObjectEnabler {
 
-    private Map<Integer, LwM2mInstanceEnabler> instances;
-    private LwM2mInstanceEnablerFactory instanceFactory;
-    private ContentFormat defaultContentFormat;
+    protected Map<Integer, LwM2mInstanceEnabler> instances;
+    protected LwM2mInstanceEnablerFactory instanceFactory;
+    protected ContentFormat defaultContentFormat;
 
     public ObjectEnabler(int id, ObjectModel objectModel, Map<Integer, LwM2mInstanceEnabler> instances,
             LwM2mInstanceEnablerFactory instanceFactory, ContentFormat defaultContentFormat) {
@@ -372,7 +372,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
         return BootstrapDeleteResponse.badRequest(String.format("unexcepted path %s", request.getPath()));
     }
 
-    private void listenInstance(LwM2mInstanceEnabler instance, final int instanceId) {
+    protected void listenInstance(LwM2mInstanceEnabler instance, final int instanceId) {
         instance.addResourceChangedListener(new ResourceChangedListener() {
             @Override
             public void resourcesChanged(int... resourceIds) {

@@ -64,14 +64,20 @@ import org.eclipse.leshan.core.response.WriteResponse;
 public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
     protected final int id;
-    private final TransactionalObjectListener transactionalListener = new TransactionalObjectListener(this);
-    private final ObjectModel objectModel;
+    protected final TransactionalObjectListener transactionalListener;
+    protected final ObjectModel objectModel;
 
     private LwM2mClient lwm2mClient;
 
     public BaseObjectEnabler(int id, ObjectModel objectModel) {
         this.id = id;
         this.objectModel = objectModel;
+        this.transactionalListener = createTransactionListener();
+
+    }
+
+    protected TransactionalObjectListener createTransactionListener() {
+        return new TransactionalObjectListener(this);
     }
 
     @Override

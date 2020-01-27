@@ -25,7 +25,7 @@ public class ResourceObserveFilter implements ObserveRelationFilter {
 
     private static final Logger LOG = LoggerFactory.getLogger(ResourceObserveFilter.class);
 
-    private final String notifyURI;
+    protected final String notifyURI;
 
     public ResourceObserveFilter(String notifyURI) {
         this.notifyURI = notifyURI;

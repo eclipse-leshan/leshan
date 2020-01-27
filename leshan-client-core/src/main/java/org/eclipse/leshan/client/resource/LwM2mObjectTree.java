@@ -28,9 +28,9 @@ import org.eclipse.leshan.client.resource.listener.ObjectsListener;
 
 public class LwM2mObjectTree {
 
-    private ObjectListener dispatcher = new ObjectListenerDispatcher();
-    private CopyOnWriteArrayList<ObjectsListener> listeners = new CopyOnWriteArrayList<>();
-    private ConcurrentHashMap<Integer, LwM2mObjectEnabler> objectEnablers = new ConcurrentHashMap<>();
+    protected ObjectListener dispatcher = new ObjectListenerDispatcher();
+    protected CopyOnWriteArrayList<ObjectsListener> listeners = new CopyOnWriteArrayList<>();
+    protected ConcurrentHashMap<Integer, LwM2mObjectEnabler> objectEnablers = new ConcurrentHashMap<>();
 
     public LwM2mObjectTree(LwM2mClient client, LwM2mObjectEnabler... enablers) {
         this(client, Arrays.asList(enablers));
@@ -88,7 +88,7 @@ public class LwM2mObjectTree {
         }
     }
 
-    private class ObjectListenerDispatcher implements ObjectListener {
+    protected class ObjectListenerDispatcher implements ObjectListener {
         @Override
         public void objectInstancesAdded(LwM2mObjectEnabler object, int... instanceIds) {
             for (ObjectsListener listener : listeners) {

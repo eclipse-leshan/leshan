@@ -65,7 +65,7 @@ public class ServerIdentity extends Identity {
      * @param identity identity to be used
      * @param role related role
      */
-    private ServerIdentity(Identity identity, Role role) {
+    protected ServerIdentity(Identity identity, Role role) {
         super(identity);
         this.role = role;
     }

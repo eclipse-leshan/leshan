@@ -36,7 +36,7 @@ import org.eclipse.leshan.util.StringUtils;
  */
 public class RootResource extends LwM2mClientCoapResource {
 
-    private CoapServer coapServer;
+    protected CoapServer coapServer;
 
     public RootResource(BootstrapHandler bootstrapHandler, CoapServer coapServer) {
         super("", bootstrapHandler);
