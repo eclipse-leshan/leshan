@@ -28,6 +28,7 @@ import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.elements.util.ExecutorsUtil;
 import org.eclipse.californium.elements.util.NamedThreadFactory;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
+import org.eclipse.leshan.client.DefaultRegistrationEngine;
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.RegistrationEngine;
 import org.eclipse.leshan.client.RegistrationUpdateHandler;
@@ -176,7 +177,7 @@ public class LeshanClient implements LwM2mClient {
             CaliforniumEndpointsManager endpointsManager, CaliforniumLwM2mRequestSender requestSender,
             BootstrapHandler bootstrapHandler, LwM2mClientObserverDispatcher observer,
             Map<String, String> additionalAttributes, ScheduledExecutorService sharedExecutor) {
-        return new RegistrationEngine(endpoint, objectTree.getObjectEnablers(), endpointsManager, requestSender,
+        return new DefaultRegistrationEngine(endpoint, objectTree.getObjectEnablers(), endpointsManager, requestSender,
                 bootstrapHandler, observer, additionalAttributes, sharedExecutor);
     }
 
