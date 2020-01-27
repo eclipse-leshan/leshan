@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
@@ -55,7 +56,7 @@ public class LeshanClient implements LwM2mClient {
     private static final Logger LOG = LoggerFactory.getLogger(LeshanClient.class);
 
     private final CoapAPI coapApi;
-    private final CoapServer clientSideServer;
+    private final CoapServer coapServer;
     private final CaliforniumLwM2mRequestSender requestSender;
     private final CaliforniumEndpointsManager endpointsManager;
 
@@ -66,79 +67,125 @@ public class LeshanClient implements LwM2mClient {
 
     public LeshanClient(String endpoint, InetSocketAddress localAddress,
             List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig, Builder dtlsConfigBuilder,
-            EndpointFactory endpointFactory, Map<String, String> additionalAttributes, final LwM2mNodeEncoder encoder,
-            final LwM2mNodeDecoder decoder, ScheduledExecutorService sharedExecutor) {
+            EndpointFactory endpointFactory, Map<String, String> additionalAttributes, LwM2mNodeEncoder encoder,
+            LwM2mNodeDecoder decoder, ScheduledExecutorService sharedExecutor) {
 
         Validate.notNull(endpoint);
         Validate.notEmpty(objectEnablers);
         Validate.notNull(coapConfig);
 
-        // create ObjectTree
-        objectTree = new LwM2mObjectTree(this, objectEnablers);
+        objectTree = createObjectTree(objectEnablers);
+        observers = createClientObserverDispatcher();
+        bootstrapHandler = createBoostrapHandler(objectTree);
+        coapServer = createCoapServer(coapConfig, sharedExecutor);
+        linkObjectTreeToCoapServer(coapServer, bootstrapHandler, objectTree, encoder, decoder);
+        coapServer.add(createBootstrapResource(bootstrapHandler));
+        endpointsManager = createEndpointsManager(coapServer, localAddress, coapConfig, dtlsConfigBuilder,
+                endpointFactory);
+        requestSender = createRequestSender(endpointsManager);
+        engine = createRegistrationEngine(endpoint, objectTree, endpointsManager, requestSender, bootstrapHandler,
+                observers, additionalAttributes, sharedExecutor);
+        createRegistrationUpdateHandler(engine, endpointsManager, bootstrapHandler, objectTree);
 
-        // Create Client Observers
-        observers = new LwM2mClientObserverDispatcher();
+        coapApi = new CoapAPI();
+    }
 
-        bootstrapHandler = new BootstrapHandler(objectTree.getObjectEnablers());
+    protected LwM2mObjectTree createObjectTree(List<? extends LwM2mObjectEnabler> objectEnablers) {
+        return new LwM2mObjectTree(this, objectEnablers);
+    }
 
-        // Create CoAP Server
-        clientSideServer = new CoapServer(coapConfig) {
+    protected LwM2mClientObserverDispatcher createClientObserverDispatcher() {
+        return new LwM2mClientObserverDispatcher();
+    }
+
+    protected BootstrapHandler createBoostrapHandler(LwM2mObjectTree objectTree) {
+        return new BootstrapHandler(objectTree.getObjectEnablers());
+    }
+
+    protected CoapServer createCoapServer(NetworkConfig coapConfig, ScheduledExecutorService sharedExecutor) {
+        // create coap server
+        CoapServer coapServer = new CoapServer(coapConfig) {
             @Override
             protected Resource createRoot() {
                 // Use to handle Delete on "/"
                 return new org.eclipse.leshan.client.californium.RootResource(bootstrapHandler, this);
             }
         };
+
+        // configure executors
         if (sharedExecutor != null) {
-            clientSideServer.setExecutors(sharedExecutor, sharedExecutor, true);
+            coapServer.setExecutors(sharedExecutor, sharedExecutor, true);
         } else {
             // use same executor as main and secondary one.
             ScheduledExecutorService executor = ExecutorsUtil.newScheduledThreadPool(
                     coapConfig.getInt(NetworkConfig.Keys.PROTOCOL_STAGE_THREAD_COUNT),
                     new NamedThreadFactory("CoapServer(main)#"));
-            clientSideServer.setExecutors(executor, executor, false);
+            coapServer.setExecutors(executor, executor, false);
         }
+        return coapServer;
+    }
+
+    protected void linkObjectTreeToCoapServer(final CoapServer coapServer, final BootstrapHandler bootstrapHandler,
+            LwM2mObjectTree objectTree, final LwM2mNodeEncoder encoder, final LwM2mNodeDecoder decoder) {
 
         // Create CoAP resources for each lwm2m Objects.
-        for (LwM2mObjectEnabler enabler : objectEnablers) {
-            ObjectResource clientObject = new ObjectResource(enabler, bootstrapHandler, encoder, decoder);
-            clientSideServer.add(clientObject);
+        for (LwM2mObjectEnabler enabler : objectTree.getObjectEnablers().values()) {
+            CoapResource clientObject = createObjectResource(enabler, bootstrapHandler, encoder, decoder);
+            coapServer.add(clientObject);
         }
+
+        // listen object tree
         objectTree.addListener(new ObjectsListenerAdapter() {
             @Override
             public void objectAdded(LwM2mObjectEnabler object) {
-                ObjectResource clientObject = new ObjectResource(object, bootstrapHandler, encoder, decoder);
-                clientSideServer.add(clientObject);
+                CoapResource clientObject = createObjectResource(object, bootstrapHandler, encoder, decoder);
+                coapServer.add(clientObject);
             }
 
             @Override
             public void objectRemoved(LwM2mObjectEnabler object) {
-                Resource resource = clientSideServer.getRoot().getChild(Integer.toString(object.getId()));
+                Resource resource = coapServer.getRoot().getChild(Integer.toString(object.getId()));
                 if (resource instanceof ObjectListener) {
                     object.removeListener((ObjectListener) (resource));
                 }
-                clientSideServer.remove(resource);
+                coapServer.remove(resource);
             }
         });
+    }
 
-        // Create CoAP resources needed for the bootstrap sequence
-        clientSideServer.add(new BootstrapResource(bootstrapHandler));
+    protected CoapResource createObjectResource(LwM2mObjectEnabler enabler, BootstrapHandler bootstrapHandler,
+            LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
+        return new ObjectResource(enabler, bootstrapHandler, encoder, decoder);
+    }
 
-        // Create EndpointHandler
-        endpointsManager = new CaliforniumEndpointsManager(clientSideServer, localAddress, coapConfig,
-                dtlsConfigBuilder, endpointFactory);
+    protected CoapResource createBootstrapResource(BootstrapHandler bootstrapHandler) {
+        return new BootstrapResource(bootstrapHandler);
+    }
 
-        // Create sender
-        requestSender = new CaliforniumLwM2mRequestSender(endpointsManager);
+    protected CaliforniumEndpointsManager createEndpointsManager(CoapServer coapServer, InetSocketAddress localAddress,
+            NetworkConfig coapConfig, Builder dtlsConfigBuilder, EndpointFactory endpointFactory) {
+        return new CaliforniumEndpointsManager(coapServer, localAddress, coapConfig, dtlsConfigBuilder,
+                endpointFactory);
+    }
 
-        // Create registration engine
-        engine = new RegistrationEngine(endpoint, objectTree.getObjectEnablers(), endpointsManager, requestSender,
-                bootstrapHandler, observers, additionalAttributes, sharedExecutor);
+    protected CaliforniumLwM2mRequestSender createRequestSender(CaliforniumEndpointsManager endpointsManager) {
+        return new CaliforniumLwM2mRequestSender(endpointsManager);
+    }
 
+    protected RegistrationEngine createRegistrationEngine(String endpoint, LwM2mObjectTree objectTree,
+            CaliforniumEndpointsManager endpointsManager, CaliforniumLwM2mRequestSender requestSender,
+            BootstrapHandler bootstrapHandler, LwM2mClientObserverDispatcher observer,
+            Map<String, String> additionalAttributes, ScheduledExecutorService sharedExecutor) {
+        return new RegistrationEngine(endpoint, objectTree.getObjectEnablers(), endpointsManager, requestSender,
+                bootstrapHandler, observer, additionalAttributes, sharedExecutor);
+    }
+
+    protected RegistrationUpdateHandler createRegistrationUpdateHandler(RegistrationEngine engine,
+            CaliforniumEndpointsManager endpointsManager, BootstrapHandler bootstrapHandler,
+            LwM2mObjectTree objectTree) {
         RegistrationUpdateHandler registrationUpdateHandler = new RegistrationUpdateHandler(engine, bootstrapHandler);
         registrationUpdateHandler.listen(objectTree);
-
-        coapApi = new CoapAPI();
+        return registrationUpdateHandler;
     }
 
     @Override
@@ -189,7 +236,7 @@ public class LeshanClient implements LwM2mClient {
          * @return the underlying {@link CoapServer}
          */
         public CoapServer getServer() {
-            return clientSideServer;
+            return coapServer;
         }
 
         /**
