@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.eclipse.californium.core.CoapServer;
+import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
 import org.eclipse.californium.elements.Connector;
@@ -274,6 +276,36 @@ public class LeshanClientBuilder {
             dtlsConfigBuilder.setSniEnabled(false);
         }
 
+        return createLeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder,
+                endpointFactory, additionalAttributes, encoder, decoder, executor);
+    }
+
+    /**
+     * Create the <code>LeshanClient</code>.
+     * <p>
+     * You can extend <code>LeshanClientBuilder</code> and override this method to create a new builder which will be
+     * able to build an extended <code>LeshanClient </code>.
+     * <p>
+     * See all the setters of this builder for more documentation about parameters.
+     * 
+     * @param endpoint The endpoint name for this client.
+     * @param localAddress The local address used for unsecured connection.
+     * @param objectEnablers The list of object enablers. An enabler adds to support for a given LWM2M object to the
+     *        client.
+     * @param coapConfig The coap config used to create {@link CoapEndpoint} and {@link CoapServer}.
+     * @param dtlsConfigBuilder The dtls config used to create the {@link DTLSConnector}.
+     * @param endpointFactory The factory which will create the {@link CoapEndpoint}.
+     * @param additionalAttributes Some extra (out-of-spec) attributes to add to the register request.
+     * @param encoder used to encode request payload.
+     * @param decoder used to decode response payload.
+     * @param sharedExecutor an optional shared executor.
+     * 
+     * @return the new {@link LeshanClient}
+     */
+    protected LeshanClient createLeshanClient(String endpoint, InetSocketAddress localAddress,
+            List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig, Builder dtlsConfigBuilder,
+            EndpointFactory endpointFactory, Map<String, String> additionalAttributes, LwM2mNodeEncoder encoder,
+            LwM2mNodeDecoder decoder, ScheduledExecutorService sharedExecutor) {
         return new LeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder, endpointFactory,
                 additionalAttributes, encoder, decoder, executor);
     }
