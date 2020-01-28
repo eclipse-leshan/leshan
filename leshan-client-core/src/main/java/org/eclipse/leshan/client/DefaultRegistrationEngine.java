@@ -31,6 +31,7 @@ import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.request.LwM2mRequestSender;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
+import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.servers.DmServerInfo;
 import org.eclipse.leshan.client.servers.Server;
 import org.eclipse.leshan.client.servers.ServerInfo;
@@ -101,13 +102,12 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     private final ScheduledExecutorService schedExecutor;
     private final boolean attachedExecutor;
 
-    public DefaultRegistrationEngine(String endpoint, Map<Integer, LwM2mObjectEnabler> objectEnablers,
-            EndpointsManager endpointsManager, LwM2mRequestSender requestSender, BootstrapHandler bootstrapState,
-            LwM2mClientObserver observer, Map<String, String> additionalAttributes, ScheduledExecutorService executor,
-            long requestTimeoutInMs, long deregistrationTimeoutInMs, int bootstrapSessionTimeoutInSec,
-            int retryWaitingTimeInMs) {
+    public DefaultRegistrationEngine(String endpoint, LwM2mObjectTree objectTree, EndpointsManager endpointsManager,
+            LwM2mRequestSender requestSender, BootstrapHandler bootstrapState, LwM2mClientObserver observer,
+            Map<String, String> additionalAttributes, ScheduledExecutorService executor, long requestTimeoutInMs,
+            long deregistrationTimeoutInMs, int bootstrapSessionTimeoutInSec, int retryWaitingTimeInMs) {
         this.endpoint = endpoint;
-        this.objectEnablers = objectEnablers;
+        this.objectEnablers = objectTree.getObjectEnablers();
         this.bootstrapHandler = bootstrapState;
         this.endpointsManager = endpointsManager;
         this.observer = observer;

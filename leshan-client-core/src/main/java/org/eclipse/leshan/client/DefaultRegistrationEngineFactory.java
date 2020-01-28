@@ -38,9 +38,9 @@ public class DefaultRegistrationEngineFactory implements RegistrationEngineFacto
             EndpointsManager endpointsManager, LwM2mRequestSender requestSender, BootstrapHandler bootstrapState,
             LwM2mClientObserver observer, Map<String, String> additionalAttributes,
             ScheduledExecutorService sharedExecutor) {
-        return new DefaultRegistrationEngine(endpoint, objectTree.getObjectEnablers(), endpointsManager, requestSender,
-                bootstrapState, observer, additionalAttributes, sharedExecutor, requestTimeoutInMs,
-                deregistrationTimeoutInMs, bootstrapSessionTimeoutInSec, retryWaitingTimeInMs);
+        return new DefaultRegistrationEngine(endpoint, objectTree, endpointsManager, requestSender, bootstrapState,
+                observer, additionalAttributes, sharedExecutor, requestTimeoutInMs, deregistrationTimeoutInMs,
+                bootstrapSessionTimeoutInSec, retryWaitingTimeInMs);
     }
 
     /**
