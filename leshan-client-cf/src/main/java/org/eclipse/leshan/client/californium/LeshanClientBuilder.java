@@ -31,6 +31,9 @@ import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.LwM2mId;
+import org.eclipse.leshan.client.DefaultRegistrationEngineFactory;
+import org.eclipse.leshan.client.RegistrationEngine;
+import org.eclipse.leshan.client.RegistrationEngineFactory;
 import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.object.Server;
@@ -63,6 +66,7 @@ public class LeshanClientBuilder {
     private LwM2mNodeDecoder decoder;
 
     private EndpointFactory endpointFactory;
+    private RegistrationEngineFactory engineFactory;
     private Map<String, String> additionalAttributes;
 
     private ScheduledExecutorService executor;
@@ -162,6 +166,23 @@ public class LeshanClientBuilder {
     }
 
     /**
+     * Set the {@link RegistrationEngineFactory} which is responsible to create the {@link RegistrationEngine}.
+     * <p>
+     * The {@link RegistrationEngine} is responsible to manage all the client lifecycle
+     * (bootstrap/register/update/deregister ...)
+     * <p>
+     * By default a {@link DefaultRegistrationEngineFactory} is used. Look at this class to change some default timeout
+     * value.
+     * 
+     * @param engineFactory
+     * @return
+     */
+    public LeshanClientBuilder setRegistrationEngineFactory(RegistrationEngineFactory engineFactory) {
+        this.engineFactory = engineFactory;
+        return this;
+    }
+
+    /**
      * Set the additionalAttributes for {@link org.eclipse.leshan.core.request.RegisterRequest}.
      */
     public LeshanClientBuilder setAdditionalAttributes(Map<String, String> additionalAttributes) {
@@ -218,6 +239,9 @@ public class LeshanClientBuilder {
             decoder = new DefaultLwM2mNodeDecoder();
         if (coapConfig == null) {
             coapConfig = createDefaultNetworkConfig();
+        }
+        if (engineFactory == null) {
+            engineFactory = new DefaultRegistrationEngineFactory();
         }
         if (endpointFactory == null) {
             endpointFactory = new DefaultEndpointFactory("LWM2M Client") {
@@ -277,7 +301,7 @@ public class LeshanClientBuilder {
         }
 
         return createLeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder,
-                endpointFactory, additionalAttributes, encoder, decoder, executor);
+                endpointFactory,engineFactory, additionalAttributes, encoder, decoder, executor);
     }
 
     /**
@@ -295,6 +319,7 @@ public class LeshanClientBuilder {
      * @param coapConfig The coap config used to create {@link CoapEndpoint} and {@link CoapServer}.
      * @param dtlsConfigBuilder The dtls config used to create the {@link DTLSConnector}.
      * @param endpointFactory The factory which will create the {@link CoapEndpoint}.
+     * @param engineFactory The factory which will create the {@link RegistrationEngine}.
      * @param additionalAttributes Some extra (out-of-spec) attributes to add to the register request.
      * @param encoder used to encode request payload.
      * @param decoder used to decode response payload.
@@ -304,9 +329,10 @@ public class LeshanClientBuilder {
      */
     protected LeshanClient createLeshanClient(String endpoint, InetSocketAddress localAddress,
             List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig, Builder dtlsConfigBuilder,
-            EndpointFactory endpointFactory, Map<String, String> additionalAttributes, LwM2mNodeEncoder encoder,
-            LwM2mNodeDecoder decoder, ScheduledExecutorService sharedExecutor) {
+            EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
+            Map<String, String> additionalAttributes, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
+            ScheduledExecutorService sharedExecutor) {
         return new LeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder, endpointFactory,
-                additionalAttributes, encoder, decoder, executor);
+                engineFactory, additionalAttributes, encoder, decoder, executor);
     }
 }

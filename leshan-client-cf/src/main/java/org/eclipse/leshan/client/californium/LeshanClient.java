@@ -28,9 +28,9 @@ import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.elements.util.ExecutorsUtil;
 import org.eclipse.californium.elements.util.NamedThreadFactory;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
-import org.eclipse.leshan.client.DefaultRegistrationEngine;
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.RegistrationEngine;
+import org.eclipse.leshan.client.RegistrationEngineFactory;
 import org.eclipse.leshan.client.RegistrationUpdateHandler;
 import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.client.californium.bootstrap.BootstrapResource;
@@ -68,8 +68,9 @@ public class LeshanClient implements LwM2mClient {
 
     public LeshanClient(String endpoint, InetSocketAddress localAddress,
             List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig, Builder dtlsConfigBuilder,
-            EndpointFactory endpointFactory, Map<String, String> additionalAttributes, LwM2mNodeEncoder encoder,
-            LwM2mNodeDecoder decoder, ScheduledExecutorService sharedExecutor) {
+            EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
+            Map<String, String> additionalAttributes, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
+            ScheduledExecutorService sharedExecutor) {
 
         Validate.notNull(endpoint);
         Validate.notEmpty(objectEnablers);
@@ -84,8 +85,8 @@ public class LeshanClient implements LwM2mClient {
         endpointsManager = createEndpointsManager(coapServer, localAddress, coapConfig, dtlsConfigBuilder,
                 endpointFactory);
         requestSender = createRequestSender(endpointsManager);
-        engine = createRegistrationEngine(endpoint, objectTree, endpointsManager, requestSender, bootstrapHandler,
-                observers, additionalAttributes, sharedExecutor);
+        engine = engineFactory.createRegistratioEngine(endpoint, objectTree, endpointsManager, requestSender,
+                bootstrapHandler, observers, additionalAttributes, sharedExecutor);
         createRegistrationUpdateHandler(engine, endpointsManager, bootstrapHandler, objectTree);
 
         coapApi = new CoapAPI();
@@ -171,14 +172,6 @@ public class LeshanClient implements LwM2mClient {
 
     protected CaliforniumLwM2mRequestSender createRequestSender(CaliforniumEndpointsManager endpointsManager) {
         return new CaliforniumLwM2mRequestSender(endpointsManager);
-    }
-
-    protected RegistrationEngine createRegistrationEngine(String endpoint, LwM2mObjectTree objectTree,
-            CaliforniumEndpointsManager endpointsManager, CaliforniumLwM2mRequestSender requestSender,
-            BootstrapHandler bootstrapHandler, LwM2mClientObserverDispatcher observer,
-            Map<String, String> additionalAttributes, ScheduledExecutorService sharedExecutor) {
-        return new DefaultRegistrationEngine(endpoint, objectTree.getObjectEnablers(), endpointsManager, requestSender,
-                bootstrapHandler, observer, additionalAttributes, sharedExecutor);
     }
 
     protected RegistrationUpdateHandler createRegistrationUpdateHandler(RegistrationEngine engine,

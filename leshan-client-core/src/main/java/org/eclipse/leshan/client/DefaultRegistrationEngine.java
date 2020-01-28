@@ -65,16 +65,17 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultRegistrationEngine.class);
 
+    private static final long NOW = 0;
+
     // We choose a default timeout a bit higher to the MAX_TRANSMIT_WAIT(62-93s) which is the time from starting to
     // send a Confirmable message to the time when an acknowledgement is no longer expected.
-    private static final long DEFAULT_TIMEOUT = 2 * 60 * 1000l; // 2min in ms
-
-    // TODO bootstrap timeout should be configurable
-    private static final int BS_TIMEOUT = 93; // in seconds (93s is the COAP MAX_TRANSMIT_WAIT with default config)
-    private static final long DEREGISTRATION_TIMEOUT = 1000; // in ms, de-registration is only used on stop for now.
-    // TODO time between bootstrap retry should be configurable and incremental
-    private static final int BS_RETRY = 10 * 60 * 1000; // in ms
-    private static final long NOW = 0;
+    private final long requestTimeoutInMs;
+    // de-registration is only used on stop/destroy for now.
+    private final long deregistrationTimeoutInMs;
+    // bootstrap timeout
+    private final int bootstrapSessionTimeoutInSec;
+    // time between bootstrap retry should be configurable and incremental
+    private final int retryWaitingTimeInMs;
 
     private static enum Status {
         SUCCESS, FAILURE, TIMEOUT
@@ -102,7 +103,9 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
 
     public DefaultRegistrationEngine(String endpoint, Map<Integer, LwM2mObjectEnabler> objectEnablers,
             EndpointsManager endpointsManager, LwM2mRequestSender requestSender, BootstrapHandler bootstrapState,
-            LwM2mClientObserver observer, Map<String, String> additionalAttributes, ScheduledExecutorService executor) {
+            LwM2mClientObserver observer, Map<String, String> additionalAttributes, ScheduledExecutorService executor,
+            long requestTimeoutInMs, long deregistrationTimeoutInMs, int bootstrapSessionTimeoutInSec,
+            int retryWaitingTimeInMs) {
         this.endpoint = endpoint;
         this.objectEnablers = objectEnablers;
         this.bootstrapHandler = bootstrapState;
@@ -110,6 +113,10 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         this.observer = observer;
         this.additionalAttributes = additionalAttributes;
         this.registeredServers = new ConcurrentHashMap<>();
+        this.requestTimeoutInMs = requestTimeoutInMs;
+        this.deregistrationTimeoutInMs = deregistrationTimeoutInMs;
+        this.bootstrapSessionTimeoutInSec = bootstrapSessionTimeoutInSec;
+        this.retryWaitingTimeInMs = retryWaitingTimeInMs;
 
         if (executor == null) {
             schedExecutor = createScheduledExecutor();
@@ -176,7 +183,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             // Send bootstrap request
             try {
                 BootstrapResponse response = sender.send(bootstrapServerInfo.getAddress(),
-                        bootstrapServerInfo.isSecure(), new BootstrapRequest(endpoint), DEFAULT_TIMEOUT);
+                        bootstrapServerInfo.isSecure(), new BootstrapRequest(endpoint), requestTimeoutInMs);
                 if (response == null) {
                     LOG.error("Unable to start bootstrap session: Timeout.");
                     if (observer != null) {
@@ -186,7 +193,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                 } else if (response.isSuccess()) {
                     LOG.info("Bootstrap started");
                     // Wait until it is finished (or too late)
-                    boolean timeout = !bootstrapHandler.waitBoostrapFinished(BS_TIMEOUT);
+                    boolean timeout = !bootstrapHandler.waitBoostrapFinished(bootstrapSessionTimeoutInSec);
                     if (timeout) {
                         LOG.error("Bootstrap sequence aborted: Timeout.");
                         if (observer != null) {
@@ -249,7 +256,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             RegisterRequest regRequest = new RegisterRequest(endpoint, dmInfo.lifetime, LwM2m.VERSION, dmInfo.binding,
                     null, LinkFormatHelper.getClientDescription(objectEnablers.values(), null), additionalAttributes);
             RegisterResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(), regRequest,
-                    DEFAULT_TIMEOUT);
+                    requestTimeoutInMs);
 
             if (response == null) {
                 LOG.error("Registration failed: Timeout.");
@@ -298,7 +305,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         LOG.info("Trying to deregister to {} ...", server.getUri());
         try {
             DeregisterResponse response = sender.send(server.getIdentity().getPeerAddress(),
-                    server.getIdentity().isSecure(), new DeregisterRequest(registrationID), DEREGISTRATION_TIMEOUT);
+                    server.getIdentity().isSecure(), new DeregisterRequest(registrationID), deregistrationTimeoutInMs);
             if (response == null) {
                 registrationID = null;
                 LOG.error("Deregistration failed: Timeout.");
@@ -360,7 +367,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                     new UpdateRequest(registrationID, registrationUpdate.getLifeTimeInSec(),
                             registrationUpdate.getSmsNumber(), registrationUpdate.getBindingMode(),
                             registrationUpdate.getObjectLinks(), registrationUpdate.getAdditionalAttributes()),
-                    DEFAULT_TIMEOUT);
+                    requestTimeoutInMs);
             if (response == null) {
                 registrationID = null;
                 LOG.error("Registration update failed: Timeout.");
@@ -431,11 +438,11 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                     // see https://github.com/eclipse/leshan/issues/701
                     bootstrapFuture = null;
                     // last thing to do reschedule a new bootstrap.
-                    scheduleClientInitiatedBootstrap(BS_RETRY);
+                    scheduleClientInitiatedBootstrap(retryWaitingTimeInMs);
                 } else {
                     Server dmServer = dmServers.iterator().next();
                     if (!registerWithRetry(dmServer))
-                        scheduleRegistrationTask(dmServer, BS_RETRY);
+                        scheduleRegistrationTask(dmServer, retryWaitingTimeInMs);
                 }
             } catch (InterruptedException e) {
                 LOG.info("Bootstrap task interrupted. ");
@@ -470,7 +477,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             try {
                 if (!registerWithRetry(server)) {
                     if (!scheduleClientInitiatedBootstrap(NOW)) {
-                        scheduleRegistrationTask(server, BS_RETRY);
+                        scheduleRegistrationTask(server, retryWaitingTimeInMs);
                     }
                 }
             } catch (InterruptedException e) {
@@ -514,7 +521,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                 if (!updateWithRetry(server, registrationId, registrationUpdate)) {
                     if (!registerWithRetry(server)) {
                         if (!scheduleClientInitiatedBootstrap(NOW)) {
-                            scheduleRegistrationTask(server, BS_RETRY);
+                            scheduleRegistrationTask(server, retryWaitingTimeInMs);
                         }
                     }
                 }
@@ -578,7 +585,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             // TODO we should manage the case where we stop in the middle of a bootstrap session ...
             if (attachedExecutor) {
                 schedExecutor.shutdownNow();
-                schedExecutor.awaitTermination(BS_TIMEOUT, TimeUnit.SECONDS);
+                schedExecutor.awaitTermination(bootstrapSessionTimeoutInSec, TimeUnit.SECONDS);
             } else {
                 cancelUpdateTask(true);
                 cancelRegistrationTask();
