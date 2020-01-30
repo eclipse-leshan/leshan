@@ -101,6 +101,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     private Future<?> bootstrapFuture;
     private Future<?> registerFuture;
     private Future<?> updateFuture;
+    private Object taskLock = new Object(); // a lock to avoid several task to be executed at the same time
     private final ScheduledExecutorService schedExecutor;
     private final boolean attachedExecutor;
 
@@ -433,23 +434,25 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     private class ClientInitiatedBootstrapTask implements Runnable {
         @Override
         public void run() {
-            try {
-                Collection<Server> dmServers = clientInitiatedBootstrap();
-                if (dmServers == null || dmServers.isEmpty()) {
-                    // clientInitiatatedBootstrapTask is considered as finished.
-                    // see https://github.com/eclipse/leshan/issues/701
-                    bootstrapFuture = null;
-                    // last thing to do reschedule a new bootstrap.
-                    scheduleClientInitiatedBootstrap(retryWaitingTimeInMs);
-                } else {
-                    Server dmServer = dmServers.iterator().next();
-                    if (!registerWithRetry(dmServer))
-                        scheduleRegistrationTask(dmServer, retryWaitingTimeInMs);
+            synchronized (taskLock) {
+                try {
+                    Collection<Server> dmServers = clientInitiatedBootstrap();
+                    if (dmServers == null || dmServers.isEmpty()) {
+                        // clientInitiatatedBootstrapTask is considered as finished.
+                        // see https://github.com/eclipse/leshan/issues/701
+                        bootstrapFuture = null;
+                        // last thing to do reschedule a new bootstrap.
+                        scheduleClientInitiatedBootstrap(retryWaitingTimeInMs);
+                    } else {
+                        Server dmServer = dmServers.iterator().next();
+                        if (!registerWithRetry(dmServer))
+                            scheduleRegistrationTask(dmServer, retryWaitingTimeInMs);
+                    }
+                } catch (InterruptedException e) {
+                    LOG.info("Bootstrap task interrupted. ");
+                } catch (RuntimeException e) {
+                    LOG.error("Unexpected exception during bootstrap task", e);
                 }
-            } catch (InterruptedException e) {
-                LOG.info("Bootstrap task interrupted. ");
-            } catch (RuntimeException e) {
-                LOG.error("Unexpected exception during bootstrap task", e);
             }
         }
     }
@@ -476,16 +479,18 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
 
         @Override
         public void run() {
-            try {
-                if (!registerWithRetry(server)) {
-                    if (!scheduleClientInitiatedBootstrap(NOW)) {
-                        scheduleRegistrationTask(server, retryWaitingTimeInMs);
+            synchronized (taskLock) {
+                try {
+                    if (!registerWithRetry(server)) {
+                        if (!scheduleClientInitiatedBootstrap(NOW)) {
+                            scheduleRegistrationTask(server, retryWaitingTimeInMs);
+                        }
                     }
+                } catch (InterruptedException e) {
+                    LOG.info("Registration task interrupted. ");
+                } catch (RuntimeException e) {
+                    LOG.error("Unexpected exception during registration task", e);
                 }
-            } catch (InterruptedException e) {
-                LOG.info("Registration task interrupted. ");
-            } catch (RuntimeException e) {
-                LOG.error("Unexpected exception during registration task", e);
             }
         }
 
@@ -519,18 +524,20 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
 
         @Override
         public void run() {
-            try {
-                if (!updateWithRetry(server, registrationId, registrationUpdate)) {
-                    if (!registerWithRetry(server)) {
-                        if (!scheduleClientInitiatedBootstrap(NOW)) {
-                            scheduleRegistrationTask(server, retryWaitingTimeInMs);
+            synchronized (taskLock) {
+                try {
+                    if (!updateWithRetry(server, registrationId, registrationUpdate)) {
+                        if (!registerWithRetry(server)) {
+                            if (!scheduleClientInitiatedBootstrap(NOW)) {
+                                scheduleRegistrationTask(server, retryWaitingTimeInMs);
+                            }
                         }
                     }
+                } catch (InterruptedException e) {
+                    LOG.info("Registration update task interrupted.");
+                } catch (RuntimeException e) {
+                    LOG.error("Unexpected exception during update registration task", e);
                 }
-            } catch (InterruptedException e) {
-                LOG.info("Registration update task interrupted.");
-            } catch (RuntimeException e) {
-                LOG.error("Unexpected exception during update registration task", e);
             }
         }
     }
@@ -605,6 +612,27 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         }
     }
 
+    private class QueueUpdateTask implements Runnable {
+
+        private RegistrationUpdate registrationUpdate;
+
+        public QueueUpdateTask(RegistrationUpdate registrationUpdate) {
+            this.registrationUpdate = registrationUpdate;
+        }
+
+        @Override
+        public void run() {
+            synchronized (taskLock) {
+                cancelUpdateTask(true);
+                // TODO we currently support only one dm server.
+                Entry<String, Server> currentServer = registeredServers.entrySet().iterator().next();
+                if (currentServer != null) {
+                    scheduleUpdate(currentServer.getValue(), currentServer.getKey(), registrationUpdate, NOW);
+                }
+            }
+        }
+    }
+
     @Override
     public void triggerRegistrationUpdate() {
         triggerRegistrationUpdate(new RegistrationUpdate());
@@ -618,10 +646,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                 if (registeredServers.isEmpty()) {
                     LOG.info("No server registered!");
                 } else {
-                    cancelUpdateTask(true);
-                    // TODO we currently support only one dm server.
-                    Entry<String, Server> currentServer = registeredServers.entrySet().iterator().next();
-                    scheduleUpdate(currentServer.getValue(), currentServer.getKey(), registrationUpdate, NOW);
+                    schedExecutor.submit(new QueueUpdateTask(registrationUpdate));
                 }
             }
         }
