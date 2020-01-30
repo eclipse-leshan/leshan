@@ -38,4 +38,9 @@ public interface LwM2mRequestSender {
      */
     <T extends LwM2mResponse> void send(InetSocketAddress server, boolean secure, UplinkRequest<T> request,
             long timeout, ResponseCallback<T> responseCallback, ErrorCallback errorCallback);
+
+    /**
+     * Destroy the sender. Free all resources. Sender can not be used anymore.
+     */
+    void destroy();
 }

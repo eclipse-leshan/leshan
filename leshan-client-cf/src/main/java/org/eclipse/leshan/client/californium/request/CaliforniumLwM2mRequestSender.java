@@ -18,6 +18,7 @@ package org.eclipse.leshan.client.californium.request;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.californium.core.coap.MessageObserver;
 import org.eclipse.californium.core.coap.Request;
@@ -31,15 +32,27 @@ import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.util.NamedThreadFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
-    private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1,
-            new NamedThreadFactory("Leshan Async Request timeout"));
+    private static final Logger LOG = LoggerFactory.getLogger(CaliforniumLwM2mRequestSender.class);
+
+    private final ScheduledExecutorService executor;
+    private final boolean attached;
     private final CaliforniumEndpointsManager endpointsManager;
 
-    public CaliforniumLwM2mRequestSender(CaliforniumEndpointsManager endpointsManager) {
+    public CaliforniumLwM2mRequestSender(CaliforniumEndpointsManager endpointsManager,
+            ScheduledExecutorService sharedExecutor) {
         this.endpointsManager = endpointsManager;
+        if (sharedExecutor == null) {
+            this.executor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("Leshan Async Request timeout"));
+            this.attached = false;
+        } else {
+            this.executor = sharedExecutor;
+            this.attached = false;
+        }
     }
 
     @Override
@@ -93,5 +106,17 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
         // Send CoAP request asynchronously
         endpointsManager.getEndpoint(null).sendRequest(coapRequest);
+    }
+
+    @Override
+    public void destroy() {
+        if (attached) {
+            executor.shutdownNow();
+            try {
+                executor.awaitTermination(5, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                LOG.warn("Destroying RequestSender was interrupted.", e);
+            }
+        }
     }
 }

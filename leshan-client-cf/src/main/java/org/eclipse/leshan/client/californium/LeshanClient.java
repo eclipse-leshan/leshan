@@ -84,7 +84,7 @@ public class LeshanClient implements LwM2mClient {
         coapServer.add(createBootstrapResource(bootstrapHandler));
         endpointsManager = createEndpointsManager(coapServer, localAddress, coapConfig, dtlsConfigBuilder,
                 endpointFactory);
-        requestSender = createRequestSender(endpointsManager);
+        requestSender = createRequestSender(endpointsManager, sharedExecutor);
         engine = engineFactory.createRegistratioEngine(endpoint, objectTree, endpointsManager, requestSender,
                 bootstrapHandler, observers, additionalAttributes, sharedExecutor);
         createRegistrationUpdateHandler(engine, endpointsManager, bootstrapHandler, objectTree);
@@ -170,8 +170,9 @@ public class LeshanClient implements LwM2mClient {
                 endpointFactory);
     }
 
-    protected CaliforniumLwM2mRequestSender createRequestSender(CaliforniumEndpointsManager endpointsManager) {
-        return new CaliforniumLwM2mRequestSender(endpointsManager);
+    protected CaliforniumLwM2mRequestSender createRequestSender(CaliforniumEndpointsManager endpointsManager,
+            ScheduledExecutorService executor) {
+        return new CaliforniumLwM2mRequestSender(endpointsManager, executor);
     }
 
     protected RegistrationUpdateHandler createRegistrationUpdateHandler(RegistrationEngine engine,
@@ -205,6 +206,7 @@ public class LeshanClient implements LwM2mClient {
         LOG.info("Destroying Leshan client ...");
         engine.destroy(deregister);
         endpointsManager.destroy();
+        requestSender.destroy();
         LOG.info("Leshan client destroyed.");
     }
 
