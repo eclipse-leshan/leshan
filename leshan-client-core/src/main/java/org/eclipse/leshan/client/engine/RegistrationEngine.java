@@ -13,7 +13,9 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client;
+package org.eclipse.leshan.client.engine;
+
+import org.eclipse.leshan.client.RegistrationUpdate;
 
 public interface RegistrationEngine {
 
