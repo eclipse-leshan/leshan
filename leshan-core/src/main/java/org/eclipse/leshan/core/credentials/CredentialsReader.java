@@ -19,8 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.RandomAccessFile;
 import java.security.GeneralSecurityException;
 
 /**
@@ -33,8 +32,11 @@ public abstract class CredentialsReader<T> {
      * Read credential from file
      */
     public T readFromFile(String fileName) throws IOException, GeneralSecurityException {
-        byte[] bytes = Files.readAllBytes(Paths.get(fileName));
-        return decode(bytes);
+        try (RandomAccessFile f = new RandomAccessFile(fileName, "r")) {
+            byte[] bytes = new byte[(int) f.length()];
+            f.readFully(bytes);
+            return decode(bytes);
+        }
     }
 
     /**
