@@ -80,7 +80,18 @@ Contributors:
                          of active threads in LeshanBootstrapServerTest and LeshanServerTest -->
                     <reuseForks>false</reuseForks>
                 </configuration>
-             </plugin>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>animal-sniffer-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>
