@@ -90,6 +90,7 @@ public class LeshanClientDemo {
 
     private static final int OBJECT_ID_TEMPERATURE_SENSOR = 3303;
     private final static String DEFAULT_ENDPOINT = "LeshanClientDemo";
+    private final static int DEFAULT_LIFETIME = 5 * 60; // 5min in seconds
     private final static String USAGE = "java -jar leshan-client-demo.jar [OPTION]\n\n";
 
     private static MyLocation locationInstance;
@@ -131,6 +132,8 @@ public class LeshanClientDemo {
         options.addOption("n", true, String.format(
                 "Set the endpoint name of the Client.\nDefault: the local hostname or '%s' if any.", DEFAULT_ENDPOINT));
         options.addOption("b", false, "If present use bootstrap.");
+        options.addOption("l", true, String.format(
+                "The lifetime in seconds used to register, ignored if -b is used.\n Default : %ds", DEFAULT_LIFETIME));
         options.addOption("lh", true, "Set the local CoAP address of the Client.\n  Default: any local address.");
         options.addOption("lp", true,
                 "Set the local CoAP port of the Client.\n  Default: A valid port value is between 0 and 65535.");
@@ -234,6 +237,14 @@ public class LeshanClientDemo {
             }
         }
 
+        // Get lifetime
+        int lifetime;
+        if (cl.hasOption("l")) {
+            lifetime = Integer.parseInt(cl.getOptionValue("l"));
+        } else {
+            lifetime = DEFAULT_LIFETIME;
+        }
+
         // Get server URI
         String serverURI;
         if (cl.hasOption("u")) {
@@ -330,9 +341,9 @@ public class LeshanClientDemo {
             }
         }
         try {
-            createAndStartClient(endpoint, localAddress, localPort, cl.hasOption("b"), serverURI, pskIdentity, pskKey,
-                    clientPrivateKey, clientPublicKey, serverPublicKey, clientCertificate, serverCertificate, latitude,
-                    longitude, scaleFactor);
+            createAndStartClient(endpoint, localAddress, localPort, cl.hasOption("b"), lifetime, serverURI, pskIdentity,
+                    pskKey, clientPrivateKey, clientPublicKey, serverPublicKey, clientCertificate, serverCertificate,
+                    latitude, longitude, scaleFactor);
         } catch (Exception e) {
             System.err.println("Unable to create and start client ...");
             e.printStackTrace();
@@ -341,9 +352,10 @@ public class LeshanClientDemo {
     }
 
     public static void createAndStartClient(String endpoint, String localAddress, int localPort, boolean needBootstrap,
-            String serverURI, byte[] pskIdentity, byte[] pskKey, PrivateKey clientPrivateKey, PublicKey clientPublicKey,
-            PublicKey serverPublicKey, X509Certificate clientCertificate, X509Certificate serverCertificate,
-            Float latitude, Float longitude, float scaleFactor) throws CertificateEncodingException {
+            int lifetime, String serverURI, byte[] pskIdentity, byte[] pskKey, PrivateKey clientPrivateKey,
+            PublicKey clientPublicKey, PublicKey serverPublicKey, X509Certificate clientCertificate,
+            X509Certificate serverCertificate, Float latitude, Float longitude, float scaleFactor)
+            throws CertificateEncodingException {
 
         locationInstance = new MyLocation(latitude, longitude, scaleFactor);
 
@@ -365,7 +377,7 @@ public class LeshanClientDemo {
             } else if (clientCertificate != null) {
                 initializer.setInstancesForObject(SECURITY, x509Bootstrap(serverURI, clientCertificate.getEncoded(),
                         clientPrivateKey.getEncoded(), serverCertificate.getEncoded()));
-                initializer.setInstancesForObject(SERVER, new Server(123, 30, BindingMode.U, false));
+                initializer.setClassForObject(SERVER, Server.class);
             } else {
                 initializer.setInstancesForObject(SECURITY, noSecBootstap(serverURI));
                 initializer.setClassForObject(SERVER, Server.class);
@@ -373,18 +385,18 @@ public class LeshanClientDemo {
         } else {
             if (pskIdentity != null) {
                 initializer.setInstancesForObject(SECURITY, psk(serverURI, 123, pskIdentity, pskKey));
-                initializer.setInstancesForObject(SERVER, new Server(123, 30, BindingMode.U, false));
+                initializer.setInstancesForObject(SERVER, new Server(123, lifetime, BindingMode.U, false));
             } else if (clientPublicKey != null) {
                 initializer.setInstancesForObject(SECURITY, rpk(serverURI, 123, clientPublicKey.getEncoded(),
                         clientPrivateKey.getEncoded(), serverPublicKey.getEncoded()));
-                initializer.setInstancesForObject(SERVER, new Server(123, 30, BindingMode.U, false));
+                initializer.setInstancesForObject(SERVER, new Server(123, lifetime, BindingMode.U, false));
             } else if (clientCertificate != null) {
                 initializer.setInstancesForObject(SECURITY, x509(serverURI, 123, clientCertificate.getEncoded(),
                         clientPrivateKey.getEncoded(), serverCertificate.getEncoded()));
-                initializer.setInstancesForObject(SERVER, new Server(123, 30, BindingMode.U, false));
+                initializer.setInstancesForObject(SERVER, new Server(123, lifetime, BindingMode.U, false));
             } else {
                 initializer.setInstancesForObject(SECURITY, noSec(serverURI, 123));
-                initializer.setInstancesForObject(SERVER, new Server(123, 30, BindingMode.U, false));
+                initializer.setInstancesForObject(SERVER, new Server(123, lifetime, BindingMode.U, false));
             }
         }
         initializer.setInstancesForObject(DEVICE, new MyDevice());
