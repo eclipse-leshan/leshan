@@ -49,7 +49,8 @@ angular.module('objectDirectives', [])
                     Promise.all(promisedValues).then(function(resourceValues) {
                         // Build payload
                         var payload = {};
-                        payload["id"] = instance.id;
+                        if (instance.id)
+                            payload["id"] = instance.id;
                         payload["resources"] = [];
 
                         for(i in instance.resources){
@@ -69,7 +70,8 @@ angular.module('objectDirectives', [])
                         .success(function(data, status, headers, config) {
                             helper.handleResponse(data, scope.object.create, function (formattedDate) {
                                 if (data.success) {
-                                    var newinstance = lwResources.addInstance(scope.object, instance.id, null);
+                                    var instanceId = data.location ? data.location.split('/').pop() : instance.id;
+                                    var newinstance = lwResources.addInstance(scope.object, instanceId, null);
                                     for (var i in payload.resources) {
                                         var tlvresource = payload.resources[i];
                                         resource = lwResources.addResource(scope.object, newinstance, tlvresource.id, null);

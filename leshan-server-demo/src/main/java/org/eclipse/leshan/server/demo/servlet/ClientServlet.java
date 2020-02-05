@@ -338,7 +338,14 @@ public class ClientServlet extends HttpServlet {
                     // create & process request
                     LwM2mNode node = extractLwM2mNode(target, req);
                     if (node instanceof LwM2mObjectInstance) {
-                        CreateRequest request = new CreateRequest(contentFormat, target, (LwM2mObjectInstance) node);
+                        CreateRequest request;
+                        if (node.getId() == LwM2mObjectInstance.UNDEFINED) {
+                            request = new CreateRequest(contentFormat, target,
+                                    ((LwM2mObjectInstance) node).getResources().values());
+                        } else {
+                            request = new CreateRequest(contentFormat, target, (LwM2mObjectInstance) node);
+                        }
+
                         CreateResponse cResponse = server.send(registration, request, TIMEOUT);
                         processDeviceResponse(req, resp, cResponse);
                     } else {

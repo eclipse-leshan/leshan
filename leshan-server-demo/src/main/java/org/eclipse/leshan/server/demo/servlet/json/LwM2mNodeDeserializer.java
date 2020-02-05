@@ -16,6 +16,7 @@
 package org.eclipse.leshan.server.demo.servlet.json;
 
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -50,12 +51,15 @@ public class LwM2mNodeDeserializer implements JsonDeserializer<LwM2mNode> {
         if (json.isJsonObject()) {
             JsonObject object = (JsonObject) json;
 
-            if (!object.has("id")) {
-                throw new JsonParseException("Missing id");
+            Integer id = null;
+            if (object.has("id")) {
+                id = object.get("id").getAsInt();
             }
-            int id = object.get("id").getAsInt();
 
             if (object.has("instances")) {
+                if (id == null) {
+                    throw new JsonParseException("Missing id");
+                }
 
                 JsonArray array = object.get("instances").getAsJsonArray();
                 LwM2mObjectInstance[] instances = new LwM2mObjectInstance[array.size()];
@@ -72,14 +76,23 @@ public class LwM2mNodeDeserializer implements JsonDeserializer<LwM2mNode> {
                 for (int i = 0; i < array.size(); i++) {
                     resources[i] = context.deserialize(array.get(i), LwM2mNode.class);
                 }
-                node = new LwM2mObjectInstance(id, resources);
-
+                if (id == null) {
+                    node = new LwM2mObjectInstance(Arrays.asList(resources));
+                } else {
+                    node = new LwM2mObjectInstance(id, resources);
+                }
             } else if (object.has("value")) {
+                if (id == null) {
+                    throw new JsonParseException("Missing id");
+                }
                 // single value resource
                 JsonPrimitive val = object.get("value").getAsJsonPrimitive();
                 org.eclipse.leshan.core.model.ResourceModel.Type expectedType = getTypeFor(val);
                 node = LwM2mSingleResource.newResource(id, deserializeValue(val, expectedType), expectedType);
             } else if (object.has("values")) {
+                if (id == null) {
+                    throw new JsonParseException("Missing id");
+                }
                 // multi-instances resource
                 Map<Integer, Object> values = new HashMap<>();
                 org.eclipse.leshan.core.model.ResourceModel.Type expectedType = null;
