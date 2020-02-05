@@ -98,7 +98,7 @@ lwClientControllers.controller('ClientListCtrl', [
             var updateCallback =  function(msg) {
                 $scope.$apply(function() {
                     var client = JSON.parse(msg.data);
-                    $scope.clients = updateClient(client, $scope.clients);
+                    $scope.clients = updateClient(client.registration, $scope.clients);
                 });
             };
 
@@ -205,6 +205,21 @@ lwClientControllers.controller('ClientDetailCtrl', [
                 });
             };
             $scope.eventsource.addEventListener('REGISTRATION', registerCallback, false);
+
+            var updateCallback = function(msg) {
+                $scope.$apply(function() {
+                    $scope.deregistered = false;
+                    var regUpdate = JSON.parse(msg.data);
+                    $scope.client = regUpdate.registration; 
+                    if (regUpdate.update.objectLinks){
+                        lwResources.buildResourceTree($scope.clientId, $scope.client.rootPath, $scope.client.objectLinks, function (objects){
+                            $scope.objects = objects;
+                        });    
+                    } 
+                });
+            };
+            $scope.eventsource.addEventListener('UPDATED', updateCallback, false);
+
 
             var deregisterCallback = function(msg) {
                 $scope.$apply(function() {
