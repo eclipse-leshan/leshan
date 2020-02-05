@@ -465,7 +465,13 @@ public class LeshanClientDemo {
         commandsHelp.append(System.lineSeparator());
         commandsHelp.append("  - delete <objectId> : to disable a new object.");
         commandsHelp.append(System.lineSeparator());
-        commandsHelp.append("  - 'w','a','s','d' : to change reported Location.");
+        commandsHelp.append("  - w : to move to North.");
+        commandsHelp.append(System.lineSeparator());
+        commandsHelp.append("  - a : to move to East.");
+        commandsHelp.append(System.lineSeparator());
+        commandsHelp.append("  - s : to move to South.");
+        commandsHelp.append(System.lineSeparator());
+        commandsHelp.append("  - d : to move to West.");
         commandsHelp.append(System.lineSeparator());
         LOG.info(commandsHelp.toString());
 
@@ -482,6 +488,7 @@ public class LeshanClientDemo {
 
         // Change the location through the Console
         try (Scanner scanner = new Scanner(System.in)) {
+            List<Character> wasdCommands = Arrays.asList('w', 'a', 's', 'd');
             while (scanner.hasNext()) {
                 String command = scanner.next();
                 if (command.startsWith("create")) {
@@ -518,8 +525,10 @@ public class LeshanClientDemo {
                         scanner.next();
                         LOG.info("\"Invalid syntax, <objectid> must be an integer : delete <objectId>");
                     }
-                } else {
+                } else if (command.length() == 1 && wasdCommands.contains(command.charAt(0))) {
                     locationInstance.moveLocation(command);
+                } else {
+                    LOG.info("Unknown command '{}'", command);
                 }
             }
         }

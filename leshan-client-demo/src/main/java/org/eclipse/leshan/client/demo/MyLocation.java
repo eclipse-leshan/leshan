@@ -62,15 +62,19 @@ public class MyLocation extends BaseInstanceEnabler {
         switch (nextMove.charAt(0)) {
         case 'w':
             moveLatitude(1.0f);
+            LOG.info("Move to North {}/{}", getLatitude(), getLongitude());
             break;
         case 'a':
             moveLongitude(-1.0f);
+            LOG.info("Move to East {}/{}", getLatitude(), getLongitude());
             break;
         case 's':
             moveLatitude(-1.0f);
+            LOG.info("Move to South {}/{}", getLatitude(), getLongitude());
             break;
         case 'd':
             moveLongitude(1.0f);
+            LOG.info("Move to West {}/{}", getLatitude(), getLongitude());
             break;
         }
     }
