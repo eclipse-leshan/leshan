@@ -91,6 +91,8 @@ public class LeshanServerDemo {
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanServerDemo.class);
 
+    // /!\ This class is a COPY of org.eclipse.leshan.client.demo.LeshanClientDemo.modelPaths /!\
+    // TODO create a leshan-demo project ?
     private final static String[] modelPaths = new String[] { "31024.xml",
 
                             "10241.xml", "10242.xml", "10243.xml", "10244.xml", "10245.xml", "10246.xml", "10247.xml",

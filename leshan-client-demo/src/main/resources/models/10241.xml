@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?><LWM2M xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M.xsd">
+	<Object ObjectType="MODefinition">
+		<Name>HostDeviceInfo</Name>
+		<Description1><![CDATA[This LWM2M Object provides a range of host device related information which can be queried by the LWM2M Server. The host device is any integrated device with an embedded cellular radio module.]]></Description1>
+		<ObjectID>10241</ObjectID>
+		<ObjectURN>urn:oma:lwm2m:x:10241</ObjectURN>
+		<LWM2MVersion />
+		<ObjectVersion />
+		<MultipleInstances>Multiple</MultipleInstances>
+		<Mandatory>Mandatory</Mandatory>
+		<Resources>
+			<Item ID="5905"><Name>Host Device Manufacturer</Name>
+				<Operations>R</Operations>
+				<MultipleInstances>Multiple</MultipleInstances>
+				<Mandatory>Mandatory</Mandatory>
+				<Type>String</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[Human readable host device manufacturer name]]></Description>
+			</Item>
+			<Item ID="5906"><Name>Host Device Model Number</Name>
+				<Operations>R</Operations>
+				<MultipleInstances>Multiple</MultipleInstances>
+				<Mandatory>Mandatory</Mandatory>
+				<Type>String</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[A host device model identifier (manufacturer specified string)]]></Description>
+			</Item>
+			<Item ID="5907"><Name>Host Device Unique ID</Name>
+				<Operations>R</Operations>
+				<MultipleInstances>Multiple</MultipleInstances>
+				<Mandatory>Mandatory</Mandatory>
+				<Type>String</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[The host device unique ID is assigned by AT&T as the “Device ID” in the onboarding tool and will be stored in]]></Description>
+			</Item>
+			<Item ID="5908"><Name>Host Device Software Version</Name>
+				<Operations>R</Operations>
+				<MultipleInstances>Multiple</MultipleInstances>
+				<Mandatory>Mandatory</Mandatory>
+				<Type>String</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[Current software version of the host device. (manufacturer specified string).]]></Description>
+			</Item></Resources>
+		<Description2 />
+	</Object>
+</LWM2M>
