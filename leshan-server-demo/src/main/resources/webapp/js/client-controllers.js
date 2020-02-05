@@ -212,9 +212,9 @@ lwClientControllers.controller('ClientDetailCtrl', [
                     var regUpdate = JSON.parse(msg.data);
                     $scope.client = regUpdate.registration; 
                     if (regUpdate.update.objectLinks){
-                        lwResources.buildResourceTree($scope.clientId, $scope.client.rootPath, $scope.client.objectLinks, function (objects){
+                        lwResources.updateResourceTree($scope.clientId, $scope.objects, $scope.client.rootPath, regUpdate.update.objectLinks, function (objects){
                             $scope.objects = objects;
-                        });    
+                        });
                     } 
                 });
             };

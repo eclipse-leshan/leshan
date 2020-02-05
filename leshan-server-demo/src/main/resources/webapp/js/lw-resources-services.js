@@ -142,6 +142,61 @@ myModule.factory('lwResources',["$http", function($http) {
     };
 
     /**
+     * Update Resource Tree for the given rootPath and objectLinks
+     */
+    var updateResourceTree = function(endpoint, tree, rootPath, objectLinks, callback) {
+        if (objectLinks.length == 0)
+            callback([]);
+
+        getObjectDefinitions(endpoint, function(objectDefs){
+
+            // add missing
+            for (var i = 0; i < objectLinks.length; i++) {
+
+                // remove root path from link
+                var link = objectLinks[i].url;
+                if(link.indexOf(rootPath) == 0) {
+                    link.slice(rootPath.length);
+                }
+
+                // get list of resources (e.g. : [3] or [1,123]
+                var resourcepath = url2array(link);
+                var attributes = objectLinks[i].attributes;
+
+                switch (resourcepath.length) {
+                case 0:
+                    // ignore empty path
+                    break;
+                case 1:
+                    // object
+                    var object = addObject(tree, objectDefs, resourcepath[0],
+                            attributes);
+                    break;
+                case 2:
+                    // instance
+                    var object = addObject(tree, objectDefs, resourcepath[0], null);
+                    addInstance(object, resourcepath[1], attributes);
+
+                    break;
+                }
+            }
+
+            // remove extra object instances
+            result = tree.filter(function (object) {
+                // remove extra instances
+                object.instances = object.instances.filter(instance => objectLinks.find(link => link.url.startsWith(rootPath+object.id+"/"+instance.id)));
+                // filter object
+                return objectLinks.find(link => link.url.startsWith(rootPath+object.id));
+            });
+
+            // sort object
+            result.sort(function(o1,o2){return o1.id - o2.id});
+
+            callback(result);
+        });
+    };
+
+    /**
      * add object with the given ID to resource tree if necessary and return it
      */
     var addObject = function(tree, objectDefs, objectId, attributes) {
@@ -293,6 +348,7 @@ myModule.factory('lwResources',["$http", function($http) {
     };
 
     serviceInstance.buildResourceTree = buildResourceTree;
+    serviceInstance.updateResourceTree = updateResourceTree;
     serviceInstance.findResource = findResource;
     serviceInstance.findInstance = findInstance;
     serviceInstance.addInstance = addInstance;
