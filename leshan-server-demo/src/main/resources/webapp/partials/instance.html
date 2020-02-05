@@ -34,7 +34,7 @@
 								'btn-success': instance.read.status == 'SUCCESS'}">Read</button>
 				</div>
 				<div class="btn-group">
-					<button type="button" ng-click="instance.write.status = null; write()"
+					<button type="button" ng-click="instance.write.status = null; write()" ng_show="writable()"}
 							tooltip-html-unsafe={{instance.write.tooltip}} tooltip-placement="right" tooltip-animation="false" tooltip-append-to-body="true"
 							ng-class="{
 								'btn': true,

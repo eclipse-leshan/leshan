@@ -35,6 +35,10 @@ angular.module('instanceDirectives', [])
             scope.instance.del  =  {tooltip : "Delete <br/>"   + scope.instance.path};
             scope.instance.observe = {tooltip : "Observe <br/>" + scope.instance.path};
 
+            scope.writable = function() {
+                return scope.instance.resources.find(resource => resource.def.operations === "W" || resource.def.operations === "RW");
+            };
+
             scope.read = function() {
                 var format = scope.settings.multi.format;
                 var uri = "api/clients/" + $routeParams.clientId + scope.instance.path;
