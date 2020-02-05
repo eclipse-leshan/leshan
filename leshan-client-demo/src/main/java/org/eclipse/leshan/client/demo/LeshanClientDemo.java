@@ -45,6 +45,8 @@ import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
+import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.StaticModel;
@@ -324,7 +326,8 @@ public class LeshanClientDemo {
         models.addAll(ObjectLoader.loadDdfResources("/models", modelPaths));
 
         // Initialize object list
-        ObjectsInitializer initializer = new ObjectsInitializer(new StaticModel(models));
+        final LwM2mModel model = new StaticModel(models);
+        final ObjectsInitializer initializer = new ObjectsInitializer(model);
         if (needBootstrap) {
             if (pskIdentity != null) {
                 initializer.setInstancesForObject(SECURITY, pskBootstrap(serverURI, pskIdentity, pskKey));
@@ -381,6 +384,18 @@ public class LeshanClientDemo {
         builder.setCoapConfig(coapConfig);
         final LeshanClient client = builder.build();
 
+        client.getObjectTree().addListener(new ObjectsListenerAdapter() {
+            @Override
+            public void objectRemoved(LwM2mObjectEnabler object) {
+                LOG.info("Object {} disabled.", object.getId());
+            }
+
+            @Override
+            public void objectAdded(LwM2mObjectEnabler object) {
+                LOG.info("Object {} enabled.", object.getId());
+            }
+        });
+
         // Display client public key to easily add it in demo servers.
         if (clientPublicKey != null) {
             PublicKey rawPublicKey = clientPublicKey;
@@ -416,8 +431,17 @@ public class LeshanClientDemo {
                     Hex.encodeHexString(clientPrivateKey.getEncoded()));
         }
 
-        LOG.info("Press 'w','a','s','d' to change reported Location ({},{}).", locationInstance.getLatitude(),
-                locationInstance.getLongitude());
+        // Print commands help
+        StringBuilder commandsHelp = new StringBuilder("Commands available :");
+        commandsHelp.append(System.lineSeparator());
+        commandsHelp.append(System.lineSeparator());
+        commandsHelp.append("  - create <objectId> : to enable a new object.");
+        commandsHelp.append(System.lineSeparator());
+        commandsHelp.append("  - delete <objectId> : to disable a new object.");
+        commandsHelp.append(System.lineSeparator());
+        commandsHelp.append("  - 'w','a','s','d' : to change reported Location.");
+        commandsHelp.append(System.lineSeparator());
+        LOG.info(commandsHelp.toString());
 
         // Start the client
         client.start();
@@ -433,8 +457,44 @@ public class LeshanClientDemo {
         // Change the location through the Console
         try (Scanner scanner = new Scanner(System.in)) {
             while (scanner.hasNext()) {
-                String nextMove = scanner.next();
-                locationInstance.moveLocation(nextMove);
+                String command = scanner.next();
+                if (command.startsWith("create")) {
+                    try {
+                        int objectId = scanner.nextInt();
+                        if (client.getObjectTree().getObjectEnabler(objectId) != null) {
+                            LOG.info("Object {} already enabled.", objectId);
+                        }
+                        if (model.getObjectModel(objectId) == null) {
+                            LOG.info("Unable to enable Object {} : there no model for this.", objectId);
+                        } else {
+                            ObjectsInitializer objectsInitializer = new ObjectsInitializer(model);
+                            objectsInitializer.setDummyInstancesForObject(objectId);
+                            LwM2mObjectEnabler object = objectsInitializer.create(objectId);
+                            client.getObjectTree().addObjectEnabler(object);
+                        }
+                    } catch (Exception e) {
+                        // skip last token
+                        scanner.next();
+                        LOG.info("Invalid syntax, <objectid> must be an integer : create <objectId>");
+                    }
+                } else if (command.startsWith("delete")) {
+                    try {
+                        int objectId = scanner.nextInt();
+                        if (objectId == 0 || objectId == 0 || objectId == 3) {
+                            LOG.info("Object {} can not be disabled.", objectId);
+                        } else if (client.getObjectTree().getObjectEnabler(objectId) == null) {
+                            LOG.info("Object {} is not enabled.", objectId);
+                        } else {
+                            client.getObjectTree().removeObjectEnabler(objectId);
+                        }
+                    } catch (Exception e) {
+                        // skip last token
+                        scanner.next();
+                        LOG.info("\"Invalid syntax, <objectid> must be an integer : delete <objectId>");
+                    }
+                } else {
+                    locationInstance.moveLocation(command);
+                }
             }
         }
     }
