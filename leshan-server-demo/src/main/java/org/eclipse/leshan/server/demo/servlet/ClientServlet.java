@@ -76,6 +76,7 @@ import com.google.gson.JsonSyntaxException;
 public class ClientServlet extends HttpServlet {
 
     private static final String FORMAT_PARAM = "format";
+    private static final String REPLACE_PARAM = "replace";
 
     private static final Logger LOG = LoggerFactory.getLogger(ClientServlet.class);
 
@@ -246,9 +247,17 @@ public class ClientServlet extends HttpServlet {
                     ContentFormat contentFormat = contentFormatParam != null
                             ? ContentFormat.fromName(contentFormatParam.toUpperCase())
                             : null;
+
+                    // get replace parameter
+                    String replaceParam = req.getParameter(REPLACE_PARAM);
+                    boolean replace = true;
+                    if (replaceParam != null)
+                        replace = Boolean.valueOf(replaceParam);
+
                     // create & process request
                     LwM2mNode node = extractLwM2mNode(target, req);
-                    WriteRequest request = new WriteRequest(Mode.REPLACE, contentFormat, target, node);
+                    WriteRequest request = new WriteRequest(replace ? Mode.REPLACE : Mode.UPDATE, contentFormat, target,
+                            node);
                     WriteResponse cResponse = server.send(registration, request, TIMEOUT);
                     processDeviceResponse(req, resp, cResponse);
                 }

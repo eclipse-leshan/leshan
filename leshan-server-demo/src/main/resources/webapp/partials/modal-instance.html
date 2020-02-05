@@ -15,5 +15,6 @@
 </div>
 <div class="modal-footer">
 	<button class="btn btn-default" ng-click="cancel()">Cancel</button>
-	<button class="btn btn-primary" ng-click="submit()">{{oklabel}}</button>
+	<button class="btn btn-primary" ng-click="submit(false)">{{oklabel}}</button>
+	<button ng-show="showReplace" class="btn btn-primary" ng-click="submit(true)">Replace</button>
 </div>

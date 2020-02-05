@@ -100,7 +100,8 @@ angular.module('instanceDirectives', [])
                   }
                 });
 
-                modalInstance.result.then(function (instance) {
+                modalInstance.result.then(function (result) {
+                    var instance = result.instance
                     promisedValues = instance.resources.map(r => r.getPromisedValue())
                     Promise.all(promisedValues).then(function(resourceValues) {
                         // Build payload
@@ -120,7 +121,7 @@ angular.module('instanceDirectives', [])
                         }
                         // Send request
                         var format = scope.settings.multi.format;
-                        $http({method: 'PUT', url: "api/clients/" + $routeParams.clientId + scope.instance.path, data: payload, headers:{'Content-Type': 'application/json'}, params:{format:format}})
+                        $http({method: 'PUT', url: "api/clients/" + $routeParams.clientId + scope.instance.path, data: payload, headers:{'Content-Type': 'application/json'}, params:{format:format, replace:result.replace}})
                         .success(function(data, status, headers, config) {
                             helper.handleResponse(data, scope.instance.write, function (formattedDate) {
                                 if (data.success) {

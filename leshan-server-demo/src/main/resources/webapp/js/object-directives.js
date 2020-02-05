@@ -43,7 +43,8 @@ angular.module('objectDirectives', [])
                   }
                 });
             
-                modalInstance.result.then(function (instance) {
+                modalInstance.result.then(function (result) {
+                    var instance = result.instance;
                     promisedValues = instance.resources.map(r => r.getPromisedValue())
                     Promise.all(promisedValues).then(function(resourceValues) {
                         // Build payload
