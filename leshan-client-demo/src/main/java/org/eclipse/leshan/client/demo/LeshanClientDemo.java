@@ -477,6 +477,8 @@ public class LeshanClientDemo {
         commandsHelp.append(System.lineSeparator());
         commandsHelp.append("  - delete <objectId> : to disable a new object.");
         commandsHelp.append(System.lineSeparator());
+        commandsHelp.append("  - update : to trigger a registration update.");
+        commandsHelp.append(System.lineSeparator());
         commandsHelp.append("  - w : to move to North.");
         commandsHelp.append(System.lineSeparator());
         commandsHelp.append("  - a : to move to East.");
@@ -537,6 +539,8 @@ public class LeshanClientDemo {
                         scanner.next();
                         LOG.info("\"Invalid syntax, <objectid> must be an integer : delete <objectId>");
                     }
+                } else if (command.startsWith("update")) {
+                    client.triggerRegistrationUpdate();
                 } else if (command.length() == 1 && wasdCommands.contains(command.charAt(0))) {
                     locationInstance.moveLocation(command);
                 } else {
