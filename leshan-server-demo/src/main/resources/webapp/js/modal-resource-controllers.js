@@ -35,7 +35,6 @@ angular.module('modalResourceControllers', [])
         $scope.submit = function() {
             $scope.$broadcast('show-errors-check-validity');
             if ($scope.form.$valid){
-                console.log($scope.resource)
                 $modalInstance.close($scope.resource);
             }
         };
