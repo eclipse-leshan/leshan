@@ -47,6 +47,8 @@ public class ResponseSerializer implements JsonSerializer<LwM2mResponse> {
                 element.add("location", context.serialize(((CreateResponse) src).getLocation()));
             }
         }
+        if (src.isFailure() && src.getErrorMessage() != null && !src.getErrorMessage().isEmpty())
+            element.addProperty("errormessage", src.getErrorMessage());
 
         return element;
     }
