@@ -211,6 +211,7 @@ myModule.factory('lwResources',["$http", function($http) {
             if (object == undefined) {
                 object = {
                     name : "Object " + objectId,
+                    unknown : true,
                     id : objectId,
                     instancetype : "multiple",
                     resourcedefs : []
@@ -280,7 +281,9 @@ myModule.factory('lwResources',["$http", function($http) {
                 var resourcedef = {
                     name : "Resource " + resourceId,
                     id : resourceId,
-                    operations : "RW"
+                    operations : "RW",
+                    unknown : true,
+                    type : "opaque",
                 };
                 object.resourcedefs.push(resourcedef);
             }

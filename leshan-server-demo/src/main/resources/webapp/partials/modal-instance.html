@@ -3,6 +3,14 @@
 </div>
 <div class="modal-body">
 	<form class="form form-horizontal" name="$parent.form" ng-submit="submit()">
+		<div class="alert alert-warning" role="alert" ng-show="object.unknown">
+		<strong> Leshan does not known object {{object.id}}.</strong> 
+			<p>
+				Leshan will not be able to generate a correct form and encode/decode value correctly. 
+				As best effort, Leshan will consider all resources as RW OPAQUE.
+			</p>
+			<p><a href="https://github.com/eclipse/leshan/wiki/Adding-new-objects#leshan-server-demo" target="_blank">Use --modelsfolder</a> to add the object model definition.</p>
+		</div>
 		<div ng-show="showinstanceid" class="form-group" show-errors>
 			<label for="instanceid" class="col-sm-4 control-label">Instance ID {{object.name}}</label>
 			<div class="col-sm-8">

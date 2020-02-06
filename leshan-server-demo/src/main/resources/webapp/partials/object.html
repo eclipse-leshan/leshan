@@ -2,7 +2,7 @@
 	<accordion-group is-open="status.open">
 		<accordion-heading>
 			<div class="row">
-				<div class="col-md-4 object-name">{{object.name}}</div>
+				<div class="col-md-4 object-name">{{object.name}} <span ng-show="object.unknown">(model unknown)</span></div>
 				<div class="col-md-8 text-muted small">{{object.path}}
 				<i class="pull-right glyphicon"
 					ng-class="{'glyphicon-chevron-down': status.open, 'glyphicon-chevron-right': !status.open}"></i>
