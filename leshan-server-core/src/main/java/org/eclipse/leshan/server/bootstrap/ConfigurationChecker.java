@@ -16,10 +16,12 @@
 package org.eclipse.leshan.server.bootstrap;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.util.Arrays;
 import java.util.Map;
 
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
@@ -77,6 +79,10 @@ public class ConfigurationChecker {
     protected void checkPSK(ServerSecurity sec) throws InvalidConfigurationException {
         assertIf(isEmpty(sec.secretKey), "pre-shared-key mode, secret key must not be empty");
         assertIf(isEmpty(sec.publicKeyOrId), "pre-shared-key mode, public key or id must not be empty");
+
+        String identity = new String(sec.publicKeyOrId, StandardCharsets.UTF_8);
+        assertIf(!Arrays.equals(sec.publicKeyOrId, identity.getBytes()),
+                "pre-shared-key mode, public key or id must not be an utf8 string");
     }
 
     protected void checkRPK(ServerSecurity sec) throws InvalidConfigurationException {
