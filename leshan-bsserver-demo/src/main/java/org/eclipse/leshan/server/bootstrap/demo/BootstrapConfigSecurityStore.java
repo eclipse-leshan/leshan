@@ -34,7 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A {@link BootstrapSecurityStore} which use a {@link BootstrapConfigStore} to device credentials.
+ * A {@link BootstrapSecurityStore} which uses a {@link BootstrapConfigStore} to device credentials.
  * <p>
  * Generally, a {@link BootstrapSecurityStore} contains information about how a device should connect to server (using
  * psk, rpk or x509 ). And a {@link BootstrapConfigStore} contains configuration which should be written on device
@@ -42,8 +42,10 @@ import org.slf4j.LoggerFactory;
  * <p>
  * This {@link BootstrapSecurityStore} will search in {@link BootstrapConfigStore} to find security info.
  * <p>
- * 
- * WARNING : This store is not production ready.
+ * {@link #getByIdentity(String)} could have some performance issue and strange behavior if you have several config with
+ * same identity. (which is possible if you are using same identity for several bootstrap server)
+ * <p>
+ * <strong>WARNING : This store is not production ready.</strong>
  */
 public class BootstrapConfigSecurityStore implements BootstrapSecurityStore {
 
@@ -61,7 +63,10 @@ public class BootstrapConfigSecurityStore implements BootstrapSecurityStore {
     @Override
     public SecurityInfo getByIdentity(String identity) {
         byte[] identityBytes = identity.getBytes(StandardCharsets.UTF_8);
+
         // Acceptable for a demo but iterate over all the store to get PSK is not really acceptable for a production
+        // server.
+        // This could behave strangely if there is several config using same identity but with different bootstrap
         // server.
         for (Map.Entry<String, BootstrapConfig> e : bootstrapConfigStore.getAll().entrySet()) {
             BootstrapConfig bsConfig = e.getValue();

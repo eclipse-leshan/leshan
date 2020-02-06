@@ -138,7 +138,7 @@ public class BootstrapServlet extends HttpServlet {
 
         String endpoint = path[0];
 
-        if (bsStore.remove(endpoint) == null) {
+        if (bsStore.remove(endpoint) != null) {
             resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
         } else {
             sendError(resp, HttpServletResponse.SC_NOT_FOUND, "no config for " + endpoint);
