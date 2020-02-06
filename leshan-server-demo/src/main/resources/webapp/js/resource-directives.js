@@ -32,14 +32,14 @@ angular.module('resourceDirectives', [])
             scope.resource.exec  =  {tooltip : "Execute <br/>"+ scope.resource.path};
             scope.resource.execwithparams = {tooltip : "Execute with parameters<br/>"+ scope.resource.path};
             scope.resource.observe  =  {tooltip : "Observe <br/>"+ scope.resource.path};
-            
+
             scope.readable = function() {
                 if(scope.resource.def.hasOwnProperty("operations")) {
                     return scope.resource.def.operations.indexOf("R") != -1;
                 }
                 return false;
             };
-           
+
             scope.writable = function() {
                 if(scope.resource.def.instancetype != "multiple") {
                     if(scope.resource.def.hasOwnProperty("operations")) {
@@ -57,6 +57,13 @@ angular.module('resourceDirectives', [])
                 }
                 return false;
             };
+
+            scope.display = function(resource){
+                if (resource.def.type === "opaque" && resource.value){
+                    return "0x"+resource.value;
+                }
+                return resource.value;
+            }
 
             scope.startObserve = function() {
                 var format = scope.settings.single.format;
@@ -88,7 +95,7 @@ angular.module('resourceDirectives', [])
                     console.error(errormessage);
                 });
             };
-            
+
             scope.stopObserve = function() {
                 var uri = "api/clients/" + $routeParams.clientId + scope.resource.path + "/observe";
                 $http.delete(uri)
@@ -101,8 +108,7 @@ angular.module('resourceDirectives', [])
                     console.error(errormessage);
                 });
             };
-            
-            
+
             scope.read = function() {
                 var format = scope.settings.single.format;
                 var uri = "api/clients/" + $routeParams.clientId + scope.resource.path;

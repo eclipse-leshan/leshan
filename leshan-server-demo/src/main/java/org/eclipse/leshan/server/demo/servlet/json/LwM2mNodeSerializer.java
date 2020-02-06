@@ -47,8 +47,8 @@ public class LwM2mNodeSerializer implements JsonSerializer<LwM2mNode> {
                 JsonObject values = new JsonObject();
                 for (Entry<Integer, ?> entry : rsc.getValues().entrySet()) {
                     if (rsc.getType() == org.eclipse.leshan.core.model.ResourceModel.Type.OPAQUE) {
-                        values.add(entry.getKey().toString(),
-                                context.serialize(Hex.encodeHex((byte[]) entry.getValue())));
+                        values.addProperty(entry.getKey().toString(),
+                                new String(Hex.encodeHex((byte[]) entry.getValue())));
                     } else {
                         values.add(entry.getKey().toString(), context.serialize(entry.getValue()));
                     }
@@ -56,7 +56,7 @@ public class LwM2mNodeSerializer implements JsonSerializer<LwM2mNode> {
                 element.add("values", values);
             } else {
                 if (rsc.getType() == org.eclipse.leshan.core.model.ResourceModel.Type.OPAQUE) {
-                    element.add("value", context.serialize(Hex.encodeHex((byte[]) rsc.getValue())));
+                    element.addProperty("value", new String(Hex.encodeHex((byte[]) rsc.getValue())));
                 } else {
                     element.add("value", context.serialize(rsc.getValue()));
                 }

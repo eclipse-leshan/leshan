@@ -281,9 +281,9 @@ myModule.factory('lwResources',["$http", function($http) {
                 var resourcedef = {
                     name : "Resource " + resourceId,
                     id : resourceId,
-                    operations : "RW",
                     unknown : true,
-                    type : "opaque",
+                    operations : "RW",
+                    type : "opaque"
                 };
                 object.resourcedefs.push(resourcedef);
             }
