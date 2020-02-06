@@ -221,6 +221,15 @@ body.modal-open,
   	text-overflow: ellipsis;
 }
 
+.btn-info,
+.btn-info:hover,
+.btn-info:active,
+.btn-info:visited,
+.btn-info:focus {
+    background-color: #babdb6;
+    border-color: #babdb6;
+}
+
 /* Sticky footer styles
 -------------------------------------------------- */
 html {

@@ -5,6 +5,19 @@
 
 		<span class="pull-right">
 			<form class="form-inline">
+			<abbr title="Timeout used to send request"><a href="https://github.com/eclipse/leshan/wiki/Request-Timeout" target="_blank"=>Response Timeout</a></abbr>
+			<div class="btn-group" dropdown is-open="timeout.status.isopen">
+				<button type="button" class="btn btn-xs btn-default dropdown-toggle dropdown-menu-contentformat" dropdown-toggle ng-disabled="disabled">
+					{{settings.timeout.format}} <span class="caret"></span>
+				</button>
+				<ul class="dropdown-menu dropdown-menu-contentformat" role="menu">
+					<li><a ng-click="settings.timeout.value=5;settings.timeout.format='5s'">5s</a></li>
+					<li><a ng-click="settings.timeout.value=300;settings.timeout.format='5min'">5min</a></li>
+					<li><a ng-click="settings.timeout.value=900;settings.timeout.format='15min'">15min</a></li>
+					<li><a ng-click="settings.timeout.value=1800;settings.timeout.format='30min'">30min</a></li>
+					<li><a ng-click="settings.timeout.value=undefined;settings.timeout.format='No'">No</a></li>
+				</ul>
+			</div>
 			<abbr title="Content Format used for object, object instance and multi-resource instance">Multi-value</abbr>
 			<div class="btn-group" dropdown is-open="multi.status.isopen">
 				<button type="button" class="btn btn-xs btn-default dropdown-toggle dropdown-menu-contentformat" dropdown-toggle ng-disabled="disabled">

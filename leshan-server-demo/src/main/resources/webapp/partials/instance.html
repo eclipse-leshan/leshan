@@ -12,6 +12,7 @@
 								'btn': true,
 								'btn-xs': true,
 								'btn-default': instance.observe.status == null,
+								'btn-info': instance.observe.status == 'TIMEOUT',
 								'btn-danger': instance.observe.status == 'ERROR',
 								'btn-warning': instance.observe.status == 'INVALID',
 								'btn-success': instance.observe.status == 'SUCCESS'}">Observe <span class="glyphicon glyphicon-play"></span></button>
@@ -29,6 +30,7 @@
 								'btn': true,
 								'btn-xs': true,
 								'btn-default': instance.read.status == null,
+								'btn-info': instance.read.status == 'TIMEOUT',
 								'btn-danger': instance.read.status == 'ERROR',
 								'btn-warning': instance.read.status == 'INVALID',
 								'btn-success': instance.read.status == 'SUCCESS'}">Read</button>
@@ -40,6 +42,7 @@
 								'btn': true,
 								'btn-xs': true,
 								'btn-default': instance.write.status == null,
+								'btn-info': instance.write.status == 'TIMEOUT',
 								'btn-danger': instance.write.status == 'ERROR',
 								'btn-warning': instance.write.status == 'INVALID',
 								'btn-success': instance.write.status == 'SUCCESS'}">Write</button>
@@ -51,6 +54,7 @@
 								'btn': true,
 								'btn-xs': true,
 								'btn-default': instance.del.status == null,
+								'btn-info': instance.del.status == 'TIMEOUT',
 								'btn-danger': instance.del.status == 'ERROR',
 								'btn-warning': instance.del.status == 'INVALID',
 								'btn-success': instance.del.status == 'SUCCESS'}">Delete</button>

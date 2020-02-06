@@ -41,55 +41,64 @@ angular.module('instanceDirectives', [])
 
             scope.read = function() {
                 var format = scope.settings.multi.format;
+                var timeout = scope.settings.timeout.value;
                 var uri = "api/clients/" + $routeParams.clientId + scope.instance.path;
-                $http.get(uri, {params:{format:format}})
+                $http.get(uri, {params:{format:format, timeout:timeout}})
                 .success(function(data, status, headers, config) {
-                	helper.handleResponse(data, scope.instance.read, function (formattedDate){
-	                    if (data.success && data.content) {
-	                        for(var i in data.content.resources) {
-	                            var tlvresource = data.content.resources[i];
-	                            resource = lwResources.addResource(scope.parent, scope.instance, tlvresource.id, null);
-	                            if("value" in tlvresource) {
-	                                // single value
-	                                resource.value = tlvresource.value;
-	                            }
-	                            else if("values" in tlvresource) {
-	                                // multiple instances
-	                                var tab = new Array();
-	                                for (var j in tlvresource.values) {
-	                                    tab.push(j+"="+tlvresource.values[j]);
-	                                }
-	                                resource.value = tab.join(", ");
-	                            }
-	                            resource.valuesupposed = false;
-	                            resource.tooltip = formattedDate;
-	                        }
-	                    }
-                	});
+                    helper.handleResponse(data, scope.instance.read, function (formattedDate){
+                        if (data.success && data.content) {
+                            for(var i in data.content.resources) {
+                                var tlvresource = data.content.resources[i];
+                                resource = lwResources.addResource(scope.parent, scope.instance, tlvresource.id, null);
+                                if("value" in tlvresource) {
+                                    // single value
+                                    resource.value = tlvresource.value;
+                                }
+                                else if("values" in tlvresource) {
+                                    // multiple instances
+                                    var tab = new Array();
+                                    for (var j in tlvresource.values) {
+                                        tab.push(j+"="+tlvresource.values[j]);
+                                    }
+                                    resource.value = tab.join(", ");
+                                }
+                                resource.valuesupposed = false;
+                                resource.tooltip = formattedDate;
+                            }
+                        }
+                    });
                 }).error(function(data, status, headers, config) {
-                    errormessage = "Unable to read instance " + scope.instance.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
-                    dialog.open(errormessage);
+                    if (status == 504){
+                        helper.handleResponse(null, scope.instance.read);
+                    } else {
+                        errormessage = "Unable to read instance " + scope.instance.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
+                        dialog.open(errormessage);
+                    }
                     console.error(errormessage);
                 });
             };
 
-
             scope.del = function() {
+                var timeout = scope.settings.timeout.value;
                 var uri = "api/clients/" + $routeParams.clientId + scope.instance.path;
-                $http.delete(uri)
+                $http.delete(uri, {params:{timeout:timeout}})
                 .success(function(data, status, headers, config) {
-                	helper.handleResponse(data, scope.instance.del, function (formattedDate){
-	                    // manage delete instance in resource tree.
-	                    if (data.success) {
-	                    	var i = scope.parent.instances.indexOf(scope.instance);
-	                    	if(i != -1) {
-	                    		scope.parent.instances.splice(i, 1);
-	                    	}
-	                    }
-                	});
+                    helper.handleResponse(data, scope.instance.del, function (formattedDate){
+                        // manage delete instance in resource tree.
+                        if (data.success) {
+                            var i = scope.parent.instances.indexOf(scope.instance);
+                            if(i != -1) {
+                                scope.parent.instances.splice(i, 1);
+                            }
+                        }
+                    });
                 }).error(function(data, status, headers, config) {
-                    errormessage = "Unable to delete instance " + scope.instance.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
-                    dialog.open(errormessage);
+                    if (status == 504){
+                        helper.handleResponse(null, scope.instance.del);
+                    } else {
+                        errormessage = "Unable to delete instance " + scope.instance.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
+                        dialog.open(errormessage);
+                    }
                     console.error(errormessage);
                 });
             };
@@ -125,7 +134,8 @@ angular.module('instanceDirectives', [])
                         }
                         // Send request
                         var format = scope.settings.multi.format;
-                        $http({method: 'PUT', url: "api/clients/" + $routeParams.clientId + scope.instance.path, data: payload, headers:{'Content-Type': 'application/json'}, params:{format:format, replace:result.replace}})
+                        var timeout = scope.settings.timeout.value;
+                        $http({method: 'PUT', url: "api/clients/" + $routeParams.clientId + scope.instance.path, data: payload, headers:{'Content-Type': 'application/json'}, params:{format:format, replace:result.replace, timeout:timeout}})
                         .success(function(data, status, headers, config) {
                             helper.handleResponse(data, scope.instance.write, function (formattedDate) {
                                 if (data.success) {
@@ -137,10 +147,14 @@ angular.module('instanceDirectives', [])
                                         resource.tooltip = formattedDate;
                                     }
                                 }
-                        	});
+                            });
                         }).error(function(data, status, headers, config) {
-                            errormessage = "Unable to write resource " + scope.instance.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
-                            dialog.open(errormessage);
+                            if (status == 504){
+                                helper.handleResponse(null, scope.instance.write);
+                            } else {
+                                errormessage = "Unable to write resource " + scope.instance.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
+                                dialog.open(errormessage);
+                            }
                             console.error(errormessage);
                         });
                     });
@@ -149,40 +163,44 @@ angular.module('instanceDirectives', [])
 
             scope.startObserve = function() {
                 var format = scope.settings.multi.format;
+                var timeout = scope.settings.timeout.value;
                 var uri = "api/clients/" + $routeParams.clientId + scope.instance.path+"/observe";
-                $http.post(uri, null, {params:{format:format}})
+                $http.post(uri, null, {params:{format:format, timeout:timeout}})
                 .success(function(data, status, headers, config) {
-                	helper.handleResponse(data, scope.instance.observe, function (formattedDate) {
-	                    if (data.success) {
-	                        scope.instance.observed = true;
-	
-	                        for(var i in data.content.resources) {
-	                            var tlvresource = data.content.resources[i];
-	                            resource = lwResources.addResource(scope.parent, scope.instance, tlvresource.id, null);
-	                            if("value" in tlvresource) {
-	                                // single value
-	                                resource.value = tlvresource.value;
-	                            }
-	                            else if("values" in tlvresource) {
-	                                // multiple instances
-	                                var tab = new Array();
-	                                for (var j in tlvresource.values) {
-	                                    tab.push(j+"="+tlvresource.values[j]);
-	                                }
-	                                resource.value = tab.join(", ");
-	                            }
-	                            resource.valuesupposed = false;
-	                            resource.tooltip = formattedDate;
-	                        }
-	
-	
-	                        scope.instance.valuesupposed = false;
-	                        scope.instance.tooltip = formattedDate;
-	                    }
-                	});
+                    helper.handleResponse(data, scope.instance.observe, function (formattedDate) {
+                        if (data.success) {
+                            scope.instance.observed = true;
+
+                            for(var i in data.content.resources) {
+                                var tlvresource = data.content.resources[i];
+                                resource = lwResources.addResource(scope.parent, scope.instance, tlvresource.id, null);
+                                if("value" in tlvresource) {
+                                    // single value
+                                    resource.value = tlvresource.value;
+                                }
+                                else if("values" in tlvresource) {
+                                    // multiple instances
+                                    var tab = new Array();
+                                    for (var j in tlvresource.values) {
+                                        tab.push(j+"="+tlvresource.values[j]);
+                                    }
+                                    resource.value = tab.join(", ");
+                                }
+                                resource.valuesupposed = false;
+                                resource.tooltip = formattedDate;
+                            }
+
+                            scope.instance.valuesupposed = false;
+                            scope.instance.tooltip = formattedDate;
+                        }
+                    });
                 }).error(function(data, status, headers, config) {
-                    errormessage = "Unable to start observation on instance " + scope.instance.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
-                    dialog.open(errormessage);
+                    if (status == 504){
+                        helper.handleResponse(null, scope.instance.observe);
+                    } else {
+                        errormessage = "Unable to start observation on instance " + scope.instance.path + " for "+ $routeParams.clientId + " : " + status +" "+ data;
+                        dialog.open(errormessage);
+                    }
                     console.error(errormessage);
                 });
                 

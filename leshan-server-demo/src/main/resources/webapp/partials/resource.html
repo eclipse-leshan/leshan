@@ -12,6 +12,7 @@
 								'btn': true,
 								'btn-xs': true,
 								'btn-default': resource.observe.status == null,
+								'btn-info': resource.observe.status == 'TIMEOUT',
 								'btn-danger': resource.observe.status == 'ERROR',
 								'btn-warning': resource.observe.status == 'INVALID',
 								'btn-success': resource.observe.status == 'SUCCESS' }">Observe <span class="glyphicon glyphicon-play"></span></button>
@@ -29,6 +30,7 @@
 								'btn': true,
 								'btn-xs': true,
 								'btn-default': resource.read.status == null,
+								'btn-info': resource.read.status == 'TIMEOUT',
 								'btn-danger': resource.read.status == 'ERROR',
 								'btn-warning': resource.read.status == 'INVALID',
 								'btn-success': resource.read.status == 'SUCCESS' }">Read</button>
@@ -40,6 +42,7 @@
 								'btn': true,
 								'btn-xs': true,
 								'btn-default': resource.write.status == null,
+								'btn-info': resource.write.status == 'TIMEOUT',
 								'btn-danger': resource.write.status == 'ERROR',
 								'btn-warning': resource.write.status == 'INVALID',
 								'btn-success': resource.write.status == 'SUCCESS' }">Write</button>
@@ -51,6 +54,7 @@
 								'btn': true,
 								'btn-xs': true,
 								'btn-default': resource.exec.status == null,
+								'btn-info': resource.exec.status == 'TIMEOUT',
 								'btn-danger': resource.exec.status == 'ERROR',
 								'btn-warning': resource.exec.status == 'INVALID',
 								'btn-success': resource.exec.status == 'SUCCESS' }">Exec</button>
@@ -60,6 +64,7 @@
 								'btn': true,
 								'btn-xs': true,
 								'btn-default': resource.exec.status == null,
+								'btn-info': resource.exec.status == 'TIMEOUT',
 								'btn-danger': resource.exec.status == 'ERROR',
 								'btn-warning': resource.exec.status == 'INVALID',
 								'btn-success': resource.exec.status == 'SUCCESS' }"><span class="glyphicon glyphicon-cog"></span></button>

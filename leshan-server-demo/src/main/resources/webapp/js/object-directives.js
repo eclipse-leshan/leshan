@@ -65,8 +65,9 @@ angular.module('objectDirectives', [])
                         }
                         // Send request
                         var format = scope.settings.multi.format;
+                        var timeout = scope.settings.timeout.value;
                         var instancepath  = scope.object.path;
-                        $http({method: 'POST', url: "api/clients/" + $routeParams.clientId + instancepath, data: payload, headers:{'Content-Type': 'application/json'}, params:{format:format}})
+                        $http({method: 'POST', url: "api/clients/" + $routeParams.clientId + instancepath, data: payload, headers:{'Content-Type': 'application/json'}, params:{format:format,timeout:timeout}})
                         .success(function(data, status, headers, config) {
                             helper.handleResponse(data, scope.object.create, function (formattedDate) {
                                 if (data.success) {
@@ -82,8 +83,12 @@ angular.module('objectDirectives', [])
                                 }
                             });
                         }).error(function(data, status, headers, config) {
-                            errormessage = "Unable to create instance " + instancepath + " for "+ $routeParams.clientId + " : " + status +" "+ data;
-                            dialog.open(errormessage);
+                            if (status == 504){
+                                helper.handleResponse(null, scope.object.create)
+                            } else {
+                                errormessage = "Unable to create instance " + instancepath + " for "+ $routeParams.clientId + " : " + status +" "+ data;
+                                dialog.open(errormessage);
+                            }
                             console.error(errormessage);
                         });
                     });
