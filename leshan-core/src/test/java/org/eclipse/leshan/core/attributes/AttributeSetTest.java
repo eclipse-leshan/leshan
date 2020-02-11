@@ -21,14 +21,9 @@ import static org.junit.Assert.assertEquals;
 import java.util.Collection;
 import java.util.Map;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class AttributeSetTest {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Test
     public void should_provide_query_params() {
@@ -89,9 +84,8 @@ public class AttributeSetTest {
         assertEquals("ver=1.1&pmin=5&pmax=60", sut.toString());
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void should_throw_on_duplicates() {
-        exception.expect(IllegalArgumentException.class);
         new AttributeSet(new Attribute(Attribute.OBJECT_VERSION, "1.1"), new Attribute(Attribute.MINIMUM_PERIOD, 5L),
                 new Attribute(Attribute.MINIMUM_PERIOD, 60L));
     }
@@ -105,22 +99,20 @@ public class AttributeSetTest {
         sut.validate(AssignationLevel.RESOURCE);
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void should_throw_on_invalid_assignation_level() {
         AttributeSet sut = new AttributeSet(new Attribute(Attribute.OBJECT_VERSION, "1.1"),
                 new Attribute(Attribute.MINIMUM_PERIOD, 5L), new Attribute(Attribute.MAXIMUM_PERIOD, 60L));
 
-        exception.expect(IllegalArgumentException.class);
         // OBJECT_VERSION cannot be assigned on resource level
         sut.validate(AssignationLevel.RESOURCE);
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void should_throw_on_invalid_pmin_pmax() {
         AttributeSet sut = new AttributeSet(new Attribute(Attribute.MINIMUM_PERIOD, 50L),
                 new Attribute(Attribute.MAXIMUM_PERIOD, 49L));
 
-        exception.expect(IllegalArgumentException.class);
         // pmin cannot be greater then pmax
         sut.validate(AssignationLevel.RESOURCE);
     }

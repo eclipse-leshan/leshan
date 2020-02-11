@@ -17,6 +17,7 @@ package org.eclipse.leshan.integration.tests;
 
 import static org.eclipse.leshan.integration.tests.SecureIntegrationTestHelper.*;
 import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 
 import org.eclipse.leshan.LwM2mId;

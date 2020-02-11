@@ -2,14 +2,9 @@ package org.eclipse.leshan.core.attributes;
 
 import static org.junit.Assert.*;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class AttributeTest {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Test
     public void should_pick_correct_model() {
@@ -20,10 +15,8 @@ public class AttributeTest {
         assertFalse(verAttribute.isWritable());
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void should_throw_on_invalid_value_type() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(Attribute.OBJECT_VERSION);
         new Attribute(Attribute.OBJECT_VERSION, 123);
     }
 }
