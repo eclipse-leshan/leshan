@@ -24,6 +24,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.servlet.http.HttpServletRequest;
 
 import org.eclipse.californium.core.network.Endpoint;
+import org.eclipse.jetty.servlets.EventSource;
+import org.eclipse.jetty.servlets.EventSourceServlet;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.response.ObserveResponse;
@@ -33,8 +35,6 @@ import org.eclipse.leshan.server.demo.servlet.json.RegistrationSerializer;
 import org.eclipse.leshan.server.demo.servlet.log.CoapMessage;
 import org.eclipse.leshan.server.demo.servlet.log.CoapMessageListener;
 import org.eclipse.leshan.server.demo.servlet.log.CoapMessageTracer;
-import org.eclipse.leshan.server.demo.utils.EventSource;
-import org.eclipse.leshan.server.demo.utils.EventSourceServlet;
 import org.eclipse.leshan.server.observation.ObservationListener;
 import org.eclipse.leshan.server.queue.PresenceListener;
 import org.eclipse.leshan.server.registration.Registration;

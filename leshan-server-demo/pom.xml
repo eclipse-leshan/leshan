@@ -62,7 +62,7 @@ Contributors:
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-continuation</artifactId>
+            <artifactId>jetty-servlets</artifactId>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
