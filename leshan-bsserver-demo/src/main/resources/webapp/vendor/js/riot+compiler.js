@@ -1,4 +1,4 @@
-/* Riot v3.11.1, @license MIT */
+/* Riot v3.13.2, @license MIT */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -161,7 +161,7 @@
       delete byName[name];
       needsInject = true;
     }
-  }
+  };
 
   /**
    * The riot template engine
@@ -892,9 +892,11 @@
 
   var settings = extend(create(brackets.settings), {
     skipAnonymousTags: true,
+    // the "value" attributes will be preserved
+    keepValueAttributes: false,
     // handle the auto updates on any DOM event
     autoUpdate: true
-  })
+  });
 
   /**
    * Shorter and fast way to select multiple nodes in the DOM
@@ -1181,7 +1183,7 @@
   var uid = (function uid() {
     var i = -1;
     return function () { return ++i; }
-  })()
+  })();
 
   /**
    * Helper function to set an immutable property
@@ -1578,6 +1580,7 @@
    * @param { ref } the dom reference location
    */
   function makeReplaceVirtual(tag, ref) {
+    if (!ref.parentNode) { return }
     var frag = createFragment();
     makeVirtual.call(tag, frag);
     ref.parentNode.replaceChild(frag, ref);
@@ -1676,9 +1679,11 @@
     var ref = this.__;
     var isAnonymous = ref.isAnonymous;
     var parent = dom && (expr.parent || dom.parentNode);
+    var keepValueAttributes = settings.keepValueAttributes;
     // detect the style attributes
     var isStyleAttr = attrName === 'style';
     var isClassAttr = attrName === 'class';
+    var isValueAttr = attrName === 'value';
 
     var value;
 
@@ -1717,7 +1722,18 @@
     }
 
     // remove original attribute
-    if (expr.attr && (!expr.wasParsedOnce || !hasValue || value === false)) {
+    if (expr.attr &&
+        (
+          // the original attribute can be removed only if we are parsing the original expression
+          !expr.wasParsedOnce ||
+          // or its value is false
+          value === false ||
+          // or if its value is currently falsy...
+          // We will keep the "value" attributes if the "keepValueAttributes"
+          // is enabled though
+          (!hasValue && (!isValueAttr || isValueAttr && !keepValueAttributes))
+        )
+    ) {
       // remove either riot-* attributes or just the attribute name
       removeAttribute(dom, getAttribute(dom, expr.attr) ? expr.attr : attrName);
     }
@@ -1773,7 +1789,7 @@
         dom[attrName] = value;
       }
 
-      if (attrName === 'value' && dom.value !== value) {
+      if (isValueAttr && dom.value !== value) {
         dom.value = value;
       } else if (hasValue && value !== false) {
         setAttribute(dom, attrName, value);
@@ -1973,7 +1989,11 @@
           setAttribute(root, IS_DIRECTIVE, tagName);
         }
 
-        tag = mount$1(root, riotTag || root.tagName.toLowerCase(), opts);
+        tag = mount$1(
+          root,
+          riotTag || root.tagName.toLowerCase(),
+          isFunction(opts) ? opts() : opts
+        );
 
         if (tag)
           { tags.push(tag); }
@@ -1984,7 +2004,7 @@
     // inject styles into DOM
     styleManager.inject();
 
-    if (isObject(tagName)) {
+    if (isObject(tagName) || isFunction(tagName)) {
       opts = tagName;
       tagName = 0;
     }
@@ -2078,7 +2098,7 @@
     return delete __TAG_IMPL[name]
   }
 
-  var version = 'v3.11.1';
+  var version = 'v3.13.2';
 
   var core = /*#__PURE__*/Object.freeze({
     Tag: Tag,
@@ -2511,7 +2531,7 @@
       if (!isBlank(this.value) && customParent)
         { arrayishRemove(customParent.refs, this.value, tagOrDom); }
     }
-  }
+  };
 
   /**
    * Create a new ref directive
@@ -2575,7 +2595,7 @@
 
       unmountAll(this.expressions || []);
     }
-  }
+  };
 
   /**
    * Create a new if directive
@@ -2730,10 +2750,11 @@
   function setMountState(value) {
     var ref = this.__;
     var isAnonymous = ref.isAnonymous;
+    var skipAnonymous = ref.skipAnonymous;
 
     define(this, 'isMounted', value);
 
-    if (!isAnonymous) {
+    if (!isAnonymous || !skipAnonymous) {
       if (value) { this.trigger('mount'); }
       else {
         this.trigger('unmount');
@@ -3067,7 +3088,7 @@
     observable: observable,
     settings: settings$1,
     util: util,
-  })
+  });
 
   var riot$2 = /*#__PURE__*/Object.freeze({
     settings: settings$1,
@@ -3086,7 +3107,7 @@
 
   /**
    * Compiler for riot custom tags
-   * @version v3.5.1
+   * @version v3.5.2
    */
 
   // istanbul ignore next
@@ -3388,7 +3409,7 @@
 
   var SPEC_TYPES = /^"(?:number|date(?:time)?|time|month|email|color)\b/i;
 
-  var IMPORT_STATEMENT = /^\s*import(?!\w)(?:(?:\s|[^\s'"])*)['|"].*\n?/gm;
+  var IMPORT_STATEMENT = /^\s*import(?!\w|(\s)?\()(?:(?:\s|[^\s'"])*)['|"].*\n?/gm;
 
   var TRIM_TRAIL = /[ \t]+$/gm;
 
@@ -3934,7 +3955,7 @@
     return output
   }
 
-  var version$2 = 'v3.5.1';
+  var version$2 = 'v3.5.2';
 
   var compiler = {
     compile: compile,
@@ -3943,7 +3964,7 @@
     compileJS: compileJS,
     parsers: parsers,
     version: version$2
-  }
+  };
 
   var
     promise,    // emits the 'ready' event and runs the first callback
@@ -4102,7 +4123,7 @@
     mount: mount$3,
     compile: compile$1,
     parsers: parsers$1
-  })
+  });
 
   return riot_compiler;
 
