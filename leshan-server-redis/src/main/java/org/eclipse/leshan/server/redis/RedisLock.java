@@ -15,21 +15,17 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.redis;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.util.Arrays;
 import java.util.Random;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.params.SetParams;
 
 /**
  * Utility class providing locking methods based on the Redis SETNX primitive (see
  * http://redis.io/topics/distlock#correct-implementation-with-a-single-instance for more information).
  */
 public class RedisLock {
-
-    private static final byte[] NX_OPTION = "NX".getBytes(UTF_8); // set the key if it does not already exist
-    private static final byte[] PX_OPTION = "PX".getBytes(UTF_8); // expire time in millisecond
 
     private static final Random RND = new Random();
 
@@ -47,7 +43,7 @@ public class RedisLock {
         RND.nextBytes(randomLockValue);
 
         // setnx with a 500ms expiration
-        while (!"OK".equals(j.set(lockKey, randomLockValue, NX_OPTION, PX_OPTION, 500))) {
+        while (!"OK".equals(j.set(lockKey, randomLockValue, SetParams.setParams().nx().px(500)))) {
             if (System.currentTimeMillis() - start > 5_000L)
                 throw new IllegalStateException("Could not acquire a lock from redis");
             try {

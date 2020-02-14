@@ -58,7 +58,7 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
-import redis.clients.util.Pool;
+import redis.clients.jedis.util.Pool;
 
 /**
  * A RegistrationStore which stores registrations and observations in Redis.
@@ -296,7 +296,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
                         }
                     }
 
-                    cursor = sr.getStringCursor();
+                    cursor = sr.getCursor();
                 } while (!"0".equals(cursor) && scanResult.isEmpty());
 
                 this.cursor = cursor;

@@ -26,7 +26,7 @@ import org.eclipse.leshan.server.security.InMemorySecurityStore;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
-import redis.clients.util.Pool;
+import redis.clients.jedis.util.Pool;
 
 public class RedisIntegrationTestHelper extends IntegrationTestHelper {
     @Override

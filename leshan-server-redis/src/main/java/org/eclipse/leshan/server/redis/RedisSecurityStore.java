@@ -27,7 +27,7 @@ import org.eclipse.leshan.server.security.SecurityStore;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
-import redis.clients.util.Pool;
+import redis.clients.jedis.util.Pool;
 
 /**
  * A {@link SecurityStore} implementation based on Redis.
@@ -87,7 +87,7 @@ public class RedisSecurityStore implements EditableSecurityStore {
                     byte[] element = j.get(key);
                     list.add(deserialize(element));
                 }
-                cursor = res.getStringCursor();
+                cursor = res.getCursor();
             } while (!"0".equals(cursor));
             return list;
         }
