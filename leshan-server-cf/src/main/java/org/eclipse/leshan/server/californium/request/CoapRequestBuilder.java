@@ -61,20 +61,20 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     private final String rootPath;
     private final String registrationId;
     private final String endpoint;
-    private final boolean preventConnectionInitiation;
+    private final boolean allowConnectionInitiation;
 
     private final LwM2mModel model;
     private final LwM2mNodeEncoder encoder;
 
     public CoapRequestBuilder(Identity destination, String rootPath, String registrationId, String endpoint,
-            LwM2mModel model, LwM2mNodeEncoder encoder, boolean preventConnectionInitiation) {
+            LwM2mModel model, LwM2mNodeEncoder encoder, boolean allowConnectionInitiation) {
         this.destination = destination;
         this.rootPath = rootPath;
         this.endpoint = endpoint;
         this.registrationId = registrationId;
         this.model = model;
         this.encoder = encoder;
-        this.preventConnectionInitiation = preventConnectionInitiation;
+        this.allowConnectionInitiation = allowConnectionInitiation;
     }
 
     @Override
@@ -174,7 +174,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     public void visit(BootstrapDeleteRequest request) {
         coapRequest = Request.newDelete();
         coapRequest.setConfirmable(true);
-        EndpointContext context = EndpointContextUtil.extractContext(destination, preventConnectionInitiation);
+        EndpointContext context = EndpointContextUtil.extractContext(destination, allowConnectionInitiation);
         coapRequest.setDestinationContext(context);
         setTarget(coapRequest, request.getPath());
     }
@@ -183,7 +183,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     public void visit(BootstrapFinishRequest request) {
         coapRequest = Request.newPost();
         coapRequest.setConfirmable(true);
-        EndpointContext context = EndpointContextUtil.extractContext(destination, preventConnectionInitiation);
+        EndpointContext context = EndpointContextUtil.extractContext(destination, allowConnectionInitiation);
         coapRequest.setDestinationContext(context);
 
         // root path
@@ -199,7 +199,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     }
 
     protected void setTarget(Request coapRequest, LwM2mPath path) {
-        EndpointContext context = EndpointContextUtil.extractContext(destination, preventConnectionInitiation);
+        EndpointContext context = EndpointContextUtil.extractContext(destination, allowConnectionInitiation);
         coapRequest.setDestinationContext(context);
 
         // root path

@@ -27,6 +27,7 @@ import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
+import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.request.exception.RequestRejectedException;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
 import org.eclipse.leshan.core.response.ErrorCallback;
@@ -97,7 +98,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
 
         // Send requests synchronously
         T response = sender.sendLwm2mRequest(destination.getEndpoint(), destination.getIdentity(), destination.getId(),
-                model, destination.getRootPath(), request, timeout, destination.preventServerToInitiateConnection());
+                model, destination.getRootPath(), request, timeout, destination.canInitiateConnection());
 
         // Handle special observe case
         if (response != null && response.getClass() == ObserveResponse.class && response.isSuccess()) {
@@ -149,7 +150,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
                         }
                         responseCallback.onResponse(response);
                     }
-                }, errorCallback, destination.preventServerToInitiateConnection());
+                }, errorCallback, destination.canInitiateConnection());
     }
 
     /**
@@ -175,7 +176,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
     public Response sendCoapRequest(Registration destination, Request coapRequest, long timeoutInMs)
             throws InterruptedException {
         return sender.sendCoapRequest(destination.getIdentity(), destination.getId(), coapRequest, timeoutInMs,
-                destination.preventServerToInitiateConnection());
+                destination.canInitiateConnection());
     }
 
     /**
@@ -206,7 +207,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
     public void sendCoapRequest(Registration destination, Request coapRequest, long timeoutInMs,
             CoapResponseCallback responseCallback, ErrorCallback errorCallback) {
         sender.sendCoapRequest(destination.getIdentity(), destination.getId(), coapRequest, timeoutInMs,
-                responseCallback, errorCallback, destination.preventServerToInitiateConnection());
+                responseCallback, errorCallback, destination.canInitiateConnection());
     }
 
     /**

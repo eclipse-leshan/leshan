@@ -28,6 +28,7 @@ import java.util.Arrays;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
+import org.eclipse.californium.elements.DtlsEndpointContext;
 import org.eclipse.californium.elements.UDPConnector;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
@@ -494,6 +495,12 @@ public class LeshanServerBuilder {
             // TODO should we support SNI ?
             if (incompleteConfig.isSniEnabled() == null) {
                 dtlsConfigBuilder.setSniEnabled(false);
+            }
+
+            // Do no allow Server to initiated Handshake by default, for U device request will be allowed to initiate
+            // handshake (see Registration.shouldInitiateConnection())
+            if (incompleteConfig.getDefaultHandshakeMode() == null) {
+                dtlsConfigBuilder.setDefaultHandshakeMode(DtlsEndpointContext.HANDSHAKE_MODE_NONE);
             }
 
             // we try to build the dtlsConfig, if it fail we will just not create the secured endpoint

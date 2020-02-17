@@ -267,12 +267,12 @@ public class Registration implements Serializable {
     }
 
     /**
-     * @return True if no DTLS handshake must be initiated by the Server for this registration.
+     * @return True if DTLS handshake can be initiated by the Server for this registration.
      */
-    public boolean preventServerToInitiateConnection() {
-        // We consider that initiates a connection (act as DTLS client to initiate a handshake) does not make sense for
-        // QueueMode as if we lost connection device is probably absent.
-        return bindingMode.useQueueMode() && bindingMode.useUDP();
+    public boolean canInitiateConnection() {
+        // We consider that initiates a connection (acting as DTLS client to initiate a handshake) does not make sense
+        // for QueueMode as if we lost connection device is probably absent.
+        return !bindingMode.useQueueMode() && bindingMode.useUDP();
     }
 
     /**
