@@ -72,7 +72,7 @@ git clone https://github.com/eclipse/leshan.git
 Compile it, by running in leshan root folder :
 
 ```
-mvn clean install
+mvn clean install -U
 ```
 
 Run demo **server**:
