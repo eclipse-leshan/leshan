@@ -18,6 +18,7 @@ package org.eclipse.leshan.server.queue;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.exception.ClientSleepingException;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
+import org.eclipse.leshan.core.request.exception.UnconnectedPeerException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
@@ -66,16 +67,23 @@ public class QueueModeLwM2mRequestSender implements LwM2mRequestSender {
         }
 
         // Use delegation to send the request
-        T response = delegatedSender.send(destination, request, timeout);
-        if (response != null) {
-            // Set the client awake. This will restart the timer.
-            presenceService.setAwake(destination);
-        } else {
-            // If the timeout expires, this means the client does not respond.
+        try {
+            T response = delegatedSender.send(destination, request, timeout);
+            if (response != null) {
+                // Set the client awake. This will restart the timer.
+                presenceService.setAwake(destination);
+            } else {
+                // If the timeout expires, this means the client does not respond.
+                presenceService.setSleeping(destination);
+            }
+
+            // Wait for response, then return it
+            return response;
+        } catch (UnconnectedPeerException e) {
+            // if peer is not connected (No DTLS connection available)
             presenceService.setSleeping(destination);
+            throw e;
         }
-        // Wait for response, then return it
-        return response;
     }
 
     /**
@@ -113,6 +121,9 @@ public class QueueModeLwM2mRequestSender implements LwM2mRequestSender {
             public void onError(Exception e) {
                 if (e instanceof TimeoutException) {
                     // If the timeout expires, this means the client does not respond.
+                    presenceService.setSleeping(destination);
+                } else if (e instanceof UnconnectedPeerException) {
+                    // if peer is not connected (No DTLS connection available)
                     presenceService.setSleeping(destination);
                 }
 

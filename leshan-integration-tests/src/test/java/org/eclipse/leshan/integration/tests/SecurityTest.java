@@ -35,13 +35,13 @@ import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.RawData;
 import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.elements.exception.EndpointMismatchException;
-import org.eclipse.californium.elements.exception.EndpointUnconnectedException;
 import org.eclipse.californium.elements.util.SimpleMessageCallback;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.dtls.DTLSSession;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
+import org.eclipse.leshan.core.request.exception.UnconnectedPeerException;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
@@ -337,8 +337,9 @@ public class SecurityTest {
         try {
             helper.server.send(registration, new ReadRequest(3), 1000);
             fail("Read request SHOULD have failed");
-        } catch (SendFailedException e) {
-            assertTrue(e.getCause() instanceof EndpointUnconnectedException);
+        } catch (UnconnectedPeerException e) {
+            // expected result
+            assertFalse("client is still awake", helper.server.getPresenceService().isClientAwake(registration));
         }
     }
 
