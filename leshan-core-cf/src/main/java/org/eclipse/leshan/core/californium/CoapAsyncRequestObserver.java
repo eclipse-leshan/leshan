@@ -25,9 +25,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
+import org.eclipse.californium.scandium.dtls.DtlsHandshakeTimeoutException;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.request.exception.RequestRejectedException;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
+import org.eclipse.leshan.core.request.exception.TimeoutException;
+import org.eclipse.leshan.core.request.exception.TimeoutException.Type;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,8 +114,8 @@ public class CoapAsyncRequestObserver extends AbstractRequestObserver {
     public void onTimeout() {
         cancelCleaningTask();
         if (eventRaised.compareAndSet(false, true)) {
-            errorCallback.onError(new org.eclipse.leshan.core.request.exception.TimeoutException("Request %s timed out",
-                    coapRequest.getURI()));
+            errorCallback.onError(new TimeoutException(Type.COAP_TIMEOUT,
+                    "Request %s timed out : CoAP or blockwise timeout", coapRequest.getURI()));
         } else {
             LOG.debug("OnTimeout callback ignored because an event was already raised for this request {}",
                     coapRequest);
@@ -124,8 +127,8 @@ public class CoapAsyncRequestObserver extends AbstractRequestObserver {
         cancelCleaningTask();
         if (eventRaised.compareAndSet(false, true)) {
             if (responseTimedOut.get()) {
-                errorCallback.onError(new org.eclipse.leshan.core.request.exception.TimeoutException(
-                        "Request %s timed out", coapRequest.getURI()));
+                errorCallback.onError(new TimeoutException(Type.RESPONSE_TIMEOUT,
+                        "Request %s timed out : no response received", coapRequest.getURI()));
             } else {
                 errorCallback.onError(new RequestCanceledException("Request %s cancelled", coapRequest.getURI()));
             }
@@ -150,7 +153,13 @@ public class CoapAsyncRequestObserver extends AbstractRequestObserver {
     public void onSendError(Throwable error) {
         cancelCleaningTask();
         if (eventRaised.compareAndSet(false, true)) {
-            errorCallback.onError(new SendFailedException(error, "Unable to send request %s", coapRequest.getURI()));
+            if (error instanceof DtlsHandshakeTimeoutException) {
+                errorCallback.onError(new TimeoutException(Type.DTLS_HANDSHAKE_TIMEOUT, error,
+                        "Request %s timeout : dtls handshake timeout", coapRequest.getURI()));
+            } else {
+                errorCallback
+                        .onError(new SendFailedException(error, "Unable to send request %s", coapRequest.getURI()));
+            }
         } else {
             LOG.debug("onSendError callback ignored because an event was already raised for this request {}",
                     coapRequest);

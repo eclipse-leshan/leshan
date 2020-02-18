@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
+import org.eclipse.californium.scandium.dtls.DtlsHandshakeTimeoutException;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.request.exception.RequestRejectedException;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
@@ -94,7 +95,11 @@ public class CoapSyncRequestObserver extends AbstractRequestObserver {
 
     @Override
     public void onSendError(Throwable error) {
-        exception.set(new SendFailedException(error, "Request %s cannot be sent", coapRequest, error.getMessage()));
+        if (error instanceof DtlsHandshakeTimeoutException) {
+            coapTimeout.set(true);
+        } else {
+            exception.set(new SendFailedException(error, "Request %s cannot be sent", coapRequest, error.getMessage()));
+        }
         latch.countDown();
     }
 

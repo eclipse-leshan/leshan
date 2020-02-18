@@ -17,9 +17,35 @@ package org.eclipse.leshan.core.request.exception;
 
 public class TimeoutException extends Exception {
 
+    public enum Type {
+        RESPONSE_TIMEOUT, COAP_TIMEOUT, DTLS_HANDSHAKE_TIMEOUT
+    }
+
     private static final long serialVersionUID = -8966041387554358975L;
 
-    public TimeoutException(String message, Object... args) {
+    private Type type;
+
+    public TimeoutException(Type type, String message, Object... args) {
         super(String.format(message, args));
+        this.type = type;
+    }
+
+    public TimeoutException(Type type, Throwable cause, String message, Object... args) {
+        super(String.format(message, args), cause);
+        this.type = type;
+    }
+
+    /**
+     * Get the kind of timeout.
+     * <p>
+     * See https://github.com/eclipse/leshan/wiki/Request-Timeout for more details.
+     * <p>
+     * Current implementation is not able to make differences between CoAP and Blockwise timeout, all is regroup over
+     * <code>COAP_TIMEOUT</code>.
+     * 
+     * @return the kind of timeout
+     */
+    public Type getType() {
+        return type;
     }
 }
