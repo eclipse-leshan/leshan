@@ -41,6 +41,7 @@ import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.dtls.DTLSSession;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
+import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
@@ -266,6 +267,46 @@ public class SecurityTest {
         DTLSSession session = ((DTLSConnector) helper.server.coap().getSecuredEndpoint().getConnector())
                 .getSessionByAddress(registration.getSocketAddress());
         assertNotNull(session);
+    }
+
+    @Test
+    public void server_initiates_dtls_handshake_timeout() throws NonUniqueSecurityInfoException, InterruptedException {
+        // Create PSK server & start it
+        helper.createServer(); // default server support PSK
+        helper.server.start();
+
+        // Create PSK Client
+        helper.createPSKClient();
+
+        // Add client credentials to the server
+        helper.getSecurityStore()
+                .add(SecurityInfo.newPreSharedKeyInfo(helper.getCurrentEndpoint(), GOOD_PSK_ID, GOOD_PSK_KEY));
+
+        // Check for registration
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.waitForRegistrationAtServerSide(1);
+        Registration registration = helper.getCurrentRegistration();
+        helper.assertClientRegisterered();
+
+        // Remove DTLS connection at server side.
+        ((DTLSConnector) helper.server.coap().getSecuredEndpoint().getConnector()).clearConnectionState();
+
+        // stop client
+        helper.client.stop(false);
+
+        // try to send request synchronously
+        ReadResponse readResponse = helper.server.send(registration, new ReadRequest(3), 1000);
+        assertNull(readResponse);
+
+        // try to send request asynchronously
+        Callback<ReadResponse> callback = new Callback<>();
+        helper.server.send(registration, new ReadRequest(3), 1000, callback, callback);
+        callback.waitForResponse(1100);
+        assertTrue(callback.getException() instanceof TimeoutException);
+        assertEquals(TimeoutException.Type.DTLS_HANDSHAKE_TIMEOUT,
+                ((TimeoutException) callback.getException()).getType());
+
     }
 
     @Test

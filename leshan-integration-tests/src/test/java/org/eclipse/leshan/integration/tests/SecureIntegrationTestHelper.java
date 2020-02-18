@@ -317,6 +317,10 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         LeshanServerBuilder builder = super.createServerBuilder();
         securityStore = new InMemorySecurityStore();
         builder.setSecurityStore(securityStore);
+        Builder dtlsConfig = new DtlsConnectorConfig.Builder();
+        dtlsConfig.setMaxRetransmissions(1);
+        dtlsConfig.setRetransmissionTimeout(300);
+        builder.setDtlsConfig(dtlsConfig);
         return builder;
     }
 
