@@ -19,8 +19,10 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.californium.CoapResponseCallback;
 import org.eclipse.leshan.core.request.exception.ClientSleepingException;
+import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.request.exception.RequestRejectedException;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
+import org.eclipse.leshan.core.request.exception.UnconnectedPeerException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.server.registration.Registration;
@@ -48,6 +50,7 @@ public interface CoapRequestSender {
      * @throws RequestRejectedException if the request is rejected by foreign peer.
      * @throws RequestCanceledException if the request is cancelled.
      * @throws SendFailedException if the request can not be sent. E.g. error at CoAP or DTLS/UDP layer.
+     * @throws UnconnectedPeerException if client is not connected (no dtls connection available).
      * @throws ClientSleepingException if client is currently sleeping.
      */
     Response sendCoapRequest(final Registration destination, final Request coapRequest, long timeoutInMs)
@@ -70,6 +73,7 @@ public interface CoapRequestSender {
      *        <li>{@link RequestCanceledException} if the request is cancelled.</li>
      *        <li>{@link SendFailedException} if the request can not be sent. E.g. error at CoAP or DTLS/UDP layer.</li>
      *        <li>{@link ClientSleepingException} if client is currently sleeping.</li>
+     *        <li>{@link UnconnectedPeerException} if client is not connected (no dtls connection available).</li>
      *        <li>{@link TimeoutException} if the timeout expires (see
      *        https://github.com/eclipse/leshan/wiki/Request-Timeout).</li>
      *        <li>or any other RuntimeException for unexpected issue.

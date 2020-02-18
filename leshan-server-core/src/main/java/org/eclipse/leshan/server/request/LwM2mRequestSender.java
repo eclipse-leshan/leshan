@@ -20,8 +20,10 @@ import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.exception.ClientSleepingException;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
+import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.request.exception.RequestRejectedException;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
+import org.eclipse.leshan.core.request.exception.UnconnectedPeerException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
@@ -51,6 +53,7 @@ public interface LwM2mRequestSender {
      * @throws RequestCanceledException if the request is cancelled.
      * @throws SendFailedException if the request can not be sent. E.g. error at CoAP or DTLS/UDP layer.
      * @throws InvalidResponseException if the response received is malformed.
+     * @throws UnconnectedPeerException if client is not connected (no dtls connection available).
      * @throws ClientSleepingException if client is currently sleeping.
      */
     <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request, long timeoutInMs)
@@ -73,6 +76,7 @@ public interface LwM2mRequestSender {
      *        <li>{@link RequestCanceledException} if the request is cancelled.</li>
      *        <li>{@link SendFailedException} if the request can not be sent. E.g. error at CoAP or DTLS/UDP layer.</li>
      *        <li>{@link InvalidResponseException} if the response received is malformed.</li>
+     *        <li>{@link UnconnectedPeerException} if client is not connected (no dtls connection available).</li>
      *        <li>{@link ClientSleepingException} if client is currently sleeping.</li>
      *        <li>{@link TimeoutException} if the timeout expires (see
      *        https://github.com/eclipse/leshan/wiki/Request-Timeout).</li>
