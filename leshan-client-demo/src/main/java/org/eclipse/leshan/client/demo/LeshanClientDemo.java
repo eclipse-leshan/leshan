@@ -30,12 +30,18 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPublicKey;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.eclipse.californium.core.network.config.NetworkConfig;
@@ -139,6 +145,10 @@ public class LeshanClientDemo {
                 "Set the local CoAP port of the Client.\n  Default: A valid port value is between 0 and 65535.");
         options.addOption("u", true, String.format("Set the LWM2M or Bootstrap server URL.\nDefault: localhost:%d.",
                 LwM2m.DEFAULT_COAP_PORT));
+        Builder aa = Option.builder("aa");
+        aa.desc("Use additional attributes at registration time, syntax is \n -aa attrName1=attrValue1 attrName2=\\\"attrValue2\\\" ...");
+        aa.hasArgs();
+        options.addOption(aa.build());
         options.addOption("pos", true,
                 "Set the initial location (latitude, longitude) of the device to be reported by the Location object.\n Format: lat_float:long_float");
         options.addOption("sf", true, "Scale factor to apply when shifting position.\n Default is 1.0." + PSKChapter);
@@ -245,6 +255,33 @@ public class LeshanClientDemo {
             lifetime = DEFAULT_LIFETIME;
         }
 
+        // Get additional attributes
+        Map<String, String> additionalAttributes = null;
+        if (cl.hasOption("aa")) {
+            additionalAttributes = new HashMap<>();
+            Pattern p1 = Pattern.compile("(.*)=\"(.*)\"");
+            Pattern p2 = Pattern.compile("(.*)=(.*)");
+            String[] values = cl.getOptionValues("aa");
+            for (String v : values) {
+                Matcher m = p1.matcher(v);
+                if (m.matches()) {
+                    String attrName = m.group(1);
+                    String attrValue = m.group(2);
+                    additionalAttributes.put(attrName, attrValue);
+                } else {
+                    m = p2.matcher(v);
+                    if (m.matches()) {
+                        String attrName = m.group(1);
+                        String attrValue = m.group(2);
+                        additionalAttributes.put(attrName, attrValue);
+                    } else {
+                        System.err.println(String.format("Invalid syntax for additional attributes : %s", v));
+                        return;
+                    }
+                }
+            }
+        }
+
         // Get server URI
         String serverURI;
         if (cl.hasOption("u")) {
@@ -341,9 +378,9 @@ public class LeshanClientDemo {
             }
         }
         try {
-            createAndStartClient(endpoint, localAddress, localPort, cl.hasOption("b"), lifetime, serverURI, pskIdentity,
-                    pskKey, clientPrivateKey, clientPublicKey, serverPublicKey, clientCertificate, serverCertificate,
-                    latitude, longitude, scaleFactor);
+            createAndStartClient(endpoint, localAddress, localPort, cl.hasOption("b"), additionalAttributes, lifetime,
+                    serverURI, pskIdentity, pskKey, clientPrivateKey, clientPublicKey, serverPublicKey,
+                    clientCertificate, serverCertificate, latitude, longitude, scaleFactor);
         } catch (Exception e) {
             System.err.println("Unable to create and start client ...");
             e.printStackTrace();
@@ -352,10 +389,10 @@ public class LeshanClientDemo {
     }
 
     public static void createAndStartClient(String endpoint, String localAddress, int localPort, boolean needBootstrap,
-            int lifetime, String serverURI, byte[] pskIdentity, byte[] pskKey, PrivateKey clientPrivateKey,
-            PublicKey clientPublicKey, PublicKey serverPublicKey, X509Certificate clientCertificate,
-            X509Certificate serverCertificate, Float latitude, Float longitude, float scaleFactor)
-            throws CertificateEncodingException {
+            Map<String, String> additionalAttributes, int lifetime, String serverURI, byte[] pskIdentity, byte[] pskKey,
+            PrivateKey clientPrivateKey, PublicKey clientPublicKey, PublicKey serverPublicKey,
+            X509Certificate clientCertificate, X509Certificate serverCertificate, Float latitude, Float longitude,
+            float scaleFactor) throws CertificateEncodingException {
 
         locationInstance = new MyLocation(latitude, longitude, scaleFactor);
 
@@ -420,6 +457,7 @@ public class LeshanClientDemo {
         builder.setLocalAddress(localAddress, localPort);
         builder.setObjects(enablers);
         builder.setCoapConfig(coapConfig);
+        builder.setAdditionalAttributes(additionalAttributes);
         final LeshanClient client = builder.build();
 
         client.getObjectTree().addListener(new ObjectsListenerAdapter() {
