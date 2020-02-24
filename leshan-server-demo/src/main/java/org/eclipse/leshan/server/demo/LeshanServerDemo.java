@@ -44,7 +44,6 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
-import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.californium.scandium.dtls.CertificateMessage;
 import org.eclipse.californium.scandium.dtls.DTLSSession;
 import org.eclipse.californium.scandium.dtls.HandshakeException;
@@ -151,11 +150,11 @@ public class LeshanServerDemo {
         options.addOption("wh", "webhost", true, "Set the HTTP address for web server.\nDefault: any local address.");
         options.addOption("wp", "webport", true, "Set the HTTP port for web server.\nDefault: 8080.");
         options.addOption("m", "modelsfolder", true, "A folder which contains object models in OMA DDF(.xml) format.");
+        options.addOption("oc", "activate support of old/deprecated cipher suites.");
         options.addOption("r", "redis", true,
                 "Set the location of the Redis database for running in cluster mode.\nThe URL is in the format of: 'redis://:password@hostname:port/db_number'\nExample without DB and password: 'redis://localhost:6379'\nDefault: none, no Redis connection.");
         options.addOption("mdns", "publishDNSSdServices", false,
                 "Publish leshan's services to DNS Service discovery" + X509Chapter);
-
         options.addOption("ks", "keystore", true,
                 "Set the key store file.\nIf set, X.509 mode is enabled, otherwise built-in RPK credentials are used.");
         options.addOption("ksp", "storepass", true, "Set the key store password.");
@@ -236,7 +235,7 @@ public class LeshanServerDemo {
         try {
             createAndStartServer(webAddress, webPort, localAddress, localPort, secureLocalAddress, secureLocalPort,
                     modelsFolderPath, redisUrl, keyStorePath, keyStoreType, keyStorePass, keyStoreAlias,
-                    keyStoreAliasPass, publishDNSSdServices);
+                    keyStoreAliasPass, publishDNSSdServices, cl.hasOption("oc"));
         } catch (BindException e) {
             System.err.println(
                     String.format("Web port %s is already used, you could change it using 'webport' option.", webPort));
@@ -249,7 +248,7 @@ public class LeshanServerDemo {
     public static void createAndStartServer(String webAddress, int webPort, String localAddress, int localPort,
             String secureLocalAddress, int secureLocalPort, String modelsFolderPath, String redisUrl,
             String keyStorePath, String keyStoreType, String keyStorePass, String keyStoreAlias,
-            String keyStoreAliasPass, Boolean publishDNSSdServices) throws Exception {
+            String keyStoreAliasPass, Boolean publishDNSSdServices, boolean supportDeprecatedCiphers) throws Exception {
         // Prepare LWM2M server
         LeshanServerBuilder builder = new LeshanServerBuilder();
         builder.setLocalAddress(localAddress, localPort);
@@ -277,8 +276,11 @@ public class LeshanServerDemo {
             jedis = new JedisPool(new URI(redisUrl));
         }
 
-        X509Certificate serverCertificate = null;
+        // Create DTLS Config
+        DtlsConnectorConfig.Builder dtlsConfig = new DtlsConnectorConfig.Builder();
+        dtlsConfig.setRecommendedCipherSuitesOnly(!supportDeprecatedCiphers);
 
+        X509Certificate serverCertificate = null;
         // Set up X.509 mode
         if (keyStorePath != null) {
             try {
@@ -336,8 +338,7 @@ public class LeshanServerDemo {
                 builder.setCertificateChain(new X509Certificate[] { serverCertificate });
 
                 // Use a certificate verifier which trust all certificates by default.
-                Builder dtlsConfigBuilder = new DtlsConnectorConfig.Builder();
-                dtlsConfigBuilder.setCertificateVerifier(new CertificateVerifier() {
+                dtlsConfig.setCertificateVerifier(new CertificateVerifier() {
                     @Override
                     public void verifyCertificate(CertificateMessage message, DTLSSession session)
                             throws HandshakeException {
@@ -349,13 +350,14 @@ public class LeshanServerDemo {
                         return null;
                     }
                 });
-                builder.setDtlsConfig(dtlsConfigBuilder);
-
             } catch (Exception e) {
                 LOG.error("Unable to load embedded X.509 certificate.", e);
                 System.exit(-1);
             }
         }
+
+        // Set DTLS Config
+        builder.setDtlsConfig(dtlsConfig);
 
         // Define model provider
         List<ObjectModel> models = ObjectLoader.loadDefault();
