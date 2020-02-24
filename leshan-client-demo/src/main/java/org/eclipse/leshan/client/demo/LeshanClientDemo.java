@@ -56,6 +56,8 @@ import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.StaticModel;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.util.Hex;
 import org.eclipse.leshan.util.SecurityUtil;
@@ -145,6 +147,8 @@ public class LeshanClientDemo {
                 "Set the local CoAP port of the Client.\n  Default: A valid port value is between 0 and 65535.");
         options.addOption("u", true, String.format("Set the LWM2M or Bootstrap server URL.\nDefault: localhost:%d.",
                 LwM2m.DEFAULT_COAP_PORT));
+        options.addOption("ocf",
+                "activate support of old/unofficial content format .\n See https://github.com/eclipse/leshan/pull/720");
         Builder aa = Option.builder("aa");
         aa.desc("Use additional attributes at registration time, syntax is \n -aa attrName1=attrValue1 attrName2=\\\"attrValue2\\\" ...");
         aa.hasArgs();
@@ -380,7 +384,7 @@ public class LeshanClientDemo {
         try {
             createAndStartClient(endpoint, localAddress, localPort, cl.hasOption("b"), additionalAttributes, lifetime,
                     serverURI, pskIdentity, pskKey, clientPrivateKey, clientPublicKey, serverPublicKey,
-                    clientCertificate, serverCertificate, latitude, longitude, scaleFactor);
+                    clientCertificate, serverCertificate, latitude, longitude, scaleFactor, cl.hasOption("ocf"));
         } catch (Exception e) {
             System.err.println("Unable to create and start client ...");
             e.printStackTrace();
@@ -392,7 +396,7 @@ public class LeshanClientDemo {
             Map<String, String> additionalAttributes, int lifetime, String serverURI, byte[] pskIdentity, byte[] pskKey,
             PrivateKey clientPrivateKey, PublicKey clientPublicKey, PublicKey serverPublicKey,
             X509Certificate clientCertificate, X509Certificate serverCertificate, Float latitude, Float longitude,
-            float scaleFactor) throws CertificateEncodingException {
+            float scaleFactor, boolean supportOldFormat) throws CertificateEncodingException {
 
         locationInstance = new MyLocation(latitude, longitude, scaleFactor);
 
@@ -457,6 +461,10 @@ public class LeshanClientDemo {
         builder.setLocalAddress(localAddress, localPort);
         builder.setObjects(enablers);
         builder.setCoapConfig(coapConfig);
+        if (supportOldFormat) {
+            builder.setDecoder(new DefaultLwM2mNodeDecoder(true));
+            builder.setEncoder(new DefaultLwM2mNodeEncoder(true));
+        }
         builder.setAdditionalAttributes(additionalAttributes);
         final LeshanClient client = builder.build();
 
