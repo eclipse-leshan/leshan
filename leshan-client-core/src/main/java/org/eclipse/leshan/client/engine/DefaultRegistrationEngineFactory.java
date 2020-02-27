@@ -30,6 +30,7 @@ public class DefaultRegistrationEngineFactory implements RegistrationEngineFacto
     private long deregistrationTimeoutInMs = 1000; // 1s in ms
     private int bootstrapSessionTimeoutInSec = 93;
     private int retryWaitingTimeInMs = 10 * 60 * 1000; // 10min in ms
+    private Integer communicationPeriodInMs = null;
 
     public DefaultRegistrationEngineFactory() {
     }
@@ -41,7 +42,19 @@ public class DefaultRegistrationEngineFactory implements RegistrationEngineFacto
             ScheduledExecutorService sharedExecutor) {
         return new DefaultRegistrationEngine(endpoint, objectTree, endpointsManager, requestSender, bootstrapState,
                 observer, additionalAttributes, sharedExecutor, requestTimeoutInMs, deregistrationTimeoutInMs,
-                bootstrapSessionTimeoutInSec, retryWaitingTimeInMs);
+                bootstrapSessionTimeoutInSec, retryWaitingTimeInMs, communicationPeriodInMs);
+    }
+
+    /**
+     * Set the period between 2 communications (update request).
+     * <p>
+     * Client will communicate periodically to refresh its lifetime but if you want to communication periodically more
+     * often you can set a smaller communication period.
+     * 
+     * @param communicationPeriodInMs the communication period in ms
+     */
+    public void setCommunicationPeriod(Integer communicationPeriodInMs) {
+        this.communicationPeriodInMs = communicationPeriodInMs;
     }
 
     /**

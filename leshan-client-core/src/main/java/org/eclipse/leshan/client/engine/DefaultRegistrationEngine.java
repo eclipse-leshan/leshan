@@ -79,6 +79,8 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     private final int bootstrapSessionTimeoutInSec;
     // time between bootstrap retry should be configurable and incremental
     private final int retryWaitingTimeInMs;
+    // time between 2 update requests (used only if it is smaller than the lifetime)
+    private Integer communicationPeriodInMs;
 
     private static enum Status {
         SUCCESS, FAILURE, TIMEOUT
@@ -108,7 +110,8 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     public DefaultRegistrationEngine(String endpoint, LwM2mObjectTree objectTree, EndpointsManager endpointsManager,
             LwM2mRequestSender requestSender, BootstrapHandler bootstrapState, LwM2mClientObserver observer,
             Map<String, String> additionalAttributes, ScheduledExecutorService executor, long requestTimeoutInMs,
-            long deregistrationTimeoutInMs, int bootstrapSessionTimeoutInSec, int retryWaitingTimeInMs) {
+            long deregistrationTimeoutInMs, int bootstrapSessionTimeoutInSec, int retryWaitingTimeInMs,
+            Integer communicationPeriodInMs) {
         this.endpoint = endpoint;
         this.objectEnablers = objectTree.getObjectEnablers();
         this.bootstrapHandler = bootstrapState;
@@ -120,6 +123,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         this.deregistrationTimeoutInMs = deregistrationTimeoutInMs;
         this.bootstrapSessionTimeoutInSec = bootstrapSessionTimeoutInSec;
         this.retryWaitingTimeInMs = retryWaitingTimeInMs;
+        this.communicationPeriodInMs = communicationPeriodInMs;
 
         if (executor == null) {
             schedExecutor = createScheduledExecutor();
@@ -404,7 +408,11 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     private long calculateNextUpdate(long lifetimeInSeconds) {
         // lifetime - 10%
         // life time is in seconds and we return the delay in milliseconds
-        return lifetimeInSeconds * 900l;
+        if (communicationPeriodInMs != null) {
+            return Math.min(communicationPeriodInMs, lifetimeInSeconds * 900l);
+        } else {
+            return lifetimeInSeconds * 900l;
+        }
     }
 
     private synchronized boolean scheduleClientInitiatedBootstrap(long timeInMs) {

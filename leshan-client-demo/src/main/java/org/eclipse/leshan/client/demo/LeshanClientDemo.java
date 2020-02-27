@@ -49,6 +49,7 @@ import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
+import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
@@ -143,6 +144,8 @@ public class LeshanClientDemo {
         options.addOption("b", false, "If present use bootstrap.");
         options.addOption("l", true, String.format(
                 "The lifetime in seconds used to register, ignored if -b is used.\n Default : %ds", DEFAULT_LIFETIME));
+        options.addOption("cp", true,
+                "The communication period in seconds which should be smaller than the lifeime, will be used even if -b is used.");
         options.addOption("lh", true, "Set the local CoAP address of the Client.\n  Default: any local address.");
         options.addOption("lp", true,
                 "Set the local CoAP port of the Client.\n  Default: A valid port value is between 0 and 65535.");
@@ -259,6 +262,12 @@ public class LeshanClientDemo {
             lifetime = Integer.parseInt(cl.getOptionValue("l"));
         } else {
             lifetime = DEFAULT_LIFETIME;
+        }
+
+        // Get lifetime
+        Integer communicationPeriod = null;
+        if (cl.hasOption("cp")) {
+            communicationPeriod = Integer.valueOf(cl.getOptionValue("cp")) * 1000;
         }
 
         // Get additional attributes
@@ -385,9 +394,9 @@ public class LeshanClientDemo {
         }
         try {
             createAndStartClient(endpoint, localAddress, localPort, cl.hasOption("b"), additionalAttributes, lifetime,
-                    serverURI, pskIdentity, pskKey, clientPrivateKey, clientPublicKey, serverPublicKey,
-                    clientCertificate, serverCertificate, latitude, longitude, scaleFactor, cl.hasOption("ocf"),
-                    cl.hasOption("oc"));
+                    communicationPeriod, serverURI, pskIdentity, pskKey, clientPrivateKey, clientPublicKey,
+                    serverPublicKey, clientCertificate, serverCertificate, latitude, longitude, scaleFactor,
+                    cl.hasOption("ocf"), cl.hasOption("oc"));
         } catch (Exception e) {
             System.err.println("Unable to create and start client ...");
             e.printStackTrace();
@@ -396,11 +405,11 @@ public class LeshanClientDemo {
     }
 
     public static void createAndStartClient(String endpoint, String localAddress, int localPort, boolean needBootstrap,
-            Map<String, String> additionalAttributes, int lifetime, String serverURI, byte[] pskIdentity, byte[] pskKey,
-            PrivateKey clientPrivateKey, PublicKey clientPublicKey, PublicKey serverPublicKey,
-            X509Certificate clientCertificate, X509Certificate serverCertificate, Float latitude, Float longitude,
-            float scaleFactor, boolean supportOldFormat, boolean supportDeprecatedCiphers)
-            throws CertificateEncodingException {
+            Map<String, String> additionalAttributes, int lifetime, Integer communicationPeriod, String serverURI,
+            byte[] pskIdentity, byte[] pskKey, PrivateKey clientPrivateKey, PublicKey clientPublicKey,
+            PublicKey serverPublicKey, X509Certificate clientCertificate, X509Certificate serverCertificate,
+            Float latitude, Float longitude, float scaleFactor, boolean supportOldFormat,
+            boolean supportDeprecatedCiphers) throws CertificateEncodingException {
 
         locationInstance = new MyLocation(latitude, longitude, scaleFactor);
 
@@ -464,12 +473,17 @@ public class LeshanClientDemo {
         DtlsConnectorConfig.Builder dtlsConfig = new DtlsConnectorConfig.Builder();
         dtlsConfig.setRecommendedCipherSuitesOnly(!supportDeprecatedCiphers);
 
+        // Configure Registration Engine
+        DefaultRegistrationEngineFactory engineFactory = new DefaultRegistrationEngineFactory();
+        engineFactory.setCommunicationPeriod(communicationPeriod);
+
         // Create client
         LeshanClientBuilder builder = new LeshanClientBuilder(endpoint);
         builder.setLocalAddress(localAddress, localPort);
         builder.setObjects(enablers);
         builder.setCoapConfig(coapConfig);
         builder.setDtlsConfig(dtlsConfig);
+        builder.setRegistrationEngineFactory(engineFactory);
         if (supportOldFormat) {
             builder.setDecoder(new DefaultLwM2mNodeDecoder(true));
             builder.setEncoder(new DefaultLwM2mNodeEncoder(true));
