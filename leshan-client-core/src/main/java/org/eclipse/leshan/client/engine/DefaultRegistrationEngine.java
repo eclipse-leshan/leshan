@@ -70,16 +70,15 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
 
     private static final long NOW = 0;
 
-    // We choose a default timeout a bit higher to the MAX_TRANSMIT_WAIT(62-93s) which is the time from starting to
-    // send a Confirmable message to the time when an acknowledgement is no longer expected.
+    // Timeout for bootstrap/register/update request
     private final long requestTimeoutInMs;
     // de-registration is only used on stop/destroy for now.
     private final long deregistrationTimeoutInMs;
-    // bootstrap timeout
+    // Bootstrap session timeout
     private final int bootstrapSessionTimeoutInSec;
-    // time between bootstrap retry should be configurable and incremental
+    // Time between bootstrap retry should incremental
     private final int retryWaitingTimeInMs;
-    // time between 2 update requests (used only if it is smaller than the lifetime)
+    // Time between 2 update requests (used only if it is smaller than the lifetime)
     private Integer communicationPeriodInMs;
 
     private static enum Status {
@@ -278,7 +277,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                 LOG.info("Registered with location '{}'.", registrationID);
 
                 // Update every lifetime period
-                long delay = calculateNextUpdate(dmInfo.lifetime);
+                long delay = calculateNextUpdate(server, dmInfo.lifetime);
                 scheduleUpdate(server, registrationID, new RegistrationUpdate(), delay);
 
                 if (observer != null) {
@@ -385,7 +384,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             } else if (response.getCode() == ResponseCode.CHANGED) {
                 // Update successful, so we reschedule new update
                 LOG.info("Registration update succeed.");
-                long delay = calculateNextUpdate(dmInfo.lifetime);
+                long delay = calculateNextUpdate(server, dmInfo.lifetime);
                 scheduleUpdate(server, registrationID, new RegistrationUpdate(), delay);
                 if (observer != null) {
                     observer.onUpdateSuccess(server, registrationID);
@@ -405,13 +404,12 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         }
     }
 
-    private long calculateNextUpdate(long lifetimeInSeconds) {
-        // lifetime - 10%
-        // life time is in seconds and we return the delay in milliseconds
+    private long calculateNextUpdate(Server server, long lifetimeInSeconds) {
+        long maxComminucationPeriod = endpointsManager.getMaxCommunicationPeriodFor(server, lifetimeInSeconds * 1000);
         if (communicationPeriodInMs != null) {
-            return Math.min(communicationPeriodInMs, lifetimeInSeconds * 900l);
+            return Math.min(communicationPeriodInMs, maxComminucationPeriod);
         } else {
-            return lifetimeInSeconds * 900l;
+            return maxComminucationPeriod;
         }
     }
 
