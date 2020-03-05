@@ -28,7 +28,7 @@ public interface EndpointsManager {
 
     long getMaxCommunicationPeriodFor(Server server, long lifetimeInSeconds);
 
-    void forceReconnection(Server server);
+    void forceReconnection(Server server, boolean resume);
 
     void start();
 

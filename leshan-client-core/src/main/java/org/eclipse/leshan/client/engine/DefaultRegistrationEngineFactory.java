@@ -31,6 +31,8 @@ public class DefaultRegistrationEngineFactory implements RegistrationEngineFacto
     private int bootstrapSessionTimeoutInSec = 93;
     private int retryWaitingTimeInMs = 10 * 60 * 1000; // 10min in ms
     private Integer communicationPeriodInMs = null;
+    private boolean reconnectOnUpdate = false;
+    private boolean resumeOnConnect = true;
 
     public DefaultRegistrationEngineFactory() {
     }
@@ -42,7 +44,8 @@ public class DefaultRegistrationEngineFactory implements RegistrationEngineFacto
             ScheduledExecutorService sharedExecutor) {
         return new DefaultRegistrationEngine(endpoint, objectTree, endpointsManager, requestSender, bootstrapState,
                 observer, additionalAttributes, sharedExecutor, requestTimeoutInMs, deregistrationTimeoutInMs,
-                bootstrapSessionTimeoutInSec, retryWaitingTimeInMs, communicationPeriodInMs);
+                bootstrapSessionTimeoutInSec, retryWaitingTimeInMs, communicationPeriodInMs, reconnectOnUpdate,
+                resumeOnConnect);
     }
 
     /**
@@ -113,6 +116,33 @@ public class DefaultRegistrationEngineFactory implements RegistrationEngineFacto
      */
     public DefaultRegistrationEngineFactory setRetryWaitingTimeInMs(int retryWaitingTimeInMs) {
         this.retryWaitingTimeInMs = retryWaitingTimeInMs;
+        return this;
+    }
+
+    /**
+     * Configure if client reconnects before update. For DTLS "reconnect" means "initiate a new handshake".
+     * <p>
+     * Default is false.
+     * 
+     * @param reconnectOnUpdate True is client should reconnect on update
+     * @return this for fluent API
+     */
+    public DefaultRegistrationEngineFactory setReconnectOnUpdate(boolean reconnectOnUpdate) {
+        this.reconnectOnUpdate = reconnectOnUpdate;
+        return this;
+    }
+
+    /**
+     * Configure if client tries to resume a session. For DTLS this means that when a new handshake is initiated we will
+     * try to do an abbreviated one (instead a full one) if possible.
+     * <p>
+     * Default value is true
+     * 
+     * @param resumeOnConnect True if client should try to resume on connect
+     * @return this for fluent API
+     */
+    public DefaultRegistrationEngineFactory setResumeOnConnect(boolean resumeOnConnect) {
+        this.resumeOnConnect = resumeOnConnect;
         return this;
     }
 }

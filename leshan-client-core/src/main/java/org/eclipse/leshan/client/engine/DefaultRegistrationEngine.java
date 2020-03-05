@@ -80,6 +80,10 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     private final int retryWaitingTimeInMs;
     // Time between 2 update requests (used only if it is smaller than the lifetime)
     private Integer communicationPeriodInMs;
+    // True if client should re-initiate a connection (DTLS) on registration update
+    private boolean reconnectOnUpdate;
+    // True if client should try to resume connection if possible.
+    private boolean resumeOnConnect;
 
     private static enum Status {
         SUCCESS, FAILURE, TIMEOUT
@@ -110,7 +114,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             LwM2mRequestSender requestSender, BootstrapHandler bootstrapState, LwM2mClientObserver observer,
             Map<String, String> additionalAttributes, ScheduledExecutorService executor, long requestTimeoutInMs,
             long deregistrationTimeoutInMs, int bootstrapSessionTimeoutInSec, int retryWaitingTimeInMs,
-            Integer communicationPeriodInMs) {
+            Integer communicationPeriodInMs, boolean reconnectOnUpdate, boolean resumeOnConnect) {
         this.endpoint = endpoint;
         this.objectEnablers = objectTree.getObjectEnablers();
         this.bootstrapHandler = bootstrapState;
@@ -123,6 +127,8 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         this.bootstrapSessionTimeoutInSec = bootstrapSessionTimeoutInSec;
         this.retryWaitingTimeInMs = retryWaitingTimeInMs;
         this.communicationPeriodInMs = communicationPeriodInMs;
+        this.reconnectOnUpdate = reconnectOnUpdate;
+        this.resumeOnConnect = resumeOnConnect;
 
         if (executor == null) {
             schedExecutor = createScheduledExecutor();
@@ -246,7 +252,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         if (registerStatus == Status.TIMEOUT) {
             // if register timeout maybe server lost the session,
             // so we reconnect (new handshake) and retry
-            endpointsManager.forceReconnection(server);
+            endpointsManager.forceReconnection(server, resumeOnConnect);
             registerStatus = register(server);
         }
         return registerStatus == Status.SUCCESS;
@@ -362,7 +368,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         if (updateStatus == Status.TIMEOUT) {
             // if register timeout maybe server lost the session,
             // so we reconnect (new handshake) and retry
-            endpointsManager.forceReconnection(server);
+            endpointsManager.forceReconnection(server, resumeOnConnect);
             updateStatus = update(server, registrationId, registrationUpdate);
         }
         return updateStatus == Status.SUCCESS;
@@ -379,6 +385,9 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         // Send update
         LOG.info("Trying to update registration to {} (response timeout {}ms)...", server.getUri(), requestTimeoutInMs);
         try {
+            if (reconnectOnUpdate) {
+                endpointsManager.forceReconnection(server, resumeOnConnect);
+            }
             UpdateResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(),
                     new UpdateRequest(registrationID, registrationUpdate.getLifeTimeInSec(),
                             registrationUpdate.getSmsNumber(), registrationUpdate.getBindingMode(),

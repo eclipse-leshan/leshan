@@ -212,11 +212,15 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
     }
 
     @Override
-    public synchronized void forceReconnection(Server server) {
+    public synchronized void forceReconnection(Server server, boolean resume) {
         // TODO support multi server
         Connector connector = currentEndpoint.getConnector();
         if (connector instanceof DTLSConnector) {
-            ((DTLSConnector) connector).forceResumeAllSessions();
+            if (resume) {
+                ((DTLSConnector) connector).forceResumeAllSessions();
+            } else {
+                ((DTLSConnector) connector).clearConnectionState();
+            }
         }
         LOG.info("Clear DTLS session for server {}", server.getUri());
     }
