@@ -221,12 +221,16 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                 } else {
                     LOG.error("Bootstrap failed: {} {}.", response.getCode(), response.getErrorMessage());
                     if (observer != null) {
-                        observer.onBootstrapFailure(bootstrapServer, response.getCode(), response.getErrorMessage());
+                        observer.onBootstrapFailure(bootstrapServer, response.getCode(), response.getErrorMessage(),
+                                null);
                     }
                     return null;
                 }
-            } catch (SendFailedException e) {
+            } catch (RuntimeException e) {
                 logExceptionOnSendRequest("Unable to send Bootstrap request", e);
+                if (observer != null) {
+                    observer.onBootstrapFailure(bootstrapServer, null, null, e);
+                }
                 return null;
             } finally {
                 bootstrapHandler.closeSession();
@@ -287,12 +291,15 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             } else {
                 LOG.error("Registration failed: {} {}.", response.getCode(), response.getErrorMessage());
                 if (observer != null) {
-                    observer.onRegistrationFailure(server, response.getCode(), response.getErrorMessage());
+                    observer.onRegistrationFailure(server, response.getCode(), response.getErrorMessage(), null);
                 }
                 return Status.FAILURE;
             }
-        } catch (SendFailedException e) {
+        } catch (RuntimeException e) {
             logExceptionOnSendRequest("Unable to send register request", e);
+            if (observer != null) {
+                observer.onRegistrationFailure(server, null, null, e);
+            }
             return Status.FAILURE;
         }
     }
@@ -328,19 +335,22 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                     if (response.isSuccess()) {
                         observer.onDeregistrationSuccess(server, registrationID);
                     } else {
-                        observer.onDeregistrationFailure(server, response.getCode(), response.getErrorMessage());
+                        observer.onDeregistrationFailure(server, response.getCode(), response.getErrorMessage(), null);
                     }
                 }
                 return true;
             } else {
                 LOG.error("Deregistration failed: {} {}.", response.getCode(), response.getErrorMessage());
                 if (observer != null) {
-                    observer.onDeregistrationFailure(server, response.getCode(), response.getErrorMessage());
+                    observer.onDeregistrationFailure(server, response.getCode(), response.getErrorMessage(), null);
                 }
                 return false;
             }
-        } catch (SendFailedException e) {
+        } catch (RuntimeException e) {
             logExceptionOnSendRequest("Unable to send deregister request", e);
+            if (observer != null) {
+                observer.onDeregistrationFailure(server, null, null, e);
+            }
             return false;
         }
     }
@@ -367,7 +377,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         }
 
         // Send update
-        LOG.info("Trying to update registration to {} ...", server.getUri());
+        LOG.info("Trying to update registration to {} (response timeout {}ms)...", server.getUri(), requestTimeoutInMs);
         try {
             UpdateResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(),
                     new UpdateRequest(registrationID, registrationUpdate.getLifeTimeInSec(),
@@ -393,13 +403,16 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             } else {
                 LOG.error("Registration update failed: {} {}.", response.getCode(), response.getErrorMessage());
                 if (observer != null) {
-                    observer.onUpdateFailure(server, response.getCode(), response.getErrorMessage());
+                    observer.onUpdateFailure(server, response.getCode(), response.getErrorMessage(), null);
                 }
                 registeredServers.remove(registrationID);
                 return Status.FAILURE;
             }
-        } catch (SendFailedException e) {
+        } catch (RuntimeException e) {
             logExceptionOnSendRequest("Unable to send update request", e);
+            if (observer != null) {
+                observer.onUpdateFailure(server, null, null, e);
+            }
             return Status.FAILURE;
         }
     }

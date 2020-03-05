@@ -25,25 +25,25 @@ public interface LwM2mClientObserver {
 
     void onBootstrapSuccess(Server bsserver);
 
-    void onBootstrapFailure(Server bsserver, ResponseCode responseCode, String errorMessage);
+    void onBootstrapFailure(Server bsserver, ResponseCode responseCode, String errorMessage, Exception cause);
 
     void onBootstrapTimeout(Server bsserver);
 
     void onRegistrationSuccess(Server server, String registrationID);
 
-    void onRegistrationFailure(Server server, ResponseCode responseCode, String errorMessage);
+    void onRegistrationFailure(Server server, ResponseCode responseCode, String errorMessage, Exception cause);
 
     void onRegistrationTimeout(Server server);
 
     void onUpdateSuccess(Server server, String registrationID);
 
-    void onUpdateFailure(Server server, ResponseCode responseCode, String errorMessage);
+    void onUpdateFailure(Server server, ResponseCode responseCode, String errorMessage, Exception cause);
 
     void onUpdateTimeout(Server server);
 
     void onDeregistrationSuccess(Server server, String registrationID);
 
-    void onDeregistrationFailure(Server server, ResponseCode responseCode, String errorMessage);
+    void onDeregistrationFailure(Server server, ResponseCode responseCode, String errorMessage, Exception cause);
 
     void onDeregistrationTimeout(Server server);
 }

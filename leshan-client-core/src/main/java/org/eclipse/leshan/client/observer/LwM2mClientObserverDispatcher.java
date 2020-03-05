@@ -39,9 +39,9 @@ public class LwM2mClientObserverDispatcher implements LwM2mClientObserver {
     }
 
     @Override
-    public void onBootstrapFailure(Server bsserver, ResponseCode responseCode, String errorMessage) {
+    public void onBootstrapFailure(Server bsserver, ResponseCode responseCode, String errorMessage, Exception cause) {
         for (LwM2mClientObserver observer : observers) {
-            observer.onBootstrapFailure(bsserver, responseCode, errorMessage);
+            observer.onBootstrapFailure(bsserver, responseCode, errorMessage, cause);
         }
     }
 
@@ -60,9 +60,9 @@ public class LwM2mClientObserverDispatcher implements LwM2mClientObserver {
     }
 
     @Override
-    public void onRegistrationFailure(Server server, ResponseCode responseCode, String errorMessage) {
+    public void onRegistrationFailure(Server server, ResponseCode responseCode, String errorMessage, Exception cause) {
         for (LwM2mClientObserver observer : observers) {
-            observer.onRegistrationFailure(server, responseCode, errorMessage);
+            observer.onRegistrationFailure(server, responseCode, errorMessage, cause);
         }
     }
 
@@ -81,9 +81,9 @@ public class LwM2mClientObserverDispatcher implements LwM2mClientObserver {
     }
 
     @Override
-    public void onUpdateFailure(Server server, ResponseCode responseCode, String errorMessage) {
+    public void onUpdateFailure(Server server, ResponseCode responseCode, String errorMessage, Exception cause) {
         for (LwM2mClientObserver observer : observers) {
-            observer.onUpdateFailure(server, responseCode, errorMessage);
+            observer.onUpdateFailure(server, responseCode, errorMessage, cause);
         }
     }
 
@@ -102,9 +102,9 @@ public class LwM2mClientObserverDispatcher implements LwM2mClientObserver {
     }
 
     @Override
-    public void onDeregistrationFailure(Server server, ResponseCode responseCode, String errorMessage) {
+    public void onDeregistrationFailure(Server server, ResponseCode responseCode, String errorMessage, Exception e) {
         for (LwM2mClientObserver observer : observers) {
-            observer.onDeregistrationFailure(server, responseCode, errorMessage);
+            observer.onDeregistrationFailure(server, responseCode, errorMessage, e);
         }
     }
 

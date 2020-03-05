@@ -49,7 +49,7 @@ public class SynchronousClientObserver implements LwM2mClientObserver {
     }
 
     @Override
-    public void onBootstrapFailure(Server bsserver, ResponseCode responseCode, String errorMessage) {
+    public void onBootstrapFailure(Server bsserver, ResponseCode responseCode, String errorMessage, Exception cause) {
         bootstrapFailed.set(true);
         bootstrapLatch.countDown();
     }
@@ -66,7 +66,7 @@ public class SynchronousClientObserver implements LwM2mClientObserver {
     }
 
     @Override
-    public void onRegistrationFailure(Server server, ResponseCode responseCode, String errorMessage) {
+    public void onRegistrationFailure(Server server, ResponseCode responseCode, String errorMessage, Exception cause) {
         registerFailed.set(true);
         registerLatch.countDown();
     }
@@ -83,7 +83,7 @@ public class SynchronousClientObserver implements LwM2mClientObserver {
     }
 
     @Override
-    public void onUpdateFailure(Server server, ResponseCode responseCode, String errorMessage) {
+    public void onUpdateFailure(Server server, ResponseCode responseCode, String errorMessage, Exception cause) {
         updateFailed.set(true);
         updateLatch.countDown();
     }
@@ -100,7 +100,8 @@ public class SynchronousClientObserver implements LwM2mClientObserver {
     }
 
     @Override
-    public void onDeregistrationFailure(Server server, ResponseCode responseCode, String errorMessage) {
+    public void onDeregistrationFailure(Server server, ResponseCode responseCode, String errorMessage,
+            Exception cause) {
         deregisterFailed.set(true);
         deregisterLatch.countDown();
     }

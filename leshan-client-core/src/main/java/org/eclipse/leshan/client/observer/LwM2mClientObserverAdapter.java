@@ -29,7 +29,7 @@ public class LwM2mClientObserverAdapter implements LwM2mClientObserver {
     }
 
     @Override
-    public void onBootstrapFailure(Server bsserver, ResponseCode responseCode, String errorMessage) {
+    public void onBootstrapFailure(Server bsserver, ResponseCode responseCode, String errorMessage, Exception cause) {
     }
 
     @Override
@@ -41,7 +41,7 @@ public class LwM2mClientObserverAdapter implements LwM2mClientObserver {
     }
 
     @Override
-    public void onRegistrationFailure(Server server, ResponseCode responseCode, String errorMessage) {
+    public void onRegistrationFailure(Server server, ResponseCode responseCode, String errorMessage, Exception cause) {
     }
 
     @Override
@@ -53,7 +53,7 @@ public class LwM2mClientObserverAdapter implements LwM2mClientObserver {
     }
 
     @Override
-    public void onUpdateFailure(Server server, ResponseCode responseCode, String errorMessage) {
+    public void onUpdateFailure(Server server, ResponseCode responseCode, String errorMessage, Exception cause) {
     }
 
     @Override
@@ -65,7 +65,8 @@ public class LwM2mClientObserverAdapter implements LwM2mClientObserver {
     }
 
     @Override
-    public void onDeregistrationFailure(Server server, ResponseCode responseCode, String errorMessage) {
+    public void onDeregistrationFailure(Server server, ResponseCode responseCode, String errorMessage,
+            Exception cause) {
     }
 
     @Override
