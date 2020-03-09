@@ -217,12 +217,14 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
         Connector connector = currentEndpoint.getConnector();
         if (connector instanceof DTLSConnector) {
             if (resume) {
+                LOG.info("Clear DTLS session for resumption for server {}", server.getUri());
                 ((DTLSConnector) connector).forceResumeAllSessions();
             } else {
+                LOG.info("Clear DTLS session for server {}", server.getUri());
                 ((DTLSConnector) connector).clearConnectionState();
             }
         }
-        LOG.info("Clear DTLS session for server {}", server.getUri());
+
     }
 
     public synchronized Endpoint getEndpoint(Identity server) {
