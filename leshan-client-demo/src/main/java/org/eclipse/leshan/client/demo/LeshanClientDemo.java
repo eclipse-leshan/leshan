@@ -151,6 +151,8 @@ public class LeshanClientDemo {
                 "Set the local CoAP port of the Client.\n  Default: A valid port value is between 0 and 65535.");
         options.addOption("u", true, String.format("Set the LWM2M or Bootstrap server URL.\nDefault: localhost:%d.",
                 LwM2m.DEFAULT_COAP_PORT));
+        options.addOption("r", false, "Force reconnect/rehandshake on update.");
+        options.addOption("f", false, "Do not try to resume session always, do a full handshake.");
         options.addOption("ocf",
                 "activate support of old/unofficial content format .\n See https://github.com/eclipse/leshan/pull/720");
         options.addOption("oc", "activate support of old/deprecated cipher suites.");
@@ -396,7 +398,7 @@ public class LeshanClientDemo {
             createAndStartClient(endpoint, localAddress, localPort, cl.hasOption("b"), additionalAttributes, lifetime,
                     communicationPeriod, serverURI, pskIdentity, pskKey, clientPrivateKey, clientPublicKey,
                     serverPublicKey, clientCertificate, serverCertificate, latitude, longitude, scaleFactor,
-                    cl.hasOption("ocf"), cl.hasOption("oc"));
+                    cl.hasOption("ocf"), cl.hasOption("oc"), cl.hasOption("r"), cl.hasOption("f"));
         } catch (Exception e) {
             System.err.println("Unable to create and start client ...");
             e.printStackTrace();
@@ -409,7 +411,8 @@ public class LeshanClientDemo {
             byte[] pskIdentity, byte[] pskKey, PrivateKey clientPrivateKey, PublicKey clientPublicKey,
             PublicKey serverPublicKey, X509Certificate clientCertificate, X509Certificate serverCertificate,
             Float latitude, Float longitude, float scaleFactor, boolean supportOldFormat,
-            boolean supportDeprecatedCiphers) throws CertificateEncodingException {
+            boolean supportDeprecatedCiphers, boolean reconnectOnUpdate, boolean forceFullhandshake)
+            throws CertificateEncodingException {
 
         locationInstance = new MyLocation(latitude, longitude, scaleFactor);
 
@@ -476,6 +479,8 @@ public class LeshanClientDemo {
         // Configure Registration Engine
         DefaultRegistrationEngineFactory engineFactory = new DefaultRegistrationEngineFactory();
         engineFactory.setCommunicationPeriod(communicationPeriod);
+        engineFactory.setReconnectOnUpdate(reconnectOnUpdate);
+        engineFactory.setResumeOnConnect(!forceFullhandshake);
 
         // Create client
         LeshanClientBuilder builder = new LeshanClientBuilder(endpoint);
