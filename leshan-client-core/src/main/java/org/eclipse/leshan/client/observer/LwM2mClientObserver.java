@@ -17,33 +17,56 @@ package org.eclipse.leshan.client.observer;
 
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.servers.Server;
+import org.eclipse.leshan.core.request.BootstrapRequest;
+import org.eclipse.leshan.core.request.DeregisterRequest;
+import org.eclipse.leshan.core.request.RegisterRequest;
+import org.eclipse.leshan.core.request.UpdateRequest;
 
 /**
  * Allow to observer the registration life cycle of a LwM2m client.
  */
 public interface LwM2mClientObserver {
+    // ============== Bootstrap =================
 
-    void onBootstrapSuccess(Server bsserver);
+    void onBootstrapStarted(Server bsserver, BootstrapRequest request);
 
-    void onBootstrapFailure(Server bsserver, ResponseCode responseCode, String errorMessage, Exception cause);
+    void onBootstrapSuccess(Server bsserver, BootstrapRequest request);
 
-    void onBootstrapTimeout(Server bsserver);
+    void onBootstrapFailure(Server bsserver, BootstrapRequest request, ResponseCode responseCode, String errorMessage,
+            Exception cause);
 
-    void onRegistrationSuccess(Server server, String registrationID);
+    void onBootstrapTimeout(Server bsserver, BootstrapRequest request);
 
-    void onRegistrationFailure(Server server, ResponseCode responseCode, String errorMessage, Exception cause);
+    // ============== Registration =================
 
-    void onRegistrationTimeout(Server server);
+    void onRegistrationStarted(Server server, RegisterRequest request);
 
-    void onUpdateSuccess(Server server, String registrationID);
+    void onRegistrationSuccess(Server server, RegisterRequest request, String registrationID);
 
-    void onUpdateFailure(Server server, ResponseCode responseCode, String errorMessage, Exception cause);
+    void onRegistrationFailure(Server server, RegisterRequest request, ResponseCode responseCode, String errorMessage,
+            Exception cause);
 
-    void onUpdateTimeout(Server server);
+    void onRegistrationTimeout(Server server, RegisterRequest request);
 
-    void onDeregistrationSuccess(Server server, String registrationID);
+    // ============== Registration Update =================
 
-    void onDeregistrationFailure(Server server, ResponseCode responseCode, String errorMessage, Exception cause);
+    void onUpdateStarted(Server server, UpdateRequest request);
 
-    void onDeregistrationTimeout(Server server);
+    void onUpdateSuccess(Server server, UpdateRequest request);
+
+    void onUpdateFailure(Server server, UpdateRequest request, ResponseCode responseCode, String errorMessage,
+            Exception cause);
+
+    void onUpdateTimeout(Server server, UpdateRequest request);
+
+    // ============== Deregistration Update =================
+
+    void onDeregistrationStarted(Server server, DeregisterRequest request);
+
+    void onDeregistrationSuccess(Server server, DeregisterRequest request);
+
+    void onDeregistrationFailure(Server server, DeregisterRequest request, ResponseCode responseCode,
+            String errorMessage, Exception cause);
+
+    void onDeregistrationTimeout(Server server, DeregisterRequest request);
 }

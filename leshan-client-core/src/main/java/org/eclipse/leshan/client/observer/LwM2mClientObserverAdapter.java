@@ -17,6 +17,10 @@ package org.eclipse.leshan.client.observer;
 
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.servers.Server;
+import org.eclipse.leshan.core.request.BootstrapRequest;
+import org.eclipse.leshan.core.request.DeregisterRequest;
+import org.eclipse.leshan.core.request.RegisterRequest;
+import org.eclipse.leshan.core.request.UpdateRequest;
 
 /**
  * An abstract adapter class for observing registration life cycle. The methods in this class are empty. This class
@@ -25,51 +29,70 @@ import org.eclipse.leshan.client.servers.Server;
 public class LwM2mClientObserverAdapter implements LwM2mClientObserver {
 
     @Override
-    public void onBootstrapSuccess(Server bsserver) {
+    public void onBootstrapStarted(Server bsserver, BootstrapRequest request) {
     }
 
     @Override
-    public void onBootstrapFailure(Server bsserver, ResponseCode responseCode, String errorMessage, Exception cause) {
+    public void onBootstrapSuccess(Server bsserver, BootstrapRequest request) {
     }
 
     @Override
-    public void onBootstrapTimeout(Server bsserver) {
+    public void onBootstrapFailure(Server bsserver, BootstrapRequest request, ResponseCode responseCode,
+            String errorMessage, Exception cause) {
     }
 
     @Override
-    public void onRegistrationSuccess(Server server, String registrationID) {
+    public void onBootstrapTimeout(Server bsserver, BootstrapRequest request) {
     }
 
     @Override
-    public void onRegistrationFailure(Server server, ResponseCode responseCode, String errorMessage, Exception cause) {
+    public void onRegistrationStarted(Server server, RegisterRequest request) {
     }
 
     @Override
-    public void onRegistrationTimeout(Server server) {
+    public void onRegistrationSuccess(Server server, RegisterRequest request, String registrationID) {
     }
 
     @Override
-    public void onUpdateSuccess(Server server, String registrationID) {
+    public void onRegistrationFailure(Server server, RegisterRequest request, ResponseCode responseCode,
+            String errorMessage, Exception cause) {
     }
 
     @Override
-    public void onUpdateFailure(Server server, ResponseCode responseCode, String errorMessage, Exception cause) {
+    public void onRegistrationTimeout(Server server, RegisterRequest request) {
     }
 
     @Override
-    public void onUpdateTimeout(Server server) {
+    public void onUpdateStarted(Server server, UpdateRequest request) {
     }
 
     @Override
-    public void onDeregistrationSuccess(Server server, String registrationID) {
+    public void onUpdateSuccess(Server server, UpdateRequest request) {
     }
 
     @Override
-    public void onDeregistrationFailure(Server server, ResponseCode responseCode, String errorMessage,
+    public void onUpdateFailure(Server server, UpdateRequest request, ResponseCode responseCode, String errorMessage,
             Exception cause) {
     }
 
     @Override
-    public void onDeregistrationTimeout(Server server) {
+    public void onUpdateTimeout(Server server, UpdateRequest request) {
+    }
+
+    @Override
+    public void onDeregistrationStarted(Server server, DeregisterRequest request) {
+    }
+
+    @Override
+    public void onDeregistrationSuccess(Server server, DeregisterRequest request) {
+    }
+
+    @Override
+    public void onDeregistrationFailure(Server server, DeregisterRequest request, ResponseCode responseCode,
+            String errorMessage, Exception cause) {
+    }
+
+    @Override
+    public void onDeregistrationTimeout(Server server, DeregisterRequest request) {
     }
 }

@@ -193,13 +193,18 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             Server bootstrapServer = endpointsManager.createEndpoint(bootstrapServerInfo);
 
             // Send bootstrap request
+            BootstrapRequest request = null;
             try {
+                request = new BootstrapRequest(endpoint);
+                if (observer != null) {
+                    observer.onBootstrapStarted(bootstrapServer, request);
+                }
                 BootstrapResponse response = sender.send(bootstrapServerInfo.getAddress(),
-                        bootstrapServerInfo.isSecure(), new BootstrapRequest(endpoint), requestTimeoutInMs);
+                        bootstrapServerInfo.isSecure(), request, requestTimeoutInMs);
                 if (response == null) {
                     LOG.info("Unable to start bootstrap session: Timeout.");
                     if (observer != null) {
-                        observer.onBootstrapTimeout(bootstrapServer);
+                        observer.onBootstrapTimeout(bootstrapServer, request);
                     }
                     return null;
                 } else if (response.isSuccess()) {
@@ -209,7 +214,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                     if (timeout) {
                         LOG.info("Bootstrap sequence aborted: Timeout.");
                         if (observer != null) {
-                            observer.onBootstrapTimeout(bootstrapServer);
+                            observer.onBootstrapTimeout(bootstrapServer, request);
                         }
                         return null;
                     } else {
@@ -220,22 +225,22 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                             dmServers = endpointsManager.createEndpoints(serverInfos.deviceManagements.values());
                         }
                         if (observer != null) {
-                            observer.onBootstrapSuccess(bootstrapServer);
+                            observer.onBootstrapSuccess(bootstrapServer, request);
                         }
                         return dmServers;
                     }
                 } else {
                     LOG.info("Bootstrap failed: {} {}.", response.getCode(), response.getErrorMessage());
                     if (observer != null) {
-                        observer.onBootstrapFailure(bootstrapServer, response.getCode(), response.getErrorMessage(),
-                                null);
+                        observer.onBootstrapFailure(bootstrapServer, request, response.getCode(),
+                                response.getErrorMessage(), null);
                     }
                     return null;
                 }
             } catch (RuntimeException e) {
                 logExceptionOnSendRequest("Unable to send Bootstrap request", e);
                 if (observer != null) {
-                    observer.onBootstrapFailure(bootstrapServer, null, null, e);
+                    observer.onBootstrapFailure(bootstrapServer, request, null, null, e);
                 }
                 return null;
             } finally {
@@ -268,16 +273,20 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
 
         // Send register request
         LOG.info("Trying to register to {} ...", server.getUri());
+        RegisterRequest request = null;
         try {
-            RegisterRequest regRequest = new RegisterRequest(endpoint, dmInfo.lifetime, LwM2m.VERSION, dmInfo.binding,
-                    null, LinkFormatHelper.getClientDescription(objectEnablers.values(), null), additionalAttributes);
-            RegisterResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(), regRequest,
+            request = new RegisterRequest(endpoint, dmInfo.lifetime, LwM2m.VERSION, dmInfo.binding, null,
+                    LinkFormatHelper.getClientDescription(objectEnablers.values(), null), additionalAttributes);
+            if (observer != null) {
+                observer.onRegistrationStarted(server, request);
+            }
+            RegisterResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(), request,
                     requestTimeoutInMs);
 
             if (response == null) {
                 LOG.info("Registration failed: Timeout.");
                 if (observer != null) {
-                    observer.onRegistrationTimeout(server);
+                    observer.onRegistrationTimeout(server, request);
                 }
                 return Status.TIMEOUT;
             } else if (response.isSuccess()) {
@@ -291,20 +300,21 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                 scheduleUpdate(server, registrationID, new RegistrationUpdate(), delay);
 
                 if (observer != null) {
-                    observer.onRegistrationSuccess(server, registrationID);
+                    observer.onRegistrationSuccess(server, request, registrationID);
                 }
                 return Status.SUCCESS;
             } else {
                 LOG.info("Registration failed: {} {}.", response.getCode(), response.getErrorMessage());
                 if (observer != null) {
-                    observer.onRegistrationFailure(server, response.getCode(), response.getErrorMessage(), null);
+                    observer.onRegistrationFailure(server, request, response.getCode(), response.getErrorMessage(),
+                            null);
                 }
                 return Status.FAILURE;
             }
         } catch (RuntimeException e) {
             logExceptionOnSendRequest("Unable to send register request", e);
             if (observer != null) {
-                observer.onRegistrationFailure(server, null, null, e);
+                observer.onRegistrationFailure(server, request, null, null, e);
             }
             return Status.FAILURE;
         }
@@ -322,14 +332,19 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
 
         // Send deregister request
         LOG.info("Trying to deregister to {} ...", server.getUri());
+        DeregisterRequest request = null;
         try {
+            request = new DeregisterRequest(registrationID);
+            if (observer != null) {
+                observer.onDeregistrationStarted(server, request);
+            }
             DeregisterResponse response = sender.send(server.getIdentity().getPeerAddress(),
-                    server.getIdentity().isSecure(), new DeregisterRequest(registrationID), deregistrationTimeoutInMs);
+                    server.getIdentity().isSecure(), request, deregistrationTimeoutInMs);
             if (response == null) {
                 registrationID = null;
                 LOG.info("Deregistration failed: Timeout.");
                 if (observer != null) {
-                    observer.onDeregistrationTimeout(server);
+                    observer.onDeregistrationTimeout(server, request);
                 }
                 return false;
             } else if (response.isSuccess() || response.getCode() == ResponseCode.NOT_FOUND) {
@@ -339,23 +354,25 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                 LOG.info("De-register response {} {}.", response.getCode(), response.getErrorMessage());
                 if (observer != null) {
                     if (response.isSuccess()) {
-                        observer.onDeregistrationSuccess(server, registrationID);
+                        observer.onDeregistrationSuccess(server, request);
                     } else {
-                        observer.onDeregistrationFailure(server, response.getCode(), response.getErrorMessage(), null);
+                        observer.onDeregistrationFailure(server, request, response.getCode(),
+                                response.getErrorMessage(), null);
                     }
                 }
                 return true;
             } else {
                 LOG.info("Deregistration failed: {} {}.", response.getCode(), response.getErrorMessage());
                 if (observer != null) {
-                    observer.onDeregistrationFailure(server, response.getCode(), response.getErrorMessage(), null);
+                    observer.onDeregistrationFailure(server, request, response.getCode(), response.getErrorMessage(),
+                            null);
                 }
                 return false;
             }
         } catch (RuntimeException e) {
             logExceptionOnSendRequest("Unable to send deregister request", e);
             if (observer != null) {
-                observer.onDeregistrationFailure(server, null, null, e);
+                observer.onDeregistrationFailure(server, request, null, null, e);
             }
             return false;
         }
@@ -384,20 +401,23 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
 
         // Send update
         LOG.info("Trying to update registration to {} (response timeout {}ms)...", server.getUri(), requestTimeoutInMs);
+        UpdateRequest request = null;
         try {
+            request = new UpdateRequest(registrationID, registrationUpdate.getLifeTimeInSec(),
+                    registrationUpdate.getSmsNumber(), registrationUpdate.getBindingMode(),
+                    registrationUpdate.getObjectLinks(), registrationUpdate.getAdditionalAttributes());
+            if (observer != null) {
+                observer.onUpdateStarted(server, request);
+            }
             if (reconnectOnUpdate) {
                 endpointsManager.forceReconnection(server, resumeOnConnect);
             }
-            UpdateResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(),
-                    new UpdateRequest(registrationID, registrationUpdate.getLifeTimeInSec(),
-                            registrationUpdate.getSmsNumber(), registrationUpdate.getBindingMode(),
-                            registrationUpdate.getObjectLinks(), registrationUpdate.getAdditionalAttributes()),
-                    requestTimeoutInMs);
+            UpdateResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(), request, requestTimeoutInMs);
             if (response == null) {
                 registrationID = null;
                 LOG.info("Registration update failed: Timeout.");
                 if (observer != null) {
-                    observer.onUpdateTimeout(server);
+                    observer.onUpdateTimeout(server, request);
                 }
                 return Status.TIMEOUT;
             } else if (response.getCode() == ResponseCode.CHANGED) {
@@ -406,13 +426,13 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                 long delay = calculateNextUpdate(server, dmInfo.lifetime);
                 scheduleUpdate(server, registrationID, new RegistrationUpdate(), delay);
                 if (observer != null) {
-                    observer.onUpdateSuccess(server, registrationID);
+                    observer.onUpdateSuccess(server, request);
                 }
                 return Status.SUCCESS;
             } else {
                 LOG.info("Registration update failed: {} {}.", response.getCode(), response.getErrorMessage());
                 if (observer != null) {
-                    observer.onUpdateFailure(server, response.getCode(), response.getErrorMessage(), null);
+                    observer.onUpdateFailure(server, request, response.getCode(), response.getErrorMessage(), null);
                 }
                 registeredServers.remove(registrationID);
                 return Status.FAILURE;
@@ -420,7 +440,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         } catch (RuntimeException e) {
             logExceptionOnSendRequest("Unable to send update request", e);
             if (observer != null) {
-                observer.onUpdateFailure(server, null, null, e);
+                observer.onUpdateFailure(server, request, null, null, e);
             }
             return Status.FAILURE;
         }
