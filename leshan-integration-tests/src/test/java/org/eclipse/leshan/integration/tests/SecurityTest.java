@@ -400,6 +400,38 @@ public class SecurityTest {
     }
 
     @Test
+    public void registered_device_with_psk_identity_to_server_with_psk_then_remove_security_info()
+            throws NonUniqueSecurityInfoException, InterruptedException {
+        // Create PSK server & start it
+        helper.createServer(); // default server support PSK
+        helper.server.start();
+
+        // Create PSK Client
+        helper.createPSKClient();
+
+        // Add client credentials to the server
+        helper.getSecurityStore()
+                .add(SecurityInfo.newPreSharedKeyInfo(helper.getCurrentEndpoint(), GOOD_PSK_ID, GOOD_PSK_KEY));
+
+        // Check client is not registered
+        helper.assertClientNotRegisterered();
+
+        // Start it and wait for registration
+        helper.client.start();
+        helper.waitForRegistrationAtClientSide(1);
+
+        // Check client is well registered
+        helper.assertClientRegisterered();
+
+        // remove compromised credentials
+        helper.getSecurityStore().remove(helper.getCurrentEndpoint(), true);
+
+        // try to update
+        helper.client.triggerRegistrationUpdate();
+        helper.ensureNoUpdate(1);
+    }
+
+    @Test
     public void nonunique_psk_identity() throws NonUniqueSecurityInfoException {
         helper.createServer();
         helper.server.start();
@@ -450,7 +482,7 @@ public class SecurityTest {
     }
 
     @Test
-    public void registered_device_with_bad_rpk_to_server_with_rpk() throws NonUniqueSecurityInfoException {
+    public void registered_device_with_bad_rpk_to_server_with_rpk_() throws NonUniqueSecurityInfoException {
         helper.createServerWithRPK();
         helper.server.start();
 
@@ -466,6 +498,32 @@ public class SecurityTest {
     }
 
     @Test
+    public void registered_device_with_rpk_to_server_with_rpk_then_remove_security_info()
+            throws NonUniqueSecurityInfoException {
+        helper.createServerWithRPK();
+        helper.server.start();
+
+        helper.createRPKClient();
+
+        helper.getSecurityStore()
+                .add(SecurityInfo.newRawPublicKeyInfo(helper.getCurrentEndpoint(), helper.clientPublicKey));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.waitForRegistrationAtClientSide(1);
+
+        // Check client is well registered
+        helper.assertClientRegisterered();
+
+        // remove compromised credentials
+        helper.getSecurityStore().remove(helper.getCurrentEndpoint(), true);
+
+        // try to update
+        helper.client.triggerRegistrationUpdate();
+        helper.ensureNoUpdate(1);
+    }
+
+    @Test
     public void registered_device_with_rpk_and_bad_endpoint_to_server_with_rpk() throws NonUniqueSecurityInfoException {
         helper.createServerWithRPK();
         helper.server.start();
@@ -476,6 +534,31 @@ public class SecurityTest {
 
         helper.client.start();
         helper.ensureNoRegistration(1);
+    }
+
+    @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert_then_remove_security_info()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert();
+        helper.server.start();
+
+        helper.createX509CertClient();
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.waitForRegistrationAtClientSide(1);
+
+        // Check client is well registered
+        helper.assertClientRegisterered();
+
+        // remove compromised credentials
+        helper.getSecurityStore().remove(helper.getCurrentEndpoint(), true);
+
+        // try to update
+        helper.client.triggerRegistrationUpdate();
+        helper.ensureNoUpdate(1);
     }
 
     @Test
