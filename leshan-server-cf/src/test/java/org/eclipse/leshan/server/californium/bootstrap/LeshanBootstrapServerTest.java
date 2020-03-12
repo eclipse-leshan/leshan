@@ -38,7 +38,8 @@ public class LeshanBootstrapServerTest {
     private BootstrapHandler bsHandler;
 
     private LeshanBootstrapServer createBootstrapServer() {
-        LeshanBootstrapServerBuilder builder = new LeshanBootstrapServerBuilder();
+        LeshanBootstrapServerBuilder builder = new LeshanBootstrapServerBuilder()
+                .setLocalAddress(new InetSocketAddress(0));
         builder.setBootstrapHandlerFactory(new BootstrapHandlerFactory() {
 
             @Override

@@ -33,7 +33,7 @@ public class LeshanServerTest {
 
     @Test
     public void testStartStopStart() throws InterruptedException {
-        LeshanServer server = new LeshanServerBuilder().build();
+        LeshanServer server = new LeshanServerBuilder().setLocalAddress(new InetSocketAddress(0)).build();
 
         server.start();
         Thread.sleep(100);
@@ -47,7 +47,7 @@ public class LeshanServerTest {
         // look at nb active thread before.
         int numberOfThreadbefore = Thread.activeCount();
 
-        LeshanServer server = new LeshanServerBuilder().build();
+        LeshanServer server = new LeshanServerBuilder().setLocalAddress(new InetSocketAddress(0)).build();
         server.start();
         Thread.sleep(100);
         // HACK force creation thread creation.
@@ -65,7 +65,7 @@ public class LeshanServerTest {
         // look at nb active thread before.
         int numberOfThreadbefore = Thread.activeCount();
 
-        LeshanServer server = new LeshanServerBuilder().build();
+        LeshanServer server = new LeshanServerBuilder().setLocalAddress(new InetSocketAddress(0)).build();
         server.start();
         Thread.sleep(100);
         // HACK force creation thread creation.
