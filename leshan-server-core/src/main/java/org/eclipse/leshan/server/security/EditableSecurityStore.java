@@ -41,7 +41,16 @@ public interface EditableSecurityStore extends SecurityStore {
      * Removes the security information for a given end-point.
      * 
      * @param endpoint the client end-point
+     * @param infosAreCompromised if the {@link SecurityInfo} removed should be considered as compromised and so must
+     *        not be used anymore immediately.
      * @return the removed {@link SecurityInfo} or <code>null</code> if no info for the end-point.
      */
-    SecurityInfo remove(String endpoint);
+    SecurityInfo remove(String endpoint, boolean infosAreCompromised);
+
+    /**
+     * Set a Listener for this store.
+     * 
+     * @param listener the security store listener
+     */
+    void setListener(SecurityStoreListener listener);
 }

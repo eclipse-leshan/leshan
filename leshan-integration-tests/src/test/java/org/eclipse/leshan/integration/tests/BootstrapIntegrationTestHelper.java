@@ -416,6 +416,6 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
     @Override
     public void dispose() {
         super.dispose();
-        ((EditableSecurityStore) server.getSecurityStore()).remove(getCurrentEndpoint());
+        ((EditableSecurityStore) server.getSecurityStore()).remove(getCurrentEndpoint(), false);
     }
 }

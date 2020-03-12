@@ -27,6 +27,7 @@ import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.server.resources.Resource;
+import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.leshan.core.californium.CoapResponseCallback;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
@@ -68,8 +69,10 @@ import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
 import org.eclipse.leshan.server.security.Authorizer;
+import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.SecurityStore;
+import org.eclipse.leshan.server.security.SecurityStoreListener;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -175,6 +178,9 @@ public class LeshanServer {
         requestSender = createRequestSender(securedEndpoint, unsecuredEndpoint, registrationService, observationService,
                 this.modelProvider, encoder, decoder, presenceService);
 
+        // connection cleaner
+        createConnectionCleaner(securityStore, securedEndpoint);
+
         coapApi = new CoapAPI();
     }
 
@@ -260,6 +266,24 @@ public class LeshanServer {
         });
 
         return requestSender;
+    }
+
+    protected void createConnectionCleaner(SecurityStore securityStore, CoapEndpoint securedEndpoint) {
+        if (securedEndpoint != null && securedEndpoint.getConnector() instanceof DTLSConnector
+                && securityStore instanceof EditableSecurityStore) {
+
+            final ConnectionCleaner connectionCleaner = new ConnectionCleaner(
+                    (DTLSConnector) securedEndpoint.getConnector());
+
+            ((EditableSecurityStore) securityStore).setListener(new SecurityStoreListener() {
+                @Override
+                public void securityInfoRemoved(boolean infosAreCompromised, SecurityInfo... infos) {
+                    if (infosAreCompromised) {
+                        connectionCleaner.cleanConnectionFor(infos);
+                    }
+                }
+            });
+        }
     }
 
     /**

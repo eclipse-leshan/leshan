@@ -70,10 +70,10 @@ public class FileSecurityStore extends InMemorySecurityStore {
     }
 
     @Override
-    public SecurityInfo remove(String endpoint) {
+    public SecurityInfo remove(String endpoint, boolean infosAreCompromised) {
         writeLock.lock();
         try {
-            SecurityInfo info = super.remove(endpoint);
+            SecurityInfo info = super.remove(endpoint, infosAreCompromised);
             if (info != null) {
                 saveToFile();
             }

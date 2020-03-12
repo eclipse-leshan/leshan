@@ -40,6 +40,8 @@ public class InMemorySecurityStore implements EditableSecurityStore {
     // by PSK identity
     protected Map<String, SecurityInfo> securityByIdentity = new HashMap<>();
 
+    private SecurityStoreListener listener;
+
     public InMemorySecurityStore() {
     }
 
@@ -106,7 +108,7 @@ public class InMemorySecurityStore implements EditableSecurityStore {
     }
 
     @Override
-    public SecurityInfo remove(String endpoint) {
+    public SecurityInfo remove(String endpoint, boolean infosAreCompromised) {
         writeLock.lock();
         try {
             SecurityInfo info = securityByEp.get(endpoint);
@@ -115,10 +117,18 @@ public class InMemorySecurityStore implements EditableSecurityStore {
                     securityByIdentity.remove(info.getIdentity());
                 }
                 securityByEp.remove(endpoint);
+                if (listener != null) {
+                    listener.securityInfoRemoved(infosAreCompromised, info);
+                }
             }
             return info;
         } finally {
             writeLock.unlock();
         }
+    }
+
+    @Override
+    public void setListener(SecurityStoreListener listener) {
+        this.listener = listener;
     }
 }
