@@ -3,11 +3,11 @@
 Copyright (c) 2013-2015 Sierra Wireless and others.
 
 All rights reserved. This program and the accompanying materials
-are made available under the terms of the Eclipse Public License v1.0
+are made available under the terms of the Eclipse Public License v2.0
 and Eclipse Distribution License v1.0 which accompany this distribution.
 
 The Eclipse Public License is available at
-   http://www.eclipse.org/legal/epl-v10.html
+   http://www.eclipse.org/legal/epl-v20.html
 and the Eclipse Distribution License is available at
    http://www.eclipse.org/org/documents/edl-v10.html.
 
@@ -28,8 +28,8 @@ Contributors:
     <description>An OMA Lightweight M2M (LWM2M) implementation in Java</description>
     <licenses>
         <license>
-            <name>Eclipse Public License (EPL), Version 1.0</name>
-            <url>http://www.eclipse.org/legal/epl-v10.html</url>
+            <name>Eclipse Public License (EPL), Version 2.0</name>
+            <url>http://www.eclipse.org/legal/epl-v20.html</url>
             <distribution>repo</distribution>
         </license>
         <license>
@@ -63,11 +63,10 @@ Contributors:
 
     <developers>
         <developer>
-            <id>jvermillard</id>
-            <name>Julien Vermillard</name>
-            <email>jvermillard@sierrawireless.com</email>
-            <organization>Sierra Wireless - AirVantage</organization>
-            <organizationUrl>http://airvantage.net</organizationUrl>
+            <id>sbernard</id>
+            <name>Simon Bernard</name>
+            <email>sbernard@sierrawireless.com</email>
+            <organization>Sierra Wireless</organization>
             <roles>
                 <role>developer</role>
             </roles>
@@ -93,10 +92,11 @@ Contributors:
             </roles>
         </developer>
         <developer>
-            <id>sbernard</id>
-            <name>Simon Bernard</name>
-            <email>sbernard@sierrawireless.com</email>
-            <organization>Sierra Wireless</organization>
+            <id>jvermillard</id>
+            <name>Julien Vermillard</name>
+            <email>jvermillard@sierrawireless.com</email>
+            <organization>Sierra Wireless - AirVantage</organization>
+            <organizationUrl>http://airvantage.net</organizationUrl>
             <roles>
                 <role>developer</role>
             </roles>
