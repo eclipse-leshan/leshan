@@ -214,6 +214,7 @@ public class LeshanClientBuilder {
         networkConfig.set(Keys.MID_TRACKER, "NULL");
         networkConfig.set(Keys.MAX_ACTIVE_PEERS, 10);
         networkConfig.set(Keys.PROTOCOL_STAGE_THREAD_COUNT, 1);
+        networkConfig.set(Keys.USE_MESSAGE_OFFLOADING, false);
 
         return networkConfig;
     }
@@ -301,7 +302,7 @@ public class LeshanClientBuilder {
         }
 
         return createLeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder,
-                endpointFactory,engineFactory, additionalAttributes, encoder, decoder, executor);
+                endpointFactory, engineFactory, additionalAttributes, encoder, decoder, executor);
     }
 
     /**

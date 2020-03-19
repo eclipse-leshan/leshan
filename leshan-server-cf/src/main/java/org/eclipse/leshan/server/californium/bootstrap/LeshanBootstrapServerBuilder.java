@@ -393,6 +393,7 @@ public class LeshanBootstrapServerBuilder {
     public NetworkConfig createDefaultNetworkConfig() {
         NetworkConfig networkConfig = new NetworkConfig();
         networkConfig.set(Keys.MID_TRACKER, "NULL");
+        networkConfig.set(Keys.USE_MESSAGE_OFFLOADING, false);
         return networkConfig;
     }
 
