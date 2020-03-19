@@ -114,7 +114,10 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     public void visit(ExecuteRequest request) {
         coapRequest = Request.newPost();
         setTarget(coapRequest, request.getPath());
-        coapRequest.setPayload(request.getParameters());
+        if (request.getParameters() != null) {
+            coapRequest.setPayload(request.getParameters());
+            coapRequest.getOptions().setContentFormat(MediaTypeRegistry.TEXT_PLAIN);
+        }
     }
 
     @Override

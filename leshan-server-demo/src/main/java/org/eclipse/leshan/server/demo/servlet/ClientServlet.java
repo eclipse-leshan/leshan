@@ -312,8 +312,11 @@ public class ClientServlet extends HttpServlet {
             try {
                 Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
                 if (registration != null) {
-                    ExecuteRequest request = new ExecuteRequest(target,
-                            IOUtils.toString(req.getInputStream(), StandardCharsets.UTF_8));
+                    String params = null;
+                    if (req.getContentLength() > 0) {
+                        params = IOUtils.toString(req.getInputStream(), StandardCharsets.UTF_8);
+                    }
+                    ExecuteRequest request = new ExecuteRequest(target, params);
                     ExecuteResponse cResponse = server.send(registration, request, extractTimeout(req));
                     processDeviceResponse(req, resp, cResponse);
                 } else {
