@@ -23,6 +23,7 @@ import static org.junit.Assert.*;
 import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.client.request.ServerIdentity;
+import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
 import org.eclipse.leshan.core.node.LwM2mObject;
@@ -105,6 +106,46 @@ public class BootstrapTest {
                 .read(ServerIdentity.SYSTEM, new ReadRequest(LwM2mId.CONNECTIVITY_STATISTICS));
         assertTrue("Connectvity instance is not deleted",
                 ((LwM2mObject) response.getContent()).getInstances().isEmpty());
+    }
+
+    @Test
+    public void bootstrapDeleteAll() {
+        // Create DM Server without security & start it
+        helper.createServer();
+        helper.server.start();
+
+        // Create and start bootstrap server
+        helper.createBootstrapServer(null, helper.deleteSecurityStore("/"));
+        helper.bootstrapServer.start();
+
+        // Create Client and check it is not already registered
+        ObjectsInitializer initializer = new ObjectsInitializer();
+        initializer.setInstancesForObject(LwM2mId.ACCESS_CONTROL, new SimpleInstanceEnabler());
+        initializer.setInstancesForObject(LwM2mId.CONNECTIVITY_STATISTICS, new SimpleInstanceEnabler());
+        helper.createClient(helper.withoutSecurity(), initializer);
+        helper.assertClientNotRegisterered();
+
+        // Start it and wait for bootstrap finished
+        helper.client.start();
+        helper.waitForBootstrapFinishedAtClientSide(1);
+
+        // ensure instances are deleted except device instance and bootstrap server
+        for (LwM2mObjectEnabler enabler : helper.client.getObjectTree().getObjectEnablers().values()) {
+            ReadResponse response = enabler.read(ServerIdentity.SYSTEM, new ReadRequest(enabler.getId()));
+            LwM2mObject responseValue = (LwM2mObject) response.getContent();
+            if (enabler.getId() == LwM2mId.DEVICE) {
+                assertTrue("The Device instance should still be here", responseValue.getInstances().size() == 1);
+            } else if (enabler.getId() == LwM2mId.SECURITY) {
+                assertTrue("Only bootstrap security instance should be here",
+                        ((LwM2mObject) response.getContent()).getInstances().size() == 1);
+                LwM2mObjectInstance securityInstance = responseValue.getInstances().values().iterator().next();
+                assertTrue("Only bootstrap security instance should be here",
+                        securityInstance.getResource(1).getValue() == Boolean.TRUE);
+            } else {
+                assertTrue(enabler.getObjectModel().name + " instance is not deleted",
+                        responseValue.getInstances().isEmpty());
+            }
+        }
     }
 
     @Test
