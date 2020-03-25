@@ -151,7 +151,9 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
             // check if the resource is readable.
             if (path.isResource()) {
                 ResourceModel resourceModel = objectModel.resources.get(path.getResourceId());
-                if (resourceModel != null && !resourceModel.operations.isReadable()) {
+                if (resourceModel == null) {
+                    return ReadResponse.notFound();
+                } else if (!resourceModel.operations.isReadable()) {
                     return ReadResponse.methodNotAllowed();
                 }
             }
@@ -189,7 +191,9 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
                 // check if the resource is writable
                 if (LwM2mId.SECURITY != id) { // security resources are writable by SYSTEM
                     ResourceModel resourceModel = objectModel.resources.get(path.getResourceId());
-                    if (resourceModel != null && !resourceModel.operations.isWritable()) {
+                    if (resourceModel == null) {
+                        return WriteResponse.notFound();
+                    } else if (!resourceModel.operations.isWritable()) {
                         return WriteResponse.methodNotAllowed();
                     }
                 }
@@ -300,7 +304,9 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
         // check if the resource is writable
         ResourceModel resourceModel = objectModel.resources.get(path.getResourceId());
-        if (resourceModel != null && !resourceModel.operations.isExecutable()) {
+        if (resourceModel == null) {
+            return ExecuteResponse.notFound();
+        } else if (!resourceModel.operations.isExecutable()) {
             return ExecuteResponse.methodNotAllowed();
         }
 
@@ -386,8 +392,11 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
             // check if the resource is readable.
             if (path.isResource()) {
                 ResourceModel resourceModel = objectModel.resources.get(path.getResourceId());
-                if (resourceModel != null && !resourceModel.operations.isReadable())
+                if (resourceModel == null) {
+                    return ObserveResponse.notFound();
+                } else if (!resourceModel.operations.isReadable()) {
                     return ObserveResponse.methodNotAllowed();
+                }
             }
         }
         return doObserve(identity, request);
