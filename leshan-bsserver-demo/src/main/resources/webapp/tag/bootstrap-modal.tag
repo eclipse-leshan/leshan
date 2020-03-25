@@ -99,7 +99,7 @@
                  dm:[{
                     binding : "U",
                     defaultMinPeriod : 1,
-                    lifetime : 20,
+                    lifetime : 300,
                     notifIfDisabled : true,
                     shortId : 123,
                     security : {
