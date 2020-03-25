@@ -26,7 +26,10 @@ import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
+import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.response.ExecuteResponse;
+import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.core.response.WriteResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,13 +45,22 @@ public class DummyInstanceEnabler extends SimpleInstanceEnabler {
     }
 
     @Override
+    public ReadResponse read(ServerIdentity identity, int resourceid) {
+        LOG.info("Read on {} Resource /{}/{}/{} ", getModel().name, getModel().id, getId(), resourceid);
+        return super.read(identity, resourceid);
+    }
+
+    @Override
+    public WriteResponse write(ServerIdentity identity, int resourceid, LwM2mResource value) {
+        LOG.info("Write on {} Resource /{}/{}/{} ", getModel().name, getModel().id, getId(), resourceid);
+        return super.write(identity, resourceid, value);
+    }
+
+    @Override
     public ExecuteResponse execute(ServerIdentity identity, int resourceid, String params) {
-        if (getModel().resources.containsKey(resourceid)) {
-            LOG.info("Executing resource [{}] with params [{}]", resourceid, params);
-            return ExecuteResponse.success();
-        } else {
-            return ExecuteResponse.notFound();
-        }
+        LOG.info("Execute {} Resource /{}/{}/{} with params {}", getModel().name, getModel().id, getId(), resourceid,
+                params);
+        return ExecuteResponse.success();
     }
 
     @Override

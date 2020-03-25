@@ -31,11 +31,15 @@ import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A simple {@link LwM2mInstanceEnabler} for the Server (1) object.
  */
 public class Server extends BaseInstanceEnabler {
+
+    private static final Logger LOG = LoggerFactory.getLogger(Server.class);
 
     private final static List<Integer> supportedResources = Arrays.asList(0, 1, 2, 3, 6, 7, 8);
 
@@ -59,6 +63,8 @@ public class Server extends BaseInstanceEnabler {
 
     @Override
     public ReadResponse read(ServerIdentity identity, int resourceid) {
+        if (!identity.isSystem())
+            LOG.debug("Read on Server resource /{}/{}/{}", getModel().id, getId(), resourceid);
 
         switch (resourceid) {
         case 0: // short server ID
@@ -90,6 +96,8 @@ public class Server extends BaseInstanceEnabler {
 
     @Override
     public WriteResponse write(ServerIdentity identity, int resourceid, LwM2mResource value) {
+        if (!identity.isSystem())
+            LOG.debug("Write on Server resource /{}/{}/{}", getModel().id, getId(), resourceid);
 
         switch (resourceid) {
         case 0:
@@ -163,7 +171,7 @@ public class Server extends BaseInstanceEnabler {
 
     @Override
     public ExecuteResponse execute(ServerIdentity identity, int resourceid, String params) {
-
+        LOG.debug("Execute on Server resource /{}/{}/{}", getModel().id, getId(), resourceid);
         if (resourceid == 8) {
             // TODO we currently support only one dm server.
             getLwM2mClient().triggerRegistrationUpdate();

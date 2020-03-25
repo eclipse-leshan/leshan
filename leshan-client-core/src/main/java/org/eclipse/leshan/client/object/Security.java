@@ -137,12 +137,10 @@ public class Security extends BaseInstanceEnabler {
 
     @Override
     public WriteResponse write(ServerIdentity identity, int resourceId, LwM2mResource value) {
-        LOG.debug("Write on resource {}: {}", resourceId, value);
-
-        // restricted to BS server?
+        if (!identity.isSystem())
+            LOG.debug("Write on Security resource /{}/{}/{}", getModel().id, getId(), resourceId);
 
         switch (resourceId) {
-
         case SEC_SERVER_URI: // server uri
             if (value.getType() != Type.STRING) {
                 return WriteResponse.badRequest("invalid type");

@@ -15,8 +15,12 @@ import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.util.NamedThreadFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RandomTemperatureSensor extends BaseInstanceEnabler {
+
+    private static final Logger LOG = LoggerFactory.getLogger(RandomTemperatureSensor.class);
 
     private static final String UNIT_CELSIUS = "cel";
     private static final int SENSOR_VALUE = 5700;
@@ -45,6 +49,7 @@ public class RandomTemperatureSensor extends BaseInstanceEnabler {
 
     @Override
     public synchronized ReadResponse read(ServerIdentity identity, int resourceId) {
+        LOG.info("Read on Temperature resource /{}/{}/{}", getModel().id, getId(), resourceId);
         switch (resourceId) {
         case MIN_MEASURED_VALUE:
             return ReadResponse.success(resourceId, getTwoDigitValue(minMeasuredValue));
@@ -61,6 +66,7 @@ public class RandomTemperatureSensor extends BaseInstanceEnabler {
 
     @Override
     public synchronized ExecuteResponse execute(ServerIdentity identity, int resourceId, String params) {
+        LOG.info("Execute on Temperature resource /{}/{}/{}", getModel().id, getId(), resourceId);
         switch (resourceId) {
         case RESET_MIN_MAX_MEASURED_VALUES:
             resetMinMaxMeasuredValues();
