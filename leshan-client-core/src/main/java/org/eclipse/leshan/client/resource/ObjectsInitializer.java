@@ -95,7 +95,7 @@ public class ObjectsInitializer {
      * instances. A dummy instance is just a very simple instance implementation which respect the object model and
      * return some random values. A good way to begin to test Leshan client but not adapted to production environment.
      * 
-     * @param objectId
+     * @param objectIds the list of object id. For each id a dummy instance will be created.
      */
     public void setDummyInstancesForObject(int... objectIds) {
         // create a map (id => nb instances)

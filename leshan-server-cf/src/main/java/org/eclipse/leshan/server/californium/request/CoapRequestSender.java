@@ -22,6 +22,7 @@ import org.eclipse.leshan.core.request.exception.ClientSleepingException;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.request.exception.RequestRejectedException;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
+import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.request.exception.UnconnectedPeerException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.ResponseCallback;
@@ -62,7 +63,7 @@ public interface CoapRequestSender {
      * {@link ResponseCallback} and {@link ErrorCallback} are exclusively called.
      * 
      * @param destination The registration linked to the LWM2M client to which the request must be sent.
-     * @param request The request to send to the client.
+     * @param coapRequest The request to send to the client.
      * @param timeoutInMs The response timeout to wait in milliseconds (see
      *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
      * @param responseCallback a callback called when a response is received (successful or error response). This

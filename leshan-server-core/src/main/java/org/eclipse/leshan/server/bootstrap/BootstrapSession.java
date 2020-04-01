@@ -27,7 +27,7 @@ import org.eclipse.leshan.core.request.Identity;
 public interface BootstrapSession {
 
     /**
-     * @Return the identifier for this session
+     * @return the identifier for this session
      */
     String getId();
 

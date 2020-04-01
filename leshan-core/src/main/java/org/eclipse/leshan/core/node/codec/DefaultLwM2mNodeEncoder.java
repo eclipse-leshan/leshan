@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A default {@link LwM2mNodeEncoder} which support default {@link ContentFormat} :
- * <p>
  * <ul>
  * <li>{@link ContentFormat#TLV}</li>
  * <li>{@link ContentFormat#JSON}</li>

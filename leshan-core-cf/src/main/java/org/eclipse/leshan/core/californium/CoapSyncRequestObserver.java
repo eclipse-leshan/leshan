@@ -24,8 +24,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
-import org.eclipse.californium.scandium.dtls.DtlsHandshakeTimeoutException;
 import org.eclipse.californium.elements.exception.EndpointUnconnectedException;
+import org.eclipse.californium.scandium.dtls.DtlsHandshakeTimeoutException;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.request.exception.RequestRejectedException;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * This class also provides response timeout facility.
  * 
- * @see https://github.com/eclipse/leshan/wiki/Request-Timeout for more details.
+ * @see <a href="https://github.com/eclipse/leshan/wiki/Request-Timeout">Request Timeout Wiki page</a>
  */
 public class CoapSyncRequestObserver extends AbstractRequestObserver {
 

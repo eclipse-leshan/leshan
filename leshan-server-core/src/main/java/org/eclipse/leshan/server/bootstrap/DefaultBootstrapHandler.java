@@ -45,7 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A default implementation for {@link BootstrapHandler.
+ * A default implementation for {@link BootstrapHandler}.
  */
 public class DefaultBootstrapHandler implements BootstrapHandler {
 

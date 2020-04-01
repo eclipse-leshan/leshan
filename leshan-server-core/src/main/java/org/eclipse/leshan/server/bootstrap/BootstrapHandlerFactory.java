@@ -18,7 +18,7 @@ package org.eclipse.leshan.server.bootstrap;
 /**
  * Creates {@link BootstrapHandler}.
  * 
- * @see {@link DefaultBootstrapHandler}
+ * @see DefaultBootstrapHandler
  */
 public interface BootstrapHandlerFactory {
 

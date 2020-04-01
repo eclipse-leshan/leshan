@@ -32,6 +32,7 @@ import org.eclipse.californium.elements.DtlsEndpointContext;
 import org.eclipse.californium.elements.UDPConnector;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.californium.scandium.dtls.CertificateType;
 import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
@@ -283,7 +284,7 @@ public class LeshanServerBuilder {
     }
 
     /**
-     * Set the Scandium/DTLS Configuration : {@link DtlsConnectorConfig.Builder}.
+     * Set the Scandium/DTLS Configuration : {@link Builder}.
      */
     public LeshanServerBuilder setDtlsConfig(DtlsConnectorConfig.Builder config) {
         this.dtlsConfigBuilder = config;
@@ -546,8 +547,8 @@ public class LeshanServerBuilder {
      * You can extend <code>LeshanServerBuilder</code> and override this method to create a new builder which will be
      * able to build an extended <code>LeshanServer</code>.
      * 
-     * @param unsecuredEndpoint CoAP endpoint used for <code>coap://<code> communication.
-     * @param securedEndpoint CoAP endpoint used for <code>coaps://<code> communication.
+     * @param unsecuredEndpoint CoAP endpoint used for <code>coap://</code> communication.
+     * @param securedEndpoint CoAP endpoint used for <code>coaps://</code> communication.
      * @param registrationStore the {@link Registration} store.
      * @param securityStore the {@link SecurityInfo} store.
      * @param authorizer define which devices is allow to register on this server.

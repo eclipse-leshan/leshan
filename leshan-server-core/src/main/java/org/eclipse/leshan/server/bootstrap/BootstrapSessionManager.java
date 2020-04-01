@@ -89,7 +89,7 @@ public interface BootstrapSessionManager {
      * 
      * @param bsSession the bootstrap session concerned.
      * @param request The request which failed to be sent.
-     * @param exception The cause of the failure. Can be null.
+     * @param cause The cause of the failure. Can be null.
      * 
      * @return a {@link BootstrapPolicy} given the way to continue the bootstrap session.
      */

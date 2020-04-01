@@ -283,8 +283,9 @@ public class Registration implements Serializable {
     }
 
     /**
-     * This is the same idea than {@link Registration#isAlive()} but with a grace period. <br/>
+     * This is the same idea than {@link Registration#isAlive()} but with a grace period. <br>
      * 
+     * @param gracePeriodInSec an extra time for the registration lifetime.
      * @return true if the last registration update was done less than lifetime+gracePeriod seconds ago.
      */
     public boolean isAlive(long gracePeriodInSec) {
@@ -300,6 +301,7 @@ public class Registration implements Serializable {
     }
 
     /**
+     * @param objectid the object id for which we want to know the supported version.
      * @return the supported version of the object with the id {@code objectid}. If the object is not supported return
      *         {@code null}
      */
@@ -308,7 +310,7 @@ public class Registration implements Serializable {
     }
 
     /**
-     * @return a map from {@code objectId} => {@code supportedVersion} for each supported objects. supported.
+     * @return a map from {@code objectId} {@literal =>} {@code supportedVersion} for each supported objects. supported.
      */
     public Map<Integer, String> getSupportedObject() {
         Map<Integer, String> objects = supportedObjects.get();
@@ -354,7 +356,11 @@ public class Registration implements Serializable {
     }
 
     /**
-     * Build a Map (object Id => object Version) from root path and registration object links.
+     * Build a Map {@code objectId} {@literal =>} {@code supportedVersion} from root path and registration object links.
+     * 
+     * @param rootPath the rootpath of LWM2M tree.
+     * @param objectLinks the registraiton object links payload.
+     * @return a Map {@code objectId} {@literal =>} {@code supportedVersion}.
      */
     public static Map<Integer, String> getSupportedObject(String rootPath, Link[] objectLinks) {
         Map<Integer, String> objects = new HashMap<>();

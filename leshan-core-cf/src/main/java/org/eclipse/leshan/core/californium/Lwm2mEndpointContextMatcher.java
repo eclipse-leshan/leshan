@@ -20,6 +20,7 @@ import java.security.Principal;
 import javax.security.auth.x500.X500Principal;
 
 import org.eclipse.californium.elements.PrincipalEndpointContextMatcher;
+import org.eclipse.leshan.core.request.Identity;
 
 /**
  * LWM2M principal based endpoint context matcher.
@@ -27,9 +28,10 @@ import org.eclipse.californium.elements.PrincipalEndpointContextMatcher;
  * Matches DTLS based on the used principal. Requires unique credentials.
  * 
  * For x.509, only the CN is checked, because the other parts of the distinguished names are removed when converting it
- * into a {@Link Identity}.
+ * into a {@link Identity}.
  * 
- * For more detailed about why this is needed, see https://github.com/eclipse/leshan/wiki/LWM2M-Observe#for-dtls
+ * For more detailed about why this is needed, see
+ * <a href="https://github.com/eclipse/leshan/wiki/LWM2M-Observe#for-dtls">LWM2M-Observe wiki page</a>
  */
 public class Lwm2mEndpointContextMatcher extends PrincipalEndpointContextMatcher {
 

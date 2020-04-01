@@ -23,6 +23,7 @@ import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.request.exception.RequestRejectedException;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
+import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.request.exception.UnconnectedPeerException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -44,6 +45,7 @@ public interface LwM2mRequestSender {
      * @param request The request to send to the client.
      * @param timeoutInMs The global timeout to wait in milliseconds (see
      *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
+     * @param <T> The expected type of the response received.
      * @return the LWM2M response. The response can be <code>null</code> if the timeout expires (see
      *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
      * 
@@ -70,6 +72,7 @@ public interface LwM2mRequestSender {
      *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
      * @param responseCallback a callback called when a response is received (successful or error response). This
      *        callback MUST NOT be null.
+     * @param <T> The expected type of the response received.
      * @param errorCallback a callback called when an error or exception occurred when response is received. It can be :
      *        <ul>
      *        <li>{@link RequestRejectedException} if the request is rejected by foreign peer.</li>

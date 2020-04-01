@@ -51,7 +51,6 @@ import org.eclipse.leshan.server.bootstrap.DefaultBootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.InMemoryBootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
-import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -176,10 +175,11 @@ public class LeshanBootstrapServerBuilder {
      * also {@link LeshanBootstrapServerBuilder#setPrivateKey(PrivateKey)}.
      * <p>
      * For RPK the public key will be extracted from the first X.509 certificate of the certificate chain. If you only
-     * need RPK support, use {@link LeshanServerBuilder#setPublicKey(PublicKey)} instead.
+     * need RPK support, use {@link LeshanBootstrapServerBuilder#setPublicKey(PublicKey)} instead.
      * <p>
-     * If you want to deactivate RPK mode, look at {@link LeshanBootstrapServerBuilder#setDtlsConfig(Builder)} and
-     * {@link DtlsConnectorConfig.Builder#setTrustCertificateTypes(CertificateType...)}
+     * If you want to deactivate RPK mode, look at
+     * {@link LeshanBootstrapServerBuilder#setDtlsConfig(org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder)}
+     * and {@link Builder#setTrustCertificateTypes(CertificateType...)}
      * 
      * @param certificateChain the certificate chain of the bootstrap server.
      * @return the builder for fluent Bootstrap Server creation.
@@ -205,8 +205,8 @@ public class LeshanBootstrapServerBuilder {
      * The list of trusted certificates used to authenticate devices using X.509 DTLS authentication.
      * <p>
      * If you need more complex/dynamic trust behavior, look at
-     * {@link LeshanBootstrapServerBuilder#setDtlsConfig(Builder)} and
-     * {@link DtlsConnectorConfig.Builder#setCertificateVerifier(org.eclipse.californium.scandium.dtls.x509.CertificateVerifier)}
+     * {@link LeshanBootstrapServerBuilder#setDtlsConfig(org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder)}
+     * and {@link Builder#setCertificateVerifier(org.eclipse.californium.scandium.dtls.x509.CertificateVerifier)}
      * instead.
      * 
      * @param trustedCertificates certificates trusted by the bootstrap server.
@@ -325,7 +325,7 @@ public class LeshanBootstrapServerBuilder {
     /**
      * Set the CoAP/Californium {@link NetworkConfig}.
      * <p>
-     * For advanced CoAP setting, see {@link NetworkConfig.Keys} for more details.
+     * For advanced CoAP setting, see {@link Keys} for more details.
      * 
      * @param coapConfig the CoAP configuration.
      * @return the builder for fluent Bootstrap Server creation.
@@ -343,7 +343,7 @@ public class LeshanBootstrapServerBuilder {
      * @param dtlsConfig the DTLS configuration builder.
      * @return the builder for fluent Bootstrap Server creation.
      */
-    public LeshanBootstrapServerBuilder setDtlsConfig(DtlsConnectorConfig.Builder dtlsConfig) {
+    public LeshanBootstrapServerBuilder setDtlsConfig(Builder dtlsConfig) {
         this.dtlsConfigBuilder = dtlsConfig;
         return this;
     }
@@ -577,8 +577,8 @@ public class LeshanBootstrapServerBuilder {
      * You can extend <code>LeshanBootstrapServerBuilder</code> and override this method to create a new builder which
      * will be able to build an extended <code>LeshanBootstrapServer</code>.
      * 
-     * @param unsecuredEndpoint CoAP endpoint used for <code>coap://<code> communication.
-     * @param securedEndpoint CoAP endpoint used for <code>coaps://<code> communication.
+     * @param unsecuredEndpoint CoAP endpoint used for <code>coap://</code> communication.
+     * @param securedEndpoint CoAP endpoint used for <code>coaps://</code> communication.
      * @param bsStore the bootstrap configuration store.
      * @param bsSecurityStore the security store used to authenticate devices.
      * @param bsSessionManager the manager responsible to handle bootstrap session.

@@ -46,6 +46,7 @@ import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.request.exception.RequestRejectedException;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
+import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.request.exception.UnconnectedPeerException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -285,7 +286,7 @@ public class RequestSender implements Destroyable {
      * @param destination the LWM2M client {@link Identity}.
      * @param sessionId A session Identifier which could be reused to cancel all ongoing request related to this one.
      *        See {@link #cancelRequests(String)}.
-     * @param request The request to send to the client.
+     * @param coapRequest The request to send to the client.
      * @param timeoutInMs The response timeout to wait in milliseconds (see
      *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
      * @param responseCallback a callback called when a response is received (successful or error response). This
@@ -333,7 +334,7 @@ public class RequestSender implements Destroyable {
      * 
      * @param sessionID the Id associated to the ongoing requests you want to cancel.
      * 
-     * @see all others send methods.
+     * @see "All others send methods."
      */
     public void cancelRequests(String sessionID) {
         Validate.notNull(sessionID);

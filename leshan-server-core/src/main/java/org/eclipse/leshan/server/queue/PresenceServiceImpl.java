@@ -36,8 +36,6 @@ import org.slf4j.LoggerFactory;
  * Tracks the status of each LWM2M client registered with Queue mode binding. Also ensures that the
  * {@link PresenceListener} are notified on state changes only for those LWM2M clients registered using Queue mode
  * binding.
- * 
- * @see Presence
  */
 public final class PresenceServiceImpl implements PresenceService, Destroyable {
     private final Logger LOG = LoggerFactory.getLogger(PresenceServiceImpl.class);

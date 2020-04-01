@@ -67,7 +67,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Call <code>LwM2mResponseBuilder#visit(coapResponse)</code>, then get the result using {@link #getResponse()}
  * 
- * @param <T>
+ * @param <T> the type of the response to build.
  */
 public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRequestVisitor {
 

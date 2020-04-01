@@ -38,6 +38,7 @@ public class LwM2mCoapResource extends CoapResource {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mCoapResource.class);
 
     /**
+     * @param name the resource name
      * @see CoapResource#CoapResource(String)
      */
     public LwM2mCoapResource(String name) {
@@ -113,7 +114,7 @@ public class LwM2mCoapResource extends CoapResource {
      * Create Leshan {@link Identity} from Californium {@link EndpointContext}.
      * 
      * @param context The Californium {@link EndpointContext} to convert.
-     * @return The corresponding Leshan {@link Identity} or <code>null</null> if we didn't succeed to extract Identity.
+     * @return The corresponding Leshan {@link Identity} or <code>null</code> if we didn't succeed to extract Identity.
      */
     protected Identity extractIdentitySafely(EndpointContext context) {
         try {

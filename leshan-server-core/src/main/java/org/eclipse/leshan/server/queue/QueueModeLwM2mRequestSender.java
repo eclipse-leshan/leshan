@@ -35,8 +35,8 @@ public class QueueModeLwM2mRequestSender implements LwM2mRequestSender {
     protected LwM2mRequestSender delegatedSender;
 
     /**
-     * @param presenceService the presence service object for setting the client into {@link Presence#SLEEPING} when
-     *        request Timeout expires and into {@link Presence#Awake} when a response arrives.
+     * @param presenceService the presence service object for setting the client into sleepint state when request
+     *        Timeout expires and into awake state when a response arrives.
      * @param delegatedSender internal sender that it is used for sending the requests, using delegation.
      */
     public QueueModeLwM2mRequestSender(PresenceServiceImpl presenceService, LwM2mRequestSender delegatedSender) {

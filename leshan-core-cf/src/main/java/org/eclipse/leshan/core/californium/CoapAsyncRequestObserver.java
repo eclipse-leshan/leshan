@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * This class also provides response timeout facility.
  * 
- * @see https://github.com/eclipse/leshan/wiki/Request-Timeout for more details.
+ * @see <a href="https://github.com/eclipse/leshan/wiki/Request-Timeout">Request Timeout Wiki page</a>
  */
 public class CoapAsyncRequestObserver extends AbstractRequestObserver {
 

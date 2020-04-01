@@ -106,7 +106,7 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
      * Creates a request for creating instances of a particular object using the TLV content format.
      * 
      * @param objectId the object id
-     * @param instance the object instances to create
+     * @param instances the object instances to create
      */
     public CreateRequest(int objectId, LwM2mObjectInstance... instances) {
         this(null, objectId, instances);

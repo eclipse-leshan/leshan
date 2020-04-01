@@ -169,7 +169,9 @@ public class AttributeSet {
     }
 
     /**
-     * Create an AttributeSet from a uri queries string. e.g. "pmin=10&pmax=60"
+     * Create an AttributeSet from a uri queries string.
+     * 
+     * @param uriQueries the URI queries to parse. e.g. {@literal pmin=10&pmax=60}
      */
     public static AttributeSet parse(String uriQueries) {
         if (uriQueries == null)

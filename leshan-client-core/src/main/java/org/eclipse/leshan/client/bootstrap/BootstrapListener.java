@@ -21,7 +21,7 @@ package org.eclipse.leshan.client.bootstrap;
 public interface BootstrapListener {
 
     /**
-     * Invoked when a bootstrap session is closed.<br/>
+     * Invoked when a bootstrap session is closed.<br>
      * 
      * Generally when we receive a bootstrap finished request or when the bootstrap session ends in an unexpected
      * way.(e.g. bootstrap server is not responding anymore)

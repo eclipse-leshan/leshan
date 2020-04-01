@@ -35,6 +35,7 @@ import org.eclipse.leshan.core.request.BindingMode;
  * <li>a Map from instanceId to Instance value for Security object. For each entry a Bootstrap Write Request will be
  * sent.
  * <li>a Map from instanceId to Instance value for ACL object. For each entry a Bootstrap Write Request will be sent.
+ * </ul>
  * 
  * @see BootstrapConfigStore
  * @see DefaultBootstrapHandler
@@ -141,6 +142,7 @@ public class BootstrapConfig implements Serializable {
          * <li>2: Certificate mode
          * <li>3: NoSec mode
          * <li>4: Certificate mode with EST
+         * </ul>
          */
         public SecurityMode securityMode;
         /**
@@ -174,6 +176,7 @@ public class BootstrapConfig implements Serializable {
          * <li>4: Reserved mode (DTLS mode with multiplexing Security Association support)
          * <li>5-203 : Reserved for future use
          * <li>204-255: Proprietary modes
+         * </ul>
          */
         public SmsSecurityMode smsSecurityMode = SmsSecurityMode.NO_SEC;
         /**
@@ -258,6 +261,7 @@ public class BootstrapConfig implements Serializable {
          * <li>3rd LSB: E(Execute)
          * <li>4th LSB: D(Delete)
          * <li>5th LSB: C(Create) Other bits are reserved for future use.
+         * </ul>
          */
         public Map<Integer, Long> acls;
         /**

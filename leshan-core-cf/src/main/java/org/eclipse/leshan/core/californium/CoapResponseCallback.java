@@ -25,6 +25,8 @@ public interface CoapResponseCallback {
 
     /**
      * Called when the request succeed.
+     * 
+     * @param response The CoAP response received.
      */
     void onResponse(Response response);
 

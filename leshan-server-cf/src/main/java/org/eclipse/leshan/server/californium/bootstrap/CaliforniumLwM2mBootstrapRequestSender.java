@@ -23,8 +23,10 @@ import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
+import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.request.exception.RequestRejectedException;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
+import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
@@ -124,8 +126,8 @@ public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapReq
      * @param session the bootstrap session for which we need to cancel requests.
      */
     @Override
-    public void cancelOngoingRequests(BootstrapSession destination) {
-        sender.cancelRequests(destination.getId());
+    public void cancelOngoingRequests(BootstrapSession session) {
+        sender.cancelRequests(session.getId());
     }
 
     @Override

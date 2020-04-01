@@ -44,5 +44,5 @@ public interface EditableBootstrapConfigStore extends BootstrapConfigStore {
      * @param endpoint The client endpoint to which we want to remove the configuration.
      * @return the removed {@link BootstrapConfig} or <code>null</code> if no bootstrap configuration for this client.
      */
-    BootstrapConfig remove(String enpoint);
+    BootstrapConfig remove(String endpoint);
 }

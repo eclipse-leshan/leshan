@@ -26,7 +26,7 @@ import com.eclipsesource.json.JsonValue;
 /**
  * An abstract class to easily create serializer/deserializer class based on "minimal-json".
  * 
- * @param <T>
+ * @param <T> the type of the objects to serialize or deserialize.
  */
 public abstract class JsonSerDes<T> {
 

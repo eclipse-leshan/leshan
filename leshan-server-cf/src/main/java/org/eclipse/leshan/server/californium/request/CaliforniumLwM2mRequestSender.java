@@ -30,6 +30,7 @@ import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.request.exception.RequestRejectedException;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
+import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.request.exception.UnconnectedPeerException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -92,7 +93,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
      * @throws UnconnectedPeerException if client is not connected (no dtls connection available).
      */
     @Override
-    public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request, long timeout)
+    public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request, long timeoutInMs)
             throws InterruptedException {
 
         // Retrieve the objects definition
@@ -100,7 +101,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
 
         // Send requests synchronously
         T response = sender.sendLwm2mRequest(destination.getEndpoint(), destination.getIdentity(), destination.getId(),
-                model, destination.getRootPath(), request, timeout, destination.canInitiateConnection());
+                model, destination.getRootPath(), request, timeoutInMs, destination.canInitiateConnection());
 
         // Handle special observe case
         if (response != null && response.getClass() == ObserveResponse.class && response.isSuccess()) {
@@ -191,7 +192,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
      * either 1 response or 1 error.
      * 
      * @param destination The {@link Registration} associate to the device we want to sent the request.
-     * @param request The request to send to the client.
+     * @param coapRequest The request to send to the client.
      * @param timeoutInMs The response timeout to wait in milliseconds (see
      *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
      * @param responseCallback a callback called when a response is received (successful or error response). This

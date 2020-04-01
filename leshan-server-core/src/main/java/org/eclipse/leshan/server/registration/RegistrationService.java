@@ -33,14 +33,13 @@ public interface RegistrationService {
     /**
      * Retrieves a registration by end-point.
      * 
-     * @param endpoint
      * @return the matching registration or <code>null</code> if not found
      */
     Registration getByEndpoint(String endpoint);
 
     /**
-     * Returns an iterator over all registrations. There are no guarantees concerning the order in which the
-     * elements are returned.
+     * Returns an iterator over all registrations. There are no guarantees concerning the order in which the elements
+     * are returned.
      *
      * @return an <tt>Iterator</tt> over registrations
      */
@@ -49,7 +48,7 @@ public interface RegistrationService {
     /**
      * Adds a new listener to be notified with client registration events.
      * 
-     * @param listener
+     * @param listener the listener to add
      */
     void addListener(RegistrationListener listener);
 

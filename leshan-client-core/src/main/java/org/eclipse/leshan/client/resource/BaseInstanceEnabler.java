@@ -94,7 +94,7 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
      * <p>
      * Calling this method is needed to trigger NOTIFICATION when an observe relation is established.
      * 
-     * @param resourceIds
+     * @param resourceIds the list of resources which change.
      */
     public void fireResourcesChange(int... resourceIds) {
         for (ResourceChangedListener listener : listeners) {

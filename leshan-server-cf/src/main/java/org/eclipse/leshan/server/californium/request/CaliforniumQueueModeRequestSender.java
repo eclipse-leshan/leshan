@@ -34,8 +34,8 @@ public class CaliforniumQueueModeRequestSender extends QueueModeLwM2mRequestSend
         implements CoapRequestSender, Destroyable {
 
     /**
-     * @param presenceService the presence service object for setting the client into {@link Presence#SLEEPING} when
-     *        request Timeout expires and into {@link Presence#Awake} when a response arrives.
+     * @param presenceService the presence service object for setting the client into sleeping state when request
+     *        Timeout expires and into awake state when a response arrives.
      * @param delegatedSender internal sender that it is used for sending the requests, using delegation.
      */
     public CaliforniumQueueModeRequestSender(PresenceServiceImpl presenceService, LwM2mRequestSender delegatedSender) {

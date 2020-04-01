@@ -135,7 +135,7 @@ public class LwM2mMultipleResource implements LwM2mResource {
     }
 
     /**
-     * @exception NoSuchElementException
+     * @exception NoSuchElementException use {@link #getValue(int)} or {@link #getValue(int)} instead.
      */
     @Override
     public Object getValue() {

@@ -18,8 +18,10 @@ package org.eclipse.leshan.server.bootstrap;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
+import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.request.exception.RequestRejectedException;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
+import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
@@ -40,6 +42,7 @@ public interface LwM2mBootstrapRequestSender {
      * @param request The request to send to the client.
      * @param timeoutInMs The global timeout to wait in milliseconds (see
      *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
+     * @param <T> The expected type of the response received.
      * @return the LWM2M response. The response can be <code>null</code> if the timeout expires (see
      *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
      * 
@@ -75,6 +78,7 @@ public interface LwM2mBootstrapRequestSender {
      *        <li>or any other RuntimeException for unexpected issue.
      *        </ul>
      *        This callback MUST NOT be null.
+     * @param <T> The expected type of the response received.
      * @throws CodecException if request payload can not be encoded.
      */
     <T extends LwM2mResponse> void send(BootstrapSession destination, DownlinkRequest<T> request, long timeoutInMs,

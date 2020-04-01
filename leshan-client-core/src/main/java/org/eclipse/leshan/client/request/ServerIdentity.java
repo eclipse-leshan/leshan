@@ -31,7 +31,7 @@ public class ServerIdentity extends Identity {
 
     private static final long serialVersionUID = 1L;
 
-    enum Role {
+    public enum Role {
         /**
          * Indicate internal call. Enables the "system" to read protected resources (e.g. resources of the security
          * object).

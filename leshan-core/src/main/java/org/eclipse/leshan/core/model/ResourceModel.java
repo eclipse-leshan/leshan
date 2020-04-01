@@ -17,9 +17,8 @@ package org.eclipse.leshan.core.model;
 
 /**
  * A resource description
- * 
- * @see Lwm2M specification D.1 Object Template
- * @see http://openmobilealliance.org/tech/profiles/LWM2M.xsd
+ * @see "LWM2M specification D.1 Object Template."
+ * @see <a href="http://openmobilealliance.org/tech/profiles/LWM2M.xsd">LWM2M Editor Schema</a>
  */
 public class ResourceModel {
 

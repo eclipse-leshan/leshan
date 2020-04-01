@@ -62,7 +62,7 @@ public class LwM2mClientCoapResource extends LwM2mCoapResource {
     /**
      * Create Leshan {@link ServerIdentity} from Californium {@link Exchange}.
      * 
-     * @param context The Californium {@link Exchange} containing the request for which we search sender identity.
+     * @param exchange The Californium {@link Exchange} containing the request for which we search sender identity.
      * @return The corresponding Leshan {@link ServerIdentity}.
      * @throws IllegalStateException if we are not able to extract {@link ServerIdentity}.
      */

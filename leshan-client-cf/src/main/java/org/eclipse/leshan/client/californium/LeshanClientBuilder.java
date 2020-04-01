@@ -158,7 +158,7 @@ public class LeshanClientBuilder {
      * endpoint.
      * 
      * @param endpointFactory An {@link EndpointFactory}, you can extends {@link DefaultEndpointFactory}.
-     * @return the builder for fluent Bootstrap Server creation.
+     * @return the builder for fluent client creation.
      */
     public LeshanClientBuilder setEndpointFactory(EndpointFactory endpointFactory) {
         this.endpointFactory = endpointFactory;
@@ -174,8 +174,7 @@ public class LeshanClientBuilder {
      * By default a {@link DefaultRegistrationEngineFactory} is used. Look at this class to change some default timeout
      * value.
      * 
-     * @param engineFactory
-     * @return
+     * @return the builder for fluent client creation.
      */
     public LeshanClientBuilder setRegistrationEngineFactory(RegistrationEngineFactory engineFactory) {
         this.engineFactory = engineFactory;
