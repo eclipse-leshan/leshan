@@ -293,6 +293,8 @@ Contributors:
                     <version>3.1.1</version>
                     <configuration>
                         <excludePackageNames>org.eclipse.leshan.util</excludePackageNames>
+                        <quiet>true</quiet>
+                        <doclint>all,-missing</doclint>
                     </configuration>
                 </plugin>
                 <plugin>
