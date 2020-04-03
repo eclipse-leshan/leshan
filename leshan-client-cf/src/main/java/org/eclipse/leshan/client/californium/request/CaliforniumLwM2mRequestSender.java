@@ -35,6 +35,9 @@ import org.eclipse.leshan.util.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A {@link LwM2mRequestSender} based on Californium(CoAP implementation).
+ */
 public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
     private static final Logger LOG = LoggerFactory.getLogger(CaliforniumLwM2mRequestSender.class);

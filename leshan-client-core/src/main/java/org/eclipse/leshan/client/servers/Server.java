@@ -17,6 +17,9 @@ package org.eclipse.leshan.client.servers;
 
 import org.eclipse.leshan.core.request.Identity;
 
+/**
+ * A Bean which identify a LWM2M Server.
+ */
 public class Server {
 
     private final Identity identity;

@@ -19,6 +19,9 @@ import java.util.Collection;
 
 import org.eclipse.leshan.core.model.ObjectModel;
 
+/**
+ * A base class to implement {@link LwM2mInstanceEnablerFactory}.
+ */
 public abstract class BaseInstanceEnablerFactory implements LwM2mInstanceEnablerFactory {
 
     @Override

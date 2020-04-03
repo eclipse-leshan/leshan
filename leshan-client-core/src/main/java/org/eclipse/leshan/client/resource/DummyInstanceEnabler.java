@@ -33,6 +33,12 @@ import org.eclipse.leshan.core.response.WriteResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A dummy implementation of {@link LwM2mInstanceEnabler} which automatically create resource with random value based on
+ * the LWM2M Object Model.
+ * <p>
+ * This is useful to create quickly demo, prototype or tests.
+ */
 public class DummyInstanceEnabler extends SimpleInstanceEnabler {
 
     private static Logger LOG = LoggerFactory.getLogger(DummyInstanceEnabler.class);

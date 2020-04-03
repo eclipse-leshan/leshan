@@ -50,6 +50,9 @@ import org.eclipse.leshan.core.request.Identity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * An {@link EndpointsManager} based on Californium(CoAP implementation) and Scandium (DTLS implementation).
+ */
 public class CaliforniumEndpointsManager implements EndpointsManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(CaliforniumEndpointsManager.class);

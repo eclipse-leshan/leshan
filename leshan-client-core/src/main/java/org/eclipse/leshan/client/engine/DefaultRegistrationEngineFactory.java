@@ -24,6 +24,11 @@ import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.request.LwM2mRequestSender;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 
+/**
+ * A default implementation of {@link RegistrationEngineFactory}.
+ * <p>
+ * It create a {@link DefaultRegistrationEngine} which could be configured. Look at all setter available in this class.
+ */
 public class DefaultRegistrationEngineFactory implements RegistrationEngineFactory {
 
     private long requestTimeoutInMs = 2 * 60 * 1000l; // 2min in ms

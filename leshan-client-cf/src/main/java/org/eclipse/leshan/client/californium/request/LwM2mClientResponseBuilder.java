@@ -31,6 +31,13 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.RegisterResponse;
 import org.eclipse.leshan.core.response.UpdateResponse;
 
+/**
+ * This class is able to create a {@link LwM2mResponse} from a CoAP {@link Response}.
+ * <p>
+ * Call <code>LwM2mClientResponseBuilder#visit(coapResponse)</code>, then get the result using {@link #getResponse()}
+ * 
+ * @param <T> the type of the response to build.
+ */
 public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements UplinkRequestVisitor {
 
     protected final Response coapResponse;

@@ -24,6 +24,10 @@ import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.request.LwM2mRequestSender;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 
+/**
+ * A factory for {@link RegistrationEngine}
+ *
+ */
 public interface RegistrationEngineFactory {
 
     RegistrationEngine createRegistratioEngine(String endpoint, LwM2mObjectTree objectTree,

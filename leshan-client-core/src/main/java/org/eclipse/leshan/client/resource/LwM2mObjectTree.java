@@ -26,6 +26,12 @@ import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.resource.listener.ObjectsListener;
 
+/**
+ * The LWM2M Object Tree.
+ * <p>
+ * It contains all the {@link LwM2mObjectEnabler} which are the implementation of each LWM2M object supported by the
+ * client.
+ */
 public class LwM2mObjectTree {
 
     protected ObjectListener dispatcher = new ObjectListenerDispatcher();

@@ -25,6 +25,10 @@ import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.request.BindingMode;
 
+/**
+ * A class responsible to handle Registration Update. It should listen LWM2M Object Tree for changing and send
+ * registration Update if needed.
+ */
 public class RegistrationUpdateHandler {
 
     private RegistrationEngine engine;

@@ -50,7 +50,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A Lightweight M2M client based on Californium (CoAP implementation) which supports only 1 LWM2M server.
+ * A Lightweight M2M client based on Californium (CoAP implementation) and Scandium (DTLS implementation) which supports
+ * only 1 LWM2M server.
  */
 public class LeshanClient implements LwM2mClient {
 
@@ -238,8 +239,8 @@ public class LeshanClient implements LwM2mClient {
         /**
          * Returns the current {@link CoapEndpoint} used to communicate with the server.
          * <p>
-         * A different endpoint address should be used by connected server, so this method only make sense as this
-         * current implementation supports only one LWM2M server.
+         * A different endpoint address should be used by connected server, so this method only make sense as current
+         * implementation supports only one LWM2M server.
          * 
          * @return the {@link CoapEndpoint} used to communicate to LWM2M server.
          */
@@ -265,8 +266,8 @@ public class LeshanClient implements LwM2mClient {
     /**
      * Returns the current registration Id.
      * <p>
-     * Client should have 1 registration Id by connected server, so this method only make sense current implementation
-     * supports only one LWM2M server.
+     * Client should have 1 registration Id by connected server, so this method only make sense as current
+     * implementation supports only one LWM2M server.
      * 
      * @return the client registration Id or <code>null</code> if the client is not registered
      */
@@ -277,8 +278,8 @@ public class LeshanClient implements LwM2mClient {
     /**
      * Returns the current {@link InetSocketAddress} use to communicate with the server.
      * <p>
-     * A different endpoint/socket address should be used by connected server, so this method only make sense as this
-     * current implementation supports only one LWM2M server.
+     * A different endpoint/socket address should be used by connected server, so this method only make sense as current
+     * implementation supports only one LWM2M server.
      * 
      * @return the address used to connect to the server or <code>null</code> if the client is not started.
      */

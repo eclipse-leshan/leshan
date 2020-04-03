@@ -18,6 +18,9 @@ package org.eclipse.leshan.client.servers;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * It contains all information about servers (LWM2M Bootstrap server or LWM2M server).
+ */
 public class ServersInfo {
 
     public ServerInfo bootstrap;

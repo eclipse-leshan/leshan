@@ -17,11 +17,16 @@ package org.eclipse.leshan.client.servers;
 
 import org.eclipse.leshan.core.request.BindingMode;
 
+/**
+ * Sensible information about a LWM2M server
+ * <p>
+ * It extends {@link ServerInfo} to add information specific to LWM2M (Device Management) server. It contains mainly
+ * information available in LWM2M Security Object and LWM2M Server Object.
+ */
 public class DmServerInfo extends ServerInfo {
 
     public long lifetime;
     public BindingMode binding;
-
     // TODO add missing information like SMS number
 
     @Override

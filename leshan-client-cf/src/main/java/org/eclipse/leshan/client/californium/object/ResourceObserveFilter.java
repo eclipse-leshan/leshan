@@ -21,6 +21,9 @@ import org.eclipse.californium.core.observe.ObserveRelationFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * An {@link ObserveRelationFilter} which select {@link ObserveRelation} based on resource URI.
+ */
 public class ResourceObserveFilter implements ObserveRelationFilter {
 
     private static final Logger LOG = LoggerFactory.getLogger(ResourceObserveFilter.class);

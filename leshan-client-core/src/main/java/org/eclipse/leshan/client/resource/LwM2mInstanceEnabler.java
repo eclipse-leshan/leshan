@@ -37,17 +37,13 @@ import org.eclipse.leshan.core.response.WriteResponse;
  * LWM2M clients should implement this interface for each LWM2M object type they support in order to take advantage of
  * automatic routing of requests from a LWM2M server to specific LWM2M object instances of that type and forwarding of
  * notifications to LWM2M servers observing resources on these instances.
- * </p>
  * <p>
  * Clients can register instances of this interface (representing the client's instances of a particular LWM2M object
  * type) using {@link ObjectsInitializer#setInstancesForObject(int, LwM2mInstanceEnabler...)} and then use
  * {@link ObjectsInitializer#create(int)} to create a {@link LwM2mObjectEnabler} instance for managing them.
- * </p>
  * <p>
  * Implementations of this interface should adhere to the definition of the implemented LWM2M Object type regarding
  * acceptable resource IDs for the <code>read, write</code> and <code>execute</code> methods.
- * </p>
- * 
  */
 public interface LwM2mInstanceEnabler {
 

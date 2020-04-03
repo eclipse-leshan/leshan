@@ -45,6 +45,15 @@ import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteAttributesResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 
+/**
+ * This interface should be implemented to be able to add support for a given LWM2M object.
+ * <p>
+ * Except if you need really more flexibility, most of the time you will not implement this interface directly. You will
+ * probably prefer the easier way based on {@link LwM2mInstanceEnabler} and {@link ObjectsInitializer}.
+ * <p>
+ * In case you really need the flexibility of this interface you should consider to inherit from
+ * {@link BaseObjectEnabler}.
+ */
 public interface LwM2mObjectEnabler {
 
     int getId();

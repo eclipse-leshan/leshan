@@ -34,6 +34,10 @@ import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 
+/**
+ * A abstract implementation of {@link LwM2mInstanceEnabler}. It could be use as base for any
+ * {@link LwM2mInstanceEnabler} implementation.
+ */
 public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
 
     protected List<ResourceChangedListener> listeners = new ArrayList<>();

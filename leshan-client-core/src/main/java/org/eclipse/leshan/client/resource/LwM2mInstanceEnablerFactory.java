@@ -18,7 +18,12 @@ package org.eclipse.leshan.client.resource;
 import java.util.Collection;
 
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.request.CreateRequest;
 
+/**
+ * A class responsible to create {@link LwM2mInstanceEnabler} generally called to create instance on
+ * {@link CreateRequest}.
+ */
 public interface LwM2mInstanceEnablerFactory {
 
     /**

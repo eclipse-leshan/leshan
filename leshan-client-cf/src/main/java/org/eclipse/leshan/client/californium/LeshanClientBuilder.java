@@ -95,7 +95,7 @@ public class LeshanClientBuilder {
     }
 
     /**
-     * Sets the local non-secure end-point address
+     * Sets the local address to use.
      */
     public LeshanClientBuilder setLocalAddress(String hostname, int port) {
         if (hostname == null) {
@@ -107,8 +107,10 @@ public class LeshanClientBuilder {
     }
 
     /**
+     * Sets the list of objects enablers.
      * <p>
-     * Sets the list of objects enablers
+     * The easier way to create {@link LwM2mObjectEnabler} is to use the {@link ObjectsInitializer} but you can
+     * implement your own {@link LwM2mObjectEnabler} if you need more flexibility.
      */
     public LeshanClientBuilder setObjects(List<? extends LwM2mObjectEnabler> objectEnablers) {
         this.objectEnablers = objectEnablers;
