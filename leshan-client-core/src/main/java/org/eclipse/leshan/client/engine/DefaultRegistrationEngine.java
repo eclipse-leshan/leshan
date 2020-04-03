@@ -199,8 +199,8 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                 if (observer != null) {
                     observer.onBootstrapStarted(bootstrapServer, request);
                 }
-                BootstrapResponse response = sender.send(bootstrapServerInfo.getAddress(),
-                        bootstrapServerInfo.isSecure(), request, requestTimeoutInMs);
+                BootstrapResponse response = sender.send(bootstrapServer, bootstrapServer.getIdentity().isSecure(),
+                        request, requestTimeoutInMs);
                 if (response == null) {
                     LOG.info("Unable to start bootstrap session: Timeout.");
                     if (observer != null) {
@@ -218,7 +218,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                         }
                         return null;
                     } else {
-                        LOG.info("Bootstrap finished {}.", bootstrapServerInfo);
+                        LOG.info("Bootstrap finished {}.", bootstrapServer.getUri());
                         ServersInfo serverInfos = ServersInfoExtractor.getInfo(objectEnablers);
                         Collection<Server> dmServers = null;
                         if (!serverInfos.deviceManagements.isEmpty()) {
@@ -280,7 +280,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             if (observer != null) {
                 observer.onRegistrationStarted(server, request);
             }
-            RegisterResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(), request,
+            RegisterResponse response = sender.send(server, server.getIdentity().isSecure(), request,
                     requestTimeoutInMs);
 
             if (response == null) {
@@ -324,12 +324,6 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         if (registrationID == null)
             return true;
 
-        DmServerInfo dmInfo = ServersInfoExtractor.getDMServerInfo(objectEnablers, server.getId());
-        if (dmInfo == null) {
-            LOG.info("Trying to deregister device but there is no LWM2M server config.");
-            return false;
-        }
-
         // Send deregister request
         LOG.info("Trying to deregister to {} ...", server.getUri());
         DeregisterRequest request = null;
@@ -338,8 +332,8 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             if (observer != null) {
                 observer.onDeregistrationStarted(server, request);
             }
-            DeregisterResponse response = sender.send(server.getIdentity().getPeerAddress(),
-                    server.getIdentity().isSecure(), request, deregistrationTimeoutInMs);
+            DeregisterResponse response = sender.send(server, server.getIdentity().isSecure(), request,
+                    deregistrationTimeoutInMs);
             if (response == null) {
                 registrationID = null;
                 LOG.info("Deregistration failed: Timeout.");
@@ -412,7 +406,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             if (reconnectOnUpdate) {
                 endpointsManager.forceReconnection(server, resumeOnConnect);
             }
-            UpdateResponse response = sender.send(dmInfo.getAddress(), dmInfo.isSecure(), request, requestTimeoutInMs);
+            UpdateResponse response = sender.send(server, server.getIdentity().isSecure(), request, requestTimeoutInMs);
             if (response == null) {
                 registrationID = null;
                 LOG.info("Registration update failed: Timeout.");

@@ -15,8 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.request;
 
-import java.net.InetSocketAddress;
-
+import org.eclipse.leshan.client.servers.Server;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.core.request.exception.ClientSleepingException;
@@ -31,7 +30,7 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 
 /**
- * A {@link LwM2mRequestSender} is responsible to send LWM2M {@link UplinkRequest} for a given Server.
+ * A {@link LwM2mRequestSender} is responsible to send LWM2M {@link UplinkRequest} for a given {@link Server}.
  */
 public interface LwM2mRequestSender {
 
@@ -58,8 +57,8 @@ public interface LwM2mRequestSender {
      * @throws UnconnectedPeerException if client is not connected (no dtls connection available).
      * @throws ClientSleepingException if client is currently sleeping.
      */
-    <T extends LwM2mResponse> T send(InetSocketAddress server, boolean secure, UplinkRequest<T> request,
-            long timeoutInMs) throws InterruptedException;
+    <T extends LwM2mResponse> T send(Server server, boolean secure, UplinkRequest<T> request, long timeoutInMs)
+            throws InterruptedException;
 
     /**
      * Send a Lightweight M2M {@link UplinkRequest} asynchronously to a LWM2M Server.
@@ -88,8 +87,8 @@ public interface LwM2mRequestSender {
      *        This callback MUST NOT be null.
      * @throws CodecException if request payload can not be encoded.
      */
-    <T extends LwM2mResponse> void send(InetSocketAddress server, boolean secure, UplinkRequest<T> request,
-            long timeoutInMs, ResponseCallback<T> responseCallback, ErrorCallback errorCallback);
+    <T extends LwM2mResponse> void send(Server server, boolean secure, UplinkRequest<T> request, long timeoutInMs,
+            ResponseCallback<T> responseCallback, ErrorCallback errorCallback);
 
     /**
      * Destroy the sender. Free all resources. Sender can not be used anymore.
