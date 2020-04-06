@@ -203,8 +203,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                 if (observer != null) {
                     observer.onBootstrapStarted(bootstrapServer, request);
                 }
-                BootstrapResponse response = sender.send(bootstrapServer, bootstrapServer.getIdentity().isSecure(),
-                        request, requestTimeoutInMs);
+                BootstrapResponse response = sender.send(bootstrapServer, request, requestTimeoutInMs);
                 if (response == null) {
                     LOG.info("Unable to start bootstrap session: Timeout.");
                     if (observer != null) {
@@ -286,8 +285,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             if (observer != null) {
                 observer.onRegistrationStarted(server, request);
             }
-            RegisterResponse response = sender.send(server, server.getIdentity().isSecure(), request,
-                    requestTimeoutInMs);
+            RegisterResponse response = sender.send(server, request, requestTimeoutInMs);
 
             if (response == null) {
                 LOG.info("Registration failed: Timeout.");
@@ -338,8 +336,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             if (observer != null) {
                 observer.onDeregistrationStarted(server, request);
             }
-            DeregisterResponse response = sender.send(server, server.getIdentity().isSecure(), request,
-                    deregistrationTimeoutInMs);
+            DeregisterResponse response = sender.send(server, request, deregistrationTimeoutInMs);
             if (response == null) {
                 registrationID = null;
                 LOG.info("Deregistration failed: Timeout.");
@@ -412,7 +409,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             if (reconnectOnUpdate) {
                 endpointsManager.forceReconnection(server, resumeOnConnect);
             }
-            UpdateResponse response = sender.send(server, server.getIdentity().isSecure(), request, requestTimeoutInMs);
+            UpdateResponse response = sender.send(server, request, requestTimeoutInMs);
             if (response == null) {
                 registrationID = null;
                 LOG.info("Registration update failed: Timeout.");

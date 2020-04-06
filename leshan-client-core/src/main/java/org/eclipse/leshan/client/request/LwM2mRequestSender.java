@@ -57,7 +57,7 @@ public interface LwM2mRequestSender {
      * @throws UnconnectedPeerException if client is not connected (no dtls connection available).
      * @throws ClientSleepingException if client is currently sleeping.
      */
-    <T extends LwM2mResponse> T send(Server server, boolean secure, UplinkRequest<T> request, long timeoutInMs)
+    <T extends LwM2mResponse> T send(Server server, UplinkRequest<T> request, long timeoutInMs)
             throws InterruptedException;
 
     /**
@@ -87,7 +87,7 @@ public interface LwM2mRequestSender {
      *        This callback MUST NOT be null.
      * @throws CodecException if request payload can not be encoded.
      */
-    <T extends LwM2mResponse> void send(Server server, boolean secure, UplinkRequest<T> request, long timeoutInMs,
+    <T extends LwM2mResponse> void send(Server server, UplinkRequest<T> request, long timeoutInMs,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback);
 
     /**

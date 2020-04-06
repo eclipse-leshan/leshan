@@ -59,7 +59,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
     }
 
     @Override
-    public <T extends LwM2mResponse> T send(Server server, boolean secure, final UplinkRequest<T> request, long timeout)
+    public <T extends LwM2mResponse> T send(Server server, final UplinkRequest<T> request, long timeout)
             throws InterruptedException {
         // Create the CoAP request from LwM2m request
         CoapRequestBuilder coapClientRequestBuilder = new CoapRequestBuilder(server.getIdentity());
@@ -86,8 +86,8 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
     }
 
     @Override
-    public <T extends LwM2mResponse> void send(Server server, boolean secure, final UplinkRequest<T> request,
-            long timeout, ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
+    public <T extends LwM2mResponse> void send(Server server, final UplinkRequest<T> request, long timeout,
+            ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         // Create the CoAP request from LwM2m request
         CoapRequestBuilder coapClientRequestBuilder = new CoapRequestBuilder(server.getIdentity());
         request.accept(coapClientRequestBuilder);
