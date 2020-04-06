@@ -25,7 +25,6 @@ import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
 import org.eclipse.californium.elements.Connector;
-import org.eclipse.californium.elements.EndpointContextMatcher;
 import org.eclipse.californium.elements.UDPConnector;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
@@ -247,11 +246,6 @@ public class LeshanClientBuilder {
         }
         if (endpointFactory == null) {
             endpointFactory = new DefaultEndpointFactory("LWM2M Client") {
-                @Override
-                protected EndpointContextMatcher createSecuredContextMatcher() {
-                    return null; // use default californium one.
-                }
-
                 @Override
                 protected Connector createSecuredConnector(DtlsConnectorConfig dtlsConfig) {
                     DTLSConnector dtlsConnector = new DTLSConnector(dtlsConfig);

@@ -15,17 +15,18 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.request;
 
-import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
 import org.eclipse.californium.core.coap.Request;
-import org.eclipse.californium.elements.AddressEndpointContext;
+import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.leshan.Link;
+import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.DeregisterRequest;
+import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.request.UplinkRequest;
@@ -39,10 +40,10 @@ import org.eclipse.leshan.core.request.UplinkRequestVisitor;
 public class CoapRequestBuilder implements UplinkRequestVisitor {
 
     protected Request coapRequest;
-    protected final InetSocketAddress serverAddress;
+    protected final Identity server;
 
-    public CoapRequestBuilder(InetSocketAddress serverAddress) {
-        this.serverAddress = serverAddress;
+    public CoapRequestBuilder(Identity server) {
+        this.server = server;
     }
 
     @Override
@@ -128,6 +129,7 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
     }
 
     protected void buildRequestSettings() {
-        coapRequest.setDestinationContext(new AddressEndpointContext(serverAddress));
+        EndpointContext context = EndpointContextUtil.extractContext(server, true);
+        coapRequest.setDestinationContext(context);
     }
 }
