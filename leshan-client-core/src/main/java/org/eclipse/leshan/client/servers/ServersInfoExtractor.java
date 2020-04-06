@@ -75,6 +75,7 @@ public class ServersInfoExtractor {
                     } else {
                         // create bootstrap info
                         ServerInfo info = new ServerInfo();
+                        info.bootstrap = true;
                         LwM2mResource serverIdResource = security.getResource(SEC_SERVER_ID);
                         if (serverIdResource != null && serverIdResource.getValue() != null)
                             info.serverId = (long) serverIdResource.getValue();
@@ -99,6 +100,7 @@ public class ServersInfoExtractor {
                 } else {
                     // create device management info
                     DmServerInfo info = new DmServerInfo();
+                    info.bootstrap = false;
                     info.serverUri = new URI((String) security.getResource(SEC_SERVER_URI).getValue());
                     info.serverId = (long) security.getResource(SEC_SERVER_ID).getValue();
                     info.secureMode = getSecurityMode(security);

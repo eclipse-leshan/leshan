@@ -43,6 +43,7 @@ import org.eclipse.californium.scandium.dtls.x509.CertificateVerifier;
 import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.client.EndpointsManager;
 import org.eclipse.leshan.client.servers.Server;
+import org.eclipse.leshan.client.servers.Server.Role;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.californium.EndpointFactory;
@@ -169,7 +170,11 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
         coapServer.addEndpoint(currentEndpoint);
 
         // Start endpoint if needed
-        currentServer = new Server(serverIdentity, serverInfo.serverId);
+        if (serverInfo.bootstrap) {
+            currentServer = new Server(serverIdentity, serverInfo.serverId, Role.LWM2M_BOOTSTRAP_SERVER);
+        } else {
+            currentServer = new Server(serverIdentity, serverInfo.serverId);
+        }
         if (started) {
             coapServer.start();
             try {

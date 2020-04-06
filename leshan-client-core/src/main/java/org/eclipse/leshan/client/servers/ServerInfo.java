@@ -37,6 +37,7 @@ public class ServerInfo {
     private static final Logger LOG = LoggerFactory.getLogger(ServerInfo.class);
 
     public long serverId;
+    public boolean bootstrap = false;
     public URI serverUri;
     public SecurityMode secureMode;
 
