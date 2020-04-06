@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.eclipse.leshan.client.RegistrationUpdate;
 import org.eclipse.leshan.client.servers.Server;
+import org.eclipse.leshan.core.request.Identity;
 
 /**
  * Manage the registration life-cycle:
@@ -63,6 +64,12 @@ public interface RegistrationEngine {
      * @return The registered server identified by the given id or null if there is no corresponding server registered.
      */
     Server getRegisteredServer(long serverId);
+
+    /**
+     * @return The registered LWM2M Server or Bootstrap server for the given identity or null if there is no
+     *         corresponding server registered.
+     */
+    Server getServer(Identity identity);
 
     /**
      * @return the endpoint name of the LWM2M client

@@ -24,6 +24,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.leshan.LwM2m;
 import org.eclipse.leshan.ResponseCode;
@@ -41,6 +42,7 @@ import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.DeregisterRequest;
+import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
@@ -94,6 +96,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     private final Map<String, String> additionalAttributes;
     private final Map<Integer /* objectId */, LwM2mObjectEnabler> objectEnablers;
     private final Map<String /* registrationId */, Server> registeredServers;
+    private final AtomicReference<Server> currentBoostrapServer;
 
     // helpers
     private final LwM2mRequestSender sender;
@@ -122,6 +125,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         this.observer = observer;
         this.additionalAttributes = additionalAttributes;
         this.registeredServers = new ConcurrentHashMap<>();
+        this.currentBoostrapServer = new AtomicReference<>();
         this.requestTimeoutInMs = requestTimeoutInMs;
         this.deregistrationTimeoutInMs = deregistrationTimeoutInMs;
         this.bootstrapSessionTimeoutInSec = bootstrapSessionTimeoutInSec;
@@ -188,6 +192,9 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             cancelRegistrationTask();
             cancelUpdateTask(true);
             Server bootstrapServer = endpointsManager.createEndpoint(bootstrapServerInfo);
+            if (bootstrapServer != null) {
+                currentBoostrapServer.set(bootstrapServer);
+            }
 
             // Send bootstrap request
             BootstrapRequest request = null;
@@ -242,6 +249,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                 }
                 return null;
             } finally {
+                currentBoostrapServer.set(null);
                 bootstrapHandler.closeSession();
             }
         } else {
@@ -754,6 +762,23 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             Server server = entry.getValue();
             if (server != null && server.getId() == serverId) {
                 return server;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Server getServer(Identity identity) {
+        if (identity == null)
+            return null;
+        Server bootstrapServer = currentBoostrapServer.get();
+        if (bootstrapServer != null && identity.equals(bootstrapServer.getIdentity())) {
+            return bootstrapServer;
+        } else {
+            for (Server server : registeredServers.values()) {
+                if (identity.equals(server.getIdentity())) {
+                    return server;
+                }
             }
         }
         return null;
