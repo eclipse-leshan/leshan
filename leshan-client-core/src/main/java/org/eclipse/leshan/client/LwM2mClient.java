@@ -42,7 +42,7 @@ public interface LwM2mClient {
     void destroy(boolean deregister);
 
     /**
-     * Trigger a registration update.
+     * Trigger a registration update to all registered Server.
      */
     void triggerRegistrationUpdate();
 

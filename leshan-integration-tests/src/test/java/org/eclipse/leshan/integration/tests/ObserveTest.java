@@ -42,6 +42,7 @@ import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.RawData;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.californium.LeshanClient;
+import org.eclipse.leshan.client.servers.Server;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
@@ -327,8 +328,9 @@ public class ObserveTest {
         byte[] payload = LwM2mNodeJsonEncoder.encode(LwM2mSingleResource.newStringResource(15, "Paris"),
                 new LwM2mPath("/3/0/15"), new StaticModel(helper.createObjectModels()), new LwM2mValueChecker());
         Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
-        sendNotification(getConnector(helper.client), payload, firstCoapResponse, 666); // 666 is not a supported //
-                                                                                        // contentFormat.
+        sendNotification(getConnector(helper.client, helper.getCurrentRegisteredServer()), payload, firstCoapResponse,
+                666); // 666 is not a supported //
+        // contentFormat.
         // *** Hack End *** //
 
         // verify result
@@ -369,7 +371,8 @@ public class ObserveTest {
         byte[] payload = LwM2mNodeJsonEncoder.encodeTimestampedData(timestampedNodes, new LwM2mPath("/3/0/15"),
                 new StaticModel(helper.createObjectModels()), new LwM2mValueChecker());
         Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
-        sendNotification(getConnector(helper.client), payload, firstCoapResponse, ContentFormat.JSON_CODE);
+        sendNotification(getConnector(helper.client, helper.getCurrentRegisteredServer()), payload, firstCoapResponse,
+                ContentFormat.JSON_CODE);
         // *** Hack End *** //
 
         // verify result
@@ -412,7 +415,8 @@ public class ObserveTest {
         byte[] payload = LwM2mNodeJsonEncoder.encodeTimestampedData(timestampedNodes, new LwM2mPath("/3/0"),
                 new StaticModel(helper.createObjectModels()), new LwM2mValueChecker());
         Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
-        sendNotification(getConnector(helper.client), payload, firstCoapResponse, ContentFormat.JSON_CODE);
+        sendNotification(getConnector(helper.client, helper.getCurrentRegisteredServer()), payload, firstCoapResponse,
+                ContentFormat.JSON_CODE);
         // *** Hack End *** //
 
         // verify result
@@ -456,7 +460,8 @@ public class ObserveTest {
                 new StaticModel(helper.createObjectModels()), new LwM2mValueChecker());
 
         Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
-        sendNotification(getConnector(helper.client), payload, firstCoapResponse, ContentFormat.JSON_CODE);
+        sendNotification(getConnector(helper.client, helper.getCurrentRegisteredServer()), payload, firstCoapResponse,
+                ContentFormat.JSON_CODE);
         // *** Hack End *** //
 
         // verify result
@@ -491,8 +496,8 @@ public class ObserveTest {
         connector.send(data);
     }
 
-    private Connector getConnector(LeshanClient client) {
-        CoapEndpoint endpoint = (CoapEndpoint) helper.client.coap().getServer().getEndpoint(helper.client.getAddress());
+    private Connector getConnector(LeshanClient client, Server server) {
+        CoapEndpoint endpoint = (CoapEndpoint) client.coap().getServer().getEndpoint(client.getAddress(server));
         return endpoint.getConnector();
     }
 

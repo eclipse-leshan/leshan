@@ -15,10 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.engine;
 
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -37,7 +37,6 @@ import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.servers.DmServerInfo;
 import org.eclipse.leshan.client.servers.Server;
 import org.eclipse.leshan.client.servers.ServerInfo;
-import org.eclipse.leshan.client.servers.ServersInfo;
 import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.request.BootstrapRequest;
@@ -151,31 +150,28 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         synchronized (this) {
             started = true;
             // Try factory bootstrap
-            Collection<Server> dmServers = factoryBootstrap();
+            // TODO support multi server
+            Server dmServer = factoryBootstrap();
 
-            if (dmServers == null || dmServers.isEmpty()) {
+            if (dmServer == null) {
                 // If it failed try client initiated bootstrap
                 if (!scheduleClientInitiatedBootstrap(NOW))
                     throw new IllegalStateException("Unable to start client : No valid server available!");
             } else {
-                // Try to register to dm servers.
-                // TODO we currently support only one dm server.
-                Server dmServer = dmServers.iterator().next();
                 registerFuture = schedExecutor.submit(new RegistrationTask(dmServer));
             }
         }
     }
 
-    public Collection<Server> factoryBootstrap() {
-        ServersInfo serversInfo = ServersInfoExtractor.getInfo(objectEnablers);
-        if (!serversInfo.deviceManagements.isEmpty()) {
-            Collection<Server> servers = endpointsManager.createEndpoints(serversInfo.deviceManagements.values());
-            return servers;
+    private Server factoryBootstrap() {
+        ServerInfo serverInfo = selectServer(ServersInfoExtractor.getInfo(objectEnablers).deviceManagements);
+        if (serverInfo != null) {
+            return endpointsManager.createEndpoint(serverInfo);
         }
         return null;
     }
 
-    private Collection<Server> clientInitiatedBootstrap() throws InterruptedException {
+    private Server clientInitiatedBootstrap() throws InterruptedException {
         ServerInfo bootstrapServerInfo = ServersInfoExtractor.getBootstrapServerInfo(objectEnablers);
 
         if (bootstrapServerInfo == null) {
@@ -219,15 +215,16 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                         return null;
                     } else {
                         LOG.info("Bootstrap finished {}.", bootstrapServer.getUri());
-                        ServersInfo serverInfos = ServersInfoExtractor.getInfo(objectEnablers);
-                        Collection<Server> dmServers = null;
-                        if (!serverInfos.deviceManagements.isEmpty()) {
-                            dmServers = endpointsManager.createEndpoints(serverInfos.deviceManagements.values());
+                        ServerInfo serverInfo = selectServer(
+                                ServersInfoExtractor.getInfo(objectEnablers).deviceManagements);
+                        Server dmServer = null;
+                        if (serverInfo != null) {
+                            dmServer = endpointsManager.createEndpoint(serverInfo);
                         }
                         if (observer != null) {
                             observer.onBootstrapSuccess(bootstrapServer, request);
                         }
-                        return dmServers;
+                        return dmServer;
                     }
                 } else {
                     LOG.info("Bootstrap failed: {} {}.", response.getCode(), response.getErrorMessage());
@@ -478,15 +475,14 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         public void run() {
             synchronized (taskLock) {
                 try {
-                    Collection<Server> dmServers = clientInitiatedBootstrap();
-                    if (dmServers == null || dmServers.isEmpty()) {
+                    Server dmServer = clientInitiatedBootstrap();
+                    if (dmServer == null) {
                         // clientInitiatatedBootstrapTask is considered as finished.
                         // see https://github.com/eclipse/leshan/issues/701
                         bootstrapFuture = null;
                         // last thing to do reschedule a new bootstrap.
                         scheduleClientInitiatedBootstrap(retryWaitingTimeInMs);
                     } else {
-                        Server dmServer = dmServers.iterator().next();
                         if (!registerWithRetry(dmServer))
                             scheduleRegistrationTask(dmServer, retryWaitingTimeInMs);
                     }
@@ -615,10 +611,10 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         }
         try {
             if (deregister) {
-                // TODO we currently support only one dm server.
                 if (!registeredServers.isEmpty()) {
-                    Entry<String, Server> currentServer = registeredServers.entrySet().iterator().next();
-                    deregister(currentServer.getValue(), currentServer.getKey());
+                    for (Entry<String, Server> registeredServer : registeredServers.entrySet()) {
+                        deregister(registeredServer.getValue(), registeredServer.getKey());
+                    }
                 }
             }
         } catch (InterruptedException e) {
@@ -644,10 +640,10 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                 cancelBootstrapTask();
             }
             if (wasStarted && deregister) {
-                // TODO we currently support only one dm server.
                 if (!registeredServers.isEmpty()) {
-                    Entry<String, Server> currentServer = registeredServers.entrySet().iterator().next();
-                    deregister(currentServer.getValue(), currentServer.getKey());
+                    for (Entry<String, Server> registeredServer : registeredServers.entrySet()) {
+                        deregister(registeredServer.getValue(), registeredServer.getKey());
+                    }
                 }
             }
         } catch (InterruptedException e) {
@@ -708,15 +704,38 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         LOG.info("{} : {}", message, e.getMessage());
     }
 
-    /**
-     * @return the current registration Id or <code>null</code> if the client is not registered.
-     */
     @Override
-    public String getRegistrationId() {
-        // TODO we currently support only one dm server.
-        Iterator<String> it = registeredServers.keySet().iterator();
-        if (it.hasNext()) {
-            return it.next();
+    public String getRegistrationId(Server server) {
+        if (server == null)
+            return null;
+        for (Entry<String, Server> entry : registeredServers.entrySet()) {
+            if (server.equals(entry.getValue())) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Map<String, Server> getRegisteredServers() {
+        return Collections.unmodifiableMap(registeredServers);
+    }
+
+    /**
+     * This class support to be connected to only one LWM2M server. This methods select the server to be used. Default
+     * implementation select the first one.
+     */
+    protected DmServerInfo selectServer(Map<Long, DmServerInfo> servers) {
+        if (servers != null && !servers.isEmpty()) {
+            if (servers.size() > 1) {
+                LOG.warn(
+                        "DefaultRegistrationEngine support only connection to 1 LWM2M server, first server will be used from the server list of {}",
+                        servers.size());
+                TreeMap<Long, DmServerInfo> sortedServers = new TreeMap<>(servers);
+                return sortedServers.values().iterator().next();
+            } else {
+                return servers.values().iterator().next();
+            }
         }
         return null;
     }

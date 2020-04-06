@@ -51,7 +51,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * An {@link EndpointsManager} based on Californium(CoAP implementation) and Scandium (DTLS implementation).
+ * An {@link EndpointsManager} based on Californium(CoAP implementation) and Scandium (DTLS implementation) which
+ * supports only 1 server.
  */
 public class CaliforniumEndpointsManager implements EndpointsManager {
 
@@ -59,7 +60,9 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
 
     protected boolean started = false;
 
+    protected Server currentServer;
     protected CoapEndpoint currentEndpoint;
+
     protected Builder dtlsConfigbuilder;
     protected NetworkConfig coapConfig;
     protected InetSocketAddress localAddress;
@@ -166,17 +169,17 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
         coapServer.addEndpoint(currentEndpoint);
 
         // Start endpoint if needed
-        Server server = new Server(serverIdentity, serverInfo.serverId);
+        currentServer = new Server(serverIdentity, serverInfo.serverId);
         if (started) {
             coapServer.start();
             try {
                 currentEndpoint.start();
-                LOG.info("New endpoint created for server {} at {}", server.getUri(), currentEndpoint.getUri());
+                LOG.info("New endpoint created for server {} at {}", currentServer.getUri(), currentEndpoint.getUri());
             } catch (IOException e) {
                 throw new RuntimeException("Unable to start endpoint", e);
             }
         }
-        return server;
+        return currentServer;
     }
 
     @Override
@@ -185,6 +188,11 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             return null;
         else {
             // TODO support multi server
+            if (serverInfo.size() > 1) {
+                LOG.warn(
+                        "CaliforniumEndpointsManager support only connection to 1 LWM2M server, first server will be used from the server list of {}",
+                        serverInfo.size());
+            }
             ServerInfo firstServer = serverInfo.iterator().next();
             Collection<Server> servers = new ArrayList<>(1);
             servers.add(createEndpoint(firstServer));
@@ -217,6 +225,9 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
     @Override
     public synchronized void forceReconnection(Server server, boolean resume) {
         // TODO support multi server
+        if (server == null || !server.equals(currentServer))
+            return;
+
         Connector connector = currentEndpoint.getConnector();
         if (connector instanceof DTLSConnector) {
             if (resume) {
@@ -230,9 +241,9 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
 
     }
 
-    public synchronized Endpoint getEndpoint(Identity server) {
+    public synchronized Endpoint getEndpoint(Server server) {
         // TODO support multi server
-        if (currentEndpoint.isStarted())
+        if (server != null && server.equals(currentServer) && currentEndpoint.isStarted())
             return currentEndpoint;
         return null;
     }

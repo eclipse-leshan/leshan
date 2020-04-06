@@ -15,7 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.engine;
 
+import java.util.Map;
+
 import org.eclipse.leshan.client.RegistrationUpdate;
+import org.eclipse.leshan.client.servers.Server;
 
 /**
  * Manage the registration life-cycle:
@@ -40,14 +43,16 @@ public interface RegistrationEngine {
     void triggerRegistrationUpdate(RegistrationUpdate registrationUpdate);
 
     /**
-     * Returns the current registration Id.
-     * <p>
-     * Client should have 1 registration Id by connected server, so this method only make sense as current
-     * implementation supports only one LWM2M server.
+     * Returns the current registration Id for this server.
      * 
-     * @return the client registration Id or <code>null</code> if the client is not registered
+     * @return the client registration Id or <code>null</code> if the client is not registered to this server.
      */
-    String getRegistrationId();
+    String getRegistrationId(Server server);
+
+    /**
+     * @return All the registered Server indexed by the corresponding registration id;
+     */
+    Map<String, Server> getRegisteredServers();
 
     /**
      * @return the endpoint name of the LWM2M client

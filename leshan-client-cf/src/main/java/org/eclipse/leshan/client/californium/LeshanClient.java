@@ -42,6 +42,7 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
+import org.eclipse.leshan.client.servers.Server;
 import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
@@ -237,15 +238,12 @@ public class LeshanClient implements LwM2mClient {
         }
 
         /**
-         * Returns the current {@link CoapEndpoint} used to communicate with the server.
-         * <p>
-         * A different endpoint address should be used by connected server, so this method only make sense as current
-         * implementation supports only one LWM2M server.
+         * Returns the current {@link CoapEndpoint} used to communicate with the given server.
          * 
          * @return the {@link CoapEndpoint} used to communicate to LWM2M server.
          */
-        public CoapEndpoint getEndpoint() {
-            return (CoapEndpoint) endpointsManager.getEndpoint(null);
+        public CoapEndpoint getEndpoint(Server server) {
+            return (CoapEndpoint) endpointsManager.getEndpoint(server);
         }
     }
 
@@ -264,26 +262,27 @@ public class LeshanClient implements LwM2mClient {
     }
 
     /**
-     * Returns the current registration Id.
-     * <p>
-     * Client should have 1 registration Id by connected server, so this method only make sense as current
-     * implementation supports only one LWM2M server.
+     * Returns the registration Id for the given server.
      * 
      * @return the client registration Id or <code>null</code> if the client is not registered
      */
-    public String getRegistrationId() {
-        return engine.getRegistrationId();
+    public String getRegistrationId(Server server) {
+        return engine.getRegistrationId(server);
     }
 
     /**
-     * Returns the current {@link InetSocketAddress} use to communicate with the server.
-     * <p>
-     * A different endpoint/socket address should be used by connected server, so this method only make sense as current
-     * implementation supports only one LWM2M server.
+     * @return All the registered Server indexed by the corresponding registration id;
+     */
+    public Map<String, Server> getRegisteredServers() {
+        return engine.getRegisteredServers();
+    }
+
+    /**
+     * Returns the current {@link InetSocketAddress} use to communicate with the given server.
      * 
      * @return the address used to connect to the server or <code>null</code> if the client is not started.
      */
-    public InetSocketAddress getAddress() {
-        return endpointsManager.getEndpoint(null).getAddress();
+    public InetSocketAddress getAddress(Server server) {
+        return endpointsManager.getEndpoint(server).getAddress();
     }
 }

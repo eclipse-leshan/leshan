@@ -79,7 +79,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         coapRequest.addMessageObserver(syncMessageObserver);
 
         // Send CoAP request asynchronously
-        endpointsManager.getEndpoint(null).sendRequest(coapRequest);
+        endpointsManager.getEndpoint(server).sendRequest(coapRequest);
 
         // Wait for response, then return it
         return syncMessageObserver.waitForResponse();
@@ -107,7 +107,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
         coapRequest.addMessageObserver(obs);
 
         // Send CoAP request asynchronously
-        endpointsManager.getEndpoint(null).sendRequest(coapRequest);
+        endpointsManager.getEndpoint(server).sendRequest(coapRequest);
     }
 
     @Override

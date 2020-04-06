@@ -32,12 +32,12 @@ import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Security;
-import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.resource.DummyInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
+import org.eclipse.leshan.client.servers.Server;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
@@ -158,7 +158,8 @@ public class IntegrationTestHelper {
         initializer.setInstancesForObject(LwM2mId.SECURITY, Security.noSec(
                 "coap://" + server.getUnsecuredAddress().getHostString() + ":" + server.getUnsecuredAddress().getPort(),
                 12345));
-        initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME, BindingMode.U, false));
+        initializer.setInstancesForObject(LwM2mId.SERVER,
+                new org.eclipse.leshan.client.object.Server(12345, LIFETIME, BindingMode.U, false));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new TestDevice("Eclipse Leshan", MODEL_NUMBER, "12345", "U"));
         initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, DummyInstanceEnabler.class);
         initializer.setInstancesForObject(TEST_OBJECT_ID, new DummyInstanceEnabler(0),
@@ -284,6 +285,13 @@ public class IntegrationTestHelper {
 
     public Registration getCurrentRegistration() {
         return server.getRegistrationService().getByEndpoint(currentEndpointIdentifier.get());
+    }
+
+    public Server getCurrentRegisteredServer() {
+        Map<String, Server> registeredServers = client.getRegisteredServers();
+        if (registeredServers != null && !registeredServers.isEmpty())
+            return registeredServers.values().iterator().next();
+        return null;
     }
 
     public void deregisterClient() {
