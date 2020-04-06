@@ -168,6 +168,16 @@ public class ServersInfoExtractor {
         }
     }
 
+    public static Long getServerId(LwM2mObjectEnabler serverEnabler, int instanceId) {
+        ReadResponse response = serverEnabler.read(ServerIdentity.SYSTEM,
+                new ReadRequest(SERVER, instanceId, SRV_SERVER_ID));
+        if (response.isSuccess()) {
+            return (Long) ((LwM2mResource) response.getContent()).getValue();
+        } else {
+            return null;
+        }
+    }
+
     public static SecurityMode getSecurityMode(LwM2mObjectInstance securityInstance) {
         return SecurityMode.fromCode((long) securityInstance.getResource(SEC_SECURITY_MODE).getValue());
     }

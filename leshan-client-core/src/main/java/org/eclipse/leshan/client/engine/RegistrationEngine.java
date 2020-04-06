@@ -43,6 +43,11 @@ public interface RegistrationEngine {
     void triggerRegistrationUpdate(RegistrationUpdate registrationUpdate);
 
     /**
+     * Trigger the given registration update to the given servers.
+     */
+    void triggerRegistrationUpdate(Server server, RegistrationUpdate registrationUpdate);
+
+    /**
      * Returns the current registration Id for this server.
      * 
      * @return the client registration Id or <code>null</code> if the client is not registered to this server.
@@ -53,6 +58,11 @@ public interface RegistrationEngine {
      * @return All the registered Server indexed by the corresponding registration id;
      */
     Map<String, Server> getRegisteredServers();
+
+    /**
+     * @return The registered server identified by the given id or null if there is no corresponding server registered.
+     */
+    Server getRegisteredServer(long serverId);
 
     /**
      * @return the endpoint name of the LWM2M client
@@ -77,4 +87,5 @@ public interface RegistrationEngine {
      * @param deregister True if client should deregister itself before to be destroyed.
      */
     void destroy(boolean deregister);
+
 }

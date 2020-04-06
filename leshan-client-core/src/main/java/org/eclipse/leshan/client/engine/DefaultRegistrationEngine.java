@@ -68,6 +68,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultRegistrationEngine.class);
 
     private static final long NOW = 0;
+    private static final Server ALL = new Server(null, null);
 
     // Timeout for bootstrap/register/update request
     private final long requestTimeoutInMs;
@@ -653,19 +654,28 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     private class QueueUpdateTask implements Runnable {
 
         private RegistrationUpdate registrationUpdate;
+        private Server server;
 
-        public QueueUpdateTask(RegistrationUpdate registrationUpdate) {
+        public QueueUpdateTask(Server server, RegistrationUpdate registrationUpdate) {
             this.registrationUpdate = registrationUpdate;
+            this.server = server;
         }
 
         @Override
         public void run() {
             synchronized (taskLock) {
                 cancelUpdateTask(true);
-                // TODO we currently support only one dm server.
-                Entry<String, Server> currentServer = registeredServers.entrySet().iterator().next();
-                if (currentServer != null) {
-                    scheduleUpdate(currentServer.getValue(), currentServer.getKey(), registrationUpdate, NOW);
+                if (ALL.equals(server)) {
+                    // TODO support multi server
+                    Entry<String, Server> currentServer = registeredServers.entrySet().iterator().next();
+                    if (currentServer != null) {
+                        scheduleUpdate(currentServer.getValue(), currentServer.getKey(), registrationUpdate, NOW);
+                    }
+                } else {
+                    String registrationId = getRegistrationId(server);
+                    if (registrationId != null) {
+                        scheduleUpdate(server, registrationId, registrationUpdate, NOW);
+                    }
                 }
             }
         }
@@ -684,7 +694,24 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                 if (registeredServers.isEmpty()) {
                     LOG.info("No server registered!");
                 } else {
-                    schedExecutor.submit(new QueueUpdateTask(registrationUpdate));
+                    schedExecutor.submit(new QueueUpdateTask(ALL, registrationUpdate));
+                }
+            }
+        }
+    }
+
+    @Override
+    public void triggerRegistrationUpdate(Server server, RegistrationUpdate registrationUpdate) {
+        if (server == null)
+            return;
+
+        synchronized (this) {
+            if (started) {
+                LOG.info("Triggering registration update...");
+                if (registeredServers.isEmpty()) {
+                    LOG.info("No server registered!");
+                } else {
+                    schedExecutor.submit(new QueueUpdateTask(server, registrationUpdate));
                 }
             }
         }
@@ -719,6 +746,17 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     @Override
     public Map<String, Server> getRegisteredServers() {
         return Collections.unmodifiableMap(registeredServers);
+    }
+
+    @Override
+    public Server getRegisteredServer(long serverId) {
+        for (Entry<String, Server> entry : registeredServers.entrySet()) {
+            Server server = entry.getValue();
+            if (server != null && server.getId() == serverId) {
+                return server;
+            }
+        }
+        return null;
     }
 
     /**
