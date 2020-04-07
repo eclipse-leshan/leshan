@@ -19,8 +19,9 @@ import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.elements.EndpointContext;
-import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
+import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.request.ServerIdentity;
+import org.eclipse.leshan.client.servers.Server;
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.californium.LwM2mCoapResource;
 import org.eclipse.leshan.core.request.Identity;
@@ -30,11 +31,11 @@ import org.eclipse.leshan.core.request.Identity;
  */
 public class LwM2mClientCoapResource extends LwM2mCoapResource {
 
-    protected final BootstrapHandler bootstrapHandler;
+    protected final RegistrationEngine registrationEngine;
 
-    public LwM2mClientCoapResource(String name, BootstrapHandler bootstrapHandler) {
+    public LwM2mClientCoapResource(String name, RegistrationEngine registrationEngine) {
         super(name);
-        this.bootstrapHandler = bootstrapHandler;
+        this.registrationEngine = registrationEngine;
     }
 
     @Override
@@ -52,7 +53,11 @@ public class LwM2mClientCoapResource extends LwM2mCoapResource {
     protected ServerIdentity extractServerIdentity(EndpointContext context) {
         Identity identity = EndpointContextUtil.extractIdentity(context);
 
-        if (bootstrapHandler.isBootstrapServer(identity)) {
+        Server server = registrationEngine.getServer(identity);
+        if (server == null)
+            return null;
+
+        if (server.isLwm2mBootstrapServer()) {
             return ServerIdentity.createLwm2mBootstrapServerIdentity(identity);
         }
 

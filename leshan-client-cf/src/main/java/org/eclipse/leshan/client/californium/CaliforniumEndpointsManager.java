@@ -70,13 +70,16 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
     protected CoapServer coapServer;
     protected EndpointFactory endpointFactory;
 
-    public CaliforniumEndpointsManager(CoapServer coapServer, InetSocketAddress localAddress, NetworkConfig coapConfig,
+    public CaliforniumEndpointsManager(InetSocketAddress localAddress, NetworkConfig coapConfig,
             Builder dtlsConfigBuilder, EndpointFactory endpointFactory) {
-        this.coapServer = coapServer;
         this.localAddress = localAddress;
         this.coapConfig = coapConfig;
         this.dtlsConfigbuilder = dtlsConfigBuilder;
         this.endpointFactory = endpointFactory;
+    }
+
+    public void setCoapServer(CoapServer coapServer) {
+        this.coapServer = coapServer;
     }
 
     @Override

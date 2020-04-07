@@ -26,6 +26,7 @@ import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
+import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
@@ -37,9 +38,12 @@ import org.eclipse.leshan.util.StringUtils;
 public class RootResource extends LwM2mClientCoapResource {
 
     protected CoapServer coapServer;
+    protected BootstrapHandler bootstrapHandler;
 
-    public RootResource(BootstrapHandler bootstrapHandler, CoapServer coapServer) {
-        super("", bootstrapHandler);
+    public RootResource(RegistrationEngine registrationEngine, BootstrapHandler bootstrapHandler,
+            CoapServer coapServer) {
+        super("", registrationEngine);
+        this.bootstrapHandler = bootstrapHandler;
         setVisible(false);
         this.coapServer = coapServer;
     }

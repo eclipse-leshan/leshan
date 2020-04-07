@@ -28,8 +28,8 @@ import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.Link;
-import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.client.californium.LwM2mClientCoapResource;
+import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
@@ -77,9 +77,9 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
     protected final LwM2mNodeEncoder encoder;
     protected final LwM2mNodeDecoder decoder;
 
-    public ObjectResource(LwM2mObjectEnabler nodeEnabler, BootstrapHandler bootstrapHandler, LwM2mNodeEncoder encoder,
-            LwM2mNodeDecoder decoder) {
-        super(Integer.toString(nodeEnabler.getId()), bootstrapHandler);
+    public ObjectResource(LwM2mObjectEnabler nodeEnabler, RegistrationEngine registrationEngine,
+            LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
+        super(Integer.toString(nodeEnabler.getId()), registrationEngine);
         this.nodeEnabler = nodeEnabler;
         this.nodeEnabler.addListener(this);
         this.encoder = encoder;
