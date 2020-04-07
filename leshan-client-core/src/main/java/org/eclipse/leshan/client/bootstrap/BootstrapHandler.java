@@ -22,10 +22,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.servers.ServerIdentity;
-import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
-import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
 import org.eclipse.leshan.core.response.BootstrapFinishResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
@@ -38,7 +36,6 @@ public class BootstrapHandler {
     private boolean bootstrapping = false;
     private CountDownLatch bootstrappingLatch = new CountDownLatch(1);
 
-    private ServerInfo bootstrapServerInfo;
     private final Map<Integer, LwM2mObjectEnabler> objects;
 
     public BootstrapHandler(Map<Integer, LwM2mObjectEnabler> objectEnablers) {
@@ -85,9 +82,8 @@ public class BootstrapHandler {
         }
     }
 
-    public synchronized boolean tryToInitSession(ServerInfo bootstrapServerInfo) {
+    public synchronized boolean tryToInitSession() {
         if (!bootstrapping) {
-            this.bootstrapServerInfo = bootstrapServerInfo;
             bootstrappingLatch = new CountDownLatch(1);
             bootstrapping = true;
             return true;
@@ -104,20 +100,7 @@ public class BootstrapHandler {
     }
 
     public synchronized void closeSession() {
-        bootstrapServerInfo = null;
         bootstrappingLatch = null;
         bootstrapping = false;
-    }
-
-    /**
-     * @return <code>true</code> if the given request sender identity is the bootstrap server (same IP address)
-     */
-    public synchronized boolean isBootstrapServer(Identity identity) {
-        if (bootstrapServerInfo == null) {
-            return false;
-        }
-
-        return bootstrapServerInfo.getAddress().getAddress() != null
-                && bootstrapServerInfo.getAddress().getAddress().equals(identity.getPeerAddress().getAddress());
     }
 }

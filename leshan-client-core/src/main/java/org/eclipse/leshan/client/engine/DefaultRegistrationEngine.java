@@ -188,7 +188,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             return null;
         }
 
-        if (bootstrapHandler.tryToInitSession(bootstrapServerInfo)) {
+        if (bootstrapHandler.tryToInitSession()) {
             LOG.info("Trying to start bootstrap session to {} ...", bootstrapServerInfo.getFullUri());
 
             // Clear all registered server, cancel all current task and recreate all endpoints
