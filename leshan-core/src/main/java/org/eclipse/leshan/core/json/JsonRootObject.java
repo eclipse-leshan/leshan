@@ -15,7 +15,7 @@
  *     Gemalto M2M GmbH
  *******************************************************************************/
 
-package org.eclipse.leshan.json;
+package org.eclipse.leshan.core.json;
 
 import java.util.Collections;
 import java.util.List;

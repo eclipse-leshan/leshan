@@ -14,7 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Gemalto M2M GmbH
  *******************************************************************************/
-package org.eclipse.leshan.json;
+package org.eclipse.leshan.core.json;
 
 /**
  * Exception thrown in case of JSON parsing error

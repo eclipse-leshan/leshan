@@ -16,6 +16,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.json;
 
+import org.eclipse.leshan.core.json.JsonRootObject;
+import org.eclipse.leshan.core.json.LwM2mJson;
+import org.eclipse.leshan.core.json.LwM2mJsonException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
