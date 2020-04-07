@@ -42,7 +42,7 @@ import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.RawData;
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.californium.LeshanClient;
-import org.eclipse.leshan.client.servers.Server;
+import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
@@ -496,7 +496,7 @@ public class ObserveTest {
         connector.send(data);
     }
 
-    private Connector getConnector(LeshanClient client, Server server) {
+    private Connector getConnector(LeshanClient client, ServerIdentity server) {
         CoapEndpoint endpoint = (CoapEndpoint) client.coap().getServer().getEndpoint(client.getAddress(server));
         return endpoint.getConnector();
     }

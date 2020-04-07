@@ -16,7 +16,7 @@
 package org.eclipse.leshan.client.observer;
 
 import org.eclipse.leshan.ResponseCode;
-import org.eclipse.leshan.client.servers.Server;
+import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
@@ -28,45 +28,45 @@ import org.eclipse.leshan.core.request.UpdateRequest;
 public interface LwM2mClientObserver {
     // ============== Bootstrap =================
 
-    void onBootstrapStarted(Server bsserver, BootstrapRequest request);
+    void onBootstrapStarted(ServerIdentity bsserver, BootstrapRequest request);
 
-    void onBootstrapSuccess(Server bsserver, BootstrapRequest request);
+    void onBootstrapSuccess(ServerIdentity bsserver, BootstrapRequest request);
 
-    void onBootstrapFailure(Server bsserver, BootstrapRequest request, ResponseCode responseCode, String errorMessage,
+    void onBootstrapFailure(ServerIdentity bsserver, BootstrapRequest request, ResponseCode responseCode, String errorMessage,
             Exception cause);
 
-    void onBootstrapTimeout(Server bsserver, BootstrapRequest request);
+    void onBootstrapTimeout(ServerIdentity bsserver, BootstrapRequest request);
 
     // ============== Registration =================
 
-    void onRegistrationStarted(Server server, RegisterRequest request);
+    void onRegistrationStarted(ServerIdentity server, RegisterRequest request);
 
-    void onRegistrationSuccess(Server server, RegisterRequest request, String registrationID);
+    void onRegistrationSuccess(ServerIdentity server, RegisterRequest request, String registrationID);
 
-    void onRegistrationFailure(Server server, RegisterRequest request, ResponseCode responseCode, String errorMessage,
+    void onRegistrationFailure(ServerIdentity server, RegisterRequest request, ResponseCode responseCode, String errorMessage,
             Exception cause);
 
-    void onRegistrationTimeout(Server server, RegisterRequest request);
+    void onRegistrationTimeout(ServerIdentity server, RegisterRequest request);
 
     // ============== Registration Update =================
 
-    void onUpdateStarted(Server server, UpdateRequest request);
+    void onUpdateStarted(ServerIdentity server, UpdateRequest request);
 
-    void onUpdateSuccess(Server server, UpdateRequest request);
+    void onUpdateSuccess(ServerIdentity server, UpdateRequest request);
 
-    void onUpdateFailure(Server server, UpdateRequest request, ResponseCode responseCode, String errorMessage,
+    void onUpdateFailure(ServerIdentity server, UpdateRequest request, ResponseCode responseCode, String errorMessage,
             Exception cause);
 
-    void onUpdateTimeout(Server server, UpdateRequest request);
+    void onUpdateTimeout(ServerIdentity server, UpdateRequest request);
 
     // ============== Deregistration Update =================
 
-    void onDeregistrationStarted(Server server, DeregisterRequest request);
+    void onDeregistrationStarted(ServerIdentity server, DeregisterRequest request);
 
-    void onDeregistrationSuccess(Server server, DeregisterRequest request);
+    void onDeregistrationSuccess(ServerIdentity server, DeregisterRequest request);
 
-    void onDeregistrationFailure(Server server, DeregisterRequest request, ResponseCode responseCode,
+    void onDeregistrationFailure(ServerIdentity server, DeregisterRequest request, ResponseCode responseCode,
             String errorMessage, Exception cause);
 
-    void onDeregistrationTimeout(Server server, DeregisterRequest request);
+    void onDeregistrationTimeout(ServerIdentity server, DeregisterRequest request);
 }

@@ -26,7 +26,7 @@ import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.client.californium.LwM2mClientCoapResource;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
-import org.eclipse.leshan.client.request.ServerIdentity;
+import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.response.BootstrapFinishResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
@@ -47,7 +47,10 @@ public class BootstrapResource extends LwM2mClientCoapResource {
     @Override
     public void handlePOST(CoapExchange exchange) {
         // Handle bootstrap request
-        ServerIdentity identity = extractServerIdentity(exchange);
+        ServerIdentity identity = getServerOrRejectRequest(exchange);
+        if (identity == null)
+            return;
+
         // Acknowledge bootstrap finished request
         exchange.accept();
         final SendableResponse<BootstrapFinishResponse> sendableResponse = bootstrapHandler.finished(identity,

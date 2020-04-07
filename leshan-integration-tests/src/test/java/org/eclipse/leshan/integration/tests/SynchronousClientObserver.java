@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverAdapter;
-import org.eclipse.leshan.client.servers.Server;
+import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
@@ -47,74 +47,74 @@ public class SynchronousClientObserver extends LwM2mClientObserverAdapter {
     private AtomicBoolean bootstrapFailed = new AtomicBoolean(false);
 
     @Override
-    public void onBootstrapSuccess(Server bsserver, BootstrapRequest request) {
+    public void onBootstrapSuccess(ServerIdentity bsserver, BootstrapRequest request) {
         bootstrapSucceed.set(true);
         bootstrapLatch.countDown();
     }
 
     @Override
-    public void onBootstrapFailure(Server bsserver, BootstrapRequest request, ResponseCode responseCode,
+    public void onBootstrapFailure(ServerIdentity bsserver, BootstrapRequest request, ResponseCode responseCode,
             String errorMessage, Exception cause) {
         bootstrapFailed.set(true);
         bootstrapLatch.countDown();
     }
 
     @Override
-    public void onBootstrapTimeout(Server bsserver, BootstrapRequest request) {
+    public void onBootstrapTimeout(ServerIdentity bsserver, BootstrapRequest request) {
         bootstrapLatch.countDown();
     }
 
     @Override
-    public void onRegistrationSuccess(Server server, RegisterRequest request, String registrationID) {
+    public void onRegistrationSuccess(ServerIdentity server, RegisterRequest request, String registrationID) {
         registerSucceed.set(true);
         registerLatch.countDown();
     }
 
     @Override
-    public void onRegistrationFailure(Server server, RegisterRequest request, ResponseCode responseCode,
+    public void onRegistrationFailure(ServerIdentity server, RegisterRequest request, ResponseCode responseCode,
             String errorMessage, Exception cause) {
         registerFailed.set(true);
         registerLatch.countDown();
     }
 
     @Override
-    public void onRegistrationTimeout(Server server, RegisterRequest request) {
+    public void onRegistrationTimeout(ServerIdentity server, RegisterRequest request) {
         registerLatch.countDown();
     }
 
     @Override
-    public void onUpdateSuccess(Server server, UpdateRequest request) {
+    public void onUpdateSuccess(ServerIdentity server, UpdateRequest request) {
         updateSucceed.set(true);
         updateLatch.countDown();
     }
 
     @Override
-    public void onUpdateFailure(Server server, UpdateRequest request, ResponseCode responseCode, String errorMessage,
+    public void onUpdateFailure(ServerIdentity server, UpdateRequest request, ResponseCode responseCode, String errorMessage,
             Exception cause) {
         updateFailed.set(true);
         updateLatch.countDown();
     }
 
     @Override
-    public void onUpdateTimeout(Server server, UpdateRequest request) {
+    public void onUpdateTimeout(ServerIdentity server, UpdateRequest request) {
         updateLatch.countDown();
     }
 
     @Override
-    public void onDeregistrationSuccess(Server server, DeregisterRequest request) {
+    public void onDeregistrationSuccess(ServerIdentity server, DeregisterRequest request) {
         deregisterSucceed.set(true);
         deregisterLatch.countDown();
     }
 
     @Override
-    public void onDeregistrationFailure(Server server, DeregisterRequest request, ResponseCode responseCode,
+    public void onDeregistrationFailure(ServerIdentity server, DeregisterRequest request, ResponseCode responseCode,
             String errorMessage, Exception cause) {
         deregisterFailed.set(true);
         deregisterLatch.countDown();
     }
 
     @Override
-    public void onDeregistrationTimeout(Server server, DeregisterRequest request) {
+    public void onDeregistrationTimeout(ServerIdentity server, DeregisterRequest request) {
         deregisterLatch.countDown();
     }
 

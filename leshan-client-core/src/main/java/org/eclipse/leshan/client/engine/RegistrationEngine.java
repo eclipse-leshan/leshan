@@ -18,7 +18,7 @@ package org.eclipse.leshan.client.engine;
 import java.util.Map;
 
 import org.eclipse.leshan.client.RegistrationUpdate;
-import org.eclipse.leshan.client.servers.Server;
+import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.request.Identity;
 
 /**
@@ -46,30 +46,30 @@ public interface RegistrationEngine {
     /**
      * Trigger the given registration update to the given servers.
      */
-    void triggerRegistrationUpdate(Server server, RegistrationUpdate registrationUpdate);
+    void triggerRegistrationUpdate(ServerIdentity server, RegistrationUpdate registrationUpdate);
 
     /**
      * Returns the current registration Id for this server.
      * 
      * @return the client registration Id or <code>null</code> if the client is not registered to this server.
      */
-    String getRegistrationId(Server server);
+    String getRegistrationId(ServerIdentity server);
 
     /**
      * @return All the registered Server indexed by the corresponding registration id;
      */
-    Map<String, Server> getRegisteredServers();
+    Map<String, ServerIdentity> getRegisteredServers();
 
     /**
      * @return The registered server identified by the given id or null if there is no corresponding server registered.
      */
-    Server getRegisteredServer(long serverId);
+    ServerIdentity getRegisteredServer(long serverId);
 
     /**
      * @return The registered LWM2M Server or Bootstrap server for the given identity or null if there is no
      *         corresponding server registered.
      */
-    Server getServer(Identity identity);
+    ServerIdentity getServer(Identity identity);
 
     /**
      * @return the endpoint name of the LWM2M client

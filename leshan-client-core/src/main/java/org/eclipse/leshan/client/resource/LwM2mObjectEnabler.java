@@ -19,8 +19,8 @@ package org.eclipse.leshan.client.resource;
 import java.util.List;
 
 import org.eclipse.leshan.client.LwM2mClient;
-import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
+import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;

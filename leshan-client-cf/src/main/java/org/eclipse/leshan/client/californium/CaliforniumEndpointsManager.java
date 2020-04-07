@@ -42,8 +42,8 @@ import org.eclipse.californium.scandium.dtls.rpkstore.TrustedRpkStore;
 import org.eclipse.californium.scandium.dtls.x509.CertificateVerifier;
 import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.client.EndpointsManager;
-import org.eclipse.leshan.client.servers.Server;
-import org.eclipse.leshan.client.servers.Server.Role;
+import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.ServerIdentity.Role;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.californium.EndpointFactory;
@@ -61,7 +61,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
 
     protected boolean started = false;
 
-    protected Server currentServer;
+    protected ServerIdentity currentServer;
     protected CoapEndpoint currentEndpoint;
 
     protected Builder dtlsConfigbuilder;
@@ -83,7 +83,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
     }
 
     @Override
-    public synchronized Server createEndpoint(ServerInfo serverInfo) {
+    public synchronized ServerIdentity createEndpoint(ServerInfo serverInfo) {
         // Clear previous endpoint
         if (currentEndpoint != null) {
             coapServer.getEndpoints().remove(currentEndpoint);
@@ -174,9 +174,9 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
 
         // Start endpoint if needed
         if (serverInfo.bootstrap) {
-            currentServer = new Server(serverIdentity, serverInfo.serverId, Role.LWM2M_BOOTSTRAP_SERVER);
+            currentServer = new ServerIdentity(serverIdentity, serverInfo.serverId, Role.LWM2M_BOOTSTRAP_SERVER);
         } else {
-            currentServer = new Server(serverIdentity, serverInfo.serverId);
+            currentServer = new ServerIdentity(serverIdentity, serverInfo.serverId);
         }
         if (started) {
             coapServer.start();
@@ -191,7 +191,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
     }
 
     @Override
-    public synchronized Collection<Server> createEndpoints(Collection<? extends ServerInfo> serverInfo) {
+    public synchronized Collection<ServerIdentity> createEndpoints(Collection<? extends ServerInfo> serverInfo) {
         if (serverInfo == null || serverInfo.isEmpty())
             return null;
         else {
@@ -202,14 +202,14 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                         serverInfo.size());
             }
             ServerInfo firstServer = serverInfo.iterator().next();
-            Collection<Server> servers = new ArrayList<>(1);
+            Collection<ServerIdentity> servers = new ArrayList<>(1);
             servers.add(createEndpoint(firstServer));
             return servers;
         }
     }
 
     @Override
-    public long getMaxCommunicationPeriodFor(Server server, long lifetimeInMs) {
+    public long getMaxCommunicationPeriodFor(ServerIdentity server, long lifetimeInMs) {
         // See https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/283 to better understand.
         // TODO For DTLS, worst Handshake scenario should be taking into account too.
 
@@ -231,7 +231,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
     }
 
     @Override
-    public synchronized void forceReconnection(Server server, boolean resume) {
+    public synchronized void forceReconnection(ServerIdentity server, boolean resume) {
         // TODO support multi server
         if (server == null || !server.equals(currentServer))
             return;
@@ -249,7 +249,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
 
     }
 
-    public synchronized Endpoint getEndpoint(Server server) {
+    public synchronized Endpoint getEndpoint(ServerIdentity server) {
         // TODO support multi server
         if (server != null && server.equals(currentServer) && currentEndpoint.isStarted())
             return currentEndpoint;

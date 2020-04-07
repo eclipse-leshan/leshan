@@ -42,7 +42,7 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
-import org.eclipse.leshan.client.servers.Server;
+import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
@@ -242,7 +242,7 @@ public class LeshanClient implements LwM2mClient {
          * 
          * @return the {@link CoapEndpoint} used to communicate to LWM2M server.
          */
-        public CoapEndpoint getEndpoint(Server server) {
+        public CoapEndpoint getEndpoint(ServerIdentity server) {
             return (CoapEndpoint) endpointsManager.getEndpoint(server);
         }
     }
@@ -266,14 +266,14 @@ public class LeshanClient implements LwM2mClient {
      * 
      * @return the client registration Id or <code>null</code> if the client is not registered
      */
-    public String getRegistrationId(Server server) {
+    public String getRegistrationId(ServerIdentity server) {
         return engine.getRegistrationId(server);
     }
 
     /**
      * @return All the registered Server indexed by the corresponding registration id;
      */
-    public Map<String, Server> getRegisteredServers() {
+    public Map<String, ServerIdentity> getRegisteredServers() {
         return engine.getRegisteredServers();
     }
 
@@ -282,7 +282,7 @@ public class LeshanClient implements LwM2mClient {
      * 
      * @return the address used to connect to the server or <code>null</code> if the client is not started.
      */
-    public InetSocketAddress getAddress(Server server) {
+    public InetSocketAddress getAddress(ServerIdentity server) {
         return endpointsManager.getEndpoint(server).getAddress();
     }
 }

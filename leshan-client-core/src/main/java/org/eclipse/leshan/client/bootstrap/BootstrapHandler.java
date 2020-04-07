@@ -20,8 +20,8 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
+import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
@@ -45,11 +45,11 @@ public class BootstrapHandler {
         objects = objectEnablers;
     }
 
-    public synchronized SendableResponse<BootstrapFinishResponse> finished(ServerIdentity identity,
+    public synchronized SendableResponse<BootstrapFinishResponse> finished(ServerIdentity server,
             BootstrapFinishRequest finishedRequest) {
         if (bootstrapping) {
             // only if the request is from the bootstrap server
-            if (!isBootstrapServer(identity)) {
+            if (!server.isLwm2mBootstrapServer()) {
                 return new SendableResponse<>(BootstrapFinishResponse.badRequest("not from a bootstrap server"));
             }
             // TODO delete bootstrap server (see 5.2.5.2 Bootstrap Delete)
@@ -67,16 +67,16 @@ public class BootstrapHandler {
         }
     }
 
-    public synchronized BootstrapDeleteResponse delete(ServerIdentity identity, BootstrapDeleteRequest deleteRequest) {
+    public synchronized BootstrapDeleteResponse delete(ServerIdentity server, BootstrapDeleteRequest deleteRequest) {
         if (bootstrapping) {
             // Only if the request is from the bootstrap server
-            if (!isBootstrapServer(identity)) {
+            if (!server.isLwm2mBootstrapServer()) {
                 return BootstrapDeleteResponse.badRequest("not from a bootstrap server");
             }
 
             // Delete all device management server
             for (LwM2mObjectEnabler enabler : objects.values()) {
-                enabler.delete(identity, new BootstrapDeleteRequest(enabler.getId()));
+                enabler.delete(server, new BootstrapDeleteRequest(enabler.getId()));
             }
 
             return BootstrapDeleteResponse.success();

@@ -30,9 +30,9 @@ import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.Link;
 import org.eclipse.leshan.client.californium.LwM2mClientCoapResource;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
-import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
+import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.attributes.AttributeSet;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.StaticModel;
@@ -89,7 +89,10 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
 
     @Override
     public void handleGET(CoapExchange exchange) {
-        ServerIdentity identity = extractServerIdentity(exchange);
+        ServerIdentity identity = getServerOrRejectRequest(exchange);
+        if (identity == null)
+            return;
+
         String URI = exchange.getRequestOptions().getUriPathString();
 
         // Manage Discover Request
@@ -162,7 +165,10 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
 
     @Override
     public void handlePUT(CoapExchange coapExchange) {
-        ServerIdentity identity = extractServerIdentity(coapExchange);
+        ServerIdentity identity = getServerOrRejectRequest(coapExchange);
+        if (identity == null)
+            return;
+
         String URI = coapExchange.getRequestOptions().getUriPathString();
 
         // get Observe Spec
@@ -230,7 +236,10 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
 
     @Override
     public void handlePOST(CoapExchange exchange) {
-        ServerIdentity identity = extractServerIdentity(exchange);
+        ServerIdentity identity = getServerOrRejectRequest(exchange);
+        if (identity == null)
+            return;
+
         String URI = exchange.getRequestOptions().getUriPathString();
 
         LwM2mPath path = new LwM2mPath(URI);
@@ -321,7 +330,9 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
     public void handleDELETE(CoapExchange coapExchange) {
         // Manage Delete Request
         String URI = coapExchange.getRequestOptions().getUriPathString();
-        ServerIdentity identity = extractServerIdentity(coapExchange);
+        ServerIdentity identity = getServerOrRejectRequest(coapExchange);
+        if (identity == null)
+            return;
 
         if (identity.isLwm2mBootstrapServer()) {
             BootstrapDeleteResponse response = nodeEnabler.delete(identity, new BootstrapDeleteRequest(URI));

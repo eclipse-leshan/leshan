@@ -17,7 +17,7 @@
 package org.eclipse.leshan.client.californium;
 
 import static org.eclipse.leshan.LwM2mId.*;
-import static org.eclipse.leshan.client.request.ServerIdentity.SYSTEM;
+import static org.eclipse.leshan.client.servers.ServerIdentity.SYSTEM;
 
 import java.net.InetSocketAddress;
 import java.net.URI;

@@ -22,12 +22,12 @@ import org.eclipse.leshan.core.request.Identity;
 /**
  * A Bean which identify a LWM2M Server.
  */
-public class Server {
+public class ServerIdentity {
 
     /**
      * Identity for system calls.
      */
-    public final static Server SYSTEM = new Server(
+    public final static ServerIdentity SYSTEM = new ServerIdentity(
             Identity.unsecure(InetSocketAddress.createUnresolved(Role.SYSTEM.toString(), 1)), null, Role.SYSTEM);
 
     public enum Role {
@@ -50,11 +50,11 @@ public class Server {
     private final Long id;
     private final Role role;
 
-    public Server(Identity identity, Long id) {
+    public ServerIdentity(Identity identity, Long id) {
         this(identity, id, Role.LWM2M_SERVER);
     }
 
-    public Server(Identity identity, Long id, Role role) {
+    public ServerIdentity(Identity identity, Long id, Role role) {
         this.identity = identity;
         this.id = id;
         this.role = role;
@@ -146,7 +146,7 @@ public class Server {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        Server other = (Server) obj;
+        ServerIdentity other = (ServerIdentity) obj;
         if (id == null) {
             if (other.id != null)
                 return false;

@@ -32,12 +32,11 @@ import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Security;
-import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.resource.DummyInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
-import org.eclipse.leshan.client.servers.Server;
+import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
@@ -287,8 +286,8 @@ public class IntegrationTestHelper {
         return server.getRegistrationService().getByEndpoint(currentEndpointIdentifier.get());
     }
 
-    public Server getCurrentRegisteredServer() {
-        Map<String, Server> registeredServers = client.getRegisteredServers();
+    public ServerIdentity getCurrentRegisteredServer() {
+        Map<String, ServerIdentity> registeredServers = client.getRegisteredServers();
         if (registeredServers != null && !registeredServers.isEmpty())
             return registeredServers.values().iterator().next();
         return null;

@@ -5,8 +5,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
-import org.eclipse.leshan.client.request.ServerIdentity;
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
+import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.slf4j.Logger;

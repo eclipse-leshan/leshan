@@ -19,7 +19,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.net.InetSocketAddress;
 
-import org.eclipse.leshan.client.servers.Server;
+import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.request.Identity;
 import org.junit.Test;
 
@@ -27,19 +27,19 @@ public class ServerTest {
 
     @Test
     public void test_server_getUri_with_localhost_hostname() {
-        Server server = new Server(Identity.unsecure(new InetSocketAddress("localhost", 5683)), 123l);
+        ServerIdentity server = new ServerIdentity(Identity.unsecure(new InetSocketAddress("localhost", 5683)), 123l);
         assertEquals("coap://localhost:5683", server.getUri());
     }
 
     @Test
     public void test_server_getUri_with_unknown_hostname() {
-        Server server = new Server(Identity.unsecure(new InetSocketAddress("unknownhost", 5683)), 123l);
+        ServerIdentity server = new ServerIdentity(Identity.unsecure(new InetSocketAddress("unknownhost", 5683)), 123l);
         assertEquals("coap://unknownhost:5683", server.getUri());
     }
 
     @Test
     public void test_server_getUri_with_ipaddress() {
-        Server server = new Server(Identity.unsecure(new InetSocketAddress("50.0.0.1", 5683)), 123l);
+        ServerIdentity server = new ServerIdentity(Identity.unsecure(new InetSocketAddress("50.0.0.1", 5683)), 123l);
         assertEquals("coap://50.0.0.1:5683", server.getUri());
     }
 }

@@ -14,7 +14,7 @@ package org.eclipse.leshan.client.observer;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.leshan.ResponseCode;
-import org.eclipse.leshan.client.servers.Server;
+import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
@@ -36,21 +36,21 @@ public class LwM2mClientObserverDispatcher implements LwM2mClientObserver {
     }
 
     @Override
-    public void onBootstrapStarted(Server bsserver, BootstrapRequest request) {
+    public void onBootstrapStarted(ServerIdentity bsserver, BootstrapRequest request) {
         for (LwM2mClientObserver observer : observers) {
             observer.onBootstrapStarted(bsserver, request);
         }
     }
 
     @Override
-    public void onBootstrapSuccess(Server bsserver, BootstrapRequest request) {
+    public void onBootstrapSuccess(ServerIdentity bsserver, BootstrapRequest request) {
         for (LwM2mClientObserver observer : observers) {
             observer.onBootstrapSuccess(bsserver, request);
         }
     }
 
     @Override
-    public void onBootstrapFailure(Server bsserver, BootstrapRequest request, ResponseCode responseCode,
+    public void onBootstrapFailure(ServerIdentity bsserver, BootstrapRequest request, ResponseCode responseCode,
             String errorMessage, Exception cause) {
         for (LwM2mClientObserver observer : observers) {
             observer.onBootstrapFailure(bsserver, request, responseCode, errorMessage, cause);
@@ -58,28 +58,28 @@ public class LwM2mClientObserverDispatcher implements LwM2mClientObserver {
     }
 
     @Override
-    public void onBootstrapTimeout(Server bsserver, BootstrapRequest request) {
+    public void onBootstrapTimeout(ServerIdentity bsserver, BootstrapRequest request) {
         for (LwM2mClientObserver observer : observers) {
             observer.onBootstrapTimeout(bsserver, request);
         }
     }
 
     @Override
-    public void onRegistrationStarted(Server server, RegisterRequest request) {
+    public void onRegistrationStarted(ServerIdentity server, RegisterRequest request) {
         for (LwM2mClientObserver observer : observers) {
             observer.onRegistrationStarted(server, request);
         }
     }
 
     @Override
-    public void onRegistrationSuccess(Server server, RegisterRequest request, String registrationID) {
+    public void onRegistrationSuccess(ServerIdentity server, RegisterRequest request, String registrationID) {
         for (LwM2mClientObserver observer : observers) {
             observer.onRegistrationSuccess(server, request, registrationID);
         }
     }
 
     @Override
-    public void onRegistrationFailure(Server server, RegisterRequest request, ResponseCode responseCode,
+    public void onRegistrationFailure(ServerIdentity server, RegisterRequest request, ResponseCode responseCode,
             String errorMessage, Exception cause) {
         for (LwM2mClientObserver observer : observers) {
             observer.onRegistrationFailure(server, request, responseCode, errorMessage, cause);
@@ -87,28 +87,28 @@ public class LwM2mClientObserverDispatcher implements LwM2mClientObserver {
     }
 
     @Override
-    public void onRegistrationTimeout(Server server, RegisterRequest request) {
+    public void onRegistrationTimeout(ServerIdentity server, RegisterRequest request) {
         for (LwM2mClientObserver observer : observers) {
             observer.onRegistrationTimeout(server, request);
         }
     }
 
     @Override
-    public void onUpdateStarted(Server server, UpdateRequest request) {
+    public void onUpdateStarted(ServerIdentity server, UpdateRequest request) {
         for (LwM2mClientObserver observer : observers) {
             observer.onUpdateStarted(server, request);
         }
     }
 
     @Override
-    public void onUpdateSuccess(Server server, UpdateRequest request) {
+    public void onUpdateSuccess(ServerIdentity server, UpdateRequest request) {
         for (LwM2mClientObserver observer : observers) {
             observer.onUpdateSuccess(server, request);
         }
     }
 
     @Override
-    public void onUpdateFailure(Server server, UpdateRequest request, ResponseCode responseCode, String errorMessage,
+    public void onUpdateFailure(ServerIdentity server, UpdateRequest request, ResponseCode responseCode, String errorMessage,
             Exception cause) {
         for (LwM2mClientObserver observer : observers) {
             observer.onUpdateFailure(server, request, responseCode, errorMessage, cause);
@@ -116,28 +116,28 @@ public class LwM2mClientObserverDispatcher implements LwM2mClientObserver {
     }
 
     @Override
-    public void onUpdateTimeout(Server server, UpdateRequest request) {
+    public void onUpdateTimeout(ServerIdentity server, UpdateRequest request) {
         for (LwM2mClientObserver observer : observers) {
             observer.onUpdateTimeout(server, request);
         }
     }
 
     @Override
-    public void onDeregistrationStarted(Server server, DeregisterRequest request) {
+    public void onDeregistrationStarted(ServerIdentity server, DeregisterRequest request) {
         for (LwM2mClientObserver observer : observers) {
             observer.onDeregistrationStarted(server, request);
         }
     }
 
     @Override
-    public void onDeregistrationSuccess(Server server, DeregisterRequest request) {
+    public void onDeregistrationSuccess(ServerIdentity server, DeregisterRequest request) {
         for (LwM2mClientObserver observer : observers) {
             observer.onDeregistrationSuccess(server, request);
         }
     }
 
     @Override
-    public void onDeregistrationFailure(Server server, DeregisterRequest request, ResponseCode responseCode,
+    public void onDeregistrationFailure(ServerIdentity server, DeregisterRequest request, ResponseCode responseCode,
             String errorMessage, Exception e) {
         for (LwM2mClientObserver observer : observers) {
             observer.onDeregistrationFailure(server, request, responseCode, errorMessage, e);
@@ -145,7 +145,7 @@ public class LwM2mClientObserverDispatcher implements LwM2mClientObserver {
     }
 
     @Override
-    public void onDeregistrationTimeout(Server server, DeregisterRequest request) {
+    public void onDeregistrationTimeout(ServerIdentity server, DeregisterRequest request) {
         for (LwM2mClientObserver observer : observers) {
             observer.onDeregistrationTimeout(server, request);
         }

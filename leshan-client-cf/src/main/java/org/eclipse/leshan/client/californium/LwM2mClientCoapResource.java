@@ -16,13 +16,11 @@
 package org.eclipse.leshan.client.californium;
 
 import org.eclipse.californium.core.CoapResource;
+import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.server.resources.CoapExchange;
-import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
-import org.eclipse.leshan.client.request.ServerIdentity;
-import org.eclipse.leshan.client.servers.Server;
-import org.eclipse.leshan.core.californium.EndpointContextUtil;
+import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.californium.LwM2mCoapResource;
 import org.eclipse.leshan.core.request.Identity;
 
@@ -38,40 +36,38 @@ public class LwM2mClientCoapResource extends LwM2mCoapResource {
         this.registrationEngine = registrationEngine;
     }
 
-    @Override
-    protected Identity extractIdentity(EndpointContext context) {
-        return extractServerIdentity(context);
-    }
-
     /**
-     * Create Leshan {@link ServerIdentity} from Californium {@link EndpointContext}.
-     * 
-     * @param context The Californium {@link EndpointContext} to convert.
-     * @return The corresponding Leshan {@link ServerIdentity}.
-     * @throws IllegalStateException if we are not able to extract {@link ServerIdentity}.
+     * @return the server identity of a registered or bootstrap server, return null if this identity does match to any
+     *         server for which we are in communication.
      */
-    protected ServerIdentity extractServerIdentity(EndpointContext context) {
-        Identity identity = EndpointContextUtil.extractIdentity(context);
-
-        Server server = registrationEngine.getServer(identity);
-        if (server == null)
-            return null;
-
-        if (server.isLwm2mBootstrapServer()) {
-            return ServerIdentity.createLwm2mBootstrapServerIdentity(identity);
-        }
-
-        return ServerIdentity.createLwm2mServerIdentity(identity);
+    protected ServerIdentity getServer(Identity identity) {
+        return registrationEngine.getServer(identity);
     }
 
     /**
-     * Create Leshan {@link ServerIdentity} from Californium {@link Exchange}.
+     * Extract the {@link ServerIdentity} for this exchange. If there is no corresponding server currently in
+     * communication with this client. Answer with an {@link ResponseCode#INTERNAL_SERVER_ERROR}.
+     */
+    protected ServerIdentity getServerOrRejectRequest(CoapExchange exchange) {
+        Identity extractedIdentity = extractIdentity(exchange);
+
+        // search if we are in communication with this server.
+        ServerIdentity server = getServer(extractedIdentity);
+        if (server != null)
+            return server;
+
+        exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR, "unknown server");
+        return null;
+    }
+
+    /**
+     * Create Leshan {@link Identity} from Californium {@link Exchange}.
      * 
      * @param exchange The Californium {@link Exchange} containing the request for which we search sender identity.
-     * @return The corresponding Leshan {@link ServerIdentity}.
-     * @throws IllegalStateException if we are not able to extract {@link ServerIdentity}.
+     * @return The corresponding Leshan {@link Identity}.
+     * @throws IllegalStateException if we are not able to extract {@link Identity}.
      */
-    protected ServerIdentity extractServerIdentity(CoapExchange exchange) {
-        return extractServerIdentity(exchange.advanced().getRequest().getSourceContext());
+    protected Identity extractIdentity(CoapExchange exchange) {
+        return extractIdentity(exchange.advanced().getRequest().getSourceContext());
     }
 }
