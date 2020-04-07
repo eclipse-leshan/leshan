@@ -16,10 +16,12 @@
 package org.eclipse.leshan.client.engine;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -96,6 +98,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     private final Map<String, String> additionalAttributes;
     private final Map<Integer /* objectId */, LwM2mObjectEnabler> objectEnablers;
     private final Map<String /* registrationId */, Server> registeredServers;
+    private final List<Server> registeringServers;
     private final AtomicReference<Server> currentBoostrapServer;
 
     // helpers
@@ -125,6 +128,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         this.observer = observer;
         this.additionalAttributes = additionalAttributes;
         this.registeredServers = new ConcurrentHashMap<>();
+        this.registeringServers = new CopyOnWriteArrayList<>();
         this.currentBoostrapServer = new AtomicReference<>();
         this.requestTimeoutInMs = requestTimeoutInMs;
         this.deregistrationTimeoutInMs = deregistrationTimeoutInMs;
@@ -285,6 +289,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             if (observer != null) {
                 observer.onRegistrationStarted(server, request);
             }
+            registeringServers.add(server);
             RegisterResponse response = sender.send(server, request, requestTimeoutInMs);
 
             if (response == null) {
@@ -321,6 +326,8 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                 observer.onRegistrationFailure(server, request, null, null, e);
             }
             return Status.FAILURE;
+        } finally {
+            registeringServers.remove(server);
         }
     }
 
@@ -755,6 +762,11 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
 
     @Override
     public Server getRegisteredServer(long serverId) {
+        for (Server server : registeringServers) {
+            if (server != null && server.getId() == serverId) {
+                return server;
+            }
+        }
         for (Entry<String, Server> entry : registeredServers.entrySet()) {
             Server server = entry.getValue();
             if (server != null && server.getId() == serverId) {
@@ -772,6 +784,11 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         if (bootstrapServer != null && identity.equals(bootstrapServer.getIdentity())) {
             return bootstrapServer;
         } else {
+            for (Server server : registeringServers) {
+                if (identity.equals(server.getIdentity())) {
+                    return server;
+                }
+            }
             for (Server server : registeredServers.values()) {
                 if (identity.equals(server.getIdentity())) {
                     return server;
