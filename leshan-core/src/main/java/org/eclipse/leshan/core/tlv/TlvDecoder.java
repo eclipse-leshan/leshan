@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.tlv;
+package org.eclipse.leshan.core.tlv;
 
 import java.math.BigInteger;
 import java.nio.Buffer;
@@ -27,7 +27,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.eclipse.leshan.core.node.ObjectLink;
-import org.eclipse.leshan.tlv.Tlv.TlvType;
+import org.eclipse.leshan.core.tlv.Tlv.TlvType;
 import org.eclipse.leshan.util.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

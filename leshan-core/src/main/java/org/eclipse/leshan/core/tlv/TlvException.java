@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.tlv;
+package org.eclipse.leshan.core.tlv;
 
 public class TlvException extends Exception {
 
