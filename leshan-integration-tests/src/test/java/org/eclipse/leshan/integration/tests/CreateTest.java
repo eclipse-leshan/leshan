@@ -26,7 +26,7 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.*;
 
 import org.eclipse.californium.core.coap.Response;
-import org.eclipse.leshan.ResponseCode;
+import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;

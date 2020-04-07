@@ -25,10 +25,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.client.servers.ServersInfoExtractor;
+import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;

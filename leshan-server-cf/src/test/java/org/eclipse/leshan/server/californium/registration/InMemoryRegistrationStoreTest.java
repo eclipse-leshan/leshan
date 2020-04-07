@@ -18,7 +18,7 @@ package org.eclipse.leshan.server.californium.registration;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 
-import org.eclipse.leshan.Link;
+import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.californium.registration.InMemoryRegistrationStore;

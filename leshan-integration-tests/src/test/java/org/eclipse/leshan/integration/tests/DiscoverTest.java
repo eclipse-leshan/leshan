@@ -16,14 +16,14 @@
 
 package org.eclipse.leshan.integration.tests;
 
-import static org.eclipse.leshan.ResponseCode.*;
+import static org.eclipse.leshan.core.ResponseCode.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.*;
 
 import org.eclipse.californium.core.coap.Response;
-import org.eclipse.leshan.Link;
+import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.request.DiscoverRequest;
 import org.eclipse.leshan.core.response.DiscoverResponse;
 import org.junit.After;

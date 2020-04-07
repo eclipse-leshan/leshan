@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.eclipse.leshan.Link;
+import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.attributes.Attribute;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.request.BindingMode;

@@ -20,8 +20,8 @@ import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toLwM2mRespon
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
-import org.eclipse.leshan.Link;
-import org.eclipse.leshan.ResponseCode;
+import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;

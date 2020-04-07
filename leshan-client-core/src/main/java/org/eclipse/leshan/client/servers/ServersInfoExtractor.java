@@ -16,8 +16,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.servers;
 
-import static org.eclipse.leshan.LwM2mId.*;
 import static org.eclipse.leshan.client.servers.ServerIdentity.SYSTEM;
+import static org.eclipse.leshan.core.LwM2mId.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -35,10 +35,10 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Map;
 
-import org.eclipse.leshan.LwM2mId;
-import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
+import org.eclipse.leshan.core.LwM2mId;
+import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;

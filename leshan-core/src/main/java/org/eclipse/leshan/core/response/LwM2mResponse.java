@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.response;
 
-import org.eclipse.leshan.ResponseCode;
+import org.eclipse.leshan.core.ResponseCode;
 
 /**
  * A response to Lightweight M2M request.

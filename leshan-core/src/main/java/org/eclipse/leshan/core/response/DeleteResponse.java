@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.response;
 
-import org.eclipse.leshan.ResponseCode;
+import org.eclipse.leshan.core.ResponseCode;
 
 public class DeleteResponse extends AbstractLwM2mResponse {
 

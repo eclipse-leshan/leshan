@@ -26,7 +26,7 @@ import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
-import org.eclipse.leshan.Link;
+import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.californium.LwM2mCoapResource;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.DeregisterRequest;
@@ -167,7 +167,7 @@ public class RegisterResource extends LwM2mCoapResource {
 
         // Create CoAP Response from LwM2m request
         // -------------------------------
-        if (response.getCode() == org.eclipse.leshan.ResponseCode.CREATED) {
+        if (response.getCode() == org.eclipse.leshan.core.ResponseCode.CREATED) {
             exchange.setLocationPath(RESOURCE_NAME + "/" + response.getRegistrationID());
             exchange.respond(ResponseCode.CREATED);
         } else {

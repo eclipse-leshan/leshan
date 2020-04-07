@@ -20,7 +20,7 @@ import java.util.Map.Entry;
 
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.elements.EndpointContext;
-import org.eclipse.leshan.Link;
+import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.BootstrapRequest;

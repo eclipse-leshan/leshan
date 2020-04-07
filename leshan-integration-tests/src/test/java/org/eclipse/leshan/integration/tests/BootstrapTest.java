@@ -20,12 +20,12 @@ import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 
-import org.eclipse.leshan.LwM2mId;
-import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
 import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.core.LwM2mId;
+import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.request.ReadRequest;

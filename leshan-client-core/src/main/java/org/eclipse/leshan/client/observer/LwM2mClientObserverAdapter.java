@@ -15,8 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.observer;
 
-import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;

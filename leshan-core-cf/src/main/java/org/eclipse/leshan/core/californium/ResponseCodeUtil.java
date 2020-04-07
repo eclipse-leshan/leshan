@@ -17,7 +17,7 @@ package org.eclipse.leshan.core.californium;
 
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MessageFormatException;
-import org.eclipse.leshan.ResponseCode;
+import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.util.Validate;
 
 public class ResponseCodeUtil {

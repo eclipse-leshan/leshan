@@ -39,7 +39,7 @@ import org.eclipse.californium.scandium.dtls.x509.CertificateVerifier;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
-import org.eclipse.leshan.LwM2m;
+import org.eclipse.leshan.core.LwM2m;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.StaticModel;

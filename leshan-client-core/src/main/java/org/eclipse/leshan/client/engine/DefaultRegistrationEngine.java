@@ -28,8 +28,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.eclipse.leshan.LwM2m;
-import org.eclipse.leshan.ResponseCode;
 import org.eclipse.leshan.client.EndpointsManager;
 import org.eclipse.leshan.client.RegistrationUpdate;
 import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
@@ -42,6 +40,8 @@ import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
+import org.eclipse.leshan.core.LwM2m;
+import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.Identity;

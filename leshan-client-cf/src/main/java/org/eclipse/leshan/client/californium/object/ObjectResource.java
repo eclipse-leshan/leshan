@@ -27,12 +27,12 @@ import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
-import org.eclipse.leshan.Link;
 import org.eclipse.leshan.client.californium.LwM2mClientCoapResource;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.attributes.AttributeSet;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.StaticModel;
@@ -120,7 +120,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
             if (exchange.getRequestOptions().hasObserve()) {
                 ObserveRequest observeRequest = new ObserveRequest(URI);
                 ObserveResponse response = nodeEnabler.observe(identity, observeRequest);
-                if (response.getCode() == org.eclipse.leshan.ResponseCode.CONTENT) {
+                if (response.getCode() == org.eclipse.leshan.core.ResponseCode.CONTENT) {
                     LwM2mPath path = new LwM2mPath(URI);
                     LwM2mNode content = response.getContent();
                     LwM2mModel model = new StaticModel(nodeEnabler.getObjectModel());
@@ -137,7 +137,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
             else {
                 ReadRequest readRequest = new ReadRequest(URI);
                 ReadResponse response = nodeEnabler.read(identity, readRequest);
-                if (response.getCode() == org.eclipse.leshan.ResponseCode.CONTENT) {
+                if (response.getCode() == org.eclipse.leshan.core.ResponseCode.CONTENT) {
                     LwM2mPath path = new LwM2mPath(URI);
                     LwM2mNode content = response.getContent();
                     LwM2mModel model = new StaticModel(nodeEnabler.getObjectModel());
@@ -311,7 +311,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
             }
 
             CreateResponse response = nodeEnabler.create(identity, createRequest);
-            if (response.getCode() == org.eclipse.leshan.ResponseCode.CREATED) {
+            if (response.getCode() == org.eclipse.leshan.core.ResponseCode.CREATED) {
                 if (response.getLocation() != null)
                     exchange.setLocationPath(response.getLocation());
                 exchange.respond(toCoapResponseCode(response.getCode()));

@@ -15,15 +15,15 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.object;
 
-import static org.eclipse.leshan.LwM2mId.*;
+import static org.eclipse.leshan.core.LwM2mId.*;
 
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mResource;

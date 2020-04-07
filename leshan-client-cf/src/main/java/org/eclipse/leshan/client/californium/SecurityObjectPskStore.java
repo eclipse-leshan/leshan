@@ -16,8 +16,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.californium;
 
-import static org.eclipse.leshan.LwM2mId.*;
 import static org.eclipse.leshan.client.servers.ServerIdentity.SYSTEM;
+import static org.eclipse.leshan.core.LwM2mId.*;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -30,9 +30,9 @@ import org.eclipse.californium.scandium.dtls.PskPublicInformation;
 import org.eclipse.californium.scandium.dtls.pskstore.PskStore;
 import org.eclipse.californium.scandium.util.SecretUtil;
 import org.eclipse.californium.scandium.util.ServerNames;
-import org.eclipse.leshan.SecurityMode;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.servers.ServerInfo;
+import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.request.ReadRequest;

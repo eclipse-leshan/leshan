@@ -17,7 +17,7 @@ package org.eclipse.leshan.client;
 
 import java.util.Map;
 
-import org.eclipse.leshan.Link;
+import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.request.BindingMode;
 
 /**

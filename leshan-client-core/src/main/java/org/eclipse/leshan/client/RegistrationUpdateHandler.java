@@ -15,7 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.client;
 
-import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
@@ -24,6 +23,7 @@ import org.eclipse.leshan.client.resource.listener.ObjectsListener;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
+import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.request.BindingMode;
 
 /**

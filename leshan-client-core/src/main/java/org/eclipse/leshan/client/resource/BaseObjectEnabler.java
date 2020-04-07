@@ -27,12 +27,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.leshan.Link;
-import org.eclipse.leshan.LwM2mId;
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
+import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;

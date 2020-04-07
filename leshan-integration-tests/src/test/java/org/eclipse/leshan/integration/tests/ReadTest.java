@@ -18,7 +18,7 @@
 
 package org.eclipse.leshan.integration.tests;
 
-import static org.eclipse.leshan.ResponseCode.*;
+import static org.eclipse.leshan.core.ResponseCode.*;
 import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
