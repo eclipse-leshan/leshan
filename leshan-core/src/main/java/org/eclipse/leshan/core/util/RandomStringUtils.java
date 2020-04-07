@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.eclipse.leshan.util;
+package org.eclipse.leshan.core.util;
 
 import java.util.Random;
 

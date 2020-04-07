@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
-import org.eclipse.leshan.util.Validate;
+import org.eclipse.leshan.core.util.Validate;
 
 /**
  * The object link is used to refer an Instance of a given Object. An Object link value is composed of two concatenated

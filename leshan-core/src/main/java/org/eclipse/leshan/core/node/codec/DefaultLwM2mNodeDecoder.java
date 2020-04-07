@@ -32,7 +32,7 @@ import org.eclipse.leshan.core.node.codec.opaque.LwM2mNodeOpaqueDecoder;
 import org.eclipse.leshan.core.node.codec.text.LwM2mNodeTextDecoder;
 import org.eclipse.leshan.core.node.codec.tlv.LwM2mNodeTlvDecoder;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.util.Validate;
+import org.eclipse.leshan.core.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

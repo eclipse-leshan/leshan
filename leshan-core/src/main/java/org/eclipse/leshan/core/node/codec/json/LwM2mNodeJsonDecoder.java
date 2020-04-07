@@ -44,7 +44,7 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
-import org.eclipse.leshan.util.Base64;
+import org.eclipse.leshan.core.util.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

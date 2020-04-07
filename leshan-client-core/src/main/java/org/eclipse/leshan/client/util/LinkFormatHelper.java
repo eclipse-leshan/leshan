@@ -29,7 +29,7 @@ import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
-import org.eclipse.leshan.util.StringUtils;
+import org.eclipse.leshan.core.util.StringUtils;
 
 /**
  * An Utility class which help to generate @{link Link} from {@link LwM2mObjectEnabler} and {@link LwM2mModel}.<br>

@@ -19,7 +19,7 @@ import java.io.Serializable;
 import java.security.PublicKey;
 import java.util.Arrays;
 
-import org.eclipse.leshan.util.Validate;
+import org.eclipse.leshan.core.util.Validate;
 
 /**
  * The security info for a client.

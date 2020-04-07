@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.util;
+package org.eclipse.leshan.core.util;
 
 import java.io.InputStream;
 import java.security.KeyFactory;

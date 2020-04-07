@@ -26,7 +26,7 @@ import java.util.Map;
 import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.Identity;
-import org.eclipse.leshan.util.Validate;
+import org.eclipse.leshan.core.util.Validate;
 
 /**
  * A container object for updating a LW-M2M client's registration properties on the server.

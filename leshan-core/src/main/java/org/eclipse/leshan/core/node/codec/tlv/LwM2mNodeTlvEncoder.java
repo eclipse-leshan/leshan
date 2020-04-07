@@ -37,7 +37,7 @@ import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
 import org.eclipse.leshan.core.tlv.Tlv;
 import org.eclipse.leshan.core.tlv.TlvEncoder;
 import org.eclipse.leshan.core.tlv.Tlv.TlvType;
-import org.eclipse.leshan.util.Validate;
+import org.eclipse.leshan.core.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

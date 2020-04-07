@@ -26,9 +26,9 @@ import java.security.spec.ECPoint;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.KeySpec;
 
+import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.redis.serialization.SecurityInfoSerDes;
 import org.eclipse.leshan.server.security.SecurityInfo;
-import org.eclipse.leshan.util.Hex;
 import org.junit.Test;
 
 public class SecurityInfoSerDesTest {

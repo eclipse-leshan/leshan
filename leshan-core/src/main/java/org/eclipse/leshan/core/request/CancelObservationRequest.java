@@ -18,7 +18,7 @@ package org.eclipse.leshan.core.request;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.CancelObservationResponse;
-import org.eclipse.leshan.util.Hex;
+import org.eclipse.leshan.core.util.Hex;
 
 /**
  * A Lightweight M2M request for actively cancel an observation.

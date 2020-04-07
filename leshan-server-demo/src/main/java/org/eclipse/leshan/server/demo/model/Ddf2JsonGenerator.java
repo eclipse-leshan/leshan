@@ -29,7 +29,7 @@ import java.util.List;
 
 import org.eclipse.leshan.core.model.DDFFileParser;
 import org.eclipse.leshan.core.model.ObjectModel;
-import org.eclipse.leshan.util.json.JsonException;
+import org.eclipse.leshan.core.util.json.JsonException;
 
 public class Ddf2JsonGenerator {
 

@@ -39,6 +39,8 @@ import org.eclipse.californium.core.coap.Token;
 import org.eclipse.californium.core.observe.ObservationStoreException;
 import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.util.NamedThreadFactory;
+import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.Destroyable;
 import org.eclipse.leshan.server.Startable;
 import org.eclipse.leshan.server.Stoppable;
@@ -51,8 +53,6 @@ import org.eclipse.leshan.server.registration.ExpirationListener;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
 import org.eclipse.leshan.server.registration.UpdatedRegistration;
-import org.eclipse.leshan.util.NamedThreadFactory;
-import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

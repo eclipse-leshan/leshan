@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.eclipse.leshan.util;
+package org.eclipse.leshan.core.util;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;

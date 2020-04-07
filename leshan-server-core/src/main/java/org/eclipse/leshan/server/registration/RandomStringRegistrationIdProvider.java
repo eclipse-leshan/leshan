@@ -16,7 +16,7 @@
 package org.eclipse.leshan.server.registration;
 
 import org.eclipse.leshan.core.request.RegisterRequest;
-import org.eclipse.leshan.util.RandomStringUtils;
+import org.eclipse.leshan.core.util.RandomStringUtils;
 
 public class RandomStringRegistrationIdProvider implements RegistrationIdProvider {
 

@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.util.json;
+package org.eclipse.leshan.core.util.json;
 
 import java.util.ArrayList;
 import java.util.Collection;

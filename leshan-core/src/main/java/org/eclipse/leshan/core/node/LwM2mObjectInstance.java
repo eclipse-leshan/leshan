@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.leshan.core.node.codec.tlv.LwM2mNodeTlvDecoder;
-import org.eclipse.leshan.util.Validate;
+import org.eclipse.leshan.core.util.Validate;
 
 /**
  * An instance of {@link LwM2mObject}.

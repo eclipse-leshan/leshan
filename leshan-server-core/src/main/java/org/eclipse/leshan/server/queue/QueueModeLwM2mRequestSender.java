@@ -22,9 +22,9 @@ import org.eclipse.leshan.core.request.exception.UnconnectedPeerException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
+import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
-import org.eclipse.leshan.util.Validate;
 
 /**
  * A {@link LwM2mRequestSender} which supports LWM2M Queue Mode.

@@ -28,8 +28,8 @@ import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
-import org.eclipse.leshan.util.Hex;
-import org.eclipse.leshan.util.StringUtils;
+import org.eclipse.leshan.core.util.Hex;
+import org.eclipse.leshan.core.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

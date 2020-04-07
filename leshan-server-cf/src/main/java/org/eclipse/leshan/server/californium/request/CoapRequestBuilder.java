@@ -44,8 +44,8 @@ import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
+import org.eclipse.leshan.core.util.StringUtils;
 import org.eclipse.leshan.server.californium.observation.ObserveUtil;
-import org.eclipse.leshan.util.StringUtils;
 
 /**
  * This class is able to create CoAP request from LWM2M {@link DownlinkRequest}.

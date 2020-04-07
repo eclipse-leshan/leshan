@@ -35,7 +35,7 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.util.Hex;
+import org.eclipse.leshan.core.util.Hex;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;

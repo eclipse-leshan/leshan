@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
-import org.eclipse.leshan.util.Validate;
+import org.eclipse.leshan.core.util.Validate;
 
 public class TimestampedLwM2mNode {
 

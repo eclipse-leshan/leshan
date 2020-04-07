@@ -30,8 +30,8 @@ import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
 import java.util.Arrays;
 
+import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.security.SecurityInfo;
-import org.eclipse.leshan.util.Hex;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;

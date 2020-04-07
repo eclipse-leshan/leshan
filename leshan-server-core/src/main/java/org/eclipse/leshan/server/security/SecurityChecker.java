@@ -19,7 +19,7 @@ import java.security.PublicKey;
 import java.util.List;
 
 import org.eclipse.leshan.core.request.Identity;
-import org.eclipse.leshan.util.Hex;
+import org.eclipse.leshan.core.util.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

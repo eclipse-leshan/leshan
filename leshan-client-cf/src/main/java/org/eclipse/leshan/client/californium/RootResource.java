@@ -30,7 +30,7 @@ import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
-import org.eclipse.leshan.util.StringUtils;
+import org.eclipse.leshan.core.util.StringUtils;
 
 /**
  * A root {@link CoapResource} resource in charge of handling Bootstrap Delete requests targeting the "/" URI.

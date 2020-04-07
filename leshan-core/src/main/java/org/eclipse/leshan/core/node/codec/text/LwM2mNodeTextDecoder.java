@@ -27,7 +27,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.codec.CodecException;
-import org.eclipse.leshan.util.Base64;
+import org.eclipse.leshan.core.util.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

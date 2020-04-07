@@ -43,6 +43,7 @@ import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
+import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.Destroyable;
 import org.eclipse.leshan.server.Startable;
 import org.eclipse.leshan.server.Stoppable;
@@ -73,7 +74,6 @@ import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.SecurityStore;
 import org.eclipse.leshan.server.security.SecurityStoreListener;
-import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

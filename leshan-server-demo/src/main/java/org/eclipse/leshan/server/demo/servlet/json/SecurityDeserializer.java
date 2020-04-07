@@ -29,8 +29,8 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
 
+import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.security.SecurityInfo;
-import org.eclipse.leshan.util.Hex;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;

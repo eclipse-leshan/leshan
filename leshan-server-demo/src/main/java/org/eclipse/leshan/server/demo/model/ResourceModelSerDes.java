@@ -18,7 +18,7 @@ package org.eclipse.leshan.server.demo.model;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Operations;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
-import org.eclipse.leshan.util.json.JsonSerDes;
+import org.eclipse.leshan.core.util.json.JsonSerDes;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;

@@ -43,7 +43,7 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.tlv.Tlv;
 import org.eclipse.leshan.core.tlv.TlvEncoder;
 import org.eclipse.leshan.core.tlv.Tlv.TlvType;
-import org.eclipse.leshan.util.Hex;
+import org.eclipse.leshan.core.util.Hex;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

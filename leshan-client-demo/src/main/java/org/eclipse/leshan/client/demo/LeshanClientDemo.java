@@ -72,8 +72,8 @@ import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.core.request.BindingMode;
-import org.eclipse.leshan.util.Hex;
-import org.eclipse.leshan.util.SecurityUtil;
+import org.eclipse.leshan.core.util.Hex;
+import org.eclipse.leshan.core.util.SecurityUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

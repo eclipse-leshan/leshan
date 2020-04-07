@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.util.json;
+package org.eclipse.leshan.core.util.json;
 
 /**
  * Exception raised by concrete implementation of {@link JsonSerDes} during serialization and deserialization.

@@ -14,7 +14,7 @@
  *     Alexander Ellwein, Daniel Maier (Bosch Software Innovations GmbH)
  *                                - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.util;
+package org.eclipse.leshan.core.util;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;

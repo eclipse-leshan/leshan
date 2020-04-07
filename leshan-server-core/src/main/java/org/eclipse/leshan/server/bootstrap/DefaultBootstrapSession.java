@@ -17,7 +17,7 @@ package org.eclipse.leshan.server.bootstrap;
 
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
-import org.eclipse.leshan.util.RandomStringUtils;
+import org.eclipse.leshan.core.util.RandomStringUtils;
 
 /**
  * A default implementation for {@link BootstrapSession}

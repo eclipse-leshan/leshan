@@ -34,8 +34,8 @@ import org.eclipse.leshan.core.attributes.Attribute;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.Identity;
-import org.eclipse.leshan.util.StringUtils;
-import org.eclipse.leshan.util.Validate;
+import org.eclipse.leshan.core.util.StringUtils;
+import org.eclipse.leshan.core.util.Validate;
 
 /**
  * An immutable structure which represent a LW-M2M client registration on the server
