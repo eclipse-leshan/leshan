@@ -567,7 +567,8 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         private final String registrationId;
         private final RegistrationUpdate registrationUpdate;
 
-        public UpdateRegistrationTask(ServerIdentity server, String registrationId, RegistrationUpdate registrationUpdate) {
+        public UpdateRegistrationTask(ServerIdentity server, String registrationId,
+                RegistrationUpdate registrationUpdate) {
             this.server = server;
             this.registrationId = registrationId;
             this.registrationUpdate = registrationUpdate;
@@ -710,6 +711,11 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                 }
             }
         }
+    }
+
+    @Override
+    public void triggerRegistrationUpdate(ServerIdentity server) {
+        triggerRegistrationUpdate(server, new RegistrationUpdate());
     }
 
     @Override

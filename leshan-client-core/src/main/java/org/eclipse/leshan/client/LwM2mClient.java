@@ -16,6 +16,7 @@
 package org.eclipse.leshan.client;
 
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
+import org.eclipse.leshan.client.servers.ServerIdentity;
 
 /**
  * A Lightweight M2M client.
@@ -45,6 +46,11 @@ public interface LwM2mClient {
      * Trigger a registration update to all registered Server.
      */
     void triggerRegistrationUpdate();
+
+    /**
+     * Trigger a registration update to the given server.
+     */
+    void triggerRegistrationUpdate(ServerIdentity server);
 
     /**
      * @return the {@link LwM2mObjectTree} containing all the object implemented by this client.

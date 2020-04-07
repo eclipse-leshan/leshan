@@ -39,6 +39,11 @@ public interface RegistrationEngine {
     void triggerRegistrationUpdate();
 
     /**
+     * Trigger an "empty" registration update to the given servers.
+     */
+    void triggerRegistrationUpdate(ServerIdentity server);
+
+    /**
      * Trigger the given registration update to all servers.
      */
     void triggerRegistrationUpdate(RegistrationUpdate registrationUpdate);

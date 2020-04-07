@@ -222,6 +222,11 @@ public class LeshanClient implements LwM2mClient {
         engine.triggerRegistrationUpdate();
     }
 
+    @Override
+    public void triggerRegistrationUpdate(ServerIdentity server) {
+        engine.triggerRegistrationUpdate(server);
+    }
+
     /**
      * A CoAP API, generally needed if you want to access to underlying CoAP layer.
      */

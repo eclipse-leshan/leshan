@@ -173,8 +173,7 @@ public class Server extends BaseInstanceEnabler {
     public ExecuteResponse execute(ServerIdentity identity, int resourceid, String params) {
         LOG.debug("Execute on Server resource /{}/{}/{}", getModel().id, getId(), resourceid);
         if (resourceid == 8) {
-            // TODO we currently support only one dm server.
-            getLwM2mClient().triggerRegistrationUpdate();
+            getLwM2mClient().triggerRegistrationUpdate(identity);
             return ExecuteResponse.success();
         } else {
             return super.execute(identity, resourceid, params);
