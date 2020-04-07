@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.tlv;
+package org.eclipse.leshan.core.tlv;
 
 import static org.junit.Assert.*;
 

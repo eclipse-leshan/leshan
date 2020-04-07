@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan;
+package org.eclipse.leshan.core;
 
 import static org.junit.Assert.assertEquals;
 
