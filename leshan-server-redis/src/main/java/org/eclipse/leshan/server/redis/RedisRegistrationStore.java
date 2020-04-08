@@ -59,6 +59,7 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.Transaction;
 import redis.clients.jedis.util.Pool;
 
 /**
@@ -376,10 +377,22 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     }
 
     private void removeAddrIndex(Jedis j, Registration registration) {
+        // Watch the key to remove.
         byte[] regAddrKey = toRegAddrKey(registration.getSocketAddress());
+        j.watch(regAddrKey);
+
         byte[] epFromAddr = j.get(regAddrKey);
+        // Delete the key if needed.
         if (Arrays.equals(epFromAddr, registration.getEndpoint().getBytes(UTF_8))) {
-            j.del(regAddrKey);
+            // Try to delete the key
+            Transaction transaction = j.multi();
+            transaction.del(regAddrKey);
+            transaction.exec();
+            // if transaction failed this is not an issue as the socket address is probably reused and we don't neeed to
+            // delete it anymore.
+        } else {
+            // the key must not be deleted.
+            j.unwatch();
         }
     }
 
