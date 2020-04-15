@@ -59,7 +59,7 @@ angular.module('resourceDirectives', [])
             };
 
             scope.display = function(resource){
-                if (resource.def.type === "opaque" && resource.value){
+                if (resource.def.type === "opaque" && resource.def.instancetype === "single" && resource.value){
                     return "0x"+resource.value;
                 }
                 return resource.value;
