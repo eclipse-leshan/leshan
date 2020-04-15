@@ -171,6 +171,7 @@ public class LeshanClientDemo {
         aa.desc("Use additional attributes at registration time, syntax is \n -aa attrName1=attrValue1 attrName2=\\\"attrValue2\\\" ...");
         aa.hasArgs();
         options.addOption(aa.build());
+        options.addOption("m", true, "A folder which contains object models in OMA DDF(.xml)format.");
         options.addOption("pos", true,
                 "Set the initial location (latitude, longitude) of the device to be reported by the Location object.\n Format: lat_float:long_float");
         options.addOption("sf", true, "Scale factor to apply when shifting position.\n Default is 1.0." + PSKChapter);
@@ -405,11 +406,15 @@ public class LeshanClientDemo {
                 return;
             }
         }
+
+        // Get models folder
+        String modelsFolderPath = cl.getOptionValue("m");
+
         try {
             createAndStartClient(endpoint, localAddress, localPort, cl.hasOption("b"), additionalAttributes, lifetime,
                     communicationPeriod, serverURI, pskIdentity, pskKey, clientPrivateKey, clientPublicKey,
                     serverPublicKey, clientCertificate, serverCertificate, latitude, longitude, scaleFactor,
-                    cl.hasOption("ocf"), cl.hasOption("oc"), cl.hasOption("r"), cl.hasOption("f"));
+                    cl.hasOption("ocf"), cl.hasOption("oc"), cl.hasOption("r"), cl.hasOption("f"), modelsFolderPath);
         } catch (Exception e) {
             System.err.println("Unable to create and start client ...");
             e.printStackTrace();
@@ -422,14 +427,17 @@ public class LeshanClientDemo {
             byte[] pskIdentity, byte[] pskKey, PrivateKey clientPrivateKey, PublicKey clientPublicKey,
             PublicKey serverPublicKey, X509Certificate clientCertificate, X509Certificate serverCertificate,
             Float latitude, Float longitude, float scaleFactor, boolean supportOldFormat,
-            boolean supportDeprecatedCiphers, boolean reconnectOnUpdate, boolean forceFullhandshake)
-            throws CertificateEncodingException {
+            boolean supportDeprecatedCiphers, boolean reconnectOnUpdate, boolean forceFullhandshake,
+            String modelsFolderPath) throws CertificateEncodingException {
 
         locationInstance = new MyLocation(latitude, longitude, scaleFactor);
 
         // Initialize model
         List<ObjectModel> models = ObjectLoader.loadDefault();
         models.addAll(ObjectLoader.loadDdfResources("/models", modelPaths));
+        if (modelsFolderPath != null) {
+            models.addAll(ObjectLoader.loadObjectsFromDir(new File(modelsFolderPath)));
+        }
 
         // Initialize object list
         final LwM2mModel model = new StaticModel(models);
