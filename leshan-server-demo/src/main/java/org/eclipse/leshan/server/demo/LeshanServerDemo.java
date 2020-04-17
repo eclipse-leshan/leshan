@@ -148,7 +148,7 @@ public class LeshanServerDemo {
         options.addOption("m", "modelsfolder", true, "A folder which contains object models in OMA DDF(.xml) format.");
         options.addOption("oc", "activate support of old/deprecated cipher suites.");
         options.addOption("r", "redis", true,
-                "Set the location of the Redis database for running in cluster mode.\nThe URL is in the format of: 'redis://:password@hostname:port/db_number'\nExample without DB and password: 'redis://localhost:6379'\nDefault: none, no Redis connection.");
+                "Use redis to store registration and securityInfo. \nThe URL of the redis server should be given using this format : 'redis://:password@hostname:port/db_number'\nExample without DB and password: 'redis://localhost:6379'\nDefault: redis is not used.");
         options.addOption("mdns", "publishDNSSdServices", false,
                 "Publish leshan's services to DNS Service discovery" + X509Chapter);
         options.addOption("ks", "keystore", true,
