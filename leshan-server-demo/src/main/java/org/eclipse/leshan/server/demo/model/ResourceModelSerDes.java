@@ -33,7 +33,7 @@ public class ResourceModelSerDes extends JsonSerDes<ResourceModel> {
         o.add("operations", m.operations.toString());
         o.add("instancetype", m.multiple ? "multiple" : "single");
         o.add("mandatory", m.mandatory);
-        o.add("type", m.type.toString().toLowerCase());
+        o.add("type", m.type == null ? "none" : m.type.toString().toLowerCase());
         o.add("range", m.rangeEnumeration);
         o.add("units", m.units);
         o.add("description", m.description);

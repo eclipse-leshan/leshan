@@ -68,7 +68,7 @@ public class DDFFileParser {
             ArrayList<ObjectModel> objects = new ArrayList<>();
             NodeList nodeList = document.getDocumentElement().getElementsByTagName("Object");
             for (int i = 0; i < nodeList.getLength(); i++) {
-                objects.add(parseObject(nodeList.item(i)));
+                objects.add(parseObject(nodeList.item(i), streamName));
             }
             return objects;
         } catch (Exception e) {
@@ -77,7 +77,14 @@ public class DDFFileParser {
         return Collections.emptyList();
     }
 
-    private ObjectModel parseObject(Node object) {
+    private ObjectModel parseObject(Node object, String streamName) {
+
+        // TODO All the validation here should be replaced by a real Validator
+
+        Node objectType = object.getAttributes().getNamedItem("ObjectType");
+        if (objectType == null || !"MODefinition".equals(objectType.getTextContent())) {
+            LOG.warn("Object element in {} MUST have a ObjectType attribute equals to 'MODefinition'", streamName);
+        }
 
         Integer id = null;
         String name = null;
@@ -89,6 +96,9 @@ public class DDFFileParser {
 
         for (int i = 0; i < object.getChildNodes().getLength(); i++) {
             Node field = object.getChildNodes().item(i);
+            if (field.getNodeType() != Node.ELEMENT_NODE)
+                continue;
+
             switch (field.getNodeName()) {
             case "ObjectID":
                 id = Integer.valueOf(field.getTextContent());
@@ -104,18 +114,50 @@ public class DDFFileParser {
                     version = field.getTextContent();
                 break;
             case "MultipleInstances":
-                multiple = "Multiple".equals(field.getTextContent());
+                if ("Multiple".equals(field.getTextContent())) {
+                    multiple = true;
+                } else if ("Single".equals(field.getTextContent())) {
+                    multiple = false;
+                } else {
+                    LOG.warn(
+                            "Invalid Value for [MultipleInstances] field in {}. It MUST be 'Multiple' or 'Single' but it was {} : We will consider it as a 'Single' value.",
+                            field.getTextContent(), streamName);
+                    multiple = false;
+                }
                 break;
             case "Mandatory":
-                mandatory = "Mandatory".equals(field.getTextContent());
+                if ("Mandatory".equals(field.getTextContent())) {
+                    mandatory = true;
+                } else if ("Optional".equals(field.getTextContent())) {
+                    mandatory = false;
+                } else {
+                    LOG.warn(
+                            "Invalid Value for [Mandatory] field in {}. It MUST be 'Mandatory' or 'Optional' but it was {} :s We will consider it as a 'Optional' value.",
+                            field.getTextContent(), streamName);
+                    mandatory = false;
+                }
                 break;
             case "Resources":
                 for (int j = 0; j < field.getChildNodes().getLength(); j++) {
                     Node item = field.getChildNodes().item(j);
+                    if (item.getNodeType() != Node.ELEMENT_NODE)
+                        continue;
+
                     if (item.getNodeName().equals("Item")) {
-                        resources.add(this.parseResource(item));
+                        resources.add(this.parseResource(item, streamName));
+                    } else {
+                        LOG.warn("Unexpected resources element [{}] in {} : it will be ignored.", item.getNodeName(),
+                                streamName);
                     }
                 }
+                break;
+            case "ObjectURN":
+            case "LWM2MVersion":
+            case "Description2":
+                // TODO it should be supported in Leshan v1.1 or later.
+                break;
+            default:
+                LOG.warn("Unexpected object element [{}] in {} : it will be ignored.", field.getNodeName(), streamName);
                 break;
             }
         }
@@ -124,20 +166,23 @@ public class DDFFileParser {
 
     }
 
-    private ResourceModel parseResource(Node item) {
+    private ResourceModel parseResource(Node item, String streamName) {
 
         Integer id = Integer.valueOf(item.getAttributes().getNamedItem("ID").getTextContent());
         String name = null;
         Operations operations = Operations.NONE;
         boolean multiple = false;
         boolean mandatory = false;
-        Type type = Type.STRING;
+        Type type = null;
         String rangeEnumeration = null;
         String units = null;
         String description = null;
 
         for (int i = 0; i < item.getChildNodes().getLength(); i++) {
             Node field = item.getChildNodes().item(i);
+            if (field.getNodeType() != Node.ELEMENT_NODE)
+                continue;
+
             switch (field.getNodeName()) {
             case "Name":
                 name = field.getTextContent();
@@ -149,10 +194,28 @@ public class DDFFileParser {
                 }
                 break;
             case "MultipleInstances":
-                multiple = "Multiple".equals(field.getTextContent());
+                if ("Multiple".equals(field.getTextContent())) {
+                    multiple = true;
+                } else if ("Single".equals(field.getTextContent())) {
+                    multiple = false;
+                } else {
+                    LOG.warn(
+                            "Invalid Value for [MultipleInstances] field in {}. It MUST be 'Multiple' or 'Single' but it was {} : We will consider it as a 'Single' value.",
+                            field.getTextContent(), streamName);
+                    multiple = false;
+                }
                 break;
             case "Mandatory":
-                mandatory = "Mandatory".equals(field.getTextContent());
+                if ("Mandatory".equals(field.getTextContent())) {
+                    mandatory = true;
+                } else if ("Optional".equals(field.getTextContent())) {
+                    mandatory = false;
+                } else {
+                    LOG.warn(
+                            "Invalid Value for [Mandatory] field in {}. It MUST be 'Mandatory' or 'Optional' but it was {} :s We will consider it as a 'Optional' value.",
+                            field.getTextContent(), streamName);
+                    mandatory = false;
+                }
                 break;
             case "Type":
                 switch (field.getTextContent()) {
@@ -177,6 +240,12 @@ public class DDFFileParser {
                 case "Objlnk":
                     type = Type.OBJLNK;
                     break;
+                case "":
+                    type = null;
+                    break;
+                default:
+                    LOG.warn("Unexpected type value [{}] in {} : no type assigned", field.getTextContent(), streamName);
+                    break;
                 }
                 break;
             case "RangeEnumeration":
@@ -188,11 +257,23 @@ public class DDFFileParser {
             case "Description":
                 description = field.getTextContent();
                 break;
+            default:
+                LOG.warn("Unexpected resource element [{} {}] in {} : it will be ignored.", field.getNodeName(),
+                        field.getNodeType(), streamName);
+                break;
             }
+        }
 
+        if (operations.isExecutable() && type != null) {
+            LOG.warn("Model for Resource {}({}) in {} is invalid : an executable resource MUST NOT have a type({})",
+                    name, id, streamName, type);
+        } else if (!operations.isExecutable() && type == null) {
+            LOG.warn(
+                    "Model for Resource {}({}) in {} is invalid : a none executable resource MUST have a type. We will consider it as String.",
+                    name, id, streamName, type);
+            type = Type.STRING;
         }
 
         return new ResourceModel(id, name, operations, multiple, mandatory, type, rangeEnumeration, units, description);
     }
-
 }

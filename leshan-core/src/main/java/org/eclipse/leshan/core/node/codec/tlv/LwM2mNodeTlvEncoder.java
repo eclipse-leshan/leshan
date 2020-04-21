@@ -35,8 +35,8 @@ import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
 import org.eclipse.leshan.core.tlv.Tlv;
-import org.eclipse.leshan.core.tlv.TlvEncoder;
 import org.eclipse.leshan.core.tlv.Tlv.TlvType;
+import org.eclipse.leshan.core.tlv.TlvEncoder;
 import org.eclipse.leshan.core.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -170,6 +170,11 @@ public class LwM2mNodeTlvEncoder {
 
         private byte[] encodeTlvValue(Object value, Type type, LwM2mPath path) {
             LOG.trace("Encoding value {} in TLV", value);
+            if (type == null) {
+                throw new CodecException(
+                        "Unable to encode value for resource {} without type(probably a executable one)", path);
+            }
+
             try {
                 switch (type) {
                 case STRING:

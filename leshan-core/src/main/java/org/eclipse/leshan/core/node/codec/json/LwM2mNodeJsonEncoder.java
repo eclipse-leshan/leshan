@@ -225,6 +225,12 @@ public class LwM2mNodeJsonEncoder {
 
         private void setResourceValue(Object value, Type type, JsonArrayEntry jsonResource, LwM2mPath resourcePath) {
             LOG.trace("Encoding value {} in JSON", value);
+
+            if (type == null) {
+                throw new CodecException(
+                        "Unable to encode value for resource {} without type(probably a executable one)", resourcePath);
+            }
+
             // Following table 20 in the Specs
             switch (type) {
             case STRING:

@@ -83,6 +83,11 @@ public class LwM2mNodeTextEncoder {
             Type expectedType = rSpec != null ? rSpec.type : resource.getType();
             Object val = converter.convertValue(resource.getValue(), resource.getType(), expectedType, path);
 
+            if (expectedType == null) {
+                throw new CodecException(
+                        "Unable to encode value for resource {} without type(probably a executable one)", path);
+            }
+
             String strValue;
             switch (expectedType) {
             case INTEGER:
