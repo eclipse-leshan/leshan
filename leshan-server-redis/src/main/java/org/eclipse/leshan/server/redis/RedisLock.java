@@ -18,7 +18,12 @@ package org.eclipse.leshan.server.redis;
 import java.util.Arrays;
 import java.util.Random;
 
+import org.eclipse.leshan.core.util.Hex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Transaction;
 import redis.clients.jedis.params.SetParams;
 
 /**
@@ -26,8 +31,10 @@ import redis.clients.jedis.params.SetParams;
  * http://redis.io/topics/distlock#correct-implementation-with-a-single-instance for more information).
  */
 public class RedisLock {
+    private static final Logger LOG = LoggerFactory.getLogger(RedisLock.class);
 
     private static final Random RND = new Random();
+    private static final int LOCK_EXP = 500; // in ms
 
     /**
      * Acquires a lock for the given key.
@@ -43,7 +50,7 @@ public class RedisLock {
         RND.nextBytes(randomLockValue);
 
         // setnx with a 500ms expiration
-        while (!"OK".equals(j.set(lockKey, randomLockValue, SetParams.setParams().nx().px(500)))) {
+        while (!"OK".equals(j.set(lockKey, randomLockValue, SetParams.setParams().nx().px(LOCK_EXP)))) {
             if (System.currentTimeMillis() - start > 5_000L)
                 throw new IllegalStateException("Could not acquire a lock from redis");
             try {
@@ -63,10 +70,30 @@ public class RedisLock {
      */
     public static void release(Jedis j, byte[] lockKey, byte[] lockValue) {
         if (lockValue != null) {
-            if (Arrays.equals(j.get(lockKey), lockValue)) {
-                j.del(lockKey);
+            // Watch the key to remove.
+            j.watch(lockKey);
+
+            byte[] prevousLockValue = j.get(lockKey);
+            // Delete the key if needed.
+            if (Arrays.equals(prevousLockValue, lockValue)) {
+                // Try to delete the key
+                Transaction transaction = j.multi();
+                transaction.del(lockKey);
+                boolean succeed = transaction.exec() != null;
+                if (!succeed) {
+                    LOG.warn(
+                            "Failed to release lock for key {}/{}, meaning the key probably expired because of acquiring the lock for too long (more than {}ms)",
+                            new String(lockKey), Hex.encodeHexString(lockValue), LOCK_EXP);
+                }
+            } else {
+                // the key must not be deleted.
+                LOG.warn(
+                        "Nothing to release for key {}/{}, meaning the key probably expired because of acquiring the lock for too long (more than {}ms)",
+                        new String(lockKey), Hex.encodeHexString(lockValue), LOCK_EXP);
+                j.unwatch();
             }
+        } else {
+            LOG.warn("Trying to release a lock for {} with a null value", new String(lockKey));
         }
     }
-
 }
