@@ -1,33 +1,31 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 
 <!--
 FILE INFORMATION
 
 OMA Permanent Document
-   File: OMA-SUP-XML_LWM2M_Device-V1_0-20170208-A
+   File: OMA-SUP-XML_LWM2M_Device-V1_0_3-20180710-A
    Type: xml
+   Date: 2018-07-10
 
 Public Reachable Information
    Path: http://www.openmobilealliance.org/tech/profiles
-   Name: LWM2M_Device-v1_0.xml
+   Name: LWM2M_Device-v1_0_3.xml
 
 NORMATIVE INFORMATION
 
   Information about this file can be found in the latest revision of
 
-    OMA-TS-LightweightM2M-V1_0
+    OMA-TS-LightweightM2M-V1_0_2
+    OMA-TS-LightweightM2M_Core-V1_1
 
   This is available at http://www.openmobilealliance.org/
 
-  Send comments to technical-comments@mail.openmobilealliance.org
-
-CHANGE HISTORY
-
-08022017 Status changed to Approved by TP, TP Ref # OMA-TP-2017-0009-INP_LightweightM2M-V1_0_ERP_for_Final_Approval
+  Send comments to https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues
 
 LEGAL DISCLAIMER
 
-  Copyright 2017 Open Mobile Alliance All rights reserved.
+  Copyright 2018 Open Mobile Alliance All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions
@@ -60,7 +58,7 @@ LEGAL DISCLAIMER
   http://www.openmobilealliance.org/ipr.html
 -->
 
-<LWM2M xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M.xsd">
+<LWM2M xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.openmobilealliance.org/tech/profiles/LWM2M.xsd">
 	<Object ObjectType="MODefinition">
 		<Name>Device</Name>
 		<Description1><![CDATA[This LwM2M Object provides a range of device related information which can be queried by the LwM2M Server, and a device reboot and factory reset function.]]></Description1>
@@ -205,7 +203,7 @@ The same Resource Instance ID MUST be used to associate a given Power Source (Re
 7=IP connectivity failure
 8=Peripheral malfunction
 
-When the single Device Object Instance is initiated, there is only one error code Resource Instance whose value is equal to 0 that means no error. When the first error happens, the LwM2M Client changes error code Resource Instance to any non-zero value to indicate the error type. When any other error happens, a new error code Resource Instance is created.
+When the single Device Object Instance is initiated, there is only one error code Resource Instance whose value is equal to 0 that means no error. When the first error happens, the LwM2M Client changes error code Resource Instance to any non-zero value to indicate the error type. When any other error happens, a new error code Resource Instance is created. When an error associated with a Resource Instance is no longer present, that Resource Instance is deleted. When the single existing error is no longer present, the LwM2M Client returns to the original no error state where Instance 0 has value 0.
 This error code Resource MAY be observed by the LwM2M Server. How to deal with LwM2M Client’s error report depends on the policy of the LwM2M Server.]]></Description>
       </Item>
       <Item ID="12">
@@ -216,7 +214,7 @@ This error code Resource MAY be observed by the LwM2M Server. How to deal with L
         <Type></Type>
         <RangeEnumeration></RangeEnumeration>
         <Units></Units>
-        <Description><![CDATA[Delete all error code Resource Instances and create only one zero-value error code that implies no error.]]></Description>
+        <Description><![CDATA[Delete all error code Resource Instances and create only one zero-value error code that implies no error, then re-evaluate all error conditions and update and create Resources Instances to capture all current error conditions.]]></Description>
       </Item>
       <Item ID="13">
         <Name>Current Time</Name>
@@ -258,7 +256,7 @@ The LwM2M Server is able to write this Resource to make the LwM2M Client synchro
         <Type>String</Type>
         <RangeEnumeration></RangeEnumeration>
         <Units></Units>
-        <Description><![CDATA[Indicates which bindings and modes are supported in the LwM2M Client. The possible values of Resource are combination of "U" or "UQ" and "S" or "SQ".]]></Description>
+        <Description><![CDATA[Indicates which bindings and modes are supported in the LwM2M Client. The possible values are those listed in the LwM2M Core Specification.]]></Description>
      </Item>    
 			<Item ID="17"><Name>Device Type</Name>
 				<Operations>R</Operations>
@@ -267,7 +265,7 @@ The LwM2M Server is able to write this Resource to make the LwM2M Client synchro
 				<Type>String</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[Type of the device (manufacturer specified string: e.g., smart meters / dev Class…)]]></Description>
+				<Description><![CDATA[Type of the device (manufacturer specified string: e.g. smart meters / dev Class…)]]></Description>
 			</Item>
 			<Item ID="18"><Name>Hardware Version</Name>
 				<Operations>R</Operations>

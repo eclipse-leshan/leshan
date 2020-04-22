@@ -1,33 +1,31 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <!--
 FILE INFORMATION
 
 OMA Permanent Document
-   File: OMA-SUP-XML_LWM2M_Access_Control-V1_0-20170208-A
+   File: OMA-SUP-XML_LWM2M_Access_Control-V1_0_3-20190617-A
    Type: xml
+   Date: 2019-Jun-17
 
 Public Reachable Information
    Path: http://www.openmobilealliance.org/tech/profiles
-   Name: LWM2M_Access_Control-v1_0.xml
+   Name: LWM2M_Access_Control-v1_0_3.xml
 
 NORMATIVE INFORMATION
 
   Information about this file can be found in the latest revision of
 
-    OMA-TS-LightweightM2M-V1_0
+    OMA-TS-LightweightM2M-V1_0_2
+    OMA-TS-LightweightM2M_Core-V1_1_1
 
   This is available at http://www.openmobilealliance.org/
 
-  Send comments to technical-comments@mail.openmobilealliance.org
-
-CHANGE HISTORY
-
-08022017 Status changed to Approved by TP, TP Ref # OMA-TP-2017-0009-INP_LightweightM2M-V1_0_ERP_for_Final_Approval
+  Send comments to https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues
 
 LEGAL DISCLAIMER
 
-  Copyright 2017 Open Mobile Alliance All rights reserved.
+  Copyright 2019 Open Mobile Alliance.
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions
@@ -57,10 +55,10 @@ LEGAL DISCLAIMER
 
   The above license is used as a license under copyright only.  Please
   reference the OMA IPR Policy for patent licensing terms:
-  http://www.openmobilealliance.org/ipr.html
+  https://www.omaspecworks.org/about/intellectual-property-rights/
 -->
 
-<LWM2M xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M.xsd">
+<LWM2M xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.openmobilealliance.org/tech/profiles/LWM2M.xsd">
 	<Object ObjectType="MODefinition">
 		<Name>LwM2M Access Control</Name>
 		<Description1><![CDATA[Access Control Object is used to check whether the LwM2M Server has access right for performing an operation.]]></Description1>
@@ -77,9 +75,9 @@ LEGAL DISCLAIMER
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Mandatory</Mandatory>
 				<Type>Integer</Type>
-				<RangeEnumeration>1-65534</RangeEnumeration>
+				<RangeEnumeration>1..65534</RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[The Object ID and The Object Instance ID are applied for.]]></Description>
+				<Description><![CDATA[Resources 0 and 1 point to the Object Instance for which the Instances of the ACL Resource of that Access Control Object Instance are applicable.]]></Description>
 			</Item>
 			<Item ID="1">
 				<Name>Object Instance ID</Name>
@@ -87,9 +85,9 @@ LEGAL DISCLAIMER
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Mandatory</Mandatory>
 				<Type>Integer</Type>
-				<RangeEnumeration>0-65535</RangeEnumeration>
+				<RangeEnumeration>0..65535</RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[See Table 20: LwM2M Identifiers.]]></Description>
+				<Description><![CDATA[See above]]></Description>
 			</Item>
 			<Item ID="2">
 				<Name>ACL</Name>
@@ -103,7 +101,7 @@ LEGAL DISCLAIMER
 The Resource Instance ID 0 is a specific ID, determining the ACL Instance which contains the default access rights.
 Each bit set in the Resource Instance value, grants an access right to the LwM2M Server to the corresponding operation.
 The bit order is specified as below.
-1st LSB: R(Read, Observe, Discover, Write-Attributes)
+1st LSB: R(Read, Observe, Write-Attributes)
 2nd LSB: W(Write)
 3rd LSB: E(Execute)
 4th LSB: D(Delete)
@@ -116,7 +114,7 @@ Other bits are reserved for future use.]]></Description>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Mandatory</Mandatory>
 				<Type>Integer</Type>
-				<RangeEnumeration>0-65535</RangeEnumeration>
+				<RangeEnumeration>0..65535</RangeEnumeration>
 				<Units></Units>
 				<Description><![CDATA[Short Server ID of a certain LwM2M Server; only such an LwM2M Server can manage the Resources of this Object Instance. 
 The specific value MAX_ID=65535 means this Access Control Object Instance is created and modified during a Bootstrap phase only.]]></Description>
