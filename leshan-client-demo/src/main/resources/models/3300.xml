@@ -1,11 +1,44 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- BSD-3 Clause License
+
+Copyright 2019 Open Mobile Alliance. 
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+1. Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+3. Neither the name of the copyright holder nor the names of its
+contributors may be used to endorse or promote products derived
+from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+-->
+
 <LWM2M  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M.xsd">
 	<Object ObjectType="MODefinition">
 		<Name>Generic Sensor</Name>
-		<Description1>This IPSO object allow the description of a generic sensor. It is based on the description of a value and a unit according to the UCUM specification. Thus, any type of value defined within this specification can be reporting using this object.
-Specific object for a given range of sensors is described later in the document, enabling to identify the type of sensors directly from its Object ID. This object may be used as a generic object if a dedicated one does not exist.</Description1>
+		<Description1>This IPSO object allows the description of a generic sensor. It is based on the description of a value and a unit according to the SenML specification. Thus, any type of value defined within this specification can be reported using this object. This object may be used as a generic object if a dedicated one does not exist.</Description1>
 		<ObjectID>3300</ObjectID>
 		<ObjectURN>urn:oma:lwm2m:ext:3300</ObjectURN>
+		<LWM2MVersion>1.0</LWM2MVersion>
+                <ObjectVersion>1.0</ObjectVersion>
 		<MultipleInstances>Multiple</MultipleInstances>
 		<Mandatory>Optional</Mandatory>
 		<Resources>
@@ -16,7 +49,7 @@ Specific object for a given range of sensors is described later in the document,
 				<Mandatory>Mandatory</Mandatory>
 				<Type>Float</Type>
 				<RangeEnumeration></RangeEnumeration>
-				<Units>Defined by “Units” resource.</Units>
+				<Units></Units>
 				<Description>Last or Current Measured Value from the Sensor</Description>
 			</Item>
 			<Item ID="5701">
@@ -27,7 +60,7 @@ Specific object for a given range of sensors is described later in the document,
 				<Type>String</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description>Measurement Units Definition e.g. “Cel” for Temperature in Celsius.</Description>
+				<Description>Measurement Units Definition.</Description>
 			</Item>
 			<Item ID="5601">
 				<Name>Min Measured Value</Name>
@@ -36,7 +69,7 @@ Specific object for a given range of sensors is described later in the document,
 				<Mandatory>Optional</Mandatory>
 				<Type>Float</Type>
 				<RangeEnumeration></RangeEnumeration>
-				<Units>Defined by “Units” resource.</Units>
+				<Units></Units>
 				<Description>The minimum value measured by the sensor since power ON or reset</Description>
 			</Item>
 			<Item ID="5602">
@@ -46,7 +79,7 @@ Specific object for a given range of sensors is described later in the document,
 				<Mandatory>Optional</Mandatory>
 				<Type>Float</Type>
 				<RangeEnumeration></RangeEnumeration>
-				<Units>Defined by “Units” resource.</Units>
+				<Units></Units>
 				<Description>The maximum value measured by the sensor since power ON or reset</Description>
 			</Item>
 			<Item ID="5603">
@@ -56,7 +89,7 @@ Specific object for a given range of sensors is described later in the document,
 				<Mandatory>Optional</Mandatory>
 				<Type>Float</Type>
 				<RangeEnumeration></RangeEnumeration>
-				<Units>Defined by “Units” resource.</Units>
+				<Units></Units>
 				<Description>The minimum value that can be measured by the sensor</Description>
 			</Item>
 			<Item ID="5604">
@@ -66,7 +99,7 @@ Specific object for a given range of sensors is described later in the document,
 				<Mandatory>Optional</Mandatory>
 				<Type>Float</Type>
 				<RangeEnumeration></RangeEnumeration>
-				<Units>Defined by “Units” resource.</Units>
+				<Units></Units>
 				<Description>The maximum value that can be measured by the sensor</Description>
 			</Item>
 			<Item ID="5750">
@@ -77,7 +110,7 @@ Specific object for a given range of sensors is described later in the document,
 				<Type>String</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description>If present, the application type of the sensor as a string, for instance, “CO2”</Description>
+				<Description>If present, the application type of the sensor as a string, for instance, "CO2"</Description>
 			</Item>
 			<Item ID="5751">
 				<Name>Sensor Type</Name>
