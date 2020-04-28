@@ -4,7 +4,7 @@
 FILE INFORMATION
 
 OMA Permanent Document
-   File: OMA-SUP-XML_LWM2M_Software_Management-V1_0-20170314-C
+   File: OMA-SUP-XML_LWM2M_Software_Management-V1_0-20180301-A
    Type: xml
 
 Public Reachable Information
@@ -23,12 +23,11 @@ NORMATIVE INFORMATION
 
 CHANGE HISTORY
 
-07022017 File created, see OMA-DM-LightweightM2M-2017-0046-CR_xml_files
-14032017 Status changed to Candidate by TP, TP Ref # OMA-TP-2017-0020-INP_LWM2M_SWMGMT-V1_0_RRP_for_Candidate_Re-Approval
+01032018 Status changed to Approved by BoD, Doc Ref # OMA-DM-2018-0014-INP_LwM2M_Object_Software_Management_V1_0_RRP_Final_Approval
 
 LEGAL DISCLAIMER
 
-  Copyright 2017 Open Mobile Alliance All rights reserved.
+  Copyright 2018 Open Mobile Alliance All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions
