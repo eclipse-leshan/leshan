@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.demo.model;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -32,6 +33,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.io.IOUtils;
+import org.eclipse.leshan.core.model.DDFFileParser;
+import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.util.json.JsonException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +62,8 @@ public class DdfList2JsonGenerator {
         return conn;
     }
 
-    private void processDdfList(String url, String ddfFilesPath) throws IOException {
+    private void processDdfList(String ddfRoot, String ddfFileName, String ddfFilesPath) throws IOException {
+        String url = ddfRoot + ddfFileName;
 
         LOG.debug("Processing DDF list file {}", url);
 
@@ -75,13 +80,21 @@ public class DdfList2JsonGenerator {
             NodeList items = document.getDocumentElement().getElementsByTagName("Item");
             for (int i = 0; i < items.getLength(); i++) {
                 Node item = items.item(i);
-                Node ddf = ((Element) item).getElementsByTagName("DDF").item(0);
-                ddfUrls.add(ddf.getTextContent());
+                Node urn = ((Element) item).getElementsByTagName("URN").item(0);
+                if (urn != null) {
+                    Node ddf = ((Element) item).getElementsByTagName("DDF").item(0);
+                    if (ddf == null || ddf.getTextContent() == null || ddf.getTextContent().isEmpty()) {
+                        LOG.debug("Unable to handle {}{}", urn, ddf);
+                    } else {
+                        ddfUrls.add(ddfRoot + ddf.getTextContent());
+                    }
+                }
             }
         } catch (SAXException | ParserConfigurationException e) {
             throw new IOException(e);
         }
 
+        DDFFileParser ddfFileParser = new DDFFileParser();
         for (String ddfUrl : ddfUrls) {
 
             URL parsedUrl;
@@ -98,18 +111,40 @@ public class DdfList2JsonGenerator {
             Path outPath = Paths.get(ddfFilesPath, filename);
 
             LOG.debug("Downloading DDF file {} to {}", ddfUrl, outPath);
-
+            // store in memory
+            byte[] ddfBytes;
             try (InputStream in = openConnection(parsedUrl).getInputStream()) {
-                Files.copy(in, outPath);
+                ddfBytes = IOUtils.toByteArray(in);
+            }
+            // parse to skip not lwm2m 1.0 models
+            boolean skip = false;
+            try (InputStream in = new ByteArrayInputStream(ddfBytes)) {
+                List<ObjectModel> models = ddfFileParser.parse(in, ddfUrl);
+                for (ObjectModel model : models) {
+                    if (!model.lwm2mVersion.equals("1.0")) {
+                        skip = true;
+                        break;
+                    }
+                }
+            }
+            // copy file
+            if (!skip) {
+                try (InputStream in = new ByteArrayInputStream(ddfBytes)) {
+                    Files.copy(in, outPath);
+                }
+            } else {
+                LOG.debug("Skip lwm2m v1.1 models : {}", ddfUrl);
             }
         }
+
     }
 
     public static void main(String[] args) throws IOException, JsonException {
         // default values
         String ddfFilesPath = Ddf2JsonGenerator.DEFAULT_DDF_FILES_PATH;
         String outputPath = Ddf2JsonGenerator.DEFAULT_OUTPUT_PATH;
-        String ddfListUrl = "http://www.openmobilealliance.org/wp/OMNA/LwM2M/DDF.xml";
+        String ddfRoot = "https://raw.githubusercontent.com/OpenMobileAlliance/lwm2m-registry/prod/";
+        String ddfFileName = "DDF.xml";
 
         // use arguments if they exist
         if (args.length >= 1)
@@ -117,12 +152,14 @@ public class DdfList2JsonGenerator {
         if (args.length >= 2)
             outputPath = args[1]; // the path of the output file.
         if (args.length >= 3)
-            ddfListUrl = args[2]; // the path of the DDF list file.
+            ddfRoot = args[2]; // the root path of lwm2m registry.
+        if (args.length >= 4)
+            ddfFileName = args[4]; // ddf file name
 
-        new DdfList2JsonGenerator().processDdfList(ddfListUrl, ddfFilesPath);
+        new DdfList2JsonGenerator().processDdfList(ddfRoot, ddfFileName, ddfFilesPath);
 
-        LOG.error("DDF list {} processed to {}, proceeding with JSON generation in {}", ddfListUrl, ddfFilesPath,
-                outputPath);
+        LOG.error("DDF list {} processed to {}, proceeding with JSON generation in {}", ddfRoot + ddfFileName,
+                ddfFilesPath, outputPath);
 
         // generate object spec file
         Ddf2JsonGenerator ddfJsonGenerator = new Ddf2JsonGenerator();

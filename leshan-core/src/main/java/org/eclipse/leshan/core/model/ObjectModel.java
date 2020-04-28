@@ -44,6 +44,7 @@ public class ObjectModel {
     public final String name;
     public final String description;
     public final String version;
+    public final String lwm2mVersion;
     public final boolean multiple;
     public final boolean mandatory;
 
@@ -56,6 +57,11 @@ public class ObjectModel {
 
     public ObjectModel(int id, String name, String description, String version, boolean multiple, boolean mandatory,
             Collection<ResourceModel> resources) {
+        this(id, name, description, version, "1.0", multiple, mandatory, resources);
+    }
+
+    public ObjectModel(int id, String name, String description, String version, String lwm2mVersion, boolean multiple,
+            boolean mandatory, Collection<ResourceModel> list) {
         Validate.notEmpty(version);
 
         this.id = id;
@@ -64,9 +70,10 @@ public class ObjectModel {
         this.version = version;
         this.multiple = multiple;
         this.mandatory = mandatory;
+        this.lwm2mVersion = lwm2mVersion;
 
-        Map<Integer, ResourceModel> resourcesMap = new HashMap<>(resources.size());
-        for (ResourceModel resource : resources) {
+        Map<Integer, ResourceModel> resourcesMap = new HashMap<>(list.size());
+        for (ResourceModel resource : list) {
             ResourceModel old = resourcesMap.put(resource.id, resource);
             if (old != null) {
                 LOG.debug("Model already exists for resource {} of object {}. Overriding it.", resource.id, id);

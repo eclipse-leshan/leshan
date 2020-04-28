@@ -85,6 +85,8 @@ public class DDFFileParser {
         String version = ObjectModel.DEFAULT_VERSION;
         boolean multiple = false;
         boolean mandatory = false;
+        String lwm2mVersion = "1.0";
+
         List<ResourceModel> resources = new ArrayList<>();
 
         for (int i = 0; i < object.getChildNodes().getLength(); i++) {
@@ -117,10 +119,14 @@ public class DDFFileParser {
                     }
                 }
                 break;
+            case "LWM2MVersion":
+                if (!StringUtils.isEmpty(field.getTextContent()))
+                    lwm2mVersion = field.getTextContent();
+                break;
             }
         }
 
-        return new ObjectModel(id, name, description, version, multiple, mandatory, resources);
+        return new ObjectModel(id, name, description, version, lwm2mVersion, multiple, mandatory, resources);
 
     }
 
