@@ -189,18 +189,7 @@ public class LeshanBootstrapServerDemo {
             builder.setCertificateChain(new X509Certificate[] { serverCertificate });
 
             // Use a certificate verifier which trust all certificates by default.
-            dtlsConfig.setCertificateVerifier(new CertificateVerifier() {
-                @Override
-                public void verifyCertificate(CertificateMessage message, DTLSSession session)
-                        throws HandshakeException {
-                    // trust all means never raise HandshakeException
-                }
-
-                @Override
-                public X509Certificate[] getAcceptedIssuers() {
-                    return null;
-                }
-            });
+            builder.setTrustedCertificates(new X509Certificate[0]);
         } catch (Exception e) {
             LOG.error("Unable to load embedded X.509 certificate.", e);
             System.exit(-1);
