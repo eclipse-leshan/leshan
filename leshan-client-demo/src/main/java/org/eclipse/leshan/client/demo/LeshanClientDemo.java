@@ -156,7 +156,7 @@ public class LeshanClientDemo {
         options.addOption("l", true, String.format(
                 "The lifetime in seconds used to register, ignored if -b is used.\n Default : %ds", DEFAULT_LIFETIME));
         options.addOption("cp", true,
-                "The communication period in seconds which should be smaller than the lifeime, will be used even if -b is used.");
+                "The communication period in seconds which should be smaller than the lifetime, will be used even if -b is used.");
         options.addOption("lh", true, "Set the local CoAP address of the Client.\n  Default: any local address.");
         options.addOption("lp", true,
                 "Set the local CoAP port of the Client.\n  Default: A valid port value is between 0 and 65535.");
