@@ -46,4 +46,34 @@ public class DeregisterRequest implements UplinkRequest<DeregisterResponse> {
     public void accept(UplinkRequestVisitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((registrationId == null) ? 0 : registrationId.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        DeregisterRequest other = (DeregisterRequest) obj;
+        if (registrationId == null) {
+            if (other.registrationId != null)
+                return false;
+        } else if (!registrationId.equals(other.registrationId))
+            return false;
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("DeregisterRequest [registrationId=%s]", registrationId);
+    }
 }

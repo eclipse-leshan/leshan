@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -106,4 +107,66 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
         visitor.visit(this);
     }
 
+    @Override
+    public String toString() {
+        return String.format(
+                "RegisterRequest [endpointName=%s, lifetime=%s, lwVersion=%s, bindingMode=%s, smsNumber=%s, objectLinks=%s, additionalAttributes=%s]",
+                endpointName, lifetime, lwVersion, bindingMode, smsNumber, Arrays.toString(objectLinks),
+                additionalAttributes);
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((additionalAttributes == null) ? 0 : additionalAttributes.hashCode());
+        result = prime * result + ((bindingMode == null) ? 0 : bindingMode.hashCode());
+        result = prime * result + ((endpointName == null) ? 0 : endpointName.hashCode());
+        result = prime * result + ((lifetime == null) ? 0 : lifetime.hashCode());
+        result = prime * result + ((lwVersion == null) ? 0 : lwVersion.hashCode());
+        result = prime * result + Arrays.hashCode(objectLinks);
+        result = prime * result + ((smsNumber == null) ? 0 : smsNumber.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        RegisterRequest other = (RegisterRequest) obj;
+        if (additionalAttributes == null) {
+            if (other.additionalAttributes != null)
+                return false;
+        } else if (!additionalAttributes.equals(other.additionalAttributes))
+            return false;
+        if (bindingMode != other.bindingMode)
+            return false;
+        if (endpointName == null) {
+            if (other.endpointName != null)
+                return false;
+        } else if (!endpointName.equals(other.endpointName))
+            return false;
+        if (lifetime == null) {
+            if (other.lifetime != null)
+                return false;
+        } else if (!lifetime.equals(other.lifetime))
+            return false;
+        if (lwVersion == null) {
+            if (other.lwVersion != null)
+                return false;
+        } else if (!lwVersion.equals(other.lwVersion))
+            return false;
+        if (!Arrays.equals(objectLinks, other.objectLinks))
+            return false;
+        if (smsNumber == null) {
+            if (other.smsNumber != null)
+                return false;
+        } else if (!smsNumber.equals(other.smsNumber))
+            return false;
+        return true;
+    }
 }

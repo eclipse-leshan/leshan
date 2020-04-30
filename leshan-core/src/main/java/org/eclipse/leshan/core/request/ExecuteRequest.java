@@ -82,7 +82,7 @@ public class ExecuteRequest extends AbstractDownlinkRequest<ExecuteResponse> {
 
     @Override
     public String toString() {
-        return String.format("ExecuteRequest [%s]", getPath());
+        return String.format("ExecuteRequest [path=%s, parameters=%s]", getPath(), getParameters());
     }
 
     @Override

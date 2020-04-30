@@ -107,7 +107,8 @@ public class BootstrapWriteRequest extends AbstractDownlinkRequest<BootstrapWrit
 
     @Override
     public String toString() {
-        return String.format("BootstrapWriteRequest [node=%s, contentFormat=%s]", node, contentFormat);
+        return String.format("BootstrapWriteRequest [path=%s, node=%s, contentFormat=%s]", getPath(), node,
+                contentFormat);
     }
 
 }

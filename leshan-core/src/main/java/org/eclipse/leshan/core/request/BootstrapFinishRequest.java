@@ -34,4 +34,8 @@ public class BootstrapFinishRequest implements DownlinkRequest<BootstrapFinishRe
         visitor.visit(this);
     }
 
+    @Override
+    public String toString() {
+        return String.format("BootstrapFinishRequest");
+    }
 }
