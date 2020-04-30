@@ -37,7 +37,7 @@ public class LwM2mMultipleResource implements LwM2mResource {
 
     private final int id;
 
-    private final Map<Integer, ?> values;
+    private final Map<Integer, Object> values;
 
     private final Type type;
 
@@ -260,7 +260,28 @@ public class LwM2mMultipleResource implements LwM2mResource {
 
     @Override
     public String toString() {
-        return String.format("LwM2mMultipleResource [id=%s, values=%s, type=%s]", id, values, type);
+        Object printableValue;
+        if (type == Type.OPAQUE) {
+            // We don't print OPAQUE value as this could be credentials one.
+            // Not ideal but didn't find better way for now.
+            StringBuilder sb = new StringBuilder();
+            sb.append("{");
+            Iterator<Entry<Integer, Object>> iter = values.entrySet().iterator();
+            while (iter.hasNext()) {
+                Entry<Integer, Object> entry = iter.next();
+                sb.append(entry.getKey());
+                sb.append("=");
+                sb.append(((byte[]) entry.getValue()).length + "Bytes");
+                if (iter.hasNext()) {
+                    sb.append(", ");
+                }
+            }
+            sb.append("}");
+            printableValue = sb.toString();
+        } else {
+            printableValue = values;
+        }
+        return String.format("LwM2mMultipleResource [id=%s, values=%s, type=%s]", id, printableValue, type);
     }
 
 }

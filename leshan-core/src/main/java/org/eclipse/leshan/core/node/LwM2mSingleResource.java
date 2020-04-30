@@ -201,7 +201,10 @@ public class LwM2mSingleResource implements LwM2mResource {
 
     @Override
     public String toString() {
-        return String.format("LwM2mSingleResource [id=%s, value=%s, type=%s]", id, value, type);
+        // We don't print OPAQUE value as this could be credentials one.
+        // Not ideal but didn't find better way for now.
+        return String.format("LwM2mSingleResource [id=%s, value=%s, type=%s]", id,
+                type == Type.OPAQUE ? ((byte[]) value).length + "Bytes" : value, type);
     }
 
 }
