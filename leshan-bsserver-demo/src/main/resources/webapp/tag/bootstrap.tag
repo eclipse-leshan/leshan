@@ -59,8 +59,8 @@
                             <strong>{ security.uri }</strong><br/>
                             security mode : {security.securityMode}<br/>
                             <span if={security.securityMode === 'PSK'}>
-                                Id : <code> {toAscii(security.publicKeyOrId)} </code> </br>
-                                secret : <code> {toHex(security.secretKey)} </code> </br>
+                                Identity : <code code style=display:block;white-space:pre-wrap>{wrap(toAscii(security.publicKeyOrId))}</code>
+                                Key : <code code style=display:block;white-space:pre-wrap>{wrap(toHex(security.secretKey))}</code>
                             </span>
                         </p>
                     </div>
@@ -71,8 +71,8 @@
                             <strong>{security.uri}</strong><br/>
                             security mode : {security.securityMode}<br/>
                             <span if={security.securityMode === 'PSK'}>
-                                Id : <code> {toAscii(security.publicKeyOrId)} </code> </br>
-                                secret : <code> {toHex(security.secretKey)} </code> </br>
+                                Identity : <code code style=display:block;white-space:pre-wrap>{wrap(toAscii(security.publicKeyOrId))}</code>
+                                key : <code code style=display:block;white-space:pre-wrap>{wrap(toHex(security.secretKey))}</code>
                             </span>
                         </p>
                     </div>
@@ -94,6 +94,7 @@
         tag.showModal = showModal;
         tag.toAscii = toAscii;
         tag.toHex = toHex;
+        tag.wrap = wrap;
         tag.saveFile = saveFile;
         tag.pubkey = null // .b64Der .hexDer .bytesDer fields
         tag.certificate = null // .b64Der .hexDer .bytesDer fields
@@ -165,6 +166,11 @@
                 }
             }
             return hex.join('');
+        };
+
+        function wrap(s) {
+            var r = s.replace(/([^\n]{1,32})/g, '$1\n');
+            return r;
         };
 
         // Utils
