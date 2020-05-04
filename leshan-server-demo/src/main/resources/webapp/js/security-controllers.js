@@ -41,7 +41,10 @@ angular.module('securityControllers', [])
             }
             return array;
         }
-        
+        $scope.wrap = (s) => s.replace(
+                /([^\n]{1,32})/g, '$1\n'
+        );
+
         // update navbar
         angular.element("#navbar").children().removeClass('active');
         angular.element("#security-navlink").addClass('active');
@@ -98,7 +101,7 @@ angular.module('securityControllers', [])
                 if($scope.securityMode == "psk") {
                     var security = {endpoint: $scope.endpoint, psk : { identity : $scope.pskIdentity , key : $scope.pskValue}};
                 } else if($scope.securityMode == "rpk") {
-                    var security = {endpoint: $scope.endpoint, rpk : { x : $scope.rpkXValue , y : $scope.rpkYValue, params : $scope.rpkParamsValue || $scope.defaultParams}};
+                    var security = {endpoint: $scope.endpoint, rpk : { key : $scope.rpkValue }};
                 } else {
                     var security = {endpoint: $scope.endpoint, x509 : true};
                 }

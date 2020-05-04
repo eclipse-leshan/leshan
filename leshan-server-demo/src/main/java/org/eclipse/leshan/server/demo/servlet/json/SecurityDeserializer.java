@@ -15,21 +15,21 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.demo.servlet.json;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.math.BigInteger;
 import java.security.AlgorithmParameters;
+import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.ECGenParameterSpec;
 import java.security.spec.ECParameterSpec;
 import java.security.spec.ECPoint;
 import java.security.spec.ECPublicKeySpec;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
 
 import org.eclipse.leshan.core.util.Hex;
+import org.eclipse.leshan.core.util.SecurityUtil;
 import org.eclipse.leshan.server.security.SecurityInfo;
 
 import com.google.gson.JsonDeserializationContext;
@@ -83,20 +83,26 @@ public class SecurityDeserializer implements JsonDeserializer<SecurityInfo> {
             } else if (rpk != null) {
                 PublicKey key;
                 try {
-                    byte[] x = Hex.decodeHex(rpk.get("x").getAsString().toCharArray());
-                    byte[] y = Hex.decodeHex(rpk.get("y").getAsString().toCharArray());
-                    String params = rpk.get("params").getAsString();
+                    if (rpk.has("key")) {
+                        byte[] bytekey = Hex.decodeHex(rpk.get("key").getAsString().toCharArray());
+                        key = SecurityUtil.publicKey.decode(bytekey);
+                    } else {
+                        // This is just needed to keep API backward compatibility.
+                        // TODO as this is not used anymore by the UI, we should maybe remove it.
+                        byte[] x = Hex.decodeHex(rpk.get("x").getAsString().toCharArray());
+                        byte[] y = Hex.decodeHex(rpk.get("y").getAsString().toCharArray());
+                        String params = rpk.get("params").getAsString();
 
-                    AlgorithmParameters algoParameters = AlgorithmParameters.getInstance("EC");
-                    algoParameters.init(new ECGenParameterSpec(params));
-                    ECParameterSpec parameterSpec = algoParameters.getParameterSpec(ECParameterSpec.class);
+                        AlgorithmParameters algoParameters = AlgorithmParameters.getInstance("EC");
+                        algoParameters.init(new ECGenParameterSpec(params));
+                        ECParameterSpec parameterSpec = algoParameters.getParameterSpec(ECParameterSpec.class);
 
-                    KeySpec keySpec = new ECPublicKeySpec(new ECPoint(new BigInteger(x), new BigInteger(y)),
-                            parameterSpec);
+                        KeySpec keySpec = new ECPublicKeySpec(new ECPoint(new BigInteger(x), new BigInteger(y)),
+                                parameterSpec);
 
-                    key = KeyFactory.getInstance("EC").generatePublic(keySpec);
-                } catch (IllegalArgumentException | InvalidKeySpecException | NoSuchAlgorithmException
-                        | InvalidParameterSpecException e) {
+                        key = KeyFactory.getInstance("EC").generatePublic(keySpec);
+                    }
+                } catch (IllegalArgumentException | IOException | GeneralSecurityException e) {
                     throw new JsonParseException("Invalid security info content", e);
                 }
                 info = SecurityInfo.newRawPublicKeyInfo(endpoint, key);

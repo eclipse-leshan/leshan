@@ -59,10 +59,7 @@
 				Key : <code>{{ security.psk.key }}</code>
 			</td>
 			<td ng-if="security.rpk">Raw Public Key <br/><small class="text-muted" >(Elliptic Curve)</small></td>
-			<td ng-if="security.rpk">
-				Params : <code>{{ security.rpk.params }}</code><br/> 
-				X : <code>{{ security.rpk.x }}</code><br/>
-				Y : <code>{{ security.rpk.y }}</code>
+			<td ng-if="security.rpk">Public Key : <br/> <code style=display:block;white-space:pre-wrap>{{wrap(security.rpk.key)}}</code><br/> 
 			</td>
 			<td ng-if="security.x509">X.509</td>
 			<td ng-if="security.x509">Uses X.509 certificate</td>
@@ -99,7 +96,7 @@
 						<div class="col-sm-8">
 							<select class="form-control" id="securityMode" ng-model="securityMode">
 								<option value="psk">Pre-Shared Key</option>
-								<option value="rpk">Raw Public Key (Elliptic Curves)</option>
+								<option value="rpk">Raw Public Key</option>
 								<option value="x509">X.509 Certificate</option>
 							</select>
 						</div>
@@ -130,31 +127,13 @@
 
 					<!-- RPK inputs -->
 					<div class="form-group"  style="resize:none" ng-class="{'hidden': securityMode!='rpk'}" show-errors>
-						<label for="rpkXValue" class="col-sm-4 control-label">X public key part</label>
+						<label for="rpkValue" class="col-sm-4 control-label">Client Public Key</label>
 						<div class="col-sm-8">
-							<textarea class="form-control" rows="3" id="rpkXValue" name="rpkXValue" ng-model="rpkXValue"
-							ng-required="securityMode=='rpk'" ng-pattern="/^[0-9a-fA-F]+$/" ng-maxlength="64"></textarea>
-							<p class="help-block" ng-if="form.rpkXValue.$error.required">X public key  part is required</p>
-							<p class="help-block" ng-if="form.rpkXValue.$error.pattern">Hexadecimal format is expected</p>
-							<p class="help-block" ng-if="form.rpkXValue.$error.maxlength">X public key part is too long</p>
-						</div>
-					</div>
-					
-					<div class="form-group"  style="resize:none" ng-class="{'hidden': securityMode!='rpk'}" show-errors>
-						<label for="rpkYValue" class="col-sm-4 control-label">Y public key part</label>
-						<div class="col-sm-8">
-							<textarea class="form-control" rows="3" id="rpkYValue" name="rpkYValue" ng-model="rpkYValue"
-							ng-required="securityMode=='rpk'" ng-pattern="/^[0-9a-fA-F]+$/" ng-maxlength="64"></textarea>
-							<p class="help-block" ng-if="form.rpkYValue.$error.required">Y public key part is required</p>
-							<p class="help-block" ng-if="form.rpkYValue.$error.pattern">Hexadecimal format is expected</p>
-							<p class="help-block" ng-if="form.rpkYValue.$error.maxlength">Y public key part is too long</p>
-						</div>
-					</div>
-					
-					<div class="form-group"  style="resize:none" ng-class="{'hidden': securityMode!='rpk'}">
-						<label for="rpkParamsValue" class="col-sm-4 control-label">EC parameters :</label>
-						<div class="col-sm-8">
-							<input class="form-control" id="rpkParamsValue" name="rpkParamsValue" ng-model="rpkParamsValue" type="text" placeholder="{{defaultParams}}">
+							<textarea class="form-control" rows="3" id="rpkValue" name="rpkValue" ng-model="rpkValue"
+							ng-required="securityMode=='rpk'" ng-pattern="/^[0-9a-fA-F]+$/"></textarea>
+							<p class="text-right text-muted small" style="margin:0">SubjectPublicKeyInfo der encoded in Hexadecimal</p>
+							<p class="help-block" ng-if="form.rpkValue.$error.required">X public key  part is required</p>
+							<p class="help-block" ng-if="form.rpkValue.$error.pattern">Hexadecimal format is expected</p>
 						</div>
 					</div>
 

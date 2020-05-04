@@ -50,6 +50,9 @@ public class SecuritySerializer implements JsonSerializer<SecurityInfo> {
             JsonObject rpk = new JsonObject();
             PublicKey rawPublicKey = src.getRawPublicKey();
             if (rawPublicKey instanceof ECPublicKey) {
+                rpk.addProperty("key", Hex.encodeHexString(rawPublicKey.getEncoded()));
+
+                // TODO all the fields above is no more used should be removed it ?
                 ECPublicKey ecPublicKey = (ECPublicKey) rawPublicKey;
                 // Get x coordinate
                 byte[] x = ecPublicKey.getW().getAffineX().toByteArray();
