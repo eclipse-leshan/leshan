@@ -28,6 +28,7 @@ import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -139,6 +140,19 @@ public class LeshanServerDemo {
         // Define options for command line tools
         Options options = new Options();
 
+        final StringBuilder RPKChapter = new StringBuilder();
+        RPKChapter.append("\n .");
+        RPKChapter.append("\n .");
+        RPKChapter.append("\n================================[ RPK ]=================================");
+        RPKChapter.append("\n| By default Leshan demo uses an embedded self-signed certificate and  |");
+        RPKChapter.append("\n| trusts any client certificates allowing to use RPK or X509           |");
+        RPKChapter.append("\n| at client side.                                                      |");
+        RPKChapter.append("\n| To use RPK only with your own keys :                                 |");
+        RPKChapter.append("\n|            -pubk -prik options should be used together.              |");
+        RPKChapter.append("\n| To get helps about files format and how to generate it, see :        |");
+        RPKChapter.append("\n| See https://github.com/eclipse/leshan/wiki/Credential-files-format   |");
+        RPKChapter.append("\n------------------------------------------------------------------------");
+
         final StringBuilder X509Chapter = new StringBuilder();
         X509Chapter.append("\n .");
         X509Chapter.append("\n .");
@@ -165,7 +179,12 @@ public class LeshanServerDemo {
         options.addOption("r", "redis", true,
                 "Use redis to store registration and securityInfo. \nThe URL of the redis server should be given using this format : 'redis://:password@hostname:port/db_number'\nExample without DB and password: 'redis://localhost:6379'\nDefault: redis is not used.");
         options.addOption("mdns", "publishDNSSdServices", false,
-                "Publish leshan's services to DNS Service discovery" + X509Chapter);
+                "Publish leshan's services to DNS Service discovery" + RPKChapter);
+        options.addOption("pubk", true,
+                "The path to your server public key file.\n The public Key should be in SubjectPublicKeyInfo format (DER encoding).");
+        options.addOption("prik", true,
+                "The path to your server private key file.\nThe private key should be in PKCS#8 format (DER encoding)."
+                        + X509Chapter);
         options.addOption("ks", "keystore", true,
                 "Set the key store file.\nIf set, X.509 mode is enabled, otherwise built-in RPK credentials are used.");
         options.addOption("ksp", "storepass", true, "Set the key store password.");
@@ -203,6 +222,26 @@ public class LeshanServerDemo {
             return;
         }
 
+        // Abort if all RPK config is not complete
+        boolean rpkConfig = false;
+        if (cl.hasOption("pubk")) {
+            if (!cl.hasOption("prik")) {
+                System.err.println("pubk, prik should be used together to connect using RPK");
+                formatter.printHelp(USAGE, options);
+                return;
+            } else {
+                rpkConfig = true;
+            }
+        }
+        // Abort if prik is used without complete RPK
+        if (cl.hasOption("prik")) {
+            if (!rpkConfig) {
+                System.err.println("prik should be used with cert for X509 config OR pubk for RPK config");
+                formatter.printHelp(USAGE, options);
+                return;
+            }
+        }
+
         // get local address
         String localAddress = cl.getOptionValue("lh");
         String localPortOption = cl.getOptionValue("lp");
@@ -233,6 +272,21 @@ public class LeshanServerDemo {
         // get the Redis hostname:port
         String redisUrl = cl.getOptionValue("r");
 
+        // get RPK info
+        PublicKey publicKey = null;
+        PrivateKey privateKey = null;
+        if (rpkConfig) {
+            try {
+                privateKey = SecurityUtil.privateKey.readFromFile(cl.getOptionValue("prik"));
+                publicKey = SecurityUtil.publicKey.readFromFile(cl.getOptionValue("pubk"));
+            } catch (Exception e) {
+                System.err.println("Unable to load RPK files : " + e.getMessage());
+                e.printStackTrace();
+                formatter.printHelp(USAGE, options);
+                return;
+            }
+        }
+
         // Get keystore parameters
         String keyStorePath = cl.getOptionValue("ks");
         String keyStoreType = cl.getOptionValue("kst", KeyStore.getDefaultType());
@@ -245,8 +299,8 @@ public class LeshanServerDemo {
 
         try {
             createAndStartServer(webAddress, webPort, localAddress, localPort, secureLocalAddress, secureLocalPort,
-                    modelsFolderPath, redisUrl, keyStorePath, keyStoreType, keyStorePass, keyStoreAlias,
-                    keyStoreAliasPass, publishDNSSdServices, cl.hasOption("oc"));
+                    modelsFolderPath, redisUrl, publicKey, privateKey, keyStorePath, keyStoreType, keyStorePass,
+                    keyStoreAlias, keyStoreAliasPass, publishDNSSdServices, cl.hasOption("oc"));
         } catch (BindException e) {
             System.err.println(
                     String.format("Web port %s is already used, you could change it using 'webport' option.", webPort));
@@ -258,8 +312,9 @@ public class LeshanServerDemo {
 
     public static void createAndStartServer(String webAddress, int webPort, String localAddress, int localPort,
             String secureLocalAddress, int secureLocalPort, String modelsFolderPath, String redisUrl,
-            String keyStorePath, String keyStoreType, String keyStorePass, String keyStoreAlias,
-            String keyStoreAliasPass, Boolean publishDNSSdServices, boolean supportDeprecatedCiphers) throws Exception {
+            PublicKey publicKey, PrivateKey privateKey, String keyStorePath, String keyStoreType, String keyStorePass,
+            String keyStoreAlias, String keyStoreAliasPass, Boolean publishDNSSdServices,
+            boolean supportDeprecatedCiphers) throws Exception {
         // Prepare LWM2M server
         LeshanServerBuilder builder = new LeshanServerBuilder();
         builder.setLocalAddress(localAddress, localPort);
@@ -292,8 +347,8 @@ public class LeshanServerDemo {
         dtlsConfig.setRecommendedCipherSuitesOnly(!supportDeprecatedCiphers);
 
         X509Certificate serverCertificate = null;
-        // Set up X.509 mode
         if (keyStorePath != null) {
+            // Set up X.509 mode (+ RPK)
             try {
                 KeyStore keyStore = KeyStore.getInstance(keyStoreType);
                 try (FileInputStream fis = new FileInputStream(keyStorePath)) {
@@ -339,13 +394,17 @@ public class LeshanServerDemo {
                 LOG.error("Unable to initialize X.509.", e);
                 System.exit(-1);
             }
-        }
-        // Otherwise, set up RPK mode
-        else {
+        } else if (publicKey != null) {
+            // use RPK only
+            builder.setPublicKey(publicKey);
+            builder.setPrivateKey(privateKey);
+        } else {
+            // use default embedded credentials (X.509 + RPK mode)
             try {
-                PrivateKey privateKey = SecurityUtil.privateKey.readFromResource("credentials/server_privkey.der");
+                PrivateKey embeddedPrivateKey = SecurityUtil.privateKey
+                        .readFromResource("credentials/server_privkey.der");
                 serverCertificate = SecurityUtil.certificate.readFromResource("credentials/server_cert.der");
-                builder.setPrivateKey(privateKey);
+                builder.setPrivateKey(embeddedPrivateKey);
                 builder.setCertificateChain(new X509Certificate[] { serverCertificate });
                 /// Trust all certificates.
                 builder.setTrustedCertificates(new X509Certificate[0]);
@@ -407,7 +466,12 @@ public class LeshanServerDemo {
         ServletHolder clientServletHolder = new ServletHolder(new ClientServlet(lwServer));
         root.addServlet(clientServletHolder, "/api/clients/*");
 
-        ServletHolder securityServletHolder = new ServletHolder(new SecurityServlet(securityStore, serverCertificate));
+        ServletHolder securityServletHolder;
+        if (publicKey != null) {
+            securityServletHolder = new ServletHolder(new SecurityServlet(securityStore, publicKey));
+        } else {
+            securityServletHolder = new ServletHolder(new SecurityServlet(securityStore, serverCertificate));
+        }
         root.addServlet(securityServletHolder, "/api/security/*");
 
         ServletHolder objectSpecServletHolder = new ServletHolder(
