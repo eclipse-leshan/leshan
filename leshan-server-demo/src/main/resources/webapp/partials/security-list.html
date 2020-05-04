@@ -55,8 +55,8 @@
 			<td>{{ endpoint }}</td>
 			<td ng-if="security.psk">Pre-Shared Key</td>
 			<td ng-if="security.psk">
-				Identity : <code>{{ security.psk.identity }}</code><br/>
-				Key : <code>{{ security.psk.key }}</code>
+				Identity : <code style=display:block;white-space:pre-wrap>{{ wrap(security.psk.identity) }}</code>
+				Key : <code style=display:block;white-space:pre-wrap>{{ wrap(security.psk.key) }}</code>
 			</td>
 			<td ng-if="security.rpk">Raw Public Key <br/><small class="text-muted" >(Elliptic Curve)</small></td>
 			<td ng-if="security.rpk">Public Key : <br/> <code style=display:block;white-space:pre-wrap>{{wrap(security.rpk.key)}}</code><br/> 
