@@ -19,11 +19,14 @@
 package org.eclipse.leshan.server.bootstrap.demo;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
@@ -63,7 +66,7 @@ public class LeshanBootstrapServerDemo {
 
     private final static String USAGE = "java -jar leshan-bsserver-demo.jar [OPTION]";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException {
         // Define options for command line tools
         Options options = new Options();
 
@@ -79,6 +82,19 @@ public class LeshanBootstrapServerDemo {
         RPKChapter.append("\n| To get helps about files format and how to generate it, see :        |");
         RPKChapter.append("\n| See https://github.com/eclipse/leshan/wiki/Credential-files-format   |");
         RPKChapter.append("\n------------------------------------------------------------------------");
+
+        final StringBuilder X509Chapter = new StringBuilder();
+        X509Chapter.append("\n .");
+        X509Chapter.append("\n .");
+        X509Chapter.append("\n===============================[ X509 ]=================================");
+        X509Chapter.append("\n| By default Leshan demo uses an embedded self-signed certificate and  |");
+        X509Chapter.append("\n| trusts any client certificates allowing to use RPK or X509           |");
+        X509Chapter.append("\n| at client side.                                                      |");
+        X509Chapter.append("\n| To use X509 with your own server key, certificate and truststore :   |");
+        X509Chapter.append("\n|               [-cert, -prik], [-truststore] should be used together  |");
+        X509Chapter.append("\n| To get helps about files format and how to generate it, see :        |");
+        X509Chapter.append("\n| See https://github.com/eclipse/leshan/wiki/Credential-files-format   |");
+        X509Chapter.append("\n------------------------------------------------------------------------");
 
         options.addOption("h", "help", false, "Display help information.");
         options.addOption("lh", "coaphost", true, "Set the local CoAP address.\n  Default: any local address.");
@@ -96,7 +112,14 @@ public class LeshanBootstrapServerDemo {
         options.addOption("pubk", true,
                 "The path to your server public key file.\n The public Key should be in SubjectPublicKeyInfo format (DER encoding).");
         options.addOption("prik", true,
-                "The path to your server private key file.\nThe private key should be in PKCS#8 format (DER encoding).");
+                "The path to your server private key file.\nThe private key should be in PKCS#8 format (DER encoding)."
+                        + X509Chapter);
+        options.addOption("cert", true,
+                "The path to your server certificate file.\n"
+                        + "The certificate Common Name (CN) should generally be equal to the server hostname.\n"
+                        + "The certificate should be in X509v3 format (DER encoding).");
+        options.addOption("truststore", true,
+                "The path to a root certificate file to trust or a folder containing all the trusted certificates in X509v3 format (DER encoding).\n Default: All certificates are trusted which is only OK for a demo.");
 
         HelpFormatter formatter = new HelpFormatter();
         formatter.setWidth(120);
@@ -136,9 +159,22 @@ public class LeshanBootstrapServerDemo {
                 rpkConfig = true;
             }
         }
-        // Abort if prik is used without complete RPK
+
+        // Abort if all X509 config is not complete
+        boolean x509Config = false;
+        if (cl.hasOption("cert")) {
+            if (!cl.hasOption("prik")) {
+                System.err.println("cert, prik should be used together to connect using X509");
+                formatter.printHelp(USAGE, options);
+                return;
+            } else {
+                x509Config = true;
+            }
+        }
+
+        // Abort if prik is used without complete RPK or X509 config
         if (cl.hasOption("prik")) {
-            if (!rpkConfig) {
+            if (!rpkConfig && !x509Config) {
                 System.err.println("prik should be used with cert for X509 config OR pubk for RPK config");
                 formatter.printHelp(USAGE, options);
                 return;
@@ -197,9 +233,50 @@ public class LeshanBootstrapServerDemo {
             }
         }
 
+        // get X509 info
+        X509Certificate certificate = null;
+        if (cl.hasOption("cert")) {
+            try {
+                privateKey = SecurityUtil.privateKey.readFromFile(cl.getOptionValue("prik"));
+                certificate = SecurityUtil.certificate.readFromFile(cl.getOptionValue("cert"));
+            } catch (Exception e) {
+                System.err.println("Unable to load X509 files : " + e.getMessage());
+                e.printStackTrace();
+                formatter.printHelp(USAGE, options);
+                return;
+            }
+        }
+
+        // get X509 info
+        List<Certificate> trustStore = null;
+        if (cl.hasOption("truststore")) {
+            trustStore = new ArrayList<>();
+            File input = new File(cl.getOptionValue("truststore"));
+
+            // check input exists
+            if (!input.exists())
+                throw new FileNotFoundException(input.toString());
+
+            // get input files.
+            File[] files;
+            if (input.isDirectory()) {
+                files = input.listFiles();
+            } else {
+                files = new File[] { input };
+            }
+            for (File file : files) {
+                try {
+                    trustStore.add(SecurityUtil.certificate.readFromFile(file.getAbsolutePath()));
+                } catch (Exception e) {
+                    LOG.warn("Unable to load X509 files {}:{} ", file.getAbsolutePath(), e.getMessage());
+                }
+            }
+        }
+
         try {
             createAndStartServer(webAddress, webPort, localAddress, localPort, secureLocalAddress, secureLocalPort,
-                    modelsFolderPath, configFilename, cl.hasOption("oc"), publicKey, privateKey);
+                    modelsFolderPath, configFilename, cl.hasOption("oc"), publicKey, privateKey, certificate,
+                    trustStore);
         } catch (BindException e) {
             System.err.println(String
                     .format("Web port %s is already in use, you can change it using the 'webport' option.", webPort));
@@ -211,7 +288,8 @@ public class LeshanBootstrapServerDemo {
 
     public static void createAndStartServer(String webAddress, int webPort, String localAddress, int localPort,
             String secureLocalAddress, int secureLocalPort, String modelsFolderPath, String configFilename,
-            boolean supportDeprecatedCiphers, PublicKey publicKey, PrivateKey privateKey) throws Exception {
+            boolean supportDeprecatedCiphers, PublicKey publicKey, PrivateKey privateKey, X509Certificate certificate,
+            List<Certificate> trustStore) throws Exception {
         // Create Models
         List<ObjectModel> models = ObjectLoader.loadDefault();
         if (modelsFolderPath != null) {
@@ -233,7 +311,12 @@ public class LeshanBootstrapServerDemo {
 
         // Create credentials;
         X509Certificate serverCertificate = null;
-        if (publicKey != null) {
+        if (certificate != null) {
+            // use X.509 mode (+ RPK)
+            serverCertificate = certificate;
+            builder.setPrivateKey(privateKey);
+            builder.setCertificateChain(new X509Certificate[] { serverCertificate });
+        } else if (publicKey != null) {
             // use RPK
             builder.setPublicKey(publicKey);
             builder.setPrivateKey(privateKey);
@@ -244,12 +327,19 @@ public class LeshanBootstrapServerDemo {
                 serverCertificate = SecurityUtil.certificate.readFromResource("credentials/bsserver_cert.der");
                 builder.setPrivateKey(embeddedPrivateKey);
                 builder.setCertificateChain(new X509Certificate[] { serverCertificate });
-
-                // Use a certificate verifier which trust all certificates by default.
-                builder.setTrustedCertificates(new X509Certificate[0]);
             } catch (Exception e) {
                 LOG.error("Unable to load embedded X.509 certificate.", e);
                 System.exit(-1);
+            }
+        }
+
+        // Define trust store
+        if (serverCertificate != null) {
+            if (trustStore != null && !trustStore.isEmpty()) {
+                builder.setTrustedCertificates(trustStore.toArray(new Certificate[trustStore.size()]));
+            } else {
+                // by default trust all
+                builder.setTrustedCertificates(new X509Certificate[0]);
             }
         }
 
