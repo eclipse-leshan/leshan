@@ -49,7 +49,7 @@ keytool -genkeypair -alias client -keyalg EC -dname 'CN=leshan_integration_test'
 keytool -exportcert -alias client -keystore $CLIENT_STORE -storepass $CLIENT_STORE_PWD | \
   keytool -importcert -alias client_self_signed -keystore $CLIENT_STORE -storepass $CLIENT_STORE_PWD -noprompt
 echo
-echo "${H2}Import root certificate just to be able to import  ned by root CA with expected CN...${RESET}"
+echo "${H2}Import root certificate just to be able to sign certificate ...${RESET}"
 keytool -exportcert -alias rootCA -keystore $SERVER_STORE -storepass $SERVER_STORE_PWD | \
   keytool -importcert -alias rootCA -keystore $CLIENT_STORE -storepass $CLIENT_STORE_PWD -noprompt
 echo
