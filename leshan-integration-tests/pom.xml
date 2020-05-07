@@ -19,7 +19,7 @@ Contributors:
     <parent>
         <groupId>org.eclipse.leshan</groupId>
         <artifactId>leshan</artifactId>
-        <version>1.0.1</version>
+        <version>1.0.2-SNAPSHOT</version>
     </parent>
     <artifactId>leshan-integration-tests</artifactId>
     <name>leshan - integration tests</name>
