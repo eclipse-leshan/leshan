@@ -29,7 +29,10 @@ import redis.clients.jedis.params.SetParams;
 /**
  * Utility class providing locking methods based on the Redis SETNX primitive (see
  * http://redis.io/topics/distlock#correct-implementation-with-a-single-instance for more information).
+ * 
+ * @deprecated use a {@link SingleInstanceJedisLock} instead or any {@link JedisLock} implementation.
  */
+@Deprecated
 public class RedisLock {
     private static final Logger LOG = LoggerFactory.getLogger(RedisLock.class);
 
