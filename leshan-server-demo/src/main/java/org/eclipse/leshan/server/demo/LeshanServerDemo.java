@@ -45,6 +45,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -281,7 +282,7 @@ public class LeshanServerDemo {
         // get local address
         String localAddress = cl.getOptionValue("lh");
         String localPortOption = cl.getOptionValue("lp");
-        int localPort = LwM2m.DEFAULT_COAP_PORT;
+        Integer localPort = null;
         if (localPortOption != null) {
             localPort = Integer.parseInt(localPortOption);
         }
@@ -289,7 +290,7 @@ public class LeshanServerDemo {
         // get secure local address
         String secureLocalAddress = cl.getOptionValue("slh");
         String secureLocalPortOption = cl.getOptionValue("slp");
-        int secureLocalPort = LwM2m.DEFAULT_COAP_SECURE_PORT;
+        Integer secureLocalPort = null;
         if (secureLocalPortOption != null) {
             secureLocalPort = Integer.parseInt(secureLocalPortOption);
         }
@@ -387,15 +388,13 @@ public class LeshanServerDemo {
         }
     }
 
-    public static void createAndStartServer(String webAddress, int webPort, String localAddress, int localPort,
-            String secureLocalAddress, int secureLocalPort, String modelsFolderPath, String redisUrl,
+    public static void createAndStartServer(String webAddress, int webPort, String localAddress, Integer localPort,
+            String secureLocalAddress, Integer secureLocalPort, String modelsFolderPath, String redisUrl,
             PublicKey publicKey, PrivateKey privateKey, X509Certificate certificate, List<Certificate> trustStore,
             String keyStorePath, String keyStoreType, String keyStorePass, String keyStoreAlias,
             String keyStoreAliasPass, Boolean publishDNSSdServices, boolean supportDeprecatedCiphers) throws Exception {
         // Prepare LWM2M server
         LeshanServerBuilder builder = new LeshanServerBuilder();
-        builder.setLocalAddress(localAddress, localPort);
-        builder.setLocalSecureAddress(secureLocalAddress, secureLocalPort);
         builder.setEncoder(new DefaultLwM2mNodeEncoder());
         LwM2mNodeDecoder decoder = new DefaultLwM2mNodeDecoder();
         builder.setDecoder(decoder);
@@ -411,6 +410,13 @@ public class LeshanServerDemo {
             coapConfig.store(configFile);
         }
         builder.setCoapConfig(coapConfig);
+
+        // ports from CoAP Config if needed
+        builder.setLocalAddress(localAddress,
+                localPort == null ? coapConfig.getInt(Keys.COAP_PORT, LwM2m.DEFAULT_COAP_PORT) : localPort);
+        builder.setLocalSecureAddress(secureLocalAddress,
+                secureLocalPort == null ? coapConfig.getInt(Keys.COAP_SECURE_PORT, LwM2m.DEFAULT_COAP_SECURE_PORT)
+                        : secureLocalPort);
 
         // Connect to redis if needed
         Pool<Jedis> jedis = null;

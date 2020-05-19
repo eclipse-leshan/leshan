@@ -35,6 +35,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -183,20 +184,16 @@ public class LeshanBootstrapServerDemo {
 
         // Get local address
         String localAddress = cl.getOptionValue("lh");
-        if (localAddress == null)
-            localAddress = "0.0.0.0";
         String localPortOption = cl.getOptionValue("lp");
-        int localPort = LwM2m.DEFAULT_COAP_PORT;
+        Integer localPort = null;
         if (localPortOption != null) {
             localPort = Integer.parseInt(localPortOption);
         }
 
         // Get secure local address
         String secureLocalAddress = cl.getOptionValue("slh");
-        if (secureLocalAddress == null)
-            secureLocalAddress = "0.0.0.0";
         String secureLocalPortOption = cl.getOptionValue("slp");
-        int secureLocalPort = LwM2m.DEFAULT_COAP_SECURE_PORT;
+        Integer secureLocalPort = null;
         if (secureLocalPortOption != null) {
             secureLocalPort = Integer.parseInt(secureLocalPortOption);
         }
@@ -286,8 +283,8 @@ public class LeshanBootstrapServerDemo {
         }
     }
 
-    public static void createAndStartServer(String webAddress, int webPort, String localAddress, int localPort,
-            String secureLocalAddress, int secureLocalPort, String modelsFolderPath, String configFilename,
+    public static void createAndStartServer(String webAddress, int webPort, String localAddress, Integer localPort,
+            String secureLocalAddress, Integer secureLocalPort, String modelsFolderPath, String configFilename,
             boolean supportDeprecatedCiphers, PublicKey publicKey, PrivateKey privateKey, X509Certificate certificate,
             List<Certificate> trustStore) throws Exception {
         // Create Models
@@ -301,8 +298,6 @@ public class LeshanBootstrapServerDemo {
         JSONFileBootstrapStore bsStore = new JSONFileBootstrapStore(configFilename);
         builder.setConfigStore(bsStore);
         builder.setSecurityStore(new BootstrapConfigSecurityStore(bsStore));
-        builder.setLocalAddress(localAddress, localPort);
-        builder.setLocalSecureAddress(secureLocalAddress, secureLocalPort);
         builder.setModel(new StaticModel(models));
 
         // Create DTLS Config
@@ -357,6 +352,13 @@ public class LeshanBootstrapServerDemo {
             coapConfig.store(configFile);
         }
         builder.setCoapConfig(coapConfig);
+
+        // ports from CoAP Config if needed
+        builder.setLocalAddress(localAddress,
+                localPort == null ? coapConfig.getInt(Keys.COAP_PORT, LwM2m.DEFAULT_COAP_PORT) : localPort);
+        builder.setLocalSecureAddress(secureLocalAddress,
+                secureLocalPort == null ? coapConfig.getInt(Keys.COAP_SECURE_PORT, LwM2m.DEFAULT_COAP_SECURE_PORT)
+                        : secureLocalPort);
 
         LeshanBootstrapServer bsServer = builder.build();
         bsServer.start();
