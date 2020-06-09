@@ -42,9 +42,22 @@ public class DDFFileParser {
     private static final Logger LOG = LoggerFactory.getLogger(DDFFileParser.class);
 
     private final DocumentBuilderFactory factory;
+    private final DDFFileValidator ddfValidator;
 
     public DDFFileParser() {
+        this(null);
+    }
+
+    /**
+     * Build a DDFFileParser with a given {@link DDFFileValidator}.
+     * 
+     * @param ddfValidator a {@link DDFFileValidator} or {@code null} if no validation required.
+     * @since 1.1
+     */
+    public DDFFileParser(DDFFileValidator ddfValidator) {
         factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        this.ddfValidator = ddfValidator;
     }
 
     public List<ObjectModel> parse(File ddfFile) {
@@ -62,9 +75,16 @@ public class DDFFileParser {
         LOG.debug("Parsing DDF file {}", streamName);
 
         try {
+            // Parse XML file
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document document = builder.parse(inputStream);
 
+            // Validate XML against Schema
+            if (ddfValidator != null) {
+                ddfValidator.validate(document);
+            }
+
+            // Build list of ObjectModel
             ArrayList<ObjectModel> objects = new ArrayList<>();
             NodeList nodeList = document.getDocumentElement().getElementsByTagName("Object");
             for (int i = 0; i < nodeList.getLength(); i++) {
