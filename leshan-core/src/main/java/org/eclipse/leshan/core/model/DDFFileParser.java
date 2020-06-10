@@ -113,6 +113,9 @@ public class DDFFileParser {
         boolean multiple = false;
         boolean mandatory = false;
         List<ResourceModel> resources = new ArrayList<>();
+        String urn = null;
+        String description2 = null;
+        String lwm2mVersion = null;
 
         for (int i = 0; i < object.getChildNodes().getLength(); i++) {
             Node field = object.getChildNodes().item(i);
@@ -172,9 +175,13 @@ public class DDFFileParser {
                 }
                 break;
             case "ObjectURN":
+                urn = field.getTextContent();
+                break;
             case "LWM2MVersion":
+                lwm2mVersion = field.getTextContent();
+                break;
             case "Description2":
-                // TODO it should be supported in Leshan v1.1 or later.
+                description2 = field.getTextContent();
                 break;
             default:
                 LOG.warn("Unexpected object element [{}] in {} : it will be ignored.", field.getNodeName(), streamName);
@@ -182,7 +189,8 @@ public class DDFFileParser {
             }
         }
 
-        return new ObjectModel(id, name, description, version, multiple, mandatory, resources);
+        return new ObjectModel(id, name, description, version, multiple, mandatory, resources, urn, lwm2mVersion,
+                description2);
 
     }
 
