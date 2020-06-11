@@ -83,7 +83,7 @@ public class LeshanClientDemo {
 
     // /!\ This field is a COPY of org.eclipse.leshan.server.demo.LeshanServerDemo.modelPaths /!\
     // TODO create a leshan-demo project ?
-    private final static String[] modelPaths = new String[] { "10241.xml", "10242.xml", "10243.xml", "10244.xml",
+    public final static String[] modelPaths = new String[] { "10241.xml", "10242.xml", "10243.xml", "10244.xml",
                             "10245.xml", "10246.xml", "10247.xml", "10248.xml", "10249.xml", "10250.xml", "10251.xml",
                             "10252.xml", "10253.xml", "10254.xml", "10255.xml", "10256.xml", "10257.xml", "10258.xml",
                             "10259.xml", "10260-2_0.xml", "10262.xml", "10263.xml", "10264.xml", "10265.xml",
