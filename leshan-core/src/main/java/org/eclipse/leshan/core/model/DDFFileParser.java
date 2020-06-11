@@ -17,6 +17,7 @@ package org.eclipse.leshan.core.model;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,15 +25,18 @@ import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.leshan.core.model.ResourceModel.Operations;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * A parser for Object DDF files.
@@ -60,6 +64,10 @@ public class DDFFileParser {
         this.ddfValidator = ddfValidator;
     }
 
+    /**
+     * @deprecated use {@link #parseEx(File)}
+     */
+    @Deprecated
     public List<ObjectModel> parse(File ddfFile) {
         try (InputStream input = new FileInputStream(ddfFile)) {
             return parse(input, ddfFile.getName());
@@ -69,6 +77,10 @@ public class DDFFileParser {
         return Collections.emptyList();
     }
 
+    /**
+     * @deprecated use {@link #parseEx(InputStream, String)}
+     */
+    @Deprecated
     public List<ObjectModel> parse(InputStream inputStream, String streamName) {
         streamName = streamName == null ? "" : streamName;
 
@@ -88,7 +100,7 @@ public class DDFFileParser {
             ArrayList<ObjectModel> objects = new ArrayList<>();
             NodeList nodeList = document.getDocumentElement().getElementsByTagName("Object");
             for (int i = 0; i < nodeList.getLength(); i++) {
-                objects.add(parseObject(nodeList.item(i), streamName));
+                objects.add(parseObject(nodeList.item(i), streamName, false));
             }
             return objects;
         } catch (Exception e) {
@@ -97,13 +109,66 @@ public class DDFFileParser {
         return Collections.emptyList();
     }
 
-    private ObjectModel parseObject(Node object, String streamName) {
+    /**
+     * Parse a DDF file.
+     * 
+     * @throws InvalidDDFFileException if DDF file is not a valid.
+     * @throws IOException see {@link FileInputStream#FileInputStream(File) or DocumentBuilder#parse(InputStream)
+     * 
+     * @since 1.1
+     */
+    public List<ObjectModel> parseEx(File ddfFile) throws InvalidDDFFileException, IOException {
+        try (InputStream input = new FileInputStream(ddfFile)) {
+            return parseEx(input, ddfFile.getName());
+        }
+    }
 
-        // TODO All the validation here should be replaced by a real Validator
+    /**
+     * Parse a DDF file from an inputstream.
+     * 
+     * @throws InvalidDDFFileException if DDF file is not a valid.
+     * @throws IOException see {@link FileInputStream#FileInputStream(File) or DocumentBuilder#parse(InputStream)
+     * 
+     * @since 1.1
+     */
+    public List<ObjectModel> parseEx(InputStream inputStream, String streamName)
+            throws InvalidDDFFileException, IOException {
+        streamName = streamName == null ? "" : streamName;
+
+        LOG.debug("Parsing DDF file {}", streamName);
+
+        // Parse XML file
+        try {
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document document = builder.parse(inputStream);
+            // Validate XML against Schema
+            if (ddfValidator != null) {
+                ddfValidator.validate(document);
+            }
+
+            // Build list of ObjectModel
+            ArrayList<ObjectModel> objects = new ArrayList<>();
+            NodeList nodeList = document.getDocumentElement().getElementsByTagName("Object");
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                objects.add(parseObject(nodeList.item(i), streamName, ddfValidator != null));
+            }
+            return objects;
+        } catch (InvalidDDFFileException | SAXException e) {
+            throw new InvalidDDFFileException(e, "Invalid DDF file %s", streamName);
+        } catch (ParserConfigurationException e) {
+            throw new IllegalStateException("Unable to create Document Builder", e);
+        }
+    }
+
+    private ObjectModel parseObject(Node object, String streamName, boolean raiseException)
+            throws InvalidDDFFileException {
 
         Node objectType = object.getAttributes().getNamedItem("ObjectType");
         if (objectType == null || !"MODefinition".equals(objectType.getTextContent())) {
-            LOG.warn("Object element in {} MUST have a ObjectType attribute equals to 'MODefinition'", streamName);
+            // TODO change for v2.0 : we keep it for backward compatibility
+            // test must be done only if validation is needed
+            handleError(raiseException,
+                    "Object element in %s MUST have a ObjectType attribute equals to 'MODefinition'.", streamName);
         }
 
         Integer id = null;
@@ -142,8 +207,10 @@ public class DDFFileParser {
                 } else if ("Single".equals(field.getTextContent())) {
                     multiple = false;
                 } else {
-                    LOG.warn(
-                            "Invalid Value for [MultipleInstances] field in {}. It MUST be 'Multiple' or 'Single' but it was {} : We will consider it as a 'Single' value.",
+                    // TODO remove for v2.0 : we keep it for backward compatibility
+                    // test will be done in DDFFileValidator or ObjectModelValidatorif validation if needed
+                    handleError(raiseException,
+                            "Invalid Value for [MultipleInstances] field in %s. It MUST be 'Multiple' or 'Single' but it was %s.",
                             field.getTextContent(), streamName);
                     multiple = false;
                 }
@@ -154,8 +221,10 @@ public class DDFFileParser {
                 } else if ("Optional".equals(field.getTextContent())) {
                     mandatory = false;
                 } else {
-                    LOG.warn(
-                            "Invalid Value for [Mandatory] field in {}. It MUST be 'Mandatory' or 'Optional' but it was {} :s We will consider it as a 'Optional' value.",
+                    // TODO remove for v2.0 : we keep it for backward compatibility
+                    // test will be done in DDFFileValidator or ObjectModelValidator if validation if needed
+                    handleError(raiseException,
+                            "Invalid Value for [Mandatory] field in %s. It MUST be 'Mandatory' or 'Optional' but it was %s.",
                             field.getTextContent(), streamName);
                     mandatory = false;
                 }
@@ -167,10 +236,12 @@ public class DDFFileParser {
                         continue;
 
                     if (item.getNodeName().equals("Item")) {
-                        resources.add(this.parseResource(item, streamName));
+                        resources.add(this.parseResource(item, streamName, raiseException));
                     } else {
-                        LOG.warn("Unexpected resources element [{}] in {} : it will be ignored.", item.getNodeName(),
-                                streamName);
+                        // TODO remove for v2.0 : we keep it for backward compatibility
+                        // test will be done in DDFFileValidator if validation if needed
+                        handleError(raiseException, "Unexpected resources element [%s] in %s : it will be ignored.",
+                                item.getNodeName(), streamName);
                     }
                 }
                 break;
@@ -184,7 +255,10 @@ public class DDFFileParser {
                 description2 = field.getTextContent();
                 break;
             default:
-                LOG.warn("Unexpected object element [{}] in {} : it will be ignored.", field.getNodeName(), streamName);
+                // TODO remove for v2.0 : we keep it for backward compatibility
+                // test will be done in DDFFileValidator if validation if needed
+                handleError(raiseException, "Unexpected object element [%s] in %s : it will be ignored.",
+                        field.getNodeName(), streamName);
                 break;
             }
         }
@@ -194,7 +268,8 @@ public class DDFFileParser {
 
     }
 
-    private ResourceModel parseResource(Node item, String streamName) {
+    private ResourceModel parseResource(Node item, String streamName, boolean raiseException)
+            throws DOMException, InvalidDDFFileException {
 
         Integer id = Integer.valueOf(item.getAttributes().getNamedItem("ID").getTextContent());
         String name = null;
@@ -227,8 +302,10 @@ public class DDFFileParser {
                 } else if ("Single".equals(field.getTextContent())) {
                     multiple = false;
                 } else {
-                    LOG.warn(
-                            "Invalid Value for [MultipleInstances] field in {}. It MUST be 'Multiple' or 'Single' but it was {} : We will consider it as a 'Single' value.",
+                    // TODO remove for v2.0 : we keep it for backward compatibility
+                    // test will be done in DDFFileValidator or ObjectModelValidatorif validation if needed
+                    handleError(raiseException,
+                            "Invalid Value for [MultipleInstances] field in %s. It MUST be 'Multiple' or 'Single' but it was %s : We will consider it as a 'Single' value.",
                             field.getTextContent(), streamName);
                     multiple = false;
                 }
@@ -239,8 +316,10 @@ public class DDFFileParser {
                 } else if ("Optional".equals(field.getTextContent())) {
                     mandatory = false;
                 } else {
-                    LOG.warn(
-                            "Invalid Value for [Mandatory] field in {}. It MUST be 'Mandatory' or 'Optional' but it was {} :s We will consider it as a 'Optional' value.",
+                    // TODO remove for v2.0 : we keep it for backward compatibility
+                    // test will be done in DDFFileValidator or ObjectModelValidatorif validation if needed
+                    handleError(raiseException,
+                            "Invalid Value for [Mandatory] field in %s. It MUST be 'Mandatory' or 'Optional' but it was %s :s We will consider it as a 'Optional' value.",
                             field.getTextContent(), streamName);
                     mandatory = false;
                 }
@@ -272,7 +351,10 @@ public class DDFFileParser {
                     type = null;
                     break;
                 default:
-                    LOG.warn("Unexpected type value [{}] in {} : no type assigned", field.getTextContent(), streamName);
+                    // TODO remove for v2.0 : we keep it for backward compatibility
+                    // test will be done in DDFFileValidator validation if needed
+                    handleError(raiseException, "Unexpected type value [%s] in %s : no type assigned",
+                            field.getTextContent(), streamName);
                     break;
                 }
                 break;
@@ -286,22 +368,37 @@ public class DDFFileParser {
                 description = field.getTextContent();
                 break;
             default:
-                LOG.warn("Unexpected resource element [{} {}] in {} : it will be ignored.", field.getNodeName(),
-                        field.getNodeType(), streamName);
+                // TODO remove for v2.0 : we keep it for backward compatibility
+                // test will be done in DDFFileValidator validation if needed
+                handleError(raiseException, "Unexpected resource element [%s %s] in %s : it will be ignored.",
+                        field.getNodeName(), field.getNodeType(), streamName);
                 break;
             }
         }
 
-        if (operations.isExecutable() && type != null) {
-            LOG.warn("Model for Resource {}({}) in {} is invalid : an executable resource MUST NOT have a type({})",
-                    name, id, streamName, type);
-        } else if (!operations.isExecutable() && type == null) {
-            LOG.warn(
-                    "Model for Resource {}({}) in {} is invalid : a none executable resource MUST have a type. We will consider it as String.",
-                    name, id, streamName, type);
-            type = Type.STRING;
+        // TODO remove for v2.0 : we keep it for backward compatibility
+        // test will be done in ObjetModelValidator if validation if needed
+        if (!raiseException) {
+            if (operations.isExecutable() && type != null) {
+                LOG.warn("Model for Resource {}({}) in {} is invalid : an executable resource MUST NOT have a type({})",
+                        name, id, streamName, type);
+            } else if (!operations.isExecutable() && type == null) {
+                LOG.warn(
+                        "Model for Resource {}({}) in {} is invalid : a none executable resource MUST have a type. We will consider it as String.",
+                        name, id, streamName, type);
+                type = Type.STRING;
+            }
         }
 
         return new ResourceModel(id, name, operations, multiple, mandatory, type, rangeEnumeration, units, description);
+    }
+
+    private void handleError(boolean raiseException, String Message, Object... args) throws InvalidDDFFileException {
+        String msg = String.format(Message, args);
+        if (raiseException) {
+            throw new InvalidDDFFileException(msg);
+        } else {
+            LOG.warn(msg);
+        }
     }
 }
