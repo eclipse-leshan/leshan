@@ -32,6 +32,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.eclipse.leshan.core.model.InvalidDDFFileException;
 import org.eclipse.leshan.core.util.json.JsonException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,7 +106,7 @@ public class DdfList2JsonGenerator {
         }
     }
 
-    public static void main(String[] args) throws IOException, JsonException {
+    public static void main(String[] args) throws IOException, JsonException, InvalidDDFFileException {
         // default values
         String ddfFilesPath = Ddf2JsonGenerator.DEFAULT_DDF_FILES_PATH;
         String outputPath = Ddf2JsonGenerator.DEFAULT_OUTPUT_PATH;
