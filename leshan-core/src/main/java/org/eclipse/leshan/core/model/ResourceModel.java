@@ -17,6 +17,7 @@ package org.eclipse.leshan.core.model;
 
 /**
  * A resource description
+ * 
  * @see "LWM2M specification D.1 Object Template."
  * @see <a href="http://openmobilealliance.org/tech/profiles/LWM2M.xsd">LWM2M Editor Schema</a>
  */
@@ -38,10 +39,12 @@ public class ResourceModel {
         }
     }
 
+    // TODO in version 2.0 : NONE should be added.
     public enum Type {
         STRING, INTEGER, FLOAT, BOOLEAN, OPAQUE, TIME, OBJLNK
     }
 
+    // TODO in version 2.0 all field should be null-able and ObjectModelValidator should be responsible to validate it.
     public final int id;
     public final String name;
     public final Operations operations;

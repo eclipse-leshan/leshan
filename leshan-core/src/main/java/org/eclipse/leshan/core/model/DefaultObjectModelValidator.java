@@ -1,0 +1,163 @@
+/*******************************************************************************
+ * Copyright (c) 2020 Sierra Wireless and others.
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v2.0
+ * and Eclipse Distribution License v1.0 which accompany this distribution.
+ * 
+ * The Eclipse Public License is available at
+ *    http://www.eclipse.org/legal/epl-v20.html
+ * and the Eclipse Distribution License is available at
+ *    http://www.eclipse.org/org/documents/edl-v10.html.
+ * 
+ * Contributors:
+ *     Sierra Wireless - initial API and implementation
+ *******************************************************************************/
+package org.eclipse.leshan.core.model;
+
+import java.util.List;
+
+public class DefaultObjectModelValidator implements ObjectModelValidator {
+
+    @Override
+    public void validate(List<ObjectModel> models, String modelName) throws InvalidModelException {
+        for (ObjectModel model : models) {
+            validate(model, modelName);
+        }
+    }
+
+    /**
+     * Validate a {@link ObjectModel}.
+     * 
+     * @param object the {@link ObjectModel} to validate
+     * @param modelName a hint about where the object come from to make debug easier. e.g a filename in model was store
+     *        in a file.
+     * @throws InvalidModelException is raised when {@link ObjectModel} is Invalid
+     */
+    public void validate(ObjectModel object, String modelName) throws InvalidModelException {
+        if (object.name == null || object.name.isEmpty()) {
+            throw new InvalidModelException(
+                    "Model for Object (%d) in %s is invalid : Object name MUST NOT be null or empty", object.id,
+                    modelName);
+        }
+        if (!(0 <= object.id && object.id <= 42768)) {
+            throw new InvalidModelException(
+                    "Model for Object (%d) in %s is invalid : Object id MUST be between 0 and 42768", object.id,
+                    modelName);
+        }
+        if (1024 <= object.id && object.id <= 2047) {
+            throw new InvalidModelException(
+                    "Model for Object (%d) in %s is invalid : Object id is in reserved range (1024-2047)", object.id,
+                    modelName);
+        }
+        validateVersion(object.version, object, modelName);
+        validateURN(object.urn, object, modelName);
+        if (object.resources == null || object.resources.isEmpty()) {
+            throw new InvalidModelException(
+                    "Model for Object %s(%d) in %s is invalid : Resource lists MUST NOT be null or empty", object.name,
+                    object.id, modelName);
+        }
+        for (ResourceModel resource : object.resources.values()) {
+            validate(resource, modelName);
+        }
+    }
+
+    /**
+     * Validate an {@link ResourceModel}
+     * 
+     * @param resource the {@link ResourceModel} to validate
+     * @param modelName a hint about where the resource come from to make debug easier. e.g a filename in model was
+     *        store in a file.
+     * @throws InvalidModelException is raised when {@link ResourceModel} is Invalid
+     */
+    public void validate(ResourceModel resource, String modelName) throws InvalidModelException {
+        if (resource.name == null || resource.name.isEmpty()) {
+            throw new InvalidModelException(
+                    "Model for Resource (%d) in %s is invalid : resource name MUST NOT be null or empty", resource.id,
+                    modelName);
+        }
+        if (!(0 <= resource.id && resource.id <= 32768)) {
+            throw new InvalidModelException(
+                    "Model for Resource (%d) in %s is invalid : Resource id MUST be between 0 and 32768", resource.id,
+                    modelName);
+        }
+        // TODO in 2.0 : type must be NONE
+        if (resource.operations.isExecutable() && resource.type != null) {
+            throw new InvalidModelException(
+                    "Model for Resource %s(%d) in %s is invalid : an executable resource MUST NOT have a type(%s)",
+                    resource.name, resource.id, modelName, resource.type);
+        } else if (!resource.operations.isExecutable() && resource.type == null) {
+            throw new InvalidModelException(
+                    "Model for Resource %s(%d) in %s is invalid : a none executable resource MUST have a type.",
+                    resource.name, resource.id, modelName, resource.type);
+        }
+    }
+
+    protected void validateURN(String urn, ObjectModel object, String modelName) throws InvalidModelException {
+        if (!urn.startsWith("urn:oma:lwm2m:")) {
+            throw new InvalidModelException(
+                    "Model for Object %s(%d) in %s is invalid : URN (%s) MUST start with urn:oma:lwm2m.", object.name,
+                    object.id, modelName, urn);
+        }
+        String[] urnParts = urn.split(":");
+        if (urnParts.length != 5 && urnParts.length != 6) {
+            throw new InvalidModelException(
+                    "Model for Object %s(%d) in %s is invalid : URN (%s) MUST be composed of 5 or 6 parts.",
+                    object.name, object.id, modelName, urn);
+        }
+        String objectId = urnParts[4];
+        if (!objectId.equals(Integer.toString(object.id))) {
+            throw new InvalidModelException(
+                    "Model for Object %s(%d) in %s is invalid : URN (%s) object id part MUST be equals to object id",
+                    object.name, object.id, modelName, urn);
+        }
+        String kind = urnParts[3];
+        String expectedKind = URN.getUrnKind(object.id);
+        if (!expectedKind.equals(kind)) {
+            throw new InvalidModelException(
+                    "Model for Object %s(%d) in %s is invalid : URN (%s) kind MUST be %s instead of %s", object.name,
+                    object.id, modelName, urn, expectedKind, kind);
+        }
+
+        if (urnParts.length == 6) {
+            String version = urnParts[5];
+            String expectedVersion = object.getVersion();
+            if (!expectedVersion.equals(version)) {
+                throw new InvalidModelException(
+                        "Model for Object %s(%d) in %s is invalid : URN (%s) version MUST be equals to object version (%s)",
+                        object.name, object.id, modelName, urn, expectedVersion);
+            }
+        } else {
+            if (!ObjectModel.DEFAULT_VERSION.equals(object.getVersion())) {
+                throw new InvalidModelException(
+                        "Model for Object %s(%d) in %s is invalid : URN (%s) version MUST be present as object version is not %s",
+                        object.name, object.id, modelName, urn, ObjectModel.DEFAULT_VERSION);
+            }
+        }
+    }
+
+    protected void validateVersion(String version, ObjectModel object, String modelName) throws InvalidModelException {
+        if (version == null || version.isEmpty())
+            return;
+        String[] versionPart = version.split("\\.");
+        if (versionPart.length != 2) {
+            throw new InvalidModelException(
+                    "Model for Object %s(%d) in %s is invalid : Version (%s) MUST be composed of 2 parts", object.name,
+                    object.id, modelName, version);
+        }
+        for (int i = 0; i < 2; i++) {
+            try {
+                int parsedInt = Integer.parseInt(versionPart[i]);
+                if (parsedInt < 0) {
+                    throw new InvalidModelException(
+                            "Model for Object %s(%d) in %s is invalid : Version (%s) part %d (%s) is not a valid integer",
+                            object.name, object.id, modelName, version, i + 1, versionPart[i]);
+                }
+            } catch (Exception e) {
+                throw new InvalidModelException(
+                        "Model for Object %s(%d) in %s is invalid : Version (%s) part %d (%s) is not a valid integer",
+                        object.name, object.id, modelName, version, i + 1, versionPart);
+            }
+        }
+    }
+}

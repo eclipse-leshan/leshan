@@ -40,6 +40,7 @@ public class ObjectModel {
     private static final int OMA_OBJECT_MIN_ID = 0;
     private static final int OMA_OBJECT_MAX_ID = 1023;
 
+    // TODO in version 2.0 all field should be null-able and ObjectModelValidator should be responsible to validate it.
     public final int id;
     public final String name;
     public final String description;
