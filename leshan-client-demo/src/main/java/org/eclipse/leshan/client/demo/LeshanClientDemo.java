@@ -451,7 +451,7 @@ public class LeshanClientDemo {
         List<ObjectModel> models = ObjectLoader.loadDefault();
         models.addAll(ObjectLoader.loadDdfResources("/models", modelPaths));
         if (modelsFolderPath != null) {
-            models.addAll(ObjectLoader.loadObjectsFromDir(new File(modelsFolderPath)));
+            models.addAll(ObjectLoader.loadObjectsFromDir(new File(modelsFolderPath), true));
         }
 
         // Initialize object list
