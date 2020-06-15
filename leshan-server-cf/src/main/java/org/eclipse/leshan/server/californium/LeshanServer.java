@@ -104,11 +104,16 @@ public class LeshanServer {
     // LWM2M attributes
     private final RegistrationServiceImpl registrationService;
     private final CaliforniumRegistrationStore registrationStore;
-    private final ObservationServiceImpl observationService;
+    /** @since 1.1 */
+    protected final ObservationServiceImpl observationService;
     private final SecurityStore securityStore;
     private final LwM2mModelProvider modelProvider;
     private final PresenceServiceImpl presenceService;
     private final LwM2mRequestSender requestSender;
+
+    // Configuration
+    /** since 1.1 */
+    protected final boolean updateRegistrationOnNotification;
 
     /**
      * Initialize a server which will bind to the specified address and port.
@@ -134,6 +139,37 @@ public class LeshanServer {
             LwM2mModelProvider modelProvider, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
             NetworkConfig coapConfig, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
             RegistrationIdProvider registrationIdProvider) {
+        this(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer, modelProvider, encoder,
+                decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider, false);
+    }
+
+    /**
+     * Initialize a server which will bind to the specified address and port.
+     * <p>
+     * {@link LeshanServerBuilder} is the priviledged way to create a {@link LeshanServer}.
+     *
+     * @param unsecuredEndpoint CoAP endpoint used for <code>coap://</code> communication.
+     * @param securedEndpoint CoAP endpoint used for <code>coaps://</code> communication.
+     * @param registrationStore the {@link Registration} store.
+     * @param securityStore the {@link SecurityInfo} store.
+     * @param authorizer define which devices is allow to register on this server.
+     * @param modelProvider provides the objects description for each client.
+     * @param decoder decoder used to decode response payload.
+     * @param encoder encode used to encode request payload.
+     * @param coapConfig the CoAP {@link NetworkConfig}.
+     * @param noQueueMode true to disable presenceService.
+     * @param awakeTimeProvider to set the client awake time if queue mode is used.
+     * @param registrationIdProvider to provide registrationId using for location-path option values on response of
+     *        Register operation.
+     * @param updateRegistrationOnNotification will activate registration update on observe notification.
+     * 
+     * @since 1.1
+     */
+    public LeshanServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
+            CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
+            LwM2mModelProvider modelProvider, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
+            NetworkConfig coapConfig, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
+            RegistrationIdProvider registrationIdProvider, boolean updateRegistrationOnNotification) {
 
         Validate.notNull(registrationStore, "registration store cannot be null");
         Validate.notNull(authorizer, "authorizer cannot be null");
@@ -163,6 +199,7 @@ public class LeshanServer {
         registrationService = createRegistrationService(registrationStore);
         this.securityStore = securityStore;
         this.modelProvider = modelProvider;
+        this.updateRegistrationOnNotification = updateRegistrationOnNotification;
         observationService = createObservationService(registrationStore, modelProvider, decoder, unsecuredEndpoint,
                 securedEndpoint);
         if (noQueueMode) {
@@ -202,7 +239,7 @@ public class LeshanServer {
             CoapEndpoint securedEndpoint) {
 
         ObservationServiceImpl observationService = new ObservationServiceImpl(registrationStore, modelProvider,
-                decoder);
+                decoder, updateRegistrationOnNotification);
 
         if (unsecuredEndpoint != null) {
             unsecuredEndpoint.addNotificationListener(observationService);
@@ -219,7 +256,11 @@ public class LeshanServer {
     protected PresenceServiceImpl createPresenceService(RegistrationService registrationService,
             ClientAwakeTimeProvider awakeTimeProvider) {
         PresenceServiceImpl presenceService = new PresenceServiceImpl(awakeTimeProvider);
+        PresenceStateListener presenceStateListener = new PresenceStateListener(presenceService);
         registrationService.addListener(new PresenceStateListener(presenceService));
+        if (updateRegistrationOnNotification) {
+            observationService.addListener(presenceStateListener);
+        }
         return presenceService;
     }
 

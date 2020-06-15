@@ -31,6 +31,7 @@ import org.eclipse.californium.core.coap.Token;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.observe.NotificationListener;
 import org.eclipse.californium.core.observe.ObservationStore;
+import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
@@ -38,6 +39,7 @@ import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.util.Hex;
@@ -46,6 +48,8 @@ import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationListener;
 import org.eclipse.leshan.server.observation.ObservationService;
 import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.RegistrationUpdate;
+import org.eclipse.leshan.server.registration.UpdatedRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,8 +68,9 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
     private final LwM2mNodeDecoder decoder;
     private Endpoint secureEndpoint;
     private Endpoint nonSecureEndpoint;
+    private boolean updateRegistrationOnNotification;
 
-    private final List<ObservationListener> listeners = new CopyOnWriteArrayList<>();
+    private final List<ObservationListener> listeners = new CopyOnWriteArrayList<>();;
 
     /**
      * Creates an instance of {@link ObservationServiceImpl}
@@ -76,9 +81,25 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
      */
     public ObservationServiceImpl(CaliforniumRegistrationStore store, LwM2mModelProvider modelProvider,
             LwM2mNodeDecoder decoder) {
+        this(store, modelProvider, decoder, false);
+    }
+
+    /**
+     * Creates an instance of {@link ObservationServiceImpl}
+     * 
+     * @param store instance of californium's {@link ObservationStore}
+     * @param modelProvider instance of {@link LwM2mModelProvider}
+     * @param decoder instance of {@link LwM2mNodeDecoder}
+     * @param updateRegistrationOnNotification will activate registration update on observe notification.
+     * 
+     * @since 1.1
+     */
+    public ObservationServiceImpl(CaliforniumRegistrationStore store, LwM2mModelProvider modelProvider,
+            LwM2mNodeDecoder decoder, boolean updateRegistrationOnNotification) {
         this.registrationStore = store;
         this.modelProvider = modelProvider;
         this.decoder = decoder;
+        this.updateRegistrationOnNotification = updateRegistrationOnNotification;
     }
 
     public void addObservation(Registration registration, Observation observation) {
@@ -214,11 +235,25 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
         }
 
         // get registration
-        Registration registration = registrationStore.getRegistration(observation.getRegistrationId());
-        if (registration == null) {
-            LOG.error("Unexpected error: There is no registration with id {} for this observation {}",
-                    observation.getRegistrationId(), observation);
-            return;
+        Registration registration;
+        if (updateRegistrationOnNotification) {
+            Identity obsIdentity = EndpointContextUtil.extractIdentity(coapResponse.getSourceContext());
+            RegistrationUpdate regUpdate = new RegistrationUpdate(observation.getRegistrationId(), obsIdentity, null,
+                    null, null, null, null);
+            UpdatedRegistration updatedRegistration = registrationStore.updateRegistration(regUpdate);
+            if (updatedRegistration == null || updatedRegistration.getUpdatedRegistration() == null) {
+                LOG.error("Unexpected error: There is no registration with id {} for this observation {}",
+                        observation.getRegistrationId(), observation);
+                return;
+            }
+            registration = updatedRegistration.getUpdatedRegistration();
+        } else {
+            registration = registrationStore.getRegistration(observation.getRegistrationId());
+            if (registration == null) {
+                LOG.error("Unexpected error: There is no registration with id {} for this observation {}",
+                        observation.getRegistrationId(), observation);
+                return;
+            }
         }
 
         try {

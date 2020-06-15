@@ -97,6 +97,8 @@ public class LeshanServerBuilder {
     private boolean noSecuredEndpoint;
     private boolean noUnsecuredEndpoint;
     private boolean noQueueMode = false;
+    /** @since 1.1 */
+    protected boolean updateRegistrationOnNotification;
 
     /**
      * <p>
@@ -356,6 +358,33 @@ public class LeshanServerBuilder {
     }
 
     /**
+     * Update Registration on notification.
+     * <p>
+     * There is some use cases where device can have a dynamic IP (E.g. NAT environment), the specification says to use
+     * an UPDATE request to notify server about IP address/ port changes. But it seems there is some rare use case where
+     * this update REQUEST can not be done.
+     * <p>
+     * With this option you can allow Leshan to update Registration on observe notification. This is clearly OUT OF
+     * SPECIFICATION and so this is not recommended and should be used only if there is no other way.
+     * 
+     * For {@code coap://} you probably need to use a the Relaxed response matching mode.
+     * 
+     * <pre>
+     * coapConfig.setString(NetworkConfig.Keys.RESPONSE_MATCHING, "RELAXED");
+     * </pre>
+     * 
+     * @since 1.1
+     * 
+     * @see <a href=
+     *      "https://github.com/eclipse/leshan/wiki/LWM2M-Devices-with-Dynamic-IP#is-the-update-request-mandatory--should-i-update-registration-on-notification-">Dynamic
+     *      IP environnement documentaiton</a>
+     */
+    public LeshanServerBuilder setUpdateRegistrationOnNotification(boolean updateRegistrationOnNotification) {
+        this.updateRegistrationOnNotification = updateRegistrationOnNotification;
+        return this;
+    }
+
+    /**
      * The default Californium/CoAP {@link NetworkConfig} used by the builder.
      */
     public static NetworkConfig createDefaultNetworkConfig() {
@@ -568,6 +597,7 @@ public class LeshanServerBuilder {
             NetworkConfig coapConfig, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
             RegistrationIdProvider registrationIdProvider) {
         return new LeshanServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer,
-                modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider);
+                modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider,
+                updateRegistrationOnNotification);
     }
 }

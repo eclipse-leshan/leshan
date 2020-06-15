@@ -18,6 +18,8 @@ package org.eclipse.leshan.server.queue;
 import java.util.Collection;
 
 import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.response.ObserveResponse;
+import org.eclipse.leshan.server.observation.ObservationListener;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationListener;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
@@ -28,7 +30,7 @@ import org.eclipse.leshan.server.registration.RegistrationUpdate;
  * sleep.
  */
 
-public class PresenceStateListener implements RegistrationListener {
+public class PresenceStateListener implements RegistrationListener, ObservationListener {
 
     PresenceServiceImpl presenceService;
 
@@ -56,5 +58,42 @@ public class PresenceStateListener implements RegistrationListener {
     public void unregistered(Registration reg, Collection<Observation> observations, boolean expired,
             Registration newReg) {
         presenceService.stopPresenceTracking(reg);
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @since 1.1
+     */
+    @Override
+    public void onResponse(Observation observation, Registration registration, ObserveResponse response) {
+        presenceService.setAwake(registration);
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @since 1.1
+     */
+    @Override
+    public void newObservation(Observation observation, Registration registration) {
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @since 1.1
+     */
+    @Override
+    public void cancelled(Observation observation) {
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @since 1.1
+     */
+    @Override
+    public void onError(Observation observation, Registration registration, Exception error) {
     }
 }
