@@ -15,6 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.BootstrapResponse;
 
@@ -24,16 +28,32 @@ import org.eclipse.leshan.core.response.BootstrapResponse;
 public class BootstrapRequest implements UplinkRequest<BootstrapResponse> {
 
     private final String endpointName;
+    private final Map<String, String> additionalAttributes;
 
     public BootstrapRequest(String endpointName) throws InvalidRequestException {
+        this(endpointName, null);
+    }
+
+    /** @since 1.1 */
+    public BootstrapRequest(String endpointName, Map<String, String> additionalAttributes)
+            throws InvalidRequestException {
         if (endpointName == null || endpointName.isEmpty())
             throw new InvalidRequestException("endpoint is mandatory");
 
         this.endpointName = endpointName;
+        if (additionalAttributes == null)
+            this.additionalAttributes = Collections.emptyMap();
+        else
+            this.additionalAttributes = Collections.unmodifiableMap(new HashMap<>(additionalAttributes));
     }
 
     public String getEndpointName() {
         return endpointName;
+    }
+
+    /** @since 1.1 */
+    public Map<String, String> getAdditionalAttributes() {
+        return additionalAttributes;
     }
 
     @Override
@@ -68,6 +88,7 @@ public class BootstrapRequest implements UplinkRequest<BootstrapResponse> {
 
     @Override
     public String toString() {
-        return String.format("BootstrapRequest [endpointName=%s]", endpointName);
+        return String.format("BootstrapRequest [endpointName=%s, additionalAttributes=%s]", endpointName,
+                additionalAttributes);
     }
 }
