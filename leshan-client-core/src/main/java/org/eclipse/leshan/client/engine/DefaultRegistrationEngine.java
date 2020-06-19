@@ -96,6 +96,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     // device state
     private final String endpoint;
     private final Map<String, String> additionalAttributes;
+    private final Map<String, String> bsAdditionalAttributes; // @since 1.1
     private final Map<Integer /* objectId */, LwM2mObjectEnabler> objectEnablers;
     private final Map<String /* registrationId */, ServerIdentity> registeredServers;
     private final List<ServerIdentity> registeringServers;
@@ -121,12 +122,25 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             Map<String, String> additionalAttributes, ScheduledExecutorService executor, long requestTimeoutInMs,
             long deregistrationTimeoutInMs, int bootstrapSessionTimeoutInSec, int retryWaitingTimeInMs,
             Integer communicationPeriodInMs, boolean reconnectOnUpdate, boolean resumeOnConnect) {
+        this(endpoint, objectTree, endpointsManager, requestSender, bootstrapState, observer, additionalAttributes,
+                null, executor, requestTimeoutInMs, deregistrationTimeoutInMs, bootstrapSessionTimeoutInSec,
+                retryWaitingTimeInMs, communicationPeriodInMs, reconnectOnUpdate, resumeOnConnect);
+    }
+
+    /** @since 1.1 */
+    public DefaultRegistrationEngine(String endpoint, LwM2mObjectTree objectTree, EndpointsManager endpointsManager,
+            LwM2mRequestSender requestSender, BootstrapHandler bootstrapState, LwM2mClientObserver observer,
+            Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes,
+            ScheduledExecutorService executor, long requestTimeoutInMs, long deregistrationTimeoutInMs,
+            int bootstrapSessionTimeoutInSec, int retryWaitingTimeInMs, Integer communicationPeriodInMs,
+            boolean reconnectOnUpdate, boolean resumeOnConnect) {
         this.endpoint = endpoint;
         this.objectEnablers = objectTree.getObjectEnablers();
         this.bootstrapHandler = bootstrapState;
         this.endpointsManager = endpointsManager;
         this.observer = observer;
         this.additionalAttributes = additionalAttributes;
+        this.bsAdditionalAttributes = bsAdditionalAttributes;
         this.registeredServers = new ConcurrentHashMap<>();
         this.registeringServers = new CopyOnWriteArrayList<>();
         this.currentBoostrapServer = new AtomicReference<>();
@@ -203,7 +217,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             // Send bootstrap request
             BootstrapRequest request = null;
             try {
-                request = new BootstrapRequest(endpoint);
+                request = new BootstrapRequest(endpoint, bsAdditionalAttributes);
                 if (observer != null) {
                     observer.onBootstrapStarted(bootstrapServer, request);
                 }

@@ -46,6 +46,7 @@ import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.request.BindingMode;
+import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.util.Validate;
 
 /**
@@ -69,6 +70,9 @@ public class LeshanClientBuilder {
     private Map<String, String> additionalAttributes;
 
     private ScheduledExecutorService executor;
+
+    /** @since 1.1 */
+    protected Map<String, String> bsAdditionalAttributes;
 
     /**
      * Creates a new instance for setting the configuration options for a {@link LeshanClient} instance.
@@ -187,6 +191,15 @@ public class LeshanClientBuilder {
      */
     public LeshanClientBuilder setAdditionalAttributes(Map<String, String> additionalAttributes) {
         this.additionalAttributes = additionalAttributes;
+        return this;
+    }
+
+    /**
+     * Set the additionalAttributes for {@link BootstrapRequest}
+     * @since 1.1
+     */
+    public LeshanClientBuilder setBootstrapAdditionalAttributes(Map<String, String> additionalAttributes) {
+        this.bsAdditionalAttributes = additionalAttributes;
         return this;
     }
 
@@ -328,6 +341,6 @@ public class LeshanClientBuilder {
             Map<String, String> additionalAttributes, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
             ScheduledExecutorService sharedExecutor) {
         return new LeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder, endpointFactory,
-                engineFactory, additionalAttributes, encoder, decoder, executor);
+                engineFactory, additionalAttributes, bsAdditionalAttributes, encoder, decoder, executor);
     }
 }

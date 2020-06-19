@@ -23,13 +23,17 @@ import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.request.LwM2mRequestSender;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * A default implementation of {@link RegistrationEngineFactory}.
+ * A default implementation of {@link RegistrationEngineFactory2}.
  * <p>
  * It create a {@link DefaultRegistrationEngine} which could be configured. Look at all setter available in this class.
  */
-public class DefaultRegistrationEngineFactory implements RegistrationEngineFactory {
+public class DefaultRegistrationEngineFactory implements RegistrationEngineFactory2 {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultRegistrationEngineFactory.class);
 
     private long requestTimeoutInMs = 2 * 60 * 1000l; // 2min in ms
     private long deregistrationTimeoutInMs = 1000; // 1s in ms
@@ -43,14 +47,31 @@ public class DefaultRegistrationEngineFactory implements RegistrationEngineFacto
     }
 
     @Override
+    @Deprecated
     public RegistrationEngine createRegistratioEngine(String endpoint, LwM2mObjectTree objectTree,
             EndpointsManager endpointsManager, LwM2mRequestSender requestSender, BootstrapHandler bootstrapState,
             LwM2mClientObserver observer, Map<String, String> additionalAttributes,
             ScheduledExecutorService sharedExecutor) {
-        return new DefaultRegistrationEngine(endpoint, objectTree, endpointsManager, requestSender, bootstrapState,
-                observer, additionalAttributes, sharedExecutor, requestTimeoutInMs, deregistrationTimeoutInMs,
-                bootstrapSessionTimeoutInSec, retryWaitingTimeInMs, communicationPeriodInMs, reconnectOnUpdate,
-                resumeOnConnect);
+        return null;
+    }
+
+    @Override
+    public RegistrationEngine createRegistratioEngine(String endpoint, LwM2mObjectTree objectTree,
+            EndpointsManager endpointsManager, LwM2mRequestSender requestSender, BootstrapHandler bootstrapState,
+            LwM2mClientObserver observer, Map<String, String> additionalAttributes,
+            Map<String, String> bsAdditionalAttributes, ScheduledExecutorService sharedExecutor) {
+
+        RegistrationEngine engine = createRegistratioEngine(endpoint, objectTree, endpointsManager, requestSender,
+                bootstrapState, observer, additionalAttributes, sharedExecutor);
+        if (engine != null) {
+            LOG.warn("It seems you override a deprecated createRegistrationEngine method, you should use the new one");
+            return engine;
+        } else {
+            return new DefaultRegistrationEngine(endpoint, objectTree, endpointsManager, requestSender, bootstrapState,
+                    observer, additionalAttributes, bsAdditionalAttributes, sharedExecutor, requestTimeoutInMs,
+                    deregistrationTimeoutInMs, bootstrapSessionTimeoutInSec, retryWaitingTimeInMs,
+                    communicationPeriodInMs, reconnectOnUpdate, resumeOnConnect);
+        }
     }
 
     /**

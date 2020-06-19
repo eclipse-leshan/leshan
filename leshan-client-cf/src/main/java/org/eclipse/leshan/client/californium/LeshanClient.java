@@ -36,6 +36,7 @@ import org.eclipse.leshan.client.californium.object.ObjectResource;
 import org.eclipse.leshan.client.californium.request.CaliforniumLwM2mRequestSender;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.engine.RegistrationEngineFactory;
+import org.eclipse.leshan.client.engine.RegistrationEngineFactory2;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverDispatcher;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
@@ -73,6 +74,16 @@ public class LeshanClient implements LwM2mClient {
             EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
             Map<String, String> additionalAttributes, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
             ScheduledExecutorService sharedExecutor) {
+        this(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder, endpointFactory, engineFactory,
+                additionalAttributes, null, encoder, decoder, sharedExecutor);
+    }
+
+    /** @since 1.1 */
+    public LeshanClient(String endpoint, InetSocketAddress localAddress,
+            List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig, Builder dtlsConfigBuilder,
+            EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
+            Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes,
+            LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder, ScheduledExecutorService sharedExecutor) {
 
         Validate.notNull(endpoint);
         Validate.notEmpty(objectEnablers);
@@ -83,8 +94,14 @@ public class LeshanClient implements LwM2mClient {
         bootstrapHandler = createBoostrapHandler(objectTree);
         endpointsManager = createEndpointsManager(localAddress, coapConfig, dtlsConfigBuilder, endpointFactory);
         requestSender = createRequestSender(endpointsManager, sharedExecutor);
-        engine = engineFactory.createRegistratioEngine(endpoint, objectTree, endpointsManager, requestSender,
-                bootstrapHandler, observers, additionalAttributes, sharedExecutor);
+        if (engineFactory instanceof RegistrationEngineFactory2) {
+            engine = ((RegistrationEngineFactory2) engineFactory).createRegistratioEngine(endpoint, objectTree,
+                    endpointsManager, requestSender, bootstrapHandler, observers, additionalAttributes,
+                    bsAdditionalAttributes, sharedExecutor);
+        } else {
+            engine = engineFactory.createRegistratioEngine(endpoint, objectTree, endpointsManager, requestSender,
+                    bootstrapHandler, observers, additionalAttributes, sharedExecutor);
+        }
 
         coapServer = createCoapServer(coapConfig, sharedExecutor);
         coapServer.add(createBootstrapResource(engine, bootstrapHandler));
