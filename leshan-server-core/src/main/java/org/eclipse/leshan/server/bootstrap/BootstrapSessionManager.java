@@ -25,6 +25,8 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
  * This class is responsible to accept or refuse to start new {@link BootstrapSession}. The session also contain the
  * ContentFormat which will be used to send Bootstrap Write Request.
  * 
+ * Since 1.1, you should rather use a {@link BootstrapSessionManager2}
+ * 
  * @see DefaultBootstrapSessionManager
  * @see BootstrapSession
  */

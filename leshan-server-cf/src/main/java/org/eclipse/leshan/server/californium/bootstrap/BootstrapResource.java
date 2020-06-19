@@ -17,6 +17,9 @@ package org.eclipse.leshan.server.californium.bootstrap;
 
 import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toCoapResponseCode;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Request;
@@ -59,10 +62,15 @@ public class BootstrapResource extends LwM2mCoapResource {
 
         // which endpoint?
         String endpoint = null;
+        Map<String, String> additionalParams = new HashMap<>();
         for (String param : request.getOptions().getUriQuery()) {
             if (param.startsWith(QUERY_PARAM_ENDPOINT)) {
                 endpoint = param.substring(QUERY_PARAM_ENDPOINT.length());
-                break;
+            } else {
+                String[] tokens = param.split("\\=");
+                if (tokens != null && tokens.length == 2) {
+                    additionalParams.put(tokens[0], tokens[1]);
+                }
             }
         }
 
@@ -71,7 +79,7 @@ public class BootstrapResource extends LwM2mCoapResource {
 
         // handle bootstrap request
         SendableResponse<BootstrapResponse> sendableResponse = bootstrapHandler.bootstrap(clientIdentity,
-                new BootstrapRequest(endpoint));
+                new BootstrapRequest(endpoint, additionalParams));
         BootstrapResponse response = sendableResponse.getResponse();
         if (response.isSuccess()) {
             exchange.respond(toCoapResponseCode(response.getCode()));

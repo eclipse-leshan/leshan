@@ -18,6 +18,7 @@ package org.eclipse.leshan.server.bootstrap;
 import java.util.List;
 
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
+import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -34,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Nothing specific is done on session's end.
  */
-public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
+public class DefaultBootstrapSessionManager implements BootstrapSessionManager2 {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultBootstrapSessionManager.class);
 
@@ -63,15 +64,27 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
     }
 
     @Override
+    @Deprecated
     public BootstrapSession begin(String endpoint, Identity clientIdentity) {
-        boolean authorized;
-        if (bsSecurityStore != null) {
-            List<SecurityInfo> securityInfos = bsSecurityStore.getAllByEndpoint(endpoint);
-            authorized = securityChecker.checkSecurityInfos(endpoint, clientIdentity, securityInfos);
+        return null;
+    }
+
+    @Override
+    public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity) {
+        BootstrapSession session = begin(request.getEndpointName(), clientIdentity);
+        if (session != null) {
+            LOG.warn("It seems you override a deprecated begin method, you should use the new one");
         } else {
-            authorized = true;
+            boolean authorized;
+            if (bsSecurityStore != null) {
+                List<SecurityInfo> securityInfos = bsSecurityStore.getAllByEndpoint(request.getEndpointName());
+                authorized = securityChecker.checkSecurityInfos(request.getEndpointName(), clientIdentity,
+                        securityInfos);
+            } else {
+                authorized = true;
+            }
+            session = new DefaultBootstrapSession(request, clientIdentity, authorized);
         }
-        DefaultBootstrapSession session = new DefaultBootstrapSession(endpoint, clientIdentity, authorized);
         LOG.trace("Bootstrap session started : {}", session);
         return session;
     }

@@ -223,7 +223,7 @@ public class BootstrapHandlerTest {
 
         @Override
         public BootstrapSession begin(String endpoint, Identity clientIdentity) {
-            lastSession = new DefaultBootstrapSession(endpoint, clientIdentity, authorized);
+            lastSession = new DefaultBootstrapSession(new BootstrapRequest(endpoint), clientIdentity, authorized);
             return lastSession;
         }
 
