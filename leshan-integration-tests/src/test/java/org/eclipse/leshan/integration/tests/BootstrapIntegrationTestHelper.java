@@ -34,6 +34,7 @@ import java.security.spec.KeySpec;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.object.Device;
@@ -50,6 +51,8 @@ import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.BootstrapSession;
+import org.eclipse.leshan.server.bootstrap.DefaultBootstrapSession;
+import org.eclipse.leshan.server.bootstrap.DefaultBootstrapSessionManager;
 import org.eclipse.leshan.server.californium.bootstrap.LeshanBootstrapServer;
 import org.eclipse.leshan.server.californium.bootstrap.LeshanBootstrapServerBuilder;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
@@ -65,6 +68,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
     public LeshanBootstrapServer bootstrapServer;
     public final PublicKey bootstrapServerPublicKey;
     public final PrivateKey bootstrapServerPrivateKey;
+    public volatile DefaultBootstrapSession lastBootstrapSession;
 
     public BootstrapIntegrationTestHelper() {
         super();
@@ -113,6 +117,12 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         builder.setPrivateKey(bootstrapServerPrivateKey);
         builder.setPublicKey(bootstrapServerPublicKey);
+        builder.setSessionManager(new DefaultBootstrapSessionManager(securityStore) {
+            @Override
+            public void end(BootstrapSession bsSession) {
+                lastBootstrapSession = (DefaultBootstrapSession) bsSession;
+            }
+        });
 
         bootstrapServer = builder.build();
     }
@@ -154,6 +164,16 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
     }
 
     public void createClient(Security security, ObjectsInitializer initializer) {
+        createClient(security, initializer, null);
+    }
+
+    @Override
+    public void createClient(Map<String, String> additionalAttributes) {
+        createClient(withoutSecurity(), null, additionalAttributes);
+    }
+
+    public void createClient(Security security, ObjectsInitializer initializer,
+            Map<String, String> additionalAttributes) {
         if (initializer == null) {
             initializer = new ObjectsInitializer();
         }
@@ -163,13 +183,14 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         initializer.setInstancesForObject(LwM2mId.DEVICE,
                 new Device("Eclipse Leshan", IntegrationTestHelper.MODEL_NUMBER, "12345", "U"));
         initializer.setClassForObject(LwM2mId.SERVER, DummyInstanceEnabler.class);
-        createClient(initializer);
+        createClient(initializer, additionalAttributes);
     }
 
-    public void createClient(ObjectsInitializer initializer) {
+    public void createClient(ObjectsInitializer initializer, Map<String, String> additionalAttributes) {
         // Create Leshan Client
         LeshanClientBuilder builder = new LeshanClientBuilder(getCurrentEndpoint());
         builder.setObjects(initializer.createAll());
+        builder.setBootstrapAdditionalAttributes(additionalAttributes);
         client = builder.build();
         setupClientMonitoring();
     }

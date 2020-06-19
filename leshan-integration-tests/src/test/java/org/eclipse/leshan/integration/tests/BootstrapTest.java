@@ -20,6 +20,9 @@ import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
@@ -73,6 +76,35 @@ public class BootstrapTest {
 
         // check the client is registered
         helper.assertClientRegisterered();
+    }
+
+    @Test
+    public void bootstrapWithAdditionalAttributes() {
+        // Create DM Server without security & start it
+        helper.createServer();
+        helper.server.start();
+
+        // Create and start bootstrap server
+        helper.createBootstrapServer(null);
+        helper.bootstrapServer.start();
+
+        // Create Client with additional attributes
+        // and check it is not already registered
+        Map<String, String> additionalAttributes = new HashMap<>();
+        additionalAttributes.put("key1", "value1");
+        additionalAttributes.put("imei", "2136872368");
+        helper.createClient(additionalAttributes);
+        helper.assertClientNotRegisterered();
+
+        // Start it and wait for registration
+        helper.client.start();
+        helper.waitForRegistrationAtServerSide(1);
+
+        // check the client is registered
+        helper.assertClientRegisterered();
+
+        // assert session contains additional attributes
+        assertEquals(additionalAttributes, helper.lastBootstrapSession.getBootstrapRequest().getAdditionalAttributes());
     }
 
     @Test
