@@ -186,6 +186,11 @@ public class LeshanClientDemo {
         aa.desc("Use additional attributes at registration time, syntax is \n -aa attrName1=attrValue1 attrName2=\\\"attrValue2\\\" ...");
         aa.hasArgs();
         options.addOption(aa.build());
+        Builder bsaa = Option.builder("bsaa");
+        bsaa.desc(
+                "Use additional attributes at bootstrap time, syntax is \n -bsaa attrName1=attrValue1 attrName2=\\\"attrValue2\\\" ...");
+        bsaa.hasArgs();
+        options.addOption(bsaa.build());
         options.addOption("m", true, "A folder which contains object models in OMA DDF(.xml)format.");
         options.addOption("pos", true,
                 "Set the initial location (latitude, longitude) of the device to be reported by the Location object.\n Format: lat_float:long_float");
@@ -299,7 +304,7 @@ public class LeshanClientDemo {
             communicationPeriod = Integer.valueOf(cl.getOptionValue("cp")) * 1000;
         }
 
-        // Get additional attributes
+        // Get additional attributes for registration
         Map<String, String> additionalAttributes = null;
         if (cl.hasOption("aa")) {
             additionalAttributes = new HashMap<>();
@@ -318,6 +323,33 @@ public class LeshanClientDemo {
                         String attrName = m.group(1);
                         String attrValue = m.group(2);
                         additionalAttributes.put(attrName, attrValue);
+                    } else {
+                        System.err.println(String.format("Invalid syntax for additional attributes : %s", v));
+                        return;
+                    }
+                }
+            }
+        }
+
+        // Get additional attributes for bootstrap
+        Map<String, String> bsAdditionalAttributes = null;
+        if (cl.hasOption("bsaa")) {
+            bsAdditionalAttributes = new HashMap<>();
+            Pattern p1 = Pattern.compile("(.*)=\"(.*)\"");
+            Pattern p2 = Pattern.compile("(.*)=(.*)");
+            String[] values = cl.getOptionValues("bsaa");
+            for (String v : values) {
+                Matcher m = p1.matcher(v);
+                if (m.matches()) {
+                    String attrName = m.group(1);
+                    String attrValue = m.group(2);
+                    bsAdditionalAttributes.put(attrName, attrValue);
+                } else {
+                    m = p2.matcher(v);
+                    if (m.matches()) {
+                        String attrName = m.group(1);
+                        String attrValue = m.group(2);
+                        bsAdditionalAttributes.put(attrName, attrValue);
                     } else {
                         System.err.println(String.format("Invalid syntax for additional attributes : %s", v));
                         return;
@@ -426,10 +458,11 @@ public class LeshanClientDemo {
         String modelsFolderPath = cl.getOptionValue("m");
 
         try {
-            createAndStartClient(endpoint, localAddress, localPort, cl.hasOption("b"), additionalAttributes, lifetime,
-                    communicationPeriod, serverURI, pskIdentity, pskKey, clientPrivateKey, clientPublicKey,
-                    serverPublicKey, clientCertificate, serverCertificate, latitude, longitude, scaleFactor,
-                    cl.hasOption("ocf"), cl.hasOption("oc"), cl.hasOption("r"), cl.hasOption("f"), modelsFolderPath);
+            createAndStartClient(endpoint, localAddress, localPort, cl.hasOption("b"), additionalAttributes,
+                    bsAdditionalAttributes, lifetime, communicationPeriod, serverURI, pskIdentity, pskKey,
+                    clientPrivateKey, clientPublicKey, serverPublicKey, clientCertificate, serverCertificate, latitude,
+                    longitude, scaleFactor, cl.hasOption("ocf"), cl.hasOption("oc"), cl.hasOption("r"),
+                    cl.hasOption("f"), modelsFolderPath);
         } catch (Exception e) {
             System.err.println("Unable to create and start client ...");
             e.printStackTrace();
@@ -438,12 +471,12 @@ public class LeshanClientDemo {
     }
 
     public static void createAndStartClient(String endpoint, String localAddress, int localPort, boolean needBootstrap,
-            Map<String, String> additionalAttributes, int lifetime, Integer communicationPeriod, String serverURI,
-            byte[] pskIdentity, byte[] pskKey, PrivateKey clientPrivateKey, PublicKey clientPublicKey,
-            PublicKey serverPublicKey, X509Certificate clientCertificate, X509Certificate serverCertificate,
-            Float latitude, Float longitude, float scaleFactor, boolean supportOldFormat,
-            boolean supportDeprecatedCiphers, boolean reconnectOnUpdate, boolean forceFullhandshake,
-            String modelsFolderPath) throws CertificateEncodingException {
+            Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes, int lifetime,
+            Integer communicationPeriod, String serverURI, byte[] pskIdentity, byte[] pskKey,
+            PrivateKey clientPrivateKey, PublicKey clientPublicKey, PublicKey serverPublicKey,
+            X509Certificate clientCertificate, X509Certificate serverCertificate, Float latitude, Float longitude,
+            float scaleFactor, boolean supportOldFormat, boolean supportDeprecatedCiphers, boolean reconnectOnUpdate,
+            boolean forceFullhandshake, String modelsFolderPath) throws CertificateEncodingException {
 
         locationInstance = new MyLocation(latitude, longitude, scaleFactor);
 
@@ -596,6 +629,7 @@ public class LeshanClientDemo {
             builder.setEncoder(new DefaultLwM2mNodeEncoder(true));
         }
         builder.setAdditionalAttributes(additionalAttributes);
+        builder.setBootstrapAdditionalAttributes(bsAdditionalAttributes);
         final LeshanClient client = builder.build();
 
         client.getObjectTree().addListener(new ObjectsListenerAdapter() {
