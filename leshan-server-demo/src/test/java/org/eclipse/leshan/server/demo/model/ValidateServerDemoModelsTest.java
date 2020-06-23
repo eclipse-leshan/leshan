@@ -20,13 +20,13 @@ import java.io.IOException;
 import org.eclipse.leshan.core.model.InvalidDDFFileException;
 import org.eclipse.leshan.core.model.InvalidModelException;
 import org.eclipse.leshan.core.model.ObjectLoader;
-import org.eclipse.leshan.server.demo.LeshanServerDemo;
+import org.eclipse.leshan.server.demo.LwM2mDemoConstant;
 import org.junit.Test;
 
 public class ValidateServerDemoModelsTest {
 
     @Test
     public void validate_embedded_models() throws InvalidModelException, InvalidDDFFileException, IOException {
-        ObjectLoader.loadDdfResources("/models/", LeshanServerDemo.modelPaths, true);
+        ObjectLoader.loadDdfResources("/models/", LwM2mDemoConstant.modelPaths, true);
     }
 }
