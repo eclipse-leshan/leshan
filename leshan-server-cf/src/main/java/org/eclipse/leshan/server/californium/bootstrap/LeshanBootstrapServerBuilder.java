@@ -443,7 +443,7 @@ public class LeshanBootstrapServerBuilder {
             DtlsConnectorConfig incompleteConfig = dtlsConfigBuilder.getIncompleteConfig();
 
             // Handle PSK Store
-            if (incompleteConfig.getPskStore() != null || incompleteConfig.getAdvancedPskStore() != null) {
+            if (incompleteConfig.getAdvancedPskStore() != null) {
                 LOG.warn(
                         "PskStore should be automatically set by Leshan. Using a custom implementation is not advised.");
             } else if (securityStore != null) {
