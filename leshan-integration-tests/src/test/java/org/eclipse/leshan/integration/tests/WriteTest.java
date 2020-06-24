@@ -305,6 +305,11 @@ public class WriteTest {
     }
 
     @Test
+    public void can_write_opaque_resource_in_text() throws InterruptedException {
+        write_opaque_resource(ContentFormat.TEXT);
+    }
+
+    @Test
     public void can_write_opaque_resource_in_old_json() throws InterruptedException {
         write_opaque_resource(ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE));
     }

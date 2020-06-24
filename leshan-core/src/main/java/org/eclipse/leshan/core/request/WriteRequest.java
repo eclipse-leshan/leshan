@@ -40,16 +40,16 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
      * Define the behavior of a write request.
      */
     public enum Mode {
-    /**
-     * Replaces the Object Instance or the Resource(s) with the new value provided in the “Write” operation. (see
-     * section 5.3.3 of the LW M2M spec).
-     */
-    REPLACE,
-    /**
-     * Adds or updates Resources provided in the new value and leaves other existing Resources unchanged. (see section
-     * 5.3.3 of the LW M2M spec).
-     */
-    UPDATE
+        /**
+         * Replaces the Object Instance or the Resource(s) with the new value provided in the “Write” operation. (see
+         * section 5.3.3 of the LW M2M spec).
+         */
+        REPLACE,
+        /**
+         * Adds or updates Resources provided in the new value and leaves other existing Resources unchanged. (see
+         * section 5.3.3 of the LW M2M spec).
+         */
+        UPDATE
     }
 
     private final LwM2mNode node;
@@ -332,16 +332,10 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
                     throw new InvalidRequestException(
                             "Invalid format for path %s: format must be used only for single resources", target,
                             format);
-                } else {
-                    if (resource.getType() == Type.OPAQUE && format == ContentFormat.TEXT) {
-                        throw new InvalidRequestException(
-                                "Invalid format for %s: TEXT format must not be used for byte array single resources",
-                                target);
-                    } else if (resource.getType() != Type.OPAQUE && format == ContentFormat.OPAQUE) {
-                        throw new InvalidRequestException(
-                                "Invalid format for %s: OPAQUE format must be used only for byte array single resources",
-                                target);
-                    }
+                } else if (resource.getType() != Type.OPAQUE && format == ContentFormat.OPAQUE) {
+                    throw new InvalidRequestException(
+                            "Invalid format for %s: OPAQUE format must be used only for byte array single resources",
+                            target);
                 }
             }
         }
