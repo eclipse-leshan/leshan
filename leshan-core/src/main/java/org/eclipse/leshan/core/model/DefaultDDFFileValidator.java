@@ -64,7 +64,7 @@ public class DefaultDDFFileValidator implements DDFFileValidator {
     /**
      * Get the Embedded the LWM2M.xsd Schema.
      * 
-     * @throws SAXException see {@link SchemaFactory#newSchema(Source))}
+     * @throws SAXException see {@link SchemaFactory#newSchema(Source)}
      */
     protected Schema getEmbeddedLwM2mSchema() throws SAXException {
         InputStream inputStream = DDFFileValidator.class.getResourceAsStream(LWM2M_V1_SCHEMA_PATH);
