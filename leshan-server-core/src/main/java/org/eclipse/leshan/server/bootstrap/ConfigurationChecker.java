@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE) - additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
@@ -46,6 +47,19 @@ public class ConfigurationChecker {
         // check security configurations
         for (Map.Entry<Integer, BootstrapConfig.ServerSecurity> e : config.security.entrySet()) {
             BootstrapConfig.ServerSecurity sec = e.getValue();
+
+            // Retrieve the OSCORE object for this bootstrap server security object
+            if (sec.bootstrapServer && sec.oscoreSecurityMode != null) {
+                BootstrapConfig.OscoreObject osc = config.oscore.get(sec.oscoreSecurityMode);
+                if (osc != null) {
+                    assertIf(StringUtils.isEmpty(osc.oscoreMasterSecret), "master secret must not be empty");
+                    assertIf(StringUtils.isEmpty(osc.oscoreSenderId) && StringUtils.isEmpty(osc.oscoreRecipientId),
+                            "either sender ID or recipient ID must be filled");
+                } else {
+                    throw new InvalidConfigurationException(
+                            "Bootstrap server is set to use OSCORE, its OSCORE object must not be empty");
+                }
+            }
 
             // checks security config
             switch (sec.securityMode) {

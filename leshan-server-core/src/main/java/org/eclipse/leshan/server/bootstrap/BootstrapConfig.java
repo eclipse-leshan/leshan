@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE) - additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
@@ -65,6 +66,9 @@ public class BootstrapConfig implements Serializable {
      * Map indexed by ACL Instance Id. Key is the ACL Instance to write.
      */
     public Map<Integer, ACLConfig> acls = new HashMap<>();
+
+    // TODO OSCORE : add some javadoc
+    public Map<Integer, OscoreObject> oscore = new HashMap<>();
 
     /** Server Configuration (object 1) as defined in LWM2M 1.0.x TS. */
     public static class ServerConfig implements Serializable {
@@ -223,6 +227,7 @@ public class BootstrapConfig implements Serializable {
          * Bootstrap-Server Account lifetime is infinite.
          */
         public Integer bootstrapServerAccountTimeout = 0;
+        public Integer oscoreSecurityMode;
 
         /**
          * The Certificate Usage Resource specifies the semantic of the certificate or raw public key stored in the
@@ -294,8 +299,32 @@ public class BootstrapConfig implements Serializable {
         }
     }
 
+    /** oscore configuration (object 17) */
+    // TODO OSCORE : add some javadoc
+    public static class OscoreObject implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        public String oscoreMasterSecret = "";
+        public String oscoreSenderId = "";
+        public String oscoreRecipientId = "";
+        public Integer oscoreAeadAlgorithm = null;
+        public Integer oscoreHmacAlgorithm = null;
+        public String oscoreMasterSalt = "";
+
+        @Override
+        public String toString() {
+            // Note : oscoreMasterSecret and oscoreMasterSalt are explicitly excluded from the display for security
+            // purposes
+            return String.format(
+                    "OscoreObject [oscoreSenderId=%s, oscoreRecipientId=%s, oscoreAeadAlgorithm=%s, oscoreHmacAlgorithm=%s]",
+                    oscoreSenderId, oscoreRecipientId, oscoreAeadAlgorithm, oscoreHmacAlgorithm);
+        }
+    }
+
     @Override
     public String toString() {
+        // TODO OSCORE : should we add OSCORE to toString ? or is it to sensitive data.
+        // this question remain for other config.
         return String.format("BootstrapConfig [servers=%s, security=%s, acls=%s]", servers, security, acls);
     }
 }
