@@ -14,6 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - add parameter for 
  *                                                     configuration filename
+ *     Rikard Höglund (RISE) - additions to support OSCORE
  *******************************************************************************/
 
 package org.eclipse.leshan.server.bootstrap.demo;
@@ -37,6 +38,7 @@ import org.apache.commons.cli.ParseException;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
 import org.eclipse.californium.elements.util.SslContextUtil;
+import org.eclipse.californium.oscore.OSCoreCoapStackFactory;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -46,6 +48,7 @@ import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.util.SecurityUtil;
+import org.eclipse.leshan.server.OscoreHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfigurationStoreAdapter;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.BootstrapServlet;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.ServerServlet;
@@ -124,12 +127,14 @@ public class LeshanBootstrapServerDemo {
 
         final StringBuilder trustStoreChapter = new StringBuilder();
         trustStoreChapter.append("\n .");
-        trustStoreChapter.append("\n URI format: file://<path-to-trust-store-file>#<hex-strore-password>#<alias-pattern>");
+        trustStoreChapter
+                .append("\n URI format: file://<path-to-trust-store-file>#<hex-strore-password>#<alias-pattern>");
         trustStoreChapter.append("\n .");
         trustStoreChapter.append("\n Where:");
         trustStoreChapter.append("\n - path-to-trust-store-file is path to pkcs12 trust store file");
         trustStoreChapter.append("\n - hex-store-password is HEX formatted password for store");
-        trustStoreChapter.append("\n - alias-pattern can be used to filter trusted certificates and can also be empty to get all");
+        trustStoreChapter.append(
+                "\n - alias-pattern can be used to filter trusted certificates and can also be empty to get all");
         trustStoreChapter.append("\n .");
         trustStoreChapter.append("\n Default: All certificates are trusted which is only OK for a demo.");
 
@@ -283,7 +288,8 @@ public class LeshanBootstrapServerDemo {
 
                 // check input exists
                 if (!input.exists()) {
-                    System.err.println("Failed to load trust store - file or directory does not exist : " + input.toString());
+                    System.err.println(
+                            "Failed to load trust store - file or directory does not exist : " + input.toString());
                     formatter.printHelp(USAGE, options);
                     return;
                 }
@@ -322,6 +328,11 @@ public class LeshanBootstrapServerDemo {
             String secureLocalAddress, Integer secureLocalPort, String modelsFolderPath, String configFilename,
             boolean supportDeprecatedCiphers, PublicKey publicKey, PrivateKey privateKey, X509Certificate certificate,
             List<Certificate> trustStore) throws Exception {
+
+        // Enable OSCORE stack (fine to do even when using DTLS or only CoAP)
+        // TODO OSCORE : this should be done in DefaultEndpointFactory ?
+        OSCoreCoapStackFactory.useAsDefault(OscoreHandler.getContextDB());
+
         // Create Models
         List<ObjectModel> models = ObjectLoader.loadDefault();
         if (modelsFolderPath != null) {
