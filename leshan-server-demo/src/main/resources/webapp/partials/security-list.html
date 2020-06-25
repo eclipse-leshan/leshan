@@ -166,8 +166,8 @@
 						<label for="idContextValue" class="col-sm-4 control-label">ID Context</label>
 						<div class="col-sm-8">
 							<textarea class="form-control" style="resize:none" rows="1" id="idContextValue" name="idContext" 
-							ng-model="idContext" ng-pattern="/^[0-9a-fA-F]+$/" ng-maxlength="32" ></textarea>
-							<p class="text-right text-muted small" style="margin:0">Hexadecimal format</p>
+							ng-model="idContext" ng-pattern="/^[0-9a-fA-F]+$/" ng-maxlength="32" disabled={true}></textarea>
+							<p class="text-right text-muted small" style="margin:0">Not supported</p>
 							<p class="help-block" ng-if="form.idContext.$error.pattern">Hexadecimal format is expected</p>
 							<p class="help-block" ng-if="form.idContext.$error.maxlength">ID Context is too long</p>
 						</div>

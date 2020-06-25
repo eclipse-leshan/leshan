@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE) - additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
@@ -19,14 +20,27 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.eclipse.californium.cose.AlgorithmID;
+import org.eclipse.californium.cose.CoseException;
+import org.eclipse.californium.oscore.HashMapCtxDB;
+import org.eclipse.californium.oscore.OSCoreCtx;
+import org.eclipse.californium.oscore.OSException;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.util.Hex;
+import org.eclipse.leshan.server.OscoreHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.upokecenter.cbor.CBORObject;
 
 /**
  * Simple bootstrap store implementation storing bootstrap configuration information in memory.
  */
 public class InMemoryBootstrapConfigStore implements EditableBootstrapConfigStore {
+
+    private static final Logger LOG = LoggerFactory.getLogger(InMemoryBootstrapConfigStore.class);
 
     protected final ConfigurationChecker configChecker = new ConfigurationChecker();
 
@@ -62,6 +76,7 @@ public class InMemoryBootstrapConfigStore implements EditableBootstrapConfigStor
         if (pskToAdd != null) {
             bootstrapByPskId.put(pskToAdd, config);
         }
+        addOscoreContext(config);
     }
 
     protected void checkConfig(String endpoint, BootstrapConfig config) throws InvalidConfigurationException {
@@ -94,6 +109,49 @@ public class InMemoryBootstrapConfigStore implements EditableBootstrapConfigStor
     @Override
     public Map<String, BootstrapConfig> getAll() {
         return Collections.unmodifiableMap(bootstrapByEndpoint);
+    }
+
+    // If an OSCORE configuration came, add it to the context db
+    // TODO this should be done via a kind of OSCORE Store
+    public void addOscoreContext(BootstrapConfig config) {
+        HashMapCtxDB db = OscoreHandler.getContextDB();
+        LOG.trace("Adding OSCORE context information to the context database");
+        BootstrapConfig.OscoreObject osc = null;
+        for (Map.Entry<Integer, BootstrapConfig.OscoreObject> o : config.oscore.entrySet()) {
+            osc = o.getValue();
+            try {
+
+                // Parse hexadecimal context parameters
+                byte[] masterSecret = Hex.decodeHex(osc.oscoreMasterSecret.toCharArray());
+                byte[] senderId = Hex.decodeHex(osc.oscoreSenderId.toCharArray());
+                byte[] recipientId = Hex.decodeHex(osc.oscoreRecipientId.toCharArray());
+
+                // Parse master salt which, should be conveyed as null if empty
+                byte[] masterSalt = Hex.decodeHex(osc.oscoreMasterSalt.toCharArray());
+                if (masterSalt.length == 0) {
+                    masterSalt = null;
+                }
+
+                // Parse AEAD Algorithm
+                AlgorithmID aeadAlg = AlgorithmID.FromCBOR(CBORObject.FromObject(osc.oscoreAeadAlgorithm));
+
+                // Parse HKDF Algorithm
+                AlgorithmID hkdfAlg = AlgorithmID.FromCBOR(CBORObject.FromObject(osc.oscoreHmacAlgorithm));
+
+                // ID Context is not supported
+                byte[] idContext = null;
+
+                // Replay window default value
+                int replayWindow = 32;
+
+                OSCoreCtx ctx = new OSCoreCtx(masterSecret, false, aeadAlg, senderId, recipientId, hkdfAlg,
+                        replayWindow, masterSalt, idContext);
+                db.addContext(ctx);
+
+            } catch (OSException | CoseException e) {
+                LOG.error("Failed to add OSCORE context to context database.", e);
+            }
+        }
     }
 
     protected static class PskByServer {

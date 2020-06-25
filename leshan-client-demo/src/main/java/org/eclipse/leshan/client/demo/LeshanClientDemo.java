@@ -676,6 +676,13 @@ public class LeshanClientDemo {
                 initializer.setInstancesForObject(SECURITY, x509Bootstrap(serverURI, clientCertificate.getEncoded(),
                         clientPrivateKey.getEncoded(), serverCertificate.getEncoded()));
                 initializer.setClassForObject(SERVER, Server.class);
+            } else if (oscoreSettings != null) {
+                Oscore oscoreObject = new Oscore(12345, oscoreSettings.masterSecret, oscoreSettings.senderId,
+                        oscoreSettings.recipientId, oscoreSettings.aeadAlgorithm, oscoreSettings.hkdfAlgorithm,
+                        oscoreSettings.masterSalt);
+                initializer.setInstancesForObject(SECURITY, oscoreOnlyBootstrap(serverURI, 123, oscoreObject.getId()));
+                initializer.setInstancesForObject(OSCORE, oscoreObject);
+                initializer.setClassForObject(SERVER, Server.class);
             } else {
                 initializer.setInstancesForObject(SECURITY, noSecBootstap(serverURI));
                 initializer.setClassForObject(SERVER, Server.class);
