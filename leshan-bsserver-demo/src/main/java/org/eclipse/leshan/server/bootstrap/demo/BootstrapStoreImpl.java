@@ -13,6 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - add json as storage format
+ *     Rikard Höglund (RISE) - additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap.demo;
 
@@ -26,7 +27,13 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.eclipse.californium.cose.AlgorithmID;
+import org.eclipse.californium.cose.CoseException;
+import org.eclipse.californium.oscore.HashMapCtxDB;
+import org.eclipse.californium.oscore.OSCoreCtx;
+import org.eclipse.californium.oscore.OSException;
 import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.server.OscoreHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapStore;
 import org.eclipse.leshan.server.bootstrap.demo.ConfigurationChecker.ConfigurationException;
@@ -37,6 +44,7 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.upokecenter.cbor.CBORObject;
 
 /**
  * Simple bootstrap store implementation storing bootstrap information in memory
@@ -80,7 +88,51 @@ public class BootstrapStoreImpl implements BootstrapStore {
     public void addConfig(String endpoint, BootstrapConfig config) throws ConfigurationException {
         ConfigurationChecker.verify(config);
         bootstrapByEndpoint.put(endpoint, config);
+        addOscoreContext(config);
         saveToFile();
+    }
+
+    // If an OSCORE configuration came, add it to the context db
+    public void addOscoreContext(BootstrapConfig config) {
+        HashMapCtxDB db = OscoreHandler.getContextDB();
+        LOG.trace("Adding OSCORE context information to the context database");
+        BootstrapConfig.OscoreObject osc = null;
+        for (Map.Entry<Integer, BootstrapConfig.OscoreObject> o : config.oscore.entrySet()) {
+            osc = o.getValue();
+            try {
+
+                AlgorithmID hkdfAlg;
+                if (osc.oscoreHmacAlgorithm.matches("-?\\d+")) { // As integer
+                    hkdfAlg = AlgorithmID.FromCBOR(CBORObject.FromObject(Integer.parseInt(osc.oscoreHmacAlgorithm)));
+                } else { // Indicated as string
+                    hkdfAlg = AlgorithmID.valueOf(osc.oscoreHmacAlgorithm);
+                }
+
+                AlgorithmID aeadAlg;
+                if (osc.oscoreAeadAlgorithm.matches("-?\\d+")) { // As integer
+                    aeadAlg = AlgorithmID.FromCBOR(CBORObject.FromObject(Integer.parseInt(osc.oscoreAeadAlgorithm)));
+                } else { // Indicated as string
+                    aeadAlg = AlgorithmID.valueOf(osc.oscoreAeadAlgorithm);
+                }
+
+                // These empty byte arrays should be conveyed as nulls
+                if (osc.oscoreMasterSalt.length == 0) {
+                    osc.oscoreMasterSalt = null;
+                }
+
+                if (osc.oscoreIdContext.length == 0) {
+                    osc.oscoreIdContext = null;
+                }
+
+                OSCoreCtx ctx = new OSCoreCtx(osc.oscoreMasterSecret, false, aeadAlg, osc.oscoreSenderId,
+                        osc.oscoreRecipientId, hkdfAlg, 32, osc.oscoreMasterSalt, osc.oscoreIdContext);
+                db.addContext(ctx);
+
+            } catch (OSException | CoseException e) {
+                LOG.error("Failed to add OSCORE context to context database.");
+                e.printStackTrace();
+            }
+        }
     }
 
     public Map<String, BootstrapConfig> getBootstrapConfigs() {

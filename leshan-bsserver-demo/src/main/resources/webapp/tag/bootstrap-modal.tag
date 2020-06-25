@@ -36,7 +36,7 @@
                                                     serverpubkey= {serversecurity.rpk.hexDer}
                                                     servercertificate= {serversecurity.certificate.hexDer}
                                                     disable = { {uri:true, serverpubkey:true, servercertificate:true}}
-                                                    secmode = { {no_sec:true, psk:true,rpk:true, x509:true}}
+                                                    secmode = { {no_sec:true, psk:true,rpk:true, x509:true, oscore:true}}
                                                     ></securityconfig-input>
                         </div>
 
@@ -93,6 +93,22 @@
         function submit(){
             var lwserver = tag.refs.lwserver.get_value()
             var bsserver = tag.refs.bsserver.get_value()
+            
+            if(bsserver.secmode === "OSCORE") {
+            	var bsserverOscore = bsserver.oscore;
+            	var oscore =
+                {
+                    objectInstanceId : 111,
+                    oscoreMasterSecret : bsserverOscore.masterSecret,
+                    oscoreSenderId : bsserverOscore.senderId,
+                    oscoreRecipientId : bsserverOscore.recipientId,
+                    oscoreAeadAlgorithm : bsserverOscore.aeadAlgorithm,
+                    oscoreHmacAlgorithm : bsserverOscore.hkdfAlgorithm,
+                    oscoreMasterSalt : bsserverOscore.masterSalt,
+                    oscoreIdContext : bsserverOscore.idContext
+                }
+            	bsserver.secmode = "NO_SEC"; // act as no_sec from here
+            }
 
             // add config to the store
             bsConfigStore.add(endpoint.value, {
@@ -114,7 +130,8 @@
                         smsBindingKeyParam : [  ],
                         smsBindingKeySecret : [  ],
                         smsSecurityMode : "NO_SEC",
-                        uri : lwserver.uri
+                        uri : lwserver.uri,
+                        oscoreSecurityMode : 123 // link to oscore object
                       }
                 }],
                  bs:[{
@@ -131,7 +148,9 @@
                         smsBindingKeySecret : [  ],
                         smsSecurityMode : "NO_SEC",
                         uri : bsserver.uri,
-                      }
+                        oscoreSecurityMode : 111 // link to oscore object
+                      },
+                      oscore
                 }]
             });
             $('#bootstrap-modal').modal('hide');

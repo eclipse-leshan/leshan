@@ -16,6 +16,7 @@
                 <option value="psk"    show={secmode.psk}    >Pre-Shared Key</option>
                 <option value="rpk"    show={secmode.rpk}    >Raw Public Key</option>
                 <option value="x509"   show={secmode.x509}   >X.509 Certificate</option>
+                <option value="oscore" show={secmode.oscore} >OSCORE</option>
             </select>
         </div>
     </div>
@@ -33,6 +34,11 @@
     <!-- X509 -->
     <div if={  refs.secMode.value == "x509" } >
         <x509-input ref="x509" onchange={onchange} disable={disable} servercertificate={servercertificate}></x509-input>
+    </div>
+    
+    <!-- OSCORE -->
+    <div if={  refs.secMode.value == "oscore" } >
+        <oscore-input ref="oscore" onchange={onchange} disable={disable}></oscore-input>
     </div>
 
     <script>
@@ -54,7 +60,7 @@
 
         // Tag Functions
         function default_uri() {
-            if (!tag.refs.secMode || tag.refs.secMode.value == "no_sec")
+            if (!tag.refs.secMode || tag.refs.secMode.value == "no_sec" || tag.refs.secMode.value == "oscore")
                 return opts.unsecuri;
             else
                 return opts.securi;
@@ -63,7 +69,8 @@
         function has_error() {
             return tag.refs.secMode.value === "psk"  && tag.refs.psk.has_error()
                 || tag.refs.secMode.value === "rpk"  && tag.refs.rpk.has_error()
-                || tag.refs.secMode.value === "x509" && tag.refs.x509.has_error();
+                || tag.refs.secMode.value === "x509" && tag.refs.x509.has_error()
+                || tag.refs.secMode.value === "oscore" && tag.refs.oscore.has_error();
         }
 
         function get_value() {
@@ -97,6 +104,29 @@
                 config.id = fromHex(x509.cert);
                 config.key = fromHex(x509.key);
                 config.serverKey = fromHex(x509.servCert);
+            } else if(config.secmode === "OSCORE"){
+                var oscoreVals = tag.refs.oscore.get_value();
+                
+                // Relay to config object
+                config.oscore = {};
+                                
+                config.oscore.masterSecret = fromHex(oscoreVals.masterSecret);
+                config.oscore.masterSalt = fromHex(oscoreVals.masterSalt);
+                config.oscore.idContext = fromHex(oscoreVals.idContext);
+                config.oscore.senderId = fromHex(oscoreVals.senderId);
+                config.oscore.recipientId = fromHex(oscoreVals.recipientId);
+                config.oscore.aeadAlgorithm = oscoreVals.aeadAlgorithm;
+                config.oscore.hkdfAlgorithm = oscoreVals.hkdfAlgorithm;
+                
+                // Apply default values
+                var isEmpty = !config.oscore.aeadAlgorithm || 0 === config.oscore.aeadAlgorithm.length;
+                if(isEmpty) {
+                	config.oscore.aeadAlgorithm = tag.refs.oscore.defaultAeadAlgorithm;
+                }
+                isEmpty = !config.oscore.hkdfAlgorithm || 0 === config.oscore.hkdfAlgorithm.length;
+                if(isEmpty) {
+                	config.oscore.hkdfAlgorithm = tag.refs.oscore.defaultHkdfAlgorithm;
+                }
             }
 
             return config;

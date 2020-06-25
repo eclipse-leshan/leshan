@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE) - additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap.demo;
 
@@ -49,6 +50,39 @@ public class ConfigurationChecker {
         // check security configurations
         for (Map.Entry<Integer, BootstrapConfig.ServerSecurity> e : config.security.entrySet()) {
             BootstrapConfig.ServerSecurity sec = e.getValue();
+
+            // Check OSCORE object for the bootstrap server security object
+            boolean usingOscore = false;
+            if (sec.bootstrapServer) {
+
+                BootstrapConfig.OscoreObject osc = null;
+                for (Map.Entry<Integer, BootstrapConfig.OscoreObject> o : config.oscore.entrySet()) {
+                    osc = o.getValue();
+                    if (osc.objectInstanceId == sec.oscoreSecurityMode) {
+                        usingOscore = true;
+                        break;
+                    }
+                }
+                if (usingOscore) {
+                    LOG.trace("Bootstrapping information contains OSCORE security object.");
+                    assertIf(usingOscore == false, "no oscore object found for bootstrap server security object");
+                    assertIf(ArrayUtils.isEmpty(osc.oscoreMasterSecret), "master secret must not be empty");
+                    assertIf(ArrayUtils.isEmpty(osc.oscoreSenderId) && ArrayUtils.isEmpty(osc.oscoreRecipientId),
+                            "either sender ID or recipient ID must be filled");
+                }
+
+            }
+
+            // checks mandatory fields
+            if (StringUtils.isEmpty(sec.uri))
+                throw new ConfigurationException("LwM2M Server URI is mandatory");
+            if (sec.securityMode == null)
+                throw new ConfigurationException("Security Mode is mandatory");
+
+            // End loop here (since OSCORE is not a proper securityMode)
+            if (usingOscore) {
+                continue;
+            }
 
             // checks security config
             switch (sec.securityMode) {
@@ -89,11 +123,6 @@ public class ConfigurationChecker {
                 break;
             }
 
-            // checks mandatory fields
-            if (StringUtils.isEmpty(sec.uri))
-                throw new ConfigurationException("LwM2M Server URI is mandatory");
-            if (sec.securityMode == null)
-                throw new ConfigurationException("Security Mode is mandatory");
         }
 
         // does each server have a corresponding security entry?

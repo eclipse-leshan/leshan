@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE) - additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap.demo;
 
@@ -22,8 +23,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.californium.oscore.HashMapCtxDB;
+import org.eclipse.californium.oscore.OSCoreCtx;
 import org.eclipse.leshan.SecurityMode;
+import org.eclipse.leshan.server.OscoreHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfig.OscoreObject;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
@@ -66,6 +71,24 @@ public class BootstrapSecurityStoreImpl implements BootstrapSecurityStore {
     public List<SecurityInfo> getAllByEndpoint(String endpoint) {
 
         BootstrapConfig bsConfig = bsStore.getBootstrap(endpoint, null);
+
+        // Extract OSCORE security info
+        if (bsConfig != null && bsConfig.oscore != null && !bsConfig.oscore.isEmpty()) {
+            LOG.trace("Extracting OSCORE security info for endpoint {}", endpoint);
+
+            // First find the context for this endpoint
+            for (Map.Entry<Integer, BootstrapConfig.OscoreObject> oscoreEntry : bsConfig.oscore.entrySet()) {
+                OscoreObject value = oscoreEntry.getValue();
+
+                HashMapCtxDB db = OscoreHandler.getContextDB();
+                OSCoreCtx ctx = db.getContext(value.oscoreRecipientId);
+
+                // Create the security info (will re-add the context to the db)
+                SecurityInfo securityInfo = SecurityInfo.newOSCoreInfo(endpoint, ctx);
+
+                return Arrays.asList(securityInfo);
+            }
+        }
 
         if (bsConfig == null || bsConfig.security == null)
             return null;
