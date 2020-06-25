@@ -55,6 +55,13 @@ public class SecurityChecker {
                 }
                 return false;
             }
+        } else if (clientIdentity.isOSCORE()) {
+            LOG.trace("Checking incoming clients OSCORE identity.");
+            for (SecurityInfo securityInfo : securityInfos) {
+                if (checkSecurityInfo(endpoint, clientIdentity, securityInfo)) {
+                    return true;
+                }
+            }
         } else if (securityInfos != null && !securityInfos.isEmpty()) {
             LOG.debug("Client '{}' must connect using DTLS", endpoint);
             return false;
@@ -73,7 +80,6 @@ public class SecurityChecker {
      * @see SecurityInfo
      */
     public boolean checkSecurityInfo(String endpoint, Identity clientIdentity, SecurityInfo securityInfo) {
-
         // if this is a secure end-point, we must check that the registering client is using the right identity.
         if (clientIdentity.isSecure()) {
             if (securityInfo == null) {
@@ -99,6 +105,7 @@ public class SecurityChecker {
             }
         } else {
             if (clientIdentity.isOSCORE()) {
+                LOG.trace("Checking incoming client's OSCORE identity.");
                 return checkOscoreIdentity(endpoint, clientIdentity, securityInfo);
             } else if (securityInfo != null) {
                 LOG.debug("Client '{}' must connect using DTLS", endpoint);

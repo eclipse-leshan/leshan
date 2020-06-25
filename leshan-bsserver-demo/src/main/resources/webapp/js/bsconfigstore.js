@@ -6,6 +6,13 @@ var configFromRestToUI = function(config){
         var security = config.security[i];
         if (security.bootstrapServer){
             newConfig.bs.push({security:security});
+
+            // add oscore object (if any) to bs
+            var oscoreObjectInstanceId = security.oscoreSecurityMode;
+            var oscore = config.oscore[oscoreObjectInstanceId];
+            if(oscore){
+                newConfig.bs.push({oscore:oscore});
+            }
         }else{
             newConfig.dm = [];
             // search for DM information;
@@ -33,10 +40,11 @@ var configsFromRestToUI = function(configs){
 
 //convert config from UI to rest API format:
 var configFromUIToRest = function(config){
-    var newConfig = {servers:{}, security:{}};
+    var newConfig = {servers:{}, security:{}, oscore:{}};
     for (var i = 0; i < config.bs.length; i++) {
         var bs = config.bs[i];
         newConfig.security[i] = bs.security;
+        newConfig.oscore[i] = bs.oscore;
     }
     for (var j = 0; j < config.dm.length; j++) {
         var dm = config.dm[j];
