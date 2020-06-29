@@ -21,15 +21,18 @@ import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 
-public class DiscoverResponse extends AbstractLwM2mResponse {
+/**
+ * @since 1.1
+ */
+public class BootstrapDiscoverResponse extends AbstractLwM2mResponse {
 
     private final Link[] links;
 
-    public DiscoverResponse(ResponseCode code, Link[] links, String errorMessage) {
+    public BootstrapDiscoverResponse(ResponseCode code, Link[] links, String errorMessage) {
         this(code, links, errorMessage, null);
     }
 
-    public DiscoverResponse(ResponseCode code, Link[] links, String errorMessage, Object coapResponse) {
+    public BootstrapDiscoverResponse(ResponseCode code, Link[] links, String errorMessage, Object coapResponse) {
         super(code, errorMessage, coapResponse);
         if (ResponseCode.CONTENT.equals(code)) {
             if (links == null)
@@ -59,9 +62,7 @@ public class DiscoverResponse extends AbstractLwM2mResponse {
         switch (code.getCode()) {
         case ResponseCode.CONTENT_CODE:
         case ResponseCode.BAD_REQUEST_CODE:
-        case ResponseCode.UNAUTHORIZED_CODE:
         case ResponseCode.NOT_FOUND_CODE:
-        case ResponseCode.METHOD_NOT_ALLOWED_CODE:
         case ResponseCode.INTERNAL_SERVER_ERROR_CODE:
             return true;
         default:
@@ -79,27 +80,19 @@ public class DiscoverResponse extends AbstractLwM2mResponse {
 
     // Syntactic sugar static constructors :
 
-    public static DiscoverResponse success(Link[] links) {
-        return new DiscoverResponse(ResponseCode.CONTENT, links, null);
+    public static BootstrapDiscoverResponse success(Link[] links) {
+        return new BootstrapDiscoverResponse(ResponseCode.CONTENT, links, null);
     }
 
-    public static DiscoverResponse badRequest(String errorMessage) {
-        return new DiscoverResponse(ResponseCode.BAD_REQUEST, null, errorMessage);
+    public static BootstrapDiscoverResponse badRequest(String errorMessage) {
+        return new BootstrapDiscoverResponse(ResponseCode.BAD_REQUEST, null, errorMessage);
     }
 
-    public static DiscoverResponse notFound() {
-        return new DiscoverResponse(ResponseCode.NOT_FOUND, null, null);
+    public static BootstrapDiscoverResponse notFound() {
+        return new BootstrapDiscoverResponse(ResponseCode.NOT_FOUND, null, null);
     }
 
-    public static DiscoverResponse unauthorized() {
-        return new DiscoverResponse(ResponseCode.UNAUTHORIZED, null, null);
-    }
-
-    public static DiscoverResponse methodNotAllowed() {
-        return new DiscoverResponse(ResponseCode.METHOD_NOT_ALLOWED, null, null);
-    }
-
-    public static DiscoverResponse internalServerError(String errorMessage) {
-        return new DiscoverResponse(ResponseCode.INTERNAL_SERVER_ERROR, null, errorMessage);
+    public static BootstrapDiscoverResponse internalServerError(String errorMessage) {
+        return new BootstrapDiscoverResponse(ResponseCode.INTERNAL_SERVER_ERROR, null, errorMessage);
     }
 }
