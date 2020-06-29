@@ -29,6 +29,7 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
+import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.CancelObservationRequest;
@@ -37,7 +38,7 @@ import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.DiscoverRequest;
 import org.eclipse.leshan.core.request.DownlinkRequest;
-import org.eclipse.leshan.core.request.DownlinkRequestVisitor;
+import org.eclipse.leshan.core.request.DownlinkRequestVisitor2;
 import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.ObserveRequest;
@@ -52,7 +53,7 @@ import org.eclipse.leshan.server.californium.observation.ObserveUtil;
  * <p>
  * Call <code>CoapRequestBuilder#visit(lwm2mRequest)</code>, then get the result using {@link #getRequest()}
  */
-public class CoapRequestBuilder implements DownlinkRequestVisitor {
+public class CoapRequestBuilder implements DownlinkRequestVisitor2 {
 
     private Request coapRequest;
 
@@ -171,6 +172,13 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         coapRequest.getOptions().setContentFormat(format.getCode());
         coapRequest.setPayload(encoder.encode(request.getNode(), format, request.getPath(), model));
         setTarget(coapRequest, request.getPath());
+    }
+
+    @Override
+    public void visit(BootstrapDiscoverRequest request) {
+        coapRequest = Request.newGet();
+        setTarget(coapRequest, request.getPath());
+        coapRequest.getOptions().setAccept(MediaTypeRegistry.APPLICATION_LINK_FORMAT);
     }
 
     @Override
