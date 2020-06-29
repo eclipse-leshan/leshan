@@ -27,10 +27,13 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
 import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.LwM2mId;
+import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
+import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
@@ -105,6 +108,56 @@ public class BootstrapTest {
 
         // assert session contains additional attributes
         assertEquals(additionalAttributes, helper.lastBootstrapSession.getBootstrapRequest().getAdditionalAttributes());
+    }
+
+    @Test
+    public void bootstrapWithDiscoverOnRoot() {
+        // Create DM Server without security & start it
+        helper.createServer();
+        helper.server.start();
+
+        // Create and start bootstrap server
+        helper.createBootstrapServer(null, null, new BootstrapDiscoverRequest());
+        helper.bootstrapServer.start();
+
+        // Create Client and check it is not already registered
+        helper.createClient();
+        helper.assertClientNotRegisterered();
+
+        // Start it and wait for registration
+        helper.client.start();
+        helper.waitForRegistrationAtServerSide(1);
+
+        // check the client is registered
+        helper.assertClientRegisterered();
+        assertNotNull(helper.lastDiscoverAnswer);
+        assertEquals(ResponseCode.CONTENT, helper.lastDiscoverAnswer.getCode());
+        assertEquals("</>;lwm2m=1.0,</0/0>,</1>,</3/0>", Link.serialize(helper.lastDiscoverAnswer.getObjectLinks()));
+    }
+
+    @Test
+    public void bootstrapWithDiscoverOnDevice() {
+        // Create DM Server without security & start it
+        helper.createServer();
+        helper.server.start();
+
+        // Create and start bootstrap server
+        helper.createBootstrapServer(null, null, new BootstrapDiscoverRequest(3));
+        helper.bootstrapServer.start();
+
+        // Create Client and check it is not already registered
+        helper.createClient();
+        helper.assertClientNotRegisterered();
+
+        // Start it and wait for registration
+        helper.client.start();
+        helper.waitForRegistrationAtServerSide(1);
+
+        // check the client is registered
+        helper.assertClientRegisterered();
+        assertNotNull(helper.lastDiscoverAnswer);
+        assertEquals(ResponseCode.CONTENT, helper.lastDiscoverAnswer.getCode());
+        assertEquals("</>;lwm2m=1.0,</3/0>", Link.serialize(helper.lastDiscoverAnswer.getObjectLinks()));
     }
 
     @Test
