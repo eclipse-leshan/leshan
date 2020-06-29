@@ -39,6 +39,7 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
+import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
@@ -51,6 +52,7 @@ import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
+import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
 import org.eclipse.leshan.core.response.BootstrapWriteResponse;
 import org.eclipse.leshan.core.response.CreateResponse;
 import org.eclipse.leshan.core.response.DeleteResponse;
@@ -62,10 +64,10 @@ import org.eclipse.leshan.core.response.WriteAttributesResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 
 /**
- * A abstract implementation of {@link LwM2mObjectEnabler}. It could be use as base for any {@link LwM2mObjectEnabler}
+ * A abstract implementation of {@link LwM2mObjectEnabler2}. It could be use as base for any {@link LwM2mObjectEnabler2}
  * implementation.
  */
-public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
+public abstract class BaseObjectEnabler implements LwM2mObjectEnabler2 {
 
     protected final int id;
     protected final TransactionalObjectListener transactionalListener;
@@ -290,6 +292,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         return doDelete(identity, request);
     }
 
+    // TODO fix in 2.0 this should be protected not public
     public BootstrapDeleteResponse doDelete(ServerIdentity identity, BootstrapDeleteRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
         return BootstrapDeleteResponse.internalServerError("not implemented");
@@ -390,6 +393,27 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
             return DiscoverResponse.success(new Link[] { resourceLink });
         }
         return DiscoverResponse.badRequest(null);
+    }
+
+    @Override
+    public synchronized BootstrapDiscoverResponse discover(ServerIdentity identity, BootstrapDiscoverRequest request) {
+
+        if (!identity.isLwm2mBootstrapServer()) {
+            return BootstrapDiscoverResponse.badRequest("not a bootstrap server");
+        }
+
+        return doDiscover(identity, request);
+    }
+
+    protected BootstrapDiscoverResponse doDiscover(ServerIdentity identity, BootstrapDiscoverRequest request) {
+
+        LwM2mPath path = request.getPath();
+        if (path.isObject()) {
+            // Manage discover on object
+            Link[] ObjectLinks = LinkFormatHelper.getBootstrapObjectDescription(this);
+            return BootstrapDiscoverResponse.success(ObjectLinks);
+        }
+        return BootstrapDiscoverResponse.badRequest("invalid path");
     }
 
     @Override

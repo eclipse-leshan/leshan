@@ -169,10 +169,24 @@ public class ServersInfoExtractor {
         }
     }
 
-    public static Long getServerId(LwM2mObjectEnabler serverEnabler, int instanceId) {
-        ReadResponse response = serverEnabler.read(ServerIdentity.SYSTEM,
-                new ReadRequest(SERVER, instanceId, SRV_SERVER_ID));
-        if (response.isSuccess()) {
+    public static Boolean isBootstrapServer(LwM2mObjectEnabler objectEnabler, int instanceId) {
+        ReadResponse response = objectEnabler.read(ServerIdentity.SYSTEM,
+                new ReadRequest(SECURITY, instanceId, SEC_BOOTSTRAP));
+        if (response != null && response.isSuccess()) {
+            return (Boolean) ((LwM2mResource) response.getContent()).getValue();
+        } else {
+            return null;
+        }
+    }
+
+    public static Long getServerId(LwM2mObjectEnabler objectEnabler, int instanceId) {
+        ReadResponse response = null;
+        if (objectEnabler.getId() == SERVER) {
+            response = objectEnabler.read(ServerIdentity.SYSTEM, new ReadRequest(SERVER, instanceId, SRV_SERVER_ID));
+        } else if (objectEnabler.getId() == SECURITY) {
+            response = objectEnabler.read(ServerIdentity.SYSTEM, new ReadRequest(SECURITY, instanceId, SEC_SERVER_ID));
+        }
+        if (response != null && response.isSuccess()) {
             return (Long) ((LwM2mResource) response.getContent()).getValue();
         } else {
             return null;

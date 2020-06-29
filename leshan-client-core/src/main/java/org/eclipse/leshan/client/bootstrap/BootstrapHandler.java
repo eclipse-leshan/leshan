@@ -22,9 +22,14 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.util.LinkFormatHelper;
+import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
+import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
+import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
 import org.eclipse.leshan.core.response.BootstrapFinishResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
 
@@ -102,5 +107,22 @@ public class BootstrapHandler {
     public synchronized void closeSession() {
         bootstrappingLatch = null;
         bootstrapping = false;
+    }
+
+    /**
+     * @since 1.1
+     */
+    public BootstrapDiscoverResponse discover(ServerIdentity identity, BootstrapDiscoverRequest request) {
+        if (!identity.isLwm2mBootstrapServer()) {
+            return BootstrapDiscoverResponse.badRequest("not a bootstrap server");
+        }
+
+        LwM2mPath path = request.getPath();
+        if (path.isRoot()) {
+            // Manage discover on object
+            Link[] ObjectLinks = LinkFormatHelper.getBootstrapClientDescription(objects.values());
+            return BootstrapDiscoverResponse.success(ObjectLinks);
+        }
+        return BootstrapDiscoverResponse.badRequest("invalid path");
     }
 }

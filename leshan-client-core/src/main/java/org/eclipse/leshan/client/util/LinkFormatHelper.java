@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
+import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -82,6 +83,18 @@ public final class LinkFormatHelper {
         return links.toArray(new Link[] {});
     }
 
+    public static Link[] getBootstrapClientDescription(Collection<LwM2mObjectEnabler> objectEnablers) {
+        List<Link> links = new ArrayList<>();
+        Map<String, String> rootAttributes = new HashMap<>();
+        rootAttributes.put("lwm2m", ObjectModel.DEFAULT_VERSION);
+        links.add(new Link("/", rootAttributes));
+
+        for (LwM2mObjectEnabler objectEnabler : objectEnablers) {
+            links.addAll(getBootstrapObjectDescriptionWithoutRoot(objectEnabler));
+        }
+        return links.toArray(new Link[] {});
+    }
+
     public static Link[] getObjectDescription(LwM2mObjectEnabler objectEnabler, String root) {
         List<Link> links = new ArrayList<>();
 
@@ -99,6 +112,64 @@ public final class LinkFormatHelper {
         }
 
         return links.toArray(new Link[] {});
+    }
+
+    public static Link[] getBootstrapObjectDescription(LwM2mObjectEnabler objectEnabler) {
+        List<Link> links = new ArrayList<>();
+        Map<String, String> rootAttributes = new HashMap<>();
+        rootAttributes.put("lwm2m", ObjectModel.DEFAULT_VERSION);
+        links.add(new Link("/", rootAttributes));
+
+        links.addAll(getBootstrapObjectDescriptionWithoutRoot(objectEnabler));
+
+        return links.toArray(new Link[] {});
+    }
+
+    private static List<Link> getBootstrapObjectDescriptionWithoutRoot(LwM2mObjectEnabler objectEnabler) {
+        List<Link> links = new ArrayList<>();
+
+        // create link for "object"
+        Link objectLink;
+        String objectURL = getPath("/", Integer.toString(objectEnabler.getId()));
+        String version = getVersion(objectEnabler.getObjectModel());
+        if (version != null) {
+            Map<String, String> objectAttributes = new HashMap<>();
+            objectAttributes.put("ver", version);
+            objectLink = new Link(objectURL, objectAttributes);
+        } else {
+            objectLink = new Link(objectURL);
+        }
+
+        // add object link if needed
+        List<Integer> availableInstanceIds = objectEnabler.getAvailableInstanceIds();
+        if (availableInstanceIds.isEmpty() || !objectLink.getAttributes().isEmpty()) {
+            links.add(objectLink);
+        }
+
+        // add instance link
+        for (Integer instanceId : objectEnabler.getAvailableInstanceIds()) {
+            String instanceURL = getPath("/", Integer.toString(objectEnabler.getId()), Integer.toString(instanceId));
+
+            // get short id
+            Long shortServerId = null;
+            if (objectEnabler.getId() == LwM2mId.SECURITY || objectEnabler.getId() == LwM2mId.SERVER) {
+                Boolean isBootstrapServer = objectEnabler.getId() == LwM2mId.SECURITY
+                        && ServersInfoExtractor.isBootstrapServer(objectEnabler, instanceId);
+                if (isBootstrapServer != null && !isBootstrapServer) {
+                    shortServerId = ServersInfoExtractor.getServerId(objectEnabler, instanceId);
+                }
+            }
+
+            // create link
+            if (shortServerId != null) {
+                Map<String, String> objectAttributes = new HashMap<>();
+                objectAttributes.put("ssid", shortServerId.toString());
+                links.add(new Link(instanceURL, objectAttributes));
+            } else {
+                links.add(new Link(instanceURL));
+            }
+        }
+        return links;
     }
 
     public static Link[] getInstanceDescription(LwM2mObjectEnabler objectEnabler, int instanceId, String root) {
@@ -193,11 +264,20 @@ public final class LinkFormatHelper {
     }
 
     private static Map<String, String> getObjectAttributes(ObjectModel objectModel) {
+        String version = getVersion(objectModel);
+        if (version == null) {
+            return null;
+        }
+
+        Map<String, String> attributes = new HashMap<>();
+        attributes.put("ver", version);
+        return attributes;
+    }
+
+    private static String getVersion(ObjectModel objectModel) {
         if (StringUtils.isEmpty(objectModel.version) || ObjectModel.DEFAULT_VERSION.equals(objectModel.version)) {
             return null;
         }
-        Map<String, String> attributes = new HashMap<>();
-        attributes.put("ver", objectModel.version);
-        return attributes;
+        return objectModel.version;
     }
 }

@@ -23,13 +23,17 @@ import java.util.List;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
+import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
+import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
+import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
 import org.eclipse.leshan.core.util.StringUtils;
 
 /**
@@ -50,7 +54,21 @@ public class RootResource extends LwM2mClientCoapResource {
 
     @Override
     public void handleGET(CoapExchange exchange) {
-        exchange.respond(ResponseCode.NOT_FOUND);
+        ServerIdentity identity = getServerOrRejectRequest(exchange);
+        if (identity == null)
+            return;
+
+        String URI = exchange.getRequestOptions().getUriPathString();
+
+        // Manage Bootstrap Discover Request
+        BootstrapDiscoverResponse response = bootstrapHandler.discover(identity, new BootstrapDiscoverRequest(URI));
+        if (response.getCode().isError()) {
+            exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
+        } else {
+            exchange.respond(toCoapResponseCode(response.getCode()), Link.serialize(response.getObjectLinks()),
+                    MediaTypeRegistry.APPLICATION_LINK_FORMAT);
+        }
+        return;
     }
 
     @Override
