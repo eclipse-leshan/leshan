@@ -129,8 +129,7 @@ public class BootstrapStoreImpl implements BootstrapStore {
                 db.addContext(ctx);
 
             } catch (OSException | CoseException e) {
-                LOG.error("Failed to add OSCORE context to context database.");
-                e.printStackTrace();
+                LOG.error("Failed to add OSCORE context to context database.", e);
             }
         }
     }
