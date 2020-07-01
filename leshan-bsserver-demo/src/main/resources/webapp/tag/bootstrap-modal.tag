@@ -130,8 +130,7 @@
                         smsBindingKeyParam : [  ],
                         smsBindingKeySecret : [  ],
                         smsSecurityMode : "NO_SEC",
-                        uri : lwserver.uri,
-                        oscoreSecurityMode : 123 // link to oscore object
+                        uri : lwserver.uri
                       }
                 }],
                  bs:[{
