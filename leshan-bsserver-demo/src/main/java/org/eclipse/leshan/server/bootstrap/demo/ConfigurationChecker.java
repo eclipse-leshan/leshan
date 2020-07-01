@@ -78,11 +78,6 @@ public class ConfigurationChecker {
             if (sec.securityMode == null)
                 throw new ConfigurationException("Security Mode is mandatory");
 
-            // End loop here (since OSCORE is not a proper securityMode)
-            if (usingOscore) {
-                continue;
-            }
-
             // checks security config
             switch (sec.securityMode) {
             case NO_SEC:
