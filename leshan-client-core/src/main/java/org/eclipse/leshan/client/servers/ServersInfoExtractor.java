@@ -124,7 +124,6 @@ public class ServersInfoExtractor {
                             info.clientCertificate = getClientCertificate(security);
                             info.serverCertificate = getServerCertificate(security);
                             info.privateKey = getPrivateKey(security);
-                        } else if (info.useOscore == true) {
                         }
                         infos.bootstrap = info;
                     }
