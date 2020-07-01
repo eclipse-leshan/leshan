@@ -95,8 +95,8 @@
             var bsserver = tag.refs.bsserver.get_value()
             
             if(bsserver.secmode === "OSCORE") {
-            	var bsserverOscore = bsserver.oscore;
-            	var oscore =
+                var bsserverOscore = bsserver.oscore;
+                var oscore =
                 {
                     objectInstanceId : 111,
                     oscoreMasterSecret : bsserverOscore.masterSecret,
@@ -107,7 +107,7 @@
                     oscoreMasterSalt : bsserverOscore.masterSalt,
                     oscoreIdContext : bsserverOscore.idContext
                 }
-            	bsserver.secmode = "NO_SEC"; // act as no_sec from here
+                bsserver.secmode = "NO_SEC"; // act as no_sec from here
             }
 
             // add config to the store

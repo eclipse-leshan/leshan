@@ -121,11 +121,11 @@
                 // Apply default values
                 var isEmpty = !config.oscore.aeadAlgorithm || 0 === config.oscore.aeadAlgorithm.length;
                 if(isEmpty) {
-                	config.oscore.aeadAlgorithm = tag.refs.oscore.defaultAeadAlgorithm;
+                    config.oscore.aeadAlgorithm = tag.refs.oscore.defaultAeadAlgorithm;
                 }
                 isEmpty = !config.oscore.hkdfAlgorithm || 0 === config.oscore.hkdfAlgorithm.length;
                 if(isEmpty) {
-                	config.oscore.hkdfAlgorithm = tag.refs.oscore.defaultHkdfAlgorithm;
+                    config.oscore.hkdfAlgorithm = tag.refs.oscore.defaultHkdfAlgorithm;
                 }
             }
 

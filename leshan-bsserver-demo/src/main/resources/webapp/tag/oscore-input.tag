@@ -211,12 +211,12 @@
 
         function get_value(){
             return { masterSecret:tag.refs.masterSecret.value,
-            	masterSalt:tag.refs.masterSalt.value,
-            	idContext:tag.refs.idContext.value,
-            	senderId:tag.refs.senderId.value,
-            	recipientId:tag.refs.recipientId.value,
-            	aeadAlgorithm:tag.refs.aeadAlgorithm.value,
-            	hkdfAlgorithm:tag.refs.hkdfAlgorithm.value };
+                masterSalt:tag.refs.masterSalt.value,
+                idContext:tag.refs.idContext.value,
+                senderId:tag.refs.senderId.value,
+                recipientId:tag.refs.recipientId.value,
+                aeadAlgorithm:tag.refs.aeadAlgorithm.value,
+                hkdfAlgorithm:tag.refs.hkdfAlgorithm.value };
         }
     </script>
 </oscore-input>
