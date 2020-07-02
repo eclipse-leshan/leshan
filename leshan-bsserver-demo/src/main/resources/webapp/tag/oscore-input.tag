@@ -24,8 +24,8 @@
     <div class={ form-group:true, has-error: idContext.error }>
         <label for="idContext" class="col-sm-4 control-label">ID Context</label>
         <div class="col-sm-8">
-            <textarea class="form-control" style="resize:none" rows="1" id="idContext" ref="idContext" oninput={validate_idContext} onblur={validate_idContext}></textarea>
-            <p class="text-right text-muted small" style="margin:0">Hexadecimal format</p>
+            <textarea class="form-control" style="resize:none" rows="1" id="idContext" ref="idContext" oninput={validate_idContext} onblur={validate_idContext} disabled={true}></textarea>
+            <p class="text-right text-muted small" style="margin:0">Not supported</p>
             <p class="help-block" if={idContext.nothexa}>Hexadecimal format is expected</p>
             <p class="help-block" if={idContext.toolong}>The ID context is too long</p>
         </div>
@@ -82,9 +82,9 @@
         tag.senderId={};
         tag.recipientId={};
         tag.aeadAlgorithm={};
-        tag.defaultAeadAlgorithm = "AES_CCM_16_64_128"
+        tag.defaultAeadAlgorithm = "AES_CCM_16_64_128";
         tag.hkdfAlgorithm={};
-        tag.defaultHkdfAlgorithm = "HKDF_HMAC_SHA_256"
+        tag.defaultHkdfAlgorithm = "HKDF_HMAC_SHA_256";
         tag.validate_masterSecret = validate_masterSecret;
         tag.validate_masterSalt = validate_masterSalt;
         tag.validate_idContext = validate_idContext;
@@ -209,14 +209,50 @@
             || tag.hkdfAlgorithm.error;
         }
 
+        // Allows entering the AEAD algorithm as a string, and sets default if empty
+        function parse_aeadAlgorithm(alg){
+
+            if (!alg || 0 === alg.length){
+                alg = tag.defaultAeadAlgorithm;
+            }
+
+            switch(alg) {
+                case 'AES_CCM_16_64_128':
+                    return 10;
+                case 'AES_CCM_64_64_128':
+                    return 12;
+                case 'AES_CCM_16_128_128':
+                    return 30;
+                case 'AES_CCM_64_128_128':
+                    return 32;
+                default:
+                    return alg;
+            }
+        }
+
+        // Allows entering the HKDF algorithm as a string, and sets default if empty
+        function parse_hkdfAlgorithm(alg){
+
+            if (!alg || 0 === alg.length){
+                alg = tag.defaultHkdfAlgorithm;
+            }
+
+            switch(alg) {
+                case 'HKDF_HMAC_SHA_256':
+                    return -10;
+                default:
+                    return alg;
+            }
+        }
+
         function get_value(){
             return { masterSecret:tag.refs.masterSecret.value,
                 masterSalt:tag.refs.masterSalt.value,
                 idContext:tag.refs.idContext.value,
                 senderId:tag.refs.senderId.value,
                 recipientId:tag.refs.recipientId.value,
-                aeadAlgorithm:tag.refs.aeadAlgorithm.value,
-                hkdfAlgorithm:tag.refs.hkdfAlgorithm.value };
+                aeadAlgorithm:parse_aeadAlgorithm(tag.refs.aeadAlgorithm.value),
+                hkdfAlgorithm:parse_hkdfAlgorithm(tag.refs.hkdfAlgorithm.value) };
         }
     </script>
 </oscore-input>

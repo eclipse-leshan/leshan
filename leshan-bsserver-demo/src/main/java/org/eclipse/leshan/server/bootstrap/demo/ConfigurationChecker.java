@@ -65,8 +65,8 @@ public class ConfigurationChecker {
                 }
                 if (usingOscore) {
                     LOG.trace("Bootstrapping information contains OSCORE security object.");
-                    assertIf(ArrayUtils.isEmpty(osc.oscoreMasterSecret), "master secret must not be empty");
-                    assertIf(ArrayUtils.isEmpty(osc.oscoreSenderId) && ArrayUtils.isEmpty(osc.oscoreRecipientId),
+                    assertIf(osc.oscoreMasterSecret.isEmpty(), "master secret must not be empty");
+                    assertIf(osc.oscoreSenderId.isEmpty() && osc.oscoreRecipientId.isEmpty(),
                             "either sender ID or recipient ID must be filled");
                 }
 

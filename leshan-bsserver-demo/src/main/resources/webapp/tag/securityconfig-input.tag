@@ -110,23 +110,14 @@
                 // Relay to config object
                 config.oscore = {};
                                 
-                config.oscore.masterSecret = fromHex(oscoreVals.masterSecret);
-                config.oscore.masterSalt = fromHex(oscoreVals.masterSalt);
-                config.oscore.idContext = fromHex(oscoreVals.idContext);
-                config.oscore.senderId = fromHex(oscoreVals.senderId);
-                config.oscore.recipientId = fromHex(oscoreVals.recipientId);
+                config.oscore.masterSecret = oscoreVals.masterSecret;
+                config.oscore.masterSalt = oscoreVals.masterSalt;
+                config.oscore.idContext = oscoreVals.idContext;
+                config.oscore.senderId = oscoreVals.senderId;
+                config.oscore.recipientId = oscoreVals.recipientId;
                 config.oscore.aeadAlgorithm = oscoreVals.aeadAlgorithm;
                 config.oscore.hkdfAlgorithm = oscoreVals.hkdfAlgorithm;
-                
-                // Apply default values
-                var isEmpty = !config.oscore.aeadAlgorithm || 0 === config.oscore.aeadAlgorithm.length;
-                if(isEmpty) {
-                    config.oscore.aeadAlgorithm = tag.refs.oscore.defaultAeadAlgorithm;
-                }
-                isEmpty = !config.oscore.hkdfAlgorithm || 0 === config.oscore.hkdfAlgorithm.length;
-                if(isEmpty) {
-                    config.oscore.hkdfAlgorithm = tag.refs.oscore.defaultHkdfAlgorithm;
-                }
+
             }
 
             return config;

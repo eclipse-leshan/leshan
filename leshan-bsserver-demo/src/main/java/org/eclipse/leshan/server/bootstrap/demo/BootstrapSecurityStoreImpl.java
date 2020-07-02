@@ -32,6 +32,7 @@ import org.eclipse.leshan.server.bootstrap.BootstrapConfig.OscoreObject;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
+import org.eclipse.leshan.util.Hex;
 import org.eclipse.leshan.util.SecurityUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +82,8 @@ public class BootstrapSecurityStoreImpl implements BootstrapSecurityStore {
                 OscoreObject value = oscoreEntry.getValue();
 
                 HashMapCtxDB db = OscoreHandler.getContextDB();
-                OSCoreCtx ctx = db.getContext(value.oscoreRecipientId);
+                byte[] rid = Hex.decodeHex(value.oscoreRecipientId.toCharArray());
+                OSCoreCtx ctx = db.getContext(rid);
 
                 // Create the security info (will re-add the context to the db)
                 SecurityInfo securityInfo = SecurityInfo.newOSCoreInfo(endpoint, ctx);

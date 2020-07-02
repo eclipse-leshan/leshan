@@ -37,6 +37,7 @@ import org.eclipse.leshan.server.OscoreHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapStore;
 import org.eclipse.leshan.server.bootstrap.demo.ConfigurationChecker.ConfigurationException;
+import org.eclipse.leshan.util.Hex;
 import org.eclipse.leshan.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,31 +102,31 @@ public class BootstrapStoreImpl implements BootstrapStore {
             osc = o.getValue();
             try {
 
-                AlgorithmID hkdfAlg;
-                if (osc.oscoreHmacAlgorithm.matches("-?\\d+")) { // As integer
-                    hkdfAlg = AlgorithmID.FromCBOR(CBORObject.FromObject(Integer.parseInt(osc.oscoreHmacAlgorithm)));
-                } else { // Indicated as string
-                    hkdfAlg = AlgorithmID.valueOf(osc.oscoreHmacAlgorithm);
+                // Parse hexadecimal context parameters
+                byte[] masterSecret = Hex.decodeHex(osc.oscoreMasterSecret.toCharArray());
+                byte[] senderId = Hex.decodeHex(osc.oscoreSenderId.toCharArray());
+                byte[] recipientId = Hex.decodeHex(osc.oscoreRecipientId.toCharArray());
+
+                // Parse master salt which, should be conveyed as null if empty
+                byte[] masterSalt = Hex.decodeHex(osc.oscoreMasterSalt.toCharArray());
+                if (masterSalt.length == 0) {
+                    masterSalt = null;
                 }
 
-                AlgorithmID aeadAlg;
-                if (osc.oscoreAeadAlgorithm.matches("-?\\d+")) { // As integer
-                    aeadAlg = AlgorithmID.FromCBOR(CBORObject.FromObject(Integer.parseInt(osc.oscoreAeadAlgorithm)));
-                } else { // Indicated as string
-                    aeadAlg = AlgorithmID.valueOf(osc.oscoreAeadAlgorithm);
-                }
+                // Parse AEAD Algorithm
+                AlgorithmID aeadAlg = AlgorithmID.FromCBOR(CBORObject.FromObject(osc.oscoreAeadAlgorithm));
 
-                // These empty byte arrays should be conveyed as nulls
-                if (osc.oscoreMasterSalt.length == 0) {
-                    osc.oscoreMasterSalt = null;
-                }
+                // Parse HKDF Algorithm
+                AlgorithmID hkdfAlg = AlgorithmID.FromCBOR(CBORObject.FromObject(osc.oscoreHmacAlgorithm));
 
-                if (osc.oscoreIdContext.length == 0) {
-                    osc.oscoreIdContext = null;
-                }
+                // ID Context is not supported
+                byte[] idContext = null;
 
-                OSCoreCtx ctx = new OSCoreCtx(osc.oscoreMasterSecret, false, aeadAlg, osc.oscoreSenderId,
-                        osc.oscoreRecipientId, hkdfAlg, 32, osc.oscoreMasterSalt, osc.oscoreIdContext);
+                // Replay window default value
+                int replayWindow = 32;
+
+                OSCoreCtx ctx = new OSCoreCtx(masterSecret, false, aeadAlg, senderId, recipientId, hkdfAlg,
+                        replayWindow, masterSalt, idContext);
                 db.addContext(ctx);
 
             } catch (OSException | CoseException e) {

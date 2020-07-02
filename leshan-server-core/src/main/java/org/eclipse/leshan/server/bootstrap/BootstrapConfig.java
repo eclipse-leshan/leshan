@@ -102,21 +102,20 @@ public class BootstrapConfig implements Serializable {
     static public class OscoreObject implements Serializable {
 
         public int objectInstanceId;
-        public byte[] oscoreMasterSecret = new byte[] {};
-        public byte[] oscoreSenderId = new byte[] {};
-        public byte[] oscoreRecipientId = new byte[] {};
-        public String oscoreAeadAlgorithm = "";
-        public String oscoreHmacAlgorithm = "";
-        public byte[] oscoreMasterSalt = new byte[] {};
-        public byte[] oscoreIdContext = new byte[] {};
+        public String oscoreMasterSecret = "";
+        public String oscoreSenderId = "";
+        public String oscoreRecipientId = "";
+        public Integer oscoreAeadAlgorithm = null;
+        public Integer oscoreHmacAlgorithm = null;
+        public String oscoreMasterSalt = "";
 
         @Override
         public String toString() {
             // Note : oscoreMasterSecret and oscoreMasterSalt are explicitly excluded from the display for security purposes
             return String.format(
                     "OscoreObject [objectInstanceId=%s, oscoreSenderId=%s, oscoreRecipientId=%s, oscoreAeadAlgorithm=%s, oscoreHmacAlgorithm=%s, oscoreIdContext=%s]",
-                    objectInstanceId, Arrays.toString(oscoreSenderId), Arrays.toString(oscoreRecipientId),
-                    oscoreAeadAlgorithm, oscoreHmacAlgorithm, Arrays.toString(oscoreIdContext));
+                    objectInstanceId, oscoreSenderId, oscoreRecipientId,
+                    oscoreAeadAlgorithm, oscoreHmacAlgorithm);
         }
     }
 
