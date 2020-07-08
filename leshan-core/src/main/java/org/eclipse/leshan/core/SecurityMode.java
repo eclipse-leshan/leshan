@@ -19,7 +19,7 @@ package org.eclipse.leshan.core;
  * The different DTLS security modes
  */
 public enum SecurityMode {
-    PSK(0), RPK(1), X509(2), NO_SEC(3);
+    PSK(0), RPK(1), X509(2), NO_SEC(3), EST(4);
 
     public final int code;
 
