@@ -101,7 +101,6 @@ public class BootstrapConfig implements Serializable {
     /** oscore configuration (object 17) */
     static public class OscoreObject implements Serializable {
 
-        public int objectInstanceId;
         public String oscoreMasterSecret = "";
         public String oscoreSenderId = "";
         public String oscoreRecipientId = "";
@@ -113,9 +112,8 @@ public class BootstrapConfig implements Serializable {
         public String toString() {
             // Note : oscoreMasterSecret and oscoreMasterSalt are explicitly excluded from the display for security purposes
             return String.format(
-                    "OscoreObject [objectInstanceId=%s, oscoreSenderId=%s, oscoreRecipientId=%s, oscoreAeadAlgorithm=%s, oscoreHmacAlgorithm=%s, oscoreIdContext=%s]",
-                    objectInstanceId, oscoreSenderId, oscoreRecipientId,
-                    oscoreAeadAlgorithm, oscoreHmacAlgorithm);
+                    "OscoreObject [oscoreSenderId=%s, oscoreRecipientId=%s, oscoreAeadAlgorithm=%s, oscoreHmacAlgorithm=%s]",
+                    oscoreSenderId, oscoreRecipientId, oscoreAeadAlgorithm, oscoreHmacAlgorithm);
         }
     }
 

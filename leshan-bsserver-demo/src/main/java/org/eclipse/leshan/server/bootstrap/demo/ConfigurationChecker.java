@@ -58,7 +58,8 @@ public class ConfigurationChecker {
                 BootstrapConfig.OscoreObject osc = null;
                 for (Map.Entry<Integer, BootstrapConfig.OscoreObject> o : config.oscore.entrySet()) {
                     osc = o.getValue();
-                    if (osc.objectInstanceId == sec.oscoreSecurityMode) {
+                    int oscoreObjectInstanceId = o.getKey();
+                    if (oscoreObjectInstanceId == sec.oscoreSecurityMode) {
                         usingOscore = true;
                         break;
                     }
@@ -69,7 +70,6 @@ public class ConfigurationChecker {
                     assertIf(osc.oscoreSenderId.isEmpty() && osc.oscoreRecipientId.isEmpty(),
                             "either sender ID or recipient ID must be filled");
                 }
-
             }
 
             // checks mandatory fields

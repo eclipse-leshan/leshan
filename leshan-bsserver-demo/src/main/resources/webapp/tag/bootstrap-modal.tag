@@ -98,7 +98,6 @@
                 var bsserverOscore = bsserver.oscore;
                 var oscore =
                 {
-                    objectInstanceId : 111,
                     oscoreMasterSecret : bsserverOscore.masterSecret,
                     oscoreSenderId : bsserverOscore.senderId,
                     oscoreRecipientId : bsserverOscore.recipientId,
@@ -147,7 +146,7 @@
                         smsBindingKeySecret : [  ],
                         smsSecurityMode : "NO_SEC",
                         uri : bsserver.uri,
-                        oscoreSecurityMode : 111 // link to oscore object
+                        oscoreSecurityMode : 0 // link to bs oscore object
                       },
                       oscore
                 }]
