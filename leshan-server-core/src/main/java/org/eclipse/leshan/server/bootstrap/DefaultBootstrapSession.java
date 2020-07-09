@@ -112,7 +112,7 @@ public class DefaultBootstrapSession implements BootstrapSession {
             long creationTime) {
         this.id = RandomStringUtils.random(10, true, true);
         this.request = null;
-        this.endpoint = request.getEndpointName();
+        this.endpoint = endpoint;
         this.identity = identity;
         this.authorized = authorized;
         this.contentFormat = contentFormat;
