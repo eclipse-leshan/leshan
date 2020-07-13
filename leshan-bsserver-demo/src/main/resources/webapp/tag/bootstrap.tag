@@ -54,7 +54,7 @@
             <tr each={ config, endpoint in configs }>
                 <td>{ endpoint }</td>
                 <td>
-                    <div each={ config.bs }>
+                    <div each={ config.bs } if={ security }>
                         <p>
                             <strong>{ security.uri }</strong><br/>
                             security mode : {security.securityMode}<br/>

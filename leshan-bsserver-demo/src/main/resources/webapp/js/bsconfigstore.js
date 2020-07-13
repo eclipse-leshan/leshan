@@ -1,11 +1,18 @@
 // convert config from server format to UI format :
-// we regroup security and server data
+// we regroup security, server and oscore data
 var convertConfig = function(config){
     var newConfig = {dm:[],bs:[]};
     for (var i in config.security){
         var security = config.security[i];
         if (security.bootstrapServer){
             newConfig.bs.push({security:security});
+
+            // add oscore object (if any) to bs
+            var oscoreObjectInstanceId = security.oscoreSecurityMode;
+            var oscore = config.oscore[oscoreObjectInstanceId];
+            if(oscore){
+                newConfig.bs.push({oscore:oscore});
+            }
         }else{
             newConfig.dm = [];
             // search for DM information;
