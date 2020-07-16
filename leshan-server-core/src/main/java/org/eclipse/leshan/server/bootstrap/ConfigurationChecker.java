@@ -61,6 +61,8 @@ public class ConfigurationChecker {
             case X509:
                 checkX509(sec);
                 break;
+            case EST:
+                throw new InvalidConfigurationException("EST is not currently supported.", e);
             }
 
             validateMandatoryField(sec);
