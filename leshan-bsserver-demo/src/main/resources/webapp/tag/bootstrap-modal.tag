@@ -106,6 +106,7 @@
                     oscoreMasterSalt : bsserverOscore.masterSalt,
                     oscoreIdContext : bsserverOscore.idContext
                 }
+                var bsOscoreSecurityMode = 0; // link to bs oscore object
                 bsserver.secmode = "NO_SEC"; // act as no_sec from here
             }
 
@@ -146,7 +147,7 @@
                         smsBindingKeySecret : [  ],
                         smsSecurityMode : "NO_SEC",
                         uri : bsserver.uri,
-                        oscoreSecurityMode : 0 // link to bs oscore object
+                        oscoreSecurityMode : bsOscoreSecurityMode
                       },
                       oscore
                 }]

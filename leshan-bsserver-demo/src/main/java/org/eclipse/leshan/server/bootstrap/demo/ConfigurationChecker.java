@@ -51,24 +51,19 @@ public class ConfigurationChecker {
         for (Map.Entry<Integer, BootstrapConfig.ServerSecurity> e : config.security.entrySet()) {
             BootstrapConfig.ServerSecurity sec = e.getValue();
 
-            // Check OSCORE object for the bootstrap server security object
-            boolean usingOscore = false;
-            if (sec.bootstrapServer) {
+            // Retrieve the OSCORE object for this bootstrap server security object
+            if (sec.bootstrapServer && sec.oscoreSecurityMode != null) {
 
-                BootstrapConfig.OscoreObject osc = null;
-                for (Map.Entry<Integer, BootstrapConfig.OscoreObject> o : config.oscore.entrySet()) {
-                    osc = o.getValue();
-                    int oscoreObjectInstanceId = o.getKey();
-                    if (oscoreObjectInstanceId == sec.oscoreSecurityMode) {
-                        usingOscore = true;
-                        break;
-                    }
-                }
-                if (usingOscore) {
+                BootstrapConfig.OscoreObject osc = config.oscore.get(sec.oscoreSecurityMode);
+
+                if (osc != null) {
                     LOG.trace("Bootstrapping information contains OSCORE security object.");
-                    assertIf(osc.oscoreMasterSecret.isEmpty(), "master secret must not be empty");
-                    assertIf(osc.oscoreSenderId.isEmpty() && osc.oscoreRecipientId.isEmpty(),
+                    assertIf(StringUtils.isEmpty(osc.oscoreMasterSecret), "master secret must not be empty");
+                    assertIf(StringUtils.isEmpty(osc.oscoreSenderId) && StringUtils.isEmpty(osc.oscoreRecipientId),
                             "either sender ID or recipient ID must be filled");
+                } else {
+                    throw new ConfigurationException(
+                            "Bootstrap server is set to use OSCORE, its OSCORE object must not be empty");
                 }
             }
 
