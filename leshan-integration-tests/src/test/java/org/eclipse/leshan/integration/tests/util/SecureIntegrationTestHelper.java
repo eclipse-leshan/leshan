@@ -47,6 +47,7 @@ import javax.security.auth.x500.X500Principal;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.observe.ObservationStore;
+import org.eclipse.californium.oscore.HashMapCtxDB;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
@@ -249,7 +250,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
 
             @Override
             public CoapEndpoint createUnsecuredEndpoint(InetSocketAddress address, NetworkConfig coapConfig,
-                    ObservationStore store) {
+                    ObservationStore store, HashMapCtxDB db) {
                 CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
                 builder.setInetSocketAddress(address);
                 builder.setNetworkConfig(coapConfig);
@@ -258,7 +259,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
 
             @Override
             public CoapEndpoint createSecuredEndpoint(DtlsConnectorConfig dtlsConfig, NetworkConfig coapConfig,
-                    ObservationStore store) {
+                    ObservationStore store, HashMapCtxDB db) {
                 CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
                 Builder dtlsConfigBuilder = new Builder(dtlsConfig);
 
