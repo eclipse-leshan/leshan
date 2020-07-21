@@ -27,6 +27,7 @@ import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.elements.EndpointContextMatcher;
 import org.eclipse.californium.elements.PrincipalEndpointContextMatcher;
 import org.eclipse.californium.elements.UDPConnector;
+import org.eclipse.californium.oscore.HashMapCtxDB;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 
@@ -101,7 +102,8 @@ public class DefaultEndpointFactory implements EndpointFactory {
 
     @Override
     public CoapEndpoint createUnsecuredEndpoint(InetSocketAddress address, NetworkConfig coapConfig,
-            ObservationStore store) {
+            ObservationStore store, HashMapCtxDB db) {
+        // TODO OSCORE : db should maybe be replaced by OscoreEStore
         return createUnsecuredEndpointBuilder(address, coapConfig, store).build();
     }
 
@@ -148,7 +150,8 @@ public class DefaultEndpointFactory implements EndpointFactory {
 
     @Override
     public CoapEndpoint createSecuredEndpoint(DtlsConnectorConfig dtlsConfig, NetworkConfig coapConfig,
-            ObservationStore store) {
+            ObservationStore store, HashMapCtxDB db) {
+        // TODO OSCORE : db should maybe be replaced by OscoreEStore
         return createSecuredEndpointBuilder(dtlsConfig, coapConfig, store).build();
     }
 
