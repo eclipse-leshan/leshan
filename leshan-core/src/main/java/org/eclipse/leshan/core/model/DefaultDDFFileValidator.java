@@ -38,7 +38,8 @@ import org.xml.sax.SAXException;
  */
 
 public class DefaultDDFFileValidator implements DDFFileValidator {
-    private static String LWM2M_V1_SCHEMA_PATH = "/schemas/LWM2M.xsd";
+    // private static String LWM2M_V1_SCHEMA_PATH = "/schemas/LWM2M.xsd";
+    private static String LWM2M_V1_1_SCHEMA_PATH = "/schemas/LWM2M-v1_1.xsd";
 
     @Override
     public void validate(Node xmlToValidate) throws InvalidDDFFileException {
@@ -67,7 +68,7 @@ public class DefaultDDFFileValidator implements DDFFileValidator {
      * @throws SAXException see {@link SchemaFactory#newSchema(Source)}
      */
     protected Schema getEmbeddedLwM2mSchema() throws SAXException {
-        InputStream inputStream = DDFFileValidator.class.getResourceAsStream(LWM2M_V1_SCHEMA_PATH);
+        InputStream inputStream = DDFFileValidator.class.getResourceAsStream(LWM2M_V1_1_SCHEMA_PATH);
         Source source = new StreamSource(inputStream);
         SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
         return schemaFactory.newSchema(source);
