@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.client.servers;
 
@@ -51,6 +52,16 @@ public class ServerInfo {
     public Certificate serverCertificate;
 
     public PrivateKey privateKey;
+
+    // OSCORE parameters
+    public boolean useOscore;
+    public byte[] masterSecret;
+    public byte[] senderId;
+    public byte[] recipientId;
+    public long aeadAlgorithm;
+    public long hkdfAlgorithm;
+    public byte[] masterSalt;
+    public byte[] idContext;
 
     public InetSocketAddress getAddress() {
         return getAddress(serverUri);

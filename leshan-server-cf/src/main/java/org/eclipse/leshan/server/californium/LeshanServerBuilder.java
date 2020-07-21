@@ -547,12 +547,13 @@ public class LeshanServerBuilder {
         // create endpoints
         CoapEndpoint unsecuredEndpoint = null;
         if (!noUnsecuredEndpoint) {
-            unsecuredEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, registrationStore);
+            unsecuredEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, registrationStore,
+                    null);
         }
 
         CoapEndpoint securedEndpoint = null;
         if (!noSecuredEndpoint && dtlsConfig != null) {
-            securedEndpoint = endpointFactory.createSecuredEndpoint(dtlsConfig, coapConfig, registrationStore);
+            securedEndpoint = endpointFactory.createSecuredEndpoint(dtlsConfig, coapConfig, registrationStore, null);
         }
 
         if (securedEndpoint == null && unsecuredEndpoint == null) {

@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.core.californium;
 
@@ -20,6 +21,7 @@ import java.net.InetSocketAddress;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.observe.ObservationStore;
+import org.eclipse.californium.oscore.HashMapCtxDB;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 
 /**
@@ -29,8 +31,9 @@ import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
  */
 public interface EndpointFactory {
 
-    CoapEndpoint createUnsecuredEndpoint(InetSocketAddress address, NetworkConfig coapConfig, ObservationStore store);
+    CoapEndpoint createUnsecuredEndpoint(InetSocketAddress address, NetworkConfig coapConfig, ObservationStore store,
+            HashMapCtxDB db);
 
-    CoapEndpoint createSecuredEndpoint(DtlsConnectorConfig dtlsConfig, NetworkConfig coapConfig,
-            ObservationStore store);
+    CoapEndpoint createSecuredEndpoint(DtlsConnectorConfig dtlsConfig, NetworkConfig coapConfig, ObservationStore store,
+            HashMapCtxDB db);
 }
