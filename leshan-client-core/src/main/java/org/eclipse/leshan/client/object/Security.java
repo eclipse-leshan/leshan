@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.client.object;
 
@@ -27,6 +28,7 @@ import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
@@ -41,7 +43,8 @@ public class Security extends BaseInstanceEnabler {
     private static final Logger LOG = LoggerFactory.getLogger(Security.class);
 
     private final static List<Integer> supportedResources = Arrays.asList(SEC_SERVER_URI, SEC_BOOTSTRAP,
-            SEC_SECURITY_MODE, SEC_PUBKEY_IDENTITY, SEC_SERVER_PUBKEY, SEC_SECRET_KEY, SEC_SERVER_ID);
+            SEC_SECURITY_MODE, SEC_PUBKEY_IDENTITY, SEC_SERVER_PUBKEY, SEC_SECRET_KEY, SEC_SERVER_ID,
+            SEC_OSCORE_SECURITY_MODE);
 
     private String serverUri; /* coaps://host:port */
     private boolean bootstrapServer;
@@ -52,13 +55,14 @@ public class Security extends BaseInstanceEnabler {
     private byte[] secretKey;
 
     private Integer shortServerId;
+    private ObjectLink oscoreSecurityMode;
 
     public Security() {
         // should only be used at bootstrap time
     }
 
     public Security(String serverUri, boolean bootstrapServer, int securityMode, byte[] publicKeyOrIdentity,
-            byte[] serverPublicKey, byte[] secretKey, Integer shortServerId) {
+            byte[] serverPublicKey, byte[] secretKey, Integer shortServerId, ObjectLink oscoreSecurityMode) {
         this.serverUri = serverUri;
         this.bootstrapServer = bootstrapServer;
         this.securityMode = securityMode;
@@ -66,13 +70,15 @@ public class Security extends BaseInstanceEnabler {
         this.serverPublicKey = serverPublicKey;
         this.secretKey = secretKey;
         this.shortServerId = shortServerId;
+        this.oscoreSecurityMode = oscoreSecurityMode;
     }
 
     /**
      * Returns a new security instance (NoSec) for a bootstrap server.
      */
     public static Security noSecBootstap(String serverUri) {
-        return new Security(serverUri, true, SecurityMode.NO_SEC.code, new byte[0], new byte[0], new byte[0], 0);
+        return new Security(serverUri, true, SecurityMode.NO_SEC.code, new byte[0], new byte[0], new byte[0], 0,
+                new ObjectLink());
     }
 
     /**
@@ -80,7 +86,7 @@ public class Security extends BaseInstanceEnabler {
      */
     public static Security pskBootstrap(String serverUri, byte[] pskIdentity, byte[] privateKey) {
         return new Security(serverUri, true, SecurityMode.PSK.code, pskIdentity.clone(), new byte[0],
-                privateKey.clone(), 0);
+                privateKey.clone(), 0, new ObjectLink());
     }
 
     /**
@@ -89,7 +95,7 @@ public class Security extends BaseInstanceEnabler {
     public static Security rpkBootstrap(String serverUri, byte[] clientPublicKey, byte[] clientPrivateKey,
             byte[] serverPublicKey) {
         return new Security(serverUri, true, SecurityMode.RPK.code, clientPublicKey.clone(), serverPublicKey.clone(),
-                clientPrivateKey.clone(), 0);
+                clientPrivateKey.clone(), 0, new ObjectLink());
     }
 
     /**
@@ -98,7 +104,7 @@ public class Security extends BaseInstanceEnabler {
     public static Security x509Bootstrap(String serverUri, byte[] clientCertificate, byte[] clientPrivateKey,
             byte[] serverPublicKey) {
         return new Security(serverUri, true, SecurityMode.X509.code, clientCertificate.clone(), serverPublicKey.clone(),
-                clientPrivateKey.clone(), 0);
+                clientPrivateKey.clone(), 0, new ObjectLink());
     }
 
     /**
@@ -106,7 +112,15 @@ public class Security extends BaseInstanceEnabler {
      */
     public static Security noSec(String serverUri, int shortServerId) {
         return new Security(serverUri, false, SecurityMode.NO_SEC.code, new byte[0], new byte[0], new byte[0],
-                shortServerId);
+                shortServerId, new ObjectLink());
+    }
+
+    /**
+     * Returns a new security instance (OSCORE only) for a device management server.
+     */
+    public static Security oscoreOnly(String serverUri, int shortServerId, int oscoreObjectInstanceId) {
+        return new Security(serverUri, false, SecurityMode.NO_SEC.code, new byte[0], new byte[0], new byte[0],
+                shortServerId, new ObjectLink(OSCORE, oscoreObjectInstanceId));
     }
 
     /**
@@ -114,7 +128,7 @@ public class Security extends BaseInstanceEnabler {
      */
     public static Security psk(String serverUri, int shortServerId, byte[] pskIdentity, byte[] privateKey) {
         return new Security(serverUri, false, SecurityMode.PSK.code, pskIdentity.clone(), new byte[0],
-                privateKey.clone(), shortServerId);
+                privateKey.clone(), shortServerId, new ObjectLink());
     }
 
     /**
@@ -123,7 +137,7 @@ public class Security extends BaseInstanceEnabler {
     public static Security rpk(String serverUri, int shortServerId, byte[] clientPublicKey, byte[] clientPrivateKey,
             byte[] serverPublicKey) {
         return new Security(serverUri, false, SecurityMode.RPK.code, clientPublicKey.clone(), serverPublicKey.clone(),
-                clientPrivateKey.clone(), shortServerId);
+                clientPrivateKey.clone(), shortServerId, new ObjectLink());
     }
 
     /**
@@ -132,7 +146,7 @@ public class Security extends BaseInstanceEnabler {
     public static Security x509(String serverUri, int shortServerId, byte[] clientCertificate, byte[] clientPrivateKey,
             byte[] serverPublicKey) {
         return new Security(serverUri, false, SecurityMode.X509.code, clientCertificate.clone(),
-                serverPublicKey.clone(), clientPrivateKey.clone(), shortServerId);
+                serverPublicKey.clone(), clientPrivateKey.clone(), shortServerId, new ObjectLink());
     }
 
     @Override
@@ -187,6 +201,13 @@ public class Security extends BaseInstanceEnabler {
             shortServerId = ((Long) value.getValue()).intValue();
             return WriteResponse.success();
 
+        case SEC_OSCORE_SECURITY_MODE: // oscore security mode
+            if (value.getType() != Type.OBJLNK) {
+                return WriteResponse.badRequest("invalid type");
+            }
+            oscoreSecurityMode = (ObjectLink) value.getValue();
+            return WriteResponse.success();
+
         default:
             return super.write(identity, resourceId, value);
         }
@@ -218,6 +239,9 @@ public class Security extends BaseInstanceEnabler {
 
         case SEC_SERVER_ID: // short server id
             return ReadResponse.success(resourceid, shortServerId);
+
+        case SEC_OSCORE_SECURITY_MODE: // oscore security mode
+            return ReadResponse.success(resourceid, oscoreSecurityMode == null ? new ObjectLink() : oscoreSecurityMode);
 
         default:
             return super.read(identity, resourceid);

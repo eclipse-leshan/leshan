@@ -13,6 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - use ServerIdentity.SYSTEM
+ *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.client.servers;
 
@@ -42,9 +43,11 @@ import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.SecurityUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +61,7 @@ public class ServersInfoExtractor {
     public static ServersInfo getInfo(Map<Integer, LwM2mObjectEnabler> objectEnablers) {
         LwM2mObjectEnabler securityEnabler = objectEnablers.get(SECURITY);
         LwM2mObjectEnabler serverEnabler = objectEnablers.get(SERVER);
+        LwM2mObjectEnabler oscoreEnabler = objectEnablers.get(OSCORE);
 
         if (securityEnabler == null || serverEnabler == null)
             return null;
@@ -65,6 +69,11 @@ public class ServersInfoExtractor {
         ServersInfo infos = new ServersInfo();
         LwM2mObject securities = (LwM2mObject) securityEnabler.read(SYSTEM, new ReadRequest(SECURITY)).getContent();
         LwM2mObject servers = (LwM2mObject) serverEnabler.read(SYSTEM, new ReadRequest(SERVER)).getContent();
+
+        LwM2mObject oscores = null;
+        if (oscoreEnabler != null) {
+            oscores = (LwM2mObject) oscoreEnabler.read(SYSTEM, new ReadRequest(OSCORE)).getContent();
+        }
 
         for (LwM2mObjectInstance security : securities.getInstances().values()) {
             try {
@@ -103,7 +112,25 @@ public class ServersInfoExtractor {
                     info.serverUri = new URI((String) security.getResource(SEC_SERVER_URI).getValue());
                     info.serverId = (long) security.getResource(SEC_SERVER_ID).getValue();
                     info.secureMode = getSecurityMode(security);
-                    if (info.secureMode == SecurityMode.PSK) {
+
+                    // find instance id of the associated oscore object (if any)
+                    ObjectLink oscoreObjLink = (ObjectLink) security.getResource(SEC_OSCORE_SECURITY_MODE).getValue();
+                    int oscoreObjectInstanceId = oscoreObjLink.getObjectInstanceId();
+                    boolean useOscore = oscoreObjLink.getObjectId() == OSCORE;
+
+                    if (useOscore) {
+                        // get corresponding oscore object
+                        LwM2mObjectInstance oscoreInstance = oscores.getInstance(oscoreObjectInstanceId);
+
+                        info.useOscore = true;
+                        info.masterSecret = getMasterSecret(oscoreInstance);
+                        info.senderId = getSenderId(oscoreInstance);
+                        info.recipientId = getRecipientId(oscoreInstance);
+                        info.aeadAlgorithm = getAeadAlgorithm(oscoreInstance);
+                        info.hkdfAlgorithm = getHkdfAlgorithm(oscoreInstance);
+                        info.masterSalt = getMasterSalt(oscoreInstance);
+                        info.idContext = getIdContext(oscoreInstance);
+                    } else if (info.secureMode == SecurityMode.PSK) {
                         info.pskId = getPskIdentity(security);
                         info.pskKey = getPskKey(security);
                     } else if (info.secureMode == SecurityMode.RPK) {
@@ -272,5 +299,44 @@ public class ServersInfoExtractor {
 
         LwM2mResource isBootstrap = (LwM2mResource) response.getContent();
         return (Boolean) isBootstrap.getValue();
+    }
+
+    // OSCORE related methods below
+
+    public static byte[] getMasterSecret(LwM2mObjectInstance oscoreInstance) {
+        String value = (String) oscoreInstance.getResource(OSCORE_Master_Secret).getValue();
+        return Hex.decodeHex(value.toCharArray());
+    }
+
+    public static byte[] getSenderId(LwM2mObjectInstance oscoreInstance) {
+        String value = (String) oscoreInstance.getResource(OSCORE_Sender_ID).getValue();
+        return Hex.decodeHex(value.toCharArray());
+    }
+
+    public static byte[] getRecipientId(LwM2mObjectInstance oscoreInstance) {
+        String value = (String) oscoreInstance.getResource(OSCORE_Recipient_ID).getValue();
+        return Hex.decodeHex(value.toCharArray());
+    }
+
+    public static long getAeadAlgorithm(LwM2mObjectInstance oscoreInstance) {
+        return (long) oscoreInstance.getResource(OSCORE_AEAD_Algorithm).getValue();
+    }
+
+    public static long getHkdfAlgorithm(LwM2mObjectInstance oscoreInstance) {
+        return (long) oscoreInstance.getResource(OSCORE_HMAC_Algorithm).getValue();
+    }
+
+    public static byte[] getMasterSalt(LwM2mObjectInstance oscoreInstance) {
+        String value = (String) oscoreInstance.getResource(OSCORE_Master_Salt).getValue();
+
+        if (value.equals("")) {
+            return null;
+        } else {
+            return Hex.decodeHex(value.toCharArray());
+        }
+    }
+
+    public static byte[] getIdContext(LwM2mObjectInstance oscoreInstance) {
+        return null;
     }
 }

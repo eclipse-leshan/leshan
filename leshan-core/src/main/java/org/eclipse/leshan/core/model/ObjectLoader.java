@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.core.model;
 
@@ -35,10 +36,11 @@ public class ObjectLoader {
 
     private static final Logger LOG = LoggerFactory.getLogger(ObjectLoader.class);
 
-    static final String[] ddfpaths = new String[] { "LWM2M_Security-v1_0.xml", "LWM2M_Server-v1_0.xml",
+    static final String[] ddfpaths = new String[] { "LWM2M_Security-v1_1_1.xml", "LWM2M_Server-v1_0.xml",
                             "LWM2M_Access_Control-v1_0_3.xml", "LWM2M_Device-v1_0_3.xml",
                             "LWM2M_Connectivity_Monitoring-v1_0_2.xml", "LWM2M_Firmware_Update-v1_0_3.xml",
-                            "LWM2M_Location-v1_0_2.xml", "LWM2M_Connectivity_Statistics-v1_0_4.xml" };
+                            "LWM2M_Location-v1_0_2.xml", "LWM2M_Connectivity_Statistics-v1_0_4.xml",
+                            "LWM2M_OSCORE-v1_0_1.xml" };
 
     /**
      * Load the default LWM2M objects

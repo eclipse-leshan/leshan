@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.server.security;
 
@@ -97,7 +98,7 @@ public class SecurityChecker {
                 return false;
             }
         } else {
-            if (securityInfo != null) {
+            if (securityInfo != null && securityInfo.useOSCore == false) {
                 LOG.debug("Client '{}' must connect using DTLS", endpoint);
                 return false;
             }
@@ -180,6 +181,11 @@ public class SecurityChecker {
                     expectedX509CommonName, receivedX509CommonName);
             return false;
         }
+        return true;
+    }
+
+    protected boolean checkOscoreIdentity(String endpoint, Identity clientIdentity, SecurityInfo securityInfo) {
+        // TODO: Add comprehensive checks here
         return true;
     }
 }
