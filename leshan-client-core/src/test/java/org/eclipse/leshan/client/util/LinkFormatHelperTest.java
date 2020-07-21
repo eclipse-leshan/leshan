@@ -265,6 +265,7 @@ public class LinkFormatHelperTest {
         Link[] links = LinkFormatHelper.getBootstrapClientDescription(objectEnablers);
         String strLinks = Link.serialize(links);
 
+        // TODO : handle version correctly
         assertEquals(
                 "</>;lwm2m=1.0,</0/0>;ssid=111,</0/1>,</0/2>;ssid=222,</0/3>;ssid=333,</1>;ver=2.0,</1/0>;ssid=333,</2>;ver=2.0,</3/0>",
                 strLinks);

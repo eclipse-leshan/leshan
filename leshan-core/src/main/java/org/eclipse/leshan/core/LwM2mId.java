@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.core;
 
@@ -31,6 +32,7 @@ public interface LwM2mId {
     public static final int LOCATION = 6;
     public static final int CONNECTIVITY_STATISTICS = 7;
     public static final int SOFTWARE_MANAGEMENT = 9;
+    public static final int OSCORE = 21;
 
     /* SECURITY RESOURCES */
 
@@ -41,6 +43,16 @@ public interface LwM2mId {
     public static final int SEC_SERVER_PUBKEY = 4;
     public static final int SEC_SECRET_KEY = 5;
     public static final int SEC_SERVER_ID = 10;
+    public static final int SEC_OSCORE_SECURITY_MODE = 17;
+
+    /* OSCORE RESOURCES */
+
+    public static final int OSCORE_Master_Secret = 0;
+    public static final int OSCORE_Sender_ID = 1;
+    public static final int OSCORE_Recipient_ID = 2;
+    public static final int OSCORE_AEAD_Algorithm = 3;
+    public static final int OSCORE_HMAC_Algorithm = 4;
+    public static final int OSCORE_Master_Salt = 5;
 
     /* SERVER RESOURCES */
 
