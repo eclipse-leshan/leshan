@@ -206,8 +206,9 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             }
 
             try {
+                byte[] idContext = null;
                 OSCoreCtx ctx = new OSCoreCtx(serverInfo.masterSecret, true, aeadAlg, serverInfo.senderId,
-                        serverInfo.recipientId, hkdfAlg, 32, serverInfo.masterSalt, serverInfo.idContext);
+                        serverInfo.recipientId, hkdfAlg, 32, serverInfo.masterSalt, idContext);
                 db.addContext(serverInfo.getFullUri().toASCIIString(), ctx);
 
                 // Also add the context by the IP of the server since requests may use that

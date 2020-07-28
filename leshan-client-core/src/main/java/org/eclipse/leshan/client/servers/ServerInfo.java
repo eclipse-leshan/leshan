@@ -61,7 +61,6 @@ public class ServerInfo {
     public long aeadAlgorithm;
     public long hkdfAlgorithm;
     public byte[] masterSalt;
-    public byte[] idContext;
 
     public InetSocketAddress getAddress() {
         return getAddress(serverUri);
