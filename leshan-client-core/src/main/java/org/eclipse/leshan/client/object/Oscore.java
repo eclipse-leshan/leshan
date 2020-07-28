@@ -49,8 +49,6 @@ public class Oscore extends BaseInstanceEnabler {
     private int aeadAlgorithm;
     private int hkdfAlgorithm;
     private String masterSalt;
-    // TODO OSCORE : never used and not part of OSCORE object
-    private String idContext;
 
     public Oscore() {
 
@@ -68,7 +66,6 @@ public class Oscore extends BaseInstanceEnabler {
         this.aeadAlgorithm = aeadAlgorithm;
         this.hkdfAlgorithm = hkdfAlgorithm;
         this.masterSalt = masterSalt;
-        this.idContext = "";
     }
 
     /**

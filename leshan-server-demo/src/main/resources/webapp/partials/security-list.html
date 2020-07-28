@@ -63,7 +63,6 @@
 			<td ng-if="security.oscore">
 				Master Secret : <code>{{ security.oscore.masterSecret }}</code><br/>
 				Master Salt : <code>{{ security.oscore.masterSalt }}</code><br/>
-				ID Context : <code>{{ security.oscore.idContext }}</code><br/>
 				Sender ID : <code>{{ security.oscore.senderId }}</code><br/>
 				Recipient ID : <code>{{ security.oscore.recipientId }}</code><br/>
 				AEAD Algorithm : <code>{{ security.oscore.aeadAlgorithm }}</code><br/>
@@ -159,17 +158,6 @@
 							<p class="text-right text-muted small" style="margin:0">Hexadecimal format</p>
 							<p class="help-block" ng-if="form.masterSalt.$error.pattern">Hexadecimal format is expected</p>
 							<p class="help-block" ng-if="form.masterSalt.$error.maxlength">Master Salt is too long</p>
-						</div>
-					</div>
-
-					<div class="form-group" ng-class="{'hidden': securityMode!='oscore'}" show-errors>
-						<label for="idContextValue" class="col-sm-4 control-label">ID Context</label>
-						<div class="col-sm-8">
-							<textarea class="form-control" style="resize:none" rows="1" id="idContextValue" name="idContext" 
-							ng-model="idContext" ng-pattern="/^[0-9a-fA-F]+$/" ng-maxlength="32" disabled={true}></textarea>
-							<p class="text-right text-muted small" style="margin:0">Not supported</p>
-							<p class="help-block" ng-if="form.idContext.$error.pattern">Hexadecimal format is expected</p>
-							<p class="help-block" ng-if="form.idContext.$error.maxlength">ID Context is too long</p>
 						</div>
 					</div>
 

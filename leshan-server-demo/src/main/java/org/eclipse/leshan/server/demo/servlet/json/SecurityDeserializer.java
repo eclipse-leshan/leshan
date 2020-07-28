@@ -131,14 +131,8 @@ public class SecurityDeserializer implements JsonDeserializer<SecurityInfo> {
                     }
                 }
 
+                // ID Context not supported
                 byte[] idContext = null;
-                if (oscore.get("idContext") != null) {
-                    idContext = Hex.decodeHex(oscore.get("idContext").getAsString().toCharArray());
-
-                    if (idContext.length == 0) {
-                        idContext = null;
-                    }
-                }
 
                 // Parse AEAD Algorithm
                 AlgorithmID aeadAlgorithm = null;
