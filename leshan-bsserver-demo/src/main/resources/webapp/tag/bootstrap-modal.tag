@@ -104,7 +104,6 @@
                     oscoreAeadAlgorithm : bsserverOscore.aeadAlgorithm,
                     oscoreHmacAlgorithm : bsserverOscore.hkdfAlgorithm,
                     oscoreMasterSalt : bsserverOscore.masterSalt,
-                    oscoreIdContext : bsserverOscore.idContext
                 }
                 var bsOscoreSecurityMode = 0; // link to bs oscore object
                 bsserver.secmode = "NO_SEC"; // act as no_sec from here
