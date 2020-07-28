@@ -20,17 +20,7 @@
             <p class="help-block" if={masterSalt.toolong}>The master salt is too long</p>
         </div>
     </div>
-    
-    <div class={ form-group:true, has-error: idContext.error }>
-        <label for="idContext" class="col-sm-4 control-label">ID Context</label>
-        <div class="col-sm-8">
-            <textarea class="form-control" style="resize:none" rows="1" id="idContext" ref="idContext" oninput={validate_idContext} onblur={validate_idContext} disabled={true}></textarea>
-            <p class="text-right text-muted small" style="margin:0">Not supported</p>
-            <p class="help-block" if={idContext.nothexa}>Hexadecimal format is expected</p>
-            <p class="help-block" if={idContext.toolong}>The ID context is too long</p>
-        </div>
-    </div>
-    
+
     <div class={ form-group:true, has-error: senderId.error }>
         <label for="senderId" class="col-sm-4 control-label">Sender ID</label>
         <div class="col-sm-8">
@@ -78,7 +68,6 @@
         // Tag internal state
         tag.masterSecret={};
         tag.masterSalt={};
-        tag.idContext={};
         tag.senderId={};
         tag.recipientId={};
         tag.aeadAlgorithm={};
@@ -87,7 +76,6 @@
         tag.defaultHkdfAlgorithm = "HKDF_HMAC_SHA_256";
         tag.validate_masterSecret = validate_masterSecret;
         tag.validate_masterSalt = validate_masterSalt;
-        tag.validate_idContext = validate_idContext;
         tag.validate_senderId = validate_senderId;
         tag.validate_recipientId = validate_recipientId;
         tag.validate_aeadAlgorithm = validate_aeadAlgorithm;
@@ -125,22 +113,6 @@
             }else if (!isEmpty && ! /^[0-9a-fA-F]+$/i.test(str)){
                 tag.masterSalt.error = true;
                 tag.masterSalt.nothexa = true;
-            }
-            tag.onchange();
-        }
-        
-        function validate_idContext(e){
-            var str = tag.refs.idContext.value;
-            tag.idContext.error = false;
-            tag.idContext.toolong = false;
-            tag.idContext.nothexa = false;
-            var isEmpty = !str || 0 === str.length;
-            if (str.length > 32){
-                tag.idContext.error = true;
-                tag.idContext.toolong = true;
-            }else if (!isEmpty && ! /^[0-9a-fA-F]+$/i.test(str)){
-                tag.idContext.error = true;
-                tag.idContext.nothexa = true;
             }
             tag.onchange();
         }
@@ -202,7 +174,6 @@
         function has_error(){
             return  typeof tag.masterSecret.error === "undefined" || tag.masterSecret.error
             || tag.masterSalt.error
-            || tag.idContext.error
             || tag.senderId.error
             || tag.recipientId.error
             || tag.aeadAlgorithm.error
@@ -248,7 +219,6 @@
         function get_value(){
             return { masterSecret:tag.refs.masterSecret.value,
                 masterSalt:tag.refs.masterSalt.value,
-                idContext:tag.refs.idContext.value,
                 senderId:tag.refs.senderId.value,
                 recipientId:tag.refs.recipientId.value,
                 aeadAlgorithm:parse_aeadAlgorithm(tag.refs.aeadAlgorithm.value),
