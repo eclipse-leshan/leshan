@@ -116,7 +116,6 @@ public class ServersInfoExtractor {
                             info.aeadAlgorithm = getAeadAlgorithm(oscoreInstance);
                             info.hkdfAlgorithm = getHkdfAlgorithm(oscoreInstance);
                             info.masterSalt = getMasterSalt(oscoreInstance);
-                            info.idContext = getIdContext(oscoreInstance);
                         } else if (info.secureMode == SecurityMode.PSK) {
                             info.pskId = getPskIdentity(security);
                             info.pskKey = getPskKey(security);
@@ -161,7 +160,6 @@ public class ServersInfoExtractor {
                         info.aeadAlgorithm = getAeadAlgorithm(oscoreInstance);
                         info.hkdfAlgorithm = getHkdfAlgorithm(oscoreInstance);
                         info.masterSalt = getMasterSalt(oscoreInstance);
-                        info.idContext = getIdContext(oscoreInstance);
                     } else if (info.secureMode == SecurityMode.PSK) {
                         info.pskId = getPskIdentity(security);
                         info.pskKey = getPskKey(security);
@@ -381,9 +379,5 @@ public class ServersInfoExtractor {
         } else {
             return Hex.decodeHex(value.toCharArray());
         }
-    }
-
-    public static byte[] getIdContext(LwM2mObjectInstance oscoreInstance) {
-        return null;
     }
 }

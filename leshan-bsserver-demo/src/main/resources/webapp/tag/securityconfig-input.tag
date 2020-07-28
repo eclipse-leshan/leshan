@@ -112,7 +112,6 @@
                                 
                 config.oscore.masterSecret = oscoreVals.masterSecret;
                 config.oscore.masterSalt = oscoreVals.masterSalt;
-                config.oscore.idContext = oscoreVals.idContext;
                 config.oscore.senderId = oscoreVals.senderId;
                 config.oscore.recipientId = oscoreVals.recipientId;
                 config.oscore.aeadAlgorithm = oscoreVals.aeadAlgorithm;

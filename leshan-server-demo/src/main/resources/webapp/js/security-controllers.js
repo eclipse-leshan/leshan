@@ -105,8 +105,8 @@ angular.module('securityControllers', [])
                 } else if($scope.securityMode == "oscore") {
                     // Information for OSCORE
                     var security = {endpoint: $scope.endpoint, oscore : { masterSecret : $scope.masterSecret, masterSalt : $scope.masterSalt,
-                        idContext : $scope.idContext, senderId : $scope.senderId, recipientId : $scope.recipientId,
-                        aeadAlgorithm : $scope.aeadAlgorithm || $scope.defaultAeadAlgorithm, hkdfAlgorithm : $scope.hkdfAlgorithm || $scope.defaultHkdfAlgorithm }};
+                        senderId : $scope.senderId, recipientId : $scope.recipientId, aeadAlgorithm : $scope.aeadAlgorithm || $scope.defaultAeadAlgorithm,
+                        hkdfAlgorithm : $scope.hkdfAlgorithm || $scope.defaultHkdfAlgorithm }};
                     } else {
                     var security = {endpoint: $scope.endpoint, x509 : true};
                 }

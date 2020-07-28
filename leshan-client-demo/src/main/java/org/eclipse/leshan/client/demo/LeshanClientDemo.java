@@ -246,8 +246,6 @@ public class LeshanClientDemo {
                 "The OSCORE pre-shared key used between the Client and LwM2M Server/Bootstrap Server.");
         options.addOption("msalt", true,
                 "The OSCORE master salt used between the Client and LwM2M Server or Bootstrap Server.\nDefault: Empty");
-        options.addOption("idctx", true,
-                "The OSCORE ID Context used between the Client and LwM2M Server or Bootstrap Server.\nDefault: Empty");
         options.addOption("sid", true,
                 "The OSCORE Sender ID used by the client to the LwM2M Server or Bootstrap Server.");
         options.addOption("rid", true,
@@ -629,13 +627,6 @@ public class LeshanClientDemo {
                 mastersaltStr = "";
             }
 
-            String idcontextStr = cl.getOptionValue("idctx");
-            if (idcontextStr != null) {
-                System.err.println("The OSCORE ID Context parameter is not yet supported");
-                formatter.printHelp(USAGE, options);
-                return;
-            }
-
             String senderidStr = cl.getOptionValue("sid");
             if (senderidStr == null) {
                 System.err.println("The OSCORE Sender ID must be indicated");
@@ -691,7 +682,7 @@ public class LeshanClientDemo {
             }
 
             // Save the configured OSCORE parameters
-            oscoreSettings = new OSCoreSettings(mastersecretStr, mastersaltStr, idcontextStr, senderidStr,
+            oscoreSettings = new OSCoreSettings(mastersecretStr, mastersaltStr, senderidStr,
                     recipientidStr, aeadInt, hkdfInt);
         }
 
@@ -1050,7 +1041,7 @@ public class LeshanClientDemo {
         public int aeadAlgorithm;
         public int hkdfAlgorithm;
 
-        public OSCoreSettings(String masterSecret, String masterSalt, String idContext, String senderId,
+        public OSCoreSettings(String masterSecret, String masterSalt, String senderId,
                 String recipientId, int aeadAlgorithm, int hkdfAlgorithm) {
             this.masterSecret = masterSecret;
             this.masterSalt = masterSalt;
