@@ -26,13 +26,11 @@ import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 
 /**
  * A factory for {@link RegistrationEngine}
- * 
- * Since 1.1 {@link RegistrationEngineFactory2} should be preferred.
  */
 public interface RegistrationEngineFactory {
 
     RegistrationEngine createRegistratioEngine(String endpoint, LwM2mObjectTree objectTree,
             EndpointsManager endpointsManager, LwM2mRequestSender requestSender, BootstrapHandler bootstrapState,
             LwM2mClientObserver observer, Map<String, String> additionalAttributes,
-            ScheduledExecutorService sharedExecutor);
+            Map<String, String> bsAdditionalAttributes, ScheduledExecutorService sharedExecutor);
 }
