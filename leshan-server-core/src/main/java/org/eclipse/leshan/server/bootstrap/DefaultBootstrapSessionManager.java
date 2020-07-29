@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Nothing specific is done on session's end.
  */
-public class DefaultBootstrapSessionManager implements BootstrapSessionManager2 {
+public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultBootstrapSessionManager.class);
 
@@ -64,27 +64,15 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager2 
     }
 
     @Override
-    @Deprecated
-    public BootstrapSession begin(String endpoint, Identity clientIdentity) {
-        return null;
-    }
-
-    @Override
     public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity) {
-        BootstrapSession session = begin(request.getEndpointName(), clientIdentity);
-        if (session != null) {
-            LOG.warn("It seems you override a deprecated begin method, you should use the new one");
+        boolean authorized;
+        if (bsSecurityStore != null) {
+            List<SecurityInfo> securityInfos = bsSecurityStore.getAllByEndpoint(request.getEndpointName());
+            authorized = securityChecker.checkSecurityInfos(request.getEndpointName(), clientIdentity, securityInfos);
         } else {
-            boolean authorized;
-            if (bsSecurityStore != null) {
-                List<SecurityInfo> securityInfos = bsSecurityStore.getAllByEndpoint(request.getEndpointName());
-                authorized = securityChecker.checkSecurityInfos(request.getEndpointName(), clientIdentity,
-                        securityInfos);
-            } else {
-                authorized = true;
-            }
-            session = new DefaultBootstrapSession(request, clientIdentity, authorized);
+            authorized = true;
         }
+        DefaultBootstrapSession session = new DefaultBootstrapSession(request, clientIdentity, authorized);
         LOG.trace("Bootstrap session started : {}", session);
         return session;
     }

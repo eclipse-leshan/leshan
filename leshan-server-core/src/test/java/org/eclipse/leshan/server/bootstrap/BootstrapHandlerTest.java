@@ -222,8 +222,8 @@ public class BootstrapHandlerTest {
         }
 
         @Override
-        public BootstrapSession begin(String endpoint, Identity clientIdentity) {
-            lastSession = new DefaultBootstrapSession(new BootstrapRequest(endpoint), clientIdentity, authorized);
+        public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity) {
+            lastSession = new DefaultBootstrapSession(request, clientIdentity, authorized);
             return lastSession;
         }
 

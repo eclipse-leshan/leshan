@@ -40,21 +40,6 @@ public class DefaultBootstrapSession implements BootstrapSession {
      * Create a {@link DefaultBootstrapSession} using default {@link ContentFormat#TLV} content format and using
      * <code>System.currentTimeMillis()</code> to set the creation time.
      * 
-     * @param endpoint The endpoint of the device.
-     * @param identity The transport layer identity of the device.
-     * @param authorized True if device is authorized to bootstrap.
-     * 
-     * @deprecated use {@link #DefaultBootstrapSession(BootstrapRequest, Identity, boolean)} instead
-     */
-    @Deprecated
-    public DefaultBootstrapSession(String endpoint, Identity identity, boolean authorized) {
-        this(endpoint, identity, authorized, ContentFormat.TLV);
-    }
-
-    /**
-     * Create a {@link DefaultBootstrapSession} using default {@link ContentFormat#TLV} content format and using
-     * <code>System.currentTimeMillis()</code> to set the creation time.
-     * 
      * @param request The bootstrap request which initiate the session.
      * @param identity The transport layer identity of the device.
      * @param authorized True if device is authorized to bootstrap.
@@ -63,22 +48,6 @@ public class DefaultBootstrapSession implements BootstrapSession {
      */
     public DefaultBootstrapSession(BootstrapRequest request, Identity identity, boolean authorized) {
         this(request, identity, authorized, ContentFormat.TLV);
-    }
-
-    /**
-     * Create a {@link DefaultBootstrapSession} using <code>System.currentTimeMillis()</code> to set the creation time.
-     * 
-     * @param endpoint The endpoint of the device.
-     * @param identity The transport layer identity of the device.
-     * @param authorized True if device is authorized to bootstrap.
-     * @param contentFormat The content format to use to write object.
-     * 
-     * @deprecated use {@link #DefaultBootstrapSession(BootstrapRequest, Identity, boolean, ContentFormat)} instead
-     */
-    @Deprecated
-    public DefaultBootstrapSession(String endpoint, Identity identity, boolean authorized,
-            ContentFormat contentFormat) {
-        this(endpoint, identity, authorized, contentFormat, System.currentTimeMillis());
     }
 
     /**
@@ -94,29 +63,6 @@ public class DefaultBootstrapSession implements BootstrapSession {
     public DefaultBootstrapSession(BootstrapRequest request, Identity identity, boolean authorized,
             ContentFormat contentFormat) {
         this(request, identity, authorized, contentFormat, System.currentTimeMillis());
-    }
-
-    /**
-     * Create a {@link DefaultBootstrapSession}.
-     * 
-     * @param endpoint The endpoint of the device.
-     * @param identity The transport layer identity of the device.
-     * @param authorized True if device is authorized to bootstrap.
-     * @param contentFormat The content format to use to write object.
-     * @param creationTime The creation time of this session in ms.
-     * 
-     * @deprecated use {@link #DefaultBootstrapSession(BootstrapRequest, Identity, boolean, ContentFormat, long)}
-     */
-    @Deprecated
-    public DefaultBootstrapSession(String endpoint, Identity identity, boolean authorized, ContentFormat contentFormat,
-            long creationTime) {
-        this.id = RandomStringUtils.random(10, true, true);
-        this.request = null;
-        this.endpoint = endpoint;
-        this.identity = identity;
-        this.authorized = authorized;
-        this.contentFormat = contentFormat;
-        this.creationTime = creationTime;
     }
 
     /**
@@ -172,6 +118,7 @@ public class DefaultBootstrapSession implements BootstrapSession {
         return creationTime;
     }
 
+    @Override
     public BootstrapRequest getBootstrapRequest() {
         return request;
     }

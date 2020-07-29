@@ -82,12 +82,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
 
         // Start session, checking the BS credentials
         final BootstrapSession session;
-        // @since 1.1
-        if (sessionManager instanceof BootstrapSessionManager2) {
-            session = ((BootstrapSessionManager2) sessionManager).begin(request, sender);
-        } else {
-            session = this.sessionManager.begin(endpoint, sender);
-        }
+        session = sessionManager.begin(request, sender);
 
         if (!session.isAuthorized()) {
             sessionManager.failed(session, UNAUTHORIZED);

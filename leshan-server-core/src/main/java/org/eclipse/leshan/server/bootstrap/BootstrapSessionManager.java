@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
+import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -24,8 +25,6 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
  * <p>
  * This class is responsible to accept or refuse to start new {@link BootstrapSession}. The session also contain the
  * ContentFormat which will be used to send Bootstrap Write Request.
- * 
- * Since 1.1, you should rather use a {@link BootstrapSessionManager2}
  * 
  * @see DefaultBootstrapSessionManager
  * @see BootstrapSession
@@ -57,14 +56,14 @@ public interface BootstrapSessionManager {
 
     /**
      * Starts a bootstrapping session for an endpoint. In particular, this is responsible for authorizing the endpoint
-     * if applicable
+     * if applicable.
      * 
-     * @param endpoint the endpoint of the client.
+     * @param request the bootstrap request which initiates the session.
      * @param clientIdentity the {@link Identity} of the client.
      * 
      * @return a BootstrapSession, possibly authorized.
      */
-    public BootstrapSession begin(String endpoint, Identity clientIdentity);
+    public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity);
 
     /**
      * Called when we receive a successful response to a request.
