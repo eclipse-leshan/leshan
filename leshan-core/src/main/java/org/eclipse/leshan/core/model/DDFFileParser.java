@@ -129,7 +129,7 @@ public class DDFFileParser {
         List<ResourceModel> resources = new ArrayList<>();
         String urn = null;
         String description2 = null;
-        String lwm2mVersion = null;
+        String lwm2mVersion = ObjectModel.DEFAULT_VERSION;
 
         for (int i = 0; i < object.getChildNodes().getLength(); i++) {
             Node field = object.getChildNodes().item(i);
@@ -179,7 +179,8 @@ public class DDFFileParser {
                 urn = field.getTextContent();
                 break;
             case "LWM2MVersion":
-                lwm2mVersion = field.getTextContent();
+                if (!StringUtils.isEmpty(field.getTextContent()))
+                    lwm2mVersion = field.getTextContent();
                 break;
             case "Description2":
                 description2 = field.getTextContent();

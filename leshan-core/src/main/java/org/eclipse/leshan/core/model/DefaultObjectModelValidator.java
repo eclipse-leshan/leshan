@@ -60,7 +60,8 @@ public class DefaultObjectModelValidator implements ObjectModelValidator {
         // validate others fields
         validateModelFieldNotNull(object, modelName, object.multiple, "multiple");
         validateModelFieldNotNull(object, modelName, object.mandatory, "mandatory");
-        validateVersion(object.version, object, modelName);
+        validateVersion(object.version, object, "version", modelName);
+        validateVersion(object.lwm2mVersion, object, "lwm2mVersion", modelName);
         validateURN(object.urn, object, modelName);
 
         // validate resources
@@ -143,14 +144,14 @@ public class DefaultObjectModelValidator implements ObjectModelValidator {
 
         if (urnParts.length == 6) {
             String version = urnParts[5];
-            String expectedVersion = object.getVersion();
+            String expectedVersion = object.version;
             if (!expectedVersion.equals(version)) {
                 throw new InvalidModelException(
                         "Model for Object %s(%d) in %s is invalid : URN (%s) version MUST be equals to object version (%s)",
                         object.name, object.id, modelName, urn, expectedVersion);
             }
         } else {
-            if (!ObjectModel.DEFAULT_VERSION.equals(object.getVersion())) {
+            if (!ObjectModel.DEFAULT_VERSION.equals(object.version)) {
                 throw new InvalidModelException(
                         "Model for Object %s(%d) in %s is invalid : URN (%s) version MUST be present as object version is not %s",
                         object.name, object.id, modelName, urn, ObjectModel.DEFAULT_VERSION);
@@ -158,27 +159,29 @@ public class DefaultObjectModelValidator implements ObjectModelValidator {
         }
     }
 
-    protected void validateVersion(String version, ObjectModel object, String modelName) throws InvalidModelException {
+    protected void validateVersion(String version, ObjectModel object, String fieldName, String modelName)
+            throws InvalidModelException {
         if (version == null || version.isEmpty())
-            return;
+            throw new InvalidModelException("Model for Object (%d) in %s is invalid : %s  MUST NOT be null or empty",
+                    object.id, modelName, fieldName);
         String[] versionPart = version.split("\\.");
         if (versionPart.length != 2) {
             throw new InvalidModelException(
-                    "Model for Object %s(%d) in %s is invalid : Version (%s) MUST be composed of 2 parts", object.name,
-                    object.id, modelName, version);
+                    "Model for Object %s(%d) in %s is invalid : %s (%s) MUST be composed of 2 parts", object.name,
+                    object.id, modelName, fieldName, version);
         }
         for (int i = 0; i < 2; i++) {
             try {
                 int parsedInt = Integer.parseInt(versionPart[i]);
                 if (parsedInt < 0) {
                     throw new InvalidModelException(
-                            "Model for Object %s(%d) in %s is invalid : Version (%s) part %d (%s) is not a valid integer",
-                            object.name, object.id, modelName, version, i + 1, versionPart[i]);
+                            "Model for Object %s(%d) in %s is invalid : %s (%s) part %d (%s) is not a valid integer",
+                            object.name, object.id, modelName, fieldName, version, i + 1, versionPart[i]);
                 }
             } catch (Exception e) {
                 throw new InvalidModelException(
-                        "Model for Object %s(%d) in %s is invalid : Version (%s) part %d (%s) is not a valid integer",
-                        object.name, object.id, modelName, version, i + 1, versionPart);
+                        "Model for Object %s(%d) in %s is invalid : %s (%s) part %d (%s) is not a valid integer",
+                        object.name, object.id, modelName, fieldName, version, i + 1, versionPart);
             }
         }
     }

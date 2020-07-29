@@ -55,7 +55,7 @@ public class LwM2mModelRepository {
                 ObjectModel old = map.put(key, model);
                 if (old != null) {
                     LOG.debug("Model already exists for object {} in version {}. Overriding it.", model.id,
-                            model.getVersion());
+                            model.version);
                 }
             }
             objects = Collections.unmodifiableMap(map);
@@ -70,7 +70,7 @@ public class LwM2mModelRepository {
     }
 
     private String getKey(ObjectModel objectModel) {
-        return getKey(objectModel.id, objectModel.getVersion());
+        return getKey(objectModel.id, objectModel.version);
     }
 
     private String getKey(Integer objectId, String version) {

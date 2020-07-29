@@ -21,8 +21,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.leshan.core.LwM2m;
-
 /**
  * An object description.
  * 
@@ -58,7 +56,8 @@ public class ObjectModel {
 
     public ObjectModel(Integer id, String name, String description, String version, Boolean multiple, Boolean mandatory,
             Collection<ResourceModel> resources) {
-        this(id, name, description, version, multiple, mandatory, resources, URN.generateURN(id, version), null, "");
+        this(id, name, description, version, multiple, mandatory, resources, URN.generateURN(id, version),
+                DEFAULT_VERSION, "");
     }
 
     public ObjectModel(Integer id, String name, String description, String version, Boolean multiple, Boolean mandatory,
@@ -88,29 +87,6 @@ public class ObjectModel {
 
     public boolean isOmaObject() {
         return id >= OMA_OBJECT_MIN_ID && id <= OMA_OBJECT_MAX_ID;
-    }
-
-    /**
-     * @return the version and if the version is null or empty return the default value 1.0
-     * @see ObjectModel#DEFAULT_VERSION
-     */
-    public String getVersion() {
-        if (version == null || version.isEmpty()) {
-            return ObjectModel.DEFAULT_VERSION;
-        }
-        return version;
-    }
-
-    /**
-     * @return the LWM2M version and if the LWM2M version is null or empty return the default value 1.0
-     * @see LwM2m#VERSION
-     * @since 1.1
-     */
-    public String getLwM2mVersion() {
-        if (lwm2mVersion == null || lwm2mVersion.isEmpty()) {
-            return LwM2m.VERSION;
-        }
-        return lwm2mVersion;
     }
 
     @Override
