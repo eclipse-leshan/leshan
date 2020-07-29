@@ -30,7 +30,6 @@ import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.client.californium.LwM2mClientCoapResource;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
-import org.eclipse.leshan.client.resource.LwM2mObjectEnabler2;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.Link;
@@ -70,15 +69,11 @@ import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteAttributesResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A CoAP {@link Resource} in charge of handling requests targeting a lwM2M Object.
  */
 public class ObjectResource extends LwM2mClientCoapResource implements ObjectListener {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ObjectResource.class);
 
     protected final LwM2mObjectEnabler nodeEnabler;
     protected final LwM2mNodeEncoder encoder;
@@ -103,34 +98,27 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
         String URI = exchange.getRequestOptions().getUriPathString();
 
         if (exchange.getRequestOptions().getAccept() == MediaTypeRegistry.APPLICATION_LINK_FORMAT) {
-            // Manage Bootstrap Discover Request
             if (identity.isLwm2mBootstrapServer()) {
-                if (nodeEnabler instanceof LwM2mObjectEnabler2) {
-                    BootstrapDiscoverResponse response = ((LwM2mObjectEnabler2) nodeEnabler).discover(identity,
-                            new BootstrapDiscoverRequest(URI));
-                    if (response.getCode().isError()) {
-                        exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
-                    } else {
-                        exchange.respond(toCoapResponseCode(response.getCode()),
-                                Link.serialize(response.getObjectLinks()), MediaTypeRegistry.APPLICATION_LINK_FORMAT);
-                    }
-                    return;
+                // Manage Bootstrap Discover Request
+                BootstrapDiscoverResponse response = nodeEnabler.discover(identity, new BootstrapDiscoverRequest(URI));
+                if (response.getCode().isError()) {
+                    exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
+                } else {
+                    exchange.respond(toCoapResponseCode(response.getCode()), Link.serialize(response.getObjectLinks()),
+                            MediaTypeRegistry.APPLICATION_LINK_FORMAT);
                 }
+                return;
             } else {
-                LOG.warn(
-                        "Your LwM2mObjectEnabler2 {} does not support Bootstrap discover request, you should consider to make it implements LwM2mObjectEnabler2",
-                        nodeEnabler.getClass().getName());
-                // continue with classic discover for backward compatibility.
+                // Manage Discover Request
+                DiscoverResponse response = nodeEnabler.discover(identity, new DiscoverRequest(URI));
+                if (response.getCode().isError()) {
+                    exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
+                } else {
+                    exchange.respond(toCoapResponseCode(response.getCode()), Link.serialize(response.getObjectLinks()),
+                            MediaTypeRegistry.APPLICATION_LINK_FORMAT);
+                }
+                return;
             }
-            // Manage Discover Request
-            DiscoverResponse response = nodeEnabler.discover(identity, new DiscoverRequest(URI));
-            if (response.getCode().isError()) {
-                exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
-            } else {
-                exchange.respond(toCoapResponseCode(response.getCode()), Link.serialize(response.getObjectLinks()),
-                        MediaTypeRegistry.APPLICATION_LINK_FORMAT);
-            }
-            return;
         } else {
             // handle content format for Read and Observe Request
             ContentFormat requestedContentFormat = null;

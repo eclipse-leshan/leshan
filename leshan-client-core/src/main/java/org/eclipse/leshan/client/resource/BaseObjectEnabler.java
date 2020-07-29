@@ -64,10 +64,10 @@ import org.eclipse.leshan.core.response.WriteAttributesResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 
 /**
- * A abstract implementation of {@link LwM2mObjectEnabler2}. It could be use as base for any {@link LwM2mObjectEnabler2}
+ * A abstract implementation of {@link LwM2mObjectEnabler}. It could be use as base for any {@link LwM2mObjectEnabler}
  * implementation.
  */
-public abstract class BaseObjectEnabler implements LwM2mObjectEnabler2 {
+public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
     protected final int id;
     protected final TransactionalObjectListener transactionalListener;
