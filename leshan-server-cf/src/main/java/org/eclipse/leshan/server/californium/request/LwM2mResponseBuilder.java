@@ -37,7 +37,7 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.DiscoverRequest;
-import org.eclipse.leshan.core.request.DownlinkRequestVisitor2;
+import org.eclipse.leshan.core.request.DownlinkRequestVisitor;
 import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.request.LwM2mRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
@@ -71,7 +71,7 @@ import org.slf4j.LoggerFactory;
  * 
  * @param <T> the type of the response to build.
  */
-public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRequestVisitor2 {
+public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRequestVisitor {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mResponseBuilder.class);
 

@@ -18,8 +18,6 @@ package org.eclipse.leshan.core.request;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A Lightweight M2M request to let LWM2M Bootstrap server discovering which LwM2M Objects and Object Instances are
@@ -28,8 +26,6 @@ import org.slf4j.LoggerFactory;
  * @since 1.1
  */
 public class BootstrapDiscoverRequest extends AbstractDownlinkRequest<BootstrapDiscoverResponse> {
-
-    private static final Logger LOG = LoggerFactory.getLogger(BootstrapDiscoverRequest.class);
 
     /**
      * Creates a request for discovering all objects and instances supported by the client.
@@ -72,12 +68,6 @@ public class BootstrapDiscoverRequest extends AbstractDownlinkRequest<BootstrapD
 
     @Override
     public void accept(DownlinkRequestVisitor visitor) {
-        if (visitor instanceof DownlinkRequestVisitor2) {
-            ((DownlinkRequestVisitor2) visitor).visit(this);
-        } else {
-            LOG.warn(
-                    "Your visitor {} does not support Bootstrap discover request, you should consider to make it implements DownlinkRequestVisitor2",
-                    this.getClass().getName());
-        }
+        visitor.visit(this);
     }
 }

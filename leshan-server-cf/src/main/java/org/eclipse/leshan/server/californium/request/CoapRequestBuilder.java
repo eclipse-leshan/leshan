@@ -38,7 +38,7 @@ import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.DiscoverRequest;
 import org.eclipse.leshan.core.request.DownlinkRequest;
-import org.eclipse.leshan.core.request.DownlinkRequestVisitor2;
+import org.eclipse.leshan.core.request.DownlinkRequestVisitor;
 import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.ObserveRequest;
@@ -53,7 +53,7 @@ import org.eclipse.leshan.server.californium.observation.ObserveUtil;
  * <p>
  * Call <code>CoapRequestBuilder#visit(lwm2mRequest)</code>, then get the result using {@link #getRequest()}
  */
-public class CoapRequestBuilder implements DownlinkRequestVisitor2 {
+public class CoapRequestBuilder implements DownlinkRequestVisitor {
 
     private Request coapRequest;
 
