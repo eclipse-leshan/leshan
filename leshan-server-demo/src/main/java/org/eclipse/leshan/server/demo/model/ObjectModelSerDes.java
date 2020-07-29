@@ -36,13 +36,15 @@ public class ObjectModelSerDes extends JsonSerDes<ObjectModel> {
     @Override
     public JsonObject jSerialize(ObjectModel m) {
         final JsonObject o = Json.object();
-        o.add("name", m.name);
         o.add("id", m.id);
+        o.add("name", m.name);
         o.add("instancetype", m.multiple ? "multiple" : "single");
         o.add("mandatory", m.mandatory);
-        if (!ObjectModel.DEFAULT_VERSION.equals(m.version))
-            o.add("version", m.version);
+        o.add("urn", m.urn);
+        o.add("version", m.version);
+        o.add("lwm2mversion", m.lwm2mVersion);
         o.add("description", m.description);
+        o.add("description2", m.description2);
 
         // sort resources value
         List<ResourceModel> resourceSpecs = new ArrayList<>(m.resources.values());
@@ -76,12 +78,22 @@ public class ObjectModelSerDes extends JsonSerDes<ObjectModel> {
 
         String name = o.getString("name", null);
         String instancetype = o.getString("instancetype", null);
-        boolean mandatory = o.getBoolean("mandatory", false);
-        String description = o.getString("description", null);
+        if (!instancetype.equals("multiple") && !instancetype.equals("single")) {
+            throw new JsonException("Invalid value for 'instancetype' : must be multiple or single");
+        }
+        Boolean mandatory = null;
+        if (o.get("mandatory") != null) {
+            mandatory = o.asBoolean();
+        }
+        String urn = o.getString("urn", null);
         String version = o.getString("version", ObjectModel.DEFAULT_VERSION);
+        String lwm2mVersion = o.getString("lwm2mversion", ObjectModel.DEFAULT_VERSION);
+        String description = o.getString("description", null);
+        String description2 = o.getString("description2", null);
+
         List<ResourceModel> resourceSpecs = resourceModelSerDes.deserialize(o.get("resourcedefs").asArray());
 
         return new ObjectModel(id, name, description, version, "multiple".equals(instancetype), mandatory,
-                resourceSpecs);
+                resourceSpecs, urn, lwm2mVersion, description2);
     }
 }
