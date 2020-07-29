@@ -117,13 +117,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             // handle success response:
             Link[] links;
             if (MediaTypeRegistry.APPLICATION_LINK_FORMAT != coapResponse.getOptions().getContentFormat()) {
-                // TODO change this behavior for the 2.0 :
-                // throw new InvalidResponseException("Client [%s] returned unexpected content format [%s] for [%s]",
-                // clientEndpoint, coapResponse.getOptions().getContentFormat(), request);
-                LOG.debug("Expected LWM2M Client [{}] to return application/link-format [{}] content but got [{}]",
-                        clientEndpoint, MediaTypeRegistry.APPLICATION_LINK_FORMAT,
-                        coapResponse.getOptions().getContentFormat());
-                links = new Link[] {}; // empty list
+                throw new InvalidResponseException("Client [%s] returned unexpected content format [%s] for [%s]",
+                        clientEndpoint, coapResponse.getOptions().getContentFormat(), request);
             } else {
                 links = Link.parse(coapResponse.getPayload());
             }
