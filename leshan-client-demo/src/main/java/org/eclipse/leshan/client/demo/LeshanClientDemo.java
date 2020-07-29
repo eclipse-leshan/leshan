@@ -26,7 +26,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPublicKey;
 import java.util.Arrays;
@@ -476,7 +475,7 @@ public class LeshanClientDemo {
             PrivateKey clientPrivateKey, PublicKey clientPublicKey, PublicKey serverPublicKey,
             X509Certificate clientCertificate, X509Certificate serverCertificate, Float latitude, Float longitude,
             float scaleFactor, boolean supportOldFormat, boolean supportDeprecatedCiphers, boolean reconnectOnUpdate,
-            boolean forceFullhandshake, String modelsFolderPath) throws CertificateEncodingException {
+            boolean forceFullhandshake, String modelsFolderPath) throws Exception {
 
         locationInstance = new MyLocation(latitude, longitude, scaleFactor);
 

@@ -20,7 +20,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -65,62 +64,15 @@ public class DDFFileParser {
     }
 
     /**
-     * @deprecated use {@link #parseEx(File)}
-     */
-    @Deprecated
-    public List<ObjectModel> parse(File ddfFile) {
-        try (InputStream input = new FileInputStream(ddfFile)) {
-            return parse(input, ddfFile.getName());
-        } catch (Exception e) {
-            LOG.error("Could not parse the resource definition file " + ddfFile.getName(), e);
-        }
-        return Collections.emptyList();
-    }
-
-    /**
-     * @deprecated use {@link #parseEx(InputStream, String)}
-     */
-    @Deprecated
-    public List<ObjectModel> parse(InputStream inputStream, String streamName) {
-        streamName = streamName == null ? "" : streamName;
-
-        LOG.debug("Parsing DDF file {}", streamName);
-
-        try {
-            // Parse XML file
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Document document = builder.parse(inputStream);
-
-            // Validate XML against Schema
-            if (ddfValidator != null) {
-                ddfValidator.validate(document);
-            }
-
-            // Build list of ObjectModel
-            ArrayList<ObjectModel> objects = new ArrayList<>();
-            NodeList nodeList = document.getDocumentElement().getElementsByTagName("Object");
-            for (int i = 0; i < nodeList.getLength(); i++) {
-                objects.add(parseObject(nodeList.item(i), streamName, false));
-            }
-            return objects;
-        } catch (Exception e) {
-            LOG.error("Could not parse the resource definition file " + streamName, e);
-        }
-        return Collections.emptyList();
-    }
-
-    /**
      * Parse a DDF file.
      * 
      * @throws InvalidDDFFileException if DDF file is not a valid.
      * @throws IOException see {@link FileInputStream#FileInputStream(File)} or
      *         {@link DocumentBuilder#parse(InputStream)}
-     * 
-     * @since 1.1
      */
-    public List<ObjectModel> parseEx(File ddfFile) throws InvalidDDFFileException, IOException {
+    public List<ObjectModel> parse(File ddfFile) throws InvalidDDFFileException, IOException {
         try (InputStream input = new FileInputStream(ddfFile)) {
-            return parseEx(input, ddfFile.getName());
+            return parse(input, ddfFile.getName());
         }
     }
 
@@ -130,10 +82,8 @@ public class DDFFileParser {
      * @throws InvalidDDFFileException if DDF file is not a valid.
      * @throws IOException see {@link FileInputStream#FileInputStream(File)} or
      *         {@link DocumentBuilder#parse(InputStream)}
-     * 
-     * @since 1.1
      */
-    public List<ObjectModel> parseEx(InputStream inputStream, String streamName)
+    public List<ObjectModel> parse(InputStream inputStream, String streamName)
             throws InvalidDDFFileException, IOException {
         streamName = streamName == null ? "" : streamName;
 

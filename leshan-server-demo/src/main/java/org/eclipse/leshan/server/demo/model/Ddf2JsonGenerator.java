@@ -61,7 +61,7 @@ public class Ddf2JsonGenerator {
         DDFFileParser ddfParser = new DDFFileParser();
         for (File f : files) {
             if (f.canRead()) {
-                objectModels.addAll(ddfParser.parseEx(f));
+                objectModels.addAll(ddfParser.parse(f));
             }
         }
 

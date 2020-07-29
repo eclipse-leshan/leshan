@@ -20,11 +20,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.leshan.core.util.StringUtils;
@@ -48,21 +45,12 @@ public class ObjectLoader {
 
         // standard objects
         LOG.debug("Loading OMA standard object models");
-        models.addAll(loadDdfResources("/models/", ddfpaths));
-
+        try {
+            models.addAll(loadDdfResources("/models/", ddfpaths));
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to load models", e);
+        }
         return models;
-    }
-
-    /**
-     * Load object definitions from DDF or JSON files.
-     * 
-     * @param modelDir the directory containing the object definition files.
-     * 
-     * @deprecated use {@link #loadObjectsFromDir(File)} instead
-     */
-    @Deprecated
-    public static List<ObjectModel> load(File modelDir) {
-        return loadObjectsFromDir(modelDir);
     }
 
     /**
@@ -74,16 +62,14 @@ public class ObjectLoader {
      * 
      * @param input An inputStream to a DDF file.
      * @param streamName A name for the stream used for logging only
+     * 
+     * @throws InvalidDDFFileException if DDF file is invalid
+     * @throws IOException
      */
-    public static List<ObjectModel> loadDdfFile(InputStream input, String streamName) {
-        try {
-            DDFFileParser ddfFileParser = new DDFFileParser();
-            return ddfFileParser.parseEx(input, streamName);
-        } catch (InvalidDDFFileException | IOException e) {
-            // TODO change for 2.0 : we should raise an IOException
-            LOG.warn("Unable to parse ddf file {}", streamName, e);
-        }
-        return Collections.emptyList();
+    public static List<ObjectModel> loadDdfFile(InputStream input, String streamName)
+            throws InvalidDDFFileException, IOException {
+        DDFFileParser ddfFileParser = new DDFFileParser();
+        return ddfFileParser.parse(input, streamName);
     }
 
     /**
@@ -125,7 +111,7 @@ public class ObjectLoader {
     public static List<ObjectModel> loadDdfFile(InputStream input, String streamName, DDFFileValidator ddfValidator,
             ObjectModelValidator modelValidator) throws InvalidModelException, InvalidDDFFileException, IOException {
         DDFFileParser ddfFileParser = new DDFFileParser(ddfValidator);
-        List<ObjectModel> models = ddfFileParser.parseEx(input, streamName);
+        List<ObjectModel> models = ddfFileParser.parse(input, streamName);
         if (modelValidator != null) {
             modelValidator.validate(models, streamName);
         }
@@ -138,19 +124,19 @@ public class ObjectLoader {
      * It should be used to load DDF embedded with your application bundle (e.g. jar, war, ...)
      * <p>
      * Models are not validate if you want to ensure that model are valid use
-     * {@link #loadDdfFile(InputStream, String, boolean)} or
-     * {@link #loadDdfFile(InputStream, String, DDFFileValidator, ObjectModelValidator)}
+     * {@link #loadDdfResources(String, String[], boolean)}
+     * {@link #loadDdfResources(String, String[], DDFFileValidator, ObjectModelValidator)}
      * 
      * @param path directory path to the DDF files
      * @param filenames names of all the DDF files
+     * 
+     * @throws InvalidDDFFileException if DDF file is invalid
+     * @throws InvalidModelException if model is invalid
+     * @throws IOException
      */
-    public static List<ObjectModel> loadDdfResources(String path, String[] filenames) {
-        try {
-            return loadDdfResources(path, filenames, false);
-        } catch (IOException | InvalidModelException | InvalidDDFFileException e) {
-            throw new IllegalStateException("Unable to load model", e);
-        }
-
+    public static List<ObjectModel> loadDdfResources(String path, String[] filenames)
+            throws IOException, InvalidModelException, InvalidDDFFileException {
+        return loadDdfResources(path, filenames, false);
     }
 
     /**
@@ -201,9 +187,7 @@ public class ObjectLoader {
             String fullpath = StringUtils.removeEnd(path, "/") + "/" + StringUtils.removeStart(filename, "/");
             InputStream input = ObjectLoader.class.getResourceAsStream(fullpath);
             if (input != null) {
-                try (Reader reader = new InputStreamReader(input)) {
-                    models.addAll(loadDdfFile(input, fullpath, ddfValidator, modelValidator));
-                }
+                models.addAll(loadDdfFile(input, fullpath, ddfValidator, modelValidator));
             } else {
                 throw new FileNotFoundException(String.format("%s not found", fullpath));
             }
@@ -218,23 +202,63 @@ public class ObjectLoader {
      * It should be used to load DDF embedded with your application bundle (e.g. jar, war, ...)
      * <p>
      * Models are not validate if you want to ensure that model are valid use
-     * {@link #loadDdfFile(InputStream, String, boolean)} or
-     * {@link #loadDdfFile(InputStream, String, DDFFileValidator, ObjectModelValidator)}
+     * {@link #loadDdfResources(String[], boolean)} or
+     * {@link #loadDdfResources(String[], DDFFileValidator, ObjectModelValidator)}
      * 
      * @param paths An array of paths to DDF files.
+     * 
+     * @throws InvalidDDFFileException if DDF file is invalid
+     * @throws IOException
+     * @throws InvalidModelException
      */
-    public static List<ObjectModel> loadDdfResources(String[] paths) {
+    public static List<ObjectModel> loadDdfResources(String[] paths)
+            throws InvalidDDFFileException, IOException, InvalidModelException {
+        return loadDdfResources(paths, false);
+    }
+
+    /**
+     * Load object definition from DDF resources following rules of {@link Class#getResourceAsStream(String)}.
+     * <p>
+     * It should be used to load DDF embedded with your application bundle (e.g. jar, war, ...)
+     * <p>
+     * 
+     * @param paths An array of paths to DDF files.
+     * @param validate true if you want model validation. Validation is not free and it could make sense to not validate
+     *        model if you already trust it.
+     * 
+     * @throws InvalidDDFFileException if DDF file is invalid
+     * @throws IOException
+     */
+    public static List<ObjectModel> loadDdfResources(String[] paths, boolean validate)
+            throws IOException, InvalidModelException, InvalidDDFFileException {
+        return loadDdfResources(paths, validate ? new DefaultDDFFileValidator() : null,
+                validate ? new DefaultObjectModelValidator() : null);
+    }
+
+    /**
+     * Load object definition from DDF resources following rules of {@link Class#getResourceAsStream(String)}.
+     * <p>
+     * It should be used to load DDF embedded with your application bundle (e.g. jar, war, ...)
+     * <p>
+     * 
+     * @param paths An array of paths to DDF files.
+     * @param ddfValidator a validator used to validate DDF files, see {@link DefaultDDFFileValidator}. If {@code null}
+     *        then there will be no validation.
+     * @param modelValidator an Object model validator to ensure model is valid, see
+     *        {@link DefaultObjectModelValidator}. If {@code null} then there will be no validation.
+     * 
+     * @throws InvalidDDFFileException if DDF file is invalid
+     * @throws IOException
+     */
+    public static List<ObjectModel> loadDdfResources(String[] paths, DDFFileValidator ddfValidator,
+            ObjectModelValidator modelValidator) throws IOException, InvalidModelException, InvalidDDFFileException {
         List<ObjectModel> models = new ArrayList<>();
         for (String path : paths) {
             InputStream input = ObjectLoader.class.getResourceAsStream(path);
             if (input != null) {
-                try (Reader reader = new InputStreamReader(input)) {
-                    models.addAll(loadDdfFile(input, path));
-                } catch (IOException e) {
-                    throw new IllegalStateException(String.format("Unable to load model %s", path), e);
-                }
+                models.addAll(loadDdfFile(input, path, ddfValidator, modelValidator));
             } else {
-                throw new IllegalStateException(String.format("Unable to load model %s", path));
+                throw new FileNotFoundException(String.format("%s not found", path));
             }
         }
         return models;
@@ -243,9 +267,8 @@ public class ObjectLoader {
     /**
      * Load object definitions from directory.
      * <p>
-     * Models are not validate if you want to ensure that model are valid use
-     * {@link #loadDdfFile(InputStream, String, boolean)} or
-     * {@link #loadDdfFile(InputStream, String, DDFFileValidator, ObjectModelValidator)}
+     * Models are not validate if you want to ensure that model are valid use {@link #loadObjectsFromDir(File, boolean)}
+     * or {@link #loadObjectsFromDir(File, DDFFileValidator, ObjectModelValidator)}
      * 
      * @param modelsDir the directory containing all the ddf file definition.
      */
