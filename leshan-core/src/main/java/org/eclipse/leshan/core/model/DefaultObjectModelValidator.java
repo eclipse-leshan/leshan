@@ -17,6 +17,8 @@ package org.eclipse.leshan.core.model;
 
 import java.util.List;
 
+import org.eclipse.leshan.core.model.ResourceModel.Type;
+
 public class DefaultObjectModelValidator implements ObjectModelValidator {
 
     @Override
@@ -100,13 +102,13 @@ public class DefaultObjectModelValidator implements ObjectModelValidator {
         validateResourceFieldNotNull(resource, modelName, resource.multiple, "multiple");
         validateResourceFieldNotNull(resource, modelName, resource.mandatory, "mandatory");
 
-        // TODO in 2.0 : type must be NONE
-        // validateResourceFieldNotNull(resource, modelName, resource.type, "type");
-        if (resource.operations.isExecutable() && resource.type != null) {
+        // validate type
+        validateResourceFieldNotNull(resource, modelName, resource.type, "type");
+        if (resource.operations.isExecutable() && resource.type != Type.NONE) {
             throw new InvalidModelException(
                     "Model for Resource %s(%d) in %s is invalid : an executable resource MUST NOT have a type(%s)",
                     resource.name, resource.id, modelName, resource.type);
-        } else if (!resource.operations.isExecutable() && resource.type == null) {
+        } else if (!resource.operations.isExecutable() && resource.type == Type.NONE) {
             throw new InvalidModelException(
                     "Model for Resource %s(%d) in %s is invalid : a none executable resource MUST have a type.",
                     resource.name, resource.id, modelName, resource.type);

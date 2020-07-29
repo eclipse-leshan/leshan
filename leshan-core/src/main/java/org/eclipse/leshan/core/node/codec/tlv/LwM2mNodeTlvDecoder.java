@@ -34,9 +34,9 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.tlv.Tlv;
+import org.eclipse.leshan.core.tlv.Tlv.TlvType;
 import org.eclipse.leshan.core.tlv.TlvDecoder;
 import org.eclipse.leshan.core.tlv.TlvException;
-import org.eclipse.leshan.core.tlv.Tlv.TlvType;
 import org.eclipse.leshan.core.util.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -262,7 +262,7 @@ public class LwM2mNodeTlvDecoder {
 
     public static Type getResourceType(LwM2mPath rscPath, LwM2mModel model) throws CodecException {
         ResourceModel rscDesc = model.getResourceModel(rscPath.getObjectId(), rscPath.getResourceId());
-        if (rscDesc == null || rscDesc.type == null) {
+        if (rscDesc == null) {
             LOG.trace("unknown type for resource : {}", rscPath);
             // no resource description... opaque
             return Type.OPAQUE;

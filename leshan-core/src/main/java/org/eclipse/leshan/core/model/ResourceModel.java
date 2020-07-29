@@ -39,9 +39,8 @@ public class ResourceModel {
         }
     }
 
-    // TODO in version 2.0 : NONE should be added.
     public enum Type {
-        STRING, INTEGER, FLOAT, BOOLEAN, OPAQUE, TIME, OBJLNK
+        NONE, STRING, INTEGER, FLOAT, BOOLEAN, OPAQUE, TIME, OBJLNK
     }
 
     public final Integer id;

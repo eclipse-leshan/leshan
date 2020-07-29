@@ -418,7 +418,7 @@ public class LwM2mNodeJsonDecoder {
     public static Type getResourceType(LwM2mPath rscPath, LwM2mModel model, JsonArrayEntry resourceElt) {
         // Use model type in priority
         ResourceModel rscDesc = model.getResourceModel(rscPath.getObjectId(), rscPath.getResourceId());
-        if (rscDesc != null && rscDesc.type != null)
+        if (rscDesc != null)
             return rscDesc.type;
 
         // Then json type

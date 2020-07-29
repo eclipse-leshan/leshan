@@ -261,7 +261,7 @@ public class DDFFileParser {
                     type = Type.OBJLNK;
                     break;
                 case "":
-                    type = null;
+                    type = Type.NONE;
                     break;
                 default:
                     break;
