@@ -26,8 +26,8 @@ import redis.clients.jedis.util.Pool;
 public class RedisSecureIntegrationTestHelper extends SecureIntegrationTestHelper {
 
     @Override
-    protected LeshanServerBuilder createServerBuilder() {
-        LeshanServerBuilder builder = super.createServerBuilder();
+    protected LeshanServerBuilder createServerBuilder(Boolean serverOnly)  {
+        LeshanServerBuilder builder = super.createServerBuilder(serverOnly);
 
         // Create redis store
         String redisURI = System.getenv("REDIS_URI");

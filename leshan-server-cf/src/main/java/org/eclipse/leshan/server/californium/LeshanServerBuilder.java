@@ -529,8 +529,11 @@ public class LeshanServerBuilder {
 
             // Do no allow Server to initiated Handshake by default, for U device request will be allowed to initiate
             // handshake (see Registration.shouldInitiateConnection())
-            if (incompleteConfig.getDefaultHandshakeMode() == null) {
-                dtlsConfigBuilder.setDefaultHandshakeMode(DtlsEndpointContext.HANDSHAKE_MODE_NONE);
+            Boolean serverOnly = incompleteConfig.isServerOnly();
+            if (serverOnly == null || !serverOnly) {
+                if (incompleteConfig.getDefaultHandshakeMode() == null) {
+                    dtlsConfigBuilder.setDefaultHandshakeMode(DtlsEndpointContext.HANDSHAKE_MODE_NONE);
+                }
             }
 
             // we try to build the dtlsConfig, if it fail we will just not create the secured endpoint

@@ -582,7 +582,7 @@ public class SecurityTest {
     @Test
     public void registered_device_with_x509cert_to_server_with_self_signed_x509cert()
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        helper.createServerWithX509Cert(helper.serverX509CertSelfSigned);
+        helper.createServerWithX509Cert(helper.serverX509CertSelfSigned, helper.serverPrivateKeyFromCert, true);
         helper.server.start();
 
         helper.createX509CertClient(helper.clientX509Cert, helper.clientPrivateKeyFromCert,
