@@ -26,19 +26,45 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import org.eclipse.leshan.core.LwM2m.Version;
+import org.eclipse.leshan.core.util.Validate;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 /**
  * A DDF File Validator.
  * <p>
- * Validate a DDF File against the embedded LWM2M.xsd schema.
- * 
- * @since 1.1
+ * Validate a DDF File against the embedded LWM2M schema.
+ * <p>
+ * Support LWM2M version 1.0 and 1.1.
  */
 
 public class DefaultDDFFileValidator implements DDFFileValidator {
-    private static String LWM2M_V1_SCHEMA_PATH = "/schemas/LWM2M.xsd";
+    private static String LWM2M_V1_0_SCHEMA_PATH = "/schemas/LWM2M.xsd";
+    private static String LWM2M_V1_1_SCHEMA_PATH = "/schemas/LWM2M-v1_1.xsd";
+
+    private final String schema;
+
+    /**
+     * Create a {@link DDFFileValidator} using the LWM2M v1.1 schema.
+     */
+    public DefaultDDFFileValidator() {
+        this(Version.V1_1);
+    }
+
+    /**
+     * Create a {@link DDFFileValidator} using schema corresponding to LWM2M {@link Version}.
+     */
+    public DefaultDDFFileValidator(Version version) {
+        Validate.notNull(version, "version must not be null");
+        if (Version.V1_0.equals(version)) {
+            schema = LWM2M_V1_0_SCHEMA_PATH;
+        } else if (Version.V1_1.equals(version)) {
+            schema = LWM2M_V1_1_SCHEMA_PATH;
+        } else {
+            throw new IllegalStateException(String.format("Unsupported version %s", version));
+        }
+    }
 
     @Override
     public void validate(Node xmlToValidate) throws InvalidDDFFileException {
@@ -50,7 +76,7 @@ public class DefaultDDFFileValidator implements DDFFileValidator {
     }
 
     /**
-     * Validate a XML {@link Source} against the embedded LWM2M.xsd Schema.
+     * Validate a XML {@link Source} against the embedded LWM2M Schema.
      * 
      * @param xmlToValidate an XML source to validate
      * @throws SAXException see {@link Validator#validate(Source)}
@@ -67,7 +93,7 @@ public class DefaultDDFFileValidator implements DDFFileValidator {
      * @throws SAXException see {@link SchemaFactory#newSchema(Source)}
      */
     protected Schema getEmbeddedLwM2mSchema() throws SAXException {
-        InputStream inputStream = DDFFileValidator.class.getResourceAsStream(LWM2M_V1_SCHEMA_PATH);
+        InputStream inputStream = DDFFileValidator.class.getResourceAsStream(schema);
         Source source = new StreamSource(inputStream);
         SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
         return schemaFactory.newSchema(source);
