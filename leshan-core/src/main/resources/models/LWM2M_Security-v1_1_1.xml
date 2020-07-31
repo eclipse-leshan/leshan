@@ -1,33 +1,30 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <!--
 FILE INFORMATION
 
 OMA Permanent Document
-   File: OMA-SUP-XML_LWM2M_Security-V1_0-20170208-A
+   File: OMA-SUP-XML_LWM2M_Security-V1_1_1-20190617-A
    Type: xml
+   Date: 2019-Jun-17
 
 Public Reachable Information
    Path: http://www.openmobilealliance.org/tech/profiles
-   Name: LWM2M_Security-v1_0.xml
+   Name: LWM2M_Security-v1_1_1.xml
 
 NORMATIVE INFORMATION
 
   Information about this file can be found in the latest revision of
 
-    OMA-TS-LightweightM2M-V1_0
+  OMA-TS-LightweightM2M_Core-V1_1_1
 
   This is available at http://www.openmobilealliance.org/
 
-  Send comments to technical-comments@mail.openmobilealliance.org
+  Send comments to https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues
 
-CHANGE HISTORY
-
-08022017 Status changed to Approved by TP, TP Ref # OMA-TP-2017-0009-INP_LightweightM2M-V1_0_ERP_for_Final_Approval
-	
 LEGAL DISCLAIMER
 
-  Copyright 2017 Open Mobile Alliance All rights reserved.
+  Copyright 2019 Open Mobile Alliance.
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions
@@ -57,16 +54,19 @@ LEGAL DISCLAIMER
 
   The above license is used as a license under copyright only.  Please
   reference the OMA IPR Policy for patent licensing terms:
-  http://www.openmobilealliance.org/ipr.html
+  https://www.omaspecworks.org/about/intellectual-property-rights/
+
 -->
 
-<LWM2M xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M.xsd" >
+<LWM2M xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.openmobilealliance.org/tech/profiles/LWM2M-v1_1.xsd" >
   <Object ObjectType="MODefinition">
 		<Name>LWM2M Security</Name>
 		<Description1><![CDATA[This LwM2M Object provides the keying material of a LwM2M Client appropriate to access a specified LwM2M Server. One Object Instance SHOULD address a LwM2M Bootstrap-Server.
 These LwM2M Object Resources MUST only be changed by a LwM2M Bootstrap-Server or Bootstrap from Smartcard and MUST NOT be accessible by any other LwM2M Server.]]></Description1>
 		<ObjectID>0</ObjectID>
-		<ObjectURN>urn:oma:lwm2m:oma:0</ObjectURN>
+		<ObjectURN>urn:oma:lwm2m:oma:0:1.1</ObjectURN>
+	  	<LWM2MVersion>1.1</LWM2MVersion>
+		<ObjectVersion>1.1</ObjectVersion>
 		<MultipleInstances>Multiple</MultipleInstances>
 		<Mandatory>Mandatory</Mandatory>
 		<Resources>
@@ -76,7 +76,7 @@ These LwM2M Object Resources MUST only be changed by a LwM2M Bootstrap-Server or
         <MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Mandatory</Mandatory>
 				<Type>String</Type>
-				<RangeEnumeration>0-255 bytes</RangeEnumeration>
+				<RangeEnumeration>0..255 bytes</RangeEnumeration>
 				<Units></Units>
 				<Description><![CDATA[Uniquely identifies the LwM2M Server or LwM2M Bootstrap-Server. The format of the CoAP URI is defined in Section 6 of RFC 7252.]]></Description>
 			</Item>
@@ -96,9 +96,9 @@ These LwM2M Object Resources MUST only be changed by a LwM2M Bootstrap-Server or
         <MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Mandatory</Mandatory>
 				<Type>Integer</Type>
-				<RangeEnumeration>0-4</RangeEnumeration>
+				<RangeEnumeration>0..4</RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[Determines which UDP payload security mode is used
+				<Description><![CDATA[Determines which security mode is used
 0: Pre-Shared Key mode
 1: Raw Public Key mode
 2: Certificate mode
@@ -113,7 +113,7 @@ These LwM2M Object Resources MUST only be changed by a LwM2M Bootstrap-Server or
 				<Type>Opaque</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[Stores the LwM2M Client’s Certificate (Certificate mode), public key (RPK mode) or PSK Identity (PSK mode). The format is defined in Section E.1.1 of the LwM2M version 1.0 specification.]]></Description>
+				<Description><![CDATA[Stores the LwM2M Client's certificate, public key (RPK mode) or PSK Identity (PSK mode).]]></Description>
 			</Item>
 			<Item ID="4">
 				<Name>Server Public Key</Name>
@@ -123,7 +123,7 @@ These LwM2M Object Resources MUST only be changed by a LwM2M Bootstrap-Server or
 				<Type>Opaque</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[Stores the LwM2M Server’s or LwM2M Bootstrap-Server’s Certificate (Certificate mode), public key (RPK mode). The format is defined in Section E.1.1 of the LwM2M version 1.0 specification.]]></Description>
+				<Description><![CDATA[Stores the LwM2M Server's, respectively LwM2M Bootstrap-Server's, certificate, public key (RPK mode) or trust anchor. The Certificate Mode Resource determines the content of this resource.]]></Description>
 			</Item>
 			<Item ID="5">
 				<Name>Secret Key</Name>
@@ -133,7 +133,7 @@ These LwM2M Object Resources MUST only be changed by a LwM2M Bootstrap-Server or
 				<Type>Opaque</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[Stores the secret key or private key of the security mode. The format of the keying material is defined by the security mode in Section E.1.1 of the LwM2M version 1.0 specification. This Resource MUST only be changed by a bootstrap-server and MUST NOT be readable by any server.]]></Description>
+				<Description><![CDATA[Stores the secret key (PSK mode) or private key (RPK or certificate mode).]]></Description>
 			</Item>
 			<Item ID="6">
 				<Name>SMS Security Mode</Name>
@@ -141,9 +141,9 @@ These LwM2M Object Resources MUST only be changed by a LwM2M Bootstrap-Server or
         <MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>Integer</Type>
-				<RangeEnumeration>0-255</RangeEnumeration>
+				<RangeEnumeration>0..255</RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[Determines which SMS security mode is used (see section 7.2 of the LwM2M version 1.0 specification)
+				<Description><![CDATA[Determines which SMS security mode is used: 
 0: Reserved for future use
 1: DTLS mode (Device terminated) PSK mode assumed
 2: Secure Packet Structure mode (Smartcard terminated)
@@ -158,9 +158,9 @@ These LwM2M Object Resources MUST only be changed by a LwM2M Bootstrap-Server or
         <MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>Opaque</Type>
-				<RangeEnumeration>6 bytes</RangeEnumeration>
+				<RangeEnumeration>6</RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[Stores the KIc, KID, SPI and TAR. The format is defined in Section E.1.2 of the LwM2M version 1.0 specification.]]></Description>
+				<Description><![CDATA[Stores the KIc, KID, SPI and TAR.]]></Description>
 			</Item>
 			<Item ID="8">
 				<Name>SMS Binding Secret Key(s)</Name>
@@ -168,10 +168,9 @@ These LwM2M Object Resources MUST only be changed by a LwM2M Bootstrap-Server or
         <MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>Opaque</Type>
-				<RangeEnumeration>16-32-48 bytes</RangeEnumeration>
+				<RangeEnumeration>16,32,48</RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[Stores the values of the key(s) for the SMS binding. 
-This resource MUST only be changed by a bootstrap-server and MUST NOT be readable by any server.]]></Description>
+				<Description><![CDATA[Stores the values of the key(s) for the SMS binding.]]></Description>
 			</Item>
 			<Item ID="9">
 				<Name>LwM2M Server SMS Number</Name>
@@ -181,8 +180,7 @@ This resource MUST only be changed by a bootstrap-server and MUST NOT be readabl
 				<Type>String</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[MSISDN used by the LwM2M Client to send messages to the LwM2M Server via the SMS binding. 
-The LwM2M Client SHALL silently ignore any SMS originated from unknown MSISDN]]></Description>
+				<Description><![CDATA[MSISDN used by the LwM2M Client to send messages to the LwM2M Server via the SMS binding.]]></Description>
 			</Item>
 			<Item ID="10">
 				<Name>Short Server ID</Name>
@@ -190,11 +188,11 @@ The LwM2M Client SHALL silently ignore any SMS originated from unknown MSISDN]]>
         <MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>Integer</Type>
-				<RangeEnumeration>1-65534</RangeEnumeration>
+				<RangeEnumeration>1..65534</RangeEnumeration>
 				<Units></Units>
 				<Description><![CDATA[This identifier uniquely identifies each LwM2M Server configured for the LwM2M Client.
-This Resource MUST be set when the Bootstrap-Server Resource has false value.
-Specific ID:0 and ID:65535 values MUST NOT be used for identifying the LwM2M Server (Section 6.3 of the LwM2M version 1.0 specification).]]></Description>
+This Resource MUST be set when the Bootstrap-Server Resource has a value of 'false'. 
+The values ID:0 and ID:65535 values MUST NOT be used for identifying the LwM2M Server.]]></Description>
 			</Item>
 			<Item ID="11">
 				<Name>Client Hold Off Time</Name>
@@ -204,9 +202,8 @@ Specific ID:0 and ID:65535 values MUST NOT be used for identifying the LwM2M Ser
 				<Type>Integer</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units>s</Units>
-				<Description><![CDATA[Relevant information for a Bootstrap-Server only.
-The number of seconds to wait before initiating a Client Initiated Bootstrap once the LwM2M Client has determined it should initiate this bootstrap mode.
-In case client initiated bootstrap is supported by the LwM2M Client, this resource MUST be supported.]]></Description>
+				<Description><![CDATA[The number of seconds to wait before initiating a Client Initiated Bootstrap once the LwM2M Client has determined it should initiate this bootstrap mode.
+In case client initiated bootstrap is supported by the LwM2M Client, this resource MUST be supported. This information is relevant for use with a Bootstrap-Server only.]]></Description>
 			</Item>
 			<Item ID="12">
 				<Name>Bootstrap-Server Account Timeout</Name>
@@ -218,6 +215,66 @@ In case client initiated bootstrap is supported by the LwM2M Client, this resour
 				<Units>s</Units>
 				<Description><![CDATA[The LwM2M Client MUST purge the LwM2M Bootstrap-Server Account after the timeout value given by this resource. The lowest timeout value is 1.
 If the value is set to 0, or if this resource is not instantiated, the Bootstrap-Server Account lifetime is infinite.]]></Description>
+			</Item>
+			<Item ID="13">
+				<Name>Matching Type</Name>
+        <Operations></Operations>
+        <MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Unsigned Integer</Type>
+				<RangeEnumeration>0..3</RangeEnumeration>
+				<Units>s</Units>
+				<Description><![CDATA[The Matching Type Resource specifies how the certificate or raw public key in in the Server Public Key is presented. Four values are currently defined:
+                0: Exact match. This is the default value and also corresponds to the functionality of LwM2M v1.0. Hence, if this resource is not present then the content of the Server Public Key Resource corresponds to this value.
+                1: SHA-256 hash [RFC6234]
+                2: SHA-384 hash [RFC6234]
+                3: SHA-512 hash [RFC6234]]]></Description>
+			</Item>
+			<Item ID="14">
+				<Name>SNI</Name>
+        <Operations></Operations>
+        <MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>String</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[This resource holds the value of the Server Name Indication (SNI) value to be used during the TLS handshake. When this resource is present then the LwM2M Server URI acts as the address of the service while the SNI value is used for matching a presented certificate, or PSK identity.]]></Description>
+			</Item>
+			<Item ID="15">
+				<Name>Certificate Usage</Name>
+        <Operations></Operations>
+        <MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Unsigned Integer</Type>
+				<RangeEnumeration>0..3</RangeEnumeration>
+				<Units>s</Units>
+				<Description><![CDATA[The Certificate Usage Resource specifies the semantic of the certificate or 
+                raw public key stored in the Server Public Key Resource, which is used to match 
+                the certificate presented in the TLS/DTLS handshake. The currently defined values are 
+                0 for "CA constraint", 1 for "service certificate constraint", 2 for "trust anchor 
+                assertion", and 3 for "domain-issued certificate". When this resource is absent, 
+                value (3) for domain issued certificate mode is assumed. More details about the 
+                semantic of each value can be found in the security consideration section of the 
+                LwM2M specification.]]></Description>
+			</Item>
+			<Item ID="16">
+				<Name>DTLS/TLS Ciphersuite</Name>
+        <Operations></Operations>
+        <MultipleInstances>Multiple</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Unsigned Integer</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[When this resource is present it instructs the TLS/DTLS client to propose the indicated ciphersuite(s) in the ClientHello of the handshake. A ciphersuite is indicated as a 32-bit integer value. The IANA TLS ciphersuite registry is maintained at https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml. As an example, the TLS_PSK_WITH_AES_128_CCM_8 ciphersuite is represented with the following string "0xC0,0xA8". To form an integer value the two values are concatenated. In this example, the value is 0xc0a8 or 49320.]]></Description>
+            </Item>
+			<Item ID="17"><Name>OSCORE Security Mode</Name>
+				<Operations></Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Objlnk</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[If this resource is defined, it provides a link to the OSCORE Object Instance.]]></Description>
 			</Item>
 		</Resources>
 			<Description2><![CDATA[]]></Description2>

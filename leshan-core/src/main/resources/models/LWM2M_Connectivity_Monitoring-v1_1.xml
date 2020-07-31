@@ -1,16 +1,16 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <!--
 FILE INFORMATION
 
 OMA Permanent Document
-   File: OMA-SUP-XML_LWM2M_Connectivity_Monitoring-V1_0_2-20180612-A
+   File: OMA-SUP-XML_LWM2M_Connectivity_Monitoring-V1_1-20180710-A
    Type: xml
-   Date: 2018-June-12
+   Date: 2018-07-10
 
 Public Reachable Information
    Path: http://www.openmobilealliance.org/tech/profiles
-   Name: LWM2M_Connectivity_Monitoring-v1_0_2.xml
+   Name: LWM2M_Connectivity_Monitoring-v1_1.xml
 
 NORMATIVE INFORMATION
 
@@ -65,9 +65,8 @@ LEGAL DISCLAIMER
 In this general connectivity Object, the Resources are limited to the most general cases common to most network bearers. It is recommended to read the description, which refers to relevant standard development organizations (e.g. 3GPP, IEEE).
 The goal of the Connectivity Monitoring Object is to carry information reflecting the more up to date values of the current connection for monitoring purposes. Resources such as Link Quality, Radio Signal Strength, Cell ID are retrieved during connected mode at least for cellular networks.]]></Description1>
 		<ObjectID>4</ObjectID>
-		<ObjectURN>urn:oma:lwm2m:oma:4</ObjectURN>
-		<LWM2MVersion>1.0</LWM2MVersion>
-		<ObjectVersion>1.0</ObjectVersion>
+		<ObjectURN>urn:oma:lwm2m:oma:4:1.1</ObjectURN>
+		<ObjectVersion>1.1</ObjectVersion>
 		<MultipleInstances>Single</MultipleInstances>
 		<Mandatory>Optional</Mandatory>
 		<Resources>
@@ -219,6 +218,15 @@ As specified in TS [3GPP 23.003].]]></Description>
         <Units></Units>
         <Description><![CDATA[Serving Mobile Country Code. This is applicable when the Network Bearer Resource value is referring to a cellular network.
 As specified in TS [3GPP 23.003].]]></Description>
+      </Item>
+      <Item ID="11"><Name>SignalSNR</Name>
+        <Operations>R</Operations>
+        <MultipleInstances>Single</MultipleInstances>
+        <Mandatory>Optional</Mandatory>
+        <Type>Integer</Type>
+        <RangeEnumeration></RangeEnumeration>
+        <Units>dB</Units>
+        <Description><![CDATA[SINR: Signal to Interference plus Noise Ratio SINR is the ratio of the strength of the received signal to the strength of the received interference signal (noise and interference).]]></Description>
       </Item>
     </Resources>
 		<Description2></Description2>

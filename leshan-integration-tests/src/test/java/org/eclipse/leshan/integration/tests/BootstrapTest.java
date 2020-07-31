@@ -132,7 +132,8 @@ public class BootstrapTest {
         helper.assertClientRegisterered();
         assertNotNull(helper.lastDiscoverAnswer);
         assertEquals(ResponseCode.CONTENT, helper.lastDiscoverAnswer.getCode());
-        assertEquals("</>;lwm2m=1.0,</0/0>,</1>,</3/0>", Link.serialize(helper.lastDiscoverAnswer.getObjectLinks()));
+        assertEquals("</>;lwm2m=1.0,</0>;ver=1.1,</0/0>,</1>;ver=1.1,</3>;ver=1.1,</3/0>",
+                Link.serialize(helper.lastDiscoverAnswer.getObjectLinks()));
     }
 
     @Test
@@ -157,7 +158,7 @@ public class BootstrapTest {
         helper.assertClientRegisterered();
         assertNotNull(helper.lastDiscoverAnswer);
         assertEquals(ResponseCode.CONTENT, helper.lastDiscoverAnswer.getCode());
-        assertEquals("</>;lwm2m=1.0,</3/0>", Link.serialize(helper.lastDiscoverAnswer.getObjectLinks()));
+        assertEquals("</>;lwm2m=1.0,</3>;ver=1.1,</3/0>", Link.serialize(helper.lastDiscoverAnswer.getObjectLinks()));
     }
 
     @Test

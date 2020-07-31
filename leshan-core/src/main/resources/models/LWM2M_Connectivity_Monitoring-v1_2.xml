@@ -1,23 +1,22 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <!--
 FILE INFORMATION
 
 OMA Permanent Document
-   File: OMA-SUP-XML_LWM2M_Connectivity_Monitoring-V1_0_2-20180612-A
+   File: OMA-SUP-XML_LWM2M_Connectivity_Monitoring-V1_2-20190617-A
    Type: xml
-   Date: 2018-June-12
+   Date: 2019-Jun-17
 
 Public Reachable Information
    Path: http://www.openmobilealliance.org/tech/profiles
-   Name: LWM2M_Connectivity_Monitoring-v1_0_2.xml
+   Name: LWM2M_Connectivity_Monitoring-v1_2.xml
 
 NORMATIVE INFORMATION
 
   Information about this file can be found in the latest revision of
 
-  OMA-TS-LightweightM2M-V1_0_2
-  OMA-TS-LightweightM2M_Core-V1_1
+  OMA-TS-LightweightM2M_Core-V1_1_1
 
   This is available at http://www.openmobilealliance.org/
 
@@ -25,7 +24,7 @@ NORMATIVE INFORMATION
 
 LEGAL DISCLAIMER
 
-  Copyright 2018 Open Mobile Alliance All rights reserved.
+  Copyright 2019 Open Mobile Alliance.
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions
@@ -55,19 +54,20 @@ LEGAL DISCLAIMER
 
   The above license is used as a license under copyright only.  Please
   reference the OMA IPR Policy for patent licensing terms:
-  http://www.openmobilealliance.org/ipr.html
+  https://www.omaspecworks.org/about/intellectual-property-rights/
+
 -->
 
-<LWM2M xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.openmobilealliance.org/tech/profiles/LWM2M.xsd">
+<LWM2M xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.openmobilealliance.org/tech/profiles/LWM2M-v1_1.xsd">
 	<Object ObjectType="MODefinition">
 		<Name>Connectivity Monitoring</Name>
 		<Description1><![CDATA[This LwM2M Object enables monitoring of parameters related to network connectivity.
 In this general connectivity Object, the Resources are limited to the most general cases common to most network bearers. It is recommended to read the description, which refers to relevant standard development organizations (e.g. 3GPP, IEEE).
 The goal of the Connectivity Monitoring Object is to carry information reflecting the more up to date values of the current connection for monitoring purposes. Resources such as Link Quality, Radio Signal Strength, Cell ID are retrieved during connected mode at least for cellular networks.]]></Description1>
 		<ObjectID>4</ObjectID>
-		<ObjectURN>urn:oma:lwm2m:oma:4</ObjectURN>
-		<LWM2MVersion>1.0</LWM2MVersion>
-		<ObjectVersion>1.0</ObjectVersion>
+		<ObjectURN>urn:oma:lwm2m:oma:4:1.2</ObjectURN>
+		<LWM2MVersion>1.1</LWM2MVersion>
+		<ObjectVersion>1.2</ObjectVersion>
 		<MultipleInstances>Single</MultipleInstances>
 		<Mandatory>Optional</Mandatory>
 		<Resources>
@@ -77,14 +77,13 @@ The goal of the Connectivity Monitoring Object is to carry information reflectin
         <MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Mandatory</Mandatory>
 				<Type>Integer</Type>
-				<RangeEnumeration>0-50</RangeEnumeration>
+				<RangeEnumeration>0..50</RangeEnumeration>
 				<Units></Units>
 				<Description><![CDATA[Indicates the network bearer used for the current LwM2M communication session from the network bearer list below. 
 The number range is split into three categories:
 0 - 20 are Cellular Bearers 
 21 - 40 are Wireless Bearers 
 41 - 50 are Wireline Bearers
-
 More specifically: 
 0: GSM cellular network
 1: TD-SCDMA cellular network
@@ -110,7 +109,7 @@ More specifically:
         <MultipleInstances>Multiple</MultipleInstances>
 				<Mandatory>Mandatory</Mandatory>
 				<Type>Integer</Type>
-				<RangeEnumeration>0-50</RangeEnumeration>
+				<RangeEnumeration>0..50</RangeEnumeration>
 				<Units></Units>
 				<Description><![CDATA[Indicates a list of current available network bearer. Each Resource Instance has a value from the network bearer list.]]></Description>
 			</Item>
@@ -121,14 +120,13 @@ More specifically:
 				<Mandatory>Mandatory</Mandatory>
 				<Type>Integer</Type>
 				<RangeEnumeration></RangeEnumeration>
-				<Units>dBm</Units>
+				<Units></Units>
 				<Description><![CDATA[Indicates the average value of the received signal strength indication used in the
-current network bearer (as indicated by Resource 0 of this Object). For the following network bearers the signal strength parameters indicated below are represented by this resource:
+current network bearer (as indicated by Resource 0 of this Object). The value is expressed in dBm. For the following network bearers the signal strength parameters indicated below are represented by this resource:
 GSM:    RSSI
 UMTS:   RSCP
 LTE:    RSRP
 NB-IoT: NRSRP
-
 For more details on Network Measurement Report, refer to the appropriate Cellular or Wireless Network standards, (e.g. for LTE Cellular Network
 refer to 3GPP TS 36.133 specification).]]></Description>
 			</Item>
@@ -161,7 +159,7 @@ refer to 3GPP TS 36.133 specification).]]></Description>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
 				<Description><![CDATA[The IP address of the next-hop IP router, on each of the interfaces specified in resource 4 (IP Addresses).
-Note: This IP Address doesn’t indicate the Server IP address.]]></Description>
+Note: This IP Address doesn't indicate the Server IP address.]]></Description>
 			</Item>
 			<Item ID="6">
 				<Name>Link Utilization</Name>
@@ -169,7 +167,7 @@ Note: This IP Address doesn’t indicate the Server IP address.]]></Description>
         <MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>Integer</Type>
-				<RangeEnumeration>0-100</RangeEnumeration>
+				<RangeEnumeration>0..100</RangeEnumeration>
 				<Units>%</Units>
 				<Description><![CDATA[The percentage indicating the average utilization of the link to the next-hop IP router.]]></Description>
 			</Item>
@@ -204,8 +202,8 @@ Parameter definitions in [3GPP 25.331].]]></Description>
         <MultipleInstances>Single</MultipleInstances>
         <Mandatory>Optional</Mandatory>
         <Type>Integer</Type>
-        <RangeEnumeration>0-999</RangeEnumeration>
-        <Units>%</Units>
+        <RangeEnumeration>0..999</RangeEnumeration>
+        <Units></Units>
         <Description><![CDATA[Serving Mobile Network Code. This is applicable when the Network Bearer Resource value is referring to a cellular network.
 As specified in TS [3GPP 23.003].]]></Description>
       </Item>
@@ -215,11 +213,31 @@ As specified in TS [3GPP 23.003].]]></Description>
         <MultipleInstances>Single</MultipleInstances>
         <Mandatory>Optional</Mandatory>
         <Type>Integer</Type>
-        <RangeEnumeration>0-999</RangeEnumeration>
+        <RangeEnumeration>0..999</RangeEnumeration>
         <Units></Units>
         <Description><![CDATA[Serving Mobile Country Code. This is applicable when the Network Bearer Resource value is referring to a cellular network.
 As specified in TS [3GPP 23.003].]]></Description>
       </Item>
+      <Item ID="11"><Name>SignalSNR</Name>
+        <Operations>R</Operations>
+        <MultipleInstances>Single</MultipleInstances>
+        <Mandatory>Optional</Mandatory>
+        <Type>Integer</Type>
+        <RangeEnumeration></RangeEnumeration>
+        <Units>dB</Units>
+        <Description><![CDATA[SINR: Signal to Interference plus Noise Ratio SINR is the ratio of the strength of the received signal to the strength of the received interference signal (noise and interference).]]></Description>
+      </Item>
+      <Item ID="12">
+        <Name>LAC</Name>
+        <Operations>R</Operations>
+        <MultipleInstances>Single</MultipleInstances>
+        <Mandatory>Optional</Mandatory>
+        <Type>Integer</Type>
+        <RangeEnumeration></RangeEnumeration>
+        <Units></Units>
+        <Description><![CDATA[Location Area Code in case Network Bearer Resource is a Cellular Network. As specified in TS [3GPP 23.003] and in [3GPP. 24.008]]]></Description>
+      </Item>
+			
     </Resources>
 		<Description2></Description2>
 	</Object>
