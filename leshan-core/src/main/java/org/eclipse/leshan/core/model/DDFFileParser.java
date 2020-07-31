@@ -299,8 +299,11 @@ public class DDFFileParser {
                     type = Type.OBJLNK;
                     break;
                 case "Unsigned Integer":
+                    type = Type.UNSIGNED_INTEGER;
+                    break;
                 case "Corelnk":
-                    throw new UnsupportedOperationException(field.getTextContent() + " type is not yet supported");
+                    type = Type.CORELINK;
+                    break;
                 case "":
                     type = Type.NONE;
                     break;

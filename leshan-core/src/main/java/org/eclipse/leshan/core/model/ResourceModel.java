@@ -40,7 +40,7 @@ public class ResourceModel {
     }
 
     public enum Type {
-        NONE, STRING, INTEGER, FLOAT, BOOLEAN, OPAQUE, TIME, OBJLNK
+        NONE, STRING, INTEGER, FLOAT, BOOLEAN, OPAQUE, TIME, OBJLNK, UNSIGNED_INTEGER, CORELINK
     }
 
     public final Integer id;
