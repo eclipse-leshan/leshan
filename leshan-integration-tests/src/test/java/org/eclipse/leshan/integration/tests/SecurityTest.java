@@ -543,6 +543,8 @@ public class SecurityTest {
         helper.createServerWithX509Cert();
         helper.server.start();
 
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
         helper.createX509CertClient();
 
         helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
@@ -568,6 +570,8 @@ public class SecurityTest {
         helper.createServerWithX509Cert();
         helper.server.start();
 
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
         helper.createX509CertClient();
 
         helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
@@ -584,6 +588,8 @@ public class SecurityTest {
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
         helper.createServerWithX509Cert(helper.serverX509CertSelfSigned, helper.serverPrivateKeyFromCert, true);
         helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
 
         helper.createX509CertClient(helper.clientX509Cert, helper.clientPrivateKeyFromCert,
                 helper.serverX509CertSelfSigned);
@@ -603,6 +609,8 @@ public class SecurityTest {
         helper.createServerWithX509Cert();
         helper.server.start();
 
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
         helper.createX509CertClient();
 
         helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(BAD_ENDPOINT));
@@ -617,6 +625,8 @@ public class SecurityTest {
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
         helper.createServerWithX509Cert();
         helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509CertWithBadCN);
 
         helper.createX509CertClient(helper.clientX509CertWithBadCN);
 
@@ -636,6 +646,8 @@ public class SecurityTest {
         // we use the RPK private key as bad key, this key will not be compatible with the client certificate
         PrivateKey badPrivateKey = helper.clientPrivateKey;
 
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
         helper.createX509CertClient(helper.clientX509Cert, badPrivateKey);
         helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
 
@@ -650,6 +662,8 @@ public class SecurityTest {
         // the server will not trust the client Certificate authority
         helper.createServerWithX509Cert();
         helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509CertNotTrusted);
 
         helper.createX509CertClient(helper.clientX509CertNotTrusted);
 
@@ -667,6 +681,8 @@ public class SecurityTest {
         helper.createServerWithX509Cert();
         helper.server.start();
 
+        helper.setEndpointNameFromX509(helper.clientX509CertSelfSigned);
+
         helper.createX509CertClient(helper.clientX509CertSelfSigned);
 
         helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
@@ -681,6 +697,8 @@ public class SecurityTest {
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
         helper.createServerWithRPK();
         helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
 
         helper.createX509CertClient(helper.clientX509Cert);
 

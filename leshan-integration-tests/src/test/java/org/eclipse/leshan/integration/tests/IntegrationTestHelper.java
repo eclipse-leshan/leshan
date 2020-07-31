@@ -131,6 +131,10 @@ public class IntegrationTestHelper {
         currentEndpointIdentifier.set("leshan_integration_test_" + r.nextInt());
     }
 
+    public void setCurrentEndpoint(String endpoint) {
+        currentEndpointIdentifier.set(endpoint);
+    }
+
     public String getCurrentEndpoint() {
         return currentEndpointIdentifier.get();
     }
