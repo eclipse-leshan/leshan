@@ -314,6 +314,11 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         InetSocketAddress clientAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
         LeshanClientBuilder builder = new LeshanClientBuilder(getCurrentEndpoint());
         builder.setLocalAddress(clientAddress.getHostString(), clientAddress.getPort());
+
+        Builder dtlsConfig = new DtlsConnectorConfig.Builder();
+        dtlsConfig.setClientOnly();
+        builder.setDtlsConfig(dtlsConfig);
+
         builder.setObjects(objects);
         client = builder.build();
         setupClientMonitoring();
@@ -321,12 +326,19 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
 
     @Override
     protected LeshanServerBuilder createServerBuilder() {
+        return createServerBuilder(null);
+    }
+
+    protected LeshanServerBuilder createServerBuilder(Boolean serverOnly) {
         LeshanServerBuilder builder = super.createServerBuilder();
         securityStore = new InMemorySecurityStore();
         builder.setSecurityStore(securityStore);
         Builder dtlsConfig = new DtlsConnectorConfig.Builder();
         dtlsConfig.setMaxRetransmissions(1);
         dtlsConfig.setRetransmissionTimeout(300);
+        if (serverOnly != null) {
+            dtlsConfig.setServerOnly(serverOnly);
+        }
         builder.setDtlsConfig(dtlsConfig);
         return builder;
     }
@@ -342,12 +354,12 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
     }
 
     public void createServerWithX509Cert() {
-        createServerWithX509Cert(serverX509Cert);
+        createServerWithX509Cert(serverX509Cert, serverPrivateKeyFromCert, true);
     }
 
-    public void createServerWithX509Cert(X509Certificate serverCertificate) {
-        LeshanServerBuilder builder = createServerBuilder();
-        builder.setPrivateKey(serverPrivateKeyFromCert);
+    public void createServerWithX509Cert(X509Certificate serverCertificate, PrivateKey privateKey, Boolean serverOnly) {
+        LeshanServerBuilder builder = createServerBuilder(serverOnly);
+        builder.setPrivateKey(privateKey);
         builder.setCertificateChain(new X509Certificate[] { serverCertificate });
         builder.setTrustedCertificates(trustedCertificates);
         builder.setAuthorizer(new DefaultAuthorizer(securityStore, new SecurityChecker() {
