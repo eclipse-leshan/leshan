@@ -360,7 +360,7 @@ public class LeshanClientDemo {
         // Get server URI
         String serverURI;
         if (cl.hasOption("u")) {
-            if (cl.hasOption("i") || cl.hasOption("cpubk"))
+            if (cl.hasOption("i") || cl.hasOption("cpubk") || cl.hasOption("ccert"))
                 serverURI = "coaps://" + cl.getOptionValue("u");
             else
                 serverURI = "coap://" + cl.getOptionValue("u");
