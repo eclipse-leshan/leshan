@@ -35,7 +35,7 @@ keytool -genkeypair -alias untrustedrootCA -keyalg EC -dname 'CN=Leshan untruste
         -keypass $SERVER_STORE_PWD -keystore $SERVER_STORE -storepass $SERVER_STORE_PWD
 echo
 echo "${H2}Creating server key and self-signed certificate ...${RESET}"
-keytool -genkeypair -alias server -keyalg EC -dname 'CN=Leshan server self-signed' \
+keytool -genkeypair -alias server -keyalg EC -dname 'CN=localhost' \
         -validity $VALIDITY \
         -ext BasicConstraints=ca:false \
         -ext KeyUsage:critical=digitalSignature,keyAgreement \
@@ -46,7 +46,7 @@ keytool -exportcert -alias server -keystore $SERVER_STORE -storepass $SERVER_STO
 
 echo
 echo "${H2}Creating server certificate signed by root CA...${RESET}"
-keytool -certreq -alias server -dname 'CN=Leshan server' -keystore $SERVER_STORE -storepass $SERVER_STORE_PWD | \
+keytool -certreq -alias server -dname 'CN=localhost' -keystore $SERVER_STORE -storepass $SERVER_STORE_PWD | \
   keytool -gencert -alias rootCA -keystore $SERVER_STORE -storepass $SERVER_STORE_PWD \
           -validity $VALIDITY \
           -ext BasicConstraints=ca:false \

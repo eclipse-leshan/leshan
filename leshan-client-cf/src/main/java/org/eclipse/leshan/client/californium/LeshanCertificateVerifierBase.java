@@ -15,12 +15,17 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.californium;
 
+import org.eclipse.californium.scandium.dtls.AlertMessage;
+import org.eclipse.californium.scandium.dtls.AlertMessage.AlertDescription;
+import org.eclipse.californium.scandium.dtls.AlertMessage.AlertLevel;
 import org.eclipse.californium.scandium.dtls.CertificateMessage;
 import org.eclipse.californium.scandium.dtls.DTLSSession;
 import org.eclipse.californium.scandium.dtls.HandshakeException;
 import org.eclipse.californium.scandium.dtls.x509.CertificateVerifier;
 import org.eclipse.leshan.core.CertificateUsage;
+import org.eclipse.leshan.core.util.X509CertUtil;
 
+import java.net.InetSocketAddress;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
@@ -42,5 +47,20 @@ public abstract class LeshanCertificateVerifierBase implements CertificateVerifi
     @Override
     public X509Certificate[] getAcceptedIssuers() {
         return null;
+    }
+
+    protected void validateSubject(final DTLSSession session, final X509Certificate receivedServerCertificate)
+            throws HandshakeException {
+        final InetSocketAddress peerSocket = session.getPeer();
+
+        if (X509CertUtil.matchSubjectDnsName(receivedServerCertificate, peerSocket.getHostName()))
+            return;
+
+        if (X509CertUtil.matchSubjectInetAddress(receivedServerCertificate, peerSocket.getAddress()))
+            return;
+
+        AlertMessage alert = new AlertMessage(AlertLevel.FATAL, AlertDescription.BAD_CERTIFICATE, session.getPeer());
+        throw new HandshakeException(
+                "Certificate chain could not be validated - server identity does not match certificate", alert);
     }
 }

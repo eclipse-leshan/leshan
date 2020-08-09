@@ -146,19 +146,23 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                 // - trustStore is client's configured trust store
                 // - must do PKIX validation with trustStore to build certPath
                 // - must check that given certificate is part of certPath
+                // - validate server name
                 //
                 // 1: Certificate usage 1 ("service certificate constraint")
                 // - trustStore is client's configured trust store
                 // - must do PKIX validation with trustStore
                 // - target certificate must match what is provided certificate in server info
+                // - validate server name
                 //
                 // 2: Certificate usage 2 ("trust anchor assertion")
                 // - trustStore is only the provided certificate in server info
                 // - must do PKIX validation with trustStore
+                // - validate server name
                 //
                 // 3: Certificate usage 3 ("domain-issued certificate") (default mode if missing)
                 // - no trustStore used in this mode
                 // - target certificate must match what is provided certificate in server info
+                // - validate server name
 
                 CertificateUsage certificateUsage = serverInfo.certificateUsage != null ? serverInfo.certificateUsage
                         : CertificateUsage.DOMAIN_ISSUER_CERTIFICATE;

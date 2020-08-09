@@ -71,6 +71,7 @@ public class TrustAnchorAssertionCertificateVerifier extends LeshanCertificateVe
                     session.getPeer());
             throw new HandshakeException("Certificate chain could not be validated - unknown certificate type", alert);
         }
+        X509Certificate serverCertificate = (X509Certificate)receivedServerCertificate;
 
         if (trustedCertificates != null) {
             try {
@@ -82,5 +83,8 @@ public class TrustAnchorAssertionCertificateVerifier extends LeshanCertificateVe
                 throw new HandshakeException("Certificate chain could not be validated", alert, e);
             }
         }
+
+        // - validate server name
+        validateSubject(session, serverCertificate);
     }
 }

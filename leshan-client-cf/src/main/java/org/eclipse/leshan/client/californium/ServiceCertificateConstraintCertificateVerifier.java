@@ -87,5 +87,8 @@ public class ServiceCertificateConstraintCertificateVerifier extends LeshanCerti
                     session.getPeer());
             throw new HandshakeException("Certificate chain could not be validated", alert);
         }
+
+        // - validate server name
+        validateSubject(session, serverCertificate);
     }
 }

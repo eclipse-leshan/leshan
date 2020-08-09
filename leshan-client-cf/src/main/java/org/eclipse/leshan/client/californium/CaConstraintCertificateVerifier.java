@@ -74,6 +74,7 @@ public class CaConstraintCertificateVerifier extends LeshanCertificateVerifierBa
                     session.getPeer());
             throw new HandshakeException("Certificate chain could not be validated - unknown certificate type", alert);
         }
+        X509Certificate serverCertificate = (X509Certificate)receivedServerCertificate;
 
         CertPath certPath = null;
         if (trustedCertificates != null) {
@@ -108,5 +109,8 @@ public class CaConstraintCertificateVerifier extends LeshanCertificateVerifierBa
                     session.getPeer());
             throw new HandshakeException("Certificate chain could not be validated", alert);
         }
+
+        // - validate server name
+        validateSubject(session, serverCertificate);
     }
 }
