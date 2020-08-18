@@ -51,7 +51,7 @@ POSSIBILITY OF SUCH DAMAGE.
                 <Type>String</Type>
                 <RangeEnumeration></RangeEnumeration>
                 <Units></Units>
-                <Description>A string representing a value in some colour space.</Description>
+                <Description>A string representing a value in some color space.</Description>
             </Item>
             <Item ID="5701">
                 <Name>Sensor Units</Name>

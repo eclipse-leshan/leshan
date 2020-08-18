@@ -91,7 +91,7 @@ POSSIBILITY OF SUCH DAMAGE.
                 <Type>Float</Type>
                 <RangeEnumeration></RangeEnumeration>
                 <Units></Units>
-                <Description>The minimum measured value along the X axis</Description>
+                <Description>The minimum measured value along the X axis.</Description>
             </Item>
             <Item ID="5509">
                 <Name>Max X Value</Name>
@@ -101,7 +101,7 @@ POSSIBILITY OF SUCH DAMAGE.
                 <Type>Float</Type>
                 <RangeEnumeration></RangeEnumeration>
                 <Units></Units>
-                <Description>The maximum measured value along the X axis</Description>
+                <Description>The maximum measured value along the X axis.</Description>
             </Item>
             <Item ID="5510">
                 <Name>Min Y Value</Name>
@@ -111,7 +111,7 @@ POSSIBILITY OF SUCH DAMAGE.
                 <Type>Float</Type>
                 <RangeEnumeration></RangeEnumeration>
                 <Units></Units>
-                <Description>The minimum measured value along the Y axis</Description>
+                <Description>The minimum measured value along the Y axis.</Description>
             </Item>
             <Item ID="5511">
                 <Name>Max Y Value</Name>
@@ -121,7 +121,7 @@ POSSIBILITY OF SUCH DAMAGE.
                 <Type>Float</Type>
                 <RangeEnumeration></RangeEnumeration>
                 <Units></Units>
-                <Description>The maximum measured value along the Y axis</Description>
+                <Description>The maximum measured value along the Y axis.</Description>
             </Item>
             <Item ID="5512">
                 <Name>Min Z Value</Name>
@@ -131,7 +131,7 @@ POSSIBILITY OF SUCH DAMAGE.
                 <Type>Float</Type>
                 <RangeEnumeration></RangeEnumeration>
                 <Units></Units>
-                <Description>The minimum measured value along the Z axis</Description>
+                <Description>The minimum measured value along the Z axis.</Description>
             </Item>
             <Item ID="5513">
                 <Name>Max Z Value</Name>
@@ -141,7 +141,7 @@ POSSIBILITY OF SUCH DAMAGE.
                 <Type>Float</Type>
                 <RangeEnumeration></RangeEnumeration>
                 <Units></Units>
-                <Description>The maximum measured value along the Z axis</Description>
+                <Description>The maximum measured value along the Z axis.</Description>
             </Item>
             <Item ID="5605">
                 <Name>Reset Min and Max Measured Values</Name>
@@ -161,7 +161,7 @@ POSSIBILITY OF SUCH DAMAGE.
                 <Type>Float</Type>
                 <RangeEnumeration></RangeEnumeration>
                 <Units></Units>
-                <Description>The minimum value that can be measured by the sensor</Description>
+                <Description>The minimum value that can be measured by the sensor.</Description>
             </Item>
             <Item ID="5604">
                 <Name>Max Range Value</Name>
@@ -171,7 +171,7 @@ POSSIBILITY OF SUCH DAMAGE.
                 <Type>Float</Type>
                 <RangeEnumeration></RangeEnumeration>
                 <Units></Units>
-                <Description>The maximum value that can be measured by the sensor</Description>
+                <Description>The maximum value that can be measured by the sensor.</Description>
             </Item>
             <Item ID="5750">
                 <Name>Application Type</Name>

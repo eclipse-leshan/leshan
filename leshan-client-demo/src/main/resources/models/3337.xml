@@ -81,7 +81,7 @@ POSSIBILITY OF SUCH DAMAGE.
                 <Type>Float</Type>
                 <RangeEnumeration></RangeEnumeration>
                 <Units></Units>
-                <Description>The minimum value set on the actuator since power ON or reset.</Description>
+                <Description>The minimum value measured by the sensor since power ON or reset.</Description>
             </Item>
             <Item ID="5602">
                 <Name>Max Measured Value</Name>
@@ -91,7 +91,7 @@ POSSIBILITY OF SUCH DAMAGE.
                 <Type>Float</Type>
                 <RangeEnumeration></RangeEnumeration>
                 <Units></Units>
-                <Description>The maximum value set on the actuator since power ON or reset.</Description>
+                <Description>The maximum value measured by the sensor since power ON or reset.</Description>
             </Item>
             <Item ID="5605">
                 <Name>Reset Min and Max Measured Values</Name>

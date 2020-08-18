@@ -50,7 +50,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type>Float</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description>Last or Current Measured Value from the Sensor</Description>
+				<Description>Last or Current Measured Value from the Sensor.</Description>
 			</Item>
 			<Item ID="5601">
 				<Name>Min Measured Value</Name>
@@ -60,7 +60,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type>Float</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description>The minimum value measured by the sensor since power ON or reset</Description>
+				<Description>The minimum value measured by the sensor since power ON or reset.</Description>
 			</Item>
 			<Item ID="5602">
 				<Name>Max Measured Value</Name>
@@ -70,7 +70,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type>Float</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description>The maximum value measured by the sensor since power ON or reset</Description>
+				<Description>The maximum value measured by the sensor since power ON or reset.</Description>
 			</Item>
 			<Item ID="5603">
 				<Name>Min Range Value</Name>
@@ -80,7 +80,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type>Float</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description>The minimum value that can be measured by the sensor</Description>
+				<Description>The minimum value that can be measured by the sensor.</Description>
 			</Item>
 			<Item ID="5604">
 				<Name>Max Range Value</Name>
@@ -90,7 +90,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type>Float</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description>The maximum value that can be measured by the sensor</Description>
+				<Description>The maximum value that can be measured by the sensor.</Description>
 			</Item>
 			<Item ID="5701">
 				<Name>Sensor Units</Name>
@@ -110,7 +110,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type></Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description>Reset the Min and Max Measured Values to Current Value</Description>
+				<Description>Reset the Min and Max Measured Values to Current Value.</Description>
 			</Item>
 		</Resources>
 		<Description2></Description2>

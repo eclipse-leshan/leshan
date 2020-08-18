@@ -70,7 +70,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type>String</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description>A string representing a value in some color space</Description>
+				<Description>A string representing a value in some color space.</Description>
 			</Item>
 			<Item ID="5750">
 				<Name>Application Type</Name>
@@ -80,7 +80,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type>String</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description>The Application type of the device, for example "Motion Closure".</Description>
+				<Description>The application type of the sensor or actuator as a string depending on the use case.</Description>
 			</Item>
 		</Resources>
 		<Description2></Description2>

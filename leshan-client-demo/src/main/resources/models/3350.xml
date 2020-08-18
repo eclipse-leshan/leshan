@@ -50,7 +50,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type>Float</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units>s</Units>
-				<Description>The total time in seconds that the stopwatch has been on. Writing a 0 resets the time.</Description>
+				<Description>The total time in seconds that the timer input is true. Writing a 0 resets the time.</Description>
 			</Item>
 			<Item ID="5850">
 				<Name>On/Off</Name>
@@ -70,7 +70,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type>Integer</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description>The number of times the input transitions from off to on.</Description>
+				<Description>The cumulative value of active state detected.</Description>
 			</Item>
 			<Item ID="5750">
 				<Name>Application Type</Name>

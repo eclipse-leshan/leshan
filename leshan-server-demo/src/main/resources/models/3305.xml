@@ -50,7 +50,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type>Float</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units>W</Units>
-				<Description>The current active power</Description>
+				<Description>The current active power.</Description>
 			</Item>
 			<Item ID="5801">
 				<Name>Min Measured active power</Name>
@@ -60,7 +60,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type>Float</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units>W</Units>
-				<Description>The minimum active power measured by the sensor since it is ON</Description>
+				<Description>The minimum active power measured by the sensor since it is ON.</Description>
 			</Item>
 			<Item ID="5802">
 				<Name>Max Measured active power</Name>
@@ -70,7 +70,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type>Float</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units>W</Units>
-				<Description>The maximum active power measured by the sensor since it is ON</Description>
+				<Description>The maximum active power measured by the sensor since it is ON.</Description>
 			</Item>
 			<Item ID="5803">
 				<Name>Min Range active power</Name>
@@ -80,7 +80,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type>Float</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units>W</Units>
-				<Description>The minimum active power that can be measured by the sensor</Description>
+				<Description>The minimum active power that can be measured by the sensor.</Description>
 			</Item>
 			<Item ID="5804">
 				<Name>Max Range active power</Name>
@@ -90,7 +90,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type>Float</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units>W</Units>
-				<Description>The maximum active power that can be measured by the sensor</Description>
+				<Description>The maximum active power that can be measured by the sensor.</Description>
 			</Item>
 			<Item ID="5805">
 				<Name>Cumulative active power</Name>
@@ -100,7 +100,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type>Float</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units>Wh</Units>
-				<Description>The cumulative active power since the last cumulative energy reset or device start</Description>
+				<Description>The cumulative active power since the last cumulative energy reset or device start.</Description>
 			</Item>
 			<Item ID="5806">
 				<Name>Active Power Calibration</Name>
@@ -120,7 +120,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type>Float</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units>var</Units>
-				<Description>The current reactive power</Description>
+				<Description>The current reactive power.</Description>
 			</Item>
 			<Item ID="5811">
 				<Name>Min Measured reactive power</Name>
@@ -130,7 +130,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type>Float</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units>var</Units>
-				<Description>The minimum reactive power measured by the sensor since it is ON</Description>
+				<Description>The minimum reactive power measured by the sensor since it is ON.</Description>
 			</Item>
 			<Item ID="5812">
 				<Name>Max Measured reactive power</Name>
@@ -140,7 +140,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type>Float</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units>var</Units>
-				<Description>The maximum reactive power measured by the sensor since it is ON</Description>
+				<Description>The maximum reactive power measured by the sensor since it is ON.</Description>
 			</Item>
 			<Item ID="5813">
 				<Name>Min Range reactive power</Name>
@@ -150,7 +150,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type>Float</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units>var</Units>
-				<Description>The minimum active power that can be measured by the sensor</Description>
+				<Description>The minimum active power that can be measured by the sensor.</Description>
 			</Item>
 			<Item ID="5814">
 				<Name>Max Range reactive power</Name>
@@ -160,7 +160,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type>Float</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units>var</Units>
-				<Description>The maximum reactive power that can be measured by the sensor</Description>
+				<Description>The maximum reactive power that can be measured by the sensor.</Description>
 			</Item>
 			<Item ID="5815">
 				<Name>Cumulative reactive power</Name>
@@ -170,7 +170,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type>Float</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units>varh</Units>
-				<Description>The cumulative reactive power since the last cumulative energy reset or device start</Description>
+				<Description>The cumulative reactive power since the last cumulative energy reset or device start.</Description>
 			</Item>
 			<Item ID="5816">
 				<Name>Reactive Power Calibration</Name>
@@ -200,7 +200,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type>Float</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description>Read or Write the current calibration coefficient</Description>
+				<Description>Read or Write the current calibration coefficient.</Description>
 			</Item>
 			<Item ID="5822">
 				<Name>Reset Cumulative energy</Name>
@@ -210,7 +210,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type></Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description>Reset both cumulative active/reactive power</Description>
+				<Description>Reset both cumulative active/reactive power.</Description>
 			</Item>
 			<Item ID="5605">
 				<Name>Reset Min and Max Measured Values</Name>
@@ -220,7 +220,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type></Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description>Reset the Min and Max Measured Values to Current Value</Description>
+				<Description>Reset the Min and Max Measured Values to Current Value.</Description>
 			</Item>
 		</Resources>
 		<Description2></Description2>

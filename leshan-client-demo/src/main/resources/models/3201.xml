@@ -70,7 +70,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type>String</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description>The application type of the output as a string, for instance, "LED"</Description>
+				<Description>The application type of the sensor or actuator as a string depending on the use case.</Description>
 			</Item>
 		</Resources>
 		<Description2></Description2>

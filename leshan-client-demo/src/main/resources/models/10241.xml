@@ -47,7 +47,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type>String</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[Human readable host device manufacturer name]]></Description>
+				<Description><![CDATA[Human readable host device manufacturer name.]]></Description>
 			</Item>
 			<Item ID="5906"><Name>Host Device Model Number</Name>
 				<Operations>R</Operations>
@@ -56,7 +56,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type>String</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[A host device model identifier (manufacturer specified string)]]></Description>
+				<Description><![CDATA[A host device model identifier (manufacturer specified string).]]></Description>
 			</Item>
 			<Item ID="5907"><Name>Host Device Unique ID</Name>
 				<Operations>R</Operations>
@@ -74,7 +74,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Type>String</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[Current software version of the host device. (manufacturer specified string).]]></Description>
+				<Description><![CDATA[Current software version of the host device (manufacturer specified string).]]></Description>
 			</Item></Resources>
 		<Description2 />
 	</Object>

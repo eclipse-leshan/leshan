@@ -60,7 +60,7 @@ POSSIBILITY OF SUCH DAMAGE.
                 <Type>Integer</Type>
                 <RangeEnumeration></RangeEnumeration>
                 <Units></Units>
-                <Description>The number of times the input transitions from 0 to 1.</Description>
+                <Description>The cumulative value of active state detected.</Description>
             </Item>
             <Item ID="5852">
                 <Name>On time</Name>
@@ -70,7 +70,7 @@ POSSIBILITY OF SUCH DAMAGE.
                 <Type>Integer</Type>
                 <RangeEnumeration></RangeEnumeration>
                 <Units>s</Units>
-                <Description>The time in seconds since the On command was sent. Writing a value of 0 resets the counter.</Description>
+                <Description>The time in seconds that the device has been on. Writing a value of 0 resets the counter.</Description>
             </Item>
             <Item ID="5854">
                 <Name>Off Time</Name>
@@ -80,7 +80,7 @@ POSSIBILITY OF SUCH DAMAGE.
                 <Type>Integer</Type>
                 <RangeEnumeration></RangeEnumeration>
                 <Units>s</Units>
-                <Description>The time in seconds since the Off command was sent. Writing a value of 0 resets the counter.</Description>
+                <Description>The time in seconds in the off state. Writing a value of 0 resets the counter.</Description>
             </Item>
             <Item ID="5750">
                 <Name>Application Type</Name>
