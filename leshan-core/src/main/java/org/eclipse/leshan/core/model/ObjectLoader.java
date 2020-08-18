@@ -23,7 +23,10 @@ import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
+import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,9 +44,46 @@ public class ObjectLoader {
                             "LWM2M_OSCORE-v1_0_1.xml", };
 
     /**
-     * Load the default LWM2M objects
+     * Load last embedded version of default LWM2M objects. So the list contain only one model by object.
      */
     public static List<ObjectModel> loadDefault() {
+        return loadDefault(Version.V1_1);
+    }
+
+    /**
+     * Load embedded version of default LWM2M objects for a given version of LWM2M. So the list contain only one model
+     * by object.
+     */
+    public static List<ObjectModel> loadDefault(Version requiredVersion) {
+        String errorMsg = Version.validate(requiredVersion.toString());
+        if (errorMsg != null)
+            throw new IllegalStateException(String.format("Invalid version : %s", errorMsg));
+
+        // standard objects
+        LOG.debug("Loading OMA standard object models for LWM2M {}", requiredVersion);
+        try {
+            Map<Integer, ObjectModel> models = new TreeMap<>();
+            for (ObjectModel model : loadDdfResources("/models/", ddfpaths)) {
+                // skip model not compatible with the given version
+                if (Version.get(model.lwm2mVersion).newerThan(requiredVersion))
+                    continue;
+
+                ObjectModel previousModel = models.get(model.id);
+                if (previousModel == null || Version.get(model.version).newerThan(previousModel.version)) {
+                    models.put(model.id, model);
+                }
+            }
+            return new ArrayList<>(models.values());
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to load models", e);
+        }
+    }
+
+    /**
+     * Load all embedded version of default LWM2M objects. So the list can contains several version of the same object
+     * model.
+     */
+    public static List<ObjectModel> loadAllDefault() {
         List<ObjectModel> models = new ArrayList<>();
 
         // standard objects

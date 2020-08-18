@@ -25,6 +25,6 @@ import org.eclipse.leshan.core.model.ObjectLoader;
 public class StandardModelProvider extends VersionedModelProvider {
 
     public StandardModelProvider() {
-        super(ObjectLoader.loadDefault());
+        super(ObjectLoader.loadAllDefault());
     }
 }
