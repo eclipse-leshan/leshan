@@ -40,7 +40,7 @@ import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
-import org.eclipse.leshan.core.LwM2m;
+import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.DeregisterRequest;
@@ -298,8 +298,8 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         LOG.info("Trying to register to {} ...", server.getUri());
         RegisterRequest request = null;
         try {
-            request = new RegisterRequest(endpoint, dmInfo.lifetime, LwM2m.VERSION, dmInfo.binding, null,
-                    LinkFormatHelper.getClientDescription(objectEnablers.values(), null), additionalAttributes);
+            request = new RegisterRequest(endpoint, dmInfo.lifetime, Version.lastSupported().toString(), dmInfo.binding,
+                    null, LinkFormatHelper.getClientDescription(objectEnablers.values(), null), additionalAttributes);
             if (observer != null) {
                 observer.onRegistrationStarted(server, request);
             }

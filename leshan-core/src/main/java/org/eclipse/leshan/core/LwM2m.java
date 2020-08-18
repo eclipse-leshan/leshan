@@ -55,6 +55,10 @@ public interface LwM2m {
             return get(version).isSupported();
         }
 
+        public static Version getDefault() {
+            return V1_0;
+        }
+
         public static Version lastSupported() {
             return V1_1;
         }
@@ -84,10 +88,6 @@ public interface LwM2m {
             return true;
         }
     }
-
-    // TODO we should probably remove this (replaced by Version enum)
-    /** The supported version of the specification */
-    static final String VERSION = "1.0";
 
     /** The default CoAP port for unsecured CoAP communication */
     static final int DEFAULT_COAP_PORT = 5683;

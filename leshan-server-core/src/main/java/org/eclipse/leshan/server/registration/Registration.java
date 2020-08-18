@@ -30,6 +30,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.attributes.Attribute;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.request.BindingMode;
@@ -45,8 +46,6 @@ public class Registration implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private static final long DEFAULT_LIFETIME_IN_SEC = 86400L;
-
-    private static final String DEFAULT_LWM2M_VERSION = "1.0";
 
     private final Date registrationDate;
 
@@ -109,7 +108,7 @@ public class Registration implements Serializable {
         this.rootPath = rootPath;
         this.supportedObjects = new AtomicReference<Map<Integer, String>>(supportedObjects);
         this.lifeTimeInSec = lifetimeInSec == null ? DEFAULT_LIFETIME_IN_SEC : lifetimeInSec;
-        this.lwM2mVersion = lwM2mVersion == null ? DEFAULT_LWM2M_VERSION : lwM2mVersion;
+        this.lwM2mVersion = lwM2mVersion == null ? Version.getDefault().toString() : lwM2mVersion;
         this.bindingMode = bindingMode == null ? BindingMode.U : bindingMode;
         this.registrationDate = registrationDate == null ? new Date() : registrationDate;
         this.lastUpdate = lastUpdate == null ? new Date() : lastUpdate;
