@@ -54,6 +54,7 @@ import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.Destroyable;
+import org.eclipse.leshan.server.request.LowerLayerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,6 +108,7 @@ public class RequestSender implements Destroyable {
      * @param rootPath a rootpath to prefix to the LWM2M path to create the CoAP path. (see 8.2.2 Alternate Path in
      *        LWM2M specification)
      * @param request The request to send to the client.
+     * @param lowerLayerConfig to tweak lower layer request (e.g. coap request)
      * @param timeoutInMs The response timeout to wait in milliseconds (see
      *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
      * @param allowConnectionInitiation This request can initiate a Handshake if there is no DTLS connection.
@@ -123,11 +125,12 @@ public class RequestSender implements Destroyable {
      */
     public <T extends LwM2mResponse> T sendLwm2mRequest(final String endpointName, Identity destination,
             String sessionId, final LwM2mModel model, String rootPath, final DownlinkRequest<T> request,
-            long timeoutInMs, boolean allowConnectionInitiation) throws InterruptedException {
+            LowerLayerConfig lowerLayerConfig, long timeoutInMs, boolean allowConnectionInitiation)
+            throws InterruptedException {
 
         // Create the CoAP request from LwM2m request
         CoapRequestBuilder coapClientRequestBuilder = new CoapRequestBuilder(destination, rootPath, sessionId,
-                endpointName, model, encoder, allowConnectionInitiation);
+                endpointName, model, encoder, allowConnectionInitiation, lowerLayerConfig);
         request.accept(coapClientRequestBuilder);
         final Request coapRequest = coapClientRequestBuilder.getRequest();
 
@@ -172,6 +175,7 @@ public class RequestSender implements Destroyable {
      * @param rootPath a rootpath to prefix to the LWM2M path to create the CoAP path. (see 8.2.2 Alternate Path in
      *        LWM2M specification)
      * @param request The request to send to the client.
+     * @param lowerLayerConfig to tweak lower layer request (e.g. coap request)
      * @param timeoutInMs The response timeout to wait in milliseconds (see
      *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
      * @param responseCallback a callback called when a response is received (successful or error response). This
@@ -191,17 +195,18 @@ public class RequestSender implements Destroyable {
      * @param allowConnectionInitiation This request can initiate a Handshake if there is no DTLS connection.
      * @throws CodecException if request payload can not be encoded.
      */
+
     public <T extends LwM2mResponse> void sendLwm2mRequest(final String endpointName, Identity destination,
             String sessionId, final LwM2mModel model, String rootPath, final DownlinkRequest<T> request,
-            long timeoutInMs, ResponseCallback<T> responseCallback, ErrorCallback errorCallback,
-            boolean allowConnectionInitiation) {
+            LowerLayerConfig lowerLayerConfig, long timeoutInMs, ResponseCallback<T> responseCallback,
+            ErrorCallback errorCallback, boolean allowConnectionInitiation) {
 
         Validate.notNull(responseCallback);
         Validate.notNull(errorCallback);
 
         // Create the CoAP request from LwM2m request
         CoapRequestBuilder coapClientRequestBuilder = new CoapRequestBuilder(destination, rootPath, sessionId,
-                endpointName, model, encoder, allowConnectionInitiation);
+                endpointName, model, encoder, allowConnectionInitiation, lowerLayerConfig);
         request.accept(coapClientRequestBuilder);
         final Request coapRequest = coapClientRequestBuilder.getRequest();
 

@@ -68,6 +68,7 @@ import org.eclipse.leshan.server.registration.RegistrationService;
 import org.eclipse.leshan.server.registration.RegistrationServiceImpl;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
+import org.eclipse.leshan.server.request.LowerLayerConfig;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
 import org.eclipse.leshan.server.security.Authorizer;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
@@ -474,7 +475,7 @@ public class LeshanServer {
      */
     public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request)
             throws InterruptedException {
-        return requestSender.send(destination, request, DEFAULT_TIMEOUT);
+        return send(destination, request, DEFAULT_TIMEOUT);
     }
 
     /**
@@ -500,7 +501,34 @@ public class LeshanServer {
      */
     public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request, long timeoutInMs)
             throws InterruptedException {
-        return requestSender.send(destination, request, timeoutInMs);
+        return send(destination, request, null, timeoutInMs);
+    }
+
+    /**
+     * Send a Lightweight M2M request synchronously. Will block until a response is received from the remote server.
+     * <p>
+     * The synchronous way could block a thread during a long time so it is more recommended to use the asynchronous
+     * way.
+     * 
+     * @param destination The {@link Registration} associate to the device we want to sent the request.
+     * @param request The request to send to the client.
+     * @param lowerLayerConfig to tweak lower layer request (e.g. coap request)
+     * @param timeoutInMs The global timeout to wait in milliseconds (see
+     *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
+     * @return the LWM2M response. The response can be <code>null</code> if the timeout expires (see
+     *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
+     * 
+     * @throws CodecException if request payload can not be encoded.
+     * @throws InterruptedException if the thread was interrupted.
+     * @throws RequestRejectedException if the request is rejected by foreign peer.
+     * @throws RequestCanceledException if the request is cancelled.
+     * @throws SendFailedException if the request can not be sent. E.g. error at CoAP or DTLS/UDP layer.
+     * @throws InvalidResponseException if the response received is malformed.
+     * @throws ClientSleepingException if client is currently sleeping.
+     */
+    public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request,
+            LowerLayerConfig lowerLayerConfig, long timeoutInMs) throws InterruptedException {
+        return requestSender.send(destination, request, lowerLayerConfig, timeoutInMs);
     }
 
     /**
@@ -533,7 +561,7 @@ public class LeshanServer {
      */
     public <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
-        requestSender.send(destination, request, DEFAULT_TIMEOUT, responseCallback, errorCallback);
+        send(destination, request, DEFAULT_TIMEOUT, responseCallback, errorCallback);
     }
 
     /**
@@ -565,7 +593,43 @@ public class LeshanServer {
      */
     public <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request, long timeoutInMs,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
-        requestSender.send(destination, request, timeoutInMs, responseCallback, errorCallback);
+        send(destination, request, null, timeoutInMs, responseCallback, errorCallback);
+    }
+
+    /**
+     * Send a Lightweight M2M {@link DownlinkRequest} asynchronously to a LWM2M client.
+     * <p>
+     * The Californium API does not ensure that message callback are exclusive. E.g. In some race condition, you can get
+     * a onReponse call and a onCancel one. This method ensures that you will receive only one event. Meaning, you get
+     * either 1 response or 1 error.
+     * 
+     * @param destination The {@link Registration} associate to the device we want to sent the request.
+     * @param request The request to send to the client.
+     * @param lowerLayerConfig to tweak lower layer request (e.g. coap request)
+     * @param timeoutInMs The global timeout to wait in milliseconds (see
+     *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
+     * @param responseCallback a callback called when a response is received (successful or error response). This
+     *        callback MUST NOT be null.
+     * @param errorCallback a callback called when an error or exception occurred when response is received. It can be :
+     *        <ul>
+     *        <li>{@link RequestRejectedException} if the request is rejected by foreign peer.</li>
+     *        <li>{@link RequestCanceledException} if the request is cancelled.</li>
+     *        <li>{@link SendFailedException} if the request can not be sent. E.g. error at CoAP or DTLS/UDP layer.</li>
+     *        <li>{@link InvalidResponseException} if the response received is malformed.</li>
+     *        <li>{@link ClientSleepingException} if client is currently sleeping.</li>
+     *        <li>{@link TimeoutException} if the timeout expires (see
+     *        https://github.com/eclipse/leshan/wiki/Request-Timeout).</li>
+     *        <li>or any other RuntimeException for unexpected issue.
+     *        </ul>
+     *        This callback MUST NOT be null.
+     * @throws CodecException if request payload can not be encoded.
+     * 
+     * @since 1.2
+     */
+    public <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request,
+            LowerLayerConfig lowerLayerConfig, long timeoutInMs, ResponseCallback<T> responseCallback,
+            ErrorCallback errorCallback) {
+        requestSender.send(destination, request, lowerLayerConfig, timeoutInMs, responseCallback, errorCallback);
     }
 
     /**

@@ -43,6 +43,7 @@ public interface LwM2mRequestSender {
      * 
      * @param destination The {@link Registration} associate to the device we want to sent the request.
      * @param request The request to send to the client.
+     * @param lowerLayerConfig to tweak lower layer request (e.g. coap request)
      * @param timeoutInMs The global timeout to wait in milliseconds (see
      *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
      * @param <T> The expected type of the response received.
@@ -58,8 +59,8 @@ public interface LwM2mRequestSender {
      * @throws UnconnectedPeerException if client is not connected (no dtls connection available).
      * @throws ClientSleepingException if client is currently sleeping.
      */
-    <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request, long timeoutInMs)
-            throws InterruptedException;
+    <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request,
+            LowerLayerConfig lowerLayerConfig, long timeoutInMs) throws InterruptedException;
 
     /**
      * Send a Lightweight M2M {@link DownlinkRequest} asynchronously to a LWM2M client.
@@ -68,6 +69,7 @@ public interface LwM2mRequestSender {
      * 
      * @param destination The {@link Registration} associate to the device we want to sent the request.
      * @param request The request to send to the client.
+     * @param lowerLayerConfig to tweak lower layer request (e.g. coap request)
      * @param timeoutInMs The global timeout to wait in milliseconds (see
      *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
      * @param responseCallback a callback called when a response is received (successful or error response). This
@@ -88,8 +90,9 @@ public interface LwM2mRequestSender {
      *        This callback MUST NOT be null.
      * @throws CodecException if request payload can not be encoded.
      */
-    <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request, long timeoutInMs,
-            ResponseCallback<T> responseCallback, ErrorCallback errorCallback);
+    <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request,
+            LowerLayerConfig lowerLayerConfig, long timeoutInMs, ResponseCallback<T> responseCallback,
+            ErrorCallback errorCallback);
 
     /**
      * cancel all ongoing messages for a LWM2M client identified by the registration identifier. In case a client

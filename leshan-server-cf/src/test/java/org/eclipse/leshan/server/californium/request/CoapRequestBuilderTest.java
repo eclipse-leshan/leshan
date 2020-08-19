@@ -90,7 +90,7 @@ public class CoapRequestBuilderTest {
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getIdentity(), reg.getRootPath(), reg.getId(),
-                reg.getEndpoint(), model, encoder, false);
+                reg.getEndpoint(), model, encoder, false, null);
         ReadRequest request = new ReadRequest(3, 0);
         builder.visit(request);
 
@@ -108,7 +108,7 @@ public class CoapRequestBuilderTest {
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getIdentity(), reg.getRootPath(), reg.getId(),
-                reg.getEndpoint(), model, encoder, false);
+                reg.getEndpoint(), model, encoder, false, null);
         ReadRequest request = new ReadRequest(3, 0, 1);
         builder.visit(request);
 
@@ -123,7 +123,7 @@ public class CoapRequestBuilderTest {
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getIdentity(), reg.getRootPath(), reg.getId(),
-                reg.getEndpoint(), model, encoder, false);
+                reg.getEndpoint(), model, encoder, false, null);
         ReadRequest request = new ReadRequest(3);
         builder.visit(request);
 
@@ -138,7 +138,7 @@ public class CoapRequestBuilderTest {
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getIdentity(), reg.getRootPath(), reg.getId(),
-                reg.getEndpoint(), model, encoder, false);
+                reg.getEndpoint(), model, encoder, false, null);
         DiscoverRequest request = new DiscoverRequest(3, 0);
         builder.visit(request);
 
@@ -157,7 +157,7 @@ public class CoapRequestBuilderTest {
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getIdentity(), reg.getRootPath(), reg.getId(),
-                reg.getEndpoint(), model, encoder, false);
+                reg.getEndpoint(), model, encoder, false, null);
         WriteRequest request = new WriteRequest(Mode.UPDATE, 3, 0, LwM2mSingleResource.newStringResource(15, "value"));
         builder.visit(request);
 
@@ -181,7 +181,7 @@ public class CoapRequestBuilderTest {
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getIdentity(), reg.getRootPath(), reg.getId(),
-                reg.getEndpoint(), model, encoder, false);
+                reg.getEndpoint(), model, encoder, false, null);
         WriteRequest request = new WriteRequest(3, 0, 14, "value");
         builder.visit(request);
 
@@ -196,7 +196,7 @@ public class CoapRequestBuilderTest {
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getIdentity(), reg.getRootPath(), reg.getId(),
-                reg.getEndpoint(), model, encoder, false);
+                reg.getEndpoint(), model, encoder, false, null);
         AttributeSet attributes = new AttributeSet(new Attribute(Attribute.MINIMUM_PERIOD, 10L),
                 new Attribute(Attribute.MAXIMUM_PERIOD, 100L));
         WriteAttributesRequest request = new WriteAttributesRequest(3, 0, 14, attributes);
@@ -216,7 +216,7 @@ public class CoapRequestBuilderTest {
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getIdentity(), reg.getRootPath(), reg.getId(),
-                reg.getEndpoint(), model, encoder, false);
+                reg.getEndpoint(), model, encoder, false, null);
         AttributeSet attributes = new AttributeSet(new Attribute(Attribute.MINIMUM_PERIOD),
                 new Attribute(Attribute.MAXIMUM_PERIOD));
         WriteAttributesRequest request = new WriteAttributesRequest(3, 0, 14, attributes);
@@ -236,7 +236,7 @@ public class CoapRequestBuilderTest {
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getIdentity(), reg.getRootPath(), reg.getId(),
-                reg.getEndpoint(), model, encoder, false);
+                reg.getEndpoint(), model, encoder, false, null);
         ExecuteRequest request = new ExecuteRequest(3, 0, 12, "params");
         builder.visit(request);
 
@@ -255,7 +255,7 @@ public class CoapRequestBuilderTest {
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getIdentity(), reg.getRootPath(), reg.getId(),
-                reg.getEndpoint(), model, encoder, false);
+                reg.getEndpoint(), model, encoder, false, null);
         CreateRequest request = new CreateRequest(12, LwM2mSingleResource.newStringResource(0, "value"));
         builder.visit(request);
 
@@ -278,7 +278,7 @@ public class CoapRequestBuilderTest {
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getIdentity(), reg.getRootPath(), reg.getId(),
-                reg.getEndpoint(), model, encoder, false);
+                reg.getEndpoint(), model, encoder, false, null);
         CreateRequest request = new CreateRequest(12,
                 new LwM2mObjectInstance(26, LwM2mSingleResource.newStringResource(0, "value")));
         builder.visit(request);
@@ -303,7 +303,7 @@ public class CoapRequestBuilderTest {
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getIdentity(), reg.getRootPath(), reg.getId(),
-                reg.getEndpoint(), model, encoder, false);
+                reg.getEndpoint(), model, encoder, false, null);
         DeleteRequest request = new DeleteRequest(12, 0);
         builder.visit(request);
 
@@ -321,7 +321,7 @@ public class CoapRequestBuilderTest {
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getIdentity(), reg.getRootPath(), reg.getId(),
-                reg.getEndpoint(), model, encoder, false);
+                reg.getEndpoint(), model, encoder, false, null);
         ObserveRequest request = new ObserveRequest(12, 0);
         builder.visit(request);
 

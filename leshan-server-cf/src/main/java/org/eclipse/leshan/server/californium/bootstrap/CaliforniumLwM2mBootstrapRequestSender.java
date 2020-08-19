@@ -84,7 +84,7 @@ public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapReq
     public <T extends LwM2mResponse> T send(BootstrapSession destination, DownlinkRequest<T> request, long timeoutInMs)
             throws InterruptedException {
         return sender.sendLwm2mRequest(destination.getEndpoint(), destination.getIdentity(), destination.getId(), model,
-                null, request, timeoutInMs, false);
+                null, request, null, timeoutInMs, false);
     }
 
     /**
@@ -117,7 +117,7 @@ public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapReq
     public <T extends LwM2mResponse> void send(BootstrapSession destination, DownlinkRequest<T> request,
             long timeoutInMs, ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         sender.sendLwm2mRequest(destination.getEndpoint(), destination.getIdentity(), destination.getId(), model, null,
-                request, timeoutInMs, responseCallback, errorCallback, false);
+                request, null, timeoutInMs, responseCallback, errorCallback, false);
     }
 
     /**
