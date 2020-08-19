@@ -32,7 +32,10 @@ import org.eclipse.leshan.server.registration.Registration;
 
 /**
  * A {@link LwM2mRequestSender} is responsible to send LWM2M {@link DownlinkRequest} for a given {@link Registration}.
+ * 
+ * @deprecated use {@link LwM2mRequestSender2} instead
  */
+@Deprecated
 public interface LwM2mRequestSender {
 
     /**

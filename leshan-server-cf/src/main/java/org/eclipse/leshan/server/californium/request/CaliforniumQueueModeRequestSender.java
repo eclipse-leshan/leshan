@@ -26,10 +26,12 @@ import org.eclipse.leshan.server.queue.PresenceServiceImpl;
 import org.eclipse.leshan.server.queue.QueueModeLwM2mRequestSender;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
+import org.eclipse.leshan.server.request.LwM2mRequestSender2;
 
 /**
- * A {@link LwM2mRequestSender} and {@link CoapRequestSender} which supports LWM2M Queue Mode.
+ * A {@link LwM2mRequestSender2} and {@link CoapRequestSender} which supports LWM2M Queue Mode.
  */
+@SuppressWarnings("deprecation")
 public class CaliforniumQueueModeRequestSender extends QueueModeLwM2mRequestSender
         implements CoapRequestSender, Destroyable {
 

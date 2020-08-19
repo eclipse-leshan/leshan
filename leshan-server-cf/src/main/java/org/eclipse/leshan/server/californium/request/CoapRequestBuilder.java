@@ -47,6 +47,7 @@ import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.util.StringUtils;
 import org.eclipse.leshan.server.californium.observation.ObserveUtil;
+import org.eclipse.leshan.server.request.LowerLayerConfig;
 
 /**
  * This class is able to create CoAP request from LWM2M {@link DownlinkRequest}.
@@ -67,6 +68,9 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor2 {
     private final LwM2mModel model;
     private final LwM2mNodeEncoder encoder;
 
+    private LowerLayerConfig lowerLayerConfig;
+
+    @Deprecated
     public CoapRequestBuilder(Identity destination, String rootPath, String registrationId, String endpoint,
             LwM2mModel model, LwM2mNodeEncoder encoder, boolean allowConnectionInitiation) {
         this.destination = destination;
@@ -78,12 +82,23 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor2 {
         this.allowConnectionInitiation = allowConnectionInitiation;
     }
 
+    /**
+     * @since 1.2
+     */
+    public CoapRequestBuilder(Identity destination2, String rootPath2, String sessionId, String endpointName,
+            LwM2mModel model2, LwM2mNodeEncoder encoder2, boolean allowConnectionInitiation2,
+            LowerLayerConfig lowerLayerConfig) {
+        this(destination2, rootPath2, sessionId, endpointName, model2, encoder2, allowConnectionInitiation2);
+        this.lowerLayerConfig = lowerLayerConfig;
+    }
+
     @Override
     public void visit(ReadRequest request) {
         coapRequest = Request.newGet();
         if (request.getContentFormat() != null)
             coapRequest.getOptions().setAccept(request.getContentFormat().getCode());
         setTarget(coapRequest, request.getPath());
+        applyLowerLayerConfig(coapRequest);
     }
 
     @Override
@@ -91,6 +106,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor2 {
         coapRequest = Request.newGet();
         setTarget(coapRequest, request.getPath());
         coapRequest.getOptions().setAccept(MediaTypeRegistry.APPLICATION_LINK_FORMAT);
+        applyLowerLayerConfig(coapRequest);
     }
 
     @Override
@@ -100,6 +116,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor2 {
         coapRequest.getOptions().setContentFormat(format.getCode());
         coapRequest.setPayload(encoder.encode(request.getNode(), format, request.getPath(), model));
         setTarget(coapRequest, request.getPath());
+        applyLowerLayerConfig(coapRequest);
     }
 
     @Override
@@ -109,6 +126,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor2 {
         for (String query : request.getAttributes().toQueryParams()) {
             coapRequest.getOptions().addUriQuery(query);
         }
+        applyLowerLayerConfig(coapRequest);
     }
 
     @Override
@@ -119,6 +137,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor2 {
             coapRequest.setPayload(request.getParameters());
             coapRequest.getOptions().setContentFormat(MediaTypeRegistry.TEXT_PLAIN);
         }
+        applyLowerLayerConfig(coapRequest);
     }
 
     @Override
@@ -134,12 +153,14 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor2 {
         }
         coapRequest.setPayload(encoder.encode(node, request.getContentFormat(), request.getPath(), model));
         setTarget(coapRequest, request.getPath());
+        applyLowerLayerConfig(coapRequest);
     }
 
     @Override
     public void visit(DeleteRequest request) {
         coapRequest = Request.newDelete();
         setTarget(coapRequest, request.getPath());
+        applyLowerLayerConfig(coapRequest);
     }
 
     @Override
@@ -152,6 +173,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor2 {
 
         // add context info to the observe request
         coapRequest.setUserContext(ObserveUtil.createCoapObserveRequestContext(endpoint, registrationId, request));
+        applyLowerLayerConfig(coapRequest);
     }
 
     @Override
@@ -162,6 +184,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor2 {
         if (request.getObservation().getContentFormat() != null)
             coapRequest.getOptions().setAccept(request.getObservation().getContentFormat().getCode());
         setTarget(coapRequest, request.getPath());
+        applyLowerLayerConfig(coapRequest);
     }
 
     @Override
@@ -172,6 +195,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor2 {
         coapRequest.getOptions().setContentFormat(format.getCode());
         coapRequest.setPayload(encoder.encode(request.getNode(), format, request.getPath(), model));
         setTarget(coapRequest, request.getPath());
+        applyLowerLayerConfig(coapRequest);
     }
 
     @Override
@@ -179,6 +203,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor2 {
         coapRequest = Request.newGet();
         setTarget(coapRequest, request.getPath());
         coapRequest.getOptions().setAccept(MediaTypeRegistry.APPLICATION_LINK_FORMAT);
+        applyLowerLayerConfig(coapRequest);
     }
 
     @Override
@@ -188,6 +213,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor2 {
         EndpointContext context = EndpointContextUtil.extractContext(destination, allowConnectionInitiation);
         coapRequest.setDestinationContext(context);
         setTarget(coapRequest, request.getPath());
+        applyLowerLayerConfig(coapRequest);
     }
 
     @Override
@@ -207,6 +233,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor2 {
         }
 
         coapRequest.getOptions().addUriPath("bs");
+        applyLowerLayerConfig(coapRequest);
     }
 
     protected void setTarget(Request coapRequest, LwM2mPath path) {
@@ -240,6 +267,11 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor2 {
         if (path.getResourceId() != null) {
             coapRequest.getOptions().addUriPath(Integer.toString(path.getResourceId()));
         }
+    }
+
+    protected void applyLowerLayerConfig(Request coapRequest) {
+        if (lowerLayerConfig != null)
+            lowerLayerConfig.apply(coapRequest);
     }
 
     public Request getRequest() {

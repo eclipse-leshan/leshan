@@ -54,6 +54,7 @@ import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.Destroyable;
+import org.eclipse.leshan.server.request.LowerLayerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,14 +121,57 @@ public class RequestSender implements Destroyable {
      * @throws SendFailedException if the request can not be sent. E.g. error at CoAP or DTLS/UDP layer.
      * @throws UnconnectedPeerException if client is not connected (no dtls connection available).
      * @throws InvalidResponseException if the response received is malformed.
+     * 
+     * @deprecated use
+     *             {@link #sendLwm2mRequest(String, Identity, String, LwM2mModel, String, DownlinkRequest, LowerLayerConfig, long, boolean)}
+     *             instead
      */
+    @Deprecated
     public <T extends LwM2mResponse> T sendLwm2mRequest(final String endpointName, Identity destination,
             String sessionId, final LwM2mModel model, String rootPath, final DownlinkRequest<T> request,
             long timeoutInMs, boolean allowConnectionInitiation) throws InterruptedException {
+        return sendLwm2mRequest(endpointName, destination, sessionId, model, rootPath, request, null, timeoutInMs,
+                allowConnectionInitiation);
+    }
+
+    /**
+     * Sends a Lightweight M2M {@link DownlinkRequest} synchronously to a LWM2M client. Will block until a response is
+     * received from the remote client.
+     * <p>
+     * The synchronous way could block a thread during a long time so it is more recommended to use the asynchronous
+     * way.
+     * 
+     * @param endpointName the LWM2M client endpoint name.
+     * @param destination the LWM2M client {@link Identity}.
+     * @param sessionId A session Identifier which could be reused to cancel all ongoing request related to this
+     *        sessionId. See {@link #cancelRequests(String)}.
+     * @param model The {@link LwM2mModel} used to encode payload in request and decode payload in response.
+     * @param rootPath a rootpath to prefix to the LWM2M path to create the CoAP path. (see 8.2.2 Alternate Path in
+     *        LWM2M specification)
+     * @param request The request to send to the client.
+     * @param lowerLayerConfig to tweak lower layer request (e.g. coap request)
+     * @param timeoutInMs The response timeout to wait in milliseconds (see
+     *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
+     * @param allowConnectionInitiation This request can initiate a Handshake if there is no DTLS connection.
+     * @return the response or <code>null</code> if the timeout expires (see
+     *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
+     * 
+     * @throws CodecException if request payload can not be encoded.
+     * @throws InterruptedException if the thread was interrupted.
+     * @throws RequestRejectedException if the request is rejected by foreign peer.
+     * @throws RequestCanceledException if the request is cancelled.
+     * @throws SendFailedException if the request can not be sent. E.g. error at CoAP or DTLS/UDP layer.
+     * @throws UnconnectedPeerException if client is not connected (no dtls connection available).
+     * @throws InvalidResponseException if the response received is malformed.
+     */
+    public <T extends LwM2mResponse> T sendLwm2mRequest(final String endpointName, Identity destination,
+            String sessionId, final LwM2mModel model, String rootPath, final DownlinkRequest<T> request,
+            LowerLayerConfig lowerLayerConfig, long timeoutInMs, boolean allowConnectionInitiation)
+            throws InterruptedException {
 
         // Create the CoAP request from LwM2m request
         CoapRequestBuilder coapClientRequestBuilder = new CoapRequestBuilder(destination, rootPath, sessionId,
-                endpointName, model, encoder, allowConnectionInitiation);
+                endpointName, model, encoder, allowConnectionInitiation, lowerLayerConfig);
         request.accept(coapClientRequestBuilder);
         final Request coapRequest = coapClientRequestBuilder.getRequest();
 
@@ -190,18 +234,68 @@ public class RequestSender implements Destroyable {
      *        This callback MUST NOT be null.
      * @param allowConnectionInitiation This request can initiate a Handshake if there is no DTLS connection.
      * @throws CodecException if request payload can not be encoded.
+     * 
+     * @deprecated use
+     *             {@link #sendLwm2mRequest(String, Identity, String, LwM2mModel, String, DownlinkRequest, LowerLayerConfig, long, ResponseCallback, ErrorCallback, boolean)}
+     *             instead
      */
+    @Deprecated
     public <T extends LwM2mResponse> void sendLwm2mRequest(final String endpointName, Identity destination,
             String sessionId, final LwM2mModel model, String rootPath, final DownlinkRequest<T> request,
             long timeoutInMs, ResponseCallback<T> responseCallback, ErrorCallback errorCallback,
             boolean allowConnectionInitiation) {
+        sendLwm2mRequest(endpointName, destination, sessionId, model, rootPath, request, null, timeoutInMs,
+                responseCallback, errorCallback, allowConnectionInitiation);
+        ;
+    }
+
+    /**
+     * Send a Lightweight M2M {@link DownlinkRequest} asynchronously to a LWM2M client.
+     * 
+     * The Californium API does not ensure that message callback are exclusive. E.g. In some race condition, you can get
+     * a onReponse call and a onCancel one. This method ensures that you will receive only one event. Meaning, you get
+     * either 1 response or 1 error.
+     * 
+     * @param endpointName the LWM2M client endpoint name.
+     * @param destination the LWM2M client {@link Identity}.
+     * @param sessionId A session Identifier which could be reused to cancel all ongoing request related to this
+     *        sessionId. See {@link #cancelRequests(String)}.
+     * @param model The {@link LwM2mModel} used to encode payload in request and decode payload in response.
+     * @param rootPath a rootpath to prefix to the LWM2M path to create the CoAP path. (see 8.2.2 Alternate Path in
+     *        LWM2M specification)
+     * @param request The request to send to the client.
+     * @param lowerLayerConfig to tweak lower layer request (e.g. coap request)
+     * @param timeoutInMs The response timeout to wait in milliseconds (see
+     *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
+     * @param responseCallback a callback called when a response is received (successful or error response). This
+     *        callback MUST NOT be null.
+     * @param errorCallback a callback called when an error or exception occurred when response is received. It can be :
+     *        <ul>
+     *        <li>{@link RequestRejectedException} if the request is rejected by foreign peer.</li>
+     *        <li>{@link RequestCanceledException} if the request is cancelled.</li>
+     *        <li>{@link SendFailedException} if the request can not be sent. E.g. error at CoAP or DTLS/UDP layer.</li>
+     *        <li>{@link InvalidResponseException} if the response received is malformed.</li>
+     *        <li>{@link UnconnectedPeerException} if client is not connected (no dtls connection available).</li>
+     *        <li>{@link TimeoutException} if the timeout expires (see
+     *        https://github.com/eclipse/leshan/wiki/Request-Timeout).</li>
+     *        <li>or any other RuntimeException for unexpected issue.
+     *        </ul>
+     *        This callback MUST NOT be null.
+     * @param allowConnectionInitiation This request can initiate a Handshake if there is no DTLS connection.
+     * @throws CodecException if request payload can not be encoded.
+     */
+
+    public <T extends LwM2mResponse> void sendLwm2mRequest(final String endpointName, Identity destination,
+            String sessionId, final LwM2mModel model, String rootPath, final DownlinkRequest<T> request,
+            LowerLayerConfig lowerLayerConfig, long timeoutInMs, ResponseCallback<T> responseCallback,
+            ErrorCallback errorCallback, boolean allowConnectionInitiation) {
 
         Validate.notNull(responseCallback);
         Validate.notNull(errorCallback);
 
         // Create the CoAP request from LwM2m request
         CoapRequestBuilder coapClientRequestBuilder = new CoapRequestBuilder(destination, rootPath, sessionId,
-                endpointName, model, encoder, allowConnectionInitiation);
+                endpointName, model, encoder, allowConnectionInitiation, lowerLayerConfig);
         request.accept(coapClientRequestBuilder);
         final Request coapRequest = coapClientRequestBuilder.getRequest();
 

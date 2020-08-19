@@ -41,12 +41,13 @@ import org.eclipse.leshan.server.Destroyable;
 import org.eclipse.leshan.server.californium.observation.ObservationServiceImpl;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.registration.Registration;
-import org.eclipse.leshan.server.request.LwM2mRequestSender;
+import org.eclipse.leshan.server.request.LowerLayerConfig;
+import org.eclipse.leshan.server.request.LwM2mRequestSender2;
 
 /**
- * An implementation of {@link LwM2mRequestSender} and {@link CoapRequestSender} based on Californium.
+ * An implementation of {@link LwM2mRequestSender2} and {@link CoapRequestSender} based on Californium.
  */
-public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRequestSender, Destroyable {
+public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender2, CoapRequestSender, Destroyable {
 
     private final ObservationServiceImpl observationService;
     private final LwM2mModelProvider modelProvider;
@@ -95,13 +96,42 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
     @Override
     public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request, long timeoutInMs)
             throws InterruptedException {
+        return send(destination, request, null, timeoutInMs);
+    }
+
+    /**
+     * Send a Lightweight M2M request synchronously. Will block until a response is received from the remote server.
+     * <p>
+     * The synchronous way could block a thread during a long time so it is more recommended to use the asynchronous
+     * way.
+     * 
+     * @param destination The {@link Registration} associate to the device we want to sent the request.
+     * @param request The request to send to the client.
+     * @param lowerLayerConfig to tweak lower layer request (e.g. coap request)
+     * @param timeoutInMs The global timeout to wait in milliseconds (see
+     *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
+     * @return the LWM2M response. The response can be <code>null</code> if the timeout expires (see
+     *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
+     * 
+     * @throws CodecException if request payload can not be encoded.
+     * @throws InterruptedException if the thread was interrupted.
+     * @throws RequestRejectedException if the request is rejected by foreign peer.
+     * @throws RequestCanceledException if the request is cancelled.
+     * @throws SendFailedException if the request can not be sent. E.g. error at CoAP or DTLS/UDP layer.
+     * @throws InvalidResponseException if the response received is malformed.
+     * @throws UnconnectedPeerException if client is not connected (no dtls connection available).
+     */
+    @Override
+    public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request,
+            LowerLayerConfig lowerLayerConfig, long timeoutInMs) throws InterruptedException {
 
         // Retrieve the objects definition
         final LwM2mModel model = modelProvider.getObjectModel(destination);
 
         // Send requests synchronously
         T response = sender.sendLwm2mRequest(destination.getEndpoint(), destination.getIdentity(), destination.getId(),
-                model, destination.getRootPath(), request, timeoutInMs, destination.canInitiateConnection());
+                model, destination.getRootPath(), request, lowerLayerConfig, timeoutInMs,
+                destination.canInitiateConnection());
 
         // Handle special observe case
         if (response != null && response.getClass() == ObserveResponse.class && response.isSuccess()) {
@@ -140,12 +170,47 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
     @Override
     public <T extends LwM2mResponse> void send(final Registration destination, DownlinkRequest<T> request,
             long timeoutInMs, final ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
+        send(destination, request, null, timeoutInMs, responseCallback, errorCallback);
+    }
+
+    /**
+     * Send a Lightweight M2M {@link DownlinkRequest} asynchronously to a LWM2M client.
+     * 
+     * The Californium API does not ensure that message callback are exclusive. E.g. In some race condition, you can get
+     * a onReponse call and a onCancel one. This method ensures that you will receive only one event. Meaning, you get
+     * either 1 response or 1 error.
+     * 
+     * @param destination The {@link Registration} associate to the device we want to sent the request.
+     * @param request The request to send to the client.
+     * @param lowerLayerConfig to tweak lower layer request (e.g. coap request)
+     * @param timeoutInMs The global timeout to wait in milliseconds (see
+     *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
+     * @param responseCallback a callback called when a response is received (successful or error response). This
+     *        callback MUST NOT be null.
+     * @param errorCallback a callback called when an error or exception occurred when response is received. It can be :
+     *        <ul>
+     *        <li>{@link RequestRejectedException} if the request is rejected by foreign peer.</li>
+     *        <li>{@link RequestCanceledException} if the request is cancelled.</li>
+     *        <li>{@link SendFailedException} if the request can not be sent. E.g. error at CoAP or DTLS/UDP layer.</li>
+     *        <li>{@link InvalidResponseException} if the response received is malformed.</li>
+     *        <li>{@link UnconnectedPeerException} if client is not connected (no dtls connection available).</li>
+     *        <li>{@link TimeoutException} if the timeout expires (see
+     *        https://github.com/eclipse/leshan/wiki/Request-Timeout).</li>
+     *        <li>or any other RuntimeException for unexpected issue.
+     *        </ul>
+     *        This callback MUST NOT be null.
+     * @throws CodecException if request payload can not be encoded.
+     */
+    @Override
+    public <T extends LwM2mResponse> void send(final Registration destination, DownlinkRequest<T> request,
+            LowerLayerConfig lowerLayerConfig, long timeoutInMs, final ResponseCallback<T> responseCallback,
+            ErrorCallback errorCallback) {
         // Retrieve the objects definition
         final LwM2mModel model = modelProvider.getObjectModel(destination);
 
         // Send requests asynchronously
         sender.sendLwm2mRequest(destination.getEndpoint(), destination.getIdentity(), destination.getId(), model,
-                destination.getRootPath(), request, timeoutInMs, new ResponseCallback<T>() {
+                destination.getRootPath(), request, lowerLayerConfig, timeoutInMs, new ResponseCallback<T>() {
                     @Override
                     public void onResponse(T response) {
                         if (response != null && response.getClass() == ObserveResponse.class && response.isSuccess()) {

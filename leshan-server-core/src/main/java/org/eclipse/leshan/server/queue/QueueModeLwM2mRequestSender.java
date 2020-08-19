@@ -24,12 +24,15 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.request.LowerLayerConfig;
 import org.eclipse.leshan.server.request.LwM2mRequestSender;
+import org.eclipse.leshan.server.request.LwM2mRequestSender2;
 
 /**
  * A {@link LwM2mRequestSender} which supports LWM2M Queue Mode.
  */
-public class QueueModeLwM2mRequestSender implements LwM2mRequestSender {
+@SuppressWarnings("deprecation")
+public class QueueModeLwM2mRequestSender implements LwM2mRequestSender2 {
 
     protected PresenceServiceImpl presenceService;
     protected LwM2mRequestSender delegatedSender;
@@ -54,9 +57,23 @@ public class QueueModeLwM2mRequestSender implements LwM2mRequestSender {
     public <T extends LwM2mResponse> T send(final Registration destination, DownlinkRequest<T> request, long timeout)
             throws InterruptedException {
 
+        return send(destination, request, null, timeout);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public <T extends LwM2mResponse> T send(final Registration destination, DownlinkRequest<T> request,
+            LowerLayerConfig lowerLayerConfig, long timeout) throws InterruptedException {
+
         // If the client does not use Q-Mode, just send
         if (!destination.usesQueueMode()) {
-            return delegatedSender.send(destination, request, timeout);
+            if (delegatedSender instanceof LwM2mRequestSender2) {
+                return ((LwM2mRequestSender2) delegatedSender).send(destination, request, lowerLayerConfig, timeout);
+            } else {
+                return delegatedSender.send(destination, request, timeout);
+            }
         }
 
         // If the client uses Q-Mode...
@@ -68,7 +85,13 @@ public class QueueModeLwM2mRequestSender implements LwM2mRequestSender {
 
         // Use delegation to send the request
         try {
-            T response = delegatedSender.send(destination, request, timeout);
+            T response = null;
+            if (delegatedSender instanceof LwM2mRequestSender2) {
+                response = ((LwM2mRequestSender2) delegatedSender).send(destination, request, lowerLayerConfig,
+                        timeout);
+            } else {
+                response = delegatedSender.send(destination, request, timeout);
+            }
             if (response != null) {
                 // Set the client awake. This will restart the timer.
                 presenceService.setAwake(destination);
@@ -92,10 +115,25 @@ public class QueueModeLwM2mRequestSender implements LwM2mRequestSender {
     @Override
     public <T extends LwM2mResponse> void send(final Registration destination, DownlinkRequest<T> request, long timeout,
             final ResponseCallback<T> responseCallback, final ErrorCallback errorCallback) {
+        send(destination, request, null, timeout, responseCallback, errorCallback);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public <T extends LwM2mResponse> void send(final Registration destination, DownlinkRequest<T> request,
+            LowerLayerConfig lowerLayerConfig, long timeout, final ResponseCallback<T> responseCallback,
+            final ErrorCallback errorCallback) {
 
         // If the client does not use Q-Mode, just send
         if (!destination.usesQueueMode()) {
-            delegatedSender.send(destination, request, timeout, responseCallback, errorCallback);
+            if (delegatedSender instanceof LwM2mRequestSender2) {
+                ((LwM2mRequestSender2) delegatedSender).send(destination, request, lowerLayerConfig, timeout,
+                        responseCallback, errorCallback);
+            } else {
+                delegatedSender.send(destination, request, timeout, responseCallback, errorCallback);
+            }
             return;
         }
 
@@ -107,31 +145,58 @@ public class QueueModeLwM2mRequestSender implements LwM2mRequestSender {
         }
 
         // Use delegation to send the request, with specific callbacks to perform Queue Mode operation
-        delegatedSender.send(destination, request, timeout, new ResponseCallback<T>() {
-            @Override
-            public void onResponse(T response) {
-                // Set the client awake. This will restart the timer.
-                presenceService.setAwake(destination);
+        if (delegatedSender instanceof LwM2mRequestSender2) {
+            ((LwM2mRequestSender2) delegatedSender).send(destination, request, lowerLayerConfig, timeout,
+                    new ResponseCallback<T>() {
+                        @Override
+                        public void onResponse(T response) {
+                            // Set the client awake. This will restart the timer.
+                            presenceService.setAwake(destination);
 
-                // Call the user's callback
-                responseCallback.onResponse(response);
-            }
-        }, new ErrorCallback() {
-            @Override
-            public void onError(Exception e) {
-                if (e instanceof TimeoutException) {
-                    // If the timeout expires, this means the client does not respond.
-                    presenceService.setSleeping(destination);
-                } else if (e instanceof UnconnectedPeerException) {
-                    // if peer is not connected (No DTLS connection available)
-                    presenceService.setSleeping(destination);
+                            // Call the user's callback
+                            responseCallback.onResponse(response);
+                        }
+                    }, new ErrorCallback() {
+                        @Override
+                        public void onError(Exception e) {
+                            if (e instanceof TimeoutException) {
+                                // If the timeout expires, this means the client does not respond.
+                                presenceService.setSleeping(destination);
+                            } else if (e instanceof UnconnectedPeerException) {
+                                // if peer is not connected (No DTLS connection available)
+                                presenceService.setSleeping(destination);
+                            }
+
+                            // Call the user's callback
+                            errorCallback.onError(e);
+                        }
+                    });
+        } else {
+            delegatedSender.send(destination, request, timeout, new ResponseCallback<T>() {
+                @Override
+                public void onResponse(T response) {
+                    // Set the client awake. This will restart the timer.
+                    presenceService.setAwake(destination);
+
+                    // Call the user's callback
+                    responseCallback.onResponse(response);
                 }
+            }, new ErrorCallback() {
+                @Override
+                public void onError(Exception e) {
+                    if (e instanceof TimeoutException) {
+                        // If the timeout expires, this means the client does not respond.
+                        presenceService.setSleeping(destination);
+                    } else if (e instanceof UnconnectedPeerException) {
+                        // if peer is not connected (No DTLS connection available)
+                        presenceService.setSleeping(destination);
+                    }
 
-                // Call the user's callback
-                errorCallback.onError(e);
-            }
-        });
-
+                    // Call the user's callback
+                    errorCallback.onError(e);
+                }
+            });
+        }
     }
 
     @Override
