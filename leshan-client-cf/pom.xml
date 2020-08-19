@@ -22,7 +22,7 @@ Contributors:
     <parent>
         <groupId>org.eclipse.leshan</groupId>
         <artifactId>leshan</artifactId>
-        <version>1.1.0</version>
+        <version>1.2.0-SNAPSHOT</version>
     </parent>
     <artifactId>leshan-client-cf</artifactId>
     <packaging>bundle</packaging>
