@@ -46,6 +46,9 @@ public class WriteAttributesRequest extends AbstractDownlinkRequest<WriteAttribu
         super(path);
         if (path.isRoot())
             throw new InvalidRequestException("WriteAttributes request cannot target root path");
+        if (path.isResourceInstance())
+            throw new InvalidRequestException(
+                    "WriteAttributes request cannot target resource instance path: %s (not yet implemented)", path);
 
         if (attributes == null)
             throw new InvalidRequestException("attributes are mandatory for %s", path);

@@ -38,6 +38,10 @@ public class BootstrapWriteRequest extends AbstractDownlinkRequest<BootstrapWrit
         if (target.isRoot())
             throw new InvalidRequestException("BootstrapWrite request cannot target root path");
 
+        if (target.isResourceInstance())
+            throw new InvalidRequestException("BootstrapWrite request cannot target resource instance path: %s ",
+                    target);
+
         if (node == null)
             throw new InvalidRequestException("new node value is mandatory for %s", target);
 

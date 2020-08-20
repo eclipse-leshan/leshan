@@ -69,6 +69,8 @@ public class DiscoverRequest extends AbstractDownlinkRequest<DiscoverResponse> {
         super(target);
         if (target.isRoot())
             throw new InvalidRequestException("Discover request cannot target root path");
+        if (target.isResourceInstance())
+            throw new InvalidRequestException("Discover request cannot target resource instance path: %s ", target);
     }
 
     @Override

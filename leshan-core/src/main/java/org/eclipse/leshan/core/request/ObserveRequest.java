@@ -137,6 +137,9 @@ public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
         super(target);
         if (target.isRoot())
             throw new InvalidRequestException("Observe request cannot target root path");
+        if (target.isResourceInstance())
+            throw new InvalidRequestException(
+                    "Observe request cannot target resource instance path: %s (not yet implemented)", target);
 
         this.format = format;
         if (context == null || context.isEmpty())
