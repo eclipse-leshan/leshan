@@ -19,7 +19,6 @@
 package org.eclipse.leshan.server.bootstrap.demo;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.security.PrivateKey;
@@ -27,6 +26,7 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
@@ -36,6 +36,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
+import org.eclipse.californium.elements.util.SslContextUtil;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -67,7 +68,7 @@ public class LeshanBootstrapServerDemo {
 
     private final static String USAGE = "java -jar leshan-bsserver-demo.jar [OPTION]";
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) {
         // Define options for command line tools
         Options options = new Options();
 
@@ -119,8 +120,21 @@ public class LeshanBootstrapServerDemo {
                 "The path to your server certificate file.\n"
                         + "The certificate Common Name (CN) should generally be equal to the server hostname.\n"
                         + "The certificate should be in X509v3 format (DER encoding).");
+
+        final StringBuilder trustStoreChapter = new StringBuilder();
+        trustStoreChapter.append("\n .");
+        trustStoreChapter.append("\n URI format: file://<path-to-trust-store-file>#<hex-strore-password>#<alias-pattern>");
+        trustStoreChapter.append("\n .");
+        trustStoreChapter.append("\n Where:");
+        trustStoreChapter.append("\n - path-to-trust-store-file is path to pkcs12 trust store file");
+        trustStoreChapter.append("\n - hex-store-password is HEX formatted password for store");
+        trustStoreChapter.append("\n - alias-pattern can be used to filter trusted certificates and can also be empty to get all");
+        trustStoreChapter.append("\n .");
+        trustStoreChapter.append("\n Default: All certificates are trusted which is only OK for a demo.");
+
         options.addOption("truststore", true,
-                "The path to a root certificate file to trust or a folder containing all the trusted certificates in X509v3 format (DER encoding).\n Default: All certificates are trusted which is only OK for a demo.");
+                "The path to a root certificate file to trust or a folder containing all the trusted certificates in X509v3 format (DER encoding) or trust store URI."
+                        + trustStoreChapter);
 
         HelpFormatter formatter = new HelpFormatter();
         formatter.setWidth(120);
@@ -244,28 +258,48 @@ public class LeshanBootstrapServerDemo {
             }
         }
 
-        // get X509 info
+        // configure trust store if given
         List<Certificate> trustStore = null;
         if (cl.hasOption("truststore")) {
             trustStore = new ArrayList<>();
-            File input = new File(cl.getOptionValue("truststore"));
 
-            // check input exists
-            if (!input.exists())
-                throw new FileNotFoundException(input.toString());
+            String trustStoreName = cl.getOptionValue("truststore");
 
-            // get input files.
-            File[] files;
-            if (input.isDirectory()) {
-                files = input.listFiles();
-            } else {
-                files = new File[] { input };
-            }
-            for (File file : files) {
+            if (trustStoreName.startsWith("file://")) {
+                // Treat argument as Java trust store
                 try {
-                    trustStore.add(SecurityUtil.certificate.readFromFile(file.getAbsolutePath()));
+                    Certificate[] trustedCertificates = SslContextUtil.loadTrustedCertificates(trustStoreName);
+                    trustStore.addAll(Arrays.asList(trustedCertificates));
                 } catch (Exception e) {
-                    LOG.warn("Unable to load X509 files {}:{} ", file.getAbsolutePath(), e.getMessage());
+                    System.err.println("Failed to load trust store : " + e.getMessage());
+                    e.printStackTrace();
+                    formatter.printHelp(USAGE, options);
+                    return;
+                }
+            } else {
+                // Treat argument as file or directory
+                File input = new File(cl.getOptionValue("truststore"));
+
+                // check input exists
+                if (!input.exists()) {
+                    System.err.println("Failed to load trust store - file or directory does not exist : " + input.toString());
+                    formatter.printHelp(USAGE, options);
+                    return;
+                }
+
+                // get input files.
+                File[] files;
+                if (input.isDirectory()) {
+                    files = input.listFiles();
+                } else {
+                    files = new File[] { input };
+                }
+                for (File file : files) {
+                    try {
+                        trustStore.add(SecurityUtil.certificate.readFromFile(file.getAbsolutePath()));
+                    } catch (Exception e) {
+                        LOG.warn("Unable to load X509 files {} : {} ", file.getAbsolutePath(), e.getMessage());
+                    }
                 }
             }
         }
