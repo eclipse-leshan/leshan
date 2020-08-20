@@ -38,6 +38,9 @@ public class CancelObservationRequest extends AbstractDownlinkRequest<CancelObse
         super(observation.getPath());
         if (getPath().isRoot())
             throw new InvalidRequestException("Observe request cannot target root path");
+        if (getPath().isResourceInstance())
+            throw new InvalidRequestException(
+                    "Observe request cannot target resource instance path: %s (not yet implemented)", getPath());
         this.observation = observation;
     }
 

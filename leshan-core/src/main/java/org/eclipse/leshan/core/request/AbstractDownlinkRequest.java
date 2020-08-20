@@ -32,9 +32,6 @@ public abstract class AbstractDownlinkRequest<T extends LwM2mResponse> implement
         if (path == null)
             throw new InvalidRequestException("path is mandatory");
 
-        if (path.isResourceInstance())
-            throw new InvalidRequestException("downlink request cannot target resource instance path: %s ", path);
-
         this.path = path;
     }
 

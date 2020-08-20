@@ -117,7 +117,9 @@ public class ReadRequest extends AbstractDownlinkRequest<ReadResponse> {
         super(target);
         if (target.isRoot())
             throw new InvalidRequestException("Read request cannot target root path");
-
+        if (target.isResourceInstance())
+            throw new InvalidRequestException(
+                    "Read request cannot target resource instance path: %s (not yet implemented)", target);
         this.format = format;
     }
 

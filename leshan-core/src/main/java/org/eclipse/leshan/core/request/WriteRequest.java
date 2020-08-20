@@ -297,6 +297,9 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
         super(target);
         if (target.isRoot())
             throw new InvalidRequestException("Write request cannot target root path");
+        if (target.isResourceInstance())
+            throw new InvalidRequestException(
+                    "Write request cannot target resource instance path: %s (not yet implemented)", target);
         if (mode == null)
             throw new InvalidRequestException("mode is mandatory for %s", target);
         if (node == null)
