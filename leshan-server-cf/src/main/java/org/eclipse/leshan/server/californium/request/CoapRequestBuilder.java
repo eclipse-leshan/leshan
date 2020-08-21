@@ -240,6 +240,11 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         if (path.getResourceId() != null) {
             coapRequest.getOptions().addUriPath(Integer.toString(path.getResourceId()));
         }
+
+        // resourceInstanceId
+        if (path.getResourceInstanceId() != null) {
+            coapRequest.getOptions().addUriPath(Integer.toString(path.getResourceInstanceId()));
+        }
     }
 
     public Request getRequest() {
