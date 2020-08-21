@@ -83,6 +83,18 @@ public class ReadRequest extends AbstractDownlinkRequest<ReadResponse> {
     /**
      * Creates a request for reading a specific resource from a client.
      * 
+     * @param objectId the object ID of the resource
+     * @param objectInstanceId the object instance ID
+     * @param resourceId the (individual) resource's ID
+     * @param resourceInstanceId the resource instance's ID
+     */
+    public ReadRequest(int objectId, int objectInstanceId, int resourceId, int resourceInstanceId) {
+        this(null, new LwM2mPath(objectId, objectInstanceId, resourceId, resourceInstanceId));
+    }
+
+    /**
+     * Creates a request for reading a specific resource from a client.
+     * 
      * @param format the desired format for the response (TLV, JSON, TEXT or OPAQUE)
      * @param objectId the object ID of the resource
      * @param objectInstanceId the object instance ID
@@ -90,6 +102,20 @@ public class ReadRequest extends AbstractDownlinkRequest<ReadResponse> {
      */
     public ReadRequest(ContentFormat format, int objectId, int objectInstanceId, int resourceId) {
         this(format, new LwM2mPath(objectId, objectInstanceId, resourceId));
+    }
+
+    /**
+     * Creates a request for reading a specific resource from a client.
+     * 
+     * @param format the desired format for the response (TLV, JSON, TEXT or OPAQUE)
+     * @param objectId the object ID of the resource
+     * @param objectInstanceId the object instance ID
+     * @param resourceId the (individual) resource's ID
+     * @param resourceInstanceId the resource instance's ID
+     */
+    public ReadRequest(ContentFormat format, int objectId, int objectInstanceId, int resourceId,
+            int resourceInstanceId) {
+        this(format, new LwM2mPath(objectId, objectInstanceId, resourceId, resourceInstanceId));
     }
 
     /**
@@ -117,9 +143,6 @@ public class ReadRequest extends AbstractDownlinkRequest<ReadResponse> {
         super(target);
         if (target.isRoot())
             throw new InvalidRequestException("Read request cannot target root path");
-        if (target.isResourceInstance())
-            throw new InvalidRequestException(
-                    "Read request cannot target resource instance path: %s (not yet implemented)", target);
         this.format = format;
     }
 
