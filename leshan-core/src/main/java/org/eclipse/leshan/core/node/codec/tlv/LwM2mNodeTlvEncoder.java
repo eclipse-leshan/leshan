@@ -149,14 +149,11 @@ public class LwM2mNodeTlvEncoder {
 
             Tlv rTlv;
             if (resource.isMultiInstances()) {
-                Tlv[] instances = new Tlv[resource.getValues().size()];
+                Tlv[] instances = new Tlv[resource.getInstances().size()];
                 int i = 0;
-                for (Entry<Integer, ?> entry : resource.getValues().entrySet()) {
-                    LwM2mPath resourceInstancePath = resourcePath.append(entry.getKey());
-                    Object convertedValue = converter.convertValue(entry.getValue(), resource.getType(), expectedType,
-                            resourceInstancePath);
-                    instances[i] = new Tlv(TlvType.RESOURCE_INSTANCE, null,
-                            this.encodeTlvValue(convertedValue, expectedType, resourceInstancePath), entry.getKey());
+                for (LwM2mResourceInstance resourceInstance : resource.getInstances().values()) {
+                    LwM2mPath resourceInstancePath = resourcePath.append(resourceInstance.getId());
+                    instances[i] = encodeResourceInstance(resourceInstance, resourceInstancePath, expectedType);
                     i++;
                 }
                 rTlv = new Tlv(TlvType.MULTIPLE_RESOURCE, instances, null, resource.getId());
@@ -170,8 +167,27 @@ public class LwM2mNodeTlvEncoder {
         }
 
         @Override
-        public void visit(LwM2mResourceInstance instance) {
-            throw new UnsupportedOperationException("not yet implemented");
+        public void visit(LwM2mResourceInstance resourceInstance) {
+            LOG.trace("Encoding resource instance {} into TLV", resourceInstance);
+
+            ResourceModel rSpec = model.getResourceModel(path.getObjectId(), path.getResourceId());
+            Type expectedType = rSpec != null ? rSpec.type : resourceInstance.getType();
+
+            Tlv rTlv = encodeResourceInstance(resourceInstance, path, expectedType);
+
+            try {
+                out.write(TlvEncoder.encode(new Tlv[] { rTlv }).array());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        private Tlv encodeResourceInstance(LwM2mResourceInstance resourceInstance, LwM2mPath resourceInstancePath,
+                Type expectedType) {
+            Object convertedValue = converter.convertValue(resourceInstance.getValue(), resourceInstance.getType(),
+                    expectedType, resourceInstancePath);
+            return new Tlv(TlvType.RESOURCE_INSTANCE, null,
+                    this.encodeTlvValue(convertedValue, expectedType, resourceInstancePath), resourceInstance.getId());
         }
 
         private byte[] encodeTlvValue(Object value, Type type, LwM2mPath path) {
