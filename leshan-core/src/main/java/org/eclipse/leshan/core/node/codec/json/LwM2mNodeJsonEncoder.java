@@ -33,6 +33,7 @@ import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
@@ -172,6 +173,11 @@ public class LwM2mNodeJsonEncoder {
                 baseName = requestPath.toString();
             }
             resourceList = lwM2mResourceToJsonArrayEntry(null, timestamp, resource);
+        }
+
+        @Override
+        public void visit(LwM2mResourceInstance instance) {
+            throw new UnsupportedOperationException("not yet implemented");
         }
 
         private ArrayList<JsonArrayEntry> lwM2mResourceToJsonArrayEntry(String resourcePath, Long timestamp,

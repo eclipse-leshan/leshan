@@ -68,6 +68,8 @@ public interface LwM2mResource extends LwM2mNode {
      * 
      * @return the values of each resource instances (key is the resource instance identifier).
      */
+    // TODO Remove this once we finished to implement resource instance operation
+    @Deprecated
     Map<Integer, ?> getValues();
 
     /**
@@ -85,4 +87,18 @@ public interface LwM2mResource extends LwM2mNode {
      * @return the value a resource instance with the given identifier.
      */
     Object getValue(int id);
+
+    /**
+     * This method is only available if {@link #isMultiInstances()} return <code>true</code>.
+     * 
+     * @return the resource instance with the given identifier.
+     */
+    LwM2mResourceInstance getInstance(int id);
+
+    /**
+     * This method is only available if {@link #isMultiInstances()} return <code>true</code>.
+     * 
+     * @return all resource instances.
+     */
+    Map<Integer, LwM2mResourceInstance> getInstances();
 }

@@ -26,4 +26,6 @@ public interface LwM2mNodeVisitor {
 
     void visit(LwM2mResource resource);
 
+    void visit(LwM2mResourceInstance instance);
+
 }
