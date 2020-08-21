@@ -30,6 +30,7 @@ import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ReadResponse;
@@ -117,6 +118,22 @@ public class ReadTest {
         LwM2mResource resource = (LwM2mResource) response.getContent();
         assertEquals(1, resource.getId());
         assertEquals(IntegrationTestHelper.MODEL_NUMBER, resource.getValue());
+    }
+
+    @Test
+    public void can_read_resource_instance() throws InterruptedException {
+        // read device model number
+        ReadResponse response = helper.server.send(helper.getCurrentRegistration(),
+                new ReadRequest(TEST_OBJECT_ID, 0, STRING_RESOUCE_INSTANCE_ID, 0), 1000000);
+
+        // verify result
+        assertEquals(CONTENT, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
+
+        LwM2mResourceInstance resourceInstance = (LwM2mResourceInstance) response.getContent();
+        assertEquals(0, resourceInstance.getId());
+        assertEquals("multiinstance", resourceInstance.getValue());
     }
 
     @Test
