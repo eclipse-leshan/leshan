@@ -30,10 +30,12 @@ import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -212,7 +214,22 @@ public class ObjectEnabler extends BaseObjectEnabler {
         }
 
         // Manage Resource case
-        return instance.read(identity, path.getResourceId());
+        if (path.getResourceInstanceId() == null) {
+            return instance.read(identity, path.getResourceId());
+        }
+
+        // Manage Resource Instance case
+        // TODO optimization: create dedicated API to access to resource instance directly
+        ReadResponse response = instance.read(identity, path.getResourceId());
+        if (response.isFailure())
+            return response;
+        LwM2mMultipleResource resource = (LwM2mMultipleResource) response.getContent();
+        LwM2mResourceInstance resourceInstance = resource.getInstance(path.getResourceInstanceId());
+        if (resourceInstance == null) {
+            return ReadResponse.notFound();
+        } else {
+            return ReadResponse.success(resourceInstance);
+        }
     }
 
     @Override
