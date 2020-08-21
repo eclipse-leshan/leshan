@@ -26,6 +26,7 @@ import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.json.LwM2mNodeJsonDecoder;
 import org.eclipse.leshan.core.node.codec.opaque.LwM2mNodeOpaqueDecoder;
@@ -156,6 +157,8 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
             return LwM2mObjectInstance.class;
         } else if (path.isResource()) {
             return LwM2mResource.class;
+        } else if (path.isResourceInstance()) {
+            return LwM2mResourceInstance.class;
         }
         throw new IllegalArgumentException("invalid path level: " + path);
     }

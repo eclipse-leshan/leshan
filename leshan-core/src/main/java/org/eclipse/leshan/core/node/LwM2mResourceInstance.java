@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Sierra Wireless and others.
+ * Copyright (c) 2020 Sierra Wireless and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -17,32 +17,28 @@ package org.eclipse.leshan.core.node;
 
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Map;
-import java.util.NoSuchElementException;
 
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 
 /**
- * A resource with a single value.
+ * An instance of {@link LwM2mMultipleResource}.
  */
-public class LwM2mSingleResource implements LwM2mResource {
+public class LwM2mResourceInstance implements LwM2mNode {
 
     private final int id;
-
     private final Object value;
-
     private final Type type;
 
-    protected LwM2mSingleResource(int id, Object value, Type type) {
+    protected LwM2mResourceInstance(int id, Object value, Type type) {
         LwM2mNodeUtil.validateNotNull(value, "value MUST NOT be null");
-        LwM2mNodeUtil.validateResourceId(id);
+        LwM2mNodeUtil.validateResourceInstanceId(id);
 
         this.id = id;
         this.value = value;
         this.type = type;
     }
 
-    public static LwM2mSingleResource newResource(int id, Object value, Type type) {
+    public static LwM2mResourceInstance newInstance(int id, Object value, Type type) {
         String doesNotMatchMessage = "Value does not match the given datatype";
         switch (type) {
         case INTEGER:
@@ -76,99 +72,48 @@ public class LwM2mSingleResource implements LwM2mResource {
         default:
             throw new LwM2mNodeException(String.format("Type %s is not supported", type.name()));
         }
-        return new LwM2mSingleResource(id, value, type);
+        return new LwM2mResourceInstance(id, value, type);
     }
 
-    public static LwM2mSingleResource newStringResource(int id, String value) {
-        return new LwM2mSingleResource(id, value, Type.STRING);
+    public static LwM2mResourceInstance newStringInstance(int id, String value) {
+        return new LwM2mResourceInstance(id, value, Type.STRING);
     }
 
-    public static LwM2mSingleResource newIntegerResource(int id, long value) {
-        return new LwM2mSingleResource(id, value, Type.INTEGER);
+    public static LwM2mResourceInstance newIntegerInstance(int id, long value) {
+        return new LwM2mResourceInstance(id, value, Type.INTEGER);
     }
 
-    public static LwM2mSingleResource newObjectLinkResource(int id, ObjectLink objlink) {
-        return new LwM2mSingleResource(id, objlink, Type.OBJLNK);
+    public static LwM2mResourceInstance newObjectLinkInstance(int id, ObjectLink objlink) {
+        return new LwM2mResourceInstance(id, objlink, Type.OBJLNK);
     }
 
-    public static LwM2mSingleResource newBooleanResource(int id, boolean value) {
-        return new LwM2mSingleResource(id, value, Type.BOOLEAN);
+    public static LwM2mResourceInstance newBooleanInstance(int id, boolean value) {
+        return new LwM2mResourceInstance(id, value, Type.BOOLEAN);
     }
 
-    public static LwM2mSingleResource newFloatResource(int id, double value) {
-        return new LwM2mSingleResource(id, value, Type.FLOAT);
+    public static LwM2mResourceInstance newFloatInstance(int id, double value) {
+        return new LwM2mResourceInstance(id, value, Type.FLOAT);
     }
 
-    public static LwM2mSingleResource newDateResource(int id, Date value) {
-        return new LwM2mSingleResource(id, value, Type.TIME);
+    public static LwM2mResourceInstance newDateInstance(int id, Date value) {
+        return new LwM2mResourceInstance(id, value, Type.TIME);
     }
 
-    public static LwM2mSingleResource newBinaryResource(int id, byte[] value) {
-        return new LwM2mSingleResource(id, value, Type.OPAQUE);
+    public static LwM2mResourceInstance newBinaryInstance(int id, byte[] value) {
+        return new LwM2mResourceInstance(id, value, Type.OPAQUE);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public int getId() {
         return id;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Type getType() {
-        return type;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public Object getValue() {
         return value;
     }
 
-    /**
-     * @exception NoSuchElementException use {@link #getValue()} instead.
-     */
-    @Override
-    public Map<Integer, ?> getValues() {
-        throw new NoSuchElementException("There is no 'values' on single resources, use getValue() instead.");
-    }
-
-    /**
-     * @exception NoSuchElementException use {@link #getValue()} instead.
-     */
-    @Override
-    public Object getValue(int id) {
-        throw new NoSuchElementException("There is no 'values' on single resources, use getValue() instead.");
-    }
-
-    /**
-     * @exception NoSuchElementException use {@link #getValue()} instead.
-     */
-    @Override
-    public LwM2mResourceInstance getInstance(int id) {
-        throw new NoSuchElementException("There is no 'instance' on single resources, use getValue() instead.");
-    }
-
-    /**
-     * @exception NoSuchElementException use {@link #getValue()} instead.
-     */
-    @Override
-    public Map<Integer, LwM2mResourceInstance> getInstances() {
-        throw new NoSuchElementException("There is no 'instances' on single resources, use getValue() instead.");
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isMultiInstances() {
-        return false;
+    public Type getType() {
+        return type;
     }
 
     @Override
@@ -199,7 +144,7 @@ public class LwM2mSingleResource implements LwM2mResource {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        LwM2mSingleResource other = (LwM2mSingleResource) obj;
+        LwM2mResourceInstance other = (LwM2mResourceInstance) obj;
         if (id != other.id)
             return false;
         if (type != other.type)
@@ -219,8 +164,7 @@ public class LwM2mSingleResource implements LwM2mResource {
     public String toString() {
         // We don't print OPAQUE value as this could be credentials one.
         // Not ideal but didn't find better way for now.
-        return String.format("LwM2mSingleResource [id=%s, value=%s, type=%s]", id,
+        return String.format("LwM2mResourceInstance [id=%s, value=%s, type=%s]", id,
                 type == Type.OPAQUE ? ((byte[]) value).length + "Bytes" : value, type);
     }
-
 }

@@ -27,6 +27,7 @@ import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
@@ -115,6 +116,11 @@ public class LwM2mNodeTextEncoder {
             }
 
             encoded = strValue.getBytes(StandardCharsets.UTF_8);
+        }
+
+        @Override
+        public void visit(LwM2mResourceInstance instance) {
+            throw new UnsupportedOperationException("not yet implemented");
         }
     }
 }

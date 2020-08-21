@@ -15,18 +15,17 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
-import java.util.AbstractMap;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 
 import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.util.Validate;
 
 /**
  * A resource which contains several resource instances.
@@ -37,9 +36,30 @@ public class LwM2mMultipleResource implements LwM2mResource {
 
     private final int id;
 
-    private final Map<Integer, Object> values;
+    private final Map<Integer, LwM2mResourceInstance> instances;
 
     private final Type type;
+
+    public LwM2mMultipleResource(int id, Type type, Collection<LwM2mResourceInstance> instances) {
+        Validate.notNull(instances);
+        Validate.notNull(type);
+        LwM2mNodeUtil.validateResourceId(id);
+
+        this.id = id;
+        this.type = type;
+        Map<Integer, LwM2mResourceInstance> instancesMap = new HashMap<>(instances.size());
+        for (LwM2mResourceInstance instance : instances) {
+            if (type != instance.getType())
+                new LwM2mNodeException("Invalid resource instance %d, type is %s but resource is %s.", id,
+                        instance.getType(), type);
+            instancesMap.put(instance.getId(), instance);
+        }
+        this.instances = Collections.unmodifiableMap(instancesMap);
+    }
+
+    public LwM2mMultipleResource(int id, Type type, LwM2mResourceInstance... instances) {
+        this(id, type, Arrays.asList(instances));
+    }
 
     protected LwM2mMultipleResource(int id, Map<Integer, ?> values, Type type) {
         LwM2mNodeUtil.validateNotNull(values, "values MUST NOT be null");
@@ -49,7 +69,11 @@ public class LwM2mMultipleResource implements LwM2mResource {
             LwM2mNodeUtil.validateResourceInstanceId(instanceId);
         }
         this.id = id;
-        this.values = Collections.unmodifiableMap(new HashMap<>(values));
+        Map<Integer, LwM2mResourceInstance> val = new HashMap<>();
+        for (Entry<Integer, ?> entry : values.entrySet()) {
+            val.put(entry.getKey(), LwM2mResourceInstance.newInstance(entry.getKey(), entry.getValue(), type));
+        }
+        this.instances = Collections.unmodifiableMap(val);
         this.type = type;
     }
 
@@ -145,9 +169,14 @@ public class LwM2mMultipleResource implements LwM2mResource {
     /**
      * {@inheritDoc}
      */
+    @Deprecated
     @Override
     public Map<Integer, ?> getValues() {
-        return values;
+        Map<Integer, Object> val = new HashMap<>();
+        for (Entry<Integer, LwM2mResourceInstance> entry : instances.entrySet()) {
+            val.put(entry.getKey(), entry.getValue().getValue());
+        }
+        return Collections.unmodifiableMap(val);
     }
 
     /**
@@ -155,7 +184,26 @@ public class LwM2mMultipleResource implements LwM2mResource {
      */
     @Override
     public Object getValue(int id) {
-        return values.get(id);
+        LwM2mResourceInstance resourceInstance = instances.get(id);
+        if (resourceInstance != null)
+            return resourceInstance.getValue();
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LwM2mResourceInstance getInstance(int id) {
+        return instances.get(id);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<Integer, LwM2mResourceInstance> getInstances() {
+        return instances;
     }
 
     /**
@@ -177,29 +225,8 @@ public class LwM2mMultipleResource implements LwM2mResource {
         int result = 1;
         result = prime * result + id;
         result = prime * result + ((type == null) ? 0 : type.hashCode());
-        result = prime * result + ((values == null) ? 0 : internalHashCode(values));
+        result = prime * result + ((instances == null) ? 0 : instances.hashCode());
         return result;
-    }
-
-    /**
-     * This is a copy of {@link AbstractMap#hashCode()} with custom code to handle byte array equality
-     */
-    private int internalHashCode(Map<?, ?> m) {
-        int h = 0;
-        Iterator<?> i = m.entrySet().iterator();
-        if (type == Type.OPAQUE) {
-            // Custom hashcode to handle byte arrays
-            while (i.hasNext()) {
-                Entry<?, ?> e = (Entry<?, ?>) i.next();
-                h += Objects.hashCode(e.getKey()) ^ Arrays.hashCode((byte[]) e.getValue());
-            }
-        } else {
-            while (i.hasNext()) {
-                Entry<?, ?> e = (Entry<?, ?>) i.next();
-                h += Objects.hashCode(e.getKey()) ^ Objects.hashCode(e.getValue());
-            }
-        }
-        return h;
     }
 
     @Override
@@ -215,73 +242,17 @@ public class LwM2mMultipleResource implements LwM2mResource {
             return false;
         if (type != other.type)
             return false;
-        if (values == null) {
-            if (other.values != null)
+        if (instances == null) {
+            if (other.instances != null)
                 return false;
-            // Custom equals to handle byte arrays
-        } else if (!internalMapEquals(values, other.values))
+        } else if (!instances.equals(other.instances))
             return false;
-        return true;
-    }
-
-    /**
-     * This is a copy of {@link AbstractMap#equals(Object)} with custom code to handle byte array equality
-     */
-    private boolean internalMapEquals(Map<?, ?> m1, Object o2) {
-        if (o2 == this)
-            return true;
-
-        if (!(o2 instanceof Map))
-            return false;
-        Map<?, ?> m2 = (Map<?, ?>) o2;
-        if (m2.size() != m1.size())
-            return false;
-
-        try {
-            for (Object o : m1.entrySet()) {
-                Entry<?, ?> e = (Entry<?, ?>) o;
-                Object key = e.getKey();
-                Object value = e.getValue();
-                if (value == null) {
-                    if (!(m2.get(key) == null && m2.containsKey(key)))
-                        return false;
-                } else {
-                    // Custom equals to handle byte arrays
-                    return type == Type.OPAQUE ? Arrays.equals((byte[]) value, (byte[]) m2.get(key))
-                            : value.equals(m2.get(key));
-                }
-            }
-        } catch (ClassCastException | NullPointerException unused) {
-            return false;
-        }
-
         return true;
     }
 
     @Override
     public String toString() {
-        Object printableValue;
-        if (type == Type.OPAQUE) {
-            // We don't print OPAQUE value as this could be credentials one.
-            // Not ideal but didn't find better way for now.
-            StringBuilder sb = new StringBuilder();
-            sb.append("{");
-            Iterator<Entry<Integer, Object>> iter = values.entrySet().iterator();
-            while (iter.hasNext()) {
-                Entry<Integer, Object> entry = iter.next();
-                sb.append(entry.getKey());
-                sb.append("=");
-                sb.append(((byte[]) entry.getValue()).length + "Bytes");
-                if (iter.hasNext()) {
-                    sb.append(", ");
-                }
-            }
-            sb.append("}");
-            printableValue = sb.toString();
-        } else {
-            printableValue = values;
-        }
-        return String.format("LwM2mMultipleResource [id=%s, values=%s, type=%s]", id, printableValue, type);
+        return String.format("LwM2mMultipleResource [id=%s, values=%s, type=%s]", id, instances, type);
     }
 
 }

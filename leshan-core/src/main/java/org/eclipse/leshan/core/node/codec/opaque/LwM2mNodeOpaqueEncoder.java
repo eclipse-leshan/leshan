@@ -24,6 +24,7 @@ import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
 import org.eclipse.leshan.core.util.Validate;
@@ -77,6 +78,11 @@ public class LwM2mNodeOpaqueEncoder {
             LOG.trace("Encoding resource {} into text", resource);
             Object value = converter.convertValue(resource.getValue(), resource.getType(), Type.OPAQUE, path);
             encoded = (byte[]) value;
+        }
+
+        @Override
+        public void visit(LwM2mResourceInstance instance) {
+            throw new UnsupportedOperationException("not yet implemented");
         }
     }
 }
