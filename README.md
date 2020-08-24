@@ -1,17 +1,17 @@
-[Build Status](https://hudson.eclipse.org/leshan/)
-
 ![Leshan](https://eclipse.org/leshan/img/multicolor-leshan.png)
 
 [Eclipse Leshan™](https://eclipse.org/leshan) is an OMA Lightweight M2M server and client Java implementation.
 
-[What is OMA LWM2M ?](http://www.openmobilealliance.org/wp/overviews/lightweightm2m_overview.html)  
-[The specification](http://openmobilealliance.org/release/LightweightM2M/V1_0_2-20180209-A/OMA-TS-LightweightM2M-V1_0_2-20180209-A.pdf).  
+[What is OMA LWM2M ?](https://omaspecworks.org/what-is-oma-specworks/iot/lightweight-m2m-lwm2m/)  
 [Object and Resource Registry](http://www.openmobilealliance.org/wp/OMNA/LwM2M/LwM2MRegistry.html).  
 
 Leshan provides libraries which help people to develop their own Lightweight M2M server and client.  
 The project also provides a client, a server and a bootstrap server demonstration as an example of the Leshan API and for testing purpose.
 
-[Here](https://github.com/eclipse/leshan/wiki/LWM2M-Supported-features) you can see which part of the specification is currently covered by Leshan.
+| LWM2M Version Targeted | Leshan Version | Development State |  Build Status	|  Standalone Demos |
+| - | - | - | - | - |
+| v1.0.2 <br/>[core specification(pdf)](http://openmobilealliance.org/release/LightweightM2M/V1_0_2-20180209-A/OMA-TS-LightweightM2M-V1_0_2-20180209-A.pdf) | [v1.x](https://github.com/eclipse/leshan/tree/1.x) <br/> [Supported features](https://github.com/eclipse/leshan/wiki/LWM2M-Supported-features)  | stable released | [jenkins-1.x](https://ci.eclipse.org/leshan/job/leshan-1.x/) | [server-demo](https://ci.eclipse.org/leshan/job/leshan-1.x/lastSuccessfulBuild/artifact/leshan-server-demo.jar)<br/> [client-demo](https://ci.eclipse.org/leshan/job/leshan-1.x/lastSuccessfulBuild/artifact/leshan-client-demo.jar) <br/> [bsserver-demo](https://ci.eclipse.org/leshan/job/leshan-1.x/lastSuccessfulBuild/artifact/leshan-bsserver-demo.jar) |
+| **v1.1.1** <br/> [core specification(html)](http://www.openmobilealliance.org/release/LightweightM2M/V1_1_1-20190617-A/HTML-Version/OMA-TS-LightweightM2M_Core-V1_1_1-20190617-A.html) <br/> [transport bindings(html)](http://www.openmobilealliance.org/release/LightweightM2M/V1_1_1-20190617-A/HTML-Version/OMA-TS-LightweightM2M_Transport-V1_1_1-20190617-A.html)| [**v2.x** (master)](https://github.com/eclipse/leshan/tree/master) <br/> [Supported features](https://github.com/eclipse/leshan/wiki/LWM2M-1.1-supported-features) | **in development**  |[jenkins-master](https://ci.eclipse.org/leshan/job/leshan/)     | [server-demo](https://ci.eclipse.org/leshan/job/leshan/lastSuccessfulBuild/artifact/leshan-server-demo.jar)<br/> [client-demo](https://ci.eclipse.org/leshan/job/leshan/lastSuccessfulBuild/artifact/leshan-client-demo.jar) <br/> [bsserver-demo](https://ci.eclipse.org/leshan/job/leshan/lastSuccessfulBuild/artifact/leshan-bsserver-demo.jar)  |
 
 The Leshan Documentation  is available in our [wiki :blue_book:](https://github.com/eclipse/leshan/wiki).
 
