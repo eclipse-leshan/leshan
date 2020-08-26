@@ -29,4 +29,13 @@ public class VersionTest {
         assertFalse(Version.isSupported(""));
         assertFalse(Version.isSupported(null));
     }
+
+    @Test
+    public void compare_tests() {
+        assertTrue(Version.get("1.0").compareTo(Version.get("1.2")) < 0);
+        assertTrue(Version.get("0.9").compareTo(Version.get("1.2")) < 0);
+        assertTrue(Version.get("1.2").compareTo(Version.get("1.2")) == 0);
+        assertTrue(Version.get("1.3").compareTo(Version.get("1.2")) > 0);
+        assertTrue(Version.get("2.0").compareTo(Version.get("1.2")) > 0);
+    }
 }

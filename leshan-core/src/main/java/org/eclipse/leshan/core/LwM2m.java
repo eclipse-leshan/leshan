@@ -20,7 +20,7 @@ public interface LwM2m {
     /**
      * Version of LWM2M specification.
      */
-    public class Version {
+    public class Version implements Comparable<Version> {
         public static Version V1_0 = new Version("1.0", true);
         public static Version V1_1 = new Version("1.1", true);
         private static Version[] supportedVersions = new Version[] { V1_0, V1_1 };
@@ -55,6 +55,28 @@ public interface LwM2m {
             return get(version).isSupported();
         }
 
+        public static String validate(String version) {
+            if (version == null || version.isEmpty())
+                return "version  MUST NOT be null or empty";
+            String[] versionPart = version.split("\\.");
+            if (versionPart.length != 2) {
+                throw new IllegalArgumentException(String.format("version (%s) MUST be composed of 2 parts", version));
+            }
+            for (int i = 0; i < 2; i++) {
+                try {
+                    int parsedInt = Integer.parseInt(versionPart[i]);
+                    if (parsedInt < 0) {
+                        return String.format("version (%s) part %d (%s) is not a valid integer", version, i + 1,
+                                versionPart[i]);
+                    }
+                } catch (Exception e) {
+                    return String.format("version (%s) part %d (%s) is not a valid integer", version, i + 1,
+                            versionPart);
+                }
+            }
+            return null;
+        }
+
         public static Version getDefault() {
             return V1_0;
         }
@@ -86,6 +108,30 @@ public interface LwM2m {
             } else if (!value.equals(other.value))
                 return false;
             return true;
+        }
+
+        @Override
+        public int compareTo(Version other) {
+            String[] versionPart = this.value.split("\\.");
+            String[] otherVersionPart = other.value.split("\\.");
+
+            short major = Short.parseShort(versionPart[0]);
+            short oMajor = Short.parseShort(otherVersionPart[0]);
+            if (major != oMajor)
+                return major - oMajor;
+
+            short minor = Short.parseShort(versionPart[1]);
+            short oMinor = Short.parseShort(otherVersionPart[1]);
+
+            return minor - oMinor;
+        }
+
+        public boolean newerThan(Version version) {
+            return this.compareTo(version) > 0;
+        }
+
+        public boolean newerThan(String version) {
+            return newerThan(Version.get(version));
         }
     }
 
