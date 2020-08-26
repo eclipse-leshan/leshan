@@ -16,7 +16,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -45,8 +47,28 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultLwM2mNodeEncoder.class);
 
+    public static Map<ContentFormat, NodeEncoder> getDefaultEncoders(boolean supportDeprecatedContentFormat) {
+        Map<ContentFormat, NodeEncoder> encoders = new HashMap<>();
+        encoders.put(ContentFormat.TEXT, new LwM2mNodeTextEncoder());
+        encoders.put(ContentFormat.OPAQUE, new LwM2mNodeOpaqueEncoder());
+        encoders.put(ContentFormat.SENML_JSON, new LwM2mNodeSenMLJsonEncoder());
+
+        // tlv
+        LwM2mNodeTlvEncoder tlvDecoder = new LwM2mNodeTlvEncoder();
+        encoders.put(ContentFormat.TLV, tlvDecoder);
+        if (supportDeprecatedContentFormat)
+            encoders.put(new ContentFormat(ContentFormat.OLD_TLV_CODE), tlvDecoder);
+
+        // deprecated json
+        LwM2mNodeJsonEncoder jsonDecoder = new LwM2mNodeJsonEncoder();
+        encoders.put(ContentFormat.JSON, jsonDecoder);
+        if (supportDeprecatedContentFormat)
+            encoders.put(new ContentFormat(ContentFormat.OLD_JSON_CODE), jsonDecoder);
+        return encoders;
+    }
+
     protected final LwM2mValueConverter converter;
-    protected final boolean supportDeprecatedContentFormat;
+    protected final Map<ContentFormat, NodeEncoder> encoders;
 
     /**
      * Create {@link DefaultLwM2mNodeEncoder} without support of old TLV and JSON code.
@@ -72,8 +94,12 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
     }
 
     public DefaultLwM2mNodeEncoder(LwM2mValueConverter converter, boolean supportDeprecatedContentFormat) {
+        this(getDefaultEncoders(supportDeprecatedContentFormat), converter);
+    }
+
+    public DefaultLwM2mNodeEncoder(Map<ContentFormat, NodeEncoder> encoders, LwM2mValueConverter converter) {
+        this.encoders = encoders;
         this.converter = converter;
-        this.supportDeprecatedContentFormat = supportDeprecatedContentFormat;
     }
 
     @Override
@@ -84,33 +110,12 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
             throw new CodecException("Content format is mandatory. [%s]", path);
         }
 
-        if (!isSupported(format)) {
+        NodeEncoder encoder = encoders.get(format);
+        if (encoder == null) {
             throw new CodecException("Content format %s is not supported [%s]", format, path);
         }
-
         LOG.trace("Encoding node {} for path {} and format {}", node, path, format);
-        byte[] encoded;
-        switch (format.getCode()) {
-        case ContentFormat.TLV_CODE:
-        case ContentFormat.OLD_TLV_CODE:
-            encoded = LwM2mNodeTlvEncoder.encode(node, path, model, converter);
-            break;
-        case ContentFormat.TEXT_CODE:
-            encoded = LwM2mNodeTextEncoder.encode(node, path, model, converter);
-            break;
-        case ContentFormat.OPAQUE_CODE:
-            encoded = LwM2mNodeOpaqueEncoder.encode(node, path, model, converter);
-            break;
-        case ContentFormat.JSON_CODE:
-        case ContentFormat.OLD_JSON_CODE:
-            encoded = LwM2mNodeJsonEncoder.encode(node, path, model, converter);
-            break;
-        case ContentFormat.SENML_JSON_CODE:
-            encoded = LwM2mNodeSenMLJsonEncoder.encode(node, path, model, converter);
-            break;
-        default:
-            throw new CodecException("Content format %s is not supported [%s]", format, path);
-        }
+        byte[] encoded = encoder.encode(node, path, model, converter);
         LOG.trace("Encoded node {}: {}", node, encoded);
         return encoded;
     }
@@ -123,39 +128,23 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
             throw new CodecException("Content format is mandatory. [%s]", path);
         }
 
-        if (!isSupported(format)) {
+        NodeEncoder encoder = encoders.get(format);
+        if (encoder == null) {
             throw new CodecException("Content format %s is not supported [%s]", format, path);
         }
-
-        LOG.trace("Encoding time-stamped nodes for path {} and format {}", timestampedNodes, path, format);
-        byte[] encoded;
-        switch (format.getCode()) {
-        case ContentFormat.JSON_CODE:
-        case ContentFormat.OLD_JSON_CODE:
-            encoded = LwM2mNodeJsonEncoder.encodeTimestampedData(timestampedNodes, path, model, converter);
-            break;
-        default:
+        if (!(encoder instanceof TimestampedNodeEncoder)) {
             throw new CodecException("Cannot encode timestampedNode with format %s. [%s]", format, path);
         }
-
+        LOG.trace("Encoding time-stamped nodes for path {} and format {}", timestampedNodes, path, format);
+        byte[] encoded = ((TimestampedNodeEncoder) encoder).encodeTimestampedData(timestampedNodes, path, model,
+                converter);
         LOG.trace("Encoded node timestampedNode: {}", timestampedNodes, encoded);
         return encoded;
+
     }
 
     @Override
     public boolean isSupported(ContentFormat format) {
-        switch (format.getCode()) {
-        case ContentFormat.TEXT_CODE:
-        case ContentFormat.TLV_CODE:
-        case ContentFormat.OPAQUE_CODE:
-        case ContentFormat.JSON_CODE:
-        case ContentFormat.SENML_JSON_CODE:
-            return true;
-        case ContentFormat.OLD_TLV_CODE:
-        case ContentFormat.OLD_JSON_CODE:
-            return supportDeprecatedContentFormat;
-        default:
-            return false;
-        }
+        return encoders.get(format) != null;
     }
 }

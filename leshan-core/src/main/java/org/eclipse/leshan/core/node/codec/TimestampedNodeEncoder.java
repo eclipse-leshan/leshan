@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Sierra Wireless and others.
+ * Copyright (c) 2020 Sierra Wireless and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -21,40 +21,24 @@ import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
-import org.eclipse.leshan.core.request.ContentFormat;
 
 /**
- * An Encoder of {@link LwM2mNode} which should support several {@link ContentFormat} and time-stamped values.
+ * A {@link NodeEncoder} which can also encode time-stamped values.
+ * 
+ * @see DefaultLwM2mNodeEncoder
  */
-public interface LwM2mNodeEncoder {
+public interface TimestampedNodeEncoder extends NodeEncoder {
 
     /**
-     * Serializes a {@link LwM2mNode} with the given content format.
-     *
-     * @param node the object/instance/resource to serialize
-     * @param format the content format
-     * @param path the path of the node to serialize
-     * @param model the collection of supported object models
-     * @return the encoded node as a byte array
-     * @throws CodecException if there payload is malformed.
-     */
-    byte[] encode(LwM2mNode node, ContentFormat format, LwM2mPath path, LwM2mModel model) throws CodecException;
-
-    /**
-     * Serializes a list of time-stamped {@link LwM2mNode} with the given content format.
+     * Serializes a list of time-stamped {@link LwM2mNode}.
      *
      * @param timestampedNodes the list of time-stamped object/instance/resource to serialize
-     * @param format the content format
      * @param path the path of the node to serialize
      * @param model the collection of supported object models
+     * @param converter a data type converter.
      * @return the encoded node as a byte array
      * @throws CodecException if there payload is malformed.
      */
-    byte[] encodeTimestampedData(List<TimestampedLwM2mNode> timestampedNodes, ContentFormat format, LwM2mPath path,
-            LwM2mModel model) throws CodecException;
-
-    /**
-     * return true is the given {@link ContentFormat} is supported
-     */
-    boolean isSupported(ContentFormat format);
+    byte[] encodeTimestampedData(List<TimestampedLwM2mNode> timestampedNodes, LwM2mPath path, LwM2mModel model,
+            LwM2mValueConverter converter) throws CodecException;
 }

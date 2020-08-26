@@ -22,10 +22,14 @@ import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.codec.CodecException;
+import org.eclipse.leshan.core.node.codec.NodeDecoder;
 
-public class LwM2mNodeOpaqueDecoder {
+public class LwM2mNodeOpaqueDecoder implements NodeDecoder {
 
-    public static LwM2mNode decode(byte[] content, LwM2mPath path, LwM2mModel model) throws CodecException {
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends LwM2mNode> T decode(byte[] content, LwM2mPath path, LwM2mModel model, Class<T> nodeClass)
+            throws CodecException {
         if (!path.isResource())
             throw new CodecException("Invalid path %s : OpaqueDecoder decodes resource only", path);
 
@@ -35,7 +39,6 @@ public class LwM2mNodeOpaqueDecoder {
                     "Invalid content format [%s] for path [%s], OPAQUE can only be used for single OPAQUE resource",
                     desc.type, path);
         }
-        return LwM2mSingleResource.newBinaryResource(path.getResourceId(), content != null ? content : new byte[0]);
+        return (T) LwM2mSingleResource.newBinaryResource(path.getResourceId(), content != null ? content : new byte[0]);
     }
-
 }

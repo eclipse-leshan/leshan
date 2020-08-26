@@ -35,6 +35,7 @@ import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
+import org.eclipse.leshan.core.node.codec.NodeEncoder;
 import org.eclipse.leshan.core.tlv.Tlv;
 import org.eclipse.leshan.core.tlv.Tlv.TlvType;
 import org.eclipse.leshan.core.tlv.TlvEncoder;
@@ -45,11 +46,12 @@ import org.slf4j.LoggerFactory;
 /**
  * TLV encoder for {@link LwM2mNode}.
  */
-public class LwM2mNodeTlvEncoder {
+public class LwM2mNodeTlvEncoder implements NodeEncoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeTlvEncoder.class);
 
-    public static byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model, LwM2mValueConverter converter)
+    @Override
+    public byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model, LwM2mValueConverter converter)
             throws CodecException {
         Validate.notNull(node);
         Validate.notNull(path);

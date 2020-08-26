@@ -28,14 +28,18 @@ import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.codec.CodecException;
+import org.eclipse.leshan.core.node.codec.NodeDecoder;
 import org.eclipse.leshan.core.util.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LwM2mNodeTextDecoder {
+public class LwM2mNodeTextDecoder implements NodeDecoder {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeTextDecoder.class);
 
-    public static LwM2mNode decode(byte[] content, LwM2mPath path, LwM2mModel model) throws CodecException {
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T extends LwM2mNode> T decode(byte[] content, LwM2mPath path, LwM2mModel model, Class<T> nodeClass)
+            throws CodecException {
         if (!path.isResource() && !path.isResourceInstance())
             throw new CodecException("Invalid path %s : TextDecoder decodes resource OR resource instance only", path);
 
@@ -45,22 +49,23 @@ public class LwM2mNodeTextDecoder {
 
         if (path.isResource()) {
             if (rDesc != null) {
-                return LwM2mSingleResource.newResource(path.getResourceId(), parseTextValue(strValue, rDesc.type, path),
-                        rDesc.type);
+                return (T) LwM2mSingleResource.newResource(path.getResourceId(),
+                        parseTextValue(strValue, rDesc.type, path), rDesc.type);
             }
+
             // unknown resource, returning a default string value
-            return LwM2mSingleResource.newStringResource(path.getResourceId(), strValue);
+            return (T) LwM2mSingleResource.newStringResource(path.getResourceId(), strValue);
         }
 
         if (rDesc != null) {
-            return LwM2mResourceInstance.newInstance(path.getResourceInstanceId(),
+            return (T) LwM2mResourceInstance.newInstance(path.getResourceInstanceId(),
                     parseTextValue(strValue, rDesc.type, path), rDesc.type);
         }
         // unknown resource, returning a default string value
-        return LwM2mResourceInstance.newStringInstance(path.getResourceInstanceId(), strValue);
+        return (T) LwM2mResourceInstance.newStringInstance(path.getResourceInstanceId(), strValue);
     }
 
-    private static Object parseTextValue(String value, Type type, LwM2mPath path) throws CodecException {
+    private Object parseTextValue(String value, Type type, LwM2mPath path) throws CodecException {
         LOG.trace("TEXT value for path {} and expected type {}: {}", path, type, value);
 
         switch (type) {

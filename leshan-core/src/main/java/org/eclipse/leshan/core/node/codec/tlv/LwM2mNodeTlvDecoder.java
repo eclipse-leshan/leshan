@@ -34,6 +34,7 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.codec.CodecException;
+import org.eclipse.leshan.core.node.codec.NodeDecoder;
 import org.eclipse.leshan.core.tlv.Tlv;
 import org.eclipse.leshan.core.tlv.Tlv.TlvType;
 import org.eclipse.leshan.core.tlv.TlvDecoder;
@@ -42,11 +43,12 @@ import org.eclipse.leshan.core.util.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LwM2mNodeTlvDecoder {
+public class LwM2mNodeTlvDecoder implements NodeDecoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeTlvDecoder.class);
 
-    public static <T extends LwM2mNode> T decode(byte[] content, LwM2mPath path, LwM2mModel model, Class<T> nodeClass)
+    @Override
+    public <T extends LwM2mNode> T decode(byte[] content, LwM2mPath path, LwM2mModel model, Class<T> nodeClass)
             throws CodecException {
         try {
             Tlv[] tlvs = TlvDecoder.decode(ByteBuffer.wrap(content != null ? content : new byte[0]));
@@ -57,7 +59,7 @@ public class LwM2mNodeTlvDecoder {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T extends LwM2mNode> T parseTlv(Tlv[] tlvs, LwM2mPath path, LwM2mModel model, Class<T> nodeClass)
+    private <T extends LwM2mNode> T parseTlv(Tlv[] tlvs, LwM2mPath path, LwM2mModel model, Class<T> nodeClass)
             throws CodecException {
         LOG.trace("Parsing TLV content for path {}: {}", path, tlvs);
 
@@ -183,8 +185,8 @@ public class LwM2mNodeTlvDecoder {
         throw new IllegalArgumentException("invalid node class: " + nodeClass);
     }
 
-    private static LwM2mObjectInstance parseObjectInstanceTlv(Tlv[] rscTlvs, int objectId, int instanceId,
-            LwM2mModel model) throws CodecException {
+    private LwM2mObjectInstance parseObjectInstanceTlv(Tlv[] rscTlvs, int objectId, int instanceId, LwM2mModel model)
+            throws CodecException {
         Map<Integer, LwM2mResource> resources = new HashMap<>(rscTlvs.length);
         for (Tlv rscTlv : rscTlvs) {
             LwM2mPath resourcePath = new LwM2mPath(objectId, instanceId, rscTlv.getIdentifier());
@@ -199,7 +201,7 @@ public class LwM2mNodeTlvDecoder {
 
     }
 
-    private static LwM2mObjectInstance parseObjectInstanceTlvWithoutId(Tlv[] rscTlvs, int objectId, LwM2mModel model)
+    private LwM2mObjectInstance parseObjectInstanceTlvWithoutId(Tlv[] rscTlvs, int objectId, LwM2mModel model)
             throws CodecException {
         Map<Integer, LwM2mResource> resources = new HashMap<>(rscTlvs.length);
         for (Tlv rscTlv : rscTlvs) {
@@ -214,8 +216,7 @@ public class LwM2mNodeTlvDecoder {
         return new LwM2mObjectInstance(resources.values());
     }
 
-    private static LwM2mResource parseResourceTlv(Tlv tlv, LwM2mPath resourcePath, LwM2mModel model)
-            throws CodecException {
+    private LwM2mResource parseResourceTlv(Tlv tlv, LwM2mPath resourcePath, LwM2mModel model) throws CodecException {
         Type expectedType = getResourceType(resourcePath, model);
         Integer resourceId = tlv.getIdentifier();
         switch (tlv.getType()) {
@@ -229,23 +230,27 @@ public class LwM2mNodeTlvDecoder {
         }
     }
 
-    private static LwM2mMultipleResource parseResourceInstancesTlv(Tlv[] tlvs, LwM2mPath resourcePath,
-            Type expectedType) throws CodecException {
+    private LwM2mMultipleResource parseResourceInstancesTlv(Tlv[] tlvs, LwM2mPath resourcePath, Type expectedType)
+            throws CodecException {
         Map<Integer, LwM2mResourceInstance> instances = new HashMap<>(tlvs.length);
-        for (Tlv tlv : tlvs) {
-            LwM2mResourceInstance resourceInstance = parseResourceInstanceTlv(tlv,
-                    resourcePath.append(tlv.getIdentifier()), expectedType);
-            LwM2mResourceInstance previousResourceInstance = instances.put(tlv.getIdentifier(), resourceInstance);
+        for (Tlv tlvChild : tlvs) {
+            if (tlvChild.getType() != TlvType.RESOURCE_INSTANCE)
+                throw new CodecException("Expected TLV of type RESOURCE_INSTANCE but was %s for path %s",
+                        tlvChild.getType().name(), resourcePath.append(tlvChild.getIdentifier()));
+
+            LwM2mResourceInstance resourceInstance = parseResourceInstanceTlv(tlvChild,
+                    resourcePath.append(tlvChild.getIdentifier()), expectedType);
+            LwM2mResourceInstance previousResourceInstance = instances.put(tlvChild.getIdentifier(), resourceInstance);
             if (previousResourceInstance != null) {
                 throw new CodecException("2 RESOURCE_INSTANCE nodes (%s,%s) with the same identifier %d for path %s",
-                        previousResourceInstance, resourceInstance, tlv.getIdentifier(), resourcePath);
+                        previousResourceInstance, resourceInstance, tlvChild.getIdentifier(), resourcePath);
             }
         }
         return new LwM2mMultipleResource(resourcePath.getResourceId(), expectedType, instances.values());
     }
 
-    private static LwM2mResourceInstance parseResourceInstanceTlv(Tlv tlv, LwM2mPath resourceInstancePath,
-            Type expectedType) throws CodecException {
+    private LwM2mResourceInstance parseResourceInstanceTlv(Tlv tlv, LwM2mPath resourceInstancePath, Type expectedType)
+            throws CodecException {
         Integer resourceInstanceId = tlv.getIdentifier();
         if (tlv.getType() != TlvType.RESOURCE_INSTANCE) {
             throw new CodecException("Expected TLV of type RESOURCE_INSTANCE but was %s for path %s", tlv.getType(),
@@ -257,7 +262,7 @@ public class LwM2mNodeTlvDecoder {
 
     }
 
-    private static Object parseTlvValue(byte[] value, Type expectedType, LwM2mPath path) throws CodecException {
+    private Object parseTlvValue(byte[] value, Type expectedType, LwM2mPath path) throws CodecException {
         try {
             LOG.trace("TLV value for path {} and expected type {}: {}", path, expectedType, value);
             switch (expectedType) {
@@ -284,7 +289,7 @@ public class LwM2mNodeTlvDecoder {
         }
     }
 
-    public static Type getResourceType(LwM2mPath rscPath, LwM2mModel model) throws CodecException {
+    public Type getResourceType(LwM2mPath rscPath, LwM2mModel model) throws CodecException {
         ResourceModel rscDesc = model.getResourceModel(rscPath.getObjectId(), rscPath.getResourceId());
         if (rscDesc == null) {
             LOG.trace("unknown type for resource : {}", rscPath);

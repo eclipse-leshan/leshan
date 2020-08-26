@@ -37,16 +37,18 @@ import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
+import org.eclipse.leshan.core.node.codec.TimestampedNodeEncoder;
 import org.eclipse.leshan.core.util.Base64;
 import org.eclipse.leshan.core.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LwM2mNodeJsonEncoder {
+public class LwM2mNodeJsonEncoder implements TimestampedNodeEncoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeJsonEncoder.class);
 
-    public static byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model, LwM2mValueConverter converter)
+    @Override
+    public byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model, LwM2mValueConverter converter)
             throws CodecException {
         Validate.notNull(node);
         Validate.notNull(path);
@@ -68,8 +70,9 @@ public class LwM2mNodeJsonEncoder {
         }
     }
 
-    public static byte[] encodeTimestampedData(List<TimestampedLwM2mNode> timestampedNodes, LwM2mPath path,
-            LwM2mModel model, LwM2mValueConverter converter) {
+    @Override
+    public byte[] encodeTimestampedData(List<TimestampedLwM2mNode> timestampedNodes, LwM2mPath path, LwM2mModel model,
+            LwM2mValueConverter converter) {
         Validate.notNull(timestampedNodes);
         Validate.notNull(path);
         Validate.notNull(model);

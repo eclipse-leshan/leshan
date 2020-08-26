@@ -325,7 +325,7 @@ public class ObserveTest {
         assertTrue("New observation is not there", observations.contains(observation));
 
         // *** HACK send a notification with unsupported content format *** //
-        byte[] payload = LwM2mNodeJsonEncoder.encode(LwM2mSingleResource.newStringResource(15, "Paris"),
+        byte[] payload = new LwM2mNodeJsonEncoder().encode(LwM2mSingleResource.newStringResource(15, "Paris"),
                 new LwM2mPath("/3/0/15"), new StaticModel(helper.createObjectModels()), new LwM2mValueChecker());
         Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
         sendNotification(getConnector(helper.client, helper.getCurrentRegisteredServer()), payload, firstCoapResponse,
@@ -368,7 +368,7 @@ public class ObserveTest {
         timestampedNodes.add(mostRecentNode);
         timestampedNodes.add(new TimestampedLwM2mNode(mostRecentNode.getTimestamp() - 2,
                 LwM2mSingleResource.newStringResource(15, "Londres")));
-        byte[] payload = LwM2mNodeJsonEncoder.encodeTimestampedData(timestampedNodes, new LwM2mPath("/3/0/15"),
+        byte[] payload = new LwM2mNodeJsonEncoder().encodeTimestampedData(timestampedNodes, new LwM2mPath("/3/0/15"),
                 new StaticModel(helper.createObjectModels()), new LwM2mValueChecker());
         Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
         sendNotification(getConnector(helper.client, helper.getCurrentRegisteredServer()), payload, firstCoapResponse,
@@ -412,7 +412,7 @@ public class ObserveTest {
         timestampedNodes.add(mostRecentNode);
         timestampedNodes.add(new TimestampedLwM2mNode(mostRecentNode.getTimestamp() - 2,
                 new LwM2mObjectInstance(0, LwM2mSingleResource.newStringResource(15, "Londres"))));
-        byte[] payload = LwM2mNodeJsonEncoder.encodeTimestampedData(timestampedNodes, new LwM2mPath("/3/0"),
+        byte[] payload = new LwM2mNodeJsonEncoder().encodeTimestampedData(timestampedNodes, new LwM2mPath("/3/0"),
                 new StaticModel(helper.createObjectModels()), new LwM2mValueChecker());
         Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
         sendNotification(getConnector(helper.client, helper.getCurrentRegisteredServer()), payload, firstCoapResponse,
@@ -456,7 +456,7 @@ public class ObserveTest {
         timestampedNodes.add(mostRecentNode);
         timestampedNodes.add(new TimestampedLwM2mNode(mostRecentNode.getTimestamp() - 2,
                 new LwM2mObject(3, new LwM2mObjectInstance(0, LwM2mSingleResource.newStringResource(15, "Londres")))));
-        byte[] payload = LwM2mNodeJsonEncoder.encodeTimestampedData(timestampedNodes, new LwM2mPath("/3"),
+        byte[] payload = new LwM2mNodeJsonEncoder().encodeTimestampedData(timestampedNodes, new LwM2mPath("/3"),
                 new StaticModel(helper.createObjectModels()), new LwM2mValueChecker());
 
         Response firstCoapResponse = (Response) observeResponse.getCoapResponse();

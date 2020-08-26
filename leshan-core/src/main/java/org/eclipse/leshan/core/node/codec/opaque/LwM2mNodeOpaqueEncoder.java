@@ -27,14 +27,16 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
+import org.eclipse.leshan.core.node.codec.NodeEncoder;
 import org.eclipse.leshan.core.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LwM2mNodeOpaqueEncoder {
+public class LwM2mNodeOpaqueEncoder implements NodeEncoder {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeOpaqueEncoder.class);
 
-    public static byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model, LwM2mValueConverter converter)
+    @Override
+    public byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model, LwM2mValueConverter converter)
             throws CodecException {
         Validate.notNull(node);
         Validate.notNull(path);

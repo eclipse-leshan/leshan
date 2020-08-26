@@ -29,6 +29,7 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
+import org.eclipse.leshan.core.node.codec.NodeEncoder;
 import org.eclipse.leshan.core.util.Base64;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.senml.SenMLJson;
@@ -37,10 +38,11 @@ import org.eclipse.leshan.senml.SenMLRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LwM2mNodeSenMLJsonEncoder {
+public class LwM2mNodeSenMLJsonEncoder implements NodeEncoder {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeSenMLJsonEncoder.class);
 
-    public static byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model, LwM2mValueConverter converter) {
+    @Override
+    public byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model, LwM2mValueConverter converter) {
         Validate.notNull(node);
         Validate.notNull(path);
         Validate.notNull(model);
