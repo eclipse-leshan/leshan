@@ -23,13 +23,14 @@ import com.eclipsesource.json.Json;
 import com.eclipsesource.json.ParseException;
 
 /**
- * Helper for encoding/decoding LWM2M JSON format
+ * Helper for encoding/decoding LWM2M JSON format using minimal-json
  */
-public class LwM2mJson {
+public class LwM2mJsonMinimalEncoderDecoder implements LwM2mJsonDecoder, LwM2mJsonEncoder {
 
     private static final JsonRootObjectSerDes serDes = new JsonRootObjectSerDes();
 
-    public static String toJsonLwM2m(JsonRootObject jro) throws LwM2mJsonException {
+    @Override
+    public String toJsonLwM2m(JsonRootObject jro) throws LwM2mJsonException {
         try {
             return serDes.sSerialize(jro);
         } catch (JsonException e) {
@@ -37,7 +38,8 @@ public class LwM2mJson {
         }
     }
 
-    public static JsonRootObject fromJsonLwM2m(String jsonString) throws LwM2mJsonException {
+    @Override
+    public JsonRootObject fromJsonLwM2m(String jsonString) throws LwM2mJsonException {
         try {
             return serDes.deserialize(Json.parse(jsonString).asObject());
         } catch (JsonException | ParseException e) {

@@ -29,8 +29,9 @@ import java.util.TreeMap;
 
 import org.eclipse.leshan.core.json.JsonArrayEntry;
 import org.eclipse.leshan.core.json.JsonRootObject;
-import org.eclipse.leshan.core.json.LwM2mJson;
+import org.eclipse.leshan.core.json.LwM2mJsonDecoder;
 import org.eclipse.leshan.core.json.LwM2mJsonException;
+import org.eclipse.leshan.core.json.LwM2mJsonMinimalEncoderDecoder;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
@@ -54,13 +55,23 @@ public class LwM2mNodeJsonDecoder implements TimestampedNodeDecoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeJsonDecoder.class);
 
+    private final LwM2mJsonDecoder decoder;
+
+    public LwM2mNodeJsonDecoder() {
+        this.decoder = new LwM2mJsonMinimalEncoderDecoder();
+    }
+
+    public LwM2mNodeJsonDecoder(LwM2mJsonDecoder jsonDecoder) {
+        this.decoder = jsonDecoder;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public <T extends LwM2mNode> T decode(byte[] content, LwM2mPath path, LwM2mModel model, Class<T> nodeClass)
             throws CodecException {
         try {
             String jsonStrValue = content != null ? new String(content) : "";
-            JsonRootObject json = LwM2mJson.fromJsonLwM2m(jsonStrValue);
+            JsonRootObject json = decoder.fromJsonLwM2m(jsonStrValue);
             List<TimestampedLwM2mNode> timestampedNodes = parseJSON(json, path, model, nodeClass);
             if (timestampedNodes.size() == 0) {
                 return null;
@@ -78,7 +89,7 @@ public class LwM2mNodeJsonDecoder implements TimestampedNodeDecoder {
             Class<? extends LwM2mNode> nodeClass) throws CodecException {
         try {
             String jsonStrValue = new String(content);
-            JsonRootObject json = LwM2mJson.fromJsonLwM2m(jsonStrValue);
+            JsonRootObject json = decoder.fromJsonLwM2m(jsonStrValue);
             return parseJSON(json, path, model, nodeClass);
         } catch (LwM2mJsonException e) {
             throw new CodecException(e, "Unable to deserialize json [path:%s]", path);

@@ -22,8 +22,9 @@ import java.util.Map.Entry;
 
 import org.eclipse.leshan.core.json.JsonArrayEntry;
 import org.eclipse.leshan.core.json.JsonRootObject;
-import org.eclipse.leshan.core.json.LwM2mJson;
+import org.eclipse.leshan.core.json.LwM2mJsonEncoder;
 import org.eclipse.leshan.core.json.LwM2mJsonException;
+import org.eclipse.leshan.core.json.LwM2mJsonMinimalEncoderDecoder;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
@@ -47,6 +48,16 @@ public class LwM2mNodeJsonEncoder implements TimestampedNodeEncoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeJsonEncoder.class);
 
+    private final LwM2mJsonEncoder encoder;
+
+    public LwM2mNodeJsonEncoder() {
+        this.encoder = new LwM2mJsonMinimalEncoderDecoder();
+    }
+
+    public LwM2mNodeJsonEncoder(LwM2mJsonEncoder jsonEncoder) {
+        this.encoder = jsonEncoder;
+    }
+
     @Override
     public byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model, LwM2mValueConverter converter)
             throws CodecException {
@@ -64,7 +75,7 @@ public class LwM2mNodeJsonEncoder implements TimestampedNodeEncoder {
         jsonObject.setResourceList(internalEncoder.resourceList);
         jsonObject.setBaseName(internalEncoder.baseName);
         try {
-            return LwM2mJson.toJsonLwM2m(jsonObject).getBytes();
+            return encoder.toJsonLwM2m(jsonObject).getBytes();
         } catch (LwM2mJsonException e) {
             throw new CodecException(e, "Unable to encode node[path:%s] : %s", path, node);
         }
@@ -103,7 +114,7 @@ public class LwM2mNodeJsonEncoder implements TimestampedNodeEncoder {
         jsonObject.setResourceList(entries);
         jsonObject.setBaseName(internalEncoder.baseName);
         try {
-            return LwM2mJson.toJsonLwM2m(jsonObject).getBytes();
+            return encoder.toJsonLwM2m(jsonObject).getBytes();
         } catch (LwM2mJsonException e) {
             throw new CodecException(e, "Unable to encode timestamped nodes[path:%s] : %s", path, timestampedNodes);
         }
