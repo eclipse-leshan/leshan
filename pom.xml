@@ -690,6 +690,17 @@ Contributors:
                 <artifactId>minimal-json</artifactId>
                 <version>0.9.5</version>
             </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>2.9.9</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-cbor</artifactId>
+                <version>2.9.9</version>
+            </dependency>
+            
 
             <!-- Demos, examples and tests dependencies -->
             <dependency>
@@ -706,11 +717,6 @@ Contributors:
                 <groupId>com.google.code.gson</groupId>
                 <artifactId>gson</artifactId>
                 <version>2.8.6</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.dataformat</groupId>
-                <artifactId>jackson-dataformat-cbor</artifactId>
-                <version>2.9.9</version>
             </dependency>
             <dependency>
                 <groupId>commons-lang</groupId>

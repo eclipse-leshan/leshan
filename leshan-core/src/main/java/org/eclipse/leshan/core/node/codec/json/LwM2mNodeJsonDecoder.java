@@ -31,7 +31,7 @@ import org.eclipse.leshan.core.json.JsonArrayEntry;
 import org.eclipse.leshan.core.json.JsonRootObject;
 import org.eclipse.leshan.core.json.LwM2mJsonDecoder;
 import org.eclipse.leshan.core.json.LwM2mJsonException;
-import org.eclipse.leshan.core.json.LwM2mJsonMinimalEncoderDecoder;
+import org.eclipse.leshan.core.json.jackson.LwM2mJsonJacksonEncoderDecoder;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
@@ -58,7 +58,7 @@ public class LwM2mNodeJsonDecoder implements TimestampedNodeDecoder {
     private final LwM2mJsonDecoder decoder;
 
     public LwM2mNodeJsonDecoder() {
-        this.decoder = new LwM2mJsonMinimalEncoderDecoder();
+        this.decoder = new LwM2mJsonJacksonEncoderDecoder();
     }
 
     public LwM2mNodeJsonDecoder(LwM2mJsonDecoder jsonDecoder) {

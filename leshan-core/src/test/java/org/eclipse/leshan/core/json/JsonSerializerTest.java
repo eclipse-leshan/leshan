@@ -18,6 +18,7 @@ package org.eclipse.leshan.core.json;
 
 import java.util.ArrayList;
 
+import org.eclipse.leshan.core.json.jackson.LwM2mJsonJacksonEncoderDecoder;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -27,7 +28,7 @@ public class JsonSerializerTest {
 
     private static Logger LOG = LoggerFactory.getLogger(JsonSerializerTest.class);
 
-    private static final LwM2mJsonMinimalEncoderDecoder LwM2mJson = new LwM2mJsonMinimalEncoderDecoder();
+    private static final LwM2mJsonJacksonEncoderDecoder LwM2mJson = new LwM2mJsonJacksonEncoderDecoder();
 
     @Test
     public void serialize_device_object() throws LwM2mJsonException {
