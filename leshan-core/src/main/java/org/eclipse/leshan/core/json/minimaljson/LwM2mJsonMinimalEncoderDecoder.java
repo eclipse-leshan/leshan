@@ -15,8 +15,12 @@
  *     Gemalto M2M GmbH
  *******************************************************************************/
 
-package org.eclipse.leshan.core.json;
+package org.eclipse.leshan.core.json.minimaljson;
 
+import org.eclipse.leshan.core.json.JsonRootObject;
+import org.eclipse.leshan.core.json.LwM2mJsonDecoder;
+import org.eclipse.leshan.core.json.LwM2mJsonEncoder;
+import org.eclipse.leshan.core.json.LwM2mJsonException;
 import org.eclipse.leshan.core.util.json.JsonException;
 
 import com.eclipsesource.json.Json;

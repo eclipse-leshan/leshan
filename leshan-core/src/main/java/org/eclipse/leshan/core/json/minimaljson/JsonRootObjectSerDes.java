@@ -13,8 +13,9 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.json;
+package org.eclipse.leshan.core.json.minimaljson;
 
+import org.eclipse.leshan.core.json.JsonRootObject;
 import org.eclipse.leshan.core.util.json.JsonException;
 import org.eclipse.leshan.core.util.json.JsonSerDes;
 
