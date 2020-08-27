@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2013-2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
+import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -60,7 +61,7 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
 
     /**
      * Request to write an <b>Object Instance</b>.
-     * 
+     *
      * @param mode the mode of the request : replace or update.
      * @param contentFormat Format of the payload (TLV or JSON).
      * @param objectId the id of the object to write.
@@ -76,7 +77,7 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
 
     /**
      * Request to write an <b>Object Instance</b> using the TLV content format.
-     * 
+     *
      * @param mode the mode of the request : replace or update.
      * @param objectId the id of the object to write.
      * @param objectInstanceId the id of the object instance to write.
@@ -89,7 +90,7 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
 
     /**
      * Request to write an <b>Object Instance</b>.
-     * 
+     *
      * @param mode the mode of the request : replace or update.
      * @param contentFormat Format of the payload (TLV or JSON).
      * @param objectId the id of the object to write.
@@ -105,7 +106,7 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
 
     /**
      * Request to write an <b>Object Instance</b> using the TLV content format.
-     * 
+     *
      * @param mode the mode of the request : replace or update.
      * @param objectId the id of the object to write.
      * @param objectInstanceId the id of the object instance to write.
@@ -126,7 +127,7 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
 
     /**
      * Request to write a <b>String Single-Instance Resource</b> using the given content format (TEXT, TLV, JSON).
-     * 
+     *
      * @exception InvalidRequestException if bad @{link ContentFormat} format was used.
      */
     public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId, String value)
@@ -144,7 +145,7 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
 
     /**
      * Request to write a <b>Boolean Single-Instance Resource</b> using the given content format (TEXT, TLV, JSON).
-     * 
+     *
      * @exception InvalidRequestException if bad @{link ContentFormat} format was used.
      */
     public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId, boolean value)
@@ -162,7 +163,7 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
 
     /**
      * Request to write a <b>Integer Single-Instance Resource</b> using the given content format (TEXT, TLV, JSON).
-     * 
+     *
      * @exception InvalidRequestException if bad @{link ContentFormat} format was used.
      */
     public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId, long value)
@@ -180,7 +181,7 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
 
     /**
      * Request to write a <b> Float Single-Instance Resource</b> using the given content format (TEXT, TLV, JSON).
-     * 
+     *
      * @exception InvalidRequestException if bad @{link ContentFormat} format was used.
      */
     public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId, double value)
@@ -198,7 +199,7 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
 
     /**
      * Request to write a <b> Date Single-Instance Resource</b> using the given content format (TEXT, TLV, JSON).
-     * 
+     *
      * @exception InvalidRequestException if bad @{link ContentFormat} format was used.
      */
     public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId, Date value)
@@ -216,7 +217,7 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
 
     /**
      * Request to write a <b> Binary Single-Instance Resource</b> using the given content format (OPAQUE, TLV, JSON).
-     * 
+     *
      * @exception InvalidRequestException if bad @{link ContentFormat} format was used.
      */
     public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId, byte[] value)
@@ -234,7 +235,7 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
 
     /**
      * Request to write a <b> Objlnk Single-Instance Resource</b> using the given content format (TLV, JSON, TEXT).
-     * 
+     *
      * @exception InvalidRequestException if bad @{link ContentFormat} format was used.
      */
     public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId,
@@ -246,7 +247,7 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
     // ***************** write multi instance resource ****************** //
     /**
      * Request to write a <b>Multi-Instance Resource</b>.
-     * 
+     *
      * @param contentFormat Format of the payload (TLV or JSON).
      * @param objectId the id of the object to write.
      * @param objectInstanceId the id of the object instance to write.
@@ -254,7 +255,7 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
      * @param values the list of resource instance (id-&gt;value) to write.
      * @param type the data type of the resource.
      * @exception InvalidRequestException if bad @{link ContentFormat} format was used.
-     * 
+     *
      */
     public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId,
             Map<Integer, ?> values, Type type) throws InvalidRequestException {
@@ -264,7 +265,7 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
 
     /**
      * Request to write a <b>Multi-Instance Resource</b> using the TLV content format.
-     * 
+     *
      * @param objectId the id of the object to write.
      * @param objectInstanceId the id of the object instance to write.
      * @param resourceId the id of the resource to write.
@@ -278,10 +279,45 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
                 LwM2mMultipleResource.newResource(resourceId, values, type));
     }
 
+    /**
+     * Request to write a specific resource instance from a client.
+     *
+     * @param mode the mode of the request : replace or update.
+     * @param contentFormat Format of the payload (TLV or JSON).
+     * @param objectId the object ID of the resource
+     * @param objectInstanceId the object instance ID
+     * @param resourceId the (individual) resource's ID
+     * @param resourceInstanceId the resource instance's ID
+     * @param value the resource instance (id-&gt;value) to write.
+     * @param type the data type of the resource.
+     */
+    public WriteRequest(Mode mode, ContentFormat contentFormat, int objectId, int objectInstanceId,
+                        int resourceId, int resourceInstanceId, Object value, Type type) {
+        this(mode, contentFormat, new LwM2mPath(objectId, objectInstanceId,
+                resourceId, resourceInstanceId), LwM2mResourceInstance.newInstance(resourceInstanceId, value, type));
+    }
+
+    /**
+     * Request to write a specific resource instance from a client, MODE = REPLACE.
+     *
+     * @param contentFormat Format of the payload (TLV or JSON).
+     * @param objectId the object ID of the resource
+     * @param objectInstanceId the object instance ID
+     * @param resourceId the (individual) resource's ID
+     * @param resourceInstanceId the resource instance's ID
+     * @param value the resource instance (id-&gt;value) to write.
+     * @param type the data type of the resource.
+     */
+    public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId,
+                        int resourceId, int resourceInstanceId, Object value, Type type) {
+        this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId,
+                resourceId, resourceInstanceId), LwM2mResourceInstance.newInstance(resourceInstanceId, value, type));
+    }
+
     // ***************** generic constructor ****************** //
     /**
      * A generic constructor to write request.
-     * 
+     *
      * @param mode the mode of the request : replace or update.
      * @param contentFormat Format of the payload (TLV,JSON,TEXT,OPAQUE ..).
      * @param path the path of the LWM2M node to write (object instance or resource).
@@ -297,9 +333,6 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
         super(target);
         if (target.isRoot())
             throw new InvalidRequestException("Write request cannot target root path");
-        if (target.isResourceInstance())
-            throw new InvalidRequestException(
-                    "Write request cannot target resource instance path: %s (not yet implemented)", target);
         if (mode == null)
             throw new InvalidRequestException("mode is mandatory for %s", target);
         if (node == null)

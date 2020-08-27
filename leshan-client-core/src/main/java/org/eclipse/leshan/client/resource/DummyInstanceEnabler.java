@@ -1,10 +1,10 @@
 /*******************************************************************************
  * Copyright (c) 2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
@@ -56,10 +56,21 @@ public class DummyInstanceEnabler extends SimpleInstanceEnabler {
         return super.read(identity, resourceid);
     }
 
+    public ReadResponse read(ServerIdentity identity, int resourceid, int resourceInstance) {
+        LOG.info("Read on {} Resource /{}/{}/{}/{} ", getModel().name, getModel().id, getId(), resourceid, resourceInstance);
+        return super.read(identity, resourceid, resourceInstance);
+    }
+
     @Override
     public WriteResponse write(ServerIdentity identity, int resourceid, LwM2mResource value) {
         LOG.info("Write on {} Resource /{}/{}/{} ", getModel().name, getModel().id, getId(), resourceid);
         return super.write(identity, resourceid, value);
+    }
+
+    @Override
+    public WriteResponse write(ServerIdentity identity, int resourceid, int resourceInstance, Object value) {
+        LOG.info("Write on {} Resource /{}/{}/{}/{} ", getModel().name, getModel().id, getId(), resourceid, resourceInstance);
+        return super.write(identity, resourceid, resourceInstance, value);
     }
 
     @Override
