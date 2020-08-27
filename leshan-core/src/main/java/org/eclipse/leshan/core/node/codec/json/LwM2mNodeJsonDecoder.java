@@ -48,6 +48,7 @@ import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.TimestampedNodeDecoder;
 import org.eclipse.leshan.core.util.Base64;
+import org.eclipse.leshan.core.util.datatype.NumberUtil;
 import org.eclipse.leshan.core.util.datatype.ULong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -435,16 +436,15 @@ public class LwM2mNodeJsonDecoder implements TimestampedNodeDecoder {
         try {
             switch (expectedType) {
             case INTEGER:
-                return ((Number) value).longValue();
+                return numberToLong((Number) value);
             case UNSIGNED_INTEGER:
-                return ULong.valueOf(value.toString());
+                return numberToULong((Number) value);
             case BOOLEAN:
                 return value;
             case FLOAT:
-                // JSON format specs said v = integer or float
-                return ((Number) value).doubleValue();
+                return numberToDouble((Number) value);
             case TIME:
-                return new Date(((Number) value).longValue() * 1000L);
+                return new Date(numberToLong((Number) value) * 1000L);
             case OPAQUE:
                 // If the Resource data type is opaque the string value
                 // holds the Base64 encoded representation of the Resource
@@ -475,5 +475,18 @@ public class LwM2mNodeJsonDecoder implements TimestampedNodeDecoder {
         // Else use String as default
         LOG.trace("unknown type for resource use string as default: {}", rscPath);
         return Type.STRING;
+    }
+
+    protected Long numberToLong(Number number) {
+        return NumberUtil.numberToLong(number);
+    }
+
+    protected ULong numberToULong(Number number) {
+        return NumberUtil.numberToULong(number);
+    }
+
+    protected Double numberToDouble(Number number) {
+        // we get the better approximate value, meaning we can get precision loss
+        return number.doubleValue();
     }
 }
