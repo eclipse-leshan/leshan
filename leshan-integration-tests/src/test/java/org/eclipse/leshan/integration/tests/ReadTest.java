@@ -133,7 +133,7 @@ public class ReadTest {
 
         LwM2mResourceInstance resourceInstance = (LwM2mResourceInstance) response.getContent();
         assertEquals(0, resourceInstance.getId());
-        assertEquals("multiinstance", resourceInstance.getValue());
+        assertEquals(MULTI_INSTANCE, resourceInstance.getValue());
     }
 
     @Test
@@ -150,7 +150,7 @@ public class ReadTest {
 
         LwM2mResourceInstance resourceInstance = (LwM2mResourceInstance) response.getContent();
         assertEquals(0, resourceInstance.getId());
-        assertEquals("multiinstance", resourceInstance.getValue());
+        assertEquals(MULTI_INSTANCE, resourceInstance.getValue());
     }
 
     @Test
