@@ -30,6 +30,7 @@ import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.NodeDecoder;
 import org.eclipse.leshan.core.util.Base64;
+import org.eclipse.leshan.core.util.datatype.ULong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,6 +77,12 @@ public class LwM2mNodeTextDecoder implements NodeDecoder {
                 return Long.valueOf(value);
             } catch (NumberFormatException e) {
                 throw new CodecException("Invalid value [%s] for integer resource [%s]", value, path);
+            }
+        case UNSIGNED_INTEGER:
+            try {
+                return ULong.valueOf(value);
+            } catch (NumberFormatException e) {
+                throw new CodecException("Invalid value [%s] for unsigned integer resource [%s]", value, path);
             }
         case BOOLEAN:
             switch (value) {

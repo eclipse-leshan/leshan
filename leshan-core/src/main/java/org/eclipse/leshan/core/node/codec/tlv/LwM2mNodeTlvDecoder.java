@@ -40,6 +40,7 @@ import org.eclipse.leshan.core.tlv.Tlv.TlvType;
 import org.eclipse.leshan.core.tlv.TlvDecoder;
 import org.eclipse.leshan.core.tlv.TlvException;
 import org.eclipse.leshan.core.util.Hex;
+import org.eclipse.leshan.core.util.datatype.ULong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -270,6 +271,8 @@ public class LwM2mNodeTlvDecoder implements NodeDecoder {
                 return TlvDecoder.decodeString(value);
             case INTEGER:
                 return TlvDecoder.decodeInteger(value).longValue();
+            case UNSIGNED_INTEGER:
+                return ULong.valueOf(TlvDecoder.decodeInteger(value).longValue());
             case FLOAT:
                 return TlvDecoder.decodeFloat(value).doubleValue();
             case BOOLEAN:

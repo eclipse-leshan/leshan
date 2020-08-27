@@ -30,6 +30,7 @@ import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.WriteResponse;
+import org.eclipse.leshan.core.util.datatype.ULong;
 
 /**
  * The request to change the value of a Resource, an array of Resources Instances or multiple Resources from an Object
@@ -170,6 +171,24 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
             throws InvalidRequestException {
         this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId),
                 LwM2mSingleResource.newIntegerResource(resourceId, value));
+    }
+
+    /**
+     * Request to write a <b>Unsigned Integer Single-Instance Resource</b> using the TLV content format.
+     */
+    public WriteRequest(int objectId, int objectInstanceId, int resourceId, ULong value) {
+        this(ContentFormat.TLV, objectId, objectInstanceId, resourceId, value);
+    }
+
+    /**
+     * Request to write a <b>Unsigned Single-Instance Resource</b> using the given content format (TEXT, TLV, JSON).
+     * 
+     * @exception InvalidRequestException if bad @{link ContentFormat} format was used.
+     */
+    public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId, ULong value)
+            throws InvalidRequestException {
+        this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId),
+                LwM2mSingleResource.newUnsignedIntegerResource(resourceId, value));
     }
 
     /**

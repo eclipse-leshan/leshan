@@ -48,6 +48,7 @@ import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.TimestampedNodeDecoder;
 import org.eclipse.leshan.core.util.Base64;
+import org.eclipse.leshan.core.util.datatype.ULong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -434,8 +435,9 @@ public class LwM2mNodeJsonDecoder implements TimestampedNodeDecoder {
         try {
             switch (expectedType) {
             case INTEGER:
-                // JSON format specs said v = integer or float
                 return ((Number) value).longValue();
+            case UNSIGNED_INTEGER:
+                return ULong.valueOf(value.toString());
             case BOOLEAN:
                 return value;
             case FLOAT:

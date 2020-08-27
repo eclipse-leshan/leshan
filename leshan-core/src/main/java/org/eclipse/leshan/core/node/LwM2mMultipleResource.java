@@ -26,6 +26,7 @@ import java.util.NoSuchElementException;
 
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.util.Validate;
+import org.eclipse.leshan.core.util.datatype.ULong;
 
 /**
  * A resource which contains several resource instances.
@@ -101,6 +102,9 @@ public class LwM2mMultipleResource implements LwM2mResource {
         case OBJLNK:
             LwM2mNodeUtil.allElementsOfType(values.values(), ObjectLink.class);
             break;
+        case UNSIGNED_INTEGER:
+            LwM2mNodeUtil.allElementsOfType(values.values(), ULong.class);
+            break;
         default:
             throw new LwM2mNodeException(String.format("Type %s is not supported", type.name()));
         }
@@ -140,6 +144,11 @@ public class LwM2mMultipleResource implements LwM2mResource {
     public static LwM2mMultipleResource newBinaryResource(int id, Map<Integer, byte[]> values) {
         LwM2mNodeUtil.noNullElements(values.values());
         return new LwM2mMultipleResource(id, values, Type.OPAQUE);
+    }
+
+    public static LwM2mMultipleResource newUnsignedIntegerResource(int id, Map<Integer, ULong> values) {
+        LwM2mNodeUtil.noNullElements(values.values());
+        return new LwM2mMultipleResource(id, values, Type.UNSIGNED_INTEGER);
     }
 
     /**

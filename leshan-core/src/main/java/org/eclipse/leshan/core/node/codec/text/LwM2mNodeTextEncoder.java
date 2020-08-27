@@ -120,6 +120,7 @@ public class LwM2mNodeTextEncoder implements NodeEncoder {
             case INTEGER:
             case FLOAT:
             case STRING:
+            case UNSIGNED_INTEGER:
                 strValue = String.valueOf(val);
                 break;
             case BOOLEAN:

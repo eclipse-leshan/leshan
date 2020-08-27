@@ -204,6 +204,7 @@ public class LwM2mNodeTlvEncoder implements NodeEncoder {
                 case STRING:
                     return TlvEncoder.encodeString((String) value);
                 case INTEGER:
+                case UNSIGNED_INTEGER:
                     return TlvEncoder.encodeInteger((Number) value);
                 case FLOAT:
                     return TlvEncoder.encodeFloat((Number) value);

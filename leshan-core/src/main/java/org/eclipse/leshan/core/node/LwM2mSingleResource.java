@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.util.datatype.ULong;
 
 /**
  * A resource with a single value.
@@ -73,6 +74,11 @@ public class LwM2mSingleResource implements LwM2mResource {
             if (!(value instanceof ObjectLink))
                 throw new LwM2mNodeException(doesNotMatchMessage);
             break;
+        case UNSIGNED_INTEGER:
+            if (!(value instanceof ULong)) {
+                throw new LwM2mNodeException(doesNotMatchMessage);
+            }
+            break;
         default:
             throw new LwM2mNodeException(String.format("Type %s is not supported", type.name()));
         }
@@ -105,6 +111,17 @@ public class LwM2mSingleResource implements LwM2mResource {
 
     public static LwM2mSingleResource newBinaryResource(int id, byte[] value) {
         return new LwM2mSingleResource(id, value, Type.OPAQUE);
+    }
+
+    public static LwM2mSingleResource newUnsignedIntegerResource(int id, ULong value) {
+        return new LwM2mSingleResource(id, value, Type.UNSIGNED_INTEGER);
+    }
+
+    public static LwM2mSingleResource newUnsignedIntegerResource(int id, Long value) {
+        if (value >= 0)
+            return new LwM2mSingleResource(id, ULong.valueOf(value), Type.UNSIGNED_INTEGER);
+        else
+            throw new LwM2mNodeException("Invalid value : positive value expected for UNSIGNED_INTEGER");
     }
 
     /**
