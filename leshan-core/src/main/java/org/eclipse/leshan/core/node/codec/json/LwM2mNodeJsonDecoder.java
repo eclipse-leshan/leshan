@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -42,6 +42,7 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.util.Base64;
@@ -139,6 +140,20 @@ public class LwM2mNodeJsonDecoder {
                     throw new CodecException("One resource should be present in the payload [path:%s]", requestPath);
 
                 node = resourcesMap.values().iterator().next();
+            } else if (nodeClass == LwM2mResourceInstance.class) {
+                // validate we have resources for only 1 instance
+                if (jsonEntryByInstanceId.size() > 1)
+                    throw new CodecException("Only one instance expected in the payload [path:%s]", requestPath);
+
+                // Extract resources
+                Map<Integer, LwM2mResource> resourcesMap = extractLwM2mResources(
+                        jsonEntryByInstanceId.values().iterator().next(), baseName, model, requestPath);
+
+                // validate there is only 1 resource
+                if (resourcesMap.size() != 1)
+                    throw new CodecException("One resource should be present in the payload [path:%s]", requestPath);
+
+                node = resourcesMap.values().iterator().next().getInstance(requestPath.getResourceInstanceId());
             } else {
                 throw new IllegalArgumentException("invalid node class: " + nodeClass);
             }
@@ -174,7 +189,7 @@ public class LwM2mNodeJsonDecoder {
 
     /**
      * Group all JsonArrayEntry by time-stamp
-     * 
+     *
      * @return a map (relativeTimestamp => collection of JsonArrayEntry)
      */
     private static SortedMap<Long, Collection<JsonArrayEntry>> groupJsonEntryByTimestamp(JsonRootObject jsonObject) {
@@ -213,7 +228,7 @@ public class LwM2mNodeJsonDecoder {
 
     /**
      * Group all JsonArrayEntry by instanceId
-     * 
+     *
      * @param jsonEntries
      * @param baseName
      *

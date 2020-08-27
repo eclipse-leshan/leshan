@@ -1,10 +1,10 @@
 /*******************************************************************************
  * Copyright (c) 2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
@@ -12,7 +12,7 @@
  *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
- *     Achim Kraus (Bosch Software Innovations GmbH) - add reset() for 
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add reset() for
  *                                                     REPLACE/UPDATE implementation
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
@@ -97,7 +97,7 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
      * deadlock.
      * <p>
      * Calling this method is needed to trigger NOTIFICATION when an observe relation is established.
-     * 
+     *
      * @param resourceIds the list of resources which change.
      */
     public void fireResourcesChange(int... resourceIds) {
@@ -122,6 +122,11 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
 
     @Override
     public ReadResponse read(ServerIdentity identity, int resourceid) {
+        return ReadResponse.notFound();
+    }
+
+    @Override
+    public ReadResponse read(ServerIdentity identity, int resourceId, int resourceInstance) {
         return ReadResponse.notFound();
     }
 
@@ -151,6 +156,11 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
 
     @Override
     public WriteResponse write(ServerIdentity identity, int resourceid, LwM2mResource value) {
+        return WriteResponse.notFound();
+    }
+
+    @Override
+    public WriteResponse write(ServerIdentity identity, int resourceid, int resourceInstance, Object value) {
         return WriteResponse.notFound();
     }
 

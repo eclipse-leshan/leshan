@@ -1,10 +1,10 @@
 /*******************************************************************************
  * Copyright (c) 2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
@@ -219,17 +219,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
         }
 
         // Manage Resource Instance case
-        // TODO optimization: create dedicated API to access to resource instance directly
-        ReadResponse response = instance.read(identity, path.getResourceId());
-        if (response.isFailure())
-            return response;
-        LwM2mMultipleResource resource = (LwM2mMultipleResource) response.getContent();
-        LwM2mResourceInstance resourceInstance = resource.getInstance(path.getResourceInstanceId());
-        if (resourceInstance == null) {
-            return ReadResponse.notFound();
-        } else {
-            return ReadResponse.success(resourceInstance);
-        }
+        return instance.read(identity, path.getResourceId(), path.getResourceInstanceId());
     }
 
     @Override
@@ -275,7 +265,13 @@ public class ObjectEnabler extends BaseObjectEnabler {
         }
 
         // Manage Resource case
-        return instance.write(identity, path.getResourceId(), (LwM2mResource) request.getNode());
+        if (path.getResourceInstanceId() == null) {
+            return instance.write(identity, path.getResourceId(), (LwM2mResource) request.getNode());
+        }
+
+        // Manage Resource Instance case
+        return instance.write(identity, path.getResourceId(), path.getResourceInstanceId(),
+                ((LwM2mResourceInstance) request.getNode()).getValue());
     }
 
     @Override

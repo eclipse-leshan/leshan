@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2013-2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Zebra Technologies - initial API and implementation
  *******************************************************************************/
@@ -56,7 +56,7 @@ import org.eclipse.leshan.server.security.InMemorySecurityStore;
 
 /**
  * Helper for running a server and executing a client against it.
- * 
+ *
  */
 public class IntegrationTestHelper {
     public static final Random r = new Random();
@@ -75,7 +75,7 @@ public class IntegrationTestHelper {
     public static final int OBJLNK_SINGLE_INSTANCE_RESOURCE_ID = 7;
     public static final int INTEGER_MANDATORY_RESOURCE_ID = 8;
     public static final int STRING_MANDATORY_RESOURCE_ID = 9;
-    public static final int STRING_RESOUCE_INSTANCE_ID = 10;
+    public static final int STRING_RESOURCE_INSTANCE_ID = 10;
 
     LeshanServer server;
     LeshanClient client;
@@ -113,7 +113,7 @@ public class IntegrationTestHelper {
                 Operations.RW, false, true, Type.INTEGER, null, null, null);
         ResourceModel stringmandatoryfield = new ResourceModel(STRING_MANDATORY_RESOURCE_ID, "stringmandatory",
                 Operations.RW, false, true, Type.STRING, null, null, null);
-        ResourceModel multiInstance = new ResourceModel(STRING_RESOUCE_INSTANCE_ID, "multiinstance", Operations.RW,
+        ResourceModel multiInstance = new ResourceModel(STRING_RESOURCE_INSTANCE_ID, "multiinstance", Operations.RW,
                 true, false, Type.STRING, null, null, null);
         objectModels.add(new ObjectModel(TEST_OBJECT_ID, "testobject", null, ObjectModel.DEFAULT_VERSION, true, false,
                 stringfield, booleanfield, integerfield, floatfield, timefield, opaquefield, objlnkfield,

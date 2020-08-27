@@ -1,10 +1,10 @@
 /*******************************************************************************
  * Copyright (c) 2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
@@ -13,9 +13,9 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - deny delete of resource
- *     Achim Kraus (Bosch Software Innovations GmbH) - use ServerIdentity to 
+ *     Achim Kraus (Bosch Software Innovations GmbH) - use ServerIdentity to
  *                                                     protect the security object
- *     Achim Kraus (Bosch Software Innovations GmbH) - add resource checks for 
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add resource checks for
  *                                                     REPLACE/UPDAT implementation
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
@@ -197,7 +197,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
                 return WriteResponse.notFound();
             }
 
-            if (path.isResource()) {
+            if (path.isResource() || path.isResourceInstance()) {
                 // resource write:
                 // check if the resource is writable
                 if (LwM2mId.SECURITY != id) { // security resources are writable by SYSTEM
@@ -206,6 +206,8 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
                         return WriteResponse.notFound();
                     } else if (!resourceModel.operations.isWritable()) {
                         return WriteResponse.methodNotAllowed();
+                    } else if (path.isResourceInstance() && !resourceModel.multiple) {
+                        return WriteResponse.badRequest("invalid path : resource is not multiple");
                     }
                 }
             } else if (path.isObjectInstance()) {
