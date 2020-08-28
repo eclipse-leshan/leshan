@@ -25,6 +25,7 @@ import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.util.Base64;
@@ -35,20 +36,28 @@ public class LwM2mNodeTextDecoder {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeTextDecoder.class);
 
     public static LwM2mNode decode(byte[] content, LwM2mPath path, LwM2mModel model) throws CodecException {
-        if (!path.isResource())
-            throw new CodecException("Invalid path %s : TextDecoder decodes resource only", path);
+        if (!path.isResource() && !path.isResourceInstance())
+            throw new CodecException("Invalid path %s : TextDecoder decodes resource OR resource instance only", path);
 
         ResourceModel rDesc = model.getResourceModel(path.getObjectId(), path.getResourceId());
 
         String strValue = content != null ? new String(content, StandardCharsets.UTF_8) : "";
-        if (rDesc != null) {
-            return LwM2mSingleResource.newResource(path.getResourceId(), parseTextValue(strValue, rDesc.type, path),
+
+        if (path.isResource()) {
+            if (rDesc != null) {
+                return LwM2mSingleResource.newResource(path.getResourceId(), parseTextValue(strValue, rDesc.type, path),
                     rDesc.type);
-        } else {
+            }
             // unknown resource, returning a default string value
             return LwM2mSingleResource.newStringResource(path.getResourceId(), strValue);
         }
 
+        if (rDesc != null) {
+            return LwM2mResourceInstance.newInstance(path.getResourceInstanceId(), parseTextValue(strValue, rDesc.type, path),
+                rDesc.type);
+        }
+        // unknown resource, returning a default string value
+        return LwM2mResourceInstance.newStringInstance(path.getResourceInstanceId(), strValue);
     }
 
     private static Object parseTextValue(String value, Type type, LwM2mPath path) throws CodecException {

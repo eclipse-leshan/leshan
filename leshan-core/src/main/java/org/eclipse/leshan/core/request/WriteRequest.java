@@ -359,19 +359,30 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
 
         // Validate content format
         if (ContentFormat.TEXT == format || ContentFormat.OPAQUE == format) {
-            if (!getPath().isResource()) {
+            if (!getPath().isResource() && !getPath().isResourceInstance()) {
                 throw new InvalidRequestException(
-                        "Invalid format for %s: %s format must be used only for single resources", target, format);
+                    "Invalid format for %s: %s format must be used only for single resources", target, format);
             } else {
-                LwM2mResource resource = (LwM2mResource) node;
-                if (resource.isMultiInstances()) {
-                    throw new InvalidRequestException(
+                if (node instanceof  LwM2mResource) {
+                    LwM2mResource resource = (LwM2mResource) node;
+                    if (resource.isMultiInstances()) {
+                        throw new InvalidRequestException(
                             "Invalid format for path %s: format must be used only for single resources", target,
                             format);
-                } else if (resource.getType() != Type.OPAQUE && format == ContentFormat.OPAQUE) {
-                    throw new InvalidRequestException(
+                    } else if (resource.getType() != Type.OPAQUE && format == ContentFormat.OPAQUE) {
+                        throw new InvalidRequestException(
                             "Invalid format for %s: OPAQUE format must be used only for byte array single resources",
                             target);
+                    }
+                }
+
+                if (node instanceof  LwM2mResourceInstance) {
+                    LwM2mResourceInstance resourceInstance = (LwM2mResourceInstance) node;
+                    if (resourceInstance.getType() != Type.OPAQUE && format == ContentFormat.OPAQUE) {
+                        throw new InvalidRequestException(
+                            "Invalid format for %s: OPAQUE format must be used only for byte array single resources",
+                            target);
+                    }
                 }
             }
         }

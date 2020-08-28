@@ -184,11 +184,20 @@ public class WriteTest {
 
     @Test
     public void write_string_resource_json_instance() throws InterruptedException {
+        assertStringResourceInstance(ContentFormat.JSON);
+    }
+
+    @Test
+    public void write_string_resource_text_instance() throws InterruptedException {
+        assertStringResourceInstance(ContentFormat.TEXT);
+    }
+
+    private void assertStringResourceInstance(ContentFormat format) throws InterruptedException {
         // read device model number
         String valueToWrite = "newValue";
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(ContentFormat.JSON, TEST_OBJECT_ID, 0,
-                        STRING_RESOURCE_INSTANCE_ID, 0, valueToWrite, Type.STRING), 1000000);
+            new WriteRequest(format, TEST_OBJECT_ID, 0,
+                STRING_RESOURCE_INSTANCE_ID, 0, valueToWrite, Type.STRING), 1000000);
 
         // verify result
         assertEquals(CHANGED, response.getCode());
@@ -197,7 +206,7 @@ public class WriteTest {
 
         // read resource to check the value changed
         ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
-                new ReadRequest(ContentFormat.JSON, TEST_OBJECT_ID, 0, STRING_RESOURCE_INSTANCE_ID, 0), 1000000);
+            new ReadRequest(format, TEST_OBJECT_ID, 0, STRING_RESOURCE_INSTANCE_ID, 0), 1000000);
 
         // verify result
         LwM2mResourceInstance resource = (LwM2mResourceInstance) readResponse.getContent();
