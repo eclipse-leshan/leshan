@@ -185,8 +185,6 @@ public class WriteTest {
     @Test
     public void write_string_resource_json_instance() throws InterruptedException {
         // read device model number
-        Map<Integer, Object> map = new HashMap<>();
-        map.put(0, "newValue");
         String valueToWrite = "newValue";
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
                 new WriteRequest(ContentFormat.JSON, TEST_OBJECT_ID, 0,

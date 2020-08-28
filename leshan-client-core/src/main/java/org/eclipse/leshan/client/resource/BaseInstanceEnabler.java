@@ -27,8 +27,10 @@ import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
+import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
@@ -127,7 +129,16 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
 
     @Override
     public ReadResponse read(ServerIdentity identity, int resourceId, int resourceInstance) {
-        return ReadResponse.notFound();
+        ReadResponse response = read(identity, resourceId);
+        if (response.isFailure())
+            return response;
+        LwM2mMultipleResource resource = (LwM2mMultipleResource) response.getContent();
+        LwM2mResourceInstance resourceIn = resource.getInstance(resourceInstance);
+        if (resourceIn == null) {
+            return ReadResponse.notFound();
+        } else {
+            return ReadResponse.success(resourceIn);
+        }
     }
 
     @Override

@@ -188,7 +188,7 @@ public class LwM2mNodeJsonEncoder {
             ResourceModel rSpec = model.getResourceModel(objectId, instance.getId());
             Type expectedType = rSpec != null ? rSpec.type : instance.getType();
 
-            JsonArrayEntry jsonArrayEntry = resourceElement(new LwM2mPath(instance.getId()).toString(), timestamp,
+            JsonArrayEntry jsonArrayEntry = createJsonArrayEntry(new LwM2mPath(instance.getId()).toString(), timestamp,
                     instance.getType(), expectedType, instance.getValue());
             resourceList = new ArrayList<>();
             resourceList.add(jsonArrayEntry);
@@ -212,19 +212,19 @@ public class LwM2mNodeJsonEncoder {
                         resourceInstancePath = resourcePath + "/" + entry.getKey();
                     }
 
-                    JsonArrayEntry jsonArrayEntry = resourceElement(resourceInstancePath, timestamp,
+                    JsonArrayEntry jsonArrayEntry = createJsonArrayEntry(resourceInstancePath, timestamp,
                             resource.getType(), expectedType, entry.getValue());
                     resourcesList.add(jsonArrayEntry);
                 }
             } else {
-                JsonArrayEntry jsonArrayEntry = resourceElement(resourcePath, timestamp,
+                JsonArrayEntry jsonArrayEntry = createJsonArrayEntry(resourcePath, timestamp,
                         resource.getType(), expectedType, resource.getValue());
                 resourcesList.add(jsonArrayEntry);
             }
             return resourcesList;
         }
 
-        private JsonArrayEntry resourceElement(String resourcePath, Long timestamp, Type type, Type expectedType, Object value) {
+        private JsonArrayEntry createJsonArrayEntry(String resourcePath, Long timestamp, Type type, Type expectedType, Object value) {
             // Create resource element
             JsonArrayEntry jsonResourceElt = new JsonArrayEntry();
             jsonResourceElt.setName(resourcePath);

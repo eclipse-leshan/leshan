@@ -172,7 +172,11 @@ public class LwM2mMultipleResource implements LwM2mResource {
     @Deprecated
     @Override
     public Map<Integer, ?> getValues() {
-        return Collections.unmodifiableMap(instances);
+        Map<Integer, Object> val = new HashMap<>();
+        for (Entry<Integer, LwM2mResourceInstance> entry : instances.entrySet()) {
+            val.put(entry.getKey(), entry.getValue().getValue());
+        }
+        return Collections.unmodifiableMap(val);
     }
 
     /**

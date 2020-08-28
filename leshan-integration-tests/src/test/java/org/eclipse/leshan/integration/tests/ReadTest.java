@@ -154,6 +154,17 @@ public class ReadTest {
     }
 
     @Test
+    public void cannot_read_non_multiple_resource_json_instance() throws InterruptedException {
+        // read device model number
+        ReadResponse response = helper.server.send(helper.getCurrentRegistration(),
+            new ReadRequest(ContentFormat.JSON, TEST_OBJECT_ID, 0, INTEGER_RESOURCE_ID, 0), 1000000);
+
+        // verify result
+        assertEquals(BAD_REQUEST, response.getCode());
+        assertEquals("invalid path : resource is not multiple",response.getErrorMessage());
+    }
+
+    @Test
     public void can_read_empty_opaque_resource() throws InterruptedException {
         // read device model number
         ReadResponse response = helper.server.send(helper.getCurrentRegistration(),
