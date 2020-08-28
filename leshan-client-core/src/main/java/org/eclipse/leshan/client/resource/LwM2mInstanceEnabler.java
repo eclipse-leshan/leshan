@@ -1,10 +1,10 @@
 /*******************************************************************************
  * Copyright (c) 2015 Sierra Wireless and others.
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- *
+ * 
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Kai Hudalla (Bosch Software Innovations GmbH) - add documentation
- *     Achim Kraus (Bosch Software Innovations GmbH) - add reset() for
+ *     Achim Kraus (Bosch Software Innovations GmbH) - add reset() for 
  *                                                     REPLACE/UPDATE implementation
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
@@ -55,7 +55,7 @@ public interface LwM2mInstanceEnabler {
     /**
      * Set this id of this instance. It should be called only by
      * {@link LwM2mInstanceEnablerFactory#create(ObjectModel, Integer, java.util.Collection)}.
-     *
+     * 
      * @param id this id of this instance.
      */
     void setId(int id);
@@ -63,38 +63,38 @@ public interface LwM2mInstanceEnabler {
     /**
      * Set the model of this instance. It should be called only by
      * {@link LwM2mInstanceEnablerFactory#create(ObjectModel, Integer, java.util.Collection)}.
-     *
+     * 
      * @param model the model of this instance
      */
     void setModel(ObjectModel model);
 
     /**
      * Set the lwm2mclient linked to this instance. It should only be called by {@link ObjectEnabler}.
-     *
+     * 
      * @param client the {@link LwM2mClient} which hold this instance.
      */
     void setLwM2mClient(LwM2mClient client);
 
     /**
      * Adds a callback handler that gets notified about changes to any of this LWM2M object instance's resources.
-     *
+     * 
      * @param listener the handler to add, a <code>null</code> value is silently ignored
      */
     void addResourceChangedListener(ResourceChangedListener listener);
 
     /**
      * Stops a callback handler from getting notified about changes to any of this LWM2M object instance's resources.
-     *
+     * 
      * @param listener the handler to remove, a <code>null</code> value is silently ignored
      */
     void removeResourceChangedListener(ResourceChangedListener listener);
 
     /**
      * Gets values of all readable resources of this instance.
-     *
+     * 
      * @param identity the identity of the requester. This could be an internal call in this case
      *        <code> identity == ServerIdentity.SYSTEM</code>.
-     *
+     * 
      * @return a success response with an {@link LwM2mObjectInstance} as content or a failure response with optional
      *         explanation message.
      */
@@ -102,7 +102,7 @@ public interface LwM2mInstanceEnabler {
 
     /**
      * Gets the current value of one of this LWM2M object instance's resources.
-     *
+     * 
      * @param identity the identity of the requester. This could be an internal call in this case
      *        <code> identity == ServerIdentity.SYSTEM</code>.
      * @param resourceId the ID of the resource to get the value of
@@ -114,7 +114,7 @@ public interface LwM2mInstanceEnabler {
 
     /**
      * Gets the current value of one of this LWM2M object instance's resources instance.
-     *
+     * 
      * @param identity the identity of the requester. This could be an internal call in this case
      *        <code> identity == ServerIdentity.SYSTEM</code>.
      * @param resourceId the ID of the resource to get the value of
@@ -127,7 +127,7 @@ public interface LwM2mInstanceEnabler {
 
     /**
      * Sets all resources of this LWM2M object instance.
-     *
+     * 
      * @param identity the identity of the requester. This could be an internal call in this case
      *        <code> identity == ServerIdentity.SYSTEM</code>.
      * @param replace if replace is true a {@link Mode#REPLACE} should be done, else {@link Mode#UPDATE} should be done.
@@ -140,7 +140,7 @@ public interface LwM2mInstanceEnabler {
 
     /**
      * Sets the value of one of this LWM2M object instance's resources.
-     *
+     * 
      * @param identity the identity of the requester. This could be an internal call in this case
      *        <code> identity == ServerIdentity.SYSTEM</code>.
      * @param resourceid the ID of the resource to set the value for
@@ -153,7 +153,7 @@ public interface LwM2mInstanceEnabler {
 
     /**
      * Sets the value of one of this LWM2M object instance's resources instance.
-     *
+     * 
      * @param identity the identity of the requester. This could be an internal call in this case
      *        <code> identity == ServerIdentity.SYSTEM</code>.
      * @param resourceid the ID of the resource to set the value for
@@ -167,7 +167,7 @@ public interface LwM2mInstanceEnabler {
 
     /**
      * Executes the operation represented by one of this LWM2M object instance's resources.
-     *
+     * 
      * @param identity the identity of the requester. This could be an internal call in this case
      *        <code> identity == ServerIdentity.SYSTEM</code>.
      * @param resourceid the ID of the resource to set the value for
@@ -180,7 +180,7 @@ public interface LwM2mInstanceEnabler {
 
     /**
      * Performs an observe register the whole LWM2M object instance.
-     *
+     * 
      * @param identity the identity of the requester. This could be an internal call in this case
      *        <code> identity == ServerIdentity.SYSTEM</code>.
      * @return a success response with an {@link LwM2mObjectInstance} as content or a failure response with optional
@@ -190,7 +190,7 @@ public interface LwM2mInstanceEnabler {
 
     /**
      * Performs an observe register on one of this LWM2M object instance's resources.
-     *
+     * 
      * @param identity the identity of the requester. This could be an internal call in this case
      *        <code> identity == ServerIdentity.SYSTEM</code>.
      * @param resourceid the ID of the resource to set the value for
@@ -199,7 +199,7 @@ public interface LwM2mInstanceEnabler {
 
     /**
      * A callback called when this instance is deleted
-     *
+     * 
      * @param identity the identity of the requester. This could be an internal call in this case
      *        <code> identity == ServerIdentity.SYSTEM</code>.
      */
@@ -214,7 +214,7 @@ public interface LwM2mInstanceEnabler {
     /**
      * Reset the current value of one of this LWM2M object instance's resources. Only used for implementation of REPLACE
      * to cleanup none mandatory resources.
-     *
+     * 
      * @param resourceId the ID of the resource to be reseted
      */
     void reset(int resourceId);
