@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Sierra Wireless and others.
+ * Copyright (c) 2020 Sierra Wireless and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -15,27 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
-import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.response.BootstrapFinishResponse;
+import org.eclipse.leshan.core.response.LwM2mResponse;
 
-/**
- * Request sent when bootstrap session is finished
- */
-public class BootstrapFinishRequest implements BootstrapDownlinkRequest<BootstrapFinishResponse> {
-
-    @Override
-    public LwM2mPath getPath() {
-        // not targeting a node.
-        return null;
-    }
-
-    @Override
-    public void accept(DownlinkRequestVisitor visitor) {
-        visitor.visit(this);
-    }
-
-    @Override
-    public String toString() {
-        return String.format("BootstrapFinishRequest");
-    }
+public interface BootstrapDownlinkRequest<T extends LwM2mResponse> extends DownlinkRequest<T> {
 }

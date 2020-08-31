@@ -52,12 +52,14 @@ import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ACLConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfiguration;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfigurationStore;
 import org.eclipse.leshan.server.bootstrap.BootstrapFailureCause;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
 import org.eclipse.leshan.server.bootstrap.BootstrapSession;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
+import org.eclipse.leshan.server.bootstrap.BootstrapUtil;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapSession;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapSessionManager;
@@ -112,7 +114,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
     }
 
     private LeshanBootstrapServerBuilder createBootstrapBuilder(BootstrapSecurityStore securityStore,
-            BootstrapConfigStore bootstrapStore) {
+            BootstrapConfigurationStore bootstrapStore) {
         if (bootstrapStore == null) {
             bootstrapStore = unsecuredBootstrapStore();
         }
@@ -138,11 +140,12 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         return builder;
     }
 
-    public void createBootstrapServer(BootstrapSecurityStore securityStore, BootstrapConfigStore bootstrapStore) {
+    public void createBootstrapServer(BootstrapSecurityStore securityStore,
+            BootstrapConfigurationStore bootstrapStore) {
         bootstrapServer = createBootstrapBuilder(securityStore, bootstrapStore).build();
     }
 
-    public void createBootstrapServer(BootstrapSecurityStore securityStore, BootstrapConfigStore bootstrapStore,
+    public void createBootstrapServer(BootstrapSecurityStore securityStore, BootstrapConfigurationStore bootstrapStore,
             final BootstrapDiscoverRequest request) {
         LeshanBootstrapServerBuilder builder = createBootstrapBuilder(securityStore, bootstrapStore);
 
@@ -150,18 +153,18 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         builder.setBootstrapHandlerFactory(new BootstrapHandlerFactory() {
 
             @Override
-            public BootstrapHandler create(BootstrapConfigStore store, LwM2mBootstrapRequestSender sender,
+            public BootstrapHandler create(BootstrapConfigurationStore store, LwM2mBootstrapRequestSender sender,
                     BootstrapSessionManager sessionManager) {
                 return new DefaultBootstrapHandler(store, sender, sessionManager) {
 
                     @Override
-                    protected void startBootstrap(final BootstrapSession session, final BootstrapConfig cfg) {
+                    protected void startBootstrap(final BootstrapSession session, final BootstrapConfiguration cfg) {
                         send(session, request, new SafeResponseCallback<BootstrapDiscoverResponse>(session) {
 
                             @Override
                             public void safeOnResponse(BootstrapDiscoverResponse response) {
                                 lastDiscoverAnswer = response;
-                                delete(session, cfg, new ArrayList<>(cfg.toDelete));
+                                sendRequest(session, cfg, new ArrayList<>(cfg.getRequests()));
                             }
                         }, new SafeErrorCallback(session) {
                             @Override
@@ -301,11 +304,11 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         };
     }
 
-    public BootstrapConfigStore unsecuredBootstrapStore() {
-        return new BootstrapConfigStore() {
+    public BootstrapConfigurationStore unsecuredBootstrapStore() {
+        return new BootstrapConfigurationStore() {
 
             @Override
-            public BootstrapConfig get(String endpoint, Identity deviceIdentity, BootstrapSession session) {
+            public BootstrapConfiguration get(String endpoint, Identity deviceIdentity, BootstrapSession session) {
 
                 BootstrapConfig bsConfig = new BootstrapConfig();
 
@@ -331,12 +334,12 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                 dmConfig.shortId = 2222;
                 bsConfig.servers.put(0, dmConfig);
 
-                return bsConfig;
+                return new BootstrapConfiguration(BootstrapUtil.toRequests(bsConfig));
             }
         };
     }
 
-    public BootstrapConfigStore deleteSecurityStore(Integer... objectToDelete) {
+    public BootstrapConfigurationStore deleteSecurityStore(Integer... objectToDelete) {
         String[] pathToDelete = new String[objectToDelete.length];
         for (int i = 0; i < pathToDelete.length; i++) {
             pathToDelete[i] = "/" + objectToDelete[i];
@@ -345,24 +348,24 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         return deleteSecurityStore(pathToDelete);
     }
 
-    public BootstrapConfigStore deleteSecurityStore(final String... pathToDelete) {
-        return new BootstrapConfigStore() {
+    public BootstrapConfigurationStore deleteSecurityStore(final String... pathToDelete) {
+        return new BootstrapConfigurationStore() {
 
             @Override
-            public BootstrapConfig get(String endpoint, Identity deviceIdentity, BootstrapSession session) {
+            public BootstrapConfiguration get(String endpoint, Identity deviceIdentity, BootstrapSession session) {
 
                 BootstrapConfig bsConfig = new BootstrapConfig();
                 bsConfig.toDelete = Arrays.asList(pathToDelete);
-                return bsConfig;
+                return new BootstrapConfiguration(BootstrapUtil.toRequests(bsConfig));
             }
         };
     }
 
-    public BootstrapConfigStore unsecuredWithAclBootstrapStore() {
-        return new BootstrapConfigStore() {
+    public BootstrapConfigurationStore unsecuredWithAclBootstrapStore() {
+        return new BootstrapConfigurationStore() {
 
             @Override
-            public BootstrapConfig get(String endpoint, Identity deviceIdentity, BootstrapSession session) {
+            public BootstrapConfiguration get(String endpoint, Identity deviceIdentity, BootstrapSession session) {
 
                 BootstrapConfig bsConfig = new BootstrapConfig();
 
@@ -404,16 +407,16 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                 aclConfig.AccessControlOwner = 2222;
                 bsConfig.acls.put(1, aclConfig);
 
-                return bsConfig;
+                return new BootstrapConfiguration(BootstrapUtil.toRequests(bsConfig));
             }
         };
     }
 
-    public BootstrapConfigStore pskBootstrapStore() {
-        return new BootstrapConfigStore() {
+    public BootstrapConfigurationStore pskBootstrapStore() {
+        return new BootstrapConfigurationStore() {
 
             @Override
-            public BootstrapConfig get(String endpoint, Identity deviceIdentity, BootstrapSession session) {
+            public BootstrapConfiguration get(String endpoint, Identity deviceIdentity, BootstrapSession session) {
 
                 BootstrapConfig bsConfig = new BootstrapConfig();
 
@@ -441,16 +444,16 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                 dmConfig.shortId = 2222;
                 bsConfig.servers.put(0, dmConfig);
 
-                return bsConfig;
+                return new BootstrapConfiguration(BootstrapUtil.toRequests(bsConfig));
             }
         };
     }
 
-    public BootstrapConfigStore rpkBootstrapStore() {
-        return new BootstrapConfigStore() {
+    public BootstrapConfigurationStore rpkBootstrapStore() {
+        return new BootstrapConfigurationStore() {
 
             @Override
-            public BootstrapConfig get(String endpoint, Identity deviceIdentity, BootstrapSession session) {
+            public BootstrapConfiguration get(String endpoint, Identity deviceIdentity, BootstrapSession session) {
 
                 BootstrapConfig bsConfig = new BootstrapConfig();
 
@@ -479,7 +482,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                 dmConfig.shortId = 2222;
                 bsConfig.servers.put(0, dmConfig);
 
-                return bsConfig;
+                return new BootstrapConfiguration(BootstrapUtil.toRequests(bsConfig));
             }
         };
     }

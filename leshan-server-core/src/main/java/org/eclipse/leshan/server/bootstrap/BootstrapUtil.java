@@ -17,17 +17,27 @@ package org.eclipse.leshan.server.bootstrap;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map.Entry;
 
+import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
+import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
+import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
+import org.eclipse.leshan.core.request.BootstrapWriteRequest;
+import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ACLConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
 
 public class BootstrapUtil {
-    public static LwM2mObjectInstance convertToSecurityInstance(int instanceId, ServerSecurity securityConfig) {
+    public static LwM2mObjectInstance toSecurityInstance(int instanceId, ServerSecurity securityConfig) {
         Collection<LwM2mResource> resources = new ArrayList<>();
 
         if (securityConfig.uri != null)
@@ -59,7 +69,14 @@ public class BootstrapUtil {
         return new LwM2mObjectInstance(instanceId, resources);
     }
 
-    public static LwM2mObjectInstance convertToServerInstance(int instanceId, ServerConfig serverConfig) {
+    public static BootstrapWriteRequest toWriteRequest(int instanceId, ServerSecurity securityConfig,
+            ContentFormat contentFormat) {
+        LwM2mPath path = new LwM2mPath(LwM2mId.SECURITY, instanceId);
+        final LwM2mNode securityInstance = BootstrapUtil.toSecurityInstance(instanceId, securityConfig);
+        return new BootstrapWriteRequest(path, securityInstance, contentFormat);
+    }
+
+    public static LwM2mObjectInstance toServerInstance(int instanceId, ServerConfig serverConfig) {
         Collection<LwM2mResource> resources = new ArrayList<>();
 
         resources.add(LwM2mSingleResource.newIntegerResource(0, serverConfig.shortId));
@@ -77,7 +94,14 @@ public class BootstrapUtil {
         return new LwM2mObjectInstance(instanceId, resources);
     }
 
-    public static LwM2mObjectInstance convertToAclInstance(int instanceId, ACLConfig aclConfig) {
+    public static BootstrapWriteRequest toWriteRequest(int instanceId, ServerConfig serverConfig,
+            ContentFormat contentFormat) {
+        LwM2mPath path = new LwM2mPath(LwM2mId.SERVER, instanceId);
+        final LwM2mNode securityInstance = BootstrapUtil.toServerInstance(instanceId, serverConfig);
+        return new BootstrapWriteRequest(path, securityInstance, contentFormat);
+    }
+
+    public static LwM2mObjectInstance toAclInstance(int instanceId, ACLConfig aclConfig) {
         Collection<LwM2mResource> resources = new ArrayList<>();
 
         resources.add(LwM2mSingleResource.newIntegerResource(0, aclConfig.objectId));
@@ -88,5 +112,39 @@ public class BootstrapUtil {
             resources.add(LwM2mSingleResource.newIntegerResource(3, aclConfig.AccessControlOwner));
 
         return new LwM2mObjectInstance(instanceId, resources);
+    }
+
+    public static BootstrapWriteRequest toWriteRequest(int instanceId, ACLConfig aclConfig,
+            ContentFormat contentFormat) {
+        LwM2mPath path = new LwM2mPath(LwM2mId.ACCESS_CONTROL, instanceId);
+        final LwM2mNode securityInstance = BootstrapUtil.toAclInstance(instanceId, aclConfig);
+        return new BootstrapWriteRequest(path, securityInstance, contentFormat);
+    }
+
+    public static List<BootstrapDownlinkRequest<? extends LwM2mResponse>> toRequests(
+            BootstrapConfig bootstrapConfig) {
+        return toRequests(bootstrapConfig, ContentFormat.TLV);
+    }
+
+    public static List<BootstrapDownlinkRequest<? extends LwM2mResponse>> toRequests(
+            BootstrapConfig bootstrapConfig, ContentFormat contentFormat) {
+        List<BootstrapDownlinkRequest<? extends LwM2mResponse>> requests = new ArrayList<>();
+        // handle delete
+        for (String path : bootstrapConfig.toDelete) {
+            requests.add(new BootstrapDeleteRequest(path));
+        }
+        // handle security
+        for (Entry<Integer, ServerSecurity> security : bootstrapConfig.security.entrySet()) {
+            requests.add(toWriteRequest(security.getKey(), security.getValue(), contentFormat));
+        }
+        // handle server
+        for (Entry<Integer, ServerConfig> server : bootstrapConfig.servers.entrySet()) {
+            requests.add(toWriteRequest(server.getKey(), server.getValue(), contentFormat));
+        }
+        // handle acl
+        for (Entry<Integer, ACLConfig> acl : bootstrapConfig.acls.entrySet()) {
+            requests.add(toWriteRequest(acl.getKey(), acl.getValue(), contentFormat));
+        }
+        return (requests);
     }
 }

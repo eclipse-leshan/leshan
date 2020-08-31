@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Sierra Wireless and others.
+ * Copyright (c) 2020 Sierra Wireless and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -15,21 +15,20 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
+import org.eclipse.leshan.core.request.Identity;
+
 /**
- * Creates {@link BootstrapHandler}.
- * 
- * @see DefaultBootstrapHandler
+ * A store containing the bootstrap information to be sent to the devices.
  */
-public interface BootstrapHandlerFactory {
+public interface BootstrapConfigurationStore {
 
     /**
-     * Creates {@link BootstrapHandler}.
+     * Get the bootstrap configuration to apply to the device identified by the given parameters.
      * 
-     * @param store the store containing bootstrap configuration.
-     * @param sender the class responsible to send LWM2M request during a bootstapSession.
-     * @param sessionManager the manager responsible to handle bootstrap session.
-     * @return the new {@link BootstrapHandler}.
+     * @param endpoint the endpoint of the device.
+     * @param deviceIdentity the {@link Identity} the device.
+     * @param session the current {@link BootstrapSession}.
+     * @return the {@link BootstrapConfig} to apply.
      */
-    BootstrapHandler create(BootstrapConfigurationStore store, LwM2mBootstrapRequestSender sender,
-            BootstrapSessionManager sessionManager);
+    BootstrapConfiguration get(String endpoint, Identity deviceIdentity, BootstrapSession session);
 }

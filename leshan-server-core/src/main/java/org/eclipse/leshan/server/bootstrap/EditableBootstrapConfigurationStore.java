@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2015 Sierra Wireless and others.
+ * Copyright (c) 2020 Sierra Wireless and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -15,40 +15,26 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
-import java.util.Map;
-
 /**
- * An editable {@link BootstrapConfigStore}.
- * 
- * @deprecated use {@link EditableBootstrapConfigurationStore} instead or see {@link BootstrapConfigurationStoreAdapter}
- *             or
- *             {@link BootstrapUtil#toRequests(BootstrapConfig, org.eclipse.leshan.core.request.ContentFormat)}
- * 
+ * An editable {@link BootstrapConfigurationStore}.
  */
-@Deprecated
-public interface EditableBootstrapConfigStore extends BootstrapConfigStore {
-
-    /**
-     * Returns all {@link BootstrapConfig} for all end-points.
-     * 
-     * @return an unmodifiable Map of {@link BootstrapConfig} indexed by endpoint name.
-     */
-    Map<String, BootstrapConfig> getAll();
+public interface EditableBootstrapConfigurationStore extends BootstrapConfigurationStore {
 
     /**
      * Add a new bootstrap configuration for a client end-point.
      * 
      * @param endpoint The client endpoint name to which we want to set the given bootstrap configuration.
      * @param config The configuration to apply for the given client.
-     * @throws InvalidConfigurationException if {@link BootstrapConfig} is not valid.
+     * @throws InvalidConfigurationException if {@link BootstrapConfiguration} is not valid.
      */
-    void add(String endpoint, BootstrapConfig config) throws InvalidConfigurationException;
+    void add(String endpoint, BootstrapConfiguration config) throws InvalidConfigurationException;
 
     /**
      * Removes the bootstrap Configuration for a given end-point.
      * 
      * @param endpoint The client endpoint to which we want to remove the configuration.
-     * @return the removed {@link BootstrapConfig} or <code>null</code> if no bootstrap configuration for this client.
+     * @return the removed {@link BootstrapConfiguration} or <code>null</code> if no bootstrap configuration for this
+     *         client.
      */
-    BootstrapConfig remove(String endpoint);
+    BootstrapConfiguration remove(String endpoint);
 }

@@ -28,21 +28,9 @@ public enum BootstrapFailureCause {
      */
     NO_BOOTSTRAP_CONFIG,
     /**
-     * A delete request failed
+     * A request failed
      */
-    DELETE_FAILED,
-    /**
-     * Object 2 (ACL) could not be written on the device
-     */
-    WRITE_ACL_FAILED,
-    /**
-     * Object 1 (Server) could not be written on the device
-     */
-    WRITE_SERVER_FAILED,
-    /**
-     * Object 0 (Security) could not be written on the device
-     */
-    WRITE_SECURITY_FAILED,
+    REQUEST_FAILED,
     /**
      * 'Bootstrap Finish' failed
      */

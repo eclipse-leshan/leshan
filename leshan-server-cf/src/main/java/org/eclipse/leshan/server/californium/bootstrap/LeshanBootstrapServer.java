@@ -30,7 +30,7 @@ import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.Destroyable;
 import org.eclipse.leshan.server.Startable;
 import org.eclipse.leshan.server.Stoppable;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfigurationStore;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
@@ -54,7 +54,7 @@ public class LeshanBootstrapServer {
     private final CoapEndpoint securedEndpoint;
 
     // LWM2M attributes
-    private final BootstrapConfigStore bsStore;
+    private final BootstrapConfigurationStore bsStore;
     private final BootstrapSecurityStore bsSecurityStore;
 
     private LwM2mBootstrapRequestSender requestSender;
@@ -76,7 +76,7 @@ public class LeshanBootstrapServer {
      * @param decoder decoder used to decode response payload.
      */
     public LeshanBootstrapServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
-            BootstrapConfigStore bsStore, BootstrapSecurityStore bsSecurityStore,
+            BootstrapConfigurationStore bsStore, BootstrapSecurityStore bsSecurityStore,
             BootstrapSessionManager bsSessionManager, BootstrapHandlerFactory bsHandlerFactory, LwM2mModel model,
             NetworkConfig coapConfig, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
 
@@ -141,9 +141,9 @@ public class LeshanBootstrapServer {
      * Access to the bootstrap configuration store. It's used for sending configuration to the devices initiating a
      * bootstrap.
      * 
-     * @return the {@link BootstrapConfigStore} containing configuration to apply to each devices.
+     * @return the {@link BootstrapConfigurationStore} containing configuration to apply to each devices.
      */
-    public BootstrapConfigStore getBoostrapStore() {
+    public BootstrapConfigurationStore getBoostrapStore() {
         return bsStore;
     }
 

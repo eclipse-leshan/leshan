@@ -43,13 +43,14 @@ import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfigurationStore;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfigurationStoreAdapter;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapSessionManager;
-import org.eclipse.leshan.server.bootstrap.InMemoryBootstrapConfigStore;
+import org.eclipse.leshan.server.bootstrap.InMemoryBootstrapConfigurationStore;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.slf4j.Logger;
@@ -67,7 +68,7 @@ public class LeshanBootstrapServerBuilder {
 
     private InetSocketAddress localAddress;
     private InetSocketAddress localAddressSecure;
-    private BootstrapConfigStore configStore;
+    private BootstrapConfigurationStore configStore;
     private BootstrapSecurityStore securityStore;
     private BootstrapSessionManager sessionManager;
     private BootstrapHandlerFactory bootstrapHandlerFactory;
@@ -218,16 +219,18 @@ public class LeshanBootstrapServerBuilder {
     }
 
     /**
-     * Set the {@link BootstrapConfigStore} containing bootstrap configuration to apply to each devices.
+     * Set the {@link BootstrapConfigurationStore} containing bootstrap configuration to apply to each devices.
      * <p>
-     * By default an {@link InMemoryBootstrapConfigStore} is used.
+     * By default an {@link InMemoryBootstrapConfigurationStore} is used.
      * <p>
      * See {@link BootstrapConfig} to see what is could be done during a bootstrap session.
      * 
      * @param configStore the bootstrap configuration store.
      * @return the builder for fluent Bootstrap Server creation.
+     * 
+     * @see BootstrapConfigurationStoreAdapter
      */
-    public LeshanBootstrapServerBuilder setConfigStore(BootstrapConfigStore configStore) {
+    public LeshanBootstrapServerBuilder setConfigStore(BootstrapConfigurationStore configStore) {
         this.configStore = configStore;
         return this;
     }
@@ -264,11 +267,8 @@ public class LeshanBootstrapServerBuilder {
     /**
      * Advanced setter used to customize default bootstrap server behavior.
      * <p>
-     * By default Bootstrap Server is only able to write Security, Server and ACL objects, see
-     * {@link #setConfigStore(BootstrapConfigStore)}. If you need more advanced behavior you can create your own
-     * {@link BootstrapHandler} by inspiring yourself from {@link DefaultBootstrapHandler}. You will probably need to
-     * create a custom {@link BootstrapConfig} and {@link BootstrapConfigStore} and/or change LWM2M model to use, see
-     * {@link #setModel(LwM2mModel)}.
+     * If default bootstrap server behavior is not flexible enough, you can create your own {@link BootstrapHandler} by
+     * inspiring yourself from {@link DefaultBootstrapHandler}.
      * 
      * @param bootstrapHandlerFactory the factory used to create {@link BootstrapHandler}.
      * @return the builder for fluent Bootstrap Server creation.
@@ -279,16 +279,10 @@ public class LeshanBootstrapServerBuilder {
     }
 
     /**
-     * Advanced setter used to customize default the {@link LwM2mModel}. This model is mainly used for data encoding of
+     * Advanced setter used to customize default {@link LwM2mModel}. This model is mainly used for data encoding of
      * Bootstrap write request.
      * <p>
-     * By default, LWM2M object models defined in LWM2M v1.0.x are used. Out of the box, Bootstrap Server is only able
-     * to write Security, Server and ACL objects, see {@link #setConfigStore(BootstrapConfigStore)}.
-     * <p>
-     * Set a different LWM2M model if you want to use a different model version of Security, Server and ACL objects, or
-     * if you need to write objects which are not available by default. For the second case, you need to change
-     * {@link BootstrapHandler} behavior as well, using {@link #setBootstrapHandlerFactory(BootstrapHandlerFactory)} and
-     * probably create a custom {@link BootstrapConfig} and {@link BootstrapConfigStore}.
+     * By default, LWM2M object models defined in LWM2M v1.1.x are used.
      * <p>
      * WARNING: Only 1 version by object is supported for now.
      * 
@@ -408,14 +402,14 @@ public class LeshanBootstrapServerBuilder {
         if (localAddress == null)
             localAddress = new InetSocketAddress(LwM2m.DEFAULT_COAP_PORT);
         if (configStore == null)
-            configStore = new InMemoryBootstrapConfigStore();
+            configStore = new InMemoryBootstrapConfigurationStore();
 
         if (sessionManager == null)
             sessionManager = new DefaultBootstrapSessionManager(securityStore);
         if (bootstrapHandlerFactory == null)
             bootstrapHandlerFactory = new BootstrapHandlerFactory() {
                 @Override
-                public BootstrapHandler create(BootstrapConfigStore store, LwM2mBootstrapRequestSender sender,
+                public BootstrapHandler create(BootstrapConfigurationStore store, LwM2mBootstrapRequestSender sender,
                         BootstrapSessionManager sessionManager) {
                     return new DefaultBootstrapHandler(store, sender, sessionManager);
                 }
@@ -589,7 +583,7 @@ public class LeshanBootstrapServerBuilder {
      * @return the LWM2M Bootstrap server.
      */
     protected LeshanBootstrapServer createBootstrapServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
-            BootstrapConfigStore bsStore, BootstrapSecurityStore bsSecurityStore,
+            BootstrapConfigurationStore bsStore, BootstrapSecurityStore bsSecurityStore,
             BootstrapSessionManager bsSessionManager, BootstrapHandlerFactory bsHandlerFactory, LwM2mModel model,
             NetworkConfig coapConfig, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
         return new LeshanBootstrapServer(unsecuredEndpoint, securedEndpoint, bsStore, bsSecurityStore, bsSessionManager,
