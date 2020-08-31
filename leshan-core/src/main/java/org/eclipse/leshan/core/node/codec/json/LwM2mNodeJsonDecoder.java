@@ -162,6 +162,10 @@ public class LwM2mNodeJsonDecoder {
                     throw new CodecException("Resource instances should not be not empty [path:%s]", requestPath);
                 }
                 
+                if (resource.getInstances().size() > 1) {
+                    throw new CodecException("Resource instances should not be > 1 [path:%s]", requestPath);
+                }
+                
                 node = resource.getInstance(requestPath.getResourceInstanceId());
             } else {
                 throw new IllegalArgumentException("invalid node class: " + nodeClass);
