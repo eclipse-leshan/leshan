@@ -181,14 +181,13 @@ public class LwM2mNodeJsonEncoder {
             if (!requestPath.isResourceInstance()) {
                 throw new CodecException("Invalid request path %s for JSON resource instance encoding", requestPath);
             }
-            baseName = new LwM2mPath(requestPath.getObjectId(),
-                    requestPath.getObjectInstanceId(), requestPath.getResourceId()).toString();
+            baseName = requestPath.toString();
 
             // get type for this resource
             ResourceModel rSpec = model.getResourceModel(objectId, instance.getId());
             Type expectedType = rSpec != null ? rSpec.type : instance.getType();
 
-            JsonArrayEntry jsonArrayEntry = createJsonArrayEntry(new LwM2mPath(instance.getId()).toString(), timestamp,
+            JsonArrayEntry jsonArrayEntry = createJsonArrayEntry(null, timestamp,
                     instance.getType(), expectedType, instance.getValue());
             resourceList = new ArrayList<>();
             resourceList.add(jsonArrayEntry);

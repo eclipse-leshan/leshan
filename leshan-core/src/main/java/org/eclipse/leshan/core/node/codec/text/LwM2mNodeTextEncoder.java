@@ -89,8 +89,7 @@ public class LwM2mNodeTextEncoder {
                         "Unable to encode value for resource {} without type(probably a executable one)", path);
             }
 
-            String strValue;
-            strValue = getStringValue(expectedType, val);
+            String strValue = getStringValue(expectedType, val);
 
             encoded = strValue.getBytes(StandardCharsets.UTF_8);
         }
@@ -108,8 +107,7 @@ public class LwM2mNodeTextEncoder {
                     "Unable to encode value for resource {} without type(probably a executable one)", path);
             }
 
-            String strValue;
-            strValue = getStringValue(expectedType, val);
+            String strValue = getStringValue(expectedType, val);
 
             encoded = strValue.getBytes(StandardCharsets.UTF_8);
         }
