@@ -18,6 +18,8 @@ package org.eclipse.leshan.core.node.codec.json;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Map.Entry;
 
 import org.eclipse.leshan.core.json.JsonArrayEntry;
@@ -202,7 +204,14 @@ public class LwM2mNodeJsonEncoder {
 
             // create JSON resource element
             if (resource.isMultiInstances()) {
-                for (Entry<Integer, ?> entry : resource.getValues().entrySet()) {
+
+                // Map resource instances to values
+                Map<Integer, Object> val = new HashMap<>();
+                for (Entry<Integer, LwM2mResourceInstance> entry : resource.getInstances().entrySet()) {
+                    val.put(entry.getKey(), entry.getValue().getValue());
+                }
+                
+                for (Entry<Integer, ?> entry : val.entrySet()) {
                     // compute resource instance path
                     String resourceInstancePath;
                     if (resourcePath == null || resourcePath.isEmpty()) {
