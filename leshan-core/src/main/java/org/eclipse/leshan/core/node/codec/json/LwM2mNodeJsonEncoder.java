@@ -203,10 +203,10 @@ public class LwM2mNodeJsonEncoder {
             // create JSON resource element
             if (resource.isMultiInstances()) {
                 
-                for (Entry<Integer, ?> entry : resource.getInstances().entrySet()) {
+                for (Entry<Integer, LwM2mResourceInstance> entry : resource.getInstances().entrySet()) {
                     // compute resource instance path
                     String resourceInstancePath;
-                    LwM2mResourceInstance instance = (LwM2mResourceInstance) entry.getValue();
+                    LwM2mResourceInstance instance = entry.getValue();
                     if (resourcePath == null || resourcePath.isEmpty()) {
                         resourceInstancePath = Integer.toString(entry.getKey());
                     } else {
