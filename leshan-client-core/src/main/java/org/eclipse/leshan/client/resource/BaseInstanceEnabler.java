@@ -171,7 +171,8 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     }
 
     @Override
-    public WriteResponse write(ServerIdentity identity, int resourceid, int resourceInstance, Object value) {
+    public WriteResponse write(ServerIdentity identity, int resourceid, int resourceInstanceId,
+            LwM2mResourceInstance value) {
         return WriteResponse.notFound();
     }
 

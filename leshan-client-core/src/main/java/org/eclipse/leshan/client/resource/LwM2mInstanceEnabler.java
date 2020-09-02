@@ -25,6 +25,7 @@ import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
@@ -163,7 +164,7 @@ public interface LwM2mInstanceEnabler {
      *         {@link WriteResponse#getCode() response code} to either reflect the success or reason for failure to set
      *         the value.
      */
-    WriteResponse write(ServerIdentity identity, int resourceid, int resourceInstance, Object value);
+    WriteResponse write(ServerIdentity identity, int resourceid, int resourceInstance, LwM2mResourceInstance value);
 
     /**
      * Executes the operation represented by one of this LWM2M object instance's resources.

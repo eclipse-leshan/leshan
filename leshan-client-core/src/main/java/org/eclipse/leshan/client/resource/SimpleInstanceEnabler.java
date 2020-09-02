@@ -98,20 +98,17 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
     }
 
     @Override
-    public WriteResponse write(ServerIdentity identity, int resourceId, int resourceInstance, Object value) {
+    public WriteResponse write(ServerIdentity identity, int resourceId, int resourceInstance,
+            LwM2mResourceInstance value) {
         if (resources.containsKey(resourceId)) {
             LwM2mMultipleResource lwM2mResource = (LwM2mMultipleResource) resources.get(resourceId);
 
-            Map<Integer, Object> newMap = new HashMap<>();
-            // Copy instances values to map
-            for (Map.Entry<Integer, LwM2mResourceInstance> entry : lwM2mResource.getInstances().entrySet()) {
-                newMap.put(entry.getKey(), entry.getValue().getValue());
-            }
-
             // Rewrite specific instance value
+            Map<Integer, LwM2mResourceInstance> newMap = new HashMap<>(lwM2mResource.getInstances());
             newMap.put(resourceInstance, value);
-            LwM2mMultipleResource newResource = LwM2mMultipleResource.newResource(resourceId, newMap,
-                    lwM2mResource.getType());
+
+            LwM2mMultipleResource newResource = new LwM2mMultipleResource(resourceId, lwM2mResource.getType(),
+                    newMap.values());
             return this.write(identity, resourceId, newResource);
 
         }

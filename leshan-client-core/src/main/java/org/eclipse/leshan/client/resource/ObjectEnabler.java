@@ -270,7 +270,7 @@ public class ObjectEnabler extends BaseObjectEnabler {
 
         // Manage Resource Instance case
         return instance.write(identity, path.getResourceId(), path.getResourceInstanceId(),
-                ((LwM2mResourceInstance) request.getNode()).getValue());
+                ((LwM2mResourceInstance) request.getNode()));
     }
 
     @Override
