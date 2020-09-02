@@ -28,7 +28,6 @@ import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mResource;
-import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
@@ -76,44 +75,11 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
     }
 
     @Override
-    public ReadResponse read(ServerIdentity identity, int resourceId, int resourceInstance) {
-        if (resources.containsKey(resourceId)) {
-            LwM2mMultipleResource lwM2mResource = (LwM2mMultipleResource) resources.get(resourceId);
-            LwM2mResourceInstance resourceIn = lwM2mResource.getInstance(resourceInstance);
-            if (resourceIn == null) {
-                return ReadResponse.notFound();
-            } else {
-                return ReadResponse.success(resourceIn);
-            }
-        }
-        return ReadResponse.notFound();
-    }
-
-    @Override
     public WriteResponse write(ServerIdentity identity, int resourceid, LwM2mResource value) {
         LwM2mResource previousValue = resources.put(resourceid, value);
         if (!value.equals(previousValue))
             fireResourcesChange(resourceid);
         return WriteResponse.success();
-    }
-
-    @Override
-    public WriteResponse write(ServerIdentity identity, int resourceId, int resourceInstance,
-            LwM2mResourceInstance value) {
-        if (resources.containsKey(resourceId)) {
-            LwM2mMultipleResource lwM2mResource = (LwM2mMultipleResource) resources.get(resourceId);
-
-            // Rewrite specific instance value
-            Map<Integer, LwM2mResourceInstance> newMap = new HashMap<>(lwM2mResource.getInstances());
-            newMap.put(resourceInstance, value);
-
-            LwM2mMultipleResource newResource = new LwM2mMultipleResource(resourceId, lwM2mResource.getType(),
-                    newMap.values());
-            return this.write(identity, resourceId, newResource);
-
-        }
-        return WriteResponse.notFound();
-
     }
 
     @Override
