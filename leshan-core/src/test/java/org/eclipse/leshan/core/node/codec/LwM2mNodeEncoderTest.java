@@ -32,9 +32,9 @@ import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
-import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.util.Hex;
 import org.junit.Assert;
@@ -228,7 +228,7 @@ public class LwM2mNodeEncoderTest {
         data.add(new TimestampedLwM2mNode(500L, LwM2mResourceInstance.newFloatInstance(0, 22.9)));
         data.add(new TimestampedLwM2mNode(510L, LwM2mResourceInstance.newFloatInstance(0, 22.4)));
         data.add(new TimestampedLwM2mNode(520L, LwM2mResourceInstance.newFloatInstance(0, 24.1)));
-        
+
         byte[] encoded = encoder.encodeTimestampedData(data, ContentFormat.JSON, new LwM2mPath(1024, 0, 1, 0), model);
 
         StringBuilder b = new StringBuilder();

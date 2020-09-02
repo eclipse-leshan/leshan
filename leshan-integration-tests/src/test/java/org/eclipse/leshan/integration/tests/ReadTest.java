@@ -15,7 +15,6 @@
  *     Achim Kraus (Bosch Software Innovations GmbH) - add test for read security object
  *     Achim Kraus (Bosch Software Innovations GmbH) - replace close() with destroy()
  *******************************************************************************/
-
 package org.eclipse.leshan.integration.tests;
 
 import static org.eclipse.leshan.core.ResponseCode.*;
@@ -157,18 +156,18 @@ public class ReadTest {
     public void cannot_read_non_multiple_resource_json_instance() throws InterruptedException {
         // read device model number
         ReadResponse response = helper.server.send(helper.getCurrentRegistration(),
-            new ReadRequest(ContentFormat.JSON, TEST_OBJECT_ID, 0, INTEGER_RESOURCE_ID, 0), 1000000);
+                new ReadRequest(ContentFormat.JSON, TEST_OBJECT_ID, 0, INTEGER_RESOURCE_ID, 0), 1000000);
 
         // verify result
         assertEquals(BAD_REQUEST, response.getCode());
-        assertEquals("invalid path : resource is not multiple",response.getErrorMessage());
+        assertEquals("invalid path : resource is not multiple", response.getErrorMessage());
     }
 
     @Test
     public void can_read_resource_text_instance() throws InterruptedException {
         // read device model number
         ReadResponse response = helper.server.send(helper.getCurrentRegistration(),
-            new ReadRequest(ContentFormat.TEXT, TEST_OBJECT_ID, 0, STRING_RESOURCE_INSTANCE_ID, 0), 1000000);
+                new ReadRequest(ContentFormat.TEXT, TEST_OBJECT_ID, 0, STRING_RESOURCE_INSTANCE_ID, 0), 1000000);
 
         // verify result
         assertEquals(CONTENT, response.getCode());

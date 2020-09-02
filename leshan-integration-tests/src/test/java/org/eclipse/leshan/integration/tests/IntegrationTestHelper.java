@@ -13,7 +13,6 @@
  * Contributors:
  *     Zebra Technologies - initial API and implementation
  *******************************************************************************/
-
 package org.eclipse.leshan.integration.tests;
 
 import static org.junit.Assert.*;

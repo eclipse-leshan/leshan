@@ -41,8 +41,8 @@ import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
-import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
+import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.util.Base64;
@@ -152,20 +152,20 @@ public class LwM2mNodeJsonDecoder {
                 // validate there is only 1 resource
                 if (resourcesMap.size() != 1)
                     throw new CodecException("One resource should be present in the payload [path:%s]", requestPath);
-                
+
                 LwM2mResource resource = resourcesMap.values().iterator().next();
                 if (!resource.isMultiInstances()) {
                     throw new CodecException("Resource should be multi Instances resource [path:%s]", requestPath);
                 }
-                
+
                 if (resource.getInstances().isEmpty()) {
                     throw new CodecException("Resource instances should not be not empty [path:%s]", requestPath);
                 }
-                
+
                 if (resource.getInstances().size() > 1) {
                     throw new CodecException("Resource instances should not be > 1 [path:%s]", requestPath);
                 }
-                
+
                 node = resource.getInstance(requestPath.getResourceInstanceId());
             } else {
                 throw new IllegalArgumentException("invalid node class: " + nodeClass);

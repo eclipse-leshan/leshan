@@ -15,7 +15,6 @@
  *     Achim Kraus (Bosch Software Innovations GmbH) - add test for write security object
  *     Achim Kraus (Bosch Software Innovations GmbH) - add test for update and replace instances
  *******************************************************************************/
-
 package org.eclipse.leshan.integration.tests;
 
 import static org.eclipse.leshan.core.ResponseCode.CHANGED;

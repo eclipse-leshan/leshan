@@ -187,8 +187,8 @@ public class LwM2mNodeJsonEncoder {
             ResourceModel rSpec = model.getResourceModel(objectId, instance.getId());
             Type expectedType = rSpec != null ? rSpec.type : instance.getType();
 
-            JsonArrayEntry jsonArrayEntry = createJsonArrayEntry(null, timestamp,
-                    instance.getType(), expectedType, instance.getValue());
+            JsonArrayEntry jsonArrayEntry = createJsonArrayEntry(null, timestamp, instance.getType(), expectedType,
+                    instance.getValue());
             resourceList = new ArrayList<>();
             resourceList.add(jsonArrayEntry);
         }
@@ -202,7 +202,7 @@ public class LwM2mNodeJsonEncoder {
 
             // create JSON resource element
             if (resource.isMultiInstances()) {
-                
+
                 for (Entry<Integer, LwM2mResourceInstance> entry : resource.getInstances().entrySet()) {
                     // compute resource instance path
                     String resourceInstancePath;
@@ -218,14 +218,15 @@ public class LwM2mNodeJsonEncoder {
                     resourcesList.add(jsonArrayEntry);
                 }
             } else {
-                JsonArrayEntry jsonArrayEntry = createJsonArrayEntry(resourcePath, timestamp,
-                        resource.getType(), expectedType, resource.getValue());
+                JsonArrayEntry jsonArrayEntry = createJsonArrayEntry(resourcePath, timestamp, resource.getType(),
+                        expectedType, resource.getValue());
                 resourcesList.add(jsonArrayEntry);
             }
             return resourcesList;
         }
 
-        private JsonArrayEntry createJsonArrayEntry(String name, Long timestamp, Type type, Type expectedType, Object value) {
+        private JsonArrayEntry createJsonArrayEntry(String name, Long timestamp, Type type, Type expectedType,
+                Object value) {
             // Create resource element
             JsonArrayEntry jsonResourceElt = new JsonArrayEntry();
             jsonResourceElt.setName(name);
@@ -233,8 +234,7 @@ public class LwM2mNodeJsonEncoder {
 
             // Convert value using expected type
             LwM2mPath lwM2mResourcePath = name != null ? new LwM2mPath(name) : null;
-            Object convertedValue = converter.convertValue(value, type, expectedType,
-                    lwM2mResourcePath);
+            Object convertedValue = converter.convertValue(value, type, expectedType, lwM2mResourcePath);
             this.setResourceValue(convertedValue, expectedType, jsonResourceElt, lwM2mResourcePath);
 
             return jsonResourceElt;

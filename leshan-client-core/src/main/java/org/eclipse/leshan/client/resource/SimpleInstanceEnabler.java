@@ -110,8 +110,9 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
 
             // Rewrite specific instance value
             newMap.put(resourceInstance, value);
-            LwM2mMultipleResource newResource = LwM2mMultipleResource.newResource(resourceId, newMap, lwM2mResource.getType());
-            return this.write(identity, resourceId,newResource);
+            LwM2mMultipleResource newResource = LwM2mMultipleResource.newResource(resourceId, newMap,
+                    lwM2mResource.getType());
+            return this.write(identity, resourceId, newResource);
 
         }
         return WriteResponse.notFound();

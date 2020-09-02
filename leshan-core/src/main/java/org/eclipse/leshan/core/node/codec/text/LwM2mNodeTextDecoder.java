@@ -24,8 +24,8 @@ import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
+import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.util.Base64;
@@ -46,15 +46,15 @@ public class LwM2mNodeTextDecoder {
         if (path.isResource()) {
             if (rDesc != null) {
                 return LwM2mSingleResource.newResource(path.getResourceId(), parseTextValue(strValue, rDesc.type, path),
-                    rDesc.type);
+                        rDesc.type);
             }
             // unknown resource, returning a default string value
             return LwM2mSingleResource.newStringResource(path.getResourceId(), strValue);
         }
 
         if (rDesc != null) {
-            return LwM2mResourceInstance.newInstance(path.getResourceInstanceId(), parseTextValue(strValue, rDesc.type, path),
-                rDesc.type);
+            return LwM2mResourceInstance.newInstance(path.getResourceInstanceId(),
+                    parseTextValue(strValue, rDesc.type, path), rDesc.type);
         }
         // unknown resource, returning a default string value
         return LwM2mResourceInstance.newStringInstance(path.getResourceInstanceId(), strValue);

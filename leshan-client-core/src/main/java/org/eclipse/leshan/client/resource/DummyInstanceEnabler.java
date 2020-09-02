@@ -55,10 +55,11 @@ public class DummyInstanceEnabler extends SimpleInstanceEnabler {
         LOG.info("Read on {} Resource /{}/{}/{} ", getModel().name, getModel().id, getId(), resourceid);
         return super.read(identity, resourceid);
     }
-    
+
     @Override
     public ReadResponse read(ServerIdentity identity, int resourceid, int resourceInstance) {
-        LOG.info("Read on {} Resource /{}/{}/{}/{} ", getModel().name, getModel().id, getId(), resourceid, resourceInstance);
+        LOG.info("Read on {} Resource /{}/{}/{}/{} ", getModel().name, getModel().id, getId(), resourceid,
+                resourceInstance);
         return super.read(identity, resourceid, resourceInstance);
     }
 
@@ -70,7 +71,8 @@ public class DummyInstanceEnabler extends SimpleInstanceEnabler {
 
     @Override
     public WriteResponse write(ServerIdentity identity, int resourceid, int resourceInstance, Object value) {
-        LOG.info("Write on {} Resource /{}/{}/{}/{} ", getModel().name, getModel().id, getId(), resourceid, resourceInstance);
+        LOG.info("Write on {} Resource /{}/{}/{}/{} ", getModel().name, getModel().id, getId(), resourceid,
+                resourceInstance);
         return super.write(identity, resourceid, resourceInstance, value);
     }
 

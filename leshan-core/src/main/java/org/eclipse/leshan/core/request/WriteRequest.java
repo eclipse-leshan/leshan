@@ -21,11 +21,11 @@ import java.util.Map;
 
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
-import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
@@ -291,10 +291,10 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
      * @param value the resource instance (id-&gt;value) to write.
      * @param type the data type of the resource.
      */
-    public WriteRequest(Mode mode, ContentFormat contentFormat, int objectId, int objectInstanceId,
-                        int resourceId, int resourceInstanceId, Object value, Type type) {
-        this(mode, contentFormat, new LwM2mPath(objectId, objectInstanceId,
-                resourceId, resourceInstanceId), LwM2mResourceInstance.newInstance(resourceInstanceId, value, type));
+    public WriteRequest(Mode mode, ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId,
+            int resourceInstanceId, Object value, Type type) {
+        this(mode, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId, resourceInstanceId),
+                LwM2mResourceInstance.newInstance(resourceInstanceId, value, type));
     }
 
     /**
@@ -308,10 +308,10 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
      * @param value the resource instance (id-&gt;value) to write.
      * @param type the data type of the resource.
      */
-    public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId,
-                        int resourceId, int resourceInstanceId, Object value, Type type) {
-        this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId,
-                resourceId, resourceInstanceId), LwM2mResourceInstance.newInstance(resourceInstanceId, value, type));
+    public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId,
+            int resourceInstanceId, Object value, Type type) {
+        this(Mode.REPLACE, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId, resourceInstanceId),
+                LwM2mResourceInstance.newInstance(resourceInstanceId, value, type));
     }
 
     // ***************** generic constructor ****************** //
@@ -361,27 +361,27 @@ public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
         if (ContentFormat.TEXT == format || ContentFormat.OPAQUE == format) {
             if (!getPath().isResource() && !getPath().isResourceInstance()) {
                 throw new InvalidRequestException(
-                    "Invalid format for %s: %s format must be used only for single resources", target, format);
+                        "Invalid format for %s: %s format must be used only for single resources", target, format);
             } else {
-                if (node instanceof  LwM2mResource) {
+                if (node instanceof LwM2mResource) {
                     LwM2mResource resource = (LwM2mResource) node;
                     if (resource.isMultiInstances()) {
                         throw new InvalidRequestException(
-                            "Invalid format for path %s: format must be used only for single resources", target,
-                            format);
+                                "Invalid format for path %s: format must be used only for single resources", target,
+                                format);
                     } else if (resource.getType() != Type.OPAQUE && format == ContentFormat.OPAQUE) {
                         throw new InvalidRequestException(
-                            "Invalid format for %s: OPAQUE format must be used only for byte array single resources",
-                            target);
+                                "Invalid format for %s: OPAQUE format must be used only for byte array single resources",
+                                target);
                     }
                 }
 
-                if (node instanceof  LwM2mResourceInstance) {
+                if (node instanceof LwM2mResourceInstance) {
                     LwM2mResourceInstance resourceInstance = (LwM2mResourceInstance) node;
                     if (resourceInstance.getType() != Type.OPAQUE && format == ContentFormat.OPAQUE) {
                         throw new InvalidRequestException(
-                            "Invalid format for %s: OPAQUE format must be used only for byte array single resources",
-                            target);
+                                "Invalid format for %s: OPAQUE format must be used only for byte array single resources",
+                                target);
                     }
                 }
             }
