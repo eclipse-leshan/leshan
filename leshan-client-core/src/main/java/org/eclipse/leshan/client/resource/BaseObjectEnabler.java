@@ -197,7 +197,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
                 return WriteResponse.notFound();
             }
 
-            if (path.isResource()) {
+            if (path.isResource() || path.isResourceInstance()) {
                 // resource write:
                 // check if the resource is writable
                 if (LwM2mId.SECURITY != id) { // security resources are writable by SYSTEM
@@ -206,6 +206,8 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
                         return WriteResponse.notFound();
                     } else if (!resourceModel.operations.isWritable()) {
                         return WriteResponse.methodNotAllowed();
+                    } else if (path.isResourceInstance() && !resourceModel.multiple) {
+                        return WriteResponse.badRequest("invalid path : resource is not multiple");
                     }
                 }
             } else if (path.isObjectInstance()) {

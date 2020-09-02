@@ -113,6 +113,19 @@ public interface LwM2mInstanceEnabler {
     ReadResponse read(ServerIdentity identity, int resourceId);
 
     /**
+     * Gets the current value of one of this LWM2M object instance's resources instance.
+     * 
+     * @param identity the identity of the requester. This could be an internal call in this case
+     *        <code> identity == ServerIdentity.SYSTEM</code>.
+     * @param resourceId the ID of the resource to get the value of
+     * @param resourceInstance the ID of the resource instance to get the value of
+     * @return the response object representing the outcome of the operation. An implementation should set the result's
+     *         {@link ReadResponse#getCode() response code} to either reflect the success or reason for failure to
+     *         retrieve the value.
+     */
+    ReadResponse read(ServerIdentity identity, int resourceId, int resourceInstance);
+
+    /**
      * Sets all resources of this LWM2M object instance.
      * 
      * @param identity the identity of the requester. This could be an internal call in this case
@@ -137,6 +150,20 @@ public interface LwM2mInstanceEnabler {
      *         the value.
      */
     WriteResponse write(ServerIdentity identity, int resourceid, LwM2mResource value);
+
+    /**
+     * Sets the value of one of this LWM2M object instance's resources instance.
+     * 
+     * @param identity the identity of the requester. This could be an internal call in this case
+     *        <code> identity == ServerIdentity.SYSTEM</code>.
+     * @param resourceid the ID of the resource to set the value for
+     * @param resourceInstance the ID of the resource instance to set the value of
+     * @param value the value to set the resource instance to
+     * @return the response object representing the outcome of the operation. An implementation should set the result's
+     *         {@link WriteResponse#getCode() response code} to either reflect the success or reason for failure to set
+     *         the value.
+     */
+    WriteResponse write(ServerIdentity identity, int resourceid, int resourceInstance, Object value);
 
     /**
      * Executes the operation represented by one of this LWM2M object instance's resources.

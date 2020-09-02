@@ -124,7 +124,7 @@ public class ReadTest {
     public void can_read_resource_instance() throws InterruptedException {
         // read device model number
         ReadResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new ReadRequest(TEST_OBJECT_ID, 0, STRING_RESOUCE_INSTANCE_ID, 0), 1000000);
+                new ReadRequest(TEST_OBJECT_ID, 0, STRING_RESOURCE_INSTANCE_ID, 0), 1000000);
 
         // verify result
         assertEquals(CONTENT, response.getCode());
@@ -133,7 +133,52 @@ public class ReadTest {
 
         LwM2mResourceInstance resourceInstance = (LwM2mResourceInstance) response.getContent();
         assertEquals(0, resourceInstance.getId());
-        assertEquals("multiinstance", resourceInstance.getValue());
+        assertEquals(MULTI_INSTANCE, resourceInstance.getValue());
+    }
+
+    @Test
+    public void can_read_resource_json_instance() throws InterruptedException {
+        // read device model number
+        ReadResponse response = helper.server.send(helper.getCurrentRegistration(),
+                new ReadRequest(ContentFormat.JSON, TEST_OBJECT_ID, 0, STRING_RESOURCE_INSTANCE_ID, 0), 1000000);
+
+        // verify result
+        assertEquals(CONTENT, response.getCode());
+        Response coapResponse = (Response) response.getCoapResponse();
+        assertNotNull(coapResponse);
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
+
+        LwM2mResourceInstance resourceInstance = (LwM2mResourceInstance) response.getContent();
+        assertEquals(0, resourceInstance.getId());
+        assertEquals(MULTI_INSTANCE, resourceInstance.getValue());
+    }
+
+    @Test
+    public void cannot_read_non_multiple_resource_json_instance() throws InterruptedException {
+        // read device model number
+        ReadResponse response = helper.server.send(helper.getCurrentRegistration(),
+            new ReadRequest(ContentFormat.JSON, TEST_OBJECT_ID, 0, INTEGER_RESOURCE_ID, 0), 1000000);
+
+        // verify result
+        assertEquals(BAD_REQUEST, response.getCode());
+        assertEquals("invalid path : resource is not multiple",response.getErrorMessage());
+    }
+
+    @Test
+    public void can_read_resource_text_instance() throws InterruptedException {
+        // read device model number
+        ReadResponse response = helper.server.send(helper.getCurrentRegistration(),
+            new ReadRequest(ContentFormat.TEXT, TEST_OBJECT_ID, 0, STRING_RESOURCE_INSTANCE_ID, 0), 1000000);
+
+        // verify result
+        assertEquals(CONTENT, response.getCode());
+        Response coapResponse = (Response) response.getCoapResponse();
+        assertNotNull(coapResponse);
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
+
+        LwM2mResourceInstance resourceInstance = (LwM2mResourceInstance) response.getContent();
+        assertEquals(0, resourceInstance.getId());
+        assertEquals(MULTI_INSTANCE, resourceInstance.getValue());
     }
 
     @Test

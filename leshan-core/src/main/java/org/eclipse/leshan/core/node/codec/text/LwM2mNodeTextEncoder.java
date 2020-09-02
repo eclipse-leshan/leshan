@@ -89,38 +89,56 @@ public class LwM2mNodeTextEncoder {
                         "Unable to encode value for resource {} without type(probably a executable one)", path);
             }
 
-            String strValue;
-            switch (expectedType) {
-            case INTEGER:
-            case FLOAT:
-            case STRING:
-                strValue = String.valueOf(val);
-                break;
-            case BOOLEAN:
-                strValue = ((Boolean) val) ? "1" : "0";
-                break;
-            case TIME:
-                // number of seconds since 1970/1/1
-                strValue = String.valueOf(((Date) val).getTime() / 1000L);
-                break;
-            case OBJLNK:
-                ObjectLink objlnk = (ObjectLink) val;
-                strValue = String.valueOf(objlnk.getObjectId() + ":" + objlnk.getObjectInstanceId());
-                break;
-            case OPAQUE:
-                byte[] binaryValue = (byte[]) val;
-                strValue = Base64.encodeBase64String(binaryValue);
-                break;
-            default:
-                throw new CodecException("Cannot encode %s in text format for %s", val, path);
-            }
+            String strValue = getStringValue(expectedType, val);
 
             encoded = strValue.getBytes(StandardCharsets.UTF_8);
         }
 
         @Override
         public void visit(LwM2mResourceInstance instance) {
-            throw new UnsupportedOperationException("not yet implemented");
+            LOG.trace("Encoding resource instance {} into text", instance);
+
+            ResourceModel rSpec = model.getResourceModel(path.getObjectId(), instance.getId());
+            Type expectedType = rSpec != null ? rSpec.type : instance.getType();
+            Object val = converter.convertValue(instance.getValue(), instance.getType(), expectedType, path);
+            
+            if (expectedType == null) {
+                throw new CodecException(
+                    "Unable to encode value for resource {} without type(probably a executable one)", path);
+            }
+
+            String strValue = getStringValue(expectedType, val);
+
+            encoded = strValue.getBytes(StandardCharsets.UTF_8);
+        }
+
+        private String getStringValue(Type expectedType, Object val) {
+            String strValue;
+            switch (expectedType) {
+                case INTEGER:
+                case FLOAT:
+                case STRING:
+                    strValue = String.valueOf(val);
+                    break;
+                case BOOLEAN:
+                    strValue = ((Boolean) val) ? "1" : "0";
+                    break;
+                case TIME:
+                    // number of seconds since 1970/1/1
+                    strValue = String.valueOf(((Date) val).getTime() / 1000L);
+                    break;
+                case OBJLNK:
+                    ObjectLink objlnk = (ObjectLink) val;
+                    strValue = String.valueOf(objlnk.getObjectId() + ":" + objlnk.getObjectInstanceId());
+                    break;
+                case OPAQUE:
+                    byte[] binaryValue = (byte[]) val;
+                    strValue = Base64.encodeBase64String(binaryValue);
+                    break;
+                default:
+                    throw new CodecException("Cannot encode %s in text format for %s", val, path);
+            }
+            return strValue;
         }
     }
 }

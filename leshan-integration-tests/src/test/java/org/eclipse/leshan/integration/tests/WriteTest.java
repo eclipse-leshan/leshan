@@ -18,6 +18,7 @@
 
 package org.eclipse.leshan.integration.tests;
 
+import static org.eclipse.leshan.core.ResponseCode.CHANGED;
 import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -34,6 +35,7 @@ import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.codec.CodecException;
@@ -178,6 +180,37 @@ public class WriteTest {
     @Test
     public void can_write_integer_resource_in_old_json() throws InterruptedException {
         write_integer_resource(ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE));
+    }
+
+    @Test
+    public void write_string_resource_json_instance() throws InterruptedException {
+        assertStringResourceInstance(ContentFormat.JSON);
+    }
+
+    @Test
+    public void write_string_resource_text_instance() throws InterruptedException {
+        assertStringResourceInstance(ContentFormat.TEXT);
+    }
+
+    private void assertStringResourceInstance(ContentFormat format) throws InterruptedException {
+        // read device model number
+        String valueToWrite = "newValue";
+        WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
+                new WriteRequest(format, TEST_OBJECT_ID, 0, STRING_RESOURCE_INSTANCE_ID, 0, valueToWrite, Type.STRING),
+                1000000);
+
+        // verify result
+        assertEquals(CHANGED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
+
+        // read resource to check the value changed
+        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
+                new ReadRequest(format, TEST_OBJECT_ID, 0, STRING_RESOURCE_INSTANCE_ID, 0), 1000000);
+
+        // verify result
+        LwM2mResourceInstance resource = (LwM2mResourceInstance) readResponse.getContent();
+        assertEquals(valueToWrite, resource.getValue());
     }
 
     private void write_integer_resource(ContentFormat format) throws InterruptedException {

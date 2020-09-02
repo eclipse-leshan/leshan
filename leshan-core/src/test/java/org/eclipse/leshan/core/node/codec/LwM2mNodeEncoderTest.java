@@ -34,6 +34,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.util.Hex;
 import org.junit.Assert;
@@ -213,6 +214,25 @@ public class LwM2mNodeEncoderTest {
 
         StringBuilder b = new StringBuilder();
         b.append("{\"bn\":\"/1024/0/1\",\"e\":[");
+        b.append("{\"v\":22.9,\"t\":500},");
+        b.append("{\"v\":22.4,\"t\":510},");
+        b.append("{\"v\":24.1,\"t\":520}]}");
+
+        String expected = b.toString();
+        Assert.assertEquals(expected, new String(encoded));
+    }
+
+    @Test
+    public void json_timestamped_resource_instances() throws CodecException {
+        List<TimestampedLwM2mNode> data = new ArrayList<>();
+        data.add(new TimestampedLwM2mNode(500L, LwM2mResourceInstance.newFloatInstance(0, 22.9)));
+        data.add(new TimestampedLwM2mNode(510L, LwM2mResourceInstance.newFloatInstance(0, 22.4)));
+        data.add(new TimestampedLwM2mNode(520L, LwM2mResourceInstance.newFloatInstance(0, 24.1)));
+        
+        byte[] encoded = encoder.encodeTimestampedData(data, ContentFormat.JSON, new LwM2mPath(1024, 0, 1, 0), model);
+
+        StringBuilder b = new StringBuilder();
+        b.append("{\"bn\":\"/1024/0/1/0\",\"e\":[");
         b.append("{\"v\":22.9,\"t\":500},");
         b.append("{\"v\":22.4,\"t\":510},");
         b.append("{\"v\":24.1,\"t\":520}]}");

@@ -177,7 +177,20 @@ public class LwM2mNodeJsonEncoder {
 
         @Override
         public void visit(LwM2mResourceInstance instance) {
-            throw new UnsupportedOperationException("not yet implemented");
+            LOG.trace("Encoding resource instance {} into JSON", instance);
+            if (!requestPath.isResourceInstance()) {
+                throw new CodecException("Invalid request path %s for JSON resource instance encoding", requestPath);
+            }
+            baseName = requestPath.toString();
+
+            // get type for this resource
+            ResourceModel rSpec = model.getResourceModel(objectId, instance.getId());
+            Type expectedType = rSpec != null ? rSpec.type : instance.getType();
+
+            JsonArrayEntry jsonArrayEntry = createJsonArrayEntry(null, timestamp,
+                    instance.getType(), expectedType, instance.getValue());
+            resourceList = new ArrayList<>();
+            resourceList.add(jsonArrayEntry);
         }
 
         private ArrayList<JsonArrayEntry> lwM2mResourceToJsonArrayEntry(String resourcePath, Long timestamp,
@@ -189,44 +202,42 @@ public class LwM2mNodeJsonEncoder {
 
             // create JSON resource element
             if (resource.isMultiInstances()) {
-                for (Entry<Integer, ?> entry : resource.getValues().entrySet()) {
+                
+                for (Entry<Integer, LwM2mResourceInstance> entry : resource.getInstances().entrySet()) {
                     // compute resource instance path
                     String resourceInstancePath;
+                    LwM2mResourceInstance instance = entry.getValue();
                     if (resourcePath == null || resourcePath.isEmpty()) {
                         resourceInstancePath = Integer.toString(entry.getKey());
                     } else {
                         resourceInstancePath = resourcePath + "/" + entry.getKey();
                     }
 
-                    // Create resource element
-                    JsonArrayEntry jsonResourceElt = new JsonArrayEntry();
-                    jsonResourceElt.setName(resourceInstancePath);
-                    jsonResourceElt.setTime(timestamp);
-
-                    // Convert value using expected type
-                    LwM2mPath lwM2mResourceInstancePath = new LwM2mPath(resourceInstancePath);
-                    Object convertedValue = converter.convertValue(entry.getValue(), resource.getType(), expectedType,
-                            lwM2mResourceInstancePath);
-                    this.setResourceValue(convertedValue, expectedType, jsonResourceElt, lwM2mResourceInstancePath);
-
-                    // Add it to the List
-                    resourcesList.add(jsonResourceElt);
+                    JsonArrayEntry jsonArrayEntry = createJsonArrayEntry(resourceInstancePath, timestamp,
+                            resource.getType(), expectedType, instance.getValue());
+                    resourcesList.add(jsonArrayEntry);
                 }
             } else {
-                // Create resource element
-                JsonArrayEntry jsonResourceElt = new JsonArrayEntry();
-                jsonResourceElt.setName(resourcePath);
-                jsonResourceElt.setTime(timestamp);
-
-                // Convert value using expected type
-                LwM2mPath lwM2mResourcePath = resourcePath != null ? new LwM2mPath(resourcePath) : null;
-                this.setResourceValue(converter.convertValue(resource.getValue(), resource.getType(), expectedType,
-                        lwM2mResourcePath), expectedType, jsonResourceElt, lwM2mResourcePath);
-
-                // Add it to the List
-                resourcesList.add(jsonResourceElt);
+                JsonArrayEntry jsonArrayEntry = createJsonArrayEntry(resourcePath, timestamp,
+                        resource.getType(), expectedType, resource.getValue());
+                resourcesList.add(jsonArrayEntry);
             }
             return resourcesList;
+        }
+
+        private JsonArrayEntry createJsonArrayEntry(String name, Long timestamp, Type type, Type expectedType, Object value) {
+            // Create resource element
+            JsonArrayEntry jsonResourceElt = new JsonArrayEntry();
+            jsonResourceElt.setName(name);
+            jsonResourceElt.setTime(timestamp);
+
+            // Convert value using expected type
+            LwM2mPath lwM2mResourcePath = name != null ? new LwM2mPath(name) : null;
+            Object convertedValue = converter.convertValue(value, type, expectedType,
+                    lwM2mResourcePath);
+            this.setResourceValue(convertedValue, expectedType, jsonResourceElt, lwM2mResourcePath);
+
+            return jsonResourceElt;
         }
 
         private void setResourceValue(Object value, Type type, JsonArrayEntry jsonResource, LwM2mPath resourcePath) {

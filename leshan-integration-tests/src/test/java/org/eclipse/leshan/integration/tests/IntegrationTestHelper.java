@@ -75,7 +75,9 @@ public class IntegrationTestHelper {
     public static final int OBJLNK_SINGLE_INSTANCE_RESOURCE_ID = 7;
     public static final int INTEGER_MANDATORY_RESOURCE_ID = 8;
     public static final int STRING_MANDATORY_RESOURCE_ID = 9;
-    public static final int STRING_RESOUCE_INSTANCE_ID = 10;
+    public static final int STRING_RESOURCE_INSTANCE_ID = 10;
+
+    public static final String MULTI_INSTANCE = "multiinstance";
 
     LeshanServer server;
     LeshanClient client;
@@ -113,7 +115,7 @@ public class IntegrationTestHelper {
                 Operations.RW, false, true, Type.INTEGER, null, null, null);
         ResourceModel stringmandatoryfield = new ResourceModel(STRING_MANDATORY_RESOURCE_ID, "stringmandatory",
                 Operations.RW, false, true, Type.STRING, null, null, null);
-        ResourceModel multiInstance = new ResourceModel(STRING_RESOUCE_INSTANCE_ID, "multiinstance", Operations.RW,
+        ResourceModel multiInstance = new ResourceModel(STRING_RESOURCE_INSTANCE_ID, MULTI_INSTANCE, Operations.RW,
                 true, false, Type.STRING, null, null, null);
         objectModels.add(new ObjectModel(TEST_OBJECT_ID, "testobject", null, ObjectModel.DEFAULT_VERSION, true, false,
                 stringfield, booleanfield, integerfield, floatfield, timefield, opaquefield, objlnkfield,
