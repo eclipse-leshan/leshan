@@ -22,6 +22,7 @@ import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.util.Hex;
 
 import com.google.gson.JsonElement;
@@ -45,12 +46,12 @@ public class LwM2mNodeSerializer implements JsonSerializer<LwM2mNode> {
             LwM2mResource rsc = (LwM2mResource) src;
             if (rsc.isMultiInstances()) {
                 JsonObject values = new JsonObject();
-                for (Entry<Integer, ?> entry : rsc.getValues().entrySet()) {
+                for (Entry<Integer, LwM2mResourceInstance> entry : rsc.getInstances().entrySet()) {
                     if (rsc.getType() == org.eclipse.leshan.core.model.ResourceModel.Type.OPAQUE) {
                         values.addProperty(entry.getKey().toString(),
-                                new String(Hex.encodeHex((byte[]) entry.getValue())));
+                                new String(Hex.encodeHex((byte[]) entry.getValue().getValue())));
                     } else {
-                        values.add(entry.getKey().toString(), context.serialize(entry.getValue()));
+                        values.add(entry.getKey().toString(), context.serialize(entry.getValue().getValue()));
                     }
                 }
                 element.add("values", values);

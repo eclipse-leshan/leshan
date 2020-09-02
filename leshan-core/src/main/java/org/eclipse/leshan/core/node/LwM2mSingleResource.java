@@ -135,14 +135,6 @@ public class LwM2mSingleResource implements LwM2mResource {
      * @exception NoSuchElementException use {@link #getValue()} instead.
      */
     @Override
-    public Map<Integer, ?> getValues() {
-        throw new NoSuchElementException("There is no 'values' on single resources, use getValue() instead.");
-    }
-
-    /**
-     * @exception NoSuchElementException use {@link #getValue()} instead.
-     */
-    @Override
     public Object getValue(int id) {
         throw new NoSuchElementException("There is no 'values' on single resources, use getValue() instead.");
     }

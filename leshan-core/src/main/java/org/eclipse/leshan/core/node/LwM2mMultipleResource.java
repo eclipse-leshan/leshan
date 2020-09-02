@@ -30,7 +30,7 @@ import org.eclipse.leshan.core.util.Validate;
 /**
  * A resource which contains several resource instances.
  * 
- * A resource instance is defined by a numeric identifier and a value. There are accessible via {@link #getValues()}
+ * A resource instance is defined by a numeric identifier and a value. There are accessible via {@link #getInstances()}
  */
 public class LwM2mMultipleResource implements LwM2mResource {
 
@@ -159,24 +159,12 @@ public class LwM2mMultipleResource implements LwM2mResource {
     }
 
     /**
-     * @exception NoSuchElementException use {@link #getValue(int)} or {@link #getValue(int)} instead.
+     * @exception NoSuchElementException use {@link #getValue(int)} or {@link #getInstances()} or
+     *            {@link #getInstance(int)} instead.
      */
     @Override
     public Object getValue() {
         throw new NoSuchElementException("There is no 'value' on multiple resources, use getValues() instead.");
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Deprecated
-    @Override
-    public Map<Integer, ?> getValues() {
-        Map<Integer, Object> val = new HashMap<>();
-        for (Entry<Integer, LwM2mResourceInstance> entry : instances.entrySet()) {
-            val.put(entry.getKey(), entry.getValue().getValue());
-        }
-        return Collections.unmodifiableMap(val);
     }
 
     /**

@@ -264,7 +264,7 @@ public class BootstrapTest {
         LwM2mObjectInstance instance = acl.getInstance(0);
         assertEquals(3l, instance.getResource(0).getValue());
         assertEquals(0l, instance.getResource(1).getValue());
-        assertEquals(1l, instance.getResource(2).getValues().get(3333));
+        assertEquals(1l, instance.getResource(2).getValue(3333));
         assertEquals(2222l, instance.getResource(3).getValue());
         instance = acl.getInstance(1);
         assertEquals(4l, instance.getResource(0).getValue());

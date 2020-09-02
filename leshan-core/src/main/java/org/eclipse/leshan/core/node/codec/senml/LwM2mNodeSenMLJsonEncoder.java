@@ -121,7 +121,7 @@ public class LwM2mNodeSenMLJsonEncoder {
         private void lwM2mResourceToSenMLRecord(String recordName, LwM2mResource resource) {
             // create resource element
             if (resource.isMultiInstances()) {
-                for (Entry<Integer, ?> entry : resource.getValues().entrySet()) {
+                for (Entry<Integer, LwM2mResourceInstance> entry : resource.getInstances().entrySet()) {
                     // compute record name for resource instance
                     String resourceInstanceRecordName;
                     if (recordName == null || recordName.isEmpty()) {
@@ -130,7 +130,7 @@ public class LwM2mNodeSenMLJsonEncoder {
                         resourceInstanceRecordName = recordName + "/" + entry.getKey();
                     }
 
-                    addSenMLRecord(resourceInstanceRecordName, resource, entry.getValue());
+                    addSenMLRecord(resourceInstanceRecordName, resource, entry.getValue().getValue());
                 }
             } else {
                 addSenMLRecord(recordName, resource, resource.getValue());

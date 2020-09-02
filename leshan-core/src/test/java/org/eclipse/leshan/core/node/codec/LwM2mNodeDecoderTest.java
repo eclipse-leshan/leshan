@@ -41,8 +41,8 @@ import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.tlv.Tlv;
-import org.eclipse.leshan.core.tlv.TlvEncoder;
 import org.eclipse.leshan.core.tlv.Tlv.TlvType;
+import org.eclipse.leshan.core.tlv.TlvEncoder;
 import org.eclipse.leshan.core.util.Hex;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -121,7 +121,7 @@ public class LwM2mNodeDecoderTest {
         assertEquals("1.0", oInstance.getResource(3).getValue());
         assertNull(oInstance.getResource(4));
         assertNull(oInstance.getResource(5));
-        assertEquals(2, oInstance.getResource(6).getValues().size());
+        assertEquals(2, oInstance.getResource(6).getInstances().size());
         assertEquals(1L, oInstance.getResource(6).getValue(0));
         assertEquals(5L, oInstance.getResource(6).getValue(1));
         assertEquals(3800L, oInstance.getResource(7).getValue(0));
@@ -130,7 +130,7 @@ public class LwM2mNodeDecoderTest {
         assertEquals(900L, oInstance.getResource(8).getValue(1));
         assertEquals(100L, oInstance.getResource(9).getValue());
         assertEquals(15L, oInstance.getResource(10).getValue());
-        assertEquals(1, oInstance.getResource(11).getValues().size());
+        assertEquals(1, oInstance.getResource(11).getInstances().size());
         assertEquals(0L, oInstance.getResource(11).getValue(0));
         assertNull(oInstance.getResource(12));
         assertEquals(new Date(1367491215000L), oInstance.getResource(13).getValue());
@@ -147,7 +147,7 @@ public class LwM2mNodeDecoderTest {
         LwM2mObjectInstance oInstance0 = oObject.getInstance(0);
         assertEquals(1L, oInstance0.getResource(0).getValue());
         assertEquals(0L, oInstance0.getResource(1).getValue());
-        assertEquals(1, oInstance0.getResource(2).getValues().size());
+        assertEquals(1, oInstance0.getResource(2).getInstances().size());
         assertEquals(7L, oInstance0.getResource(2).getValue(127));
         assertEquals(127L, oInstance0.getResource(3).getValue());
 
@@ -155,7 +155,7 @@ public class LwM2mNodeDecoderTest {
         LwM2mObjectInstance oInstance2 = oObject.getInstance(2);
         assertEquals(3L, oInstance2.getResource(0).getValue());
         assertEquals(0L, oInstance2.getResource(1).getValue());
-        assertEquals(2, oInstance2.getResource(2).getValues().size());
+        assertEquals(2, oInstance2.getResource(2).getInstances().size());
         assertEquals(7L, oInstance2.getResource(2).getValue(127));
         assertEquals(1L, oInstance2.getResource(2).getValue(310));
         assertEquals(127L, oInstance2.getResource(3).getValue());
@@ -176,7 +176,7 @@ public class LwM2mNodeDecoderTest {
         assertEquals(0, instance.getId());
 
         // instance 1
-        assertEquals(2, instance.getResource(0).getValues().size());
+        assertEquals(2, instance.getResource(0).getInstances().size());
         assertEquals(new ObjectLink(66, 0), instance.getResource(0).getValue(0));
         assertEquals(new ObjectLink(66, 1), instance.getResource(0).getValue(1));
         assertEquals("8613800755500", instance.getResource(1).getValue());
@@ -338,7 +338,7 @@ public class LwM2mNodeDecoderTest {
                 model);
 
         assertEquals(6, resource.getId());
-        assertEquals(2, resource.getValues().size());
+        assertEquals(2, resource.getInstances().size());
         assertEquals(1L, resource.getValue(0));
         assertEquals(5L, resource.getValue(1));
     }
@@ -353,7 +353,7 @@ public class LwM2mNodeDecoderTest {
                 model);
 
         assertEquals(6, resource.getId());
-        assertEquals(2, resource.getValues().size());
+        assertEquals(2, resource.getInstances().size());
         assertEquals(1L, resource.getValue(0));
         assertEquals(5L, resource.getValue(1));
     }
@@ -447,7 +447,7 @@ public class LwM2mNodeDecoderTest {
         assertNotNull(resource);
         assertTrue(resource instanceof LwM2mMultipleResource);
         assertEquals(6, resource.getId());
-        assertTrue(resource.getValues().isEmpty());
+        assertTrue(resource.getInstances().isEmpty());
     }
 
     @Test(expected = CodecException.class)
@@ -743,7 +743,7 @@ public class LwM2mNodeDecoderTest {
         assertNotNull(resource);
         assertTrue(resource instanceof LwM2mMultipleResource);
         assertEquals(6, resource.getId());
-        assertTrue(resource.getValues().isEmpty());
+        assertTrue(resource.getInstances().isEmpty());
 
         // with empty resources list and base name
         b = new StringBuilder();
@@ -753,7 +753,7 @@ public class LwM2mNodeDecoderTest {
         assertNotNull(resource);
         assertTrue(resource instanceof LwM2mMultipleResource);
         assertEquals(6, resource.getId());
-        assertTrue(resource.getValues().isEmpty());
+        assertTrue(resource.getInstances().isEmpty());
     }
 
     @Test
@@ -806,6 +806,6 @@ public class LwM2mNodeDecoderTest {
         assertNotNull(resource);
         assertTrue(resource instanceof LwM2mMultipleResource);
         assertEquals(11, resource.getId());
-        assertTrue(resource.getValues().size() == 2);
+        assertTrue(resource.getInstances().size() == 2);
     }
 }
