@@ -26,10 +26,11 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPublicKey;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +58,7 @@ import org.eclipse.californium.scandium.dtls.ResumingServerHandshaker;
 import org.eclipse.californium.scandium.dtls.ServerHandshaker;
 import org.eclipse.californium.scandium.dtls.SessionAdapter;
 import org.eclipse.californium.scandium.dtls.SessionId;
+import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
@@ -182,6 +184,10 @@ public class LeshanClientDemo {
         options.addOption("f", false, "Do not try to resume session always, do a full handshake.");
         options.addOption("ocf",
                 "activate support of old/unofficial content format .\n See https://github.com/eclipse/leshan/pull/720");
+        Builder c = Option.builder("c");
+        c.desc("define cipher suites used.");
+        c.hasArgs();
+        options.addOption(c.build());
         options.addOption("oc", "activate support of old/deprecated cipher suites.");
         Builder aa = Option.builder("aa");
         aa.desc("Use additional attributes at registration time, syntax is \n -aa attrName1=attrValue1 attrName2=\\\"attrValue2\\\" ...");
@@ -414,6 +420,35 @@ public class LeshanClientDemo {
             }
         }
 
+        // get Cipher suite
+        List<CipherSuite> ciphers = null;
+        if (cl.hasOption("c")) {
+            ciphers = new ArrayList<>();
+            String[] values = cl.getOptionValues("c");
+            boolean wasIgnore = false;
+            for (String v : values) {
+                try {
+                    ciphers.add(CipherSuite.valueOf(v));
+                } catch (IllegalArgumentException e) {
+                    LOG.warn("unknown cipher suite from '-c' option : {}", v);
+                    wasIgnore = true;
+                }
+            }
+            if (wasIgnore) {
+                StringBuilder supportedCiphers = new StringBuilder();
+                for (CipherSuite supportedCipher : EnumSet.allOf(CipherSuite.class)) {
+                    supportedCiphers.append(System.lineSeparator());
+                    supportedCiphers.append("  ");
+                    supportedCiphers.append(supportedCipher);
+                }
+                LOG.warn("Potentially supported cipher suites are : {}", supportedCiphers);
+            }
+            if (ciphers.isEmpty()) {
+                LOG.warn("All cipher are ignored, default ones will be used");
+                ciphers = null;
+            }
+        }
+
         // get local address
         String localAddress = null;
         int localPort = 0;
@@ -463,7 +498,7 @@ public class LeshanClientDemo {
                     bsAdditionalAttributes, lifetime, communicationPeriod, serverURI, pskIdentity, pskKey,
                     clientPrivateKey, clientPublicKey, serverPublicKey, clientCertificate, serverCertificate, latitude,
                     longitude, scaleFactor, cl.hasOption("ocf"), cl.hasOption("oc"), cl.hasOption("r"),
-                    cl.hasOption("f"), modelsFolderPath);
+                    cl.hasOption("f"), modelsFolderPath, ciphers);
         } catch (Exception e) {
             System.err.println("Unable to create and start client ...");
             e.printStackTrace();
@@ -477,7 +512,7 @@ public class LeshanClientDemo {
             PrivateKey clientPrivateKey, PublicKey clientPublicKey, PublicKey serverPublicKey,
             X509Certificate clientCertificate, X509Certificate serverCertificate, Float latitude, Float longitude,
             float scaleFactor, boolean supportOldFormat, boolean supportDeprecatedCiphers, boolean reconnectOnUpdate,
-            boolean forceFullhandshake, String modelsFolderPath) throws CertificateEncodingException {
+            boolean forceFullhandshake, String modelsFolderPath, List<CipherSuite> ciphers) throws Exception {
 
         locationInstance = new MyLocation(latitude, longitude, scaleFactor);
 
@@ -543,6 +578,9 @@ public class LeshanClientDemo {
         // Create DTLS Config
         DtlsConnectorConfig.Builder dtlsConfig = new DtlsConnectorConfig.Builder();
         dtlsConfig.setRecommendedCipherSuitesOnly(!supportDeprecatedCiphers);
+        if (ciphers != null) {
+            dtlsConfig.setSupportedCipherSuites(ciphers);
+        }
 
         // Configure Registration Engine
         DefaultRegistrationEngineFactory engineFactory = new DefaultRegistrationEngineFactory();
