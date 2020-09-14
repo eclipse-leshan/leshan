@@ -56,6 +56,7 @@ import org.eclipse.californium.scandium.dtls.ResumingClientHandshaker;
 import org.eclipse.californium.scandium.dtls.ResumingServerHandshaker;
 import org.eclipse.californium.scandium.dtls.ServerHandshaker;
 import org.eclipse.californium.scandium.dtls.SessionAdapter;
+import org.eclipse.californium.scandium.dtls.SessionId;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
@@ -559,30 +560,39 @@ public class LeshanClientDemo {
                     protected void onInitializeHandshaker(Handshaker handshaker) {
                         handshaker.addSessionListener(new SessionAdapter() {
 
+                            private SessionId sessionIdentifier = null;
+
                             @Override
                             public void handshakeStarted(Handshaker handshaker) throws HandshakeException {
-                                if (handshaker instanceof ServerHandshaker) {
-                                    LOG.info("DTLS Full Handshake initiated by server : STARTED ...");
-                                } else if (handshaker instanceof ResumingServerHandshaker) {
+                                if (handshaker instanceof ResumingServerHandshaker) {
                                     LOG.info("DTLS abbreviated Handshake initiated by server : STARTED ...");
+                                } else if (handshaker instanceof ServerHandshaker) {
+                                    LOG.info("DTLS Full Handshake initiated by server : STARTED ...");
+                                } else if (handshaker instanceof ResumingClientHandshaker) {
+                                    sessionIdentifier = handshaker.getSession().getSessionIdentifier();
+                                    LOG.info("DTLS abbreviated Handshake initiated by client : STARTED ...");
                                 } else if (handshaker instanceof ClientHandshaker) {
                                     LOG.info("DTLS Full Handshake initiated by client : STARTED ...");
-                                } else if (handshaker instanceof ResumingClientHandshaker) {
-                                    LOG.info("DTLS abbreviated Handshake initiated by client : STARTED ...");
                                 }
                             }
 
                             @Override
                             public void sessionEstablished(Handshaker handshaker, DTLSSession establishedSession)
                                     throws HandshakeException {
-                                if (handshaker instanceof ServerHandshaker) {
-                                    LOG.info("DTLS Full Handshake initiated by server : SUCCEED");
-                                } else if (handshaker instanceof ResumingServerHandshaker) {
+                                if (handshaker instanceof ResumingServerHandshaker) {
                                     LOG.info("DTLS abbreviated Handshake initiated by server : SUCCEED");
+                                } else if (handshaker instanceof ServerHandshaker) {
+                                    LOG.info("DTLS Full Handshake initiated by server : SUCCEED");
+                                } else if (handshaker instanceof ResumingClientHandshaker) {
+                                    if (sessionIdentifier != null && sessionIdentifier
+                                            .equals(handshaker.getSession().getSessionIdentifier())) {
+                                        LOG.info("DTLS abbreviated Handshake initiated by client : SUCCEED");
+                                    } else {
+                                        LOG.info(
+                                                "DTLS abbreviated turns into Full Handshake initiated by client : SUCCEED");
+                                    }
                                 } else if (handshaker instanceof ClientHandshaker) {
                                     LOG.info("DTLS Full Handshake initiated by client : SUCCEED");
-                                } else if (handshaker instanceof ResumingClientHandshaker) {
-                                    LOG.info("DTLS abbreviated Handshake initiated by client : SUCCEED");
                                 }
                             }
 
@@ -600,14 +610,14 @@ public class LeshanClientDemo {
                                     cause = "unknown cause";
                                 }
 
-                                if (handshaker instanceof ServerHandshaker) {
-                                    LOG.info("DTLS Full Handshake initiated by server : FAILED ({})", cause);
-                                } else if (handshaker instanceof ResumingServerHandshaker) {
+                                if (handshaker instanceof ResumingServerHandshaker) {
                                     LOG.info("DTLS abbreviated Handshake initiated by server : FAILED ({})", cause);
-                                } else if (handshaker instanceof ClientHandshaker) {
-                                    LOG.info("DTLS Full Handshake initiated by client : FAILED ({})", cause);
+                                } else if (handshaker instanceof ServerHandshaker) {
+                                    LOG.info("DTLS Full Handshake initiated by server : FAILED ({})", cause);
                                 } else if (handshaker instanceof ResumingClientHandshaker) {
                                     LOG.info("DTLS abbreviated Handshake initiated by client : FAILED ({})", cause);
+                                } else if (handshaker instanceof ClientHandshaker) {
+                                    LOG.info("DTLS Full Handshake initiated by client : FAILED ({})", cause);
                                 }
                             }
                         });
