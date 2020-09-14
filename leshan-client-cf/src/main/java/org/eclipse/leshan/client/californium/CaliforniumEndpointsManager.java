@@ -22,6 +22,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoapEndpoint;
@@ -37,6 +38,7 @@ import org.eclipse.californium.scandium.dtls.AlertMessage.AlertLevel;
 import org.eclipse.californium.scandium.dtls.CertificateMessage;
 import org.eclipse.californium.scandium.dtls.DTLSSession;
 import org.eclipse.californium.scandium.dtls.HandshakeException;
+import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.californium.scandium.dtls.pskstore.StaticPskStore;
 import org.eclipse.californium.scandium.dtls.rpkstore.TrustedRpkStore;
 import org.eclipse.californium.scandium.dtls.x509.CertificateVerifier;
@@ -100,6 +102,8 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                 StaticPskStore staticPskStore = new StaticPskStore(serverInfo.pskId, serverInfo.pskKey);
                 newBuilder.setPskStore(staticPskStore);
                 serverIdentity = Identity.psk(serverInfo.getAddress(), serverInfo.pskId);
+                filterCipherSuites(newBuilder, dtlsConfigbuilder.getIncompleteConfig().getSupportedCipherSuites(), true,
+                        false);
             } else if (serverInfo.secureMode == SecurityMode.RPK) {
                 // set identity
                 newBuilder.setIdentity(serverInfo.privateKey, serverInfo.publicKey);
@@ -123,6 +127,8 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                     }
                 });
                 serverIdentity = Identity.rpk(serverInfo.getAddress(), expectedKey);
+                filterCipherSuites(newBuilder, dtlsConfigbuilder.getIncompleteConfig().getSupportedCipherSuites(),
+                        false, true);
             } else if (serverInfo.secureMode == SecurityMode.X509) {
                 // set identity
                 newBuilder.setIdentity(serverInfo.privateKey, new Certificate[] { serverInfo.clientCertificate });
@@ -163,6 +169,8 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                 });
                 serverIdentity = Identity.x509(serverInfo.getAddress(), EndpointContextUtil
                         .extractCN(((X509Certificate) expectedServerCertificate).getSubjectX500Principal().getName()));
+                filterCipherSuites(newBuilder,
+                        dtlsConfigbuilder.getIncompleteConfig().getSupportedCipherSuites(), false, true);
             } else {
                 throw new RuntimeException("Unable to create connector : unsupported security mode");
             }
@@ -186,7 +194,9 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             try {
                 currentEndpoint.start();
                 LOG.info("New endpoint created for server {} at {}", currentServer.getUri(), currentEndpoint.getUri());
-            } catch (IOException e) {
+            } catch (
+
+            IOException e) {
                 throw new RuntimeException("Unable to start endpoint", e);
             }
         }
@@ -291,5 +301,21 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             started = false;
 
         coapServer.destroy();
+    }
+
+    private void filterCipherSuites(Builder dtlsConfigurationBuilder, List<CipherSuite> ciphers, boolean psk,
+            boolean requireServerCertificateMessage) {
+        if (ciphers == null)
+            return;
+
+        List<CipherSuite> filteredCiphers = new ArrayList<>();
+        for (CipherSuite cipher : ciphers) {
+            if (psk && cipher.isPskBased()) {
+                filteredCiphers.add(cipher);
+            } else if (requireServerCertificateMessage && cipher.requiresServerCertificateMessage()) {
+                filteredCiphers.add(cipher);
+            }
+        }
+        dtlsConfigurationBuilder.setSupportedCipherSuites(filteredCiphers);
     }
 }
