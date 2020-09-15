@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.security;
 
-import java.util.List;
+import java.util.Iterator;
 
 /**
  * A store containing data needed to authenticate clients.
@@ -31,7 +31,7 @@ public interface BootstrapSecurityStore {
      * @param endpoint the client end-point
      * @return the security information of <code>null</code> if not found.
      */
-    List<SecurityInfo> getAllByEndpoint(String endpoint);
+    Iterator<SecurityInfo> getAllByEndpoint(String endpoint);
 
     /**
      * Returns the security information for a PSK identity.

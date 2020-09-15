@@ -34,7 +34,7 @@ import java.security.spec.KeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
@@ -57,10 +57,10 @@ import org.eclipse.leshan.server.bootstrap.BootstrapFailureCause;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
 import org.eclipse.leshan.server.bootstrap.BootstrapSession;
-import org.eclipse.leshan.server.bootstrap.DefaultBootstrapSession;
-import org.eclipse.leshan.server.bootstrap.DefaultBootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapHandler;
+import org.eclipse.leshan.server.bootstrap.DefaultBootstrapSession;
+import org.eclipse.leshan.server.bootstrap.DefaultBootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
 import org.eclipse.leshan.server.californium.bootstrap.LeshanBootstrapServer;
 import org.eclipse.leshan.server.californium.bootstrap.LeshanBootstrapServerBuilder;
@@ -259,18 +259,18 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
             }
 
             @Override
-            public List<SecurityInfo> getAllByEndpoint(String endpoint) {
+            public Iterator<SecurityInfo> getAllByEndpoint(String endpoint) {
                 if (getCurrentEndpoint().equals(endpoint)) {
                     SecurityInfo info;
                     if (mode == SecurityMode.PSK) {
                         info = pskSecurityInfo();
-                        return Arrays.asList(info);
+                        return Arrays.asList(info).iterator();
                     } else if (mode == SecurityMode.RPK) {
                         info = rpkSecurityInfo();
-                        return Arrays.asList(info);
+                        return Arrays.asList(info).iterator();
                     }
                 }
-                return Arrays.asList();
+                return null;
             }
         };
     }
@@ -295,7 +295,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
             }
 
             @Override
-            public List<SecurityInfo> getAllByEndpoint(String endpoint) {
+            public Iterator<SecurityInfo> getAllByEndpoint(String endpoint) {
                 return null;
             }
         };

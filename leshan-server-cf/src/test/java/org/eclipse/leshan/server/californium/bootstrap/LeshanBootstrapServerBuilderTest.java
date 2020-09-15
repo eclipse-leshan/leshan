@@ -17,14 +17,12 @@ package org.eclipse.leshan.server.californium.bootstrap;
 
 import static org.junit.Assert.*;
 
-import java.util.List;
+import java.util.Iterator;
 
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.BootstrapSession;
-import org.eclipse.leshan.server.californium.bootstrap.LeshanBootstrapServer;
-import org.eclipse.leshan.server.californium.bootstrap.LeshanBootstrapServerBuilder;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.junit.Before;
@@ -63,7 +61,7 @@ public class LeshanBootstrapServerBuilderTest {
             }
 
             @Override
-            public List<SecurityInfo> getAllByEndpoint(String endpoint) {
+            public Iterator<SecurityInfo> getAllByEndpoint(String endpoint) {
                 return null;
             }
         });
@@ -83,7 +81,7 @@ public class LeshanBootstrapServerBuilderTest {
             }
 
             @Override
-            public List<SecurityInfo> getAllByEndpoint(String endpoint) {
+            public Iterator<SecurityInfo> getAllByEndpoint(String endpoint) {
                 return null;
             }
         });
@@ -103,7 +101,7 @@ public class LeshanBootstrapServerBuilderTest {
             }
 
             @Override
-            public List<SecurityInfo> getAllByEndpoint(String endpoint) {
+            public Iterator<SecurityInfo> getAllByEndpoint(String endpoint) {
                 return null;
             }
         });

@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
-import java.util.List;
+import java.util.Iterator;
 
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
@@ -67,7 +67,7 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
     public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity) {
         boolean authorized;
         if (bsSecurityStore != null) {
-            List<SecurityInfo> securityInfos = bsSecurityStore.getAllByEndpoint(request.getEndpointName());
+            Iterator<SecurityInfo> securityInfos = bsSecurityStore.getAllByEndpoint(request.getEndpointName());
             authorized = securityChecker.checkSecurityInfos(request.getEndpointName(), clientIdentity, securityInfos);
         } else {
             authorized = true;

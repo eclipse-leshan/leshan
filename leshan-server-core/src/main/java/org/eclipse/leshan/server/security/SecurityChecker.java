@@ -16,7 +16,7 @@
 package org.eclipse.leshan.server.security;
 
 import java.security.PublicKey;
-import java.util.List;
+import java.util.Iterator;
 
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.util.Hex;
@@ -40,21 +40,23 @@ public class SecurityChecker {
      * @return true if client is correctly authenticated.
      * @see SecurityInfo
      */
-    public boolean checkSecurityInfos(String endpoint, Identity clientIdentity, List<SecurityInfo> securityInfos) {
+    public boolean checkSecurityInfos(String endpoint, Identity clientIdentity, Iterator<SecurityInfo> securityInfos) {
         // if this is a secure end-point, we must check that the registering client is using the right identity.
         if (clientIdentity.isSecure()) {
-            if (securityInfos == null || securityInfos.isEmpty()) {
+            if (securityInfos == null || !securityInfos.hasNext()) {
                 LOG.debug("Client '{}' without security info try to connect through the secure endpoint", endpoint);
                 return false;
             } else {
-                for (SecurityInfo securityInfo : securityInfos) {
+                // check of one expected security info matches client identity
+                do {
+                    SecurityInfo securityInfo = securityInfos.next();
                     if (checkSecurityInfo(endpoint, clientIdentity, securityInfo)) {
                         return true;
                     }
-                }
+                } while (securityInfos.hasNext());
                 return false;
             }
-        } else if (securityInfos != null && !securityInfos.isEmpty()) {
+        } else if (securityInfos != null && securityInfos.hasNext()) {
             LOG.debug("Client '{}' must connect using DTLS", endpoint);
             return false;
         }

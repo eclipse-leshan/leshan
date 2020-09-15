@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.eclipse.leshan.core.SecurityMode;
@@ -84,7 +84,7 @@ public class BootstrapConfigSecurityStore implements BootstrapSecurityStore {
     }
 
     @Override
-    public List<SecurityInfo> getAllByEndpoint(String endpoint) {
+    public Iterator<SecurityInfo> getAllByEndpoint(String endpoint) {
 
         BootstrapConfig bsConfig = bootstrapConfigStore.get(endpoint, null, null);
 
@@ -98,14 +98,14 @@ public class BootstrapConfigSecurityStore implements BootstrapSecurityStore {
             if (value.bootstrapServer && value.securityMode == SecurityMode.PSK) {
                 SecurityInfo securityInfo = SecurityInfo.newPreSharedKeyInfo(endpoint,
                         new String(value.publicKeyOrId, StandardCharsets.UTF_8), value.secretKey);
-                return Arrays.asList(securityInfo);
+                return Arrays.asList(securityInfo).iterator();
             }
             // Extract RPK security info
             else if (value.bootstrapServer && value.securityMode == SecurityMode.RPK) {
                 try {
                     SecurityInfo securityInfo = SecurityInfo.newRawPublicKeyInfo(endpoint,
                             SecurityUtil.publicKey.decode(value.publicKeyOrId));
-                    return Arrays.asList(securityInfo);
+                    return Arrays.asList(securityInfo).iterator();
                 } catch (IOException | GeneralSecurityException e) {
                     LOG.error("Unable to decode Client public key for {}", endpoint, e);
                     return null;
@@ -114,7 +114,7 @@ public class BootstrapConfigSecurityStore implements BootstrapSecurityStore {
             // Extract X509 security info
             else if (value.bootstrapServer && value.securityMode == SecurityMode.X509) {
                 SecurityInfo securityInfo = SecurityInfo.newX509CertInfo(endpoint);
-                return Arrays.asList(securityInfo);
+                return Arrays.asList(securityInfo).iterator();
             }
         }
         return null;
