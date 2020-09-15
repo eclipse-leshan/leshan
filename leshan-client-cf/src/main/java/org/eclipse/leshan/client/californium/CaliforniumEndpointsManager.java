@@ -141,7 +141,8 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                         if (message.getCertificateChain().getCertificates().size() == 0) {
                             AlertMessage alert = new AlertMessage(AlertLevel.FATAL, AlertDescription.BAD_CERTIFICATE,
                                     session.getPeer());
-                            throw new HandshakeException("Certificate chain could not be validated", alert);
+                            throw new HandshakeException(
+                                    "Certificate chain could not be validated : server cert chain is empty", alert);
                         }
                         Certificate receivedServerCertificate = message.getCertificateChain().getCertificates().get(0);
 
@@ -149,7 +150,9 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                         if (!expectedServerCertificate.equals(receivedServerCertificate)) {
                             AlertMessage alert = new AlertMessage(AlertLevel.FATAL, AlertDescription.BAD_CERTIFICATE,
                                     session.getPeer());
-                            throw new HandshakeException("Certificate chain could not be validated", alert);
+                            throw new HandshakeException(
+                                    "Certificate chain could not be validated: server certificate does not match expected one ('domain-issue certificate' usage)",
+                                    alert);
                         }
                     }
 
