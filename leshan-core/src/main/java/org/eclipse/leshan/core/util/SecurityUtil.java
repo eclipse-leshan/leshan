@@ -27,6 +27,7 @@ import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.ArrayList;
 
 import org.eclipse.leshan.core.credentials.CredentialsReader;
 
@@ -72,4 +73,18 @@ public class SecurityUtil {
             }
         }
     };
+
+    public static X509Certificate[] asX509Certificates(Certificate[] certificates) throws CertificateException {
+        ArrayList<X509Certificate> x509Certificates = new ArrayList<>();
+
+        for (Certificate cert : certificates) {
+            if (!(cert instanceof X509Certificate)) {
+                throw new CertificateException(String.format(
+                        "%s certificate format is not supported, Only X.509 certificate is supported", cert.getType()));
+            }
+            x509Certificates.add((X509Certificate) cert);
+        }
+
+        return x509Certificates.toArray(new X509Certificate[0]);
+    }
 }
