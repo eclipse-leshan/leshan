@@ -169,7 +169,7 @@ angular.module('resourceDirectives', [])
                         payload["value"] = lwResources.getTypedValue(resourceValue, resource.def.type);
 
                         // Send request
-                        var format = scope.settings.multi.format;
+                        var format = scope.settings.single.format;
                         var timeout = scope.settings.timeout.value;
                         $http({method: 'PUT', url: "api/clients/" + $routeParams.clientId + scope.resource.path, data: payload, headers:{'Content-Type': 'application/json'},params:{format:format, timeout:timeout}})
                         .success(function(data, status, headers, config) {
