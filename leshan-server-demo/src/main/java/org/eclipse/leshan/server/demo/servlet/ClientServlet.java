@@ -29,8 +29,14 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.leshan.core.attributes.AttributeSet;
+import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.ObjectLoader;
+import org.eclipse.leshan.core.model.ResourceModel;
+import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -62,6 +68,7 @@ import org.eclipse.leshan.server.demo.servlet.json.LwM2mNodeDeserializer;
 import org.eclipse.leshan.server.demo.servlet.json.LwM2mNodeSerializer;
 import org.eclipse.leshan.server.demo.servlet.json.RegistrationSerializer;
 import org.eclipse.leshan.server.demo.servlet.json.ResponseSerializer;
+import org.eclipse.leshan.server.demo.utils.MagicLwM2mValueConverter;
 import org.eclipse.leshan.server.registration.Registration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,6 +96,10 @@ public class ClientServlet extends HttpServlet {
 
     private final Gson gson;
 
+    private final LwM2mModel model;
+
+    private final MagicLwM2mValueConverter converter;
+
     public ClientServlet(LeshanServer server) {
         this.server = server;
 
@@ -100,6 +111,8 @@ public class ClientServlet extends HttpServlet {
         gsonBuilder.registerTypeHierarchyAdapter(LwM2mNode.class, new LwM2mNodeDeserializer());
         gsonBuilder.setDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
         this.gson = gsonBuilder.create();
+        this.model = new StaticModel(ObjectLoader.loadDefault());
+        this.converter = new MagicLwM2mValueConverter();
     }
 
     /**
@@ -256,7 +269,7 @@ public class ClientServlet extends HttpServlet {
                         replace = Boolean.valueOf(replaceParam);
 
                     // create & process request
-                    LwM2mNode node = extractLwM2mNode(target, req);
+                    LwM2mNode node = extractLwM2mNode(target, req, new LwM2mPath(target));
                     WriteRequest request = new WriteRequest(replace ? Mode.REPLACE : Mode.UPDATE, contentFormat, target,
                             node);
                     WriteResponse cResponse = server.send(registration, request, extractTimeout(req));
@@ -341,7 +354,7 @@ public class ClientServlet extends HttpServlet {
                             : null;
 
                     // create & process request
-                    LwM2mNode node = extractLwM2mNode(target, req);
+                    LwM2mNode node = extractLwM2mNode(target, req, new LwM2mPath(target));
                     if (node instanceof LwM2mObjectInstance) {
                         CreateRequest request;
                         if (node.getId() == LwM2mObjectInstance.UNDEFINED) {
@@ -421,13 +434,24 @@ public class ClientServlet extends HttpServlet {
         }
     }
 
-    private LwM2mNode extractLwM2mNode(String target, HttpServletRequest req) throws IOException {
+    private LwM2mNode extractLwM2mNode(String target, HttpServletRequest req, LwM2mPath path) throws IOException {
         String contentType = StringUtils.substringBefore(req.getContentType(), ";");
         if ("application/json".equals(contentType)) {
             String content = IOUtils.toString(req.getInputStream(), req.getCharacterEncoding());
             LwM2mNode node;
             try {
                 node = gson.fromJson(content, LwM2mNode.class);
+                if (node instanceof LwM2mSingleResource) {
+                    // TODO HACK resource type should be extracted from json value but this is not yet available.
+                    LwM2mSingleResource singleResource = (LwM2mSingleResource) node;
+                    ResourceModel resourceModel = model.getResourceModel(path.getObjectId(), singleResource.getId());
+                    if (resourceModel != null) {
+                        Type expectedType = resourceModel.type;
+                        Object expectedValue = converter.convertValue(singleResource.getValue(),
+                                singleResource.getType(), expectedType, path);
+                        node = LwM2mSingleResource.newResource(node.getId(), expectedValue, expectedType);
+                    }
+                }
             } catch (JsonSyntaxException e) {
                 throw new InvalidRequestException(e, "unable to parse json to tlv:%s", e.getMessage());
             }
