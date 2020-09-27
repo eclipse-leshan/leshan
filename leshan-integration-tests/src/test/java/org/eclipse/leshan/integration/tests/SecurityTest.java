@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
 
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Request;
@@ -38,6 +39,7 @@ import org.eclipse.californium.elements.exception.EndpointMismatchException;
 import org.eclipse.californium.elements.util.SimpleMessageCallback;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.dtls.DTLSSession;
+import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
@@ -691,6 +693,840 @@ public class SecurityTest {
         helper.client.start();
         helper.ensureNoRegistration(1);
     }
+
+    /* ---- CA_CONSTRAINT ---- */
+
+    /**
+     * Test scenario:
+     * - Certificate Usage = CA constraint
+     * - Server Certificate = server certificate
+     * - Server's TLS Server Certificate = intermediate signed certificate (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = root CA
+     *
+     * Expected outcome:
+     * - Client denied the connection (server certificate is not a CA certificate)
+     */
+    @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_ca()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
+                helper.trustedCertificates, true);
+
+        helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
+        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
+                helper.clientTrustStore, helper.serverIntX509CertChain[0], CertificateUsage.CA_CONSTRAINT);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.ensureNoRegistration(1);
+    }
+
+    /**
+     * Test scenario:
+     * - Certificate Usage = CA constraint
+     * - Server Certificate = intermediate CA certificate
+     * - Server's TLS Server Certificate = intermediate signed certificate (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = root CA
+     *
+     * Expected outcome:
+     * - Client is able to connect (intermediate CA cert is part of the chain)
+     */
+    @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_ca_intca_given()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
+                helper.trustedCertificates, true);
+
+        helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
+        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
+                helper.clientTrustStore, helper.serverIntX509CertChain[1], CertificateUsage.CA_CONSTRAINT);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.waitForRegistrationAtServerSide(1);
+
+        assertNotNull(helper.getCurrentRegistration());
+    }
+
+    /**
+     * Test scenario:
+     * - Certificate Usage = CA constraint
+     * - Server Certificate = root CA certificate (not end-entity certificate)
+     * - Server's TLS Server Certificate = intermediate signed certificate (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = root CA
+     *
+     * Expected outcome:
+     * - Client is able to connect (root CA cert is part of the chain)
+     */
+    @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_ca_domain_root_ca_given()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
+                helper.trustedCertificates, true);
+
+        helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
+        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
+                helper.clientTrustStore, helper.rootCAX509Cert, CertificateUsage.CA_CONSTRAINT);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.waitForRegistrationAtServerSide(1);
+
+        assertNotNull(helper.getCurrentRegistration());
+    }
+
+    /**
+     * Test scenario:
+     * - Certificate Usage = CA constraint
+     * - Server Certificate = other end-entity certificate with same dns name signed by same root ca
+     * - Server's TLS Server Certificate = intermediate signed certificate (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = root CA
+     *
+     * Expected outcome:
+     * - Client denied the connection
+     */
+    @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_ca_other_server_cert_given()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
+                helper.trustedCertificates, true);
+
+        helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
+        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
+                helper.clientTrustStore, helper.serverX509Cert, CertificateUsage.CA_CONSTRAINT);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.ensureNoRegistration(1);
+    }
+
+    /**
+     * Test scenario:
+     * - Certificate Usage = CA constraint
+     * - Server Certificate = self signed certificate given
+     * - Server's TLS Server Certificate = intermediate signed certificate (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = root CA
+     *
+     * Expected outcome:
+     * - Client denied the connection
+     */
+    @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_ca_selfsigned_server_cert_given()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
+                helper.trustedCertificates, true);
+
+        helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
+        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
+                helper.clientTrustStore, helper.serverIntX509CertSelfSigned, CertificateUsage.CA_CONSTRAINT);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.ensureNoRegistration(1);
+    }
+
+    /**
+     * Test scenario:
+     * - Certificate Usage = CA constraint
+     * - Server Certificate = self signed certificate
+     * - Server's TLS Server Certificate = self signed certificate (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = root CA
+     *
+     * Expected outcome:
+     * - Client denied the connection (self signed certificate is not a CA certificate)
+     */
+    @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert_selfsigned_certificate_usage_ca_selfsigned_server_cert_given()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert(new X509Certificate[] { helper.serverIntX509CertSelfSigned },
+                helper.serverIntPrivateKeyFromCert, helper.trustedCertificates, true);
+
+        helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
+        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
+                helper.clientTrustStore, helper.serverIntX509CertSelfSigned, CertificateUsage.CA_CONSTRAINT);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.ensureNoRegistration(1);
+    }
+
+    /**
+     * Test scenario:
+     * - Certificate Usage = CA constraint
+     * - Server Certificate = intermediate signed certificate/wo chain
+     * - Server's TLS Server Certificate = intermediate signed certificate/wo chain (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = root CA
+     *
+     * Expected outcome:
+     * - Client denied the connection (missing intermediate CA aka. "server chain configuration problem")
+     */
+    @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert_server_certificate_usage_ca_server_cert_wo_chain_given()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert(new X509Certificate[] { helper.serverIntX509CertChain[0] },
+                helper.serverIntPrivateKeyFromCert, helper.trustedCertificates, true);
+
+        helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
+        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
+                helper.clientTrustStore, helper.serverIntX509CertChain[0], CertificateUsage.CA_CONSTRAINT);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.ensureNoRegistration(1);
+    }
+
+    /* ---- SERVICE_CERTIFICATE_CONSTRAINT ---- */
+
+    /**
+     * Test scenario:
+     * - Certificate Usage = service certificate constraint
+     * - Server Certificate = server certificate
+     * - Server's TLS Server Certificate = intermediate signed certificate (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = root CA
+     *
+     * Expected outcome:
+     * - Client is able to connect
+     */
+    @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_service()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
+                helper.trustedCertificates, true);
+
+        helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
+        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
+                helper.clientTrustStore, helper.serverIntX509CertChain[0], CertificateUsage.SERVICE_CERTIFICATE_CONSTRAINT);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.waitForRegistrationAtServerSide(1);
+
+        assertNotNull(helper.getCurrentRegistration());
+    }
+
+    /**
+     * Test scenario:
+     * - Certificate Usage = service certificate constraint
+     * - Server Certificate = root CA certificate (not end-entity certificate)
+     * - Server's TLS Server Certificate = intermediate signed certificate (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = root CA
+     *
+     * Expected outcome:
+     * - Client denied the connection
+     */
+    @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_service_domain_root_ca_given()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
+                helper.trustedCertificates, true);
+
+        helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
+        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
+                helper.clientTrustStore, helper.rootCAX509Cert, CertificateUsage.SERVICE_CERTIFICATE_CONSTRAINT);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.ensureNoRegistration(1);
+    }
+
+    /**
+     * Test scenario:
+     * - Certificate Usage = service certificate constraint
+     * - Server Certificate = other end-entity certificate with same dns name signed by same root ca
+     * - Server's TLS Server Certificate = intermediate signed certificate (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = root CA
+     *
+     * Expected outcome:
+     * - Client denied the connection
+     */
+    @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_service_other_server_cert_given()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
+                helper.trustedCertificates, true);
+
+        helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
+        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
+                helper.clientTrustStore, helper.serverX509Cert, CertificateUsage.SERVICE_CERTIFICATE_CONSTRAINT);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.ensureNoRegistration(1);
+    }
+
+    /**
+     * Test scenario:
+     * - Certificate Usage = service certificate constraint
+     * - Server Certificate = self signed certificate given
+     * - Server's TLS Server Certificate = intermediate signed certificate (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = root CA
+     *
+     * Expected outcome:
+     * - Client denied the connection
+     */
+    @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_service_selfsigned_server_cert_given()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
+                helper.trustedCertificates, true);
+
+        helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
+        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
+                helper.clientTrustStore, helper.serverIntX509CertSelfSigned, CertificateUsage.SERVICE_CERTIFICATE_CONSTRAINT);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.ensureNoRegistration(1);
+    }
+
+    /**
+     * Test scenario:
+     * - Certificate Usage = service certificate constraint
+     * - Server Certificate = self signed certificate
+     * - Server's TLS Server Certificate = self signed certificate (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = root CA
+     *
+     * Expected outcome:
+     * - Client denied the connection (self-signed is not PKIX chainable)
+     */
+    @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert_selfsigned_certificate_usage_service_selfsigned_server_cert_given()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert(new X509Certificate[] { helper.serverIntX509CertSelfSigned },
+                helper.serverIntPrivateKeyFromCert, helper.trustedCertificates, true);
+
+        helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
+        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
+                helper.clientTrustStore, helper.serverIntX509CertSelfSigned, CertificateUsage.SERVICE_CERTIFICATE_CONSTRAINT);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.ensureNoRegistration(1);
+    }
+
+    /**
+     * Test scenario:
+     * - Certificate Usage = service certificate constraint
+     * - Server Certificate = intermediate signed certificate/wo chain
+     * - Server's TLS Server Certificate = intermediate signed certificate/wo chain (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = root CA
+     *
+     * Expected outcome:
+     * - Client denied the connection (missing intermediate CA aka. "server chain configuration problem")
+     */
+    @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert_server_certificate_usage_service_server_cert_wo_chain_given()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert(new X509Certificate[] { helper.serverIntX509CertChain[0] },
+                helper.serverIntPrivateKeyFromCert, helper.trustedCertificates, true);
+
+        helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
+        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
+                helper.clientTrustStore, helper.serverIntX509CertChain[0], CertificateUsage.SERVICE_CERTIFICATE_CONSTRAINT);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.ensureNoRegistration(1);
+    }
+
+    /* ---- TRUST_ANCHOR_ASSERTION ---- */
+
+    /**
+     * Test scenario:
+     * - Certificate Usage = trust anchor assertion
+     * - Server Certificate = server certificate
+     * - Server's TLS Server Certificate = intermediate signed certificate (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = root CA
+     *
+     * Expected outcome:
+     * - Client denied the connection (not pkix chainable, client trust store not in use, server not sending root CA and TAA is not root CA)
+     */
+    @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_taa()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
+                helper.trustedCertificates, true);
+
+        helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
+        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
+                helper.clientTrustStore, helper.serverIntX509CertChain[0], CertificateUsage.TRUST_ANCHOR_ASSERTION);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.ensureNoRegistration(1);
+    }
+
+    /**
+     * Test scenario:
+     * - Certificate Usage = trust anchor assertion
+     * - Server Certificate = intermediate CA certificate
+     * - Server's TLS Server Certificate = intermediate signed certificate (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = root CA
+     *
+     * Expected outcome:
+     * - Client is able to connect (pkix path terminates in intermediate CA (TA), root CA is not available as client trust store not in use)
+     */
+    @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_taa_intca_given()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
+                helper.trustedCertificates, true);
+
+        helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
+        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
+                helper.clientTrustStore, helper.serverIntX509CertChain[1], CertificateUsage.TRUST_ANCHOR_ASSERTION);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.waitForRegistrationAtServerSide(1);
+
+        assertNotNull(helper.getCurrentRegistration());
+    }
+
+    /**
+     * Test scenario:
+     * - Certificate Usage = trust anchor assertion
+     * - Server Certificate = root CA certificate
+     * - Server's TLS Server Certificate = intermediate signed certificate (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = root CA
+     *
+     * Expected outcome:
+     * - Client is able to connect (root CA cert is part of the chain)
+     */
+    @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_taa_domain_root_ca_given()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
+                helper.trustedCertificates, true);
+
+        helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
+        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
+                helper.clientTrustStore, helper.rootCAX509Cert, CertificateUsage.TRUST_ANCHOR_ASSERTION);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.waitForRegistrationAtServerSide(1);
+
+        assertNotNull(helper.getCurrentRegistration());
+    }
+
+    /**
+     * Test scenario:
+     * - Certificate Usage = trust anchor assertion
+     * - Server Certificate = other end-entity certificate with same dns name signed by same root ca
+     * - Server's TLS Server Certificate = intermediate signed certificate (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = root CA
+     *
+     * Expected outcome:
+     * - Client denied the connection
+     */
+    @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_taa_other_server_cert_given()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
+                helper.trustedCertificates, true);
+
+        helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
+        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
+                helper.clientTrustStore, helper.serverX509Cert, CertificateUsage.TRUST_ANCHOR_ASSERTION);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.ensureNoRegistration(1);
+    }
+
+    /**
+     * Test scenario:
+     * - Certificate Usage = trust anchor assertion
+     * - Server Certificate = self signed certificate given
+     * - Server's TLS Server Certificate = intermediate signed certificate (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = root CA
+     *
+     * Expected outcome:
+     * - Client denied the connection
+     */
+    @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_taa_selfsigned_server_cert_given()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
+                helper.trustedCertificates, true);
+
+        helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
+        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
+                helper.clientTrustStore, helper.serverIntX509CertSelfSigned, CertificateUsage.TRUST_ANCHOR_ASSERTION);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.ensureNoRegistration(1);
+    }
+
+    /**
+     * Test scenario:
+     * - Certificate Usage = trust anchor assertion
+     * - Server Certificate = self signed certificate
+     * - Server's TLS Server Certificate = self signed certificate (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = root CA
+     *
+     * Expected outcome:
+     * - Client is able to connect (a bit silly test thou -- in real life this shouldn't be used as not CA)
+     */
+    @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert_selfsigned_certificate_usage_taa_selfsigned_server_cert_given()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert(new X509Certificate[] { helper.serverIntX509CertSelfSigned },
+                helper.serverIntPrivateKeyFromCert, helper.trustedCertificates, true);
+
+        helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
+        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
+                helper.clientTrustStore, helper.serverIntX509CertSelfSigned, CertificateUsage.TRUST_ANCHOR_ASSERTION);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.waitForRegistrationAtServerSide(1);
+
+        assertNotNull(helper.getCurrentRegistration());
+    }
+
+    /**
+     * Test scenario:
+     * - Certificate Usage = trust anchor assertion
+     * - Server Certificate = intermediate signed certificate/wo chain
+     * - Server's TLS Server Certificate = intermediate signed certificate/wo chain (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = root CA
+     *
+     * Expected outcome:
+     * - Client denied the connection (not pkix chainable, missing root CA and intermediate CA)
+     */
+    @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert_server_certificate_usage_taa_server_cert_wo_chain_given()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert(new X509Certificate[] { helper.serverIntX509CertChain[0] },
+                helper.serverIntPrivateKeyFromCert, helper.trustedCertificates, true);
+
+        helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
+        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
+                helper.clientTrustStore, helper.serverIntX509CertChain[0], CertificateUsage.TRUST_ANCHOR_ASSERTION);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.ensureNoRegistration(1);
+    }
+
+    /* ---- DOMAIN_ISSUER_CERTIFICATE ---- */
+
+    /**
+     * Test scenario:
+     * - Certificate Usage = domain issuer certificate
+     * - Server Certificate = server certificate
+     * - Server's TLS Server Certificate = intermediate signed certificate (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = root CA
+     *
+     * Expected outcome:
+     * - Client is able to connect
+     */
+    @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_domain()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
+                helper.trustedCertificates, true);
+
+        helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
+        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
+                helper.clientTrustStore, helper.serverIntX509CertChain[0], CertificateUsage.DOMAIN_ISSUER_CERTIFICATE);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.waitForRegistrationAtServerSide(1);
+
+        assertNotNull(helper.getCurrentRegistration());
+    }
+
+    /**
+     * Test scenario:
+     * - Certificate Usage = domain issuer certificate
+     * - Server Certificate = root CA certificate (not end-entity certificate)
+     * - Server's TLS Server Certificate = intermediate signed certificate (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = root CA
+     *
+     * Expected outcome:
+     * - Client denied the connection (no end-entity certificate given)
+     */
+    @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_domain_root_ca_given()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
+                helper.trustedCertificates, true);
+
+        helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
+        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
+                helper.clientTrustStore, helper.rootCAX509Cert, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.ensureNoRegistration(1);
+    }
+
+    /**
+     * Test scenario:
+     * - Certificate Usage = domain issuer certificate
+     * - Server Certificate = other end-entity certificate with same dns name signed by same root ca
+     * - Server's TLS Server Certificate = intermediate signed certificate (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = root CA
+     *
+     * Expected outcome:
+     * - Client denied the connection (different server cert given even thou hostname matches)
+     */
+    @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_domain_other_server_cert_given()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
+                helper.trustedCertificates, true);
+
+        helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
+        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
+                helper.clientTrustStore, helper.serverX509Cert, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.ensureNoRegistration(1);
+    }
+
+    /**
+     * Test scenario:
+     * - Certificate Usage = domain issuer certificate
+     * - Server Certificate = self signed certificate given
+     * - Server's TLS Server Certificate = intermediate signed certificate (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = root CA
+     *
+     * Expected outcome:
+     * - Client denied the connection (different certificate self-signed vs. signed -- even thou the public key is same)
+     */
+    @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_domain_selfsigned_server_cert_given()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
+                helper.trustedCertificates, true);
+
+        helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
+        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
+                helper.clientTrustStore, helper.serverIntX509CertSelfSigned, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.ensureNoRegistration(1);
+    }
+
+    /**
+     * Test scenario:
+     * - Certificate Usage = domain issuer certificate
+     * - Server Certificate = self signed certificate
+     * - Server's TLS Server Certificate = self signed certificate (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = root CA
+     *
+     * Expected outcome:
+     * - Client is able to connect
+     */
+    @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert_selfsigned_certificate_usage_domain_selfsigned_server_cert_given()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert(new X509Certificate[] { helper.serverIntX509CertSelfSigned },
+                helper.serverIntPrivateKeyFromCert, helper.trustedCertificates, true);
+
+        helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
+        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
+                helper.clientTrustStore, helper.serverIntX509CertSelfSigned, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.waitForRegistrationAtServerSide(1);
+
+        assertNotNull(helper.getCurrentRegistration());
+    }
+
+    /**
+     * Test scenario:
+     * - Certificate Usage = service certificate constraint
+     * - Server Certificate = intermediate signed certificate/wo chain
+     * - Server's TLS Server Certificate = intermediate signed certificate/wo chain (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = root CA
+     *
+     * Expected outcome:
+     * - Client is able to connect
+     */
+    @Test
+    public void registered_device_with_x509cert_to_server_with_x509cert_server_certificate_usage_domain_server_cert_wo_chain_given()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+        helper.createServerWithX509Cert(new X509Certificate[] { helper.serverIntX509CertChain[0] },
+                helper.serverIntPrivateKeyFromCert, helper.trustedCertificates, true);
+
+        helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
+        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
+                helper.clientTrustStore, helper.serverIntX509CertChain[0], CertificateUsage.DOMAIN_ISSUER_CERTIFICATE);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.waitForRegistrationAtServerSide(1);
+
+        assertNotNull(helper.getCurrentRegistration());
+    }
+
+    /* ---- */
 
     @Test
     public void registered_device_with_x509cert_to_server_with_rpk()
