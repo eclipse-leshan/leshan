@@ -19,11 +19,14 @@ import java.security.GeneralSecurityException;
 import java.security.cert.CertPath;
 import java.security.cert.CertPathValidator;
 import java.security.cert.CertPathValidatorResult;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.PKIXCertPathValidatorResult;
 import java.security.cert.PKIXParameters;
 import java.security.cert.TrustAnchor;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -121,5 +124,22 @@ public class X509Util {
             }
         }
         return false;
+    }
+
+    /**
+     * Convert array of {@link Certificate} to array of {@link X509Certificate}
+     */
+    public static X509Certificate[] asX509Certificates(Certificate[] certificates) throws CertificateException {
+        ArrayList<X509Certificate> x509Certificates = new ArrayList<>();
+
+        for (Certificate cert : certificates) {
+            if (!(cert instanceof X509Certificate)) {
+                throw new CertificateException(String.format(
+                        "%s certificate format is not supported, Only X.509 certificate is supported", cert.getType()));
+            }
+            x509Certificates.add((X509Certificate) cert);
+        }
+
+        return x509Certificates.toArray(new X509Certificate[0]);
     }
 }

@@ -37,6 +37,8 @@ import java.security.spec.ECPoint;
 import java.security.spec.ECPrivateKeySpec;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.KeySpec;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.crypto.SecretKey;
@@ -53,6 +55,7 @@ import org.eclipse.californium.scandium.dtls.PskPublicInformation;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.californium.scandium.dtls.pskstore.AdvancedPskStore;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
+import org.eclipse.leshan.client.californium.X509Util;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Security;
@@ -60,6 +63,7 @@ import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.DummyInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.util.Hex;
@@ -89,8 +93,12 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
 
     // client private key used for X509
     public final PrivateKey clientPrivateKeyFromCert;
+    // mfg client private key used for X509
+    public final PrivateKey mfgClientPrivateKeyFromCert;
     // server private key used for X509
     public final PrivateKey serverPrivateKeyFromCert;
+    // server private key used for X509
+    public final PrivateKey serverIntPrivateKeyFromCert;
     // client certificate signed by rootCA with a good CN (CN start by leshan_integration_test)
     public final X509Certificate clientX509Cert;
     // client certificate signed by rootCA but with bad CN (CN does not start by leshan_integration_test)
@@ -99,14 +107,25 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
     public final X509Certificate clientX509CertSelfSigned;
     // client certificate signed by another CA (not rootCA) with a good CN (CN start by leshan_integration_test)
     public final X509Certificate clientX509CertNotTrusted;
+    // client certificate signed by manufacturer CA's with a good CN
+    // (CN=urn:dev:ops:32473-IoT_Device-K1234567,O=Manufacturer)
+    public final X509Certificate[] mfgClientX509CertChain;
     // server certificate signed by rootCA
     public final X509Certificate serverX509Cert;
+    // server certificate signed by intermediateCA
+    public final X509Certificate[] serverIntX509CertChain;
     // self-signed server certificate
     public final X509Certificate serverX509CertSelfSigned;
+    // self-signed server certificate
+    public final X509Certificate serverIntX509CertSelfSigned;
     // rootCA used by the server
     public final X509Certificate rootCAX509Cert;
     // certificates trustedby the server (should contain rootCA)
     public final Certificate[] trustedCertificates = new Certificate[1];
+    // client's initial trust store
+    public final List<Certificate> clientTrustStore;
+    // client's initial empty trust store
+    public final List<Certificate> clientEmptyTrustStore = new ArrayList<>();
 
     public SecureIntegrationTestHelper() {
         // create client credentials
@@ -145,6 +164,9 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
             clientX509CertWithBadCN = (X509Certificate) clientKeyStore.getCertificate("client_bad_cn");
             clientX509CertSelfSigned = (X509Certificate) clientKeyStore.getCertificate("client_self_signed");
             clientX509CertNotTrusted = (X509Certificate) clientKeyStore.getCertificate("client_not_trusted");
+
+            mfgClientPrivateKeyFromCert = (PrivateKey) clientKeyStore.getKey("mfgClient", clientKeyStorePwd);
+            mfgClientX509CertChain = X509Util.asX509Certificates(clientKeyStore.getCertificateChain("mfgClient"));
         } catch (GeneralSecurityException | IOException e) {
             throw new RuntimeException(e);
         }
@@ -181,11 +203,14 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
             }
 
             serverPrivateKeyFromCert = (PrivateKey) serverKeyStore.getKey("server", serverKeyStorePwd);
+            serverIntPrivateKeyFromCert = (PrivateKey) serverKeyStore.getKey("serverint", serverKeyStorePwd);
             rootCAX509Cert = (X509Certificate) serverKeyStore.getCertificate("rootCA");
             serverX509Cert = (X509Certificate) serverKeyStore.getCertificate("server");
             serverX509CertSelfSigned = (X509Certificate) serverKeyStore.getCertificate("server_self_signed");
+            serverIntX509CertSelfSigned = (X509Certificate) serverKeyStore.getCertificate("serverInt_self_signed");
+            serverIntX509CertChain = X509Util.asX509Certificates(serverKeyStore.getCertificateChain("serverint"));
             trustedCertificates[0] = rootCAX509Cert;
-
+            clientTrustStore = Arrays.asList(new Certificate[] { rootCAX509Cert });
         } catch (GeneralSecurityException | IOException e) {
             throw new RuntimeException(e);
         }
@@ -333,6 +358,38 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         setupClientMonitoring();
     }
 
+    public void createX509CertClient(X509Certificate[] clientCertificate, PrivateKey privatekey,
+            List<Certificate> clientTrustStore, X509Certificate serverCertificate, CertificateUsage certificateUsage)
+            throws CertificateEncodingException {
+        /* Make sure there is only 1 certificate in chain before client certificate chains are supported */
+        assert (clientCertificate.length == 1);
+
+        ObjectsInitializer initializer = new ObjectsInitializer();
+        initializer.setInstancesForObject(LwM2mId.SECURITY,
+                Security.x509(
+                        "coaps://" + server.getSecuredAddress().getHostString() + ":"
+                                + server.getSecuredAddress().getPort(),
+                        12345, clientCertificate[0].getEncoded(), privatekey.getEncoded(),
+                        serverCertificate.getEncoded(), certificateUsage.code));
+        initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME));
+        initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345"));
+        initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, DummyInstanceEnabler.class);
+        List<LwM2mObjectEnabler> objects = initializer.createAll();
+
+        InetSocketAddress clientAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
+        LeshanClientBuilder builder = new LeshanClientBuilder(getCurrentEndpoint());
+        builder.setLocalAddress(clientAddress.getHostString(), clientAddress.getPort());
+        builder.setTrustStore(clientTrustStore);
+
+        Builder dtlsConfig = new DtlsConnectorConfig.Builder();
+        dtlsConfig.setClientOnly();
+        builder.setDtlsConfig(dtlsConfig);
+
+        builder.setObjects(objects);
+        client = builder.build();
+        setupClientMonitoring();
+    }
+
     @Override
     protected LeshanServerBuilder createServerBuilder() {
         return createServerBuilder(null);
@@ -367,9 +424,19 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
     }
 
     public void createServerWithX509Cert(X509Certificate serverCertificate, PrivateKey privateKey, Boolean serverOnly) {
+        createServerWithX509Cert(new X509Certificate[] { serverCertificate }, privateKey, serverOnly);
+    }
+
+    public void createServerWithX509Cert(X509Certificate serverCertificateChain[], PrivateKey privateKey,
+            Boolean serverOnly) {
+        createServerWithX509Cert(serverCertificateChain, privateKey, this.trustedCertificates, serverOnly);
+    }
+
+    public void createServerWithX509Cert(X509Certificate serverCertificateChain[], PrivateKey privateKey,
+            Certificate[] trustedCertificates, Boolean serverOnly) {
         LeshanServerBuilder builder = createServerBuilder(serverOnly);
         builder.setPrivateKey(privateKey);
-        builder.setCertificateChain(new X509Certificate[] { serverCertificate });
+        builder.setCertificateChain(serverCertificateChain);
         builder.setTrustedCertificates(trustedCertificates);
         builder.setAuthorizer(new DefaultAuthorizer(securityStore, new SecurityChecker() {
             @Override
