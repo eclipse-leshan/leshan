@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.californium;
 
+import org.eclipse.californium.elements.util.CertPathUtil;
 import org.eclipse.californium.scandium.dtls.AlertMessage;
 import org.eclipse.californium.scandium.dtls.AlertMessage.AlertDescription;
 import org.eclipse.californium.scandium.dtls.AlertMessage.AlertLevel;
@@ -51,7 +52,8 @@ public class DomainIssuerCertificateVerifier extends LeshanCertificateVerifierBa
     }
 
     @Override
-    public void verifyCertificate(CertificateMessage message, DTLSSession session) throws HandshakeException {
+    public CertPath verifyCertificate(Boolean clientUsage, boolean truncateCertificatePath, CertificateMessage message,
+            DTLSSession session) throws HandshakeException {
         CertPath messageChain = message.getCertificateChain();
 
         if (messageChain.getCertificates().size() == 0) {
@@ -69,6 +71,16 @@ public class DomainIssuerCertificateVerifier extends LeshanCertificateVerifierBa
         }
         X509Certificate serverCertificate = (X509Certificate) receivedServerCertificate;
 
+        // If clientUsage is defined then check key usage
+        if (clientUsage) {
+            if (!CertPathUtil.canBeUsedForAuthentication(serverCertificate, true)) {
+                AlertMessage alert = new AlertMessage(AlertLevel.FATAL, AlertDescription.BAD_CERTIFICATE,
+                        session.getPeer());
+                throw new HandshakeException("Certificate chain could not be validated - Key Usage doesn't match!",
+                        alert);
+            }
+        }
+
         // - target certificate must match what is provided certificate in server info
         if (!expectedServerCertificate.equals(serverCertificate)) {
             AlertMessage alert = new AlertMessage(AlertLevel.FATAL, AlertDescription.BAD_CERTIFICATE,
@@ -78,5 +90,7 @@ public class DomainIssuerCertificateVerifier extends LeshanCertificateVerifierBa
 
         // - validate server name
         validateSubject(session, serverCertificate);
+
+        return messageChain;
     }
 }

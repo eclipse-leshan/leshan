@@ -55,7 +55,8 @@ public class TrustAnchorAssertionCertificateVerifier extends LeshanCertificateVe
     }
 
     @Override
-    public void verifyCertificate(CertificateMessage message, DTLSSession session) throws HandshakeException {
+    public CertPath verifyCertificate(Boolean clientUsage, boolean truncateCertificatePath, CertificateMessage message,
+            DTLSSession session) throws HandshakeException {
         CertPath messageChain = message.getCertificateChain();
 
         if (messageChain.getCertificates().size() == 0) {
@@ -71,12 +72,23 @@ public class TrustAnchorAssertionCertificateVerifier extends LeshanCertificateVe
                     session.getPeer());
             throw new HandshakeException("Certificate chain could not be validated - unknown certificate type", alert);
         }
-        X509Certificate serverCertificate = (X509Certificate)receivedServerCertificate;
+        X509Certificate serverCertificate = (X509Certificate) receivedServerCertificate;
 
+        // If clientUsage is defined then check key usage
+        if (clientUsage) {
+            if (!CertPathUtil.canBeUsedForAuthentication(serverCertificate, true)) {
+                AlertMessage alert = new AlertMessage(AlertLevel.FATAL, AlertDescription.BAD_CERTIFICATE,
+                        session.getPeer());
+                throw new HandshakeException("Certificate chain could not be validated - Key Usage doesn't match!",
+                        alert);
+            }
+        }
+
+        CertPath certPath = expandCertPath(messageChain);
         if (trustedCertificates != null) {
             try {
                 // - must do PKIX validation with trustStore
-                CertPathUtil.validateCertificatePath(false, messageChain, trustedCertificates);
+                CertPathUtil.validateCertificatePath(truncateCertificatePath, certPath, trustedCertificates);
             } catch (GeneralSecurityException e) {
                 AlertMessage alert = new AlertMessage(AlertLevel.FATAL, AlertDescription.BAD_CERTIFICATE,
                         session.getPeer());
@@ -86,5 +98,7 @@ public class TrustAnchorAssertionCertificateVerifier extends LeshanCertificateVe
 
         // - validate server name
         validateSubject(session, serverCertificate);
+
+        return messageChain;
     }
 }
