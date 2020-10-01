@@ -100,7 +100,7 @@ public class LwM2mNodeTextEncoder implements NodeEncoder {
         public void visit(LwM2mResourceInstance instance) {
             LOG.trace("Encoding resource instance {} into text", instance);
 
-            ResourceModel rSpec = model.getResourceModel(path.getObjectId(), instance.getId());
+            ResourceModel rSpec = model.getResourceModel(path.getObjectId(), path.getResourceId());
             Type expectedType = rSpec != null ? rSpec.type : instance.getType();
             Object val = converter.convertValue(instance.getValue(), instance.getType(), expectedType, path);
 

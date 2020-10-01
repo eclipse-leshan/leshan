@@ -96,6 +96,7 @@ public class DummyInstanceEnabler extends SimpleInstanceEnabler {
         switch (resourceModel.type) {
         case STRING:
             values.put(0, createDefaultStringValueFor(objectModel, resourceModel));
+            values.put(1, createDefaultStringValueFor(objectModel, resourceModel));
             break;
         case BOOLEAN:
             values.put(0, createDefaultBooleanValueFor(objectModel, resourceModel));

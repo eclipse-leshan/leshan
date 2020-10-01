@@ -184,7 +184,7 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
                 if (instances.containsKey(resourceInstanceId)) {
                     instances.put(resourceInstanceId, value);
                     return write(identity, resourceid,
-                            new LwM2mMultipleResource(resourceInstanceId, value.getType(), instances.values()));
+                        new LwM2mMultipleResource(resourceid, value.getType(), instances.values()));
                 }
             }
         }
