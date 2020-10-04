@@ -596,7 +596,7 @@ public class LeshanClientDemo {
         engineFactory.setResumeOnConnect(!forceFullhandshake);
 
         // configure EndpointFactory
-        DefaultEndpointFactory endpointFactory = new DefaultEndpointFactory("LWM2M CLIENT") {
+        DefaultEndpointFactory endpointFactory = new DefaultEndpointFactory("LWM2M CLIENT", true) {
             @Override
             protected Connector createSecuredConnector(DtlsConnectorConfig dtlsConfig) {
 
