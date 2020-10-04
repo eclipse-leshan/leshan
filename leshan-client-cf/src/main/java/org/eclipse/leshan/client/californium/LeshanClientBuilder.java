@@ -257,7 +257,7 @@ public class LeshanClientBuilder {
             engineFactory = new DefaultRegistrationEngineFactory();
         }
         if (endpointFactory == null) {
-            endpointFactory = new DefaultEndpointFactory("LWM2M Client") {
+            endpointFactory = new DefaultEndpointFactory("LWM2M Client", true) {
                 @Override
                 protected Connector createSecuredConnector(DtlsConnectorConfig dtlsConfig) {
                     DTLSConnector dtlsConnector = new DTLSConnector(dtlsConfig);

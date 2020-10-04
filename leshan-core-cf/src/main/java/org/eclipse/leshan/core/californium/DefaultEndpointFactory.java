@@ -16,6 +16,7 @@
 package org.eclipse.leshan.core.californium;
 
 import java.net.InetSocketAddress;
+import java.security.Principal;
 
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.CoapEndpoint.Builder;
@@ -24,6 +25,7 @@ import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.observe.ObservationStore;
 import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.elements.EndpointContextMatcher;
+import org.eclipse.californium.elements.PrincipalEndpointContextMatcher;
 import org.eclipse.californium.elements.UDPConnector;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
@@ -46,7 +48,15 @@ public class DefaultEndpointFactory implements EndpointFactory {
     }
 
     public DefaultEndpointFactory(String loggingTag) {
-        securedContextMatcher = createSecuredContextMatcher();
+        this(loggingTag, false);
+    }
+
+    /**
+     * @param loggingTag Logging tag
+     * @param isClient Indication whether this factory is for client or for server.
+     */
+    public DefaultEndpointFactory(String loggingTag, boolean isClient) {
+        securedContextMatcher = createSecuredContextMatcher(isClient);
         unsecuredContextMatcher = createUnsecuredContextMatcher();
         if (loggingTag != null) {
             this.loggingTag = loggingTag;
@@ -54,14 +64,27 @@ public class DefaultEndpointFactory implements EndpointFactory {
     }
 
     /**
-     * By default a {@link Lwm2mEndpointContextMatcher} is created.
+     * For server {@link Lwm2mEndpointContextMatcher} is created.
+     * For client {@link PrincipalEndpointContextMatcher} is created.
      * <p>
      * This method is intended to be overridden.
      * 
      * @return the {@link EndpointContextMatcher} used for secured communication
+     * @param isClient Indication whether to use client side endpoint context matcher of server side.
      */
-    protected EndpointContextMatcher createSecuredContextMatcher() {
-        return new Lwm2mEndpointContextMatcher();
+    protected EndpointContextMatcher createSecuredContextMatcher(boolean isClient) {
+        if (isClient) {
+            return new PrincipalEndpointContextMatcher() {
+                @Override
+                protected boolean matchPrincipals(Principal requestedPrincipal, Principal availablePrincipal) {
+                    // Client always knows where it is connected -> no need to match principals.
+                    // For DTLS connections handshake has already been performed which verifies peer identity.
+                    return true;
+                }
+            };
+        } else {
+            return new Lwm2mEndpointContextMatcher();
+        }
     }
 
     /**
