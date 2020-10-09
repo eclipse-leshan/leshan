@@ -60,6 +60,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
     protected CoapEndpoint currentEndpoint;
 
     protected Builder dtlsConfigbuilder;
+    protected List<Certificate> trustStore;
     protected NetworkConfig coapConfig;
     protected InetSocketAddress localAddress;
     protected CoapServer coapServer;
@@ -67,9 +68,18 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
 
     public CaliforniumEndpointsManager(InetSocketAddress localAddress, NetworkConfig coapConfig,
             Builder dtlsConfigBuilder, EndpointFactory endpointFactory) {
+        this(localAddress, coapConfig, dtlsConfigBuilder, null, endpointFactory);
+    }
+
+    /**
+     * @since 2.0
+     */
+    public CaliforniumEndpointsManager(InetSocketAddress localAddress, NetworkConfig coapConfig,
+            Builder dtlsConfigBuilder, List<Certificate> trustStore, EndpointFactory endpointFactory) {
         this.localAddress = localAddress;
         this.coapConfig = coapConfig;
         this.dtlsConfigbuilder = dtlsConfigBuilder;
+        this.trustStore = trustStore;
         this.endpointFactory = endpointFactory;
     }
 

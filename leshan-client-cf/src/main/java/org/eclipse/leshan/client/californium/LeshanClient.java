@@ -16,6 +16,7 @@
 package org.eclipse.leshan.client.californium;
 
 import java.net.InetSocketAddress;
+import java.security.cert.Certificate;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
@@ -83,6 +84,16 @@ public class LeshanClient implements LwM2mClient {
             EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
             Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes,
             LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder, ScheduledExecutorService sharedExecutor) {
+        this(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder, null, endpointFactory,
+                engineFactory, additionalAttributes, bsAdditionalAttributes, encoder, decoder, sharedExecutor);
+    }
+
+    /** @since 2.0 */
+    public LeshanClient(String endpoint, InetSocketAddress localAddress,
+            List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig, Builder dtlsConfigBuilder, List<Certificate> trustStore,
+            EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
+            Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes,
+            LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder, ScheduledExecutorService sharedExecutor) {
 
         Validate.notNull(endpoint);
         Validate.notEmpty(objectEnablers);
@@ -91,7 +102,7 @@ public class LeshanClient implements LwM2mClient {
         objectTree = createObjectTree(objectEnablers);
         observers = createClientObserverDispatcher();
         bootstrapHandler = createBoostrapHandler(objectTree);
-        endpointsManager = createEndpointsManager(localAddress, coapConfig, dtlsConfigBuilder, endpointFactory);
+        endpointsManager = createEndpointsManager(localAddress, coapConfig, dtlsConfigBuilder, trustStore, endpointFactory);
         requestSender = createRequestSender(endpointsManager, sharedExecutor);
         engine = engineFactory.createRegistratioEngine(endpoint, objectTree, endpointsManager, requestSender,
                 bootstrapHandler, observers, additionalAttributes, bsAdditionalAttributes, sharedExecutor);
@@ -178,8 +189,8 @@ public class LeshanClient implements LwM2mClient {
     }
 
     protected CaliforniumEndpointsManager createEndpointsManager(InetSocketAddress localAddress,
-            NetworkConfig coapConfig, Builder dtlsConfigBuilder, EndpointFactory endpointFactory) {
-        return new CaliforniumEndpointsManager(localAddress, coapConfig, dtlsConfigBuilder, endpointFactory);
+            NetworkConfig coapConfig, Builder dtlsConfigBuilder, List<Certificate> trustStore, EndpointFactory endpointFactory) {
+        return new CaliforniumEndpointsManager(localAddress, coapConfig, dtlsConfigBuilder, trustStore, endpointFactory);
     }
 
     protected CaliforniumLwM2mRequestSender createRequestSender(CaliforniumEndpointsManager endpointsManager,

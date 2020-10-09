@@ -16,6 +16,7 @@
 package org.eclipse.leshan.client.californium;
 
 import java.net.InetSocketAddress;
+import java.security.cert.Certificate;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
@@ -61,6 +62,7 @@ public class LeshanClientBuilder {
 
     private NetworkConfig coapConfig;
     private Builder dtlsConfigBuilder;
+    private List<Certificate> trustStore;
 
     private LwM2mNodeEncoder encoder;
     private LwM2mNodeDecoder decoder;
@@ -153,6 +155,15 @@ public class LeshanClientBuilder {
      */
     public LeshanClientBuilder setDtlsConfig(DtlsConnectorConfig.Builder config) {
         this.dtlsConfigBuilder = config;
+        return this;
+    }
+
+    /**
+     * Set optional trust store for verifying X.509 server certificates.
+     * @param trustStore List of trusted CA certificates
+     */
+    public LeshanClientBuilder setTrustStore(List<Certificate> trustStore) {
+        this.trustStore = trustStore;
         return this;
     }
 
@@ -309,7 +320,7 @@ public class LeshanClientBuilder {
         }
 
         return createLeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder,
-                endpointFactory, engineFactory, additionalAttributes, encoder, decoder, executor);
+                this.trustStore, endpointFactory, engineFactory, additionalAttributes, encoder, decoder, executor);
     }
 
     /**
@@ -326,6 +337,7 @@ public class LeshanClientBuilder {
      *        client.
      * @param coapConfig The coap config used to create {@link CoapEndpoint} and {@link CoapServer}.
      * @param dtlsConfigBuilder The dtls config used to create the {@link DTLSConnector}.
+     * @param trustStore The optional trust store for verifying X.509 server certificates.
      * @param endpointFactory The factory which will create the {@link CoapEndpoint}.
      * @param engineFactory The factory which will create the {@link RegistrationEngine}.
      * @param additionalAttributes Some extra (out-of-spec) attributes to add to the register request.
@@ -337,10 +349,11 @@ public class LeshanClientBuilder {
      */
     protected LeshanClient createLeshanClient(String endpoint, InetSocketAddress localAddress,
             List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig, Builder dtlsConfigBuilder,
-            EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
+            List<Certificate> trustStore, EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
             Map<String, String> additionalAttributes, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
             ScheduledExecutorService sharedExecutor) {
-        return new LeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder, endpointFactory,
-                engineFactory, additionalAttributes, bsAdditionalAttributes, encoder, decoder, executor);
+        return new LeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder, trustStore,
+                endpointFactory, engineFactory, additionalAttributes, bsAdditionalAttributes, encoder, decoder,
+                executor);
     }
 }
