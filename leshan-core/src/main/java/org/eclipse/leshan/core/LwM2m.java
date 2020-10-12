@@ -60,7 +60,7 @@ public interface LwM2m {
                 return "version  MUST NOT be null or empty";
             String[] versionPart = version.split("\\.");
             if (versionPart.length != 2) {
-                throw new IllegalArgumentException(String.format("version (%s) MUST be composed of 2 parts", version));
+                return String.format("version (%s) MUST be composed of 2 parts", version);
             }
             for (int i = 0; i < 2; i++) {
                 try {
@@ -128,6 +128,10 @@ public interface LwM2m {
 
         public boolean newerThan(Version version) {
             return this.compareTo(version) > 0;
+        }
+
+        public boolean olderThan(Version version) {
+            return this.compareTo(version) < 0;
         }
 
         public boolean newerThan(String version) {
