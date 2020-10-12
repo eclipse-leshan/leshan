@@ -18,6 +18,7 @@ package org.eclipse.leshan.server.californium;
 import static org.junit.Assert.assertEquals;
 
 import java.net.InetSocketAddress;
+import java.util.EnumSet;
 
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.Identity;
@@ -82,7 +83,7 @@ public class LeshanServerTest {
 
     private void forceThreadsCreation(LeshanServer server) {
         Registration reg = new Registration.Builder("id", "endpoint", Identity.unsecure(new InetSocketAddress(5555)))
-                .bindingMode(BindingMode.UQ).build();
+                .bindingMode(EnumSet.of(BindingMode.U, BindingMode.Q)).build();
         // Force timer thread creation of preference service.
         ((PresenceServiceImpl) server.getPresenceService()).setAwake(reg);
         // Force time thread creation of CoapAsyncRequestObserver

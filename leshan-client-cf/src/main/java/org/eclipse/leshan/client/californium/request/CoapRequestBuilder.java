@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.request;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
@@ -85,12 +86,20 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
         if (lwVersion != null)
             attributes.put("lwm2m", lwVersion);
 
-        BindingMode bindingMode = request.getBindingMode();
+        EnumSet<BindingMode> bindingMode = request.getBindingMode();
         if (bindingMode != null)
-            attributes.put("b", bindingMode.toString());
+            attributes.put("b", BindingMode.toString(bindingMode));
+
+        Boolean queueMode = request.getQueueMode();
+        if (queueMode != null && queueMode)
+            attributes.put("Q", null);
 
         for (Entry<String, String> attr : attributes.entrySet()) {
-            coapRequest.getOptions().addUriQuery(attr.getKey() + "=" + attr.getValue());
+            if (attr.getValue() != null) {
+                coapRequest.getOptions().addUriQuery(attr.getKey() + "=" + attr.getValue());
+            } else {
+                coapRequest.getOptions().addUriQuery(attr.getKey());
+            }
         }
 
         Link[] objectLinks = request.getObjectLinks();
@@ -113,9 +122,9 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
         if (smsNumber != null)
             coapRequest.getOptions().addUriQuery("sms=" + smsNumber);
 
-        BindingMode bindingMode = request.getBindingMode();
+        EnumSet<BindingMode> bindingMode = request.getBindingMode();
         if (bindingMode != null)
-            coapRequest.getOptions().addUriQuery("b=" + bindingMode.toString());
+            coapRequest.getOptions().addUriQuery("b=" + BindingMode.toString(bindingMode));
 
         Link[] linkObjects = request.getObjectLinks();
         if (linkObjects != null) {

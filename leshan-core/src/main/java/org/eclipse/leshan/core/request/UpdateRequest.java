@@ -17,10 +17,12 @@ package org.eclipse.leshan.core.request;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.UpdateResponse;
 
@@ -32,7 +34,7 @@ public class UpdateRequest implements UplinkRequest<UpdateResponse> {
 
     private final Long lifeTimeInSec;
     private final String smsNumber;
-    private final BindingMode bindingMode;
+    private final EnumSet<BindingMode> bindingMode;
     private final String registrationId;
     private final Link[] objectLinks;
     private final Map<String, String> additionalAttributes;
@@ -47,7 +49,7 @@ public class UpdateRequest implements UplinkRequest<UpdateResponse> {
      * @param objectLinks the objects and object instances the client hosts/supports
      * @exception InvalidRequestException if the registrationId is empty.
      */
-    public UpdateRequest(String registrationId, Long lifetime, String smsNumber, BindingMode binding,
+    public UpdateRequest(String registrationId, Long lifetime, String smsNumber, EnumSet<BindingMode> binding,
             Link[] objectLinks, Map<String, String> additionalAttributes) throws InvalidRequestException {
 
         if (registrationId == null || registrationId.isEmpty())
@@ -80,12 +82,21 @@ public class UpdateRequest implements UplinkRequest<UpdateResponse> {
         return smsNumber;
     }
 
-    public BindingMode getBindingMode() {
+    public EnumSet<BindingMode> getBindingMode() {
         return bindingMode;
     }
 
     public Map<String, String> getAdditionalAttributes() {
         return additionalAttributes;
+    }
+
+    public void validate(String targetedVersion) {
+        if (bindingMode != null) {
+            String err = BindingMode.isValidFor(bindingMode, Version.get(targetedVersion));
+            if (err != null) {
+                throw new InvalidRequestException("Invalid Binding mode: %s", err);
+            }
+        }
     }
 
     @Override

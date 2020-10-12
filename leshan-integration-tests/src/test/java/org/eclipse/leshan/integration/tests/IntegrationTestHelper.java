@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -172,7 +173,7 @@ public class IntegrationTestHelper {
                 "coap://" + server.getUnsecuredAddress().getHostString() + ":" + server.getUnsecuredAddress().getPort(),
                 12345));
         initializer.setInstancesForObject(LwM2mId.SERVER,
-                new org.eclipse.leshan.client.object.Server(12345, LIFETIME, BindingMode.U, false));
+                new org.eclipse.leshan.client.object.Server(12345, LIFETIME, EnumSet.of(BindingMode.U), false));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new TestDevice("Eclipse Leshan", MODEL_NUMBER, "12345", "U"));
         initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, DummyInstanceEnabler.class);
         initializer.setInstancesForObject(TEST_OBJECT_ID, new DummyInstanceEnabler(0),

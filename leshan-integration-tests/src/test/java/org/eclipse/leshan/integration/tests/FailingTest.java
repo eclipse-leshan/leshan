@@ -17,6 +17,7 @@ package org.eclipse.leshan.integration.tests;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.EnumSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -71,8 +72,8 @@ public class FailingTest {
     public void sync_send_without_acknowleged() throws Exception {
         // Register client
         LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress());
-        client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, null, BindingMode.U, null,
-                Link.parse("</1>,</2>,</3>".getBytes()), null));
+        client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1", EnumSet.of(BindingMode.U),
+                null, null, Link.parse("</1>,</2>,</3>".getBytes()), null));
         client.expectResponse().go();
         helper.waitForRegistrationAtServerSide(1);
 
@@ -93,8 +94,8 @@ public class FailingTest {
     public void sync_send_with_acknowleged_request_without_response() throws Exception {
         // Register client
         LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress());
-        client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, null, BindingMode.U, null,
-                Link.parse("</1>,</2>,</3>".getBytes()), null));
+        client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1", EnumSet.of(BindingMode.U),
+                null, null, Link.parse("</1>,</2>,</3>".getBytes()), null));
         client.expectResponse().go();
         helper.waitForRegistrationAtServerSide(1);
 
@@ -122,8 +123,8 @@ public class FailingTest {
     public void async_send_without_acknowleged() throws Exception {
         // register client
         LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress());
-        client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, null, BindingMode.U, null,
-                Link.parse("</1>,</2>,</3>".getBytes()), null));
+        client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1", EnumSet.of(BindingMode.U),
+                null, null, Link.parse("</1>,</2>,</3>".getBytes()), null));
         client.expectResponse().go();
         helper.waitForRegistrationAtServerSide(1);
 
@@ -141,8 +142,8 @@ public class FailingTest {
     public void async_send_with_acknowleged_request_without_response() throws Exception {
         // register client
         LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress());
-        client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, null, BindingMode.U, null,
-                Link.parse("</1>,</2>,</3>".getBytes()), null));
+        client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1", EnumSet.of(BindingMode.U),
+                null, null, Link.parse("</1>,</2>,</3>".getBytes()), null));
         client.expectResponse().go();
         helper.waitForRegistrationAtServerSide(1);
 

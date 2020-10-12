@@ -17,10 +17,12 @@ package org.eclipse.leshan.core.request;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.RegisterResponse;
 
@@ -33,7 +35,8 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
     private final String endpointName;
     private final Long lifetime;
     private final String lwVersion;
-    private final BindingMode bindingMode;
+    private final EnumSet<BindingMode> bindingMode;
+    private final Boolean queueMode; // since LWM2M 1.1
     private final String smsNumber;
     private final Link[] objectLinks;
     private final Map<String, String> additionalAttributes;
@@ -44,14 +47,15 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
      * @param endpointName is the LWM2M client identifier.
      * @param lifetime specifies the lifetime of the registration in seconds.
      * @param lwVersion indicates the version of the LWM2M Enabler that the LWM2M Client supports.
-     * @param bindingMode indicates current {@link BindingMode} of the LWM2M Client.
+     * @param bindingMode Indicates the supported {@link BindingMode}s in the LwM2M Client.
+     * @param queueMode Indicates whether Queue Mode is supported.
      * @param smsNumber is the MSISDN where the LWM2M Client can be reached for use with the SMS binding.
      * @param objectLinks is the list of Objects supported and Object Instances available on the LWM2M Client.
      * @param additionalAttributes are any attributes/parameters which is out of the LWM2M specification.
      * @exception InvalidRequestException if endpoint name or objectlinks is empty.
      */
-    public RegisterRequest(String endpointName, Long lifetime, String lwVersion, BindingMode bindingMode,
-            String smsNumber, Link[] objectLinks, Map<String, String> additionalAttributes)
+    public RegisterRequest(String endpointName, Long lifetime, String lwVersion, EnumSet<BindingMode> bindingMode,
+            Boolean queueMode, String smsNumber, Link[] objectLinks, Map<String, String> additionalAttributes)
             throws InvalidRequestException {
 
         if (endpointName == null || endpointName.isEmpty())
@@ -61,6 +65,29 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
             throw new InvalidRequestException(
                     "supported object list is mandatory and mandatory objects should be present for endpoint %s",
                     endpointName);
+
+        String err = Version.validate(lwVersion);
+        if (err != null) {
+            throw new InvalidRequestException("Invalid LWM2M version: %s", err);
+        }
+
+        if (bindingMode != null) {
+            err = BindingMode.isValidFor(bindingMode, Version.get(lwVersion));
+            if (err != null) {
+                throw new InvalidRequestException("Invalid Binding mode: %s", err);
+            }
+        }
+
+        // handle queue mode param
+        Version version = Version.get(lwVersion);
+        if (version.equals(Version.V1_0)) {
+            if (queueMode != null)
+                throw new InvalidRequestException("QueueMode is not defined in LWM2M v1.0");
+            else
+                this.queueMode = null;
+        } else {
+            this.queueMode = queueMode == null ? false : queueMode;
+        }
 
         this.endpointName = endpointName;
         this.lifetime = lifetime;
@@ -86,7 +113,7 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
         return lwVersion;
     }
 
-    public BindingMode getBindingMode() {
+    public EnumSet<BindingMode> getBindingMode() {
         return bindingMode;
     }
 
@@ -96,6 +123,10 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
 
     public Link[] getObjectLinks() {
         return objectLinks;
+    }
+
+    public Boolean getQueueMode() {
+        return queueMode;
     }
 
     public Map<String, String> getAdditionalAttributes() {
@@ -110,8 +141,8 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
     @Override
     public String toString() {
         return String.format(
-                "RegisterRequest [endpointName=%s, lifetime=%s, lwVersion=%s, bindingMode=%s, smsNumber=%s, objectLinks=%s, additionalAttributes=%s]",
-                endpointName, lifetime, lwVersion, bindingMode, smsNumber, Arrays.toString(objectLinks),
+                "RegisterRequest [endpointName=%s, lifetime=%s, lwVersion=%s, bindingMode=%s, queueMode=%s, smsNumber=%s, objectLinks=%s, additionalAttributes=%s]",
+                endpointName, lifetime, lwVersion, bindingMode, queueMode, smsNumber, Arrays.toString(objectLinks),
                 additionalAttributes);
     }
 
@@ -125,6 +156,7 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
         result = prime * result + ((lifetime == null) ? 0 : lifetime.hashCode());
         result = prime * result + ((lwVersion == null) ? 0 : lwVersion.hashCode());
         result = prime * result + Arrays.hashCode(objectLinks);
+        result = prime * result + ((queueMode == null) ? 0 : queueMode.hashCode());
         result = prime * result + ((smsNumber == null) ? 0 : smsNumber.hashCode());
         return result;
     }
@@ -161,6 +193,11 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
         } else if (!lwVersion.equals(other.lwVersion))
             return false;
         if (!Arrays.equals(objectLinks, other.objectLinks))
+            return false;
+        if (queueMode == null) {
+            if (other.queueMode != null)
+                return false;
+        } else if (!queueMode.equals(other.queueMode))
             return false;
         if (smsNumber == null) {
             if (other.smsNumber != null)

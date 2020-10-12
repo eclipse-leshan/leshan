@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.client;
 
+import java.util.EnumSet;
+
 import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
@@ -75,7 +77,7 @@ public class RegistrationUpdateHandler {
                 if (!bsHandler.isBootstrapping())
                     if (object.getId() == LwM2mId.SERVER) {
                         Long lifetime = null;
-                        BindingMode bindingMode = null;
+                        EnumSet<BindingMode> bindingMode = null;
                         for (int i = 0; i < resourceIds.length; i++) {
                             if (resourceIds[i] == LwM2mId.SRV_LIFETIME) {
                                 lifetime = ServersInfoExtractor.getLifeTime(object, instanceId);

@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.client;
 
+import java.util.EnumSet;
 import java.util.Map;
 
 import org.eclipse.leshan.core.Link;
@@ -27,12 +28,12 @@ public class RegistrationUpdate {
 
     private final Long lifeTimeInSec;
     private final String smsNumber;
-    private final BindingMode bindingMode;
+    private final EnumSet<BindingMode> bindingMode;
     private final Link[] objectLinks;
     private final Map<String, String> additionalAttributes;
 
-    public RegistrationUpdate(Long lifeTimeInSec, String smsNumber, BindingMode bindingMode, Link[] objectLinks,
-            Map<String, String> additionalAttributes) {
+    public RegistrationUpdate(Long lifeTimeInSec, String smsNumber, EnumSet<BindingMode> bindingMode,
+            Link[] objectLinks, Map<String, String> additionalAttributes) {
         this.lifeTimeInSec = lifeTimeInSec;
         this.smsNumber = smsNumber;
         this.bindingMode = bindingMode;
@@ -52,7 +53,7 @@ public class RegistrationUpdate {
         this(null, smsNumber, null, null, null);
     }
 
-    public RegistrationUpdate(BindingMode bindingMode) {
+    public RegistrationUpdate(EnumSet<BindingMode> bindingMode) {
         this(null, null, bindingMode, null, null);
     }
 
@@ -72,7 +73,7 @@ public class RegistrationUpdate {
         return smsNumber;
     }
 
-    public BindingMode getBindingMode() {
+    public EnumSet<BindingMode> getBindingMode() {
         return bindingMode;
     }
 

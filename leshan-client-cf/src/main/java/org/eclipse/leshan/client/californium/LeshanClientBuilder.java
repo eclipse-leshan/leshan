@@ -17,6 +17,7 @@ package org.eclipse.leshan.client.californium;
 
 import java.net.InetSocketAddress;
 import java.security.cert.Certificate;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
@@ -160,6 +161,7 @@ public class LeshanClientBuilder {
 
     /**
      * Set optional trust store for verifying X.509 server certificates.
+     * 
      * @param trustStore List of trusted CA certificates
      */
     public LeshanClientBuilder setTrustStore(List<Certificate> trustStore) {
@@ -207,6 +209,7 @@ public class LeshanClientBuilder {
 
     /**
      * Set the additionalAttributes for {@link BootstrapRequest}
+     * 
      * @since 1.1
      */
     public LeshanClientBuilder setBootstrapAdditionalAttributes(Map<String, String> additionalAttributes) {
@@ -253,7 +256,8 @@ public class LeshanClientBuilder {
             ObjectsInitializer initializer = new ObjectsInitializer();
             initializer.setInstancesForObject(LwM2mId.SECURITY,
                     Security.noSec("coap://leshan.eclipseprojects.io:5683", 12345));
-            initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, 5 * 60, BindingMode.U, false));
+            initializer.setInstancesForObject(LwM2mId.SERVER,
+                    new Server(12345, 5 * 60, EnumSet.of(BindingMode.U), false));
             initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", "model12345", "12345", "U"));
             objectEnablers = initializer.createAll();
         }

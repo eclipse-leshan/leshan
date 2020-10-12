@@ -20,6 +20,7 @@ import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,12 +39,12 @@ public class RegistrationUpdate {
     private final Identity identity;
     private final Long lifeTimeInSec;
     private final String smsNumber;
-    private final BindingMode bindingMode;
+    private final EnumSet<BindingMode> bindingMode;
     private final Link[] objectLinks;
     private final Map<String, String> additionalAttributes;
 
     public RegistrationUpdate(String registrationId, Identity identity, Long lifeTimeInSec, String smsNumber,
-            BindingMode bindingMode, Link[] objectLinks, Map<String, String> additionalAttributes) {
+            EnumSet<BindingMode> bindingMode, Link[] objectLinks, Map<String, String> additionalAttributes) {
         Validate.notNull(registrationId);
         Validate.notNull(identity);
         this.registrationId = registrationId;
@@ -68,7 +69,7 @@ public class RegistrationUpdate {
         Identity identity = this.identity != null ? this.identity : registration.getIdentity();
         Link[] linkObject = this.objectLinks != null ? this.objectLinks : registration.getObjectLinks();
         long lifeTimeInSec = this.lifeTimeInSec != null ? this.lifeTimeInSec : registration.getLifeTimeInSec();
-        BindingMode bindingMode = this.bindingMode != null ? this.bindingMode : registration.getBindingMode();
+        EnumSet<BindingMode> bindingMode = this.bindingMode != null ? this.bindingMode : registration.getBindingMode();
         String smsNumber = this.smsNumber != null ? this.smsNumber : registration.getSmsNumber();
 
         Map<String, String> additionalAttributes = this.additionalAttributes.isEmpty()
@@ -83,8 +84,9 @@ public class RegistrationUpdate {
                 identity);
 
         builder.lwM2mVersion(registration.getLwM2mVersion()).lifeTimeInSec(lifeTimeInSec).smsNumber(smsNumber)
-                .bindingMode(bindingMode).objectLinks(linkObject).registrationDate(registration.getRegistrationDate())
-                .lastUpdate(lastUpdate).additionalRegistrationAttributes(additionalAttributes);
+                .bindingMode(bindingMode).queueMode(registration.getQueueMode()).objectLinks(linkObject)
+                .registrationDate(registration.getRegistrationDate()).lastUpdate(lastUpdate)
+                .additionalRegistrationAttributes(additionalAttributes);
 
         return builder.build();
 
@@ -114,7 +116,7 @@ public class RegistrationUpdate {
         return smsNumber;
     }
 
-    public BindingMode getBindingMode() {
+    public EnumSet<BindingMode> getBindingMode() {
         return bindingMode;
     }
 

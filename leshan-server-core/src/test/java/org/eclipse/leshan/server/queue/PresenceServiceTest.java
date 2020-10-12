@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
+import java.util.EnumSet;
 
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.Identity;
@@ -74,7 +75,7 @@ public class PresenceServiceTest {
         Registration.Builder builder = new Registration.Builder("ID", "urn:client",
                 Identity.unsecure(Inet4Address.getLoopbackAddress(), 12354));
 
-        Registration reg = builder.bindingMode(BindingMode.UQ).build();
+        Registration reg = builder.bindingMode(EnumSet.of(BindingMode.U, BindingMode.Q)).build();
         presenceService.setAwake(reg);
         return reg;
     }

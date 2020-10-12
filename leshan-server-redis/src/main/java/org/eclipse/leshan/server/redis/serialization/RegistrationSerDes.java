@@ -43,7 +43,9 @@ public class RegistrationSerDes {
             o.add("sms", r.getSmsNumber());
         }
         o.add("ver", r.getLwM2mVersion());
-        o.add("bnd", r.getBindingMode().name());
+        o.add("bnd", BindingMode.toString(r.getBindingMode()));
+        if (r.getQueueMode() != null)
+            o.add("qm", r.getQueueMode());
         o.add("ep", r.getEndpoint());
         o.add("regId", r.getId());
 
@@ -84,7 +86,9 @@ public class RegistrationSerDes {
     public static Registration deserialize(JsonObject jObj) {
         Registration.Builder b = new Registration.Builder(jObj.getString("regId", null), jObj.getString("ep", null),
                 IdentitySerDes.deserialize(jObj.get("identity").asObject()));
-        b.bindingMode(BindingMode.valueOf(jObj.getString("bnd", null)));
+        b.bindingMode(BindingMode.parse(jObj.getString("bnd", null)));
+        if (jObj.get("qm") != null)
+            b.queueMode(jObj.getBoolean("qm", false));
         b.lastUpdate(new Date(jObj.getLong("lastUp", 0)));
         b.lifeTimeInSec(jObj.getLong("lt", 0));
         b.lwM2mVersion(jObj.getString("ver", Version.getDefault().toString()));

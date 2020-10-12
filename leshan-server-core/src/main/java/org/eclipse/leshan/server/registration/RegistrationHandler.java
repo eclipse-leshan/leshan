@@ -56,8 +56,9 @@ public class RegistrationHandler {
                 registrationIdProvider.getRegistrationId(registerRequest), registerRequest.getEndpointName(), sender);
 
         builder.lwM2mVersion(registerRequest.getLwVersion()).lifeTimeInSec(registerRequest.getLifetime())
-                .bindingMode(registerRequest.getBindingMode()).objectLinks(registerRequest.getObjectLinks())
-                .smsNumber(registerRequest.getSmsNumber()).registrationDate(new Date()).lastUpdate(new Date())
+                .bindingMode(registerRequest.getBindingMode()).queueMode(registerRequest.getQueueMode())
+                .objectLinks(registerRequest.getObjectLinks()).smsNumber(registerRequest.getSmsNumber())
+                .registrationDate(new Date()).lastUpdate(new Date())
                 .additionalRegistrationAttributes(registerRequest.getAdditionalAttributes());
 
         // We must check if the client is using the right identity.
@@ -99,6 +100,9 @@ public class RegistrationHandler {
         if (authorizer.isAuthorized(updateRequest, registration, sender) == null) {
             return new SendableResponse<>(UpdateResponse.badRequest("forbidden"));
         }
+
+        // validate request
+        updateRequest.validate(registration.getLwM2mVersion());
 
         // Create update
         final RegistrationUpdate update = new RegistrationUpdate(updateRequest.getRegistrationId(), sender,

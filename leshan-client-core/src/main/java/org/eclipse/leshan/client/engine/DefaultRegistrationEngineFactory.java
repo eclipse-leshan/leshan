@@ -38,6 +38,7 @@ public class DefaultRegistrationEngineFactory implements RegistrationEngineFacto
     private Integer communicationPeriodInMs = null;
     private boolean reconnectOnUpdate = false;
     private boolean resumeOnConnect = true;
+    private boolean queueMode = false;
 
     public DefaultRegistrationEngineFactory() {
     }
@@ -50,7 +51,7 @@ public class DefaultRegistrationEngineFactory implements RegistrationEngineFacto
         return new DefaultRegistrationEngine(endpoint, objectTree, endpointsManager, requestSender, bootstrapState,
                 observer, additionalAttributes, bsAdditionalAttributes, sharedExecutor, requestTimeoutInMs,
                 deregistrationTimeoutInMs, bootstrapSessionTimeoutInSec, retryWaitingTimeInMs, communicationPeriodInMs,
-                reconnectOnUpdate, resumeOnConnect);
+                reconnectOnUpdate, resumeOnConnect, queueMode);
     }
 
     /**
@@ -148,6 +149,19 @@ public class DefaultRegistrationEngineFactory implements RegistrationEngineFacto
      */
     public DefaultRegistrationEngineFactory setResumeOnConnect(boolean resumeOnConnect) {
         this.resumeOnConnect = resumeOnConnect;
+        return this;
+    }
+
+    /**
+     * Configure client to use queueMode.
+     * <p>
+     * Default value is false
+     * 
+     * @param enable True if client must use queueMode
+     * @return this for fluent API
+     */
+    public DefaultRegistrationEngineFactory setQueueMode(boolean enable) {
+        this.queueMode = enable;
         return this;
     }
 }

@@ -610,18 +610,18 @@ public class LeshanClientDemo {
         } else {
             if (pskIdentity != null) {
                 initializer.setInstancesForObject(SECURITY, psk(serverURI, 123, pskIdentity, pskKey));
-                initializer.setInstancesForObject(SERVER, new Server(123, lifetime, BindingMode.U, false));
+                initializer.setInstancesForObject(SERVER, new Server(123, lifetime, EnumSet.of(BindingMode.U), false));
             } else if (clientPublicKey != null) {
                 initializer.setInstancesForObject(SECURITY, rpk(serverURI, 123, clientPublicKey.getEncoded(),
                         clientPrivateKey.getEncoded(), serverPublicKey.getEncoded()));
-                initializer.setInstancesForObject(SERVER, new Server(123, lifetime, BindingMode.U, false));
+                initializer.setInstancesForObject(SERVER, new Server(123, lifetime, EnumSet.of(BindingMode.U), false));
             } else if (clientCertificate != null) {
                 initializer.setInstancesForObject(SECURITY, x509(serverURI, 123, clientCertificate.getEncoded(),
                         clientPrivateKey.getEncoded(), serverCertificate.getEncoded()));
-                initializer.setInstancesForObject(SERVER, new Server(123, lifetime, BindingMode.U, false));
+                initializer.setInstancesForObject(SERVER, new Server(123, lifetime, EnumSet.of(BindingMode.U), false));
             } else {
                 initializer.setInstancesForObject(SECURITY, noSec(serverURI, 123));
-                initializer.setInstancesForObject(SERVER, new Server(123, lifetime, BindingMode.U, false));
+                initializer.setInstancesForObject(SERVER, new Server(123, lifetime, EnumSet.of(BindingMode.U), false));
             }
         }
         initializer.setInstancesForObject(DEVICE, new MyDevice());

@@ -15,6 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
+import java.util.EnumSet;
+
+import org.eclipse.leshan.core.LwM2m.Version;
+
 /**
  * Transport binding and Queue Mode
  */
@@ -23,30 +27,85 @@ public enum BindingMode {
     /** UDP */
     U,
 
-    /** UDP with Queue Mode */
-    UQ,
+    /** TCP */
+    T,
 
     /** SMS */
     S,
 
-    /** SMS with Queue Mode */
-    SQ,
+    /** Non-Ip */
+    N,
 
-    /** UDP and SMS */
-    US,
+    /** Queue Mode : removed since LWM2M 1.1 */
+    Q;
 
-    /** UDP with Queue Mode and SMS */
-    UQS;
-
-    public boolean useSMS() {
-        return equals(S) || equals(SQ) || equals(UQS);
+    /**
+     * @param targetVersion the target LWM2M version
+     * @return null if the BindingMode value is compatible with the given LWM2M version, else return an error message.
+     */
+    public String isValidFor(Version targetVersion) {
+        switch (this) {
+        case T:
+        case N:
+            if (targetVersion.olderThan(Version.V1_1)) {
+                return String.format("%s is supported since LWM2M 1.1", this);
+            }
+            break;
+        case Q:
+            if (targetVersion.newerThan(Version.V1_0)) {
+                return String.format("%s is not supported since LWM2M 1.1", this);
+            }
+            break;
+        default:
+        }
+        return null;
     }
 
-    public boolean useQueueMode() {
-        return equals(UQ) || equals(SQ) || equals(UQS);
+    private static BindingMode valueOf(char c) {
+        switch (c) {
+        case 'U':
+            return U;
+        case 'T':
+            return T;
+        case 'S':
+            return S;
+        case 'N':
+            return N;
+        case 'Q':
+            return Q;
+        default:
+            throw new IllegalArgumentException("No enum constant " + c + ".");
+
+        }
     }
 
-    public boolean useUDP() {
-        return equals(U) || equals(UQ) || equals(UQS);
+    /**
+     * @param bindings bindings to check
+     * @param targetVersion the target LWM2M version
+     * @return null if the bindings are compatible with the given LWM2M version, else return an error message.
+     */
+    public static String isValidFor(EnumSet<BindingMode> bindings, Version targetVersion) {
+        for (BindingMode binding : bindings) {
+            String err = binding.isValidFor(targetVersion);
+            if (err != null)
+                return err;
+        }
+        return null;
+    }
+
+    public static String toString(EnumSet<BindingMode> bindings) {
+        StringBuilder b = new StringBuilder();
+        for (BindingMode binding : bindings) {
+            b.append(binding);
+        }
+        return b.toString();
+    }
+
+    public static EnumSet<BindingMode> parse(String bindings) {
+        EnumSet<BindingMode> res = EnumSet.noneOf(BindingMode.class);
+        for (int i = 0; i < bindings.length(); i++) {
+            res.add(BindingMode.valueOf(bindings.charAt(i)));
+        }
+        return res;
     }
 }

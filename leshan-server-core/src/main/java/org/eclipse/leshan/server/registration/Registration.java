@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -57,7 +58,9 @@ public class Registration implements Serializable {
 
     private final String lwM2mVersion;
 
-    private final BindingMode bindingMode;
+    private final EnumSet<BindingMode> bindingMode;
+
+    private final Boolean queueMode; // since LWM2M 1.1
 
     /**
      * The LWM2M Client's unique end point name.
@@ -80,8 +83,9 @@ public class Registration implements Serializable {
     private final Date lastUpdate;
 
     protected Registration(String id, String endpoint, Identity identity, String lwM2mVersion, Long lifetimeInSec,
-            String smsNumber, BindingMode bindingMode, Link[] objectLinks, Date registrationDate, Date lastUpdate,
-            Map<String, String> additionalRegistrationAttributes, Map<Integer, String> supportedObjects) {
+            String smsNumber, EnumSet<BindingMode> bindingMode, Boolean queueMode, Link[] objectLinks,
+            Date registrationDate, Date lastUpdate, Map<String, String> additionalRegistrationAttributes,
+            Map<Integer, String> supportedObjects) {
 
         Validate.notNull(id);
         Validate.notEmpty(endpoint);
@@ -109,7 +113,9 @@ public class Registration implements Serializable {
         this.supportedObjects = new AtomicReference<Map<Integer, String>>(supportedObjects);
         this.lifeTimeInSec = lifetimeInSec == null ? DEFAULT_LIFETIME_IN_SEC : lifetimeInSec;
         this.lwM2mVersion = lwM2mVersion == null ? Version.getDefault().toString() : lwM2mVersion;
-        this.bindingMode = bindingMode == null ? BindingMode.U : bindingMode;
+        this.bindingMode = bindingMode == null ? EnumSet.of(BindingMode.U) : bindingMode;
+        this.queueMode = queueMode == null && Version.get(this.lwM2mVersion).newerThan(Version.V1_0) ? Boolean.FALSE
+                : queueMode;
         this.registrationDate = registrationDate == null ? new Date() : registrationDate;
         this.lastUpdate = lastUpdate == null ? new Date() : lastUpdate;
         if (additionalRegistrationAttributes == null || additionalRegistrationAttributes.isEmpty()) {
@@ -233,8 +239,12 @@ public class Registration implements Serializable {
         return lwM2mVersion;
     }
 
-    public BindingMode getBindingMode() {
+    public EnumSet<BindingMode> getBindingMode() {
         return bindingMode;
+    }
+
+    public Boolean getQueueMode() {
+        return queueMode;
     }
 
     /**
@@ -271,7 +281,7 @@ public class Registration implements Serializable {
     public boolean canInitiateConnection() {
         // We consider that initiates a connection (acting as DTLS client to initiate a handshake) does not make sense
         // for QueueMode as if we lost connection device is probably absent.
-        return !bindingMode.useQueueMode() && bindingMode.useUDP();
+        return !usesQueueMode();
     }
 
     /**
@@ -296,7 +306,10 @@ public class Registration implements Serializable {
     }
 
     public boolean usesQueueMode() {
-        return bindingMode.useQueueMode() && bindingMode.useUDP();
+        if (Version.get(lwM2mVersion).olderThan(Version.V1_1))
+            return bindingMode.contains(BindingMode.Q);
+        else
+            return queueMode;
     }
 
     /**
@@ -409,7 +422,8 @@ public class Registration implements Serializable {
         private Date lastUpdate;
         private Long lifeTimeInSec;
         private String smsNumber;
-        private BindingMode bindingMode;
+        private EnumSet<BindingMode> bindingMode;
+        private Boolean queueMode;
         private String lwM2mVersion;
         private Link[] objectLinks;
         private Map<Integer, String> supportedObjects;
@@ -445,8 +459,13 @@ public class Registration implements Serializable {
             return this;
         }
 
-        public Builder bindingMode(BindingMode bindingMode) {
+        public Builder bindingMode(EnumSet<BindingMode> bindingMode) {
             this.bindingMode = bindingMode;
+            return this;
+        }
+
+        public Builder queueMode(Boolean queueMode) {
+            this.queueMode = queueMode;
             return this;
         }
 
@@ -473,8 +492,8 @@ public class Registration implements Serializable {
         public Registration build() {
             return new Registration(Builder.this.registrationId, Builder.this.endpoint, Builder.this.identity,
                     Builder.this.lwM2mVersion, Builder.this.lifeTimeInSec, Builder.this.smsNumber, this.bindingMode,
-                    this.objectLinks, this.registrationDate, this.lastUpdate, this.additionalRegistrationAttributes,
-                    this.supportedObjects);
+                    this.queueMode, this.objectLinks, this.registrationDate, this.lastUpdate,
+                    this.additionalRegistrationAttributes, this.supportedObjects);
         }
 
     }

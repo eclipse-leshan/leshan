@@ -18,6 +18,7 @@
 package org.eclipse.leshan.client.object;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 
@@ -47,14 +48,14 @@ public class Server extends BaseInstanceEnabler {
     private long lifetime;
     private Long defaultMinPeriod;
     private Long defaultMaxPeriod;
-    private BindingMode binding;
+    private EnumSet<BindingMode> binding;
     private boolean notifyWhenDisable;
 
     public Server() {
         // should only be used at bootstrap time
     }
 
-    public Server(int shortServerId, long lifetime, BindingMode binding, boolean notifyWhenDisable) {
+    public Server(int shortServerId, long lifetime, EnumSet<BindingMode> binding, boolean notifyWhenDisable) {
         this.shortServerId = shortServerId;
         this.lifetime = lifetime;
         this.binding = binding;
@@ -87,7 +88,7 @@ public class Server extends BaseInstanceEnabler {
             return ReadResponse.success(resourceid, notifyWhenDisable);
 
         case 7: // binding
-            return ReadResponse.success(resourceid, binding.toString());
+            return ReadResponse.success(resourceid, BindingMode.toString(binding));
 
         default:
             return super.read(identity, resourceid);
@@ -155,9 +156,9 @@ public class Server extends BaseInstanceEnabler {
                 return WriteResponse.badRequest("invalid type");
             }
             try {
-                BindingMode previousBinding = binding;
-                binding = BindingMode.valueOf((String) value.getValue());
-                if (!Objects.equals(previousBinding, binding))
+                EnumSet<BindingMode> previousBinding = binding;
+                binding = BindingMode.parse((String) value.getValue());
+                if (!previousBinding.equals(binding))
                     fireResourcesChange(resourceid);
                 return WriteResponse.success();
             } catch (IllegalArgumentException e) {

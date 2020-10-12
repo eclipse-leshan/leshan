@@ -17,6 +17,7 @@ package org.eclipse.leshan.server.demo.servlet.json;
 
 import java.lang.reflect.Type;
 
+import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.server.queue.PresenceService;
 import org.eclipse.leshan.server.registration.Registration;
 
@@ -45,7 +46,7 @@ public class RegistrationSerializer implements JsonSerializer<Registration> {
         element.addProperty("smsNumber", src.getSmsNumber());
         element.addProperty("lwM2mVersion", src.getLwM2mVersion());
         element.addProperty("lifetime", src.getLifeTimeInSec());
-        element.addProperty("bindingMode", src.getBindingMode().toString());
+        element.addProperty("bindingMode", BindingMode.toString(src.getBindingMode()));
         element.add("rootPath", context.serialize(src.getRootPath()));
         element.add("objectLinks", context.serialize(src.getSortedObjectLinks()));
         element.add("secure", context.serialize(src.getIdentity().isSecure()));

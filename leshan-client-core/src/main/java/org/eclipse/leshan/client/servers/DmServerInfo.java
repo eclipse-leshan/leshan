@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.servers;
 
+import java.util.EnumSet;
+
 import org.eclipse.leshan.core.request.BindingMode;
 
 /**
@@ -26,11 +28,12 @@ import org.eclipse.leshan.core.request.BindingMode;
 public class DmServerInfo extends ServerInfo {
 
     public long lifetime;
-    public BindingMode binding;
+    public EnumSet<BindingMode> binding;
     // TODO add missing information like SMS number
 
     @Override
     public String toString() {
-        return String.format("DM Server [uri=%s, lifetime=%s, binding=%s]", serverUri, lifetime, binding);
+        return String.format("DM Server [uri=%s, lifetime=%s, binding=%s]", serverUri, lifetime,
+                BindingMode.toString(binding));
     }
 }

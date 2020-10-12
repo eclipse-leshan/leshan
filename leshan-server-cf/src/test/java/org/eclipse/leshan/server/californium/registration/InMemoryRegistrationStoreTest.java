@@ -17,11 +17,11 @@ package org.eclipse.leshan.server.californium.registration;
 
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.EnumSet;
 
 import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.Identity;
-import org.eclipse.leshan.server.californium.registration.InMemoryRegistrationStore;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
@@ -38,7 +38,7 @@ public class InMemoryRegistrationStoreTest {
     int port = 23452;
     Long lifetime = 10000L;
     String sms = "0171-32423545";
-    BindingMode binding = BindingMode.UQS;
+    EnumSet<BindingMode> binding = EnumSet.of(BindingMode.U, BindingMode.Q, BindingMode.S);
     Link[] objectLinks = Link.parse("</3>".getBytes(StandardCharsets.UTF_8));
     String registrationId = "4711";
     Registration registration;

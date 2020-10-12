@@ -88,6 +88,8 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     private boolean reconnectOnUpdate;
     // True if client should try to resume connection if possible.
     private boolean resumeOnConnect;
+    // True if client use queueMode : for now this just add Q parameter on register request.
+    private final boolean queueMode;
 
     private static enum Status {
         SUCCESS, FAILURE, TIMEOUT
@@ -124,7 +126,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             Integer communicationPeriodInMs, boolean reconnectOnUpdate, boolean resumeOnConnect) {
         this(endpoint, objectTree, endpointsManager, requestSender, bootstrapState, observer, additionalAttributes,
                 null, executor, requestTimeoutInMs, deregistrationTimeoutInMs, bootstrapSessionTimeoutInSec,
-                retryWaitingTimeInMs, communicationPeriodInMs, reconnectOnUpdate, resumeOnConnect);
+                retryWaitingTimeInMs, communicationPeriodInMs, reconnectOnUpdate, resumeOnConnect, false);
     }
 
     /** @since 1.1 */
@@ -133,7 +135,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes,
             ScheduledExecutorService executor, long requestTimeoutInMs, long deregistrationTimeoutInMs,
             int bootstrapSessionTimeoutInSec, int retryWaitingTimeInMs, Integer communicationPeriodInMs,
-            boolean reconnectOnUpdate, boolean resumeOnConnect) {
+            boolean reconnectOnUpdate, boolean resumeOnConnect, boolean useQueueMode) {
         this.endpoint = endpoint;
         this.objectEnablers = objectTree.getObjectEnablers();
         this.bootstrapHandler = bootstrapState;
@@ -151,6 +153,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         this.communicationPeriodInMs = communicationPeriodInMs;
         this.reconnectOnUpdate = reconnectOnUpdate;
         this.resumeOnConnect = resumeOnConnect;
+        this.queueMode = useQueueMode;
 
         if (executor == null) {
             schedExecutor = createScheduledExecutor();
@@ -299,7 +302,8 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         RegisterRequest request = null;
         try {
             request = new RegisterRequest(endpoint, dmInfo.lifetime, Version.lastSupported().toString(), dmInfo.binding,
-                    null, LinkFormatHelper.getClientDescription(objectEnablers.values(), null), additionalAttributes);
+                    queueMode, null, LinkFormatHelper.getClientDescription(objectEnablers.values(), null),
+                    additionalAttributes);
             if (observer != null) {
                 observer.onRegistrationStarted(server, request);
             }
