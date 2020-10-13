@@ -298,9 +298,13 @@ public class X509CertUtil {
                         }
                     }
                 }
+
+                // Strict Subject Alternative Name mode:
+                // - Do not allow fallback to Subject DN matching
+                return false;
             }
 
-            // Then one can fallback to old ways at looking in Subject DN
+            // If subject alternative names are not present fallback to old ways at looking in Subject DN
             String cn = getPrincipalField(certificate.getSubjectX500Principal(), "CN");
 
             if (hostAddress.equals(cn)) {
