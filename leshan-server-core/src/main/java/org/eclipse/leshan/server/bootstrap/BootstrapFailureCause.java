@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE) - additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
@@ -35,6 +36,10 @@ public enum BootstrapFailureCause {
      * Object 2 (ACL) could not be written on the device
      */
     WRITE_ACL_FAILED,
+    /**
+     * Object 21 (OSCORE) could not be written on the device
+     */
+    WRITE_OSCORE_FAILED,
     /**
      * Object 1 (Server) could not be written on the device
      */

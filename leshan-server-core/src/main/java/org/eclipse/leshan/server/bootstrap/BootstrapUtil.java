@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE) - additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
@@ -22,9 +23,12 @@ import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ACLConfig;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfig.OscoreObject;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
+import static org.eclipse.leshan.core.LwM2mId.*;
 
 public class BootstrapUtil {
     public static LwM2mObjectInstance convertToSecurityInstance(int instanceId, ServerSecurity securityConfig) {
@@ -55,6 +59,11 @@ public class BootstrapUtil {
             resources.add(LwM2mSingleResource.newIntegerResource(11, securityConfig.clientOldOffTime));
         if (securityConfig.bootstrapServerAccountTimeout != null)
             resources.add(LwM2mSingleResource.newIntegerResource(12, securityConfig.bootstrapServerAccountTimeout));
+        if (securityConfig.oscoreSecurityMode != null) {
+            // integer value needs to be made into an object link
+            ObjectLink oscoreSecurityModeLink = new ObjectLink(OSCORE, securityConfig.oscoreSecurityMode);
+            resources.add(LwM2mSingleResource.newObjectLinkResource(17, oscoreSecurityModeLink));
+        }
 
         return new LwM2mObjectInstance(instanceId, resources);
     }
@@ -86,6 +95,25 @@ public class BootstrapUtil {
             resources.add(LwM2mMultipleResource.newIntegerResource(2, aclConfig.acls));
         if (aclConfig.AccessControlOwner != null)
             resources.add(LwM2mSingleResource.newIntegerResource(3, aclConfig.AccessControlOwner));
+
+        return new LwM2mObjectInstance(instanceId, resources);
+    }
+
+    public static LwM2mObjectInstance convertToOscoreInstance(int instanceId, OscoreObject oscoreConfig) {
+        Collection<LwM2mResource> resources = new ArrayList<>();
+
+        if (oscoreConfig.oscoreMasterSecret != null)
+            resources.add(LwM2mSingleResource.newStringResource(0, oscoreConfig.oscoreMasterSecret));
+        if (oscoreConfig.oscoreSenderId != null)
+            resources.add(LwM2mSingleResource.newStringResource(1, oscoreConfig.oscoreSenderId));
+        if (oscoreConfig.oscoreRecipientId != null)
+            resources.add(LwM2mSingleResource.newStringResource(2, oscoreConfig.oscoreRecipientId));
+        if (oscoreConfig.oscoreAeadAlgorithm != null)
+            resources.add(LwM2mSingleResource.newIntegerResource(3, oscoreConfig.oscoreAeadAlgorithm));
+        if (oscoreConfig.oscoreHmacAlgorithm != null)
+            resources.add(LwM2mSingleResource.newIntegerResource(4, oscoreConfig.oscoreHmacAlgorithm));
+        if (oscoreConfig.oscoreMasterSalt != null)
+            resources.add(LwM2mSingleResource.newStringResource(5, oscoreConfig.oscoreMasterSalt));
 
         return new LwM2mObjectInstance(instanceId, resources);
     }

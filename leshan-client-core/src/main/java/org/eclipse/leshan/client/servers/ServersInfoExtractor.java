@@ -102,9 +102,13 @@ public class ServersInfoExtractor {
 
                         boolean useOscore = oscoreObjLink.getObjectId() == OSCORE;
                         if (useOscore) {
+                            LOG.trace("Bootstrap connection is using OSCORE.");
+
                             // get corresponding oscore object
                             LwM2mObjectInstance oscoreInstance = oscores.getInstance(oscoreObjectInstanceId);
-                            LOG.trace("Bootstrap connection is using OSCORE.");
+                            if (oscoreInstance == null) {
+                                LOG.error("Failed to retrieve OSCORE object linked from BS security object");
+                            }
 
                             info.useOscore = true;
                             info.masterSecret = getMasterSecret(oscoreInstance);
@@ -145,9 +149,13 @@ public class ServersInfoExtractor {
 
                     boolean useOscore = oscoreObjLink.getObjectId() == OSCORE;
                     if (useOscore) {
+                        LOG.trace("Registration connection is using OSCORE.");
+
                         // get corresponding oscore object
                         LwM2mObjectInstance oscoreInstance = oscores.getInstance(oscoreObjectInstanceId);
-                        LOG.trace("Registration connection is using OSCORE.");
+                        if (oscoreInstance == null) {
+                            LOG.error("Failed to retrieve OSCORE object linked from DM security object");
+                        }
 
                         info.useOscore = true;
                         info.masterSecret = getMasterSecret(oscoreInstance);

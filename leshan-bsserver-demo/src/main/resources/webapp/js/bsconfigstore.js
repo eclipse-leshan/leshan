@@ -26,6 +26,13 @@ var configFromRestToUI = function(config){
             if (!newConfig.dm){
                 newConfig.dm.push({security:security});
             }
+            
+            // add oscore object (if any) to dm
+            var oscoreObjectInstanceId = security.oscoreSecurityMode;
+            var oscore = config.oscore[oscoreObjectInstanceId];
+            if(oscore){
+                newConfig.dm.push({oscore:oscore});
+            }
         }
     }
     return newConfig;
@@ -50,6 +57,8 @@ var configFromUIToRest = function(config){
         var dm = config.dm[j];
         newConfig.security[i+j] = dm.security;
         delete dm.security;
+        newConfig.oscore[i+j] = dm.oscore;
+        delete dm.oscore;
         newConfig.servers[j] = dm;
     }
     newConfig.toDelete = ["/0", "/1"]

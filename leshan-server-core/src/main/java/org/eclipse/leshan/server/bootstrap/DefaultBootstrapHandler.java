@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE) - additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
@@ -38,6 +39,7 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ACLConfig;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfig.OscoreObject;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager.BootstrapPolicy;
@@ -381,8 +383,9 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
                 }
             });
         } else {
-            // we are done, send bootstrap finished.
-            bootstrapFinished(session, cfg);
+            // we are done, write OSCORE objects now
+            List<Integer> oscoreInstancesToWrite = new ArrayList<>(cfg.oscore.keySet());
+            writeOscoreObjects(session, cfg, oscoreInstancesToWrite);
         }
     }
 
@@ -408,6 +411,75 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             break;
         case STOP:
             stopSession(session, WRITE_ACL_FAILED);
+            break;
+        default:
+            throw new IllegalStateException("unknown policy :" + policy);
+        }
+    }
+
+    protected void writeOscoreObjects(final BootstrapSession session, final BootstrapConfig cfg,
+            final List<Integer> oscoreInstancesToWrite) {
+        if (!oscoreInstancesToWrite.isEmpty()) {
+            // get next OSCORE configuration
+            Integer key = oscoreInstancesToWrite.get(0);
+            OscoreObject oscoreConfig = cfg.oscore.get(key);
+
+            // create write request from it
+            LwM2mPath path = new LwM2mPath(21, key);
+            final LwM2mNode oscoreInstance = BootstrapUtil.convertToOscoreInstance(key, oscoreConfig);
+            final BootstrapWriteRequest writeOSCORERequest = new BootstrapWriteRequest(path, oscoreInstance,
+                    session.getContentFormat());
+
+            // sent it
+            send(session, writeOSCORERequest, new SafeResponseCallback<BootstrapWriteResponse>(session) {
+                @Override
+                public void safeOnResponse(BootstrapWriteResponse response) {
+                    if (response.isSuccess()) {
+                        LOG.trace("{} receives {} for {}", session, response, writeOSCORERequest);
+                        sessionManager.onResponseSuccess(session, writeOSCORERequest);
+                        afterWriteOscoreObjects(session, cfg, oscoreInstancesToWrite, BootstrapPolicy.CONTINUE);
+                    } else {
+                        LOG.debug("{} receives {} for {}", session, response, writeOSCORERequest);
+                        BootstrapPolicy policy = sessionManager.onResponseError(session, writeOSCORERequest, response);
+                        afterWriteOscoreObjects(session, cfg, oscoreInstancesToWrite, policy);
+                    }
+                }
+            }, new SafeErrorCallback(session) {
+                @Override
+                public void safeOnError(Exception e) {
+                    LOG.debug("Error for {} while sending {} ", session, writeOSCORERequest, e);
+                    BootstrapPolicy policy = sessionManager.onRequestFailure(session, writeOSCORERequest, e);
+                    afterWriteOscoreObjects(session, cfg, oscoreInstancesToWrite, policy);
+                }
+            });
+        } else {
+            // we are done, send bootstrap finished.
+            bootstrapFinished(session, cfg);
+        }
+    }
+
+    protected void afterWriteOscoreObjects(BootstrapSession session, BootstrapConfig cfg,
+            List<Integer> oscoreInstancesToWrite, BootstrapPolicy policy) {
+        if (session.isCancelled()) {
+            stopSession(session, CANCELLED);
+            return;
+        }
+        switch (policy) {
+        case CONTINUE:
+            oscoreInstancesToWrite.remove(0);
+            writeOscoreObjects(session, cfg, oscoreInstancesToWrite);
+            break;
+        case RETRY:
+            writeOscoreObjects(session, cfg, oscoreInstancesToWrite);
+            break;
+        case RETRYALL:
+            startBootstrap(session, cfg);
+            break;
+        case SEND_FINISHED:
+            bootstrapFinished(session, cfg);
+            break;
+        case STOP:
+            stopSession(session, WRITE_OSCORE_FAILED);
             break;
         default:
             throw new IllegalStateException("unknown policy :" + policy);
