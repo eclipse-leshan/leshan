@@ -47,4 +47,8 @@ public interface LwM2mId {
     public static final int SRV_SERVER_ID = 0;
     public static final int SRV_LIFETIME = 1;
     public static final int SRV_BINDING = 7;
+
+    /* DEVICE RESOURCES */
+
+    public static final int DVC_SUPPORTED_BINDING = 16;
 }

@@ -160,9 +160,19 @@ public class ServersInfoExtractor {
         }
     }
 
-    public static EnumSet<BindingMode> getBindingMode(LwM2mObjectEnabler serverEnabler, int instanceId) {
+    public static EnumSet<BindingMode> getServerBindingMode(LwM2mObjectEnabler serverEnabler, int instanceId) {
         ReadResponse response = serverEnabler.read(ServerIdentity.SYSTEM,
                 new ReadRequest(SERVER, instanceId, SRV_BINDING));
+        if (response.isSuccess()) {
+            return BindingMode.parse((String) ((LwM2mResource) response.getContent()).getValue());
+        } else {
+            return null;
+        }
+    }
+
+    public static EnumSet<BindingMode> getDeviceSupportedBindingMode(LwM2mObjectEnabler serverEnabler, int instanceId) {
+        ReadResponse response = serverEnabler.read(ServerIdentity.SYSTEM,
+                new ReadRequest(DEVICE, instanceId, DVC_SUPPORTED_BINDING));
         if (response.isSuccess()) {
             return BindingMode.parse((String) ((LwM2mResource) response.getContent()).getValue());
         } else {
