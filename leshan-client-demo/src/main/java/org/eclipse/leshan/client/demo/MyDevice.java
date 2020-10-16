@@ -44,7 +44,8 @@ public class MyDevice extends BaseInstanceEnabler {
 
     @Override
     public ReadResponse read(ServerIdentity identity, int resourceid) {
-        LOG.info("Read on Device resource /{}/{}/{}", getModel().id, getId(), resourceid);
+        if (!identity.isSystem())
+            LOG.info("Read on Device resource /{}/{}/{}", getModel().id, getId(), resourceid);
         switch (resourceid) {
         case 0:
             return ReadResponse.success(resourceid, getManufacturer());

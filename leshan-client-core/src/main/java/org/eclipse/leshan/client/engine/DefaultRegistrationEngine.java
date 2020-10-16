@@ -16,6 +16,7 @@
 package org.eclipse.leshan.client.engine;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -41,7 +42,9 @@ import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.LwM2m.Version;
+import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.ResponseCode;
+import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.Identity;
@@ -301,9 +304,11 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         LOG.info("Trying to register to {} ...", server.getUri());
         RegisterRequest request = null;
         try {
-            request = new RegisterRequest(endpoint, dmInfo.lifetime, Version.lastSupported().toString(), dmInfo.binding,
-                    queueMode, null, LinkFormatHelper.getClientDescription(objectEnablers.values(), null),
-                    additionalAttributes);
+            EnumSet<BindingMode> supportedBindingMode = ServersInfoExtractor
+                    .getDeviceSupportedBindingMode(objectEnablers.get(LwM2mId.DEVICE), 0);
+            request = new RegisterRequest(endpoint, dmInfo.lifetime, Version.lastSupported().toString(),
+                    supportedBindingMode, queueMode, null,
+                    LinkFormatHelper.getClientDescription(objectEnablers.values(), null), additionalAttributes);
             if (observer != null) {
                 observer.onRegistrationStarted(server, request);
             }
