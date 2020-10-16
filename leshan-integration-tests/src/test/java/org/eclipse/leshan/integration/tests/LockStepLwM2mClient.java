@@ -18,7 +18,9 @@ package org.eclipse.leshan.integration.tests;
 import java.net.InetSocketAddress;
 import java.util.Random;
 
+import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.coap.Token;
 import org.eclipse.californium.core.network.serialization.UdpDataSerializer;
 import org.eclipse.californium.core.test.lockstep.LockstepEndpoint;
 import org.eclipse.californium.elements.RawData;
@@ -37,7 +39,7 @@ public class LockStepLwM2mClient extends LockstepEndpoint {
         this.destination = destination;
     }
 
-    public void sendLwM2mRequest(UplinkRequest<? extends LwM2mResponse> lwm2mReq) {
+    public Request createCoapRequest(UplinkRequest<? extends LwM2mResponse> lwm2mReq) {
         // create CoAP request
         CoapRequestBuilder coapRequestBuilder = new CoapRequestBuilder(Identity.unsecure(destination));
         lwm2mReq.accept(coapRequestBuilder);
@@ -45,12 +47,21 @@ public class LockStepLwM2mClient extends LockstepEndpoint {
         byte[] token = new byte[8];
         r.nextBytes(token);
         coapReq.setToken(token);
+        coapReq.setMID(r.nextInt(Message.MAX_MID));
+        return coapReq;
+    }
 
+    public Token sendLwM2mRequest(UplinkRequest<? extends LwM2mResponse> lwm2mReq) {
+        return sendCoapRequest(createCoapRequest(lwm2mReq));
+    }
+
+    public Token sendCoapRequest(Request coapReq) {
         // serialize request
         UdpDataSerializer serializer = new UdpDataSerializer();
         RawData raw = serializer.serializeRequest(coapReq);
 
         // send it
         super.send(raw);
+        return coapReq.getToken();
     }
 }
