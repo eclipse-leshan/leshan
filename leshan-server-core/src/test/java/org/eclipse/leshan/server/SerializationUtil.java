@@ -57,7 +57,18 @@ public class SerializationUtil {
                 return true;
             }
 
-            if (Serializable.class.isAssignableFrom(clazz)) {
+            // For Collection, Map interface as most implementation is Serializable, checking if parameterized type is
+            // serializable should enough.
+            if (Collection.class.isAssignableFrom(clazz) || Map.class.isAssignableFrom(clazz)) {
+                for (Type t : ptype.getActualTypeArguments()) {
+                    if (!isSerializable(t, notSerializableObject, excludes)) {
+                        notSerializableObject.put(clazz, String
+                                .format("[%s] is parameterized with not serializable type [%s].", clazz.getName(), t));
+                        return false;
+                    }
+                }
+                return true;
+            } else if (Serializable.class.isAssignableFrom(clazz)) {
                 boolean isSerializable = true;
                 for (Field field : clazz.getDeclaredFields()) {
                     // check if this field is Serializable
@@ -68,25 +79,11 @@ public class SerializationUtil {
                     }
                 }
                 return isSerializable;
-            }
-            // we accept Collection, Map interface because most implementation is Serializable and checking if
-            // parameterized type is serializable should enough.
-            else if (clazz.isInterface()) {
-                if (Collection.class.isAssignableFrom(clazz) || Map.class.isAssignableFrom(clazz)) {
-                    for (Type t : ptype.getActualTypeArguments()) {
-                        if (!isSerializable(t, notSerializableObject, excludes)) {
-                            notSerializableObject.put(clazz, String.format(
-                                    "[%s] is parameterized with not serializable type [%s].", clazz.getName(), t));
-                            return false;
-                        }
-                    }
-                    return true;
-                } else {
-                    notSerializableObject.put(clazz, String.format(
-                            "[%s] interface is maybe serializable but we only support Collection and Map as parameterized interface class.",
-                            clazz));
-                    return false;
-                }
+            } else if (clazz.isInterface()) {
+                notSerializableObject.put(clazz, String.format(
+                        "[%s] interface is maybe serializable but we only support Collection and Map as parameterized interface class.",
+                        clazz));
+                return false;
             } else {
                 notSerializableObject.put(clazz,
                         String.format("[%s] is not primitive or does not implement Serializable.", clazz.getName()));
