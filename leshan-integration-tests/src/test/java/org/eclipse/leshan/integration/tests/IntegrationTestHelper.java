@@ -19,7 +19,6 @@ import static org.junit.Assert.*;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -33,6 +32,7 @@ import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Security;
+import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.DummyInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
@@ -47,7 +47,6 @@ import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
-import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.server.californium.LeshanServer;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
@@ -152,8 +151,8 @@ public class IntegrationTestHelper {
             super();
         }
 
-        public TestDevice(String manufacturer, String modelNumber, String serialNumber, String supportedBinding) {
-            super(manufacturer, modelNumber, serialNumber, supportedBinding);
+        public TestDevice(String manufacturer, String modelNumber, String serialNumber) {
+            super(manufacturer, modelNumber, serialNumber);
         }
 
         @Override
@@ -172,9 +171,8 @@ public class IntegrationTestHelper {
         initializer.setInstancesForObject(LwM2mId.SECURITY, Security.noSec(
                 "coap://" + server.getUnsecuredAddress().getHostString() + ":" + server.getUnsecuredAddress().getPort(),
                 12345));
-        initializer.setInstancesForObject(LwM2mId.SERVER,
-                new org.eclipse.leshan.client.object.Server(12345, LIFETIME, EnumSet.of(BindingMode.U), false));
-        initializer.setInstancesForObject(LwM2mId.DEVICE, new TestDevice("Eclipse Leshan", MODEL_NUMBER, "12345", "U"));
+        initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME));
+        initializer.setInstancesForObject(LwM2mId.DEVICE, new TestDevice("Eclipse Leshan", MODEL_NUMBER, "12345"));
         initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, DummyInstanceEnabler.class);
         initializer.setInstancesForObject(TEST_OBJECT_ID, new DummyInstanceEnabler(0),
                 new SimpleInstanceEnabler(1, OPAQUE_RESOURCE_ID, new byte[0]));

@@ -18,7 +18,6 @@ package org.eclipse.leshan.integration.tests;
 
 import static org.junit.Assert.*;
 
-import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -32,7 +31,6 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.model.StaticModel;
-import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.queue.StaticClientAwakeTimeProvider;
@@ -67,9 +65,8 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         initializer.setInstancesForObject(LwM2mId.SECURITY, Security.noSec(
                 "coap://" + server.getUnsecuredAddress().getHostString() + ":" + server.getUnsecuredAddress().getPort(),
                 12345));
-        initializer.setInstancesForObject(LwM2mId.SERVER,
-                new Server(12345, LIFETIME, EnumSet.of(BindingMode.U), false));
-        initializer.setInstancesForObject(LwM2mId.DEVICE, new TestDevice("Eclipse Leshan", MODEL_NUMBER, "12345", "U"));
+        initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME));
+        initializer.setInstancesForObject(LwM2mId.DEVICE, new TestDevice("Eclipse Leshan", MODEL_NUMBER, "12345"));
         initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, DummyInstanceEnabler.class);
         initializer.setDummyInstancesForObject(2000);
         List<LwM2mObjectEnabler> objects = initializer.createAll();

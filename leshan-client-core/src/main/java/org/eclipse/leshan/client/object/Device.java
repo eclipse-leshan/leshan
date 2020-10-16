@@ -20,6 +20,7 @@ package org.eclipse.leshan.client.object;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TimeZone;
@@ -30,6 +31,7 @@ import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
@@ -44,7 +46,7 @@ public class Device extends BaseInstanceEnabler {
     private String manufacturer;
     private String modelNumber;
     private String serialNumber;
-    private String supportedBinding;
+    private EnumSet<BindingMode> supportedBinding;
 
     private String timezone = TimeZone.getDefault().getID();
     private String utcOffset = new SimpleDateFormat("X").format(Calendar.getInstance().getTime());
@@ -53,7 +55,14 @@ public class Device extends BaseInstanceEnabler {
         // should never be used
     }
 
-    public Device(String manufacturer, String modelNumber, String serialNumber, String supportedBinding) {
+    public Device(String manufacturer, String modelNumber, String serialNumber) {
+        this.manufacturer = manufacturer;
+        this.modelNumber = modelNumber;
+        this.serialNumber = serialNumber;
+        this.supportedBinding = EnumSet.of(BindingMode.U);
+    }
+
+    public Device(String manufacturer, String modelNumber, String serialNumber, EnumSet<BindingMode> supportedBinding) {
         this.manufacturer = manufacturer;
         this.modelNumber = modelNumber;
         this.serialNumber = serialNumber;
@@ -83,7 +92,7 @@ public class Device extends BaseInstanceEnabler {
             return ReadResponse.success(resourceid, timezone);
 
         case 16: // supported binding and modes
-            return ReadResponse.success(resourceid, supportedBinding);
+            return ReadResponse.success(resourceid, BindingMode.toString(supportedBinding));
 
         default:
             return super.read(identity, resourceid);

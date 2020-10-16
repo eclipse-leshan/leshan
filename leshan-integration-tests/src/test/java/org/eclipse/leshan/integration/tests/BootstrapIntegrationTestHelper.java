@@ -234,7 +234,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         // Initialize LWM2M Object Tree
         initializer.setInstancesForObject(LwM2mId.SECURITY, security);
         initializer.setInstancesForObject(LwM2mId.DEVICE,
-                new Device("Eclipse Leshan", IntegrationTestHelper.MODEL_NUMBER, "12345", "U"));
+                new Device("Eclipse Leshan", IntegrationTestHelper.MODEL_NUMBER, "12345"));
         initializer.setClassForObject(LwM2mId.SERVER, DummyInstanceEnabler.class);
         createClient(initializer, additionalAttributes);
     }

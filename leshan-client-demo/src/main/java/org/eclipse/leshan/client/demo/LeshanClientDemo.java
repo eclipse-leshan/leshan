@@ -70,7 +70,6 @@ import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
-import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.SecurityUtil;
 import org.slf4j.Logger;
@@ -610,18 +609,18 @@ public class LeshanClientDemo {
         } else {
             if (pskIdentity != null) {
                 initializer.setInstancesForObject(SECURITY, psk(serverURI, 123, pskIdentity, pskKey));
-                initializer.setInstancesForObject(SERVER, new Server(123, lifetime, EnumSet.of(BindingMode.U), false));
+                initializer.setInstancesForObject(SERVER, new Server(123, lifetime));
             } else if (clientPublicKey != null) {
                 initializer.setInstancesForObject(SECURITY, rpk(serverURI, 123, clientPublicKey.getEncoded(),
                         clientPrivateKey.getEncoded(), serverPublicKey.getEncoded()));
-                initializer.setInstancesForObject(SERVER, new Server(123, lifetime, EnumSet.of(BindingMode.U), false));
+                initializer.setInstancesForObject(SERVER, new Server(123, lifetime));
             } else if (clientCertificate != null) {
                 initializer.setInstancesForObject(SECURITY, x509(serverURI, 123, clientCertificate.getEncoded(),
                         clientPrivateKey.getEncoded(), serverCertificate.getEncoded()));
-                initializer.setInstancesForObject(SERVER, new Server(123, lifetime, EnumSet.of(BindingMode.U), false));
+                initializer.setInstancesForObject(SERVER, new Server(123, lifetime));
             } else {
                 initializer.setInstancesForObject(SECURITY, noSec(serverURI, 123));
-                initializer.setInstancesForObject(SERVER, new Server(123, lifetime, EnumSet.of(BindingMode.U), false));
+                initializer.setInstancesForObject(SERVER, new Server(123, lifetime));
             }
         }
         initializer.setInstancesForObject(DEVICE, new MyDevice());
