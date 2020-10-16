@@ -34,6 +34,8 @@ public class SynchronousRegistrationListener implements RegistrationListener {
 
     @Override
     public void registered(Registration reg, Registration previousReg, Collection<Observation> previousObsersations) {
+        System.out.println(reg);
+
         if (accept(reg)) {
             lastRegistration = reg;
             registerLatch.countDown();
@@ -42,6 +44,7 @@ public class SynchronousRegistrationListener implements RegistrationListener {
 
     @Override
     public void updated(RegistrationUpdate update, Registration updatedReg, Registration previousReg) {
+        System.out.println(updatedReg);
         if (accept(updatedReg))
             updateLatch.countDown();
     }
@@ -49,6 +52,8 @@ public class SynchronousRegistrationListener implements RegistrationListener {
     @Override
     public void unregistered(Registration reg, Collection<Observation> observations, boolean expired,
             Registration newReg) {
+        System.out.println(reg);
+
         if (accept(reg))
             deregisterLatch.countDown();
     }

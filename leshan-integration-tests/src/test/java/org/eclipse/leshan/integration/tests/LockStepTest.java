@@ -23,12 +23,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.CoAP.Type;
+import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.coap.Token;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
+import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
@@ -37,7 +41,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class FailingTest {
+public class LockStepTest {
 
     public IntegrationTestHelper helper = new IntegrationTestHelper() {
         @Override
@@ -69,12 +73,96 @@ public class FailingTest {
     }
 
     @Test
+    public void register_with_uq_binding_in_lw_1_0() throws Exception {
+        // Register client
+        LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress());
+        Token token = client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.0",
+                EnumSet.of(BindingMode.U, BindingMode.Q), null, null, Link.parse("</1>,</2>,</3>".getBytes()), null));
+        client.expectResponse().token(token).code(ResponseCode.CREATED).go();
+        helper.waitForRegistrationAtServerSide(1);
+    }
+
+    @Test
+    public void register_with_ut_binding_in_lw_1_1() throws Exception {
+        // Register client
+        LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress());
+        Token token = client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1",
+                EnumSet.of(BindingMode.U, BindingMode.T), null, null, Link.parse("</1>,</2>,</3>".getBytes()), null));
+        client.expectResponse().token(token).code(ResponseCode.CREATED).go();
+        helper.waitForRegistrationAtServerSide(1);
+    }
+
+    @Test
+    public void register_update_with_invalid_binding_for_lw_1_1() throws Exception {
+        LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress());
+
+        // register with valid binding for 1.1
+        RegisterRequest validRegisterRequest = new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1",
+                EnumSet.of(BindingMode.U), null, null, Link.parse("</1>,</2>,</3>".getBytes()), null);
+        Token token = client.sendLwM2mRequest(validRegisterRequest);
+        client.expectResponse().token(token).code(ResponseCode.CREATED).go();
+        helper.waitForRegistrationAtServerSide(1);
+
+        // update with valid binding for 1.1
+        UpdateRequest validUpdateRequest = new UpdateRequest("/rd/" + helper.getLastRegistration().getId(), 60l, null,
+                EnumSet.of(BindingMode.U), null, null);
+        token = client.sendLwM2mRequest(validUpdateRequest);
+        client.expectResponse().token(token).code(ResponseCode.CHANGED).go();
+
+        // register with invalid binding for 1.1
+        Request invalidRegisterRequest = client.createCoapRequest(validRegisterRequest);
+        invalidRegisterRequest.getOptions().removeUriQuery("b=U");
+        invalidRegisterRequest.getOptions().addUriQuery("b=UQ");
+        token = client.sendCoapRequest(invalidRegisterRequest);
+        client.expectResponse().token(token).code(ResponseCode.BAD_REQUEST).go();
+
+        // update with invalid binding for 1.1
+        Request invalidUpdateRequest = client.createCoapRequest(validRegisterRequest);
+        invalidUpdateRequest.getOptions().removeUriQuery("b=U");
+        invalidUpdateRequest.getOptions().addUriQuery("b=UQ");
+        token = client.sendCoapRequest(invalidUpdateRequest);
+        client.expectResponse().token(token).code(ResponseCode.BAD_REQUEST).go();
+    }
+
+    @Test
+    public void register_update_with_invalid_binding_for_lw_1_0() throws Exception {
+        LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress());
+
+        // register with valid binding for 1.0
+        RegisterRequest validRegisterRequest = new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.0",
+                EnumSet.of(BindingMode.U), null, null, Link.parse("</1>,</2>,</3>".getBytes()), null);
+        Token token = client.sendLwM2mRequest(validRegisterRequest);
+        client.expectResponse().token(token).code(ResponseCode.CREATED).go();
+        helper.waitForRegistrationAtServerSide(1);
+
+        // update with valid binding for 1.0
+        UpdateRequest validUpdateRequest = new UpdateRequest("/rd/" + helper.getLastRegistration().getId(), 60l, null,
+                EnumSet.of(BindingMode.U), null, null);
+        token = client.sendLwM2mRequest(validUpdateRequest);
+        client.expectResponse().token(token).code(ResponseCode.CHANGED).go();
+
+        // register with invalid binding for 1.0
+        Request invalidRegisterRequest = client.createCoapRequest(validRegisterRequest);
+        invalidRegisterRequest.getOptions().removeUriQuery("b=U");
+        invalidRegisterRequest.getOptions().addUriQuery("b=UT");
+        token = client.sendCoapRequest(invalidRegisterRequest);
+        client.expectResponse().token(token).code(ResponseCode.BAD_REQUEST).go();
+
+        // update with invalid binding for 1.0
+        Request invalidUpdateRequest = client.createCoapRequest(validRegisterRequest);
+        invalidUpdateRequest.getOptions().removeUriQuery("b=U");
+        invalidUpdateRequest.getOptions().addUriQuery("b=UT");
+        token = client.sendCoapRequest(invalidUpdateRequest);
+        client.expectResponse().token(token).code(ResponseCode.BAD_REQUEST).go();
+    }
+
+    @Test
     public void sync_send_without_acknowleged() throws Exception {
         // Register client
         LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress());
-        client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1", EnumSet.of(BindingMode.U),
-                null, null, Link.parse("</1>,</2>,</3>".getBytes()), null));
-        client.expectResponse().go();
+        Token token = client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1",
+                EnumSet.of(BindingMode.U), null, null, Link.parse("</1>,</2>,</3>".getBytes()), null));
+        client.expectResponse().token(token).go();
         helper.waitForRegistrationAtServerSide(1);
 
         // Send read
@@ -94,9 +182,9 @@ public class FailingTest {
     public void sync_send_with_acknowleged_request_without_response() throws Exception {
         // Register client
         LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress());
-        client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1", EnumSet.of(BindingMode.U),
-                null, null, Link.parse("</1>,</2>,</3>".getBytes()), null));
-        client.expectResponse().go();
+        Token token = client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1",
+                EnumSet.of(BindingMode.U), null, null, Link.parse("</1>,</2>,</3>".getBytes()), null));
+        client.expectResponse().token(token).go();
         helper.waitForRegistrationAtServerSide(1);
 
         // Send read
@@ -123,9 +211,9 @@ public class FailingTest {
     public void async_send_without_acknowleged() throws Exception {
         // register client
         LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress());
-        client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1", EnumSet.of(BindingMode.U),
-                null, null, Link.parse("</1>,</2>,</3>".getBytes()), null));
-        client.expectResponse().go();
+        Token token = client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1",
+                EnumSet.of(BindingMode.U), null, null, Link.parse("</1>,</2>,</3>".getBytes()), null));
+        client.expectResponse().token(token).go();
         helper.waitForRegistrationAtServerSide(1);
 
         // send read
@@ -142,9 +230,9 @@ public class FailingTest {
     public void async_send_with_acknowleged_request_without_response() throws Exception {
         // register client
         LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress());
-        client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1", EnumSet.of(BindingMode.U),
-                null, null, Link.parse("</1>,</2>,</3>".getBytes()), null));
-        client.expectResponse().go();
+        Token token = client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1",
+                EnumSet.of(BindingMode.U), null, null, Link.parse("</1>,</2>,</3>".getBytes()), null));
+        client.expectResponse().token(token).go();
         helper.waitForRegistrationAtServerSide(1);
 
         // send read
