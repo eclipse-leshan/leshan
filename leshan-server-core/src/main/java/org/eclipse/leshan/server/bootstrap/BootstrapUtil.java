@@ -27,6 +27,7 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
@@ -89,7 +90,7 @@ public class BootstrapUtil {
             resources.add(LwM2mSingleResource.newIntegerResource(5, serverConfig.disableTimeout));
         resources.add(LwM2mSingleResource.newBooleanResource(6, serverConfig.notifIfDisabled));
         if (serverConfig.binding != null)
-            resources.add(LwM2mSingleResource.newStringResource(7, serverConfig.binding.name()));
+            resources.add(LwM2mSingleResource.newStringResource(7, BindingMode.toString(serverConfig.binding)));
 
         return new LwM2mObjectInstance(instanceId, resources);
     }
@@ -121,13 +122,12 @@ public class BootstrapUtil {
         return new BootstrapWriteRequest(path, securityInstance, contentFormat);
     }
 
-    public static List<BootstrapDownlinkRequest<? extends LwM2mResponse>> toRequests(
-            BootstrapConfig bootstrapConfig) {
+    public static List<BootstrapDownlinkRequest<? extends LwM2mResponse>> toRequests(BootstrapConfig bootstrapConfig) {
         return toRequests(bootstrapConfig, ContentFormat.TLV);
     }
 
-    public static List<BootstrapDownlinkRequest<? extends LwM2mResponse>> toRequests(
-            BootstrapConfig bootstrapConfig, ContentFormat contentFormat) {
+    public static List<BootstrapDownlinkRequest<? extends LwM2mResponse>> toRequests(BootstrapConfig bootstrapConfig,
+            ContentFormat contentFormat) {
         List<BootstrapDownlinkRequest<? extends LwM2mResponse>> requests = new ArrayList<>();
         // handle delete
         for (String path : bootstrapConfig.toDelete) {

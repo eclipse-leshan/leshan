@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.util.EnumSet;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -27,9 +28,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.EditableBootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.InvalidConfigurationException;
+import org.eclipse.leshan.server.bootstrap.demo.json.BindingModeTypeAdapter;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -41,6 +44,7 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
 
 /**
  * Servlet for REST API in charge of adding bootstrap information to the bootstrap server.
@@ -70,8 +74,10 @@ public class BootstrapServlet extends HttpServlet {
     public BootstrapServlet(EditableBootstrapConfigStore bsStore) {
         this.bsStore = bsStore;
 
-        this.gson = new GsonBuilder().registerTypeHierarchyAdapter(Byte.class, new SignedByteUnsignedByteAdapter())
-                .create();
+        this.gson = new GsonBuilder()//
+                .registerTypeAdapter(new TypeToken<EnumSet<BindingMode>>() {
+                }.getType(), new BindingModeTypeAdapter()) //
+                .registerTypeHierarchyAdapter(Byte.class, new SignedByteUnsignedByteAdapter()).create();
     }
 
     @Override

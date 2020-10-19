@@ -18,6 +18,7 @@ package org.eclipse.leshan.server.bootstrap;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,7 +104,7 @@ public class BootstrapConfig implements Serializable {
          * This Resource defines the transport binding configured for the LwM2M Client. If the LwM2M Client supports the
          * binding specified in this Resource, the LwM2M Client MUST use that transport for the Current Binding Mode.
          */
-        public BindingMode binding = BindingMode.U;
+        public EnumSet<BindingMode> binding = EnumSet.of(BindingMode.U);
 
         @Override
         public String toString() {
