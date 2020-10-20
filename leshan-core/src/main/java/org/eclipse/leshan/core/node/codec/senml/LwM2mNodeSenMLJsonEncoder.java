@@ -34,7 +34,7 @@ import org.eclipse.leshan.core.util.Base64;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.senml.SenMLPack;
 import org.eclipse.leshan.senml.SenMLRecord;
-import org.eclipse.leshan.senml.json.minimaljson.SenMLJson;
+import org.eclipse.leshan.senml.json.minimaljson.SenMLJsonMinimalEncoderDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +56,7 @@ public class LwM2mNodeSenMLJsonEncoder implements NodeEncoder {
 
         SenMLPack pack = new SenMLPack();
         pack.setRecords(internalEncoder.records);
-        return SenMLJson.toSenMLJson(pack).getBytes();
+        return SenMLJsonMinimalEncoderDecoder.toSenMLJson(pack).getBytes();
     }
 
     private static class InternalEncoder implements LwM2mNodeVisitor {

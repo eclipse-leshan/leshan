@@ -19,9 +19,9 @@ import org.eclipse.leshan.senml.SenMLPack;
 import com.eclipsesource.json.Json;
 
 /**
- * Helper for encoding/decoding SenML JSON format
+ * Helper for encoding/decoding SenML JSON using minimal-json
  */
-public class SenMLJson {
+public class SenMLJsonMinimalEncoderDecoder {
     private static final SenMLJsonPackSerDes serDes = new SenMLJsonPackSerDes();
 
     public static String toSenMLJson(SenMLPack pack) {

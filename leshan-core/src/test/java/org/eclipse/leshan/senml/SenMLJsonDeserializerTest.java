@@ -14,7 +14,7 @@
 
 package org.eclipse.leshan.senml;
 
-import org.eclipse.leshan.senml.json.minimaljson.SenMLJson;
+import org.eclipse.leshan.senml.json.minimaljson.SenMLJsonMinimalEncoderDecoder;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -23,9 +23,9 @@ public class SenMLJsonDeserializerTest extends AbstractSenMLTest {
     @Test
     public void deserialize_device_object() {
         String dataString = givenSenMLJsonExample();
-        SenMLPack pack = SenMLJson.fromSenMLJson(dataString);
+        SenMLPack pack = SenMLJsonMinimalEncoderDecoder.fromSenMLJson(dataString);
 
-        String outString = SenMLJson.toSenMLJson(pack);
+        String outString = SenMLJsonMinimalEncoderDecoder.toSenMLJson(pack);
         Assert.assertEquals(dataString.trim(), outString);
     }
 }
