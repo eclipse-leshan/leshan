@@ -22,6 +22,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 
+import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.LwM2m;
 import org.eclipse.leshan.core.SecurityMode;
 import org.slf4j.Logger;
@@ -40,6 +41,7 @@ public class ServerInfo {
     public boolean bootstrap = false;
     public URI serverUri;
     public SecurityMode secureMode;
+    public CertificateUsage certificateUsage;
 
     public String pskId;
     public byte[] pskKey;
