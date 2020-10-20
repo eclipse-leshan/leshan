@@ -30,6 +30,7 @@ import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
+import org.eclipse.californium.elements.util.CertPathUtil;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
@@ -40,6 +41,7 @@ import org.eclipse.leshan.client.EndpointsManager;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.client.servers.ServerIdentity.Role;
 import org.eclipse.leshan.client.servers.ServerInfo;
+import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.californium.EndpointFactory;
@@ -123,9 +125,65 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                 // set identity
                 newBuilder.setIdentity(serverInfo.privateKey, new Certificate[] { serverInfo.clientCertificate });
 
-                // set X509 verifier
-                newBuilder.setAdvancedCertificateVerifier(
-                        new DefaultLeshanCertificateVerifier(serverInfo.serverCertificate));
+                // LWM2M v1.1.1 - 5.2.8.7. Certificate Usage Field
+                //
+                // 0: Certificate usage 0 ("CA constraint")
+                // - trustStore is combination of client's configured trust store and provided certificate in server
+                // info
+                // - must do PKIX validation with trustStore to build certPath
+                // - must check that given certificate is part of certPath
+                // - validate server name
+                //
+                // 1: Certificate usage 1 ("service certificate constraint")
+                // - trustStore is client's configured trust store
+                // - must do PKIX validation with trustStore
+                // - target certificate must match what is provided certificate in server info
+                // - validate server name
+                //
+                // 2: Certificate usage 2 ("trust anchor assertion")
+                // - trustStore is only the provided certificate in server info
+                // - must do PKIX validation with trustStore
+                // - validate server name
+                //
+                // 3: Certificate usage 3 ("domain-issued certificate") (default mode if missing)
+                // - no trustStore used in this mode
+                // - target certificate must match what is provided certificate in server info
+                // - validate server name
+
+                CertificateUsage certificateUsage = serverInfo.certificateUsage != null ? serverInfo.certificateUsage
+                        : CertificateUsage.DOMAIN_ISSUER_CERTIFICATE;
+
+                if (certificateUsage == CertificateUsage.CA_CONSTRAINT) {
+                    X509Certificate[] trustedCertificates = null;
+                    // - trustStore is combination of client's configured trust store and provided certificate in server
+                    // info
+                    ArrayList<X509Certificate> newTrustedCertificatesList = new ArrayList<>();
+                    if (this.trustStore != null) {
+                        newTrustedCertificatesList.addAll(CertPathUtil.toX509CertificatesList(this.trustStore));
+                    }
+                    newTrustedCertificatesList.add((X509Certificate) serverInfo.serverCertificate);
+                    trustedCertificates = newTrustedCertificatesList.toArray(new X509Certificate[0]);
+                    newBuilder.setAdvancedCertificateVerifier(
+                            new CaConstraintCertificateVerifier(serverInfo.serverCertificate, trustedCertificates));
+                } else if (certificateUsage == CertificateUsage.SERVICE_CERTIFICATE_CONSTRAINT) {
+                    X509Certificate[] trustedCertificates = null;
+
+                    // - trustStore is client's configured trust store
+                    if (this.trustStore != null) {
+                        trustedCertificates = CertPathUtil.toX509CertificatesList(this.trustStore)
+                                .toArray(new X509Certificate[0]);
+                    }
+
+                    newBuilder.setAdvancedCertificateVerifier(new ServiceCertificateConstraintCertificateVerifier(
+                            serverInfo.serverCertificate, trustedCertificates));
+                } else if (certificateUsage == CertificateUsage.TRUST_ANCHOR_ASSERTION) {
+                    newBuilder.setAdvancedCertificateVerifier(new TrustAnchorAssertionCertificateVerifier(
+                            (X509Certificate) serverInfo.serverCertificate));
+                } else if (certificateUsage == CertificateUsage.DOMAIN_ISSUER_CERTIFICATE) {
+                    newBuilder.setAdvancedCertificateVerifier(
+                            new DomainIssuerCertificateVerifier(serverInfo.serverCertificate));
+                }
+
                 serverIdentity = Identity.x509(serverInfo.getAddress(), EndpointContextUtil.extractCN(
                         ((X509Certificate) serverInfo.serverCertificate).getSubjectX500Principal().getName()));
                 filterCipherSuites(newBuilder, dtlsConfigbuilder.getIncompleteConfig().getSupportedCipherSuites(),
