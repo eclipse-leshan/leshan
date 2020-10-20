@@ -12,21 +12,17 @@
  *     Boya Zhang - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.leshan.senml;
+package org.eclipse.leshan.senml.cbor;
+
+import org.eclipse.leshan.senml.SenMLPack;
 
 /**
- * Exception thrown in case of Cbor encoding error
+ * Helper for encoding/decoding SenML CBOR format
  */
-public class SenMLCborException extends Exception {
+public class SenMLCbor {
+    private static final SenMLCborPackSerDes serDes = new SenMLCborPackSerDes();
 
-    private static final long serialVersionUID = 1L;
-
-    public SenMLCborException(String message) {
-        super(message);
+    public static byte[] toSenMLCbor(SenMLPack pack) throws SenMLCborException {
+        return serDes.serializeToCbor(pack);
     }
-
-    public SenMLCborException(String message, Exception cause) {
-        super(message, cause);
-    }
-
 }

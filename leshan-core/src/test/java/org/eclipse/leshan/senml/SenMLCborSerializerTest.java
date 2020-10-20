@@ -15,6 +15,7 @@
 package org.eclipse.leshan.senml;
 
 import org.eclipse.leshan.core.util.Hex;
+import org.eclipse.leshan.senml.cbor.SenMLCbor;
 import org.junit.Assert;
 import org.junit.Test;
 
