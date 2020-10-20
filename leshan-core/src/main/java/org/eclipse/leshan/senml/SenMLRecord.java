@@ -17,6 +17,11 @@ package org.eclipse.leshan.senml;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 
+/**
+ * The class representing the SenML Record.
+ * 
+ * @see <a href="https://tools.ietf.org/html/rfc8428#section-4">rfc8428 - Sensor Measurement Lists (SenML)</a>
+ */
 public class SenMLRecord {
 
     private String baseName = null;

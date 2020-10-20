@@ -32,6 +32,7 @@ import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
 import org.eclipse.leshan.core.node.codec.NodeEncoder;
 import org.eclipse.leshan.core.util.Base64;
 import org.eclipse.leshan.core.util.Validate;
+import org.eclipse.leshan.senml.SenMLException;
 import org.eclipse.leshan.senml.SenMLPack;
 import org.eclipse.leshan.senml.SenMLRecord;
 import org.eclipse.leshan.senml.json.minimaljson.SenMLJsonMinimalEncoderDecoder;
@@ -56,7 +57,12 @@ public class LwM2mNodeSenMLJsonEncoder implements NodeEncoder {
 
         SenMLPack pack = new SenMLPack();
         pack.setRecords(internalEncoder.records);
-        return SenMLJsonMinimalEncoderDecoder.toSenMLJson(pack).getBytes();
+
+        try {
+            return SenMLJsonMinimalEncoderDecoder.toSenMLJson(pack).getBytes();
+        } catch (SenMLException e) {
+            throw new CodecException(e, "Unable to encode node[path:%s] : %s", path, node);
+        }
     }
 
     private static class InternalEncoder implements LwM2mNodeVisitor {

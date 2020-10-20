@@ -19,7 +19,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * The class representing the SenML Pack of LwM2M
+ * The class representing the SenML Pack.
+ * 
+ * @see <a href="https://tools.ietf.org/html/rfc8428#section-4">rfc8428 - Sensor Measurement Lists (SenML)</a>
  */
 public class SenMLPack {
 

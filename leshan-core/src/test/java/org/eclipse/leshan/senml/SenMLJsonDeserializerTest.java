@@ -21,11 +21,12 @@ import org.junit.Test;
 public class SenMLJsonDeserializerTest extends AbstractSenMLTest {
 
     @Test
-    public void deserialize_device_object() {
+    public void deserialize_device_object_with_minimalJson() throws SenMLException {
         String dataString = givenSenMLJsonExample();
         SenMLPack pack = SenMLJsonMinimalEncoderDecoder.fromSenMLJson(dataString);
 
         String outString = SenMLJsonMinimalEncoderDecoder.toSenMLJson(pack);
         Assert.assertEquals(dataString.trim(), outString);
     }
+
 }

@@ -14,9 +14,12 @@
 
 package org.eclipse.leshan.senml.json.minimaljson;
 
+import org.eclipse.leshan.core.util.json.JsonException;
+import org.eclipse.leshan.senml.SenMLException;
 import org.eclipse.leshan.senml.SenMLPack;
 
 import com.eclipsesource.json.Json;
+import com.eclipsesource.json.ParseException;
 
 /**
  * Helper for encoding/decoding SenML JSON using minimal-json
@@ -24,11 +27,19 @@ import com.eclipsesource.json.Json;
 public class SenMLJsonMinimalEncoderDecoder {
     private static final SenMLJsonPackSerDes serDes = new SenMLJsonPackSerDes();
 
-    public static String toSenMLJson(SenMLPack pack) {
-        return serDes.serializeToJson(pack);
+    public static String toSenMLJson(SenMLPack pack) throws SenMLException {
+        try {
+            return serDes.serializeToJson(pack);
+        } catch (JsonException e) {
+            throw new SenMLException("Unable to serialize LWM2M JSON.", e);
+        }
     }
 
-    public static SenMLPack fromSenMLJson(String jsonString) {
-        return serDes.deserializeFromJson(Json.parse(jsonString).asArray());
+    public static SenMLPack fromSenMLJson(String jsonString) throws SenMLException {
+        try {
+            return serDes.deserializeFromJson(Json.parse(jsonString).asArray());
+        } catch (JsonException | ParseException e) {
+            throw new SenMLException("Unable to parse SenML JSON.", e);
+        }
     }
 }
