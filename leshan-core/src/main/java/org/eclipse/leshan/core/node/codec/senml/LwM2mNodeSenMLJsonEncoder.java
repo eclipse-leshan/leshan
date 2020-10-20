@@ -32,9 +32,9 @@ import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
 import org.eclipse.leshan.core.node.codec.NodeEncoder;
 import org.eclipse.leshan.core.util.Base64;
 import org.eclipse.leshan.core.util.Validate;
-import org.eclipse.leshan.senml.SenMLJson;
 import org.eclipse.leshan.senml.SenMLPack;
 import org.eclipse.leshan.senml.SenMLRecord;
+import org.eclipse.leshan.senml.json.minimaljson.SenMLJson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

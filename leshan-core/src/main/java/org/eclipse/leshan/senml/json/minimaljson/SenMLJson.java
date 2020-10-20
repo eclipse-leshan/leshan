@@ -12,7 +12,9 @@
  *     Boya Zhang - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.leshan.senml;
+package org.eclipse.leshan.senml.json.minimaljson;
+
+import org.eclipse.leshan.senml.SenMLPack;
 
 import com.eclipsesource.json.Json;
 

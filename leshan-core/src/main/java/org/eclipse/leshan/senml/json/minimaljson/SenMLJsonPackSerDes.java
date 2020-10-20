@@ -12,10 +12,12 @@
  *     Boya Zhang - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.leshan.senml;
+package org.eclipse.leshan.senml.json.minimaljson;
 
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.util.Base64;
+import org.eclipse.leshan.senml.SenMLPack;
+import org.eclipse.leshan.senml.SenMLRecord;
 
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;

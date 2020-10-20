@@ -14,6 +14,7 @@
 
 package org.eclipse.leshan.senml;
 
+import org.eclipse.leshan.senml.json.minimaljson.SenMLJson;
 import org.junit.Assert;
 import org.junit.Test;
 
