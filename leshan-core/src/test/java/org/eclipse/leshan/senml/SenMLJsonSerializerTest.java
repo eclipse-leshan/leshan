@@ -20,9 +20,15 @@ import org.junit.Test;
 
 public class SenMLJsonSerializerTest extends AbstractSenMLTest {
 
+    private SenMLEncoder encoder;
+
+    public SenMLJsonSerializerTest() {
+        encoder = new SenMLJsonMinimalEncoderDecoder();
+    }
+
     @Test
     public void serialize_device_object_to_senml_json() throws SenMLException {
-        String json = SenMLJsonMinimalEncoderDecoder.toSenMLJson(givenDeviceObjectInstance());
+        String json = new String(encoder.toSenML(givenDeviceObjectInstance()));
         Assert.assertTrue(json.equals(givenSenMLJsonExample()));
     }
 }

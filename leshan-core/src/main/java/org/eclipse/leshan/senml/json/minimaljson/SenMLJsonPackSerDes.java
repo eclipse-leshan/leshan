@@ -25,7 +25,7 @@ import com.eclipsesource.json.JsonValue;
 
 public class SenMLJsonPackSerDes {
 
-    public String serializeToJson(SenMLPack pack) {
+    public byte[] serializeToJson(SenMLPack pack) {
         JsonArray jsonArray = new JsonArray();
 
         for (SenMLRecord record : pack.getRecords()) {
@@ -72,7 +72,7 @@ public class SenMLJsonPackSerDes {
             jsonArray.add(jsonObj);
         }
 
-        return jsonArray.toString();
+        return jsonArray.toString().getBytes();
     }
 
     public SenMLPack deserializeFromJson(JsonArray array) {

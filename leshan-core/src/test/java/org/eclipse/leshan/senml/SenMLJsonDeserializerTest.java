@@ -20,12 +20,19 @@ import org.junit.Test;
 
 public class SenMLJsonDeserializerTest extends AbstractSenMLTest {
 
+    private SenMLEncoder encoder;
+    private SenMLDecoder decoder;
+
+    public SenMLJsonDeserializerTest() {
+        encoder = new SenMLJsonMinimalEncoderDecoder();
+    }
+
     @Test
     public void deserialize_device_object_with_minimalJson() throws SenMLException {
         String dataString = givenSenMLJsonExample();
-        SenMLPack pack = SenMLJsonMinimalEncoderDecoder.fromSenMLJson(dataString);
+        SenMLPack pack = decoder.fromSenML(dataString.getBytes());
 
-        String outString = SenMLJsonMinimalEncoderDecoder.toSenMLJson(pack);
+        String outString = new String(encoder.toSenML(pack));
         Assert.assertEquals(dataString.trim(), outString);
     }
 

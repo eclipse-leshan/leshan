@@ -32,15 +32,21 @@ import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
 import org.eclipse.leshan.core.node.codec.NodeEncoder;
 import org.eclipse.leshan.core.util.Base64;
 import org.eclipse.leshan.core.util.Validate;
+import org.eclipse.leshan.senml.SenMLEncoder;
 import org.eclipse.leshan.senml.SenMLException;
 import org.eclipse.leshan.senml.SenMLPack;
 import org.eclipse.leshan.senml.SenMLRecord;
-import org.eclipse.leshan.senml.json.minimaljson.SenMLJsonMinimalEncoderDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LwM2mNodeSenMLJsonEncoder implements NodeEncoder {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeSenMLJsonEncoder.class);
+
+    private final SenMLEncoder encoder;
+
+    public LwM2mNodeSenMLJsonEncoder(SenMLEncoder encoder) {
+        this.encoder = encoder;
+    }
 
     @Override
     public byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model, LwM2mValueConverter converter) {
@@ -59,7 +65,7 @@ public class LwM2mNodeSenMLJsonEncoder implements NodeEncoder {
         pack.setRecords(internalEncoder.records);
 
         try {
-            return SenMLJsonMinimalEncoderDecoder.toSenMLJson(pack).getBytes();
+            return encoder.toSenML(pack);
         } catch (SenMLException e) {
             throw new CodecException(e, "Unable to encode node[path:%s] : %s", path, node);
         }
