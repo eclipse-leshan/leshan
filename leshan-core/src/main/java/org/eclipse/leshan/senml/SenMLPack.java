@@ -25,6 +25,13 @@ public class SenMLPack {
 
     private List<SenMLRecord> records;
 
+    public SenMLPack() {
+    }
+
+    public SenMLPack(List<SenMLRecord> records) {
+        this.records = records;
+    }
+
     public void addRecord(SenMLRecord record) {
         if (records == null) {
             records = new ArrayList<>();
