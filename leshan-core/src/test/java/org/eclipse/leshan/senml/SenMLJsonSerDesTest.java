@@ -14,24 +14,40 @@
 
 package org.eclipse.leshan.senml;
 
+import java.util.Arrays;
+import java.util.Collection;
+
+import org.eclipse.leshan.senml.json.jackson.SenMLJsonJacksonEncoderDecoder;
 import org.eclipse.leshan.senml.json.minimaljson.SenMLJsonMinimalEncoderDecoder;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
-public class SenMLJsonDeserializerTest extends AbstractSenMLTest {
+@RunWith(Parameterized.class)
+public class SenMLJsonSerDesTest extends AbstractSenMLTest {
+
+    @Parameterized.Parameters(name = "{2}")
+    public static Collection<?> senMLJsonencoderDecoder() {
+        SenMLJsonMinimalEncoderDecoder minimal = new SenMLJsonMinimalEncoderDecoder();
+        SenMLJsonJacksonEncoderDecoder jackson = new SenMLJsonJacksonEncoderDecoder();
+        return Arrays.asList(new Object[][] { //
+                                { minimal, minimal, "minimal-json" }, //
+                                { jackson, jackson, "jackson" } });
+    }
 
     private SenMLEncoder encoder;
     private SenMLDecoder decoder;
 
-    public SenMLJsonDeserializerTest() {
-        encoder = new SenMLJsonMinimalEncoderDecoder();
+    public SenMLJsonSerDesTest(SenMLEncoder encoder, SenMLDecoder decoder, String encoderDecoderName) {
+        this.encoder = encoder;
+        this.decoder = decoder;
     }
 
     @Test
     public void deserialize_device_object_with_minimalJson() throws SenMLException {
         String dataString = givenSenMLJsonExample();
         SenMLPack pack = decoder.fromSenML(dataString.getBytes());
-
         String outString = new String(encoder.toSenML(pack));
         Assert.assertEquals(dataString.trim(), outString);
     }
