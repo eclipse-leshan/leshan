@@ -51,7 +51,7 @@ public class SenMLJsonPackSerDes {
             if (type != null) {
                 switch (record.getType()) {
                 case FLOAT:
-                    jsonObj.add("v", record.getFloatValue().floatValue());
+                    jsonObj.add("v", record.getFloatValue().doubleValue());
                     break;
                 case BOOLEAN:
                     jsonObj.add("vb", record.getBooleanValue());
@@ -105,7 +105,7 @@ public class SenMLJsonPackSerDes {
 
             JsonValue v = o.get("v");
             if (v != null && v.isNumber())
-                record.setFloatValue(v.asFloat());
+                record.setFloatValue(v.asDouble());
 
             JsonValue vb = o.get("vb");
             if (vb != null && vb.isBoolean())
