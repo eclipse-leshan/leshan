@@ -182,11 +182,18 @@ public class LwM2mNodeSenMLJsonEncoder implements NodeEncoder {
 
         private void setResourceValue(Object value, Type type, LwM2mPath resourcePath, SenMLRecord record) {
             LOG.trace("Encoding resource value {} in SenML JSON", value);
+
+            if (type == null || type == Type.NONE) {
+                throw new CodecException(
+                        "Unable to encode value for resource {} without type(probably a executable one)", resourcePath);
+            }
+
             switch (type) {
             case STRING:
                 record.setStringValue((String) value);
                 break;
             case INTEGER:
+            case UNSIGNED_INTEGER:
             case FLOAT:
                 record.setFloatValue((Number) value);
                 break;

@@ -34,6 +34,8 @@ import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.NodeDecoder;
 import org.eclipse.leshan.core.util.Base64;
+import org.eclipse.leshan.core.util.datatype.NumberUtil;
+import org.eclipse.leshan.core.util.datatype.ULong;
 import org.eclipse.leshan.senml.SenMLDecoder;
 import org.eclipse.leshan.senml.SenMLException;
 import org.eclipse.leshan.senml.SenMLPack;
@@ -65,8 +67,8 @@ public class LwM2mNodeSenMLJsonDecoder implements NodeDecoder {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T extends LwM2mNode> T parseSenMLPack(SenMLPack pack, LwM2mPath path, LwM2mModel model,
-            Class<T> nodeClass) throws CodecException {
+    private <T extends LwM2mNode> T parseSenMLPack(SenMLPack pack, LwM2mPath path, LwM2mModel model, Class<T> nodeClass)
+            throws CodecException {
 
         LOG.trace("Parsing SenML JSON object for path {}: {}", path, pack);
 
@@ -124,8 +126,8 @@ public class LwM2mNodeSenMLJsonDecoder implements NodeDecoder {
      * 
      * @return a map (instanceId => collection of SenML Record)
      */
-    private static Map<Integer, Collection<ResolvedSenMLRecord>> groupRecordsByInstanceId(
-            Collection<SenMLRecord> records, LwM2mPath requestPath) throws CodecException {
+    private Map<Integer, Collection<ResolvedSenMLRecord>> groupRecordsByInstanceId(Collection<SenMLRecord> records,
+            LwM2mPath requestPath) throws CodecException {
         Map<Integer, Collection<ResolvedSenMLRecord>> result = new HashMap<>();
 
         String basename = "";
@@ -163,7 +165,7 @@ public class LwM2mNodeSenMLJsonDecoder implements NodeDecoder {
         return result;
     }
 
-    private static Map<Integer, LwM2mResource> extractLwM2mResources(Collection<ResolvedSenMLRecord> records,
+    private Map<Integer, LwM2mResource> extractLwM2mResources(Collection<ResolvedSenMLRecord> records,
             LwM2mPath requestPath, LwM2mModel model) throws CodecException {
         if (records == null)
             return Collections.emptyMap();
@@ -251,20 +253,24 @@ public class LwM2mNodeSenMLJsonDecoder implements NodeDecoder {
         return lwM2mResourceMap;
     }
 
-    private static Object parseResourceValue(Object value, Type expectedType, LwM2mPath path) throws CodecException {
+    private Object parseResourceValue(Object value, Type expectedType, LwM2mPath path) throws CodecException {
         LOG.trace("Parse SenML JSON value for path {} and expected type {}: {}", path, expectedType, value);
 
         try {
             switch (expectedType) {
             case INTEGER:
-                return ((Number) value).longValue();
-            case FLOAT:
-                return ((Number) value).doubleValue();
+                return numberToLong((Number) value);
+            case UNSIGNED_INTEGER:
+                return numberToULong((Number) value);
             case BOOLEAN:
                 return value;
+            case FLOAT:
+                return numberToDouble((Number) value);
             case TIME:
-                return new Date(((Number) value).longValue() * 1000L);
+                return new Date(numberToLong((Number) value) * 1000L);
             case OPAQUE:
+                // If the Resource data type is opaque the string value
+                // holds the Base64 encoded representation of the Resource
                 return Base64.decodeBase64((String) value);
             case STRING:
                 return value;
@@ -276,7 +282,7 @@ public class LwM2mNodeSenMLJsonDecoder implements NodeDecoder {
         }
     }
 
-    public static Type getResourceType(LwM2mPath rscPath, LwM2mModel model, SenMLRecord record) {
+    private Type getResourceType(LwM2mPath rscPath, LwM2mModel model, SenMLRecord record) {
         // Use model type in priority
         ResourceModel rscDesc = model.getResourceModel(rscPath.getObjectId(), rscPath.getResourceId());
         if (rscDesc != null && rscDesc.type != null)
@@ -292,6 +298,19 @@ public class LwM2mNodeSenMLJsonDecoder implements NodeDecoder {
         // Else use String as default
         LOG.trace("unknown type for resource use string as default: {}", rscPath);
         return Type.STRING;
+    }
+
+    protected Long numberToLong(Number number) {
+        return NumberUtil.numberToLong(number);
+    }
+
+    protected ULong numberToULong(Number number) {
+        return NumberUtil.numberToULong(number);
+    }
+
+    protected Double numberToDouble(Number number) {
+        // we get the better approximate value, meaning we can get precision loss
+        return number.doubleValue();
     }
 
     private static class ResolvedSenMLRecord {

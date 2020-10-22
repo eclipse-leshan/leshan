@@ -44,6 +44,7 @@ import org.eclipse.leshan.core.tlv.Tlv;
 import org.eclipse.leshan.core.tlv.Tlv.TlvType;
 import org.eclipse.leshan.core.tlv.TlvEncoder;
 import org.eclipse.leshan.core.util.Hex;
+import org.eclipse.leshan.core.util.datatype.ULong;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -916,5 +917,31 @@ public class LwM2mNodeDecoderTest {
         assertTrue(multipleResources.isMultiInstances());
         assertEquals(3800l, multipleResources.getValue(0));
         assertEquals(5000l, multipleResources.getValue(1));
+    }
+
+    @Test
+    public void senml_json_decode_ulong() {
+        // 18446744073709551615 can not hold in Long
+        String payload = "[{\"n\":\"/0/0/16\",\"v\":18446744073709551615}]";
+        LwM2mResource resource = decoder.decode(payload.getBytes(), ContentFormat.SENML_JSON, new LwM2mPath("/0/0/16"),
+                model, LwM2mResource.class);
+
+        assertNotNull(resource);
+        assertTrue(!resource.isMultiInstances());
+        assertEquals(16, resource.getId());
+        assertEquals(ULong.valueOf("18446744073709551615"), resource.getValue());
+    }
+
+    @Test
+    public void senml_json_decode_long() {
+        // 9223372036854775800 long value can not hold in double (will be approximate to 9223372036854775808)
+        String payload = "[{\"n\":\"/1/0/2\",\"v\":9223372036854775800}]";
+        LwM2mResource resource = decoder.decode(payload.getBytes(), ContentFormat.SENML_JSON, new LwM2mPath("/1/0/2"),
+                model, LwM2mResource.class);
+
+        assertNotNull(resource);
+        assertTrue(!resource.isMultiInstances());
+        assertEquals(2, resource.getId());
+        assertEquals(9223372036854775800l, resource.getValue());
     }
 }
