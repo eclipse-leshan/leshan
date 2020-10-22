@@ -15,6 +15,7 @@ package org.eclipse.leshan.core.node.codec.senml;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map.Entry;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -27,9 +28,10 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
-import org.eclipse.leshan.core.node.codec.NodeEncoder;
+import org.eclipse.leshan.core.node.codec.TimestampedNodeEncoder;
 import org.eclipse.leshan.core.util.Base64;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.senml.SenMLEncoder;
@@ -39,7 +41,7 @@ import org.eclipse.leshan.senml.SenMLRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LwM2mNodeSenMLJsonEncoder implements NodeEncoder {
+public class LwM2mNodeSenMLJsonEncoder implements TimestampedNodeEncoder {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeSenMLJsonEncoder.class);
 
     private final SenMLEncoder encoder;
@@ -68,6 +70,42 @@ public class LwM2mNodeSenMLJsonEncoder implements NodeEncoder {
             return encoder.toSenML(pack);
         } catch (SenMLException e) {
             throw new CodecException(e, "Unable to encode node[path:%s] : %s", path, node);
+        }
+    }
+
+    @Override
+    public byte[] encodeTimestampedData(List<TimestampedLwM2mNode> timestampedNodes, LwM2mPath path, LwM2mModel model,
+            LwM2mValueConverter converter) throws CodecException {
+        Validate.notNull(timestampedNodes);
+        Validate.notNull(path);
+        Validate.notNull(model);
+
+        SenMLPack pack = new SenMLPack();
+        for (TimestampedLwM2mNode timestampedLwM2mNode : timestampedNodes) {
+
+            if (timestampedLwM2mNode.getTimestamp() < 268_435_456) {
+                // The smallest absolute Time value that can be expressed (2**28) is 1978-07-04 21:24:16 UTC.
+                // see https://tools.ietf.org/html/rfc8428#section-4.5.3
+                throw new CodecException(
+                        "Unable to encode timestamped node[path:%s] : invalid timestamp %s, timestamp should be greater or equals to 268,435,456",
+                        path, timestampedLwM2mNode.getTimestamp());
+            }
+
+            InternalEncoder internalEncoder = new InternalEncoder();
+            internalEncoder.objectId = path.getObjectId();
+            internalEncoder.model = model;
+            internalEncoder.requestPath = path;
+            internalEncoder.converter = converter;
+            internalEncoder.records = new ArrayList<>();
+            timestampedLwM2mNode.getNode().accept(internalEncoder);
+            internalEncoder.records.get(0).setBaseTime(timestampedLwM2mNode.getTimestamp());
+            pack.addRecords(internalEncoder.records);
+        }
+
+        try {
+            return encoder.toSenML(pack);
+        } catch (SenMLException e) {
+            throw new CodecException(e, "Unable to encode timestamped node[path:%s] : %s", path, timestampedNodes);
         }
     }
 

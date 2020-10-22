@@ -42,6 +42,13 @@ public class SenMLPack {
         records.add(record);
     }
 
+    public void addRecords(List<SenMLRecord> records) {
+        if (this.records == null) {
+            this.records = new ArrayList<>();
+        }
+        this.records.addAll(records);
+    }
+
     public void setRecords(List<SenMLRecord> records) {
         this.records = records;
     }
