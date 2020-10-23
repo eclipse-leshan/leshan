@@ -147,12 +147,6 @@ public class WriteSingleValueTest {
 
     @Test
     public void can_write_string_resource_instance() throws InterruptedException {
-        // resource instance operation not yet implemented for some content format.
-        switch (contentFormat.getCode()) {
-        case ContentFormat.SENML_JSON_CODE:
-            return;
-        }
-
         write_string_resource_instance(contentFormat, 0);
         write_string_resource_instance(contentFormat, 1);
     }

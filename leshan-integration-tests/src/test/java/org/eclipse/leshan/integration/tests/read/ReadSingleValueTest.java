@@ -90,10 +90,6 @@ public class ReadSingleValueTest {
 
     @Test
     public void can_read_resource_instance() throws InterruptedException {
-        if (contentFormat == ContentFormat.SENML_JSON)
-            // not supported yet
-            return;
-
         // read device model number
         ReadResponse response = helper.server.send(helper.getCurrentRegistration(),
                 new ReadRequest(contentFormat, TEST_OBJECT_ID, 0, STRING_RESOURCE_INSTANCE_ID, 0), 1000000);

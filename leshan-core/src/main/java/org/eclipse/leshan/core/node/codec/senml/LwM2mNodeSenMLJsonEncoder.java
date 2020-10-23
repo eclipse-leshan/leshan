@@ -166,11 +166,25 @@ public class LwM2mNodeSenMLJsonEncoder implements TimestampedNodeEncoder {
         }
 
         @Override
-        public void visit(LwM2mResourceInstance instance) {
-            throw new UnsupportedOperationException("not yet implemented");
+        public void visit(LwM2mResourceInstance resourceInstance) {
+            LOG.trace("Encoding resource instance {} into SenML JSON", resourceInstance);
+            if (!requestPath.isResourceInstance()) {
+                throw new CodecException("Invalid request path %s for resource  instance encoding", requestPath);
+            }
+
+            // get type for this resource
+            ResourceModel rSpec = model.getResourceModel(objectId, requestPath.getResourceId());
+            Type expectedType = rSpec != null ? rSpec.type : resourceInstance.getType();
+
+            // Using request path as base name, and record doesn't have name
+            addSenMLRecord(null, resourceInstance.getType(), expectedType, resourceInstance.getValue());
         }
 
         private void lwM2mResourceToSenMLRecord(String recordName, LwM2mResource resource) {
+            // get type for this resource
+            ResourceModel rSpec = model.getResourceModel(objectId, resource.getId());
+            Type expectedType = rSpec != null ? rSpec.type : resource.getType();
+
             // create resource element
             if (resource.isMultiInstances()) {
                 for (Entry<Integer, LwM2mResourceInstance> entry : resource.getInstances().entrySet()) {
@@ -182,18 +196,15 @@ public class LwM2mNodeSenMLJsonEncoder implements TimestampedNodeEncoder {
                         resourceInstanceRecordName = recordName + "/" + entry.getKey();
                     }
 
-                    addSenMLRecord(resourceInstanceRecordName, resource, entry.getValue().getValue());
+                    addSenMLRecord(resourceInstanceRecordName, resource.getType(), expectedType,
+                            entry.getValue().getValue());
                 }
             } else {
-                addSenMLRecord(recordName, resource, resource.getValue());
+                addSenMLRecord(recordName, resource.getType(), expectedType, resource.getValue());
             }
         }
 
-        private void addSenMLRecord(String recordName, LwM2mResource resource, Object value) {
-            // get type for this resource
-            ResourceModel rSpec = model.getResourceModel(objectId, resource.getId());
-            Type expectedType = rSpec != null ? rSpec.type : resource.getType();
-
+        private void addSenMLRecord(String recordName, Type valueType, Type expectedType, Object value) {
             // Create SenML record
             SenMLRecord record = new SenMLRecord();
 
@@ -211,7 +222,7 @@ public class LwM2mNodeSenMLJsonEncoder implements TimestampedNodeEncoder {
 
             // Convert value using expected type
             LwM2mPath lwM2mResourcePath = new LwM2mPath(bn + n);
-            Object convertedValue = converter.convertValue(value, resource.getType(), expectedType, lwM2mResourcePath);
+            Object convertedValue = converter.convertValue(value, valueType, expectedType, lwM2mResourcePath);
             setResourceValue(convertedValue, expectedType, lwM2mResourcePath, record);
 
             // Add record to the List
