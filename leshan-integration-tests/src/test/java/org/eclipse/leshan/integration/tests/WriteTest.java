@@ -203,16 +203,19 @@ public class WriteTest {
     @Test
     public void can_write_string_resource_json_instance() throws InterruptedException {
         write_string_resource_instance(ContentFormat.JSON, 0);
+        write_string_resource_instance(ContentFormat.JSON, 1);
     }
 
     @Test
     public void can_write_string_resource_old_json_instance() throws InterruptedException {
         write_string_resource_instance(ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE), 0);
+        write_string_resource_instance(ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE), 1);
     }
 
     @Test
     public void can_write_string_resource_text_instance() throws InterruptedException {
         write_string_resource_instance(ContentFormat.TEXT, 0);
+        write_string_resource_instance(ContentFormat.TEXT, 1);
     }
 
     @Test
@@ -224,18 +227,21 @@ public class WriteTest {
     @Test
     public void can_write_string_resource_tlv_instance() throws InterruptedException {
         write_string_resource_instance(ContentFormat.TLV, 0);
+        write_string_resource_instance(ContentFormat.TLV, 1);
     }
 
     @Test
     public void can_write_string_resource_old_tlv_instance() throws InterruptedException {
         write_string_resource_instance(ContentFormat.fromCode(ContentFormat.OLD_TLV_CODE), 0);
+        write_string_resource_instance(ContentFormat.fromCode(ContentFormat.OLD_TLV_CODE), 1);
     }
 
-    private void write_string_resource_instance(ContentFormat format, int resourceInstance) throws InterruptedException {
+    private void write_string_resource_instance(ContentFormat format, int resourceInstance)
+            throws InterruptedException {
         // read device model number
         String valueToWrite = "newValue";
-        WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
-            new WriteRequest(format, TEST_OBJECT_ID, 0, STRING_RESOURCE_INSTANCE_ID, resourceInstance, valueToWrite, Type.STRING));
+        WriteResponse response = helper.server.send(helper.getCurrentRegistration(), new WriteRequest(format,
+                TEST_OBJECT_ID, 0, STRING_RESOURCE_INSTANCE_ID, resourceInstance, valueToWrite, Type.STRING));
 
         // verify result
         assertEquals(CHANGED, response.getCode());
@@ -244,7 +250,7 @@ public class WriteTest {
 
         // read resource to check the value changed
         ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
-            new ReadRequest(format, TEST_OBJECT_ID, 0, STRING_RESOURCE_INSTANCE_ID, resourceInstance));
+                new ReadRequest(format, TEST_OBJECT_ID, 0, STRING_RESOURCE_INSTANCE_ID, resourceInstance));
 
         // verify result
         LwM2mResourceInstance resource = (LwM2mResourceInstance) readResponse.getContent();

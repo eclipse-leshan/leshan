@@ -198,7 +198,7 @@ public class LwM2mNodeJsonEncoder implements TimestampedNodeEncoder {
             baseName = requestPath.toString();
 
             // get type for this resource
-            ResourceModel rSpec = model.getResourceModel(objectId, instance.getId());
+            ResourceModel rSpec = model.getResourceModel(objectId, requestPath.getResourceId());
             Type expectedType = rSpec != null ? rSpec.type : instance.getType();
 
             JsonArrayEntry jsonArrayEntry = createJsonArrayEntry(null, timestamp, instance.getType(), expectedType,
