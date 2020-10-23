@@ -23,6 +23,7 @@ import java.util.List;
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
@@ -30,6 +31,7 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
+import org.eclipse.leshan.core.util.datatype.ULong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +43,8 @@ public class Security extends BaseInstanceEnabler {
     private static final Logger LOG = LoggerFactory.getLogger(Security.class);
 
     private final static List<Integer> supportedResources = Arrays.asList(SEC_SERVER_URI, SEC_BOOTSTRAP,
-            SEC_SECURITY_MODE, SEC_PUBKEY_IDENTITY, SEC_SERVER_PUBKEY, SEC_SECRET_KEY, SEC_SERVER_ID);
+            SEC_SECURITY_MODE, SEC_PUBKEY_IDENTITY, SEC_SERVER_PUBKEY, SEC_SECRET_KEY, SEC_SERVER_ID,
+            SEC_CERTIFICATE_USAGE);
 
     private String serverUri; /* coaps://host:port */
     private boolean bootstrapServer;
@@ -53,12 +56,15 @@ public class Security extends BaseInstanceEnabler {
 
     private Integer shortServerId;
 
+    private ULong certificateUsage;
+
     public Security() {
         // should only be used at bootstrap time
+        this.certificateUsage = CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code;
     }
 
     public Security(String serverUri, boolean bootstrapServer, int securityMode, byte[] publicKeyOrIdentity,
-            byte[] serverPublicKey, byte[] secretKey, Integer shortServerId) {
+            byte[] serverPublicKey, byte[] secretKey, Integer shortServerId, ULong certificateUsage) {
         this.serverUri = serverUri;
         this.bootstrapServer = bootstrapServer;
         this.securityMode = securityMode;
@@ -66,13 +72,15 @@ public class Security extends BaseInstanceEnabler {
         this.serverPublicKey = serverPublicKey;
         this.secretKey = secretKey;
         this.shortServerId = shortServerId;
+        this.certificateUsage = certificateUsage;
     }
 
     /**
      * Returns a new security instance (NoSec) for a bootstrap server.
      */
     public static Security noSecBootstap(String serverUri) {
-        return new Security(serverUri, true, SecurityMode.NO_SEC.code, new byte[0], new byte[0], new byte[0], 0);
+        return new Security(serverUri, true, SecurityMode.NO_SEC.code, new byte[0], new byte[0], new byte[0], 0,
+                CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code);
     }
 
     /**
@@ -80,7 +88,7 @@ public class Security extends BaseInstanceEnabler {
      */
     public static Security pskBootstrap(String serverUri, byte[] pskIdentity, byte[] privateKey) {
         return new Security(serverUri, true, SecurityMode.PSK.code, pskIdentity.clone(), new byte[0],
-                privateKey.clone(), 0);
+                privateKey.clone(), 0, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code);
     }
 
     /**
@@ -89,7 +97,7 @@ public class Security extends BaseInstanceEnabler {
     public static Security rpkBootstrap(String serverUri, byte[] clientPublicKey, byte[] clientPrivateKey,
             byte[] serverPublicKey) {
         return new Security(serverUri, true, SecurityMode.RPK.code, clientPublicKey.clone(), serverPublicKey.clone(),
-                clientPrivateKey.clone(), 0);
+                clientPrivateKey.clone(), 0, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code);
     }
 
     /**
@@ -98,7 +106,7 @@ public class Security extends BaseInstanceEnabler {
     public static Security x509Bootstrap(String serverUri, byte[] clientCertificate, byte[] clientPrivateKey,
             byte[] serverPublicKey) {
         return new Security(serverUri, true, SecurityMode.X509.code, clientCertificate.clone(), serverPublicKey.clone(),
-                clientPrivateKey.clone(), 0);
+                clientPrivateKey.clone(), 0, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code);
     }
 
     /**
@@ -106,7 +114,7 @@ public class Security extends BaseInstanceEnabler {
      */
     public static Security noSec(String serverUri, int shortServerId) {
         return new Security(serverUri, false, SecurityMode.NO_SEC.code, new byte[0], new byte[0], new byte[0],
-                shortServerId);
+                shortServerId, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code);
     }
 
     /**
@@ -114,7 +122,7 @@ public class Security extends BaseInstanceEnabler {
      */
     public static Security psk(String serverUri, int shortServerId, byte[] pskIdentity, byte[] privateKey) {
         return new Security(serverUri, false, SecurityMode.PSK.code, pskIdentity.clone(), new byte[0],
-                privateKey.clone(), shortServerId);
+                privateKey.clone(), shortServerId, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code);
     }
 
     /**
@@ -123,7 +131,7 @@ public class Security extends BaseInstanceEnabler {
     public static Security rpk(String serverUri, int shortServerId, byte[] clientPublicKey, byte[] clientPrivateKey,
             byte[] serverPublicKey) {
         return new Security(serverUri, false, SecurityMode.RPK.code, clientPublicKey.clone(), serverPublicKey.clone(),
-                clientPrivateKey.clone(), shortServerId);
+                clientPrivateKey.clone(), shortServerId, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code);
     }
 
     /**
@@ -132,7 +140,8 @@ public class Security extends BaseInstanceEnabler {
     public static Security x509(String serverUri, int shortServerId, byte[] clientCertificate, byte[] clientPrivateKey,
             byte[] serverPublicKey) {
         return new Security(serverUri, false, SecurityMode.X509.code, clientCertificate.clone(),
-                serverPublicKey.clone(), clientPrivateKey.clone(), shortServerId);
+                serverPublicKey.clone(), clientPrivateKey.clone(), shortServerId,
+                CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code);
     }
 
     @Override
@@ -186,6 +195,12 @@ public class Security extends BaseInstanceEnabler {
             }
             shortServerId = ((Long) value.getValue()).intValue();
             return WriteResponse.success();
+        case SEC_CERTIFICATE_USAGE: // certificate usage
+            if (value.getType() != Type.UNSIGNED_INTEGER) {
+                return WriteResponse.badRequest("invalid type");
+            }
+            certificateUsage = (ULong) value.getValue();
+            return WriteResponse.success();
 
         default:
             return super.write(identity, resourceId, value);
@@ -218,6 +233,9 @@ public class Security extends BaseInstanceEnabler {
 
         case SEC_SERVER_ID: // short server id
             return ReadResponse.success(resourceid, shortServerId);
+
+        case SEC_CERTIFICATE_USAGE: // certificate usage
+            return ReadResponse.success(resourceid, certificateUsage);
 
         default:
             return super.read(identity, resourceid);

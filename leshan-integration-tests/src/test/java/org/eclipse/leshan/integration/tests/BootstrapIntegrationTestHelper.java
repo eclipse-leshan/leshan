@@ -188,7 +188,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         // Create Security Object (with bootstrap server only)
         String bsUrl = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
                 + bootstrapServer.getUnsecuredAddress().getPort();
-        return new Security(bsUrl, true, 3, new byte[0], new byte[0], new byte[0], 0);
+        return Security.noSecBootstap(bsUrl);
     }
 
     @Override
