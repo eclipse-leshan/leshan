@@ -222,9 +222,10 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
         }
         this.contentFormat = format != null ? format : ContentFormat.TLV; // default to TLV
 
-        if (this.contentFormat == ContentFormat.JSON && unknownObjectInstanceId()) {
+        if (this.contentFormat != ContentFormat.TLV && unknownObjectInstanceId()) {
             throw new InvalidRequestException(
-                    "Missing object instance id for CREATE request (%s) using JSON content format.", target);
+                    "Missing object instance id for CREATE request (%s) using %s content format.", target,
+                    this.contentFormat);
         }
     }
 
