@@ -176,7 +176,6 @@ public class WriteMultiValueTest {
         switch (contentFormat.getCode()) {
         case ContentFormat.JSON_CODE:
         case ContentFormat.OLD_JSON_CODE:
-        case ContentFormat.SENML_JSON_CODE:
             return;
         }
 
