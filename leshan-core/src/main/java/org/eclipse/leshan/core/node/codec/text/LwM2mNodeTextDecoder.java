@@ -16,7 +16,6 @@
 package org.eclipse.leshan.core.node.codec.text;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Date;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -107,15 +106,10 @@ public class LwM2mNodeTextDecoder implements NodeDecoder {
                 throw new CodecException("Invalid value [%s] for date resource [%s]", value, path);
             }
         case OBJLNK:
-            String[] intArr = value.split(":");
-            if (intArr.length != 2)
-                throw new CodecException("Invalid value %s for objectLink resource [%s]", Arrays.toString(intArr),
-                        path);
             try {
-                return new ObjectLink(Integer.parseInt(intArr[0]), Integer.parseInt(intArr[1]));
-            } catch (NumberFormatException e) {
-                throw new CodecException("Invalid value %s for objectLink resource [%s] ", Arrays.toString(intArr),
-                        path);
+                return ObjectLink.decodeFromString(value);
+            } catch (IllegalArgumentException e) {
+                throw new CodecException(e, "Invalid value [%s] for objectLink resource [%s] ", value, path);
             }
         case OPAQUE:
             if (!Base64.isBase64(value)) {
