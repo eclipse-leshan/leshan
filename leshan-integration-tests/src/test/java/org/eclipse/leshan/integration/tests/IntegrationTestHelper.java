@@ -62,7 +62,7 @@ import org.eclipse.leshan.server.security.InMemorySecurityStore;
 public class IntegrationTestHelper {
     public static final Random r = new Random();
 
-    static final String MODEL_NUMBER = "IT-TEST-123";
+    public static final String MODEL_NUMBER = "IT-TEST-123";
     public static final long LIFETIME = 2;
 
     public static final int TEST_OBJECT_ID = 2000;
