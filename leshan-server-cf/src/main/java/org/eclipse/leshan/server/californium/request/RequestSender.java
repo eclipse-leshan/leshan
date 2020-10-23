@@ -261,8 +261,14 @@ public class RequestSender implements Destroyable {
             boolean allowConnectionInitiation) throws InterruptedException {
 
         // Define destination
-        EndpointContext context = EndpointContextUtil.extractContext(destination, allowConnectionInitiation);
-        coapRequest.setDestinationContext(context);
+        if (coapRequest.getDestinationContext() == null) {
+            EndpointContext context = EndpointContextUtil.extractContext(destination, allowConnectionInitiation);
+            coapRequest.setDestinationContext(context);
+        } else {
+            LOG.warn(
+                    "Destination context was not set by Leshan for this request. The context is used to ensure you talk to the right peer. Bad usage could bring to security issue. {}",
+                    coapRequest);
+        }
 
         // Send CoAP request synchronously
         CoapSyncRequestObserver syncMessageObserver = new CoapSyncRequestObserver(coapRequest, timeoutInMs);
@@ -316,8 +322,14 @@ public class RequestSender implements Destroyable {
         Validate.notNull(errorCallback);
 
         // Define destination
-        EndpointContext context = EndpointContextUtil.extractContext(destination, allowConnectionInitiation);
-        coapRequest.setDestinationContext(context);
+        if (coapRequest.getDestinationContext() == null) {
+            EndpointContext context = EndpointContextUtil.extractContext(destination, allowConnectionInitiation);
+            coapRequest.setDestinationContext(context);
+        } else {
+            LOG.warn(
+                    "Destination context was not set by Leshan for this request. The context is used to ensure you talk to the right peer. Bad usage could bring to security issue.{}",
+                    coapRequest);
+        }
 
         // Add CoAP request callback
         MessageObserver obs = new CoapAsyncRequestObserver(coapRequest, responseCallback, errorCallback, timeoutInMs,
