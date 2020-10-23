@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
+import java.util.Arrays;
+
 import org.eclipse.leshan.core.util.Validate;
 
 /**
@@ -65,6 +67,23 @@ public class ObjectLink {
             return new ObjectLink(lwM2mPath.getObjectId(), lwM2mPath.getObjectInstanceId());
         } else {
             throw new IllegalArgumentException("Invalid path: ObjectLink should reference an object instance");
+        }
+    }
+
+    public String encodeToString() {
+        return this.getObjectId() + ":" + this.getObjectInstanceId();
+    }
+
+    public static ObjectLink decodeFromString(String encodedObjectLink) {
+        String[] intArr = encodedObjectLink.split(":");
+        if (intArr.length != 2)
+            throw new IllegalArgumentException(
+                    String.format("Invalid value %s for objectLink", Arrays.toString(intArr)));
+        try {
+            return new ObjectLink(Integer.parseInt(intArr[0]), Integer.parseInt(intArr[1]));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(
+                    String.format("Invalid value %s for objectLink", Arrays.toString(intArr)));
         }
     }
 
