@@ -26,6 +26,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.eclipse.californium.core.network.CoapEndpoint;
+import org.eclipse.californium.elements.Connector;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.object.Device;
@@ -79,9 +81,9 @@ public class IntegrationTestHelper {
 
     public static final String MULTI_INSTANCE = "multiinstance";
 
-    LeshanServer server;
-    LeshanClient client;
-    AtomicReference<String> currentEndpointIdentifier = new AtomicReference<String>();
+    public LeshanServer server;
+    public LeshanClient client;
+    public AtomicReference<String> currentEndpointIdentifier = new AtomicReference<String>();
 
     private SynchronousClientObserver clientObserver = new SynchronousClientObserver();
     private SynchronousRegistrationListener registrationListener = new SynchronousRegistrationListener() {
@@ -91,7 +93,7 @@ public class IntegrationTestHelper {
         }
     };
 
-    protected List<ObjectModel> createObjectModels() {
+    public List<ObjectModel> createObjectModels() {
         // load default object from the spec
         List<ObjectModel> objectModels = ObjectLoader.loadDefault();
         // define custom model for testing purpose
@@ -328,5 +330,10 @@ public class IntegrationTestHelper {
 
     public Registration getLastRegistration() {
         return registrationListener.getLastRegistration();
+    }
+
+    public Connector getClientConnector(ServerIdentity server) {
+        CoapEndpoint endpoint = (CoapEndpoint) client.coap().getServer().getEndpoint(client.getAddress(server));
+        return endpoint.getConnector();
     }
 }

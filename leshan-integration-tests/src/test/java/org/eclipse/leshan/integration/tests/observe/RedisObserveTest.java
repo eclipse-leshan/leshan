@@ -13,7 +13,9 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.integration.tests;
+package org.eclipse.leshan.integration.tests.observe;
+
+import org.eclipse.leshan.integration.tests.RedisIntegrationTestHelper;
 
 public class RedisObserveTest extends ObserveTest {
 
