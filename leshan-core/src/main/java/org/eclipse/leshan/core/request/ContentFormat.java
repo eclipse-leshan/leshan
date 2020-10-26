@@ -41,7 +41,8 @@ public class ContentFormat {
 
     public static final ContentFormat DEFAULT = TLV;
 
-    private static final ContentFormat knownContentFormat[] = new ContentFormat[] { TLV, JSON, TEXT, OPAQUE, LINK };
+    private static final ContentFormat knownContentFormat[] = new ContentFormat[] { TLV, JSON, SENML_JSON, TEXT, OPAQUE,
+                            LINK };
 
     private final String name;
     private final String mediaType;
