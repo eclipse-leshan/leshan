@@ -71,7 +71,7 @@ function BsConfigStore() {
         var data = configFromUIToRest(config);
         $.ajax({
             type: "POST",
-            url: 'api/bootstrap/'+endpoint,
+            url: 'api/bootstrap/'+encodeURIComponent(endpoint),
             data: JSON.stringify(data),
             contentType:"application/json; charset=utf-8",
         }).done(function () {
@@ -87,7 +87,7 @@ function BsConfigStore() {
     self.remove = function(endpoint) {
         $.ajax({
             type: "DELETE",
-            url: 'api/bootstrap/'+endpoint,
+            url: 'api/bootstrap/'+encodeURIComponent(endpoint),
         }).done(function () {
             delete self.bsconfigs[endpoint];
             self.trigger('changed', self.bsconfigs);
