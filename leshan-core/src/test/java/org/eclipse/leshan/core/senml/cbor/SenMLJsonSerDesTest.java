@@ -12,11 +12,15 @@
  *     Boya Zhang - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.leshan.senml;
+package org.eclipse.leshan.core.senml.cbor;
 
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.eclipse.leshan.senml.SenMLDecoder;
+import org.eclipse.leshan.senml.SenMLEncoder;
+import org.eclipse.leshan.senml.SenMLException;
+import org.eclipse.leshan.senml.SenMLPack;
 import org.eclipse.leshan.senml.json.jackson.SenMLJsonJacksonEncoderDecoder;
 import org.eclipse.leshan.senml.json.minimaljson.SenMLJsonMinimalEncoderDecoder;
 import org.junit.Assert;

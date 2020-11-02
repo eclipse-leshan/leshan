@@ -12,7 +12,7 @@
  *     Boya Zhang - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.leshan.senml.cbor;
+package org.eclipse.leshan.senml.cbor.jackson;
 
 import java.io.ByteArrayOutputStream;
 

@@ -12,10 +12,10 @@
  *     Boya Zhang - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.leshan.senml;
+package org.eclipse.leshan.core.senml.cbor;
 
 import org.eclipse.leshan.core.util.Hex;
-import org.eclipse.leshan.senml.cbor.SenMLCbor;
+import org.eclipse.leshan.senml.cbor.jackson.SenMLCbor;
 import org.junit.Assert;
 import org.junit.Test;
 

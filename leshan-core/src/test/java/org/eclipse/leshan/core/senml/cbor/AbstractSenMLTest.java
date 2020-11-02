@@ -12,7 +12,10 @@
  *     Boya Zhang - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.leshan.senml;
+package org.eclipse.leshan.core.senml.cbor;
+
+import org.eclipse.leshan.senml.SenMLPack;
+import org.eclipse.leshan.senml.SenMLRecord;
 
 public abstract class AbstractSenMLTest {
     protected void givenResourceWithFloatValue(SenMLPack pack, String n, Number value) {
