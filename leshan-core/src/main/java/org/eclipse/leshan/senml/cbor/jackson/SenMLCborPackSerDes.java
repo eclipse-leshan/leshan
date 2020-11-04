@@ -15,10 +15,13 @@
 package org.eclipse.leshan.senml.cbor.jackson;
 
 import java.io.ByteArrayOutputStream;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Iterator;
 
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.util.Base64;
+import org.eclipse.leshan.core.util.datatype.ULong;
 import org.eclipse.leshan.core.util.json.JsonException;
 import org.eclipse.leshan.senml.SenMLPack;
 import org.eclipse.leshan.senml.SenMLRecord;
@@ -154,8 +157,31 @@ public class SenMLCborPackSerDes {
                 if (type != null) {
                     switch (record.getType()) {
                     case FLOAT:
+                        Number value = record.getFloatValue();
                         generator.writeFieldId(2);
-                        generator.writeNumber(record.getFloatValue().intValue());
+                        if (value instanceof Byte) {
+                            generator.writeNumber(value.byteValue());
+                        } else if (value instanceof Short) {
+                            generator.writeNumber(value.shortValue());
+                        } else if (value instanceof Integer) {
+                            generator.writeNumber(value.intValue());
+                        } else if (value instanceof Long) {
+                            generator.writeNumber(value.longValue());
+                        } else if (value instanceof BigInteger) {
+                            generator.writeNumber((BigInteger) value);
+                        }
+                        // unsigned integer
+                        else if (value instanceof ULong) {
+                            generator.writeNumber(((ULong) value).toBigInteger());
+                        }
+                        // floating-point
+                        else if (value instanceof Float) {
+                            generator.writeNumber(value.floatValue());
+                        } else if (value instanceof Double) {
+                            generator.writeNumber(value.doubleValue());
+                        } else if (value instanceof BigDecimal) {
+                            generator.writeNumber((BigDecimal) value);
+                        }
                         break;
                     case BOOLEAN:
                         generator.writeFieldId(4);
