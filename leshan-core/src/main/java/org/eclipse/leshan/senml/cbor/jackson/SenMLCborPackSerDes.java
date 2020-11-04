@@ -15,15 +15,83 @@
 package org.eclipse.leshan.senml.cbor.jackson;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Iterator;
 
 import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.util.Base64;
+import org.eclipse.leshan.core.util.json.JsonException;
 import org.eclipse.leshan.senml.SenMLPack;
 import org.eclipse.leshan.senml.SenMLRecord;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 
 public class SenMLCborPackSerDes {
+
+    public SenMLPack deserializeFromCbor(Iterator<JsonNode> nodes) throws SenMLCborException {
+        SenMLPack senMLPack = new SenMLPack();
+        while (nodes.hasNext()) {
+            JsonNode o = nodes.next();
+            if (o == null)
+                return null;
+
+            SenMLRecord record = new SenMLRecord();
+
+            JsonNode bn = o.get("-2");
+            if (bn != null && bn.isTextual())
+                record.setBaseName(bn.asText());
+
+            JsonNode bt = o.get("-3");
+            if (bt != null && bt.isNumber())
+                record.setBaseTime(bt.asLong());
+
+            JsonNode n = o.get("0");
+            if (n != null && n.isTextual())
+                record.setName(n.asText());
+
+            JsonNode t = o.get("6");
+            if (t != null && t.isNumber())
+                record.setTime(t.asLong());
+
+            JsonNode v = o.get("2");
+            boolean hasValue = false;
+            if (v != null && v.isNumber()) {
+                record.setFloatValue(v.numberValue());
+                hasValue = true;
+            }
+
+            JsonNode vb = o.get("4");
+            if (vb != null && vb.isBoolean()) {
+                record.setBooleanValue(vb.asBoolean());
+                hasValue = true;
+            }
+
+            JsonNode vs = o.get("3");
+            if (vs != null && vs.isTextual()) {
+                record.setStringValue(vs.asText());
+                hasValue = true;
+            }
+
+            JsonNode vlo = o.get("vlo");
+            if (vlo != null && vlo.isTextual()) {
+                record.setObjectLinkValue(vlo.asText());
+                hasValue = true;
+            }
+
+            JsonNode vd = o.get("8");
+            if (vd != null && vd.isTextual()) {
+                record.setOpaqueValue(Base64.decodeBase64(vd.asText()));
+                hasValue = true;
+            }
+
+            if (!hasValue)
+                throw new JsonException("Invalid SenML record : record must have a value (v,vb,vlo,vd,vs) : %s", o);
+
+            senMLPack.addRecord(record);
+        }
+        return senMLPack;
+    }
 
     public byte[] serializeToCbor(SenMLPack pack) throws SenMLCborException {
         CBORFactory factory = new CBORFactory();
