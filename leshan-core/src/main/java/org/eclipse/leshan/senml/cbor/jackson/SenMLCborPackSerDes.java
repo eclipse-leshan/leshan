@@ -22,7 +22,7 @@ import java.util.Iterator;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.util.Base64;
 import org.eclipse.leshan.core.util.datatype.ULong;
-import org.eclipse.leshan.core.util.json.JsonException;
+import org.eclipse.leshan.senml.SenMLException;
 import org.eclipse.leshan.senml.SenMLPack;
 import org.eclipse.leshan.senml.SenMLRecord;
 
@@ -32,7 +32,7 @@ import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 
 public class SenMLCborPackSerDes {
 
-    public SenMLPack deserializeFromCbor(Iterator<JsonNode> nodes) throws SenMLCborException {
+    public SenMLPack deserializeFromCbor(Iterator<JsonNode> nodes) throws SenMLException {
         SenMLPack senMLPack = new SenMLPack();
         while (nodes.hasNext()) {
             JsonNode o = nodes.next();
@@ -89,19 +89,18 @@ public class SenMLCborPackSerDes {
             }
 
             if (!hasValue)
-                throw new JsonException("Invalid SenML record : record must have a value (v,vb,vlo,vd,vs) : %s", o);
+                throw new SenMLException("Invalid SenML record : record must have a value (v,vb,vlo,vd,vs) : %s", o);
 
             senMLPack.addRecord(record);
         }
         return senMLPack;
     }
 
-    public byte[] serializeToCbor(SenMLPack pack) throws SenMLCborException {
+    public byte[] serializeToCbor(SenMLPack pack) throws SenMLException {
         CBORFactory factory = new CBORFactory();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        try {
-            CBORGenerator generator = factory.createGenerator(out);
+        try (CBORGenerator generator = factory.createGenerator(out)) {
             generator.writeStartArray(pack.getRecords().size());
 
             for (SenMLRecord record : pack.getRecords()) {
@@ -205,9 +204,8 @@ public class SenMLCborPackSerDes {
             }
 
             generator.writeEndArray();
-            generator.close();
         } catch (Exception ex) {
-            throw new SenMLCborException("Impossible to encode pack to CBOR: \n" + pack, ex);
+            throw new SenMLException(ex, "Impossible to encode pack to CBOR: %s", pack, ex);
         }
 
         return out.toByteArray();

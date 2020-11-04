@@ -36,11 +36,7 @@ public class SenMLCborJacksonEncoderDecoder implements SenMLDecoder, SenMLEncode
     public byte[] toSenML(SenMLPack pack) throws SenMLException {
         if (pack == null)
             return null;
-        try {
-            return serDes.serializeToCbor(pack);
-        } catch (SenMLCborException e) {
-            throw new SenMLException("Unable to serialize SenML CBOR.", e);
-        }
+        return serDes.serializeToCbor(pack);
     }
 
     @Override
@@ -51,7 +47,7 @@ public class SenMLCborJacksonEncoderDecoder implements SenMLDecoder, SenMLEncode
                 throw new SenMLException("Unable to parse SenML CBOR: Array expected but was %s", node.getNodeType());
             }
             return serDes.deserializeFromCbor(node.iterator());
-        } catch (IOException | SenMLCborException e) {
+        } catch (IOException e) {
             throw new SenMLException("Unable to parse SenML CBOR.", e);
         }
     }
