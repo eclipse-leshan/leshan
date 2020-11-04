@@ -81,7 +81,7 @@ public abstract class AbstractSenMLTest {
         givenResourceWithFloatValue(pack, "9", 100);
         givenResourceWithFloatValue(pack, "10", 15);
         givenResourceWithFloatValue(pack, "11/0", 0);
-        givenResourceWithFloatValue(pack, "13", 1367491215l);
+        givenResourceWithFloatValue(pack, "13", 1367491215);
 
         givenResourceWithStringValue(pack, "14", "+02:00");
         givenResourceWithStringValue(pack, "16", "U");
