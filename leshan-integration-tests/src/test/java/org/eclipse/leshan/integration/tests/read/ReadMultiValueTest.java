@@ -46,7 +46,8 @@ public class ReadMultiValueTest {
         return Arrays.asList(new Object[][] { //
                                 { ContentFormat.TLV }, //
                                 { ContentFormat.JSON }, //
-                                { ContentFormat.SENML_JSON } });
+                                { ContentFormat.SENML_JSON }, //
+                                { ContentFormat.SENML_CBOR } });
     }
 
     private ContentFormat contentFormat;

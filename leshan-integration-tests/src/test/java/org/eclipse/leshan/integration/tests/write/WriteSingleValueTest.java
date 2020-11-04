@@ -62,7 +62,8 @@ public class WriteSingleValueTest {
                                 { ContentFormat.fromCode(ContentFormat.OLD_TLV_CODE) }, //
                                 { ContentFormat.JSON }, //
                                 { ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE) }, //
-                                { ContentFormat.SENML_JSON } });
+                                { ContentFormat.SENML_JSON }, //
+                                { ContentFormat.SENML_CBOR } });
     }
 
     private ContentFormat contentFormat;
