@@ -26,7 +26,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.json.LwM2mNodeJsonEncoder;
 import org.eclipse.leshan.core.node.codec.opaque.LwM2mNodeOpaqueEncoder;
-import org.eclipse.leshan.core.node.codec.senml.LwM2mNodeSenMLJsonEncoder;
+import org.eclipse.leshan.core.node.codec.senml.LwM2mNodeSenMLEncoder;
 import org.eclipse.leshan.core.node.codec.text.LwM2mNodeTextEncoder;
 import org.eclipse.leshan.core.node.codec.tlv.LwM2mNodeTlvEncoder;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -53,8 +53,8 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
         Map<ContentFormat, NodeEncoder> encoders = new HashMap<>();
         encoders.put(ContentFormat.TEXT, new LwM2mNodeTextEncoder());
         encoders.put(ContentFormat.OPAQUE, new LwM2mNodeOpaqueEncoder());
-        encoders.put(ContentFormat.SENML_JSON, new LwM2mNodeSenMLJsonEncoder(new SenMLJsonJacksonEncoderDecoder()));
-        encoders.put(ContentFormat.SENML_CBOR, new LwM2mNodeSenMLJsonEncoder(new SenMLCborJacksonEncoderDecoder()));
+        encoders.put(ContentFormat.SENML_JSON, new LwM2mNodeSenMLEncoder(new SenMLJsonJacksonEncoderDecoder()));
+        encoders.put(ContentFormat.SENML_CBOR, new LwM2mNodeSenMLEncoder(new SenMLCborJacksonEncoderDecoder()));
 
         // tlv
         LwM2mNodeTlvEncoder tlvDecoder = new LwM2mNodeTlvEncoder();

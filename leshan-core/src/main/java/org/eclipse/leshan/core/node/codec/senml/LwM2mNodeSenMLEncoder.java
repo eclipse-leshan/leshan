@@ -42,12 +42,12 @@ import org.eclipse.leshan.senml.SenMLRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LwM2mNodeSenMLJsonEncoder implements TimestampedNodeEncoder {
-    private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeSenMLJsonEncoder.class);
+public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder {
+    private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeSenMLEncoder.class);
 
     private final SenMLEncoder encoder;
 
-    public LwM2mNodeSenMLJsonEncoder(SenMLEncoder encoder) {
+    public LwM2mNodeSenMLEncoder(SenMLEncoder encoder) {
         this.encoder = encoder;
     }
 
@@ -122,7 +122,7 @@ public class LwM2mNodeSenMLJsonEncoder implements TimestampedNodeEncoder {
 
         @Override
         public void visit(LwM2mObject object) {
-            LOG.trace("Encoding Object {} into SenML JSON", object);
+            LOG.trace("Encoding Object {} into SenML", object);
             // Validate request path
             if (!requestPath.isObject()) {
                 throw new CodecException("Invalid request path %s for object encoding", requestPath);
@@ -139,7 +139,7 @@ public class LwM2mNodeSenMLJsonEncoder implements TimestampedNodeEncoder {
 
         @Override
         public void visit(LwM2mObjectInstance instance) {
-            LOG.trace("Encoding object instance {} into SenML JSON", instance);
+            LOG.trace("Encoding object instance {} into SenML", instance);
             for (LwM2mResource resource : instance.getResources().values()) {
                 // Validate request path & compute resource path
                 String prefixPath;
@@ -168,7 +168,7 @@ public class LwM2mNodeSenMLJsonEncoder implements TimestampedNodeEncoder {
 
         @Override
         public void visit(LwM2mResourceInstance resourceInstance) {
-            LOG.trace("Encoding resource instance {} into SenML JSON", resourceInstance);
+            LOG.trace("Encoding resource instance {} into SenML", resourceInstance);
             if (!requestPath.isResourceInstance()) {
                 throw new CodecException("Invalid request path %s for resource  instance encoding", requestPath);
             }
@@ -231,7 +231,7 @@ public class LwM2mNodeSenMLJsonEncoder implements TimestampedNodeEncoder {
         }
 
         private void setResourceValue(Object value, Type type, LwM2mPath resourcePath, SenMLRecord record) {
-            LOG.trace("Encoding resource value {} in SenML JSON", value);
+            LOG.trace("Encoding resource value {} in SenML", value);
 
             if (type == null || type == Type.NONE) {
                 throw new CodecException(
