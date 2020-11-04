@@ -10,4 +10,7 @@ For more details, please look at https://www.eclipse.org/security/.
 
 ## Supported Versions
 
-There is no final [release of leshan for now](https://github.com/eclipse/leshan/wiki/Roadmap). So security fixes are applied in master branch and then available in next milestone release.
+| Version | Supported          |
+| ------- | ------------------ |
+| 2.0.0 (master)   | :white_check_mark: | |
+| 1.x   | :white_check_mark: |
