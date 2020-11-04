@@ -30,6 +30,7 @@ public class ContentFormat {
     public static final int OLD_TLV_CODE = 1542;
 
     public static final int SENML_JSON_CODE = 110;
+    public static final int SENML_CBOR_CODE = 112;
 
     public static final ContentFormat TLV = new ContentFormat("TLV", "application/vnd.oma.lwm2m+tlv", TLV_CODE);
     public static final ContentFormat JSON = new ContentFormat("JSON", "application/vnd.oma.lwm2m+json", JSON_CODE);
@@ -38,11 +39,13 @@ public class ContentFormat {
     public static final ContentFormat LINK = new ContentFormat("LINK", "application/link-format", LINK_CODE);
     public static final ContentFormat SENML_JSON = new ContentFormat("SENML_JSON", "application/senml+json",
             SENML_JSON_CODE);
+    public static final ContentFormat SENML_CBOR = new ContentFormat("SENML_CBOR", "application/senml+cbor",
+            SENML_CBOR_CODE);
 
     public static final ContentFormat DEFAULT = TLV;
 
-    private static final ContentFormat knownContentFormat[] = new ContentFormat[] { TLV, JSON, SENML_JSON, TEXT, OPAQUE,
-                            LINK };
+    private static final ContentFormat knownContentFormat[] = new ContentFormat[] { TLV, JSON, SENML_JSON, SENML_CBOR,
+                            TEXT, OPAQUE, LINK };
 
     private final String name;
     private final String mediaType;
