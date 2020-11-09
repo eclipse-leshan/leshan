@@ -67,7 +67,7 @@ angular.module('objectDirectives', [])
                         var format = scope.settings.multi.format;
                         var timeout = scope.settings.timeout.value;
                         var instancepath  = scope.object.path;
-                        $http({method: 'POST', url: "api/clients/" + $routeParams.clientId + instancepath, data: payload, headers:{'Content-Type': 'application/json'}, params:{format:format,timeout:timeout}})
+                        $http({method: 'POST', url: "api/clients/" + encodeURIComponent($routeParams.clientId) + instancepath, data: payload, headers:{'Content-Type': 'application/json'}, params:{format:format,timeout:timeout}})
                         .success(function(data, status, headers, config) {
                             helper.handleResponse(data, scope.object.create, function (formattedDate) {
                                 if (data.success) {

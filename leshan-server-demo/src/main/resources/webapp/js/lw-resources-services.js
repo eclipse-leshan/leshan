@@ -326,7 +326,7 @@ myModule.factory('lwResources',["$http", function($http) {
      * Load all the Object Definition known by the server.
      */
     var loadObjectDefinitions = function(endpoint, callback) {
-        $http.get("api/objectspecs/"+endpoint)
+        $http.get("api/objectspecs/"+encodeURIComponent(endpoint))
         .success(function(data, status, headers, config) {
             if (data) {
                 objectDefs = data;

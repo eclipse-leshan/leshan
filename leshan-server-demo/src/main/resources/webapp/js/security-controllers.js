@@ -80,7 +80,7 @@ angular.module('securityControllers', [])
         });
 
         $scope.remove = function(endpoint) {
-            $http({method: 'DELETE', url: "api/security/clients/" + endpoint, headers:{'Content-Type': 'text/plain'}})
+            $http({method: 'DELETE', url: "api/security/clients/" + encodeURIComponent(endpoint), headers:{'Content-Type': 'text/plain'}})
             .success(function(data, status, headers, config) {
                 delete $scope.securityInfos[endpoint];
            }).error(function(data, status, headers, config) {

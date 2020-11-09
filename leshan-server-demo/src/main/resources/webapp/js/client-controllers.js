@@ -180,7 +180,7 @@ lwClientControllers.controller('ClientDetailCtrl', [
         $scope.clientId = $routeParams.clientId;
 
         // get client details
-        $http.get('api/clients/' + $routeParams.clientId)
+        $http.get('api/clients/' + encodeURIComponent($routeParams.clientId))
         .error(function(data, status, headers, config) {
             $scope.error = "Unable to get client " + $routeParams.clientId+" : "+ status + " " + data;
             console.error($scope.error);

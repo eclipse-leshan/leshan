@@ -42,7 +42,7 @@ angular.module('instanceDirectives', [])
             scope.read = function() {
                 var format = scope.settings.multi.format;
                 var timeout = scope.settings.timeout.value;
-                var uri = "api/clients/" + $routeParams.clientId + scope.instance.path;
+                var uri = "api/clients/" + encodeURIComponent($routeParams.clientId) + scope.instance.path;
                 $http.get(uri, {params:{format:format, timeout:timeout}})
                 .success(function(data, status, headers, config) {
                     helper.handleResponse(data, scope.instance.read, function (formattedDate){
@@ -80,7 +80,7 @@ angular.module('instanceDirectives', [])
 
             scope.del = function() {
                 var timeout = scope.settings.timeout.value;
-                var uri = "api/clients/" + $routeParams.clientId + scope.instance.path;
+                var uri = "api/clients/" + encodeURIComponent($routeParams.clientId) + scope.instance.path;
                 $http.delete(uri, {params:{timeout:timeout}})
                 .success(function(data, status, headers, config) {
                     helper.handleResponse(data, scope.instance.del, function (formattedDate){
@@ -135,7 +135,7 @@ angular.module('instanceDirectives', [])
                         // Send request
                         var format = scope.settings.multi.format;
                         var timeout = scope.settings.timeout.value;
-                        $http({method: 'PUT', url: "api/clients/" + $routeParams.clientId + scope.instance.path, data: payload, headers:{'Content-Type': 'application/json'}, params:{format:format, replace:result.replace, timeout:timeout}})
+                        $http({method: 'PUT', url: "api/clients/" +encodeURIComponent($routeParams.clientId) + scope.instance.path, data: payload, headers:{'Content-Type': 'application/json'}, params:{format:format, replace:result.replace, timeout:timeout}})
                         .success(function(data, status, headers, config) {
                             helper.handleResponse(data, scope.instance.write, function (formattedDate) {
                                 if (data.success) {
@@ -164,7 +164,7 @@ angular.module('instanceDirectives', [])
             scope.startObserve = function() {
                 var format = scope.settings.multi.format;
                 var timeout = scope.settings.timeout.value;
-                var uri = "api/clients/" + $routeParams.clientId + scope.instance.path+"/observe";
+                var uri = "api/clients/" + encodeURIComponent($routeParams.clientId) + scope.instance.path+"/observe";
                 $http.post(uri, null, {params:{format:format, timeout:timeout}})
                 .success(function(data, status, headers, config) {
                     helper.handleResponse(data, scope.instance.observe, function (formattedDate) {
@@ -207,7 +207,7 @@ angular.module('instanceDirectives', [])
             };
 
             scope.stopObserve = function() {
-                var uri = "api/clients/" + $routeParams.clientId + scope.instance.path + "/observe";
+                var uri = "api/clients/" + encodeURIComponent($routeParams.clientId) + scope.instance.path + "/observe";
                 $http.delete(uri)
                 .success(function(data, status, headers, config) {
                     scope.instance.observed = false;

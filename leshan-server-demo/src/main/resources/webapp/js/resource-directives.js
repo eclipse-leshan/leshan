@@ -68,7 +68,7 @@ angular.module('resourceDirectives', [])
             scope.startObserve = function() {
                 var format = scope.settings.single.format;
                 var timeout = scope.settings.timeout.value;
-                var uri = "api/clients/" + $routeParams.clientId + scope.resource.path+"/observe";
+                var uri = "api/clients/" + encodeURIComponent($routeParams.clientId) + scope.resource.path+"/observe";
                 $http.post(uri, null,{params:{format:format, timeout:timeout}})
                 .success(function(data, status, headers, config) {
                     helper.handleResponse(data, scope.resource.observe, function (formattedDate){
@@ -103,7 +103,7 @@ angular.module('resourceDirectives', [])
 
             scope.stopObserve = function() {
                 var timeout = scope.settings.timeout.value;
-                var uri = "api/clients/" + $routeParams.clientId + scope.resource.path + "/observe";
+                var uri = "api/clients/" + encodeURIComponent($routeParams.clientId) + scope.resource.path + "/observe";
                 $http.delete(uri)
                 .success(function(data, status, headers, config) {
                     scope.resource.observed = false;
@@ -118,7 +118,7 @@ angular.module('resourceDirectives', [])
             scope.read = function() {
                 var timeout = scope.settings.timeout.value;
                 var format = scope.settings.single.format;
-                var uri = "api/clients/" + $routeParams.clientId + scope.resource.path;
+                var uri = "api/clients/" + encodeURIComponent($routeParams.clientId) + scope.resource.path;
                 $http.get(uri, {params:{format:format, timeout:timeout}})
                 .success(function(data, status, headers, config) {
                     // manage request information
@@ -171,7 +171,7 @@ angular.module('resourceDirectives', [])
                         // Send request
                         var format = scope.settings.single.format;
                         var timeout = scope.settings.timeout.value;
-                        $http({method: 'PUT', url: "api/clients/" + $routeParams.clientId + scope.resource.path, data: payload, headers:{'Content-Type': 'application/json'},params:{format:format, timeout:timeout}})
+                        $http({method: 'PUT', url: "api/clients/" + encodeURIComponent($routeParams.clientId) + scope.resource.path, data: payload, headers:{'Content-Type': 'application/json'},params:{format:format, timeout:timeout}})
                         .success(function(data, status, headers, config) {
                             helper.handleResponse(data, scope.resource.write, function (formattedDate){
                                 if (data.success) {
@@ -195,7 +195,7 @@ angular.module('resourceDirectives', [])
 
             scope.exec = function() {
                 var timeout = scope.settings.timeout.value;
-                $http({method:'POST', url:"api/clients/" + $routeParams.clientId+ scope.resource.path, params:{timeout:timeout}})
+                $http({method:'POST', url:"api/clients/" + encodeURIComponent($routeParams.clientId)+ scope.resource.path, params:{timeout:timeout}})
                 .success(function(data, status, headers, config) {
                     helper.handleResponse(data, scope.resource.exec);
                 }).error(function(data, status, headers, config) {
@@ -220,7 +220,7 @@ angular.module('resourceDirectives', [])
                     if(value) {
                         $('#writeModal').modal('hide');
                         var timeout = scope.settings.timeout.value;
-                        $http({method: 'POST', url: "api/clients/" + $routeParams.clientId + scope.resource.path, data: value, params:{timeout:timeout}})
+                        $http({method: 'POST', url: "api/clients/" + encodeURIComponent($routeParams.clientId) + scope.resource.path, data: value, params:{timeout:timeout}})
                         .success(function(data, status, headers, config) {
                             helper.handleResponse(data, scope.resource.exec);
                         }).error(function(data, status, headers, config) {
