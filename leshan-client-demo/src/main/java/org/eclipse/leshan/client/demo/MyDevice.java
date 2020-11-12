@@ -31,9 +31,11 @@ public class MyDevice extends BaseInstanceEnabler {
     private static final List<Integer> supportedResources = Arrays.asList(0, 1, 2, 3, 9, 10, 11, 13, 14, 15, 16, 17, 18,
             19, 20, 21);
 
+    private final Timer timer;
+
     public MyDevice() {
         // notify new date each 5 second
-        Timer timer = new Timer("Device-Current Time");
+        timer = new Timer("Device-Current Time");
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -209,5 +211,9 @@ public class MyDevice extends BaseInstanceEnabler {
     @Override
     public List<Integer> getAvailableResourceIds(ObjectModel model) {
         return supportedResources;
+    }
+
+    public void cancel() {
+        timer.cancel();
     }
 }

@@ -113,4 +113,8 @@ public class RandomTemperatureSensor extends BaseInstanceEnabler {
     public List<Integer> getAvailableResourceIds(ObjectModel model) {
         return supportedResources;
     }
+
+    public void shutdown() {
+        scheduler.shutdown();
+    }
 }

@@ -623,9 +623,11 @@ public class LeshanClientDemo {
                 initializer.setInstancesForObject(SERVER, new Server(123, lifetime));
             }
         }
-        initializer.setInstancesForObject(DEVICE, new MyDevice());
+        final MyDevice myDevice = new MyDevice();
+        initializer.setInstancesForObject(DEVICE, myDevice);
         initializer.setInstancesForObject(LOCATION, locationInstance);
-        initializer.setInstancesForObject(OBJECT_ID_TEMPERATURE_SENSOR, new RandomTemperatureSensor());
+        final RandomTemperatureSensor randomTemperatureSensor = new RandomTemperatureSensor();
+        initializer.setInstancesForObject(OBJECT_ID_TEMPERATURE_SENSOR, randomTemperatureSensor);
         List<LwM2mObjectEnabler> enablers = initializer.createAll();
 
         // Create CoAP Config
@@ -743,7 +745,23 @@ public class LeshanClientDemo {
         }
         builder.setAdditionalAttributes(additionalAttributes);
         builder.setBootstrapAdditionalAttributes(bsAdditionalAttributes);
+
+        final LeshanClientHolder leshanClientHolder = new LeshanClientHolder();
+        builder.setShutdownTrigger(new Runnable() {
+            @Override
+            public void run() {
+                LOG.info("shutdown trigger has called");
+                final LeshanClient client = leshanClientHolder.getClient();
+                if (client != null) {
+                    client.destroy(true);
+                }
+                myDevice.cancel();
+                randomTemperatureSensor.shutdown();
+            }
+        });
+
         final LeshanClient client = builder.build();
+        leshanClientHolder.setClient(client);
 
         client.getObjectTree().addListener(new ObjectsListenerAdapter() {
             @Override
@@ -870,6 +888,18 @@ public class LeshanClientDemo {
                     LOG.info("Unknown command '{}'", command);
                 }
             }
+        }
+    }
+
+    private static class LeshanClientHolder {
+        private LeshanClient client;
+
+        public LeshanClient getClient() {
+            return client;
+        }
+
+        public void setClient(final LeshanClient client) {
+            this.client = client;
         }
     }
 }
