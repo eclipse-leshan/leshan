@@ -73,6 +73,11 @@ import org.slf4j.LoggerFactory;
 public class DefaultRegistrationEngine implements RegistrationEngine {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultRegistrationEngine.class);
+    private static final Runnable NOP_SHUTDOWN_TRIGGER = new Runnable() {
+        @Override
+        public void run() {
+        }
+    };
 
     private static final long NOW = 0;
     private static final ServerIdentity ALL = new ServerIdentity(null, null);
@@ -122,6 +127,8 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     private final ScheduledExecutorService schedExecutor;
     private final boolean attachedExecutor;
 
+    private final Runnable shutdownTrigger;
+
     public DefaultRegistrationEngine(String endpoint, LwM2mObjectTree objectTree, EndpointsManager endpointsManager,
             LwM2mRequestSender requestSender, BootstrapHandler bootstrapState, LwM2mClientObserver observer,
             Map<String, String> additionalAttributes, ScheduledExecutorService executor, long requestTimeoutInMs,
@@ -129,7 +136,8 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             Integer communicationPeriodInMs, boolean reconnectOnUpdate, boolean resumeOnConnect) {
         this(endpoint, objectTree, endpointsManager, requestSender, bootstrapState, observer, additionalAttributes,
                 null, executor, requestTimeoutInMs, deregistrationTimeoutInMs, bootstrapSessionTimeoutInSec,
-                retryWaitingTimeInMs, communicationPeriodInMs, reconnectOnUpdate, resumeOnConnect, false);
+                retryWaitingTimeInMs, communicationPeriodInMs, reconnectOnUpdate, resumeOnConnect, false,
+                NOP_SHUTDOWN_TRIGGER);
     }
 
     /** @since 1.1 */
@@ -138,7 +146,8 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes,
             ScheduledExecutorService executor, long requestTimeoutInMs, long deregistrationTimeoutInMs,
             int bootstrapSessionTimeoutInSec, int retryWaitingTimeInMs, Integer communicationPeriodInMs,
-            boolean reconnectOnUpdate, boolean resumeOnConnect, boolean useQueueMode) {
+            boolean reconnectOnUpdate, boolean resumeOnConnect, boolean useQueueMode,
+            Runnable shutdownTrigger) {
         this.endpoint = endpoint;
         this.objectEnablers = objectTree.getObjectEnablers();
         this.bootstrapHandler = bootstrapState;
@@ -157,6 +166,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         this.reconnectOnUpdate = reconnectOnUpdate;
         this.resumeOnConnect = resumeOnConnect;
         this.queueMode = useQueueMode;
+        this.shutdownTrigger = shutdownTrigger;
 
         if (executor == null) {
             schedExecutor = createScheduledExecutor();
@@ -165,6 +175,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             schedExecutor = executor;
             attachedExecutor = false;
         }
+
 
         sender = requestSender;
     }
@@ -526,6 +537,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                     LOG.info("Bootstrap task interrupted. ");
                 } catch (RuntimeException e) {
                     LOG.error("Unexpected exception during bootstrap task", e);
+                    shutdownTrigger.run();
                 }
             }
         }
@@ -564,6 +576,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                     LOG.info("Registration task interrupted. ");
                 } catch (RuntimeException e) {
                     LOG.error("Unexpected exception during registration task", e);
+                    shutdownTrigger.run();
                 }
             }
         }
@@ -612,6 +625,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                     LOG.info("Registration update task interrupted.");
                 } catch (RuntimeException e) {
                     LOG.error("Unexpected exception during update registration task", e);
+                    shutdownTrigger.run();
                 }
             }
         }

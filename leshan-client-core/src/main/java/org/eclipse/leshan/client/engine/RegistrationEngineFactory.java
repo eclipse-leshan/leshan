@@ -32,5 +32,6 @@ public interface RegistrationEngineFactory {
     RegistrationEngine createRegistratioEngine(String endpoint, LwM2mObjectTree objectTree,
             EndpointsManager endpointsManager, LwM2mRequestSender requestSender, BootstrapHandler bootstrapState,
             LwM2mClientObserver observer, Map<String, String> additionalAttributes,
-            Map<String, String> bsAdditionalAttributes, ScheduledExecutorService sharedExecutor);
+            Map<String, String> bsAdditionalAttributes, ScheduledExecutorService sharedExecutor,
+            Runnable shutdownTrigger);
 }

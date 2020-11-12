@@ -77,6 +77,12 @@ public class LeshanClientBuilder {
     /** @since 1.1 */
     protected Map<String, String> bsAdditionalAttributes;
 
+    private Runnable shutdownTrigger = new Runnable() {
+        @Override
+        public void run() {
+        }
+    };
+
     /**
      * Creates a new instance for setting the configuration options for a {@link LeshanClient} instance.
      * 
@@ -218,6 +224,16 @@ public class LeshanClientBuilder {
     }
 
     /**
+     * Set the shutdown trigger that called on unexpected exception has been occurred.
+     *
+     * The default value is NOP procedure.
+     */
+    public LeshanClientBuilder setShutdownTrigger(Runnable shutdownTrigger) {
+        this.shutdownTrigger = shutdownTrigger;
+        return this;
+    }
+
+    /**
      * Set a shared executor. This executor will be used everywhere it is possible. This is generally used when you want
      * to limit the number of thread to use or if you want to simulate a lot of clients sharing the same thread pool.
      * <p>
@@ -324,7 +340,8 @@ public class LeshanClientBuilder {
         }
 
         return createLeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder,
-                this.trustStore, endpointFactory, engineFactory, additionalAttributes, encoder, decoder, executor);
+                this.trustStore, endpointFactory, engineFactory, additionalAttributes, encoder, decoder, executor,
+                shutdownTrigger);
     }
 
     /**
@@ -355,9 +372,9 @@ public class LeshanClientBuilder {
             List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig, Builder dtlsConfigBuilder,
             List<Certificate> trustStore, EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
             Map<String, String> additionalAttributes, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
-            ScheduledExecutorService sharedExecutor) {
+            ScheduledExecutorService sharedExecutor, Runnable shutdownTrigger) {
         return new LeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder, trustStore,
                 endpointFactory, engineFactory, additionalAttributes, bsAdditionalAttributes, encoder, decoder,
-                executor);
+                executor, shutdownTrigger);
     }
 }

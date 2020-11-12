@@ -58,6 +58,11 @@ import org.slf4j.LoggerFactory;
 public class LeshanClient implements LwM2mClient {
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanClient.class);
+    private static final Runnable NOP_SHUTDOWN_TRIGGER = new Runnable() {
+        @Override
+        public void run() {
+        }
+    };
 
     private final CoapAPI coapApi;
     private final CoapServer coapServer;
@@ -85,7 +90,7 @@ public class LeshanClient implements LwM2mClient {
             Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes,
             LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder, ScheduledExecutorService sharedExecutor) {
         this(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder, null, endpointFactory,
-                engineFactory, additionalAttributes, bsAdditionalAttributes, encoder, decoder, sharedExecutor);
+                engineFactory, additionalAttributes, bsAdditionalAttributes, encoder, decoder, sharedExecutor, NOP_SHUTDOWN_TRIGGER);
     }
 
     /** @since 2.0 */
@@ -93,7 +98,7 @@ public class LeshanClient implements LwM2mClient {
             List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig, Builder dtlsConfigBuilder, List<Certificate> trustStore,
             EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
             Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes,
-            LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder, ScheduledExecutorService sharedExecutor) {
+            LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder, ScheduledExecutorService sharedExecutor, Runnable shutdownTrigger) {
 
         Validate.notNull(endpoint);
         Validate.notEmpty(objectEnablers);
@@ -105,7 +110,7 @@ public class LeshanClient implements LwM2mClient {
         endpointsManager = createEndpointsManager(localAddress, coapConfig, dtlsConfigBuilder, trustStore, endpointFactory);
         requestSender = createRequestSender(endpointsManager, sharedExecutor);
         engine = engineFactory.createRegistratioEngine(endpoint, objectTree, endpointsManager, requestSender,
-                bootstrapHandler, observers, additionalAttributes, bsAdditionalAttributes, sharedExecutor);
+                bootstrapHandler, observers, additionalAttributes, bsAdditionalAttributes, sharedExecutor, shutdownTrigger);
 
         coapServer = createCoapServer(coapConfig, sharedExecutor);
         coapServer.add(createBootstrapResource(engine, bootstrapHandler));

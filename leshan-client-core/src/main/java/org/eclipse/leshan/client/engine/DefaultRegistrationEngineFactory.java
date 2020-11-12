@@ -47,11 +47,12 @@ public class DefaultRegistrationEngineFactory implements RegistrationEngineFacto
     public RegistrationEngine createRegistratioEngine(String endpoint, LwM2mObjectTree objectTree,
             EndpointsManager endpointsManager, LwM2mRequestSender requestSender, BootstrapHandler bootstrapState,
             LwM2mClientObserver observer, Map<String, String> additionalAttributes,
-            Map<String, String> bsAdditionalAttributes, ScheduledExecutorService sharedExecutor) {
+            Map<String, String> bsAdditionalAttributes, ScheduledExecutorService sharedExecutor,
+            Runnable shutdownTrigger) {
         return new DefaultRegistrationEngine(endpoint, objectTree, endpointsManager, requestSender, bootstrapState,
                 observer, additionalAttributes, bsAdditionalAttributes, sharedExecutor, requestTimeoutInMs,
                 deregistrationTimeoutInMs, bootstrapSessionTimeoutInSec, retryWaitingTimeInMs, communicationPeriodInMs,
-                reconnectOnUpdate, resumeOnConnect, queueMode);
+                reconnectOnUpdate, resumeOnConnect, queueMode, shutdownTrigger);
     }
 
     /**
