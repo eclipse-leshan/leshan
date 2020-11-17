@@ -453,7 +453,7 @@ Contributors:
                 <plugin>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>maven-bundle-plugin</artifactId>
-                    <version>4.0.0</version>
+                    <version>5.1.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -518,12 +518,12 @@ Contributors:
                 <plugin>
                     <groupId>org.revapi</groupId>
                     <artifactId>revapi-maven-plugin</artifactId>
-                    <version>0.11.2</version>
+                    <version>0.12.2</version>
                     <dependencies>
                         <dependency>
                             <groupId>org.revapi</groupId>
                             <artifactId>revapi-java</artifactId>
-                            <version>0.22.0</version>
+                            <version>0.22.1</version>
                         </dependency>
                     </dependencies>
                 </plugin>
@@ -554,7 +554,7 @@ Contributors:
                             <rules>
                                 <dependencyConvergence/>
                                 <requireMavenVersion>
-                                    <version>3.0.5</version>
+                                    <version>3.5.0</version>
                                 </requireMavenVersion>
                             </rules>
                         </configuration>
@@ -575,17 +575,20 @@ Contributors:
                                 <patch>equivalent</patch>
                             </versionIncreaseAllows>
                         </revapi.semver.ignore>
-                        <revapi.ignore>
-                            <item>
-                                <regex>true</regex>
-                                <code>java.class.externalClassExposedInAPI</code>
-                                <newArchive>org\.eclipse\.leshan:leshan.*:.*</newArchive>
-                                <justification>
-                                    Leshan sub-modules implement the Leshan API which makes them expose
-                                    Leshan-specific classes usually. 
-                                </justification>
-                            </item>
-                        </revapi.ignore>
+                        <revapi.differences>
+                            <ignore>true</ignore>
+                            <differences>
+                                <item>
+                                    <regex>true</regex>
+                                    <code>java.class.externalClassExposedInAPI</code>
+                                    <newArchive>org\.eclipse\.leshan:leshan.*:.*</newArchive>
+                                    <justification>
+                                        Leshan sub-modules implement the Leshan API which makes them expose
+                                        Leshan-specific classes usually.
+                                    </justification>
+                                </item>
+                            </differences>
+                        </revapi.differences>
                         <revapi.java>
                             <checks>
                                 <nonPublicPartOfAPI>
