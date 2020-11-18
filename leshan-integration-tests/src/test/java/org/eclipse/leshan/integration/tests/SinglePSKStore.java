@@ -19,12 +19,14 @@ import java.net.InetSocketAddress;
 
 import javax.crypto.SecretKey;
 
+import org.eclipse.californium.scandium.dtls.ConnectionId;
 import org.eclipse.californium.scandium.dtls.PskPublicInformation;
-import org.eclipse.californium.scandium.dtls.pskstore.PskStore;
+import org.eclipse.californium.scandium.dtls.PskSecretResult;
+import org.eclipse.californium.scandium.dtls.pskstore.AdvancedPskStore;
 import org.eclipse.californium.scandium.util.SecretUtil;
 import org.eclipse.californium.scandium.util.ServerNames;
 
-public class SinglePSKStore implements PskStore {
+public class SinglePSKStore implements AdvancedPskStore {
 
     private PskPublicInformation identity;
     private SecretKey key;
@@ -40,24 +42,26 @@ public class SinglePSKStore implements PskStore {
     }
 
     @Override
-    public SecretKey getKey(PskPublicInformation identity) {
-        return SecretUtil.create(key);
+    public boolean hasEcdhePskSupported() {
+        return true;
     }
 
     @Override
-    public SecretKey getKey(ServerNames serverName, PskPublicInformation identity) {
-        // we do not support SNI
-        return getKey(identity);
+    public PskSecretResult requestPskSecretResult(ConnectionId cid, ServerNames serverName,
+            PskPublicInformation identity, String hmacAlgorithm, SecretKey otherSecret, byte[] seed) {
+        SecretKey pskSecret = SecretUtil.create(key);
+        return new PskSecretResult(cid, identity, pskSecret);
     }
 
     @Override
-    public PskPublicInformation getIdentity(InetSocketAddress inetAddress) {
-        return identity;
+    public void setResultHandler(
+            @SuppressWarnings("deprecation") org.eclipse.californium.scandium.dtls.PskSecretResultHandler resultHandler) {
+        // we don't use async mode.
     }
 
     @Override
     public PskPublicInformation getIdentity(InetSocketAddress peerAddress, ServerNames virtualHost) {
-        throw new UnsupportedOperationException();
+        return identity;
     }
 
     public void setKey(byte[] key) {

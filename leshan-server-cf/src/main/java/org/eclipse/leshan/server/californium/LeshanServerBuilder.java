@@ -446,7 +446,7 @@ public class LeshanServerBuilder {
                 LOG.warn(
                         "PskStore should be automatically set by Leshan. Using a custom implementation is not advised.");
             } else if (securityStore != null) {
-                dtlsConfigBuilder.setPskStore(new LwM2mPskStore(this.securityStore, registrationStore));
+                dtlsConfigBuilder.setAdvancedPskStore(new LwM2mPskStore(this.securityStore, registrationStore));
             }
 
             // Handle secure address

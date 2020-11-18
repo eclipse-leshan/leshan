@@ -19,8 +19,10 @@ import java.net.InetSocketAddress;
 
 import javax.crypto.SecretKey;
 
+import org.eclipse.californium.scandium.dtls.ConnectionId;
 import org.eclipse.californium.scandium.dtls.PskPublicInformation;
-import org.eclipse.californium.scandium.dtls.pskstore.PskStore;
+import org.eclipse.californium.scandium.dtls.PskSecretResult;
+import org.eclipse.californium.scandium.dtls.pskstore.AdvancedPskStore;
 import org.eclipse.californium.scandium.util.SecretUtil;
 import org.eclipse.californium.scandium.util.ServerNames;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
@@ -32,7 +34,7 @@ import org.eclipse.leshan.server.security.SecurityInfo;
  * Only supports getting the PSK key for a given identity. (Getting identity from IP only makes sense when we initiate
  * DTLS Connection) side.)
  */
-public class LwM2mBootstrapPskStore implements PskStore {
+public class LwM2mBootstrapPskStore implements AdvancedPskStore {
 
     private BootstrapSecurityStore bsSecurityStore;
 
@@ -41,25 +43,27 @@ public class LwM2mBootstrapPskStore implements PskStore {
     }
 
     @Override
-    public SecretKey getKey(PskPublicInformation identity) {
+    public boolean hasEcdhePskSupported() {
+        return true;
+    }
+
+    @Override
+    public PskSecretResult requestPskSecretResult(ConnectionId cid, ServerNames serverName,
+            PskPublicInformation identity, String hmacAlgorithm, SecretKey otherSecret, byte[] seed) {
         SecurityInfo info = bsSecurityStore.getByIdentity(identity.getPublicInfoAsString());
         if (info == null || info.getPreSharedKey() == null) {
-            return null;
+            return new PskSecretResult(cid, identity, null);
         } else {
             // defensive copy
-            return SecretUtil.create(info.getPreSharedKey(), "PSK");
+            return new PskSecretResult(cid, identity, SecretUtil.create(info.getPreSharedKey(), "PSK"));
         }
+
     }
 
     @Override
-    public SecretKey getKey(ServerNames serverNames, PskPublicInformation identity) {
-        // serverNames is not supported
-        return getKey(identity);
-    }
-
-    @Override
-    public PskPublicInformation getIdentity(InetSocketAddress inetAddress) {
-        throw new UnsupportedOperationException("Getting PSK Id by IP addresss dos not make sense on BS server side.");
+    public void setResultHandler(
+            @SuppressWarnings("deprecation") org.eclipse.californium.scandium.dtls.PskSecretResultHandler resultHandler) {
+        // we don't use async mode.
     }
 
     @Override

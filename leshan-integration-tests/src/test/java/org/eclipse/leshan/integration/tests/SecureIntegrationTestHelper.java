@@ -48,9 +48,10 @@ import org.eclipse.californium.core.observe.ObservationStore;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
+import org.eclipse.californium.scandium.dtls.ConnectionId;
 import org.eclipse.californium.scandium.dtls.PskPublicInformation;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
-import org.eclipse.californium.scandium.dtls.pskstore.PskStore;
+import org.eclipse.californium.scandium.dtls.pskstore.AdvancedPskStore;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.object.Device;
@@ -237,13 +238,13 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
                 Builder dtlsConfigBuilder = new Builder(dtlsConfig);
 
                 // tricks to be able to change psk information on the fly
-                @SuppressWarnings("deprecation")
-                PskStore pskStore = dtlsConfig.getPskStore();
+                AdvancedPskStore pskStore = dtlsConfig.getAdvancedPskStore();
                 if (pskStore != null) {
-                    PskPublicInformation identity = pskStore.getIdentity(null);
-                    SecretKey key = pskStore.getKey(identity);
+                    PskPublicInformation identity = pskStore.getIdentity(null, null);
+                    SecretKey key = pskStore
+                            .requestPskSecretResult(ConnectionId.EMPTY, null, identity, null, null, null).getSecret();
                     singlePSKStore = new SinglePSKStore(identity, key);
-                    dtlsConfigBuilder.setPskStore(singlePSKStore);
+                    dtlsConfigBuilder.setAdvancedPskStore(singlePSKStore);
                 }
                 builder.setConnector(new DTLSConnector(dtlsConfigBuilder.build()));
                 builder.setNetworkConfig(coapConfig);

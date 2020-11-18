@@ -33,7 +33,7 @@ import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
-import org.eclipse.californium.scandium.dtls.pskstore.StaticPskStore;
+import org.eclipse.californium.scandium.dtls.pskstore.AdvancedSinglePskStore;
 import org.eclipse.californium.scandium.dtls.rpkstore.TrustedRpkStore;
 import org.eclipse.leshan.client.EndpointsManager;
 import org.eclipse.leshan.client.servers.ServerIdentity;
@@ -102,8 +102,8 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
 
             // Support PSK
             if (serverInfo.secureMode == SecurityMode.PSK) {
-                StaticPskStore staticPskStore = new StaticPskStore(serverInfo.pskId, serverInfo.pskKey);
-                newBuilder.setPskStore(staticPskStore);
+                AdvancedSinglePskStore staticPskStore = new AdvancedSinglePskStore(serverInfo.pskId, serverInfo.pskKey);
+                newBuilder.setAdvancedPskStore(staticPskStore);
                 serverIdentity = Identity.psk(serverInfo.getAddress(), serverInfo.pskId);
                 filterCipherSuites(newBuilder, dtlsConfigbuilder.getIncompleteConfig().getSupportedCipherSuites(), true,
                         false);
