@@ -32,16 +32,10 @@ import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
-import org.eclipse.californium.scandium.dtls.AlertMessage;
-import org.eclipse.californium.scandium.dtls.AlertMessage.AlertDescription;
-import org.eclipse.californium.scandium.dtls.AlertMessage.AlertLevel;
-import org.eclipse.californium.scandium.dtls.CertificateMessage;
-import org.eclipse.californium.scandium.dtls.DTLSSession;
-import org.eclipse.californium.scandium.dtls.HandshakeException;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.californium.scandium.dtls.pskstore.AdvancedSinglePskStore;
-import org.eclipse.californium.scandium.dtls.rpkstore.TrustedRpkStore;
-import org.eclipse.californium.scandium.dtls.x509.CertificateVerifier;
+import org.eclipse.californium.scandium.dtls.x509.NewAdvancedCertificateVerifier;
+import org.eclipse.californium.scandium.dtls.x509.StaticNewAdvancedCertificateVerifier;
 import org.eclipse.leshan.client.EndpointsManager;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.client.servers.ServerIdentity.Role;
@@ -109,23 +103,9 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                 newBuilder.setIdentity(serverInfo.privateKey, serverInfo.publicKey);
                 // set RPK truststore
                 final PublicKey expectedKey = serverInfo.serverPublicKey;
-                newBuilder.setRpkTrustStore(new TrustedRpkStore() {
-                    @Override
-                    public boolean isTrusted(RawPublicKeyIdentity id) {
-                        PublicKey receivedKey = id.getKey();
-                        if (receivedKey == null) {
-                            LOG.warn("The server public key is null {}", id);
-                            return false;
-                        }
-                        if (!receivedKey.equals(expectedKey)) {
-                            LOG.debug(
-                                    "Server public key received does match with the expected one.\nReceived: {}\nExpected: {}",
-                                    receivedKey, expectedKey);
-                            return false;
-                        }
-                        return true;
-                    }
-                });
+                NewAdvancedCertificateVerifier rpkVerifier = new StaticNewAdvancedCertificateVerifier.Builder()
+                        .setTrustedRPKs(new RawPublicKeyIdentity(expectedKey)).build();
+                newBuilder.setAdvancedCertificateVerifier(rpkVerifier);
                 serverIdentity = Identity.rpk(serverInfo.getAddress(), expectedKey);
                 filterCipherSuites(newBuilder, dtlsConfigbuilder.getIncompleteConfig().getSupportedCipherSuites(),
                         false, true);
@@ -134,43 +114,12 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                 newBuilder.setIdentity(serverInfo.privateKey, new Certificate[] { serverInfo.clientCertificate });
 
                 // set X509 verifier
-                final Certificate expectedServerCertificate = serverInfo.serverCertificate;
-                newBuilder.setCertificateVerifier(new CertificateVerifier() {
-
-                    @Override
-                    public void verifyCertificate(CertificateMessage message, DTLSSession session)
-                            throws HandshakeException {
-                        // As specify in the LWM2M spec 1.0, we only support "domain-issued certificate" usage
-                        // Defined in : https://tools.ietf.org/html/rfc6698#section-2.1.1 (3 -- Certificate usage 3)
-
-                        // Get server certificate from certificate message
-                        if (message.getCertificateChain().getCertificates().size() == 0) {
-                            AlertMessage alert = new AlertMessage(AlertLevel.FATAL, AlertDescription.BAD_CERTIFICATE,
-                                    session.getPeer());
-                            throw new HandshakeException(
-                                    "Certificate chain could not be validated : server cert chain is empty", alert);
-                        }
-                        Certificate receivedServerCertificate = message.getCertificateChain().getCertificates().get(0);
-
-                        // Validate certificate
-                        if (!expectedServerCertificate.equals(receivedServerCertificate)) {
-                            AlertMessage alert = new AlertMessage(AlertLevel.FATAL, AlertDescription.BAD_CERTIFICATE,
-                                    session.getPeer());
-                            throw new HandshakeException(
-                                    "Certificate chain could not be validated: server certificate does not match expected one ('domain-issue certificate' usage)",
-                                    alert);
-                        }
-                    }
-
-                    @Override
-                    public X509Certificate[] getAcceptedIssuers() {
-                        return null;
-                    }
-                });
-                serverIdentity = Identity.x509(serverInfo.getAddress(), EndpointContextUtil
-                        .extractCN(((X509Certificate) expectedServerCertificate).getSubjectX500Principal().getName()));
-                filterCipherSuites(newBuilder,
-                        dtlsConfigbuilder.getIncompleteConfig().getSupportedCipherSuites(), false, true);
+                newBuilder.setAdvancedCertificateVerifier(
+                        new DefaultLeshanCertificateVerifier(serverInfo.serverCertificate));
+                serverIdentity = Identity.x509(serverInfo.getAddress(), EndpointContextUtil.extractCN(
+                        ((X509Certificate) serverInfo.serverCertificate).getSubjectX500Principal().getName()));
+                filterCipherSuites(newBuilder, dtlsConfigbuilder.getIncompleteConfig().getSupportedCipherSuites(),
+                        false, true);
             } else {
                 throw new RuntimeException("Unable to create connector : unsupported security mode");
             }
