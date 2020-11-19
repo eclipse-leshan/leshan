@@ -41,7 +41,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  * a {@link PskStore} which search PSK credentials in Lwm2m Security object.
+ * 
+ * @deprecated this is no more used CaliforniumEndpointsManager is responsible to create {@link PskStore}.
  */
+@Deprecated
 public class SecurityObjectPskStore implements PskStore {
     private static final Logger LOG = LoggerFactory.getLogger(SecurityObjectPskStore.class);
 

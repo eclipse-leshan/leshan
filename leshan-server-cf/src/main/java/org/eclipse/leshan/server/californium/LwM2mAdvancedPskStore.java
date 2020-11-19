@@ -19,8 +19,10 @@ import java.net.InetSocketAddress;
 
 import javax.crypto.SecretKey;
 
+import org.eclipse.californium.scandium.dtls.ConnectionId;
 import org.eclipse.californium.scandium.dtls.PskPublicInformation;
-import org.eclipse.californium.scandium.dtls.pskstore.PskStore;
+import org.eclipse.californium.scandium.dtls.PskSecretResult;
+import org.eclipse.californium.scandium.dtls.pskstore.AdvancedPskStore;
 import org.eclipse.californium.scandium.util.SecretUtil;
 import org.eclipse.californium.scandium.util.ServerNames;
 import org.eclipse.leshan.server.registration.Registration;
@@ -29,51 +31,56 @@ import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.SecurityStore;
 
 /**
- * A {@link PskStore} which retrieve PSK information from Leshan {@link SecurityStore}.
+ * A {@link AdvancedPskStore} which retrieve PSK information from Leshan {@link SecurityStore}.
  * 
- * @deprecated use {@link LwM2mAdvancedPskStore} instead
+ * @since 1.3.0
  */
-@Deprecated
-public class LwM2mPskStore implements PskStore {
+public class LwM2mAdvancedPskStore implements AdvancedPskStore {
 
     private SecurityStore securityStore;
     private RegistrationStore registrationStore;
 
-    public LwM2mPskStore(SecurityStore securityStore) {
+    public LwM2mAdvancedPskStore(SecurityStore securityStore) {
         this(securityStore, null);
     }
 
-    public LwM2mPskStore(SecurityStore securityStore, RegistrationStore registrationStore) {
+    public LwM2mAdvancedPskStore(SecurityStore securityStore, RegistrationStore registrationStore) {
         this.securityStore = securityStore;
         this.registrationStore = registrationStore;
     }
 
     @Override
-    public SecretKey getKey(PskPublicInformation identity) {
+    public boolean hasEcdhePskSupported() {
+        return true;
+    }
+
+    @Override
+    public PskSecretResult requestPskSecretResult(ConnectionId cid, ServerNames serverName,
+            PskPublicInformation identity, String hmacAlgorithm, SecretKey otherSecret, byte[] seed) {
         if (securityStore == null)
             return null;
 
         SecurityInfo info = securityStore.getByIdentity(identity.getPublicInfoAsString());
         if (info == null || info.getPreSharedKey() == null) {
-            return null;
+            return new PskSecretResult(cid, identity, null);
         } else {
             // defensive copy
-            return SecretUtil.create(info.getPreSharedKey(), "PSK");
+            return new PskSecretResult(cid, identity, SecretUtil.create(info.getPreSharedKey(), "PSK"));
         }
     }
 
     @Override
-    public SecretKey getKey(ServerNames serverNames, PskPublicInformation identity) {
-        // serverNames is not supported
-        return getKey(identity);
+    public void setResultHandler(
+            @SuppressWarnings("deprecation") org.eclipse.californium.scandium.dtls.PskSecretResultHandler resultHandler) {
+        // we don't use async mode.
     }
 
     @Override
-    public PskPublicInformation getIdentity(InetSocketAddress inetAddress) {
+    public PskPublicInformation getIdentity(InetSocketAddress peerAddress, ServerNames virtualHost) {
         if (registrationStore == null)
             return null;
 
-        Registration registration = registrationStore.getRegistrationByAdress(inetAddress);
+        Registration registration = registrationStore.getRegistrationByAdress(peerAddress);
         if (registration != null) {
             SecurityInfo securityInfo = securityStore.getByEndpoint(registration.getEndpoint());
             if (securityInfo != null) {
@@ -82,11 +89,5 @@ public class LwM2mPskStore implements PskStore {
             return null;
         }
         return null;
-    }
-
-    @Override
-    public PskPublicInformation getIdentity(InetSocketAddress peerAddress, ServerNames virtualHost) {
-        // TODO should we support SNI ?
-        throw new UnsupportedOperationException();
     }
 }

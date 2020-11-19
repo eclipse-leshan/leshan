@@ -31,7 +31,10 @@ import org.eclipse.leshan.server.security.SecurityInfo;
  * 
  * Only supports getting the PSK key for a given identity. (Getting identity from IP only makes sense when we initiate
  * DTLS Connection) side.)
+ * 
+ * @deprecated used {@link LwM2mAdvancedBootstrapPskStore} instead
  */
+@Deprecated
 public class LwM2mBootstrapPskStore implements PskStore {
 
     private BootstrapSecurityStore bsSecurityStore;

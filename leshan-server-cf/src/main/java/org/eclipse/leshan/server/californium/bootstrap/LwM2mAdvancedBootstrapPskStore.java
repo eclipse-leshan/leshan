@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Sierra Wireless and others.
+ * Copyright (c) 2013-2015 Sierra Wireless and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.integration.tests;
+package org.eclipse.leshan.server.californium.bootstrap;
 
 import java.net.InetSocketAddress;
 
@@ -25,20 +25,23 @@ import org.eclipse.californium.scandium.dtls.PskSecretResult;
 import org.eclipse.californium.scandium.dtls.pskstore.AdvancedPskStore;
 import org.eclipse.californium.scandium.util.SecretUtil;
 import org.eclipse.californium.scandium.util.ServerNames;
+import org.eclipse.leshan.server.security.BootstrapSecurityStore;
+import org.eclipse.leshan.server.security.SecurityInfo;
 
-public class SinglePSKStore implements AdvancedPskStore {
+/**
+ * an {@link AdvancedPskStore} to feed a Bootstrap server.
+ * 
+ * Only supports getting the PSK key for a given identity. (Getting identity from IP only makes sense when we initiate
+ * DTLS Connection) side.)
+ * 
+ * @since 1.3.0
+ */
+public class LwM2mAdvancedBootstrapPskStore implements AdvancedPskStore {
 
-    private PskPublicInformation identity;
-    private SecretKey key;
+    private BootstrapSecurityStore bsSecurityStore;
 
-    public SinglePSKStore(PskPublicInformation identity, byte[] key) {
-        this.identity = identity;
-        this.key = SecretUtil.create(key, "PSK");
-    }
-
-    public SinglePSKStore(PskPublicInformation identity, SecretKey key) {
-        this.identity = identity;
-        this.key = key;
+    public LwM2mAdvancedBootstrapPskStore(BootstrapSecurityStore bsSecurityStore) {
+        this.bsSecurityStore = bsSecurityStore;
     }
 
     @Override
@@ -49,8 +52,14 @@ public class SinglePSKStore implements AdvancedPskStore {
     @Override
     public PskSecretResult requestPskSecretResult(ConnectionId cid, ServerNames serverName,
             PskPublicInformation identity, String hmacAlgorithm, SecretKey otherSecret, byte[] seed) {
-        SecretKey pskSecret = SecretUtil.create(key);
-        return new PskSecretResult(cid, identity, pskSecret);
+        SecurityInfo info = bsSecurityStore.getByIdentity(identity.getPublicInfoAsString());
+        if (info == null || info.getPreSharedKey() == null) {
+            return new PskSecretResult(cid, identity, null);
+        } else {
+            // defensive copy
+            return new PskSecretResult(cid, identity, SecretUtil.create(info.getPreSharedKey(), "PSK"));
+        }
+
     }
 
     @Override
@@ -61,14 +70,6 @@ public class SinglePSKStore implements AdvancedPskStore {
 
     @Override
     public PskPublicInformation getIdentity(InetSocketAddress peerAddress, ServerNames virtualHost) {
-        return identity;
-    }
-
-    public void setKey(byte[] key) {
-        this.key = SecretUtil.create(key, "PSK");
-    }
-
-    public void setIdentity(String identity) {
-        this.identity = new PskPublicInformation(identity);
+        throw new UnsupportedOperationException("Getting PSK Id by IP addresss dos not make sense on BS server side.");
     }
 }
