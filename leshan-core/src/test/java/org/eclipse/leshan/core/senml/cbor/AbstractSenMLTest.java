@@ -18,18 +18,19 @@ import org.eclipse.leshan.senml.SenMLPack;
 import org.eclipse.leshan.senml.SenMLRecord;
 
 public abstract class AbstractSenMLTest {
-    protected void givenResourceWithFloatValue(SenMLPack pack, String n, Number value) {
+
+    private void givenResourceWithFloatValue(SenMLPack pack, String n, Number value) {
         SenMLRecord elt = new SenMLRecord();
         elt.setName(n);
         elt.setFloatValue(value);
         pack.addRecord(elt);
     }
 
-    protected void givenResourceWithStringValue(SenMLPack pack, String n, String value) {
+    private void givenResourceWithStringValue(SenMLPack pack, String n, String value) {
         givenResourceWithStringValue(pack, null, n, value);
     }
 
-    protected void givenResourceWithStringValue(SenMLPack pack, String bn, String n, String value) {
+    private void givenResourceWithStringValue(SenMLPack pack, String bn, String n, String value) {
         SenMLRecord elt = new SenMLRecord();
         if (bn != null) {
             elt.setBaseName(bn);
@@ -57,7 +58,7 @@ public abstract class AbstractSenMLTest {
         b.append("{\"n\":\"9\",\"v\":100},");
         b.append("{\"n\":\"10\",\"v\":15},");
         b.append("{\"n\":\"11/0\",\"v\":0},");
-        b.append("{\"n\":\"13\",\"v\":1.3674912E9},");
+        b.append("{\"n\":\"13\",\"v\":1367491215},");
         b.append("{\"n\":\"14\",\"vs\":\"+02:00\"},");
         b.append("{\"n\":\"16\",\"vs\":\"U\"}]");
         return b.toString();
