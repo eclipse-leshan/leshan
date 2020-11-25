@@ -703,6 +703,11 @@ Contributors:
                 <artifactId>jackson-dataformat-cbor</artifactId>
                 <version>2.11.2</version>
             </dependency>
+            <dependency>
+                <groupId>com.upokecenter</groupId>
+                <artifactId>cbor</artifactId>
+                <version>4.0.0</version>
+            </dependency>
             
 
             <!-- Demos, examples and tests dependencies -->

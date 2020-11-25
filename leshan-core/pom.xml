@@ -46,6 +46,10 @@ Contributors:
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-cbor</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.upokecenter</groupId>
+            <artifactId>cbor</artifactId>
+        </dependency>
 
         <!-- test dependencies -->
         <dependency>
