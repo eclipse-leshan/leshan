@@ -69,6 +69,7 @@ public class SenMLCborPackSerDes {
                             if (eInteger.CanFitInInt64()) {
                                 record.setFloatValue(eInteger.ToInt64Unchecked());
                             } else {
+                                // There is maybe a better way to do that.
                                 record.setFloatValue(ULong.valueOf(v.AsEInteger().toString()));
                             }
                         }
@@ -154,6 +155,7 @@ public class SenMLCborPackSerDes {
                         }
                         // unsigned integer
                         else if (value instanceof ULong) {
+                            // There is maybe a better way to do that.
                             cborRecord.Add(2, EInteger.FromString(value.toString()));
                         }
                         // floating-point

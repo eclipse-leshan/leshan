@@ -31,7 +31,7 @@ import org.eclipse.leshan.core.node.codec.text.LwM2mNodeTextEncoder;
 import org.eclipse.leshan.core.node.codec.tlv.LwM2mNodeTlvEncoder;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.util.Validate;
-import org.eclipse.leshan.senml.cbor.jackson.SenMLCborJacksonEncoderDecoder;
+import org.eclipse.leshan.senml.cbor.upokecenter.SenMLCborUpokecenterEncoderDecoder;
 import org.eclipse.leshan.senml.json.jackson.SenMLJsonJacksonEncoderDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +54,7 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
         encoders.put(ContentFormat.TEXT, new LwM2mNodeTextEncoder());
         encoders.put(ContentFormat.OPAQUE, new LwM2mNodeOpaqueEncoder());
         encoders.put(ContentFormat.SENML_JSON, new LwM2mNodeSenMLEncoder(new SenMLJsonJacksonEncoderDecoder()));
-        encoders.put(ContentFormat.SENML_CBOR, new LwM2mNodeSenMLEncoder(new SenMLCborJacksonEncoderDecoder()));
+        encoders.put(ContentFormat.SENML_CBOR, new LwM2mNodeSenMLEncoder(new SenMLCborUpokecenterEncoderDecoder()));
 
         // tlv
         LwM2mNodeTlvEncoder tlvDecoder = new LwM2mNodeTlvEncoder();
