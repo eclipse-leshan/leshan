@@ -234,13 +234,6 @@ public class WriteSingleValueTest {
     @Test
     public void can_write_single_instance_objlnk_resource() throws InterruptedException {
 
-        // object link not yet implemented for some content format.
-        switch (contentFormat.getCode()) {
-        case ContentFormat.JSON_CODE:
-        case ContentFormat.OLD_JSON_CODE:
-            return;
-        }
-
         ObjectLink data = new ObjectLink(10245, 1);
 
         // Write objlnk resource

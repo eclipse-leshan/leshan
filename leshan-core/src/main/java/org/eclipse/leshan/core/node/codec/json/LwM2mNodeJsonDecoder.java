@@ -44,6 +44,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.TimestampedNodeDecoder;
@@ -451,6 +452,8 @@ public class LwM2mNodeJsonDecoder implements TimestampedNodeDecoder {
                 return Base64.decodeBase64((String) value);
             case STRING:
                 return value;
+            case OBJLNK:
+                return ObjectLink.decodeFromString((String) value);
             default:
                 throw new CodecException("Unsupported type %s for path %s", expectedType, path);
             }
