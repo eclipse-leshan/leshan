@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.leshan.core.util.NamedThreadFactory;
-import org.eclipse.leshan.server.Destroyable;
+import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.server.registration.Registration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

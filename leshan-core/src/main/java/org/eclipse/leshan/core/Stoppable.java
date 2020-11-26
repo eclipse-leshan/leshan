@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server;
+package org.eclipse.leshan.core;
 
 public interface Stoppable {
 
