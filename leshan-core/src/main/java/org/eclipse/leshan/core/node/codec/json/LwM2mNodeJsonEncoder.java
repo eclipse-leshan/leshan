@@ -33,6 +33,7 @@ import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
@@ -250,6 +251,14 @@ public class LwM2mNodeJsonEncoder {
                 break;
             case OPAQUE:
                 jsonResource.setStringValue(Base64.encodeBase64String((byte[]) value));
+                break;
+            case OBJLNK:
+                try {
+                    jsonResource.setStringValue(((ObjectLink) value).encodeToString());
+                } catch (IllegalArgumentException e) {
+                    throw new CodecException(e, "Invalid value [%s] for objectLink resource [%s] ", value,
+                            resourcePath);
+                }
                 break;
             default:
                 throw new CodecException("Invalid value type %s for %s", type, resourcePath);
