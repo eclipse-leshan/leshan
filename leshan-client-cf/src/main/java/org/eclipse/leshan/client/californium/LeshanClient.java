@@ -44,6 +44,9 @@ import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.core.Destroyable;
+import org.eclipse.leshan.core.Startable;
+import org.eclipse.leshan.core.Stoppable;
 import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
@@ -211,6 +214,13 @@ public class LeshanClient implements LwM2mClient {
         LOG.info("Starting Leshan client ...");
         endpointsManager.start();
         engine.start();
+
+        for (LwM2mObjectEnabler objectEnabler : objectTree.getObjectEnablers().values()) {
+            if (objectEnabler instanceof Startable) {
+                ((Startable) objectEnabler).start();
+            }
+        }
+
         if (LOG.isInfoEnabled()) {
             LOG.info("Leshan client[endpoint:{}] started.", engine.getEndpoint());
         }
@@ -221,6 +231,13 @@ public class LeshanClient implements LwM2mClient {
         LOG.info("Stopping Leshan Client ...");
         engine.stop(deregister);
         endpointsManager.stop();
+
+        for (LwM2mObjectEnabler objectEnabler : objectTree.getObjectEnablers().values()) {
+            if (objectEnabler instanceof Stoppable) {
+                ((Stoppable) objectEnabler).stop();
+            }
+        }
+
         LOG.info("Leshan client stopped.");
     }
 
@@ -230,6 +247,13 @@ public class LeshanClient implements LwM2mClient {
         engine.destroy(deregister);
         endpointsManager.destroy();
         requestSender.destroy();
+
+        for (LwM2mObjectEnabler objectEnabler : objectTree.getObjectEnablers().values()) {
+            if (objectEnabler instanceof Destroyable) {
+                ((Destroyable) objectEnabler).destroy();
+            }
+        }
+
         LOG.info("Leshan client destroyed.");
     }
 
