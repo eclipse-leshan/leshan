@@ -13,10 +13,11 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server;
+package org.eclipse.leshan.core;
 
-public interface Startable {
+public interface Destroyable {
 
-    void start();
+    /** Destroy the instances and frees all system resources. */
+    void destroy();
 
 }
