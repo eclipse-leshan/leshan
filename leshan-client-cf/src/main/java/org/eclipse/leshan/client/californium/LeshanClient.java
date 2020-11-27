@@ -251,6 +251,8 @@ public class LeshanClient implements LwM2mClient {
         for (LwM2mObjectEnabler objectEnabler : objectTree.getObjectEnablers().values()) {
             if (objectEnabler instanceof Destroyable) {
                 ((Destroyable) objectEnabler).destroy();
+            } else if (objectEnabler instanceof Stoppable) {
+                ((Stoppable) objectEnabler).stop();
             }
         }
 
