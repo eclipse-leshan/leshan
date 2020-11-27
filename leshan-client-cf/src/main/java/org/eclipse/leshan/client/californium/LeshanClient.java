@@ -214,12 +214,7 @@ public class LeshanClient implements LwM2mClient {
         LOG.info("Starting Leshan client ...");
         endpointsManager.start();
         engine.start();
-
-        for (LwM2mObjectEnabler objectEnabler : objectTree.getObjectEnablers().values()) {
-            if (objectEnabler instanceof Startable) {
-                ((Startable) objectEnabler).start();
-            }
-        }
+        objectTree.start();
 
         if (LOG.isInfoEnabled()) {
             LOG.info("Leshan client[endpoint:{}] started.", engine.getEndpoint());
@@ -231,12 +226,7 @@ public class LeshanClient implements LwM2mClient {
         LOG.info("Stopping Leshan Client ...");
         engine.stop(deregister);
         endpointsManager.stop();
-
-        for (LwM2mObjectEnabler objectEnabler : objectTree.getObjectEnablers().values()) {
-            if (objectEnabler instanceof Stoppable) {
-                ((Stoppable) objectEnabler).stop();
-            }
-        }
+        objectTree.stop();
 
         LOG.info("Leshan client stopped.");
     }
@@ -247,14 +237,7 @@ public class LeshanClient implements LwM2mClient {
         engine.destroy(deregister);
         endpointsManager.destroy();
         requestSender.destroy();
-
-        for (LwM2mObjectEnabler objectEnabler : objectTree.getObjectEnablers().values()) {
-            if (objectEnabler instanceof Destroyable) {
-                ((Destroyable) objectEnabler).destroy();
-            } else if (objectEnabler instanceof Stoppable) {
-                ((Stoppable) objectEnabler).stop();
-            }
-        }
+        objectTree.destroy();
 
         LOG.info("Leshan client destroyed.");
     }
