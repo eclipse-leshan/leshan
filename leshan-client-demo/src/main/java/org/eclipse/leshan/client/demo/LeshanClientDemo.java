@@ -59,6 +59,7 @@ import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.object.Server;
+import org.eclipse.leshan.client.observer.LwM2mClientObserverAdapter;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
@@ -623,9 +624,11 @@ public class LeshanClientDemo {
                 initializer.setInstancesForObject(SERVER, new Server(123, lifetime));
             }
         }
-        initializer.setInstancesForObject(DEVICE, new MyDevice());
+        final MyDevice myDevice = new MyDevice();
+        final RandomTemperatureSensor randomTemperatureSensor = new RandomTemperatureSensor();
+        initializer.setInstancesForObject(DEVICE, myDevice);
         initializer.setInstancesForObject(LOCATION, locationInstance);
-        initializer.setInstancesForObject(OBJECT_ID_TEMPERATURE_SENSOR, new RandomTemperatureSensor());
+        initializer.setInstancesForObject(OBJECT_ID_TEMPERATURE_SENSOR, randomTemperatureSensor);
         List<LwM2mObjectEnabler> enablers = initializer.createAll();
 
         // Create CoAP Config
@@ -744,6 +747,9 @@ public class LeshanClientDemo {
         builder.setAdditionalAttributes(additionalAttributes);
         builder.setBootstrapAdditionalAttributes(bsAdditionalAttributes);
         final LeshanClient client = builder.build();
+
+        client.addObserver(
+            new ClientShutdownOnUnexpectedErrorObserver(client, myDevice, randomTemperatureSensor));
 
         client.getObjectTree().addListener(new ObjectsListenerAdapter() {
             @Override
@@ -870,6 +876,30 @@ public class LeshanClientDemo {
                     LOG.info("Unknown command '{}'", command);
                 }
             }
+        }
+    }
+
+    private static class ClientShutdownOnUnexpectedErrorObserver extends LwM2mClientObserverAdapter {
+        final LeshanClient client;
+        final MyDevice myDevice;
+        final RandomTemperatureSensor randomTemperatureSensor;
+
+        public ClientShutdownOnUnexpectedErrorObserver(
+            final LeshanClient client,
+			final MyDevice myDevice,
+            final RandomTemperatureSensor randomTemperatureSensor
+        ) {
+            this.client = client;
+            this.myDevice = myDevice;
+            this.randomTemperatureSensor = randomTemperatureSensor;
+        }
+
+        @Override
+        public void onUnexpectedErrorOccurred(Throwable unexpectedError) {
+            LOG.error("unexpected error occurred", unexpectedError);
+            client.destroy(true);
+            myDevice.destroy();
+            randomTemperatureSensor.destroy();
         }
     }
 }
