@@ -69,4 +69,8 @@ public interface LwM2mClientObserver {
             String errorMessage, Exception cause);
 
     void onDeregistrationTimeout(ServerIdentity server, DeregisterRequest request);
+
+    // ============== Unexpected Error Handling =================
+
+    void onUnexpectedError(Throwable unexpectedError);
 }

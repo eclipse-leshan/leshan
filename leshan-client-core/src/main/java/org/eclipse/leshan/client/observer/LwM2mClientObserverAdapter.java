@@ -95,4 +95,8 @@ public class LwM2mClientObserverAdapter implements LwM2mClientObserver {
     @Override
     public void onDeregistrationTimeout(ServerIdentity server, DeregisterRequest request) {
     }
+
+    @Override
+    public void onUnexpectedError(Throwable unexpectedError) {
+    }
 }
