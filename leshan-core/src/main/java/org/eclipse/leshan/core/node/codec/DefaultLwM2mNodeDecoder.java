@@ -30,6 +30,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
+import org.eclipse.leshan.core.node.codec.cbor.LwM2mNodeCborDecoder;
 import org.eclipse.leshan.core.node.codec.json.LwM2mNodeJsonDecoder;
 import org.eclipse.leshan.core.node.codec.opaque.LwM2mNodeOpaqueDecoder;
 import org.eclipse.leshan.core.node.codec.senml.LwM2mNodeSenMLDecoder;
@@ -59,6 +60,7 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
         Map<ContentFormat, NodeDecoder> decoders = new HashMap<>();
         decoders.put(ContentFormat.TEXT, new LwM2mNodeTextDecoder());
         decoders.put(ContentFormat.OPAQUE, new LwM2mNodeOpaqueDecoder());
+        decoders.put(ContentFormat.CBOR, new LwM2mNodeCborDecoder());
         decoders.put(ContentFormat.SENML_JSON, new LwM2mNodeSenMLDecoder(new SenMLJsonJacksonEncoderDecoder()));
         decoders.put(ContentFormat.SENML_CBOR, new LwM2mNodeSenMLDecoder(new SenMLCborUpokecenterEncoderDecoder()));
 
