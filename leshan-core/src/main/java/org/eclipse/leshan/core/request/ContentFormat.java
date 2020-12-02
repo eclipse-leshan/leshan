@@ -24,6 +24,7 @@ public class ContentFormat {
     public static final int TEXT_CODE = 0;
     public static final int OPAQUE_CODE = 42;
     public static final int LINK_CODE = 40;
+    public static final int CBOR_CODE = 60;
 
     // Keep old code for backward-compatibility
     public static final int OLD_JSON_CODE = 1543;
@@ -41,11 +42,12 @@ public class ContentFormat {
             SENML_JSON_CODE);
     public static final ContentFormat SENML_CBOR = new ContentFormat("SENML_CBOR", "application/senml+cbor",
             SENML_CBOR_CODE);
+    public static final ContentFormat CBOR = new ContentFormat("CBOR", "application/cbor", CBOR_CODE);
 
     public static final ContentFormat DEFAULT = TLV;
 
     private static final ContentFormat knownContentFormat[] = new ContentFormat[] { TLV, JSON, SENML_JSON, SENML_CBOR,
-                            TEXT, OPAQUE, LINK };
+                            TEXT, OPAQUE, CBOR, LINK };
 
     private final String name;
     private final String mediaType;
