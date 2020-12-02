@@ -46,6 +46,7 @@ public class ReadOpaqueValueTest {
                                 { ContentFormat.OPAQUE }, //
                                 { ContentFormat.TEXT }, //
                                 { ContentFormat.TLV }, //
+                                { ContentFormat.CBOR }, //
                                 { ContentFormat.JSON }, //
                                 { ContentFormat.SENML_JSON }, //
                                 { ContentFormat.SENML_CBOR } });

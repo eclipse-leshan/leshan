@@ -50,6 +50,7 @@ public class WriteOpaqueValueTest {
                                 { ContentFormat.OPAQUE }, //
                                 { ContentFormat.TEXT }, //
                                 { ContentFormat.TLV }, //
+                                { ContentFormat.CBOR }, //
                                 { ContentFormat.fromCode(ContentFormat.OLD_TLV_CODE) }, //
                                 { ContentFormat.JSON }, //
                                 { ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE) }, //

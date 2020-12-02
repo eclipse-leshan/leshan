@@ -59,6 +59,7 @@ public class WriteSingleValueTest {
         return Arrays.asList(new Object[][] { //
                                 { ContentFormat.TEXT }, //
                                 { ContentFormat.TLV }, //
+                                { ContentFormat.CBOR }, //
                                 { ContentFormat.fromCode(ContentFormat.OLD_TLV_CODE) }, //
                                 { ContentFormat.JSON }, //
                                 { ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE) }, //
@@ -197,7 +198,7 @@ public class WriteSingleValueTest {
         // write resource
         Date expectedvalue = new Date(946681000l); // second accuracy
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(contentFormat, TEST_OBJECT_ID, 0, TIME_RESOURCE_ID, expectedvalue));
+                new WriteRequest(contentFormat, TEST_OBJECT_ID, 0, TIME_RESOURCE_ID, expectedvalue), 100000000);
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
@@ -206,7 +207,7 @@ public class WriteSingleValueTest {
 
         // read resource to check the value changed
         ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
-                new ReadRequest(contentFormat, TEST_OBJECT_ID, 0, TIME_RESOURCE_ID));
+                new ReadRequest(contentFormat, TEST_OBJECT_ID, 0, TIME_RESOURCE_ID), 100000000);
         LwM2mResource resource = (LwM2mResource) readResponse.getContent();
         assertEquals(expectedvalue, resource.getValue());
     }
