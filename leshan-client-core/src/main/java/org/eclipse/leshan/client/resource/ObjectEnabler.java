@@ -28,7 +28,10 @@ import java.util.Map.Entry;
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.client.servers.ServersInfoExtractor;
+import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.LwM2mId;
+import org.eclipse.leshan.core.Startable;
+import org.eclipse.leshan.core.Stoppable;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
@@ -62,7 +65,7 @@ import org.eclipse.leshan.core.response.WriteResponse;
  * Implementing a {@link LwM2mInstanceEnabler} then creating an {@link ObjectEnabler} with {@link ObjectsInitializer} is
  * the easier way to implement LWM2M object in Leshan client.
  */
-public class ObjectEnabler extends BaseObjectEnabler {
+public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Startable, Stoppable {
 
     protected Map<Integer, LwM2mInstanceEnabler> instances;
     protected LwM2mInstanceEnablerFactory instanceFactory;
@@ -409,6 +412,35 @@ public class ObjectEnabler extends BaseObjectEnabler {
     public void setLwM2mClient(LwM2mClient client) {
         for (LwM2mInstanceEnabler instanceEnabler : instances.values()) {
             instanceEnabler.setLwM2mClient(client);
+        }
+    }
+
+    @Override
+    public void destroy() {
+        for (LwM2mInstanceEnabler instanceEnabler : instances.values()) {
+            if (instanceEnabler instanceof Destroyable) {
+                ((Destroyable) instanceEnabler).destroy();
+            } else if (instanceEnabler instanceof Stoppable) {
+                ((Stoppable) instanceEnabler).stop();
+            }
+        }
+    }
+
+    @Override
+    public void start() {
+        for (LwM2mInstanceEnabler instanceEnabler : instances.values()) {
+            if (instanceEnabler instanceof Startable) {
+                ((Startable) instanceEnabler).start();
+            }
+        }
+    }
+
+    @Override
+    public void stop() {
+        for (LwM2mInstanceEnabler instanceEnabler : instances.values()) {
+            if (instanceEnabler instanceof Stoppable) {
+                ((Stoppable) instanceEnabler).stop();
+            }
         }
     }
 }
