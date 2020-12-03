@@ -22,6 +22,9 @@ import java.util.List;
 
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.core.Destroyable;
+import org.eclipse.leshan.core.Startable;
+import org.eclipse.leshan.core.Stoppable;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
@@ -45,6 +48,12 @@ import org.eclipse.leshan.core.response.WriteResponse;
  * <p>
  * Implementations of this interface should adhere to the definition of the implemented LWM2M Object type regarding
  * acceptable resource IDs for the <code>read, write</code> and <code>execute</code> methods.
+ * An instance that implements this interface synchronizes with the lifecycle of the LeshanClient. This means when
+ * <p>
+ * {@code LeshanClient#destroy()} is called, {@code LwM2mInstanceEnabler#destroy()} is also called if it implements the
+ * {@link Destroyable} interface. And {@link Startable} ({@code #start()}) and {@link Stoppable} ({@code #stop()}) are
+ * also same as this. If you need to restart the instance, please implement {@link Startable} with {@link Stoppable}
+ * together.
  */
 public interface LwM2mInstanceEnabler {
 

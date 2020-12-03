@@ -624,11 +624,9 @@ public class LeshanClientDemo {
                 initializer.setInstancesForObject(SERVER, new Server(123, lifetime));
             }
         }
-        final MyDevice myDevice = new MyDevice();
-        final RandomTemperatureSensor randomTemperatureSensor = new RandomTemperatureSensor();
-        initializer.setInstancesForObject(DEVICE, myDevice);
+        initializer.setInstancesForObject(DEVICE, new MyDevice());
         initializer.setInstancesForObject(LOCATION, locationInstance);
-        initializer.setInstancesForObject(OBJECT_ID_TEMPERATURE_SENSOR, randomTemperatureSensor);
+        initializer.setInstancesForObject(OBJECT_ID_TEMPERATURE_SENSOR, new RandomTemperatureSensor());
         List<LwM2mObjectEnabler> enablers = initializer.createAll();
 
         // Create CoAP Config
@@ -748,8 +746,7 @@ public class LeshanClientDemo {
         builder.setBootstrapAdditionalAttributes(bsAdditionalAttributes);
         final LeshanClient client = builder.build();
 
-        client.addObserver(
-            new ClientShutdownOnUnexpectedErrorObserver(client, myDevice, randomTemperatureSensor));
+        client.addObserver(new ClientShutdownOnUnexpectedErrorObserver(client));
 
         client.getObjectTree().addListener(new ObjectsListenerAdapter() {
             @Override
@@ -881,25 +878,15 @@ public class LeshanClientDemo {
 
     private static class ClientShutdownOnUnexpectedErrorObserver extends LwM2mClientObserverAdapter {
         final LeshanClient client;
-        final MyDevice myDevice;
-        final RandomTemperatureSensor randomTemperatureSensor;
 
-        public ClientShutdownOnUnexpectedErrorObserver(
-            final LeshanClient client,
-			final MyDevice myDevice,
-            final RandomTemperatureSensor randomTemperatureSensor
-        ) {
+        public ClientShutdownOnUnexpectedErrorObserver(final LeshanClient client) {
             this.client = client;
-            this.myDevice = myDevice;
-            this.randomTemperatureSensor = randomTemperatureSensor;
         }
 
         @Override
         public void onUnexpectedError(Throwable unexpectedError) {
             LOG.error("unexpected error occurred", unexpectedError);
             client.destroy(true);
-            myDevice.destroy();
-            randomTemperatureSensor.destroy();
         }
     }
 }
