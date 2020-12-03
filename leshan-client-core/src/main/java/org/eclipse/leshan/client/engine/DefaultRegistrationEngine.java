@@ -526,7 +526,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                     LOG.info("Bootstrap task interrupted. ");
                 } catch (RuntimeException e) {
                     LOG.error("Unexpected exception during bootstrap task", e);
-                    observer.onUnexpectedErrorOccurred(e);
+                    observer.onUnexpectedError(e);
                 }
             }
         }
@@ -565,7 +565,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                     LOG.info("Registration task interrupted. ");
                 } catch (RuntimeException e) {
                     LOG.error("Unexpected exception during registration task", e);
-                    observer.onUnexpectedErrorOccurred(e);
+                    observer.onUnexpectedError(e);
                 }
             }
         }
@@ -614,7 +614,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                     LOG.info("Registration update task interrupted.");
                 } catch (RuntimeException e) {
                     LOG.error("Unexpected exception during update registration task", e);
-                    observer.onUnexpectedErrorOccurred(e);
+                    observer.onUnexpectedError(e);
                 }
             }
         }

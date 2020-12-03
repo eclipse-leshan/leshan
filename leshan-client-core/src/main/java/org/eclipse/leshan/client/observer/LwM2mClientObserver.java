@@ -72,5 +72,5 @@ public interface LwM2mClientObserver {
 
     // ============== Unexpected Error Handling =================
 
-    void onUnexpectedErrorOccurred(Throwable unexpectedError);
+    void onUnexpectedError(Throwable unexpectedError);
 }

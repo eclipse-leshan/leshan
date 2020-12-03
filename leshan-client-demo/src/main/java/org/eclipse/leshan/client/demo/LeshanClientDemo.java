@@ -895,7 +895,7 @@ public class LeshanClientDemo {
         }
 
         @Override
-        public void onUnexpectedErrorOccurred(Throwable unexpectedError) {
+        public void onUnexpectedError(Throwable unexpectedError) {
             LOG.error("unexpected error occurred", unexpectedError);
             client.destroy(true);
             myDevice.destroy();

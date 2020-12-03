@@ -152,9 +152,9 @@ public class LwM2mClientObserverDispatcher implements LwM2mClientObserver {
     }
 
     @Override
-    public void onUnexpectedErrorOccurred(Throwable unexpectedError) {
+    public void onUnexpectedError(Throwable unexpectedError) {
         for (LwM2mClientObserver observer : observers) {
-            observer.onUnexpectedErrorOccurred(unexpectedError);
+            observer.onUnexpectedError(unexpectedError);
         }
     }
 }

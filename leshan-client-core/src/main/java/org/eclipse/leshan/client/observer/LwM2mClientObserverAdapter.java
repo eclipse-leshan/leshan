@@ -97,6 +97,6 @@ public class LwM2mClientObserverAdapter implements LwM2mClientObserver {
     }
 
     @Override
-    public void onUnexpectedErrorOccurred(Throwable unexpectedError) {
+    public void onUnexpectedError(Throwable unexpectedError) {
     }
 }
