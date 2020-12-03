@@ -38,6 +38,7 @@ import org.eclipse.leshan.client.californium.request.CaliforniumLwM2mRequestSend
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.engine.RegistrationEngineFactory;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
+import org.eclipse.leshan.client.observer.LwM2mClientObserverAdapter;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverDispatcher;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
@@ -115,6 +116,9 @@ public class LeshanClient implements LwM2mClient {
         createRegistrationUpdateHandler(engine, endpointsManager, bootstrapHandler, objectTree);
 
         coapApi = new CoapAPI();
+
+        // register the shutdown observer for when the unexpected error occurred.
+        addObserver(new ShutdownOnUnexpectedErrorObserver(this));
     }
 
     protected LwM2mObjectTree createObjectTree(List<? extends LwM2mObjectEnabler> objectEnablers) {
@@ -319,5 +323,20 @@ public class LeshanClient implements LwM2mClient {
      */
     public InetSocketAddress getAddress(ServerIdentity server) {
         return endpointsManager.getEndpoint(server).getAddress();
+    }
+
+    private static class ShutdownOnUnexpectedErrorObserver extends
+        LwM2mClientObserverAdapter {
+        final LeshanClient client;
+
+        public ShutdownOnUnexpectedErrorObserver(final LeshanClient client) {
+            this.client = client;
+        }
+
+        @Override
+        public void onUnexpectedError(Throwable unexpectedError) {
+            LOG.error("unexpected error occurred. destroy the leshan-client", unexpectedError);
+            client.destroy(true);
+        }
     }
 }

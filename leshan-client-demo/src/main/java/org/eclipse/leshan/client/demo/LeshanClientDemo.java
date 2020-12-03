@@ -746,8 +746,6 @@ public class LeshanClientDemo {
         builder.setBootstrapAdditionalAttributes(bsAdditionalAttributes);
         final LeshanClient client = builder.build();
 
-        client.addObserver(new ClientShutdownOnUnexpectedErrorObserver(client));
-
         client.getObjectTree().addListener(new ObjectsListenerAdapter() {
             @Override
             public void objectRemoved(LwM2mObjectEnabler object) {
@@ -873,20 +871,6 @@ public class LeshanClientDemo {
                     LOG.info("Unknown command '{}'", command);
                 }
             }
-        }
-    }
-
-    private static class ClientShutdownOnUnexpectedErrorObserver extends LwM2mClientObserverAdapter {
-        final LeshanClient client;
-
-        public ClientShutdownOnUnexpectedErrorObserver(final LeshanClient client) {
-            this.client = client;
-        }
-
-        @Override
-        public void onUnexpectedError(Throwable unexpectedError) {
-            LOG.error("unexpected error occurred", unexpectedError);
-            client.destroy(true);
         }
     }
 }
