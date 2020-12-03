@@ -65,7 +65,7 @@ import org.eclipse.leshan.core.response.WriteResponse;
  * Implementing a {@link LwM2mInstanceEnabler} then creating an {@link ObjectEnabler} with {@link ObjectsInitializer} is
  * the easier way to implement LWM2M object in Leshan client.
  */
-public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Startable, Stoppable{
+public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Startable, Stoppable {
 
     protected Map<Integer, LwM2mInstanceEnabler> instances;
     protected LwM2mInstanceEnablerFactory instanceFactory;

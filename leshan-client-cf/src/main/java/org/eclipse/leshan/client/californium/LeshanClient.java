@@ -325,8 +325,7 @@ public class LeshanClient implements LwM2mClient {
         return endpointsManager.getEndpoint(server).getAddress();
     }
 
-    private static class ShutdownOnUnexpectedErrorObserver extends
-        LwM2mClientObserverAdapter {
+    private static class ShutdownOnUnexpectedErrorObserver extends LwM2mClientObserverAdapter {
         final LeshanClient client;
 
         public ShutdownOnUnexpectedErrorObserver(final LeshanClient client) {
