@@ -403,7 +403,6 @@ public class LeshanServerBuilder {
      * @return the LWM2M server.
      * @throws IllegalStateException if builder configuration is not consistent.
      */
-    @SuppressWarnings("deprecation")
     public LeshanServer build() {
         if (localAddress == null)
             localAddress = new InetSocketAddress(LwM2m.DEFAULT_COAP_PORT);

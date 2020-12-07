@@ -140,6 +140,7 @@ public class SecurityTest {
         // create a ping message
         Request request = new Request(null, Type.CON);
         request.setToken(Token.EMPTY);
+        request.setMID(0);
         byte[] ping = new UdpDataSerializer().getByteArray(request);
         // sent it
         connector.send(

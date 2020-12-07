@@ -61,8 +61,7 @@ public class LwM2mBootstrapPskStore implements AdvancedPskStore {
     }
 
     @Override
-    public void setResultHandler(
-            @SuppressWarnings("deprecation") org.eclipse.californium.scandium.dtls.PskSecretResultHandler resultHandler) {
+    public void setResultHandler(org.eclipse.californium.scandium.dtls.PskSecretResultHandler resultHandler) {
         // we don't use async mode.
     }
 
