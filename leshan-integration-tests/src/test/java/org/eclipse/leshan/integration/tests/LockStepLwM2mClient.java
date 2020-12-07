@@ -18,6 +18,7 @@ package org.eclipse.leshan.integration.tests;
 import java.net.InetSocketAddress;
 import java.util.Random;
 
+import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.network.serialization.UdpDataSerializer;
 import org.eclipse.californium.core.test.lockstep.LockstepEndpoint;
@@ -45,6 +46,7 @@ public class LockStepLwM2mClient extends LockstepEndpoint {
         byte[] token = new byte[8];
         r.nextBytes(token);
         coapReq.setToken(token);
+        coapReq.setMID(r.nextInt(Message.MAX_MID));
 
         // serialize request
         UdpDataSerializer serializer = new UdpDataSerializer();
