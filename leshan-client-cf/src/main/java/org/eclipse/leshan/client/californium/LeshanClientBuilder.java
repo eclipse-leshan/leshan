@@ -31,7 +31,6 @@ import org.eclipse.californium.elements.UDPConnector;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
-import org.eclipse.californium.scandium.dtls.ProtocolVersion;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.engine.RegistrationEngineFactory;
@@ -290,11 +289,6 @@ public class LeshanClientBuilder {
             dtlsConfigBuilder = new DtlsConnectorConfig.Builder();
         }
         DtlsConnectorConfig incompleteConfig = dtlsConfigBuilder.getIncompleteConfig();
-
-        // TODO probably remove this with integration of Cf-2.6.0.
-        // see : https://github.com/eclipse/californium/pull/1459
-        if (incompleteConfig.getProtocolVersionForHelloVerifyRequests() == null)
-            dtlsConfigBuilder.setProtocolVersionForHelloVerifyRequests(ProtocolVersion.VERSION_DTLS_1_2);
 
         // Handle secure address
         if (incompleteConfig.getAddress() == null) {
