@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
@@ -18,7 +19,7 @@ import org.eclipse.leshan.core.util.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RandomTemperatureSensor extends BaseInstanceEnabler {
+public class RandomTemperatureSensor extends BaseInstanceEnabler implements Destroyable {
 
     private static final Logger LOG = LoggerFactory.getLogger(RandomTemperatureSensor.class);
 
@@ -112,5 +113,10 @@ public class RandomTemperatureSensor extends BaseInstanceEnabler {
     @Override
     public List<Integer> getAvailableResourceIds(ObjectModel model) {
         return supportedResources;
+    }
+
+    @Override
+    public void destroy() {
+        scheduler.shutdown();
     }
 }

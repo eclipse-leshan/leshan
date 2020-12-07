@@ -38,6 +38,7 @@ import org.eclipse.leshan.client.californium.request.CaliforniumLwM2mRequestSend
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.engine.RegistrationEngineFactory;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
+import org.eclipse.leshan.client.observer.LwM2mClientObserverAdapter;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverDispatcher;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
@@ -122,7 +123,14 @@ public class LeshanClient implements LwM2mClient {
     }
 
     protected LwM2mClientObserverDispatcher createClientObserverDispatcher() {
-        return new LwM2mClientObserverDispatcher();
+        LwM2mClientObserverDispatcher observer = new LwM2mClientObserverDispatcher();
+        observer.addObserver(new LwM2mClientObserverAdapter() {
+            @Override
+            public void onUnexpectedError(Throwable unexpectedError) {
+                LeshanClient.this.destroy(false);
+            }
+        });
+        return observer;
     }
 
     protected BootstrapHandler createBoostrapHandler(LwM2mObjectTree objectTree) {
