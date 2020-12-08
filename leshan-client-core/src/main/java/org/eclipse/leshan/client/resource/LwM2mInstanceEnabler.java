@@ -44,6 +44,13 @@ import org.eclipse.leshan.core.response.WriteResponse;
  * <p>
  * Implementations of this interface should adhere to the definition of the implemented LWM2M Object type regarding
  * acceptable resource IDs for the <code>read, write</code> and <code>execute</code> methods.
+ * <p>
+ * {@code LeshanClient#destroy()} is called, {@code LwM2mInstanceEnabler#destroy()} is also called if it implements the
+ * {@link org.eclipse.leshan.core.Destroyable} interface.
+ * And {@link org.eclipse.leshan.core.Startable} ({@code #start()}) and {@link org.eclipse.leshan.core.Stoppable} ({@code #stop()})
+ * are also same as this.
+ * If you need to restart the instance, please implement {@link org.eclipse.leshan.core.Startable} with
+ * {@link org.eclipse.leshan.core.Stoppable} together.
  */
 public interface LwM2mInstanceEnabler {
 
