@@ -133,8 +133,8 @@ public class CaliforniumQueueModeRequestSender extends QueueModeLwM2mRequestSend
 
     @Override
     public void destroy() {
-        if (delegatedSender instanceof Destroyable) {
-            ((Destroyable) delegatedSender).destroy();
+        if (delegatedSender instanceof org.eclipse.leshan.core.Destroyable) {
+            ((org.eclipse.leshan.core.Destroyable) delegatedSender).destroy();
         }
     }
 }
