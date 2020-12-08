@@ -32,6 +32,7 @@ import org.eclipse.leshan.client.EndpointsManager;
 import org.eclipse.leshan.client.RegistrationUpdate;
 import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
+import org.eclipse.leshan.client.observer.LwM2mClientObserver2;
 import org.eclipse.leshan.client.request.LwM2mRequestSender;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
@@ -517,6 +518,9 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                     LOG.info("Bootstrap task interrupted. ");
                 } catch (RuntimeException e) {
                     LOG.error("Unexpected exception during bootstrap task", e);
+                    if (observer instanceof LwM2mClientObserver2) {
+                        ((LwM2mClientObserver2) observer).onUnexpectedError(e);
+                    }
                 }
             }
         }
@@ -555,6 +559,9 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                     LOG.info("Registration task interrupted. ");
                 } catch (RuntimeException e) {
                     LOG.error("Unexpected exception during registration task", e);
+                    if (observer instanceof LwM2mClientObserver2) {
+                        ((LwM2mClientObserver2) observer).onUnexpectedError(e);
+                    }
                 }
             }
         }
@@ -603,6 +610,9 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                     LOG.info("Registration update task interrupted.");
                 } catch (RuntimeException e) {
                     LOG.error("Unexpected exception during update registration task", e);
+                    if (observer instanceof LwM2mClientObserver2) {
+                        ((LwM2mClientObserver2) observer).onUnexpectedError(e);
+                    }
                 }
             }
         }
