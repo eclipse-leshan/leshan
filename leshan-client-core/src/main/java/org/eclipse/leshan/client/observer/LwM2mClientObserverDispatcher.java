@@ -25,7 +25,7 @@ import org.eclipse.leshan.core.request.UpdateRequest;
  *
  */
 public class LwM2mClientObserverDispatcher implements LwM2mClientObserver2 {
-    protected CopyOnWriteArrayList<LwM2mClientObserver> observers = new CopyOnWriteArrayList<>();
+    private CopyOnWriteArrayList<LwM2mClientObserver> observers = new CopyOnWriteArrayList<>();
 
     public void addObserver(LwM2mClientObserver observer) {
         observers.add(observer);
