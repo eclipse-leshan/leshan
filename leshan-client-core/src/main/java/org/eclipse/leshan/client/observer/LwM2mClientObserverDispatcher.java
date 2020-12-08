@@ -24,7 +24,7 @@ import org.eclipse.leshan.core.request.UpdateRequest;
  * A dispatcher for LwM2mClientObserver. It allow several observers on a LwM2mClient.
  *
  */
-public class LwM2mClientObserverDispatcher implements LwM2mClientObserver {
+public class LwM2mClientObserverDispatcher implements LwM2mClientObserver2 {
     private CopyOnWriteArrayList<LwM2mClientObserver> observers = new CopyOnWriteArrayList<>();
 
     public void addObserver(LwM2mClientObserver observer) {
@@ -151,4 +151,12 @@ public class LwM2mClientObserverDispatcher implements LwM2mClientObserver {
         }
     }
 
+    @Override
+    public void onUnexpectedError(Throwable unexpectedError) {
+        for (LwM2mClientObserver observer : observers) {
+            if (observer instanceof LwM2mClientObserver2) {
+                ((LwM2mClientObserver2) observer).onUnexpectedError(unexpectedError);
+            }
+        }
+    }
 }

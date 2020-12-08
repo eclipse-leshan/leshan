@@ -26,7 +26,7 @@ import org.eclipse.leshan.core.request.UpdateRequest;
  * An abstract adapter class for observing registration life cycle. The methods in this class are empty. This class
  * exists as convenience for creating client observer objects.
  */
-public class LwM2mClientObserverAdapter implements LwM2mClientObserver {
+public class LwM2mClientObserverAdapter implements LwM2mClientObserver2 {
 
     @Override
     public void onBootstrapStarted(ServerIdentity bsserver, BootstrapRequest request) {
@@ -94,5 +94,9 @@ public class LwM2mClientObserverAdapter implements LwM2mClientObserver {
 
     @Override
     public void onDeregistrationTimeout(ServerIdentity server, DeregisterRequest request) {
+    }
+
+    @Override
+    public void onUnexpectedError(Throwable unexpectedError) {
     }
 }
