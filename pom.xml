@@ -706,7 +706,7 @@ Contributors:
             <dependency>
                 <groupId>com.upokecenter</groupId>
                 <artifactId>cbor</artifactId>
-                <version>4.0.0</version>
+                <version>4.3.0</version>
             </dependency>
             
 
