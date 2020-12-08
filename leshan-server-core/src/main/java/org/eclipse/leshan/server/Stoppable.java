@@ -15,6 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.server;
 
+/**
+ * @deprecated please consider to use {@link org.eclipse.leshan.core.Stoppable} instead.
+ */
+@Deprecated
 public interface Stoppable {
 
     void stop();

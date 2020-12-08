@@ -15,6 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.server;
 
+/**
+ * @deprecated please consider to use {@link org.eclipse.leshan.core.Destroyable} instead.
+ */
+@Deprecated
 public interface Destroyable {
 
     /** Destroy the instances and frees all system resources. */

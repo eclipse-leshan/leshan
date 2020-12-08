@@ -15,6 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.server;
 
+/**
+ * @deprecated please consider to use {@link org.eclipse.leshan.core.Startable} instead.
+ */
+@Deprecated
 public interface Startable {
 
     void start();
