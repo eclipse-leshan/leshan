@@ -16,7 +16,7 @@
 package org.eclipse.leshan.server;
 
 /**
- * @deprecated please consider to use {@link org.eclipse.leshan.core.Stoppable} instead.
+ * @deprecated please consider to use {@link org.eclipse.leshan.core.Stoppable} instead. This interface is going to be removed at version 2.0.
  */
 @Deprecated
 public interface Stoppable {
