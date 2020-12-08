@@ -63,6 +63,7 @@ import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.object.Server;
+import org.eclipse.leshan.client.observer.LwM2mClientObserverAdapter;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
@@ -691,6 +692,7 @@ public class LeshanClientDemo {
                 LOG.info("Object {} enabled.", object.getId());
             }
         });
+        client.addObserver(new ShutdownOnUnexpectedErrorObserver(client));
 
         // Display client public key to easily add it in demo servers.
         if (clientPublicKey != null) {
@@ -805,6 +807,20 @@ public class LeshanClientDemo {
                     LOG.info("Unknown command '{}'", command);
                 }
             }
+        }
+    }
+
+    private static class ShutdownOnUnexpectedErrorObserver extends LwM2mClientObserverAdapter {
+        final LeshanClient client;
+
+        public ShutdownOnUnexpectedErrorObserver(final LeshanClient client) {
+            this.client = client;
+        }
+
+        @Override
+        public void onUnexpectedError(Throwable unexpectedError) {
+            LOG.error("unexpected error occurred. destroy the leshan-client", unexpectedError);
+            client.destroy(true);
         }
     }
 }
