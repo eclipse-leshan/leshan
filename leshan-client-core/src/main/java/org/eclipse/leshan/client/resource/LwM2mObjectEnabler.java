@@ -53,6 +53,14 @@ import org.eclipse.leshan.core.response.WriteResponse;
  * <p>
  * In case you really need the flexibility of this interface you should consider to inherit from
  * {@link BaseObjectEnabler}.
+ * <p>
+ * An instance that implements this interface synchronizes with the lifecycle of the LeshanClient.
+ * This means when {@code LeshanClient#destroy()} is called, {@code LwM2mObjectEnabler#destroy()} is
+ * also called if it implements the {@link org.eclipse.leshan.core.Destroyable} interface.
+ * And {@link org.eclipse.leshan.core.Startable} ({@code #start()}) and
+ * {@link org.eclipse.leshan.core.Stoppable} ({@code #stop()}) are also same as this.
+ * If you need to restart the instance, please implement {@link org.eclipse.leshan.core.Startable}
+ * with {@link org.eclipse.leshan.core.Stoppable} together.
  */
 public interface LwM2mObjectEnabler {
 
