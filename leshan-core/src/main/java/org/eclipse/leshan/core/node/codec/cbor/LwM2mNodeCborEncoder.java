@@ -32,12 +32,12 @@ import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
 import org.eclipse.leshan.core.node.codec.NodeEncoder;
 import org.eclipse.leshan.core.util.Validate;
+import org.eclipse.leshan.core.util.datatype.NumberUtil;
 import org.eclipse.leshan.core.util.datatype.ULong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.upokecenter.cbor.CBORObject;
-import com.upokecenter.numbers.EInteger;
 
 public class LwM2mNodeCborEncoder implements NodeEncoder {
 
@@ -132,7 +132,7 @@ public class LwM2mNodeCborEncoder implements NodeEncoder {
                 cbor = CBORObject.FromObject((String) val);
                 break;
             case UNSIGNED_INTEGER:
-                cbor = CBORObject.FromObject(EInteger.FromString(((ULong) val).toString()));
+                cbor = CBORObject.FromObject(NumberUtil.unsignedLongToEInteger(((ULong) val).longValue()));
                 break;
             case BOOLEAN:
                 cbor = ((Boolean) val) ? CBORObject.True : CBORObject.False;

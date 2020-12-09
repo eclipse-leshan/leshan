@@ -131,7 +131,7 @@ public class WriteSingleValueTest {
     @Test
     public void write_integer_resource() throws InterruptedException {
         // write resource
-        long expectedvalue = 999l;
+        long expectedvalue = -999l;
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
                 new WriteRequest(contentFormat, TEST_OBJECT_ID, 0, INTEGER_RESOURCE_ID, expectedvalue));
 

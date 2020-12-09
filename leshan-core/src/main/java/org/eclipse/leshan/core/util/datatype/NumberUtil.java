@@ -17,6 +17,8 @@ package org.eclipse.leshan.core.util.datatype;
 
 import java.math.BigInteger;
 
+import com.upokecenter.numbers.EInteger;
+
 public class NumberUtil {
 
     /**
@@ -94,5 +96,14 @@ public class NumberUtil {
         }
         throw new IllegalStateException(String.format("Can not convert %s to long safely : Unsupported number %s",
                 number, number.getClass().getCanonicalName()));
+    }
+
+    // This will maybe be added in a new version of CBOR-java : https://github.com/peteroupc/CBOR-Java/issues/15
+    public static EInteger unsignedLongToEInteger(long v) {
+        if (v >= 0) {
+            return EInteger.FromInt64(v);
+        } else {
+            return EInteger.FromInt32(1).ShiftLeft(64).Add(v);
+        }
     }
 }

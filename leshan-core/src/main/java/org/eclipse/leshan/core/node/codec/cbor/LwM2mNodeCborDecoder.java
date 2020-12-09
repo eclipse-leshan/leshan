@@ -129,9 +129,9 @@ public class LwM2mNodeCborDecoder implements NodeDecoder {
             case UNSIGNED_INTEGER:
                 if (cborObject.getType() == CBORType.Integer) {
                     CBORNumber number = cborObject.AsNumber();
-                    if (number.IsInteger() && !number.IsNegative()) {
-                        // There is maybe a better way to do this conversion ?
-                        return ULong.valueOf(cborObject.toString());
+                    if (number.IsInteger() && !number.IsNegative()
+                            && number.ToEIntegerIfExact().GetUnsignedBitLengthAsInt64() <= 64) {
+                        return ULong.valueOf(number.ToInt64Unchecked());
                     }
                 }
                 break;
