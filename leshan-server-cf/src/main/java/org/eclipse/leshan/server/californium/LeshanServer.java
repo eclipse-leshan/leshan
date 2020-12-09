@@ -89,7 +89,6 @@ import org.slf4j.LoggerFactory;
  * <p>
  * The {@link LeshanServerBuilder} should be the preferred way to build an instance of {@link LeshanServer}.
  */
-@SuppressWarnings("deprecation")
 public class LeshanServer {
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanServer.class);

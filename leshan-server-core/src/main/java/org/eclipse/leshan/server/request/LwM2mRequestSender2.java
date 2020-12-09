@@ -35,7 +35,6 @@ import org.eclipse.leshan.server.registration.Registration;
  * 
  * @since 1.2
  */
-@SuppressWarnings("deprecation")
 public interface LwM2mRequestSender2 extends LwM2mRequestSender {
 
     /**

@@ -31,7 +31,6 @@ import org.eclipse.leshan.server.request.LwM2mRequestSender2;
 /**
  * A {@link LwM2mRequestSender} which supports LWM2M Queue Mode.
  */
-@SuppressWarnings("deprecation")
 public class QueueModeLwM2mRequestSender implements LwM2mRequestSender2 {
 
     protected PresenceServiceImpl presenceService;
