@@ -25,25 +25,30 @@ public class WriteAttributesRequest extends AbstractDownlinkRequest<WriteAttribu
     private final AttributeSet attributes;
 
     public WriteAttributesRequest(int objectId, AttributeSet attributes) throws InvalidRequestException {
-        this(new LwM2mPath(objectId), attributes);
+        this(new LwM2mPath(objectId), attributes, null);
     }
 
     public WriteAttributesRequest(int objectId, int objectInstanceId, AttributeSet attributes)
             throws InvalidRequestException {
-        this(new LwM2mPath(objectId, objectInstanceId), attributes);
+        this(new LwM2mPath(objectId, objectInstanceId), attributes, null);
     }
 
     public WriteAttributesRequest(int objectId, int objectInstanceId, int resourceId, AttributeSet attributes)
             throws InvalidRequestException {
-        this(new LwM2mPath(objectId, objectInstanceId, resourceId), attributes);
+        this(new LwM2mPath(objectId, objectInstanceId, resourceId), attributes, null);
     }
 
     public WriteAttributesRequest(String path, AttributeSet attributes) {
-        this(newPath(path), attributes);
+        this(newPath(path), attributes, null);
     }
 
-    private WriteAttributesRequest(LwM2mPath path, AttributeSet attributes) throws InvalidRequestException {
-        super(path);
+    public WriteAttributesRequest(String path, AttributeSet attributes, Object coapRequest) {
+        this(newPath(path), attributes, coapRequest);
+    }
+
+    private WriteAttributesRequest(LwM2mPath path, AttributeSet attributes, Object coapRequest)
+            throws InvalidRequestException {
+        super(path, coapRequest);
         if (path.isRoot())
             throw new InvalidRequestException("WriteAttributes request cannot target root path");
         if (path.isResourceInstance())

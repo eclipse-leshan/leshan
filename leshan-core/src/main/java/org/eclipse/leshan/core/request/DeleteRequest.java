@@ -31,7 +31,7 @@ public class DeleteRequest extends AbstractDownlinkRequest<DeleteResponse> {
      * @param objectInstanceId the object instance
      */
     public DeleteRequest(int objectId, int objectInstanceId) {
-        this(new LwM2mPath(objectId, objectInstanceId));
+        this(new LwM2mPath(objectId, objectInstanceId), null);
     }
 
     /**
@@ -41,11 +41,23 @@ public class DeleteRequest extends AbstractDownlinkRequest<DeleteResponse> {
      * @exception InvalidRequestException if the path is not valid.
      */
     public DeleteRequest(String path) throws InvalidRequestException {
-        this(newPath(path));
+        this(newPath(path), null);
     }
 
-    private DeleteRequest(LwM2mPath target) {
-        super(target);
+    /**
+     * Creates a request for deleting a particular object instance implemented by a client.
+     *
+     * @param path the path of the instance to delete
+     * @param coapRequest the underlying request
+     * 
+     * @exception InvalidRequestException if the path is not valid.
+     */
+    public DeleteRequest(String path, Object coapRequest) throws InvalidRequestException {
+        this(newPath(path), coapRequest);
+    }
+
+    private DeleteRequest(LwM2mPath target, Object coapRequest) {
+        super(target, coapRequest);
         if (target.isRoot())
             throw new InvalidRequestException("Delete request cannot target root path");
 

@@ -30,7 +30,7 @@ import org.eclipse.leshan.core.response.RegisterResponse;
  * A Lightweight M2M request for sending the LWM2M Client properties required by the LWM2M Server to contact the LWM2M
  * Client.
  */
-public class RegisterRequest implements UplinkRequest<RegisterResponse> {
+public class RegisterRequest extends AbstractLwM2mRequest<RegisterResponse> implements UplinkRequest<RegisterResponse> {
 
     private final String endpointName;
     private final Long lifetime;
@@ -57,7 +57,29 @@ public class RegisterRequest implements UplinkRequest<RegisterResponse> {
     public RegisterRequest(String endpointName, Long lifetime, String lwVersion, EnumSet<BindingMode> bindingMode,
             Boolean queueMode, String smsNumber, Link[] objectLinks, Map<String, String> additionalAttributes)
             throws InvalidRequestException {
+        this(endpointName, lifetime, lwVersion, bindingMode, queueMode, smsNumber, objectLinks, additionalAttributes,
+                null);
+    }
 
+    /**
+     * Creates a request for registering a LWM2M client to a LWM2M Server.
+     * 
+     * @param endpointName is the LWM2M client identifier.
+     * @param lifetime specifies the lifetime of the registration in seconds.
+     * @param lwVersion indicates the version of the LWM2M Enabler that the LWM2M Client supports.
+     * @param bindingMode Indicates the supported {@link BindingMode}s in the LwM2M Client.
+     * @param queueMode Indicates whether Queue Mode is supported.
+     * @param smsNumber is the MSISDN where the LWM2M Client can be reached for use with the SMS binding.
+     * @param objectLinks is the list of Objects supported and Object Instances available on the LWM2M Client.
+     * @param additionalAttributes are any attributes/parameters which is out of the LWM2M specification.
+     * @param coapRequest the underlying request
+     * 
+     * @exception InvalidRequestException if endpoint name or objectlinks is empty.
+     */
+    public RegisterRequest(String endpointName, Long lifetime, String lwVersion, EnumSet<BindingMode> bindingMode,
+            Boolean queueMode, String smsNumber, Link[] objectLinks, Map<String, String> additionalAttributes,
+            Object coapRequest) throws InvalidRequestException {
+        super(coapRequest);
         if (endpointName == null || endpointName.isEmpty())
             throw new InvalidRequestException("endpoint is mandatory");
 

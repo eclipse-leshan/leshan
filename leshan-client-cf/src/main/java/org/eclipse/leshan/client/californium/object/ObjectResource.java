@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
+import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.client.californium.LwM2mClientCoapResource;
@@ -96,11 +97,13 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
             return;
 
         String URI = exchange.getRequestOptions().getUriPathString();
+        Request coapRequest = exchange.advanced().getRequest();
 
         if (exchange.getRequestOptions().getAccept() == MediaTypeRegistry.APPLICATION_LINK_FORMAT) {
             if (identity.isLwm2mBootstrapServer()) {
                 // Manage Bootstrap Discover Request
-                BootstrapDiscoverResponse response = nodeEnabler.discover(identity, new BootstrapDiscoverRequest(URI));
+                BootstrapDiscoverResponse response = nodeEnabler.discover(identity,
+                        new BootstrapDiscoverRequest(URI, coapRequest));
                 if (response.getCode().isError()) {
                     exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
                 } else {
@@ -110,7 +113,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
                 return;
             } else {
                 // Manage Discover Request
-                DiscoverResponse response = nodeEnabler.discover(identity, new DiscoverRequest(URI));
+                DiscoverResponse response = nodeEnabler.discover(identity, new DiscoverRequest(URI, coapRequest));
                 if (response.getCode().isError()) {
                     exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
                 } else {
@@ -133,7 +136,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
 
             // Manage Observe Request
             if (exchange.getRequestOptions().hasObserve()) {
-                ObserveRequest observeRequest = new ObserveRequest(URI);
+                ObserveRequest observeRequest = new ObserveRequest(requestedContentFormat, URI, coapRequest);
                 ObserveResponse response = nodeEnabler.observe(identity, observeRequest);
                 if (response.getCode() == org.eclipse.leshan.core.ResponseCode.CONTENT) {
                     LwM2mPath path = new LwM2mPath(URI);
@@ -150,7 +153,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
             }
             // Manage Read Request
             else {
-                ReadRequest readRequest = new ReadRequest(URI);
+                ReadRequest readRequest = new ReadRequest(requestedContentFormat, URI, coapRequest);
                 ReadResponse response = nodeEnabler.read(identity, readRequest);
                 if (response.getCode() == org.eclipse.leshan.core.ResponseCode.CONTENT) {
                     LwM2mPath path = new LwM2mPath(URI);
@@ -185,18 +188,19 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
             return;
 
         String URI = coapExchange.getRequestOptions().getUriPathString();
+        Request coapRequest = coapExchange.advanced().getRequest();
 
         // get Observe Spec
         AttributeSet attributes = null;
-        if (coapExchange.advanced().getRequest().getOptions().getURIQueryCount() != 0) {
-            List<String> uriQueries = coapExchange.advanced().getRequest().getOptions().getUriQuery();
+        if (coapRequest.getOptions().getURIQueryCount() != 0) {
+            List<String> uriQueries = coapRequest.getOptions().getUriQuery();
             attributes = AttributeSet.parse(uriQueries);
         }
 
         // Manage Write Attributes Request
         if (attributes != null) {
             WriteAttributesResponse response = nodeEnabler.writeAttributes(identity,
-                    new WriteAttributesRequest(URI, attributes));
+                    new WriteAttributesRequest(URI, attributes, coapRequest));
             if (response.getCode().isError()) {
                 coapExchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
             } else {
@@ -224,7 +228,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
                 lwM2mNode = decoder.decode(coapExchange.getRequestPayload(), contentFormat, path, model);
                 if (identity.isLwm2mBootstrapServer()) {
                     BootstrapWriteResponse response = nodeEnabler.write(identity,
-                            new BootstrapWriteRequest(path, lwM2mNode, contentFormat));
+                            new BootstrapWriteRequest(path, lwM2mNode, contentFormat, coapRequest));
                     if (response.getCode().isError()) {
                         coapExchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
                     } else {
@@ -232,7 +236,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
                     }
                 } else {
                     WriteResponse response = nodeEnabler.write(identity,
-                            new WriteRequest(Mode.REPLACE, contentFormat, URI, lwM2mNode));
+                            new WriteRequest(Mode.REPLACE, contentFormat, URI, lwM2mNode, coapRequest));
                     if (response.getCode().isError()) {
                         coapExchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
                     } else {
@@ -256,6 +260,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
             return;
 
         String URI = exchange.getRequestOptions().getUriPathString();
+        Request coapRequest = exchange.advanced().getRequest();
 
         LwM2mPath path = new LwM2mPath(URI);
 
@@ -263,7 +268,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
         if (path.isResource()) {
             byte[] payload = exchange.getRequestPayload();
             ExecuteResponse response = nodeEnabler.execute(identity,
-                    new ExecuteRequest(URI, payload != null ? new String(payload) : null));
+                    new ExecuteRequest(URI, payload != null ? new String(payload) : null, coapRequest));
             if (response.getCode().isError()) {
                 exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
             } else {
@@ -290,7 +295,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
             try {
                 LwM2mNode lwM2mNode = decoder.decode(exchange.getRequestPayload(), contentFormat, path, model);
                 WriteResponse response = nodeEnabler.write(identity,
-                        new WriteRequest(Mode.UPDATE, contentFormat, URI, lwM2mNode));
+                        new WriteRequest(Mode.UPDATE, contentFormat, URI, lwM2mNode, coapRequest));
                 if (response.getCode().isError()) {
                     exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
                 } else {
@@ -314,14 +319,13 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
             if (object.getInstances().isEmpty()) {
                 // This is probably the pretty strange use case where
                 // instance ID is not defined an no resources available.
-                createRequest = new CreateRequest(contentFormat, path.getObjectId(), new LwM2mResource[0]);
+                createRequest = new CreateRequest(contentFormat, coapRequest, URI, new LwM2mResource[0]);
             } else if (object.getInstances().size() == 1 && newInstance != null) {
                 // the instance Id was not part of the create request payload.
                 // will be assigned by the client.
-                createRequest = new CreateRequest(contentFormat, path.getObjectId(),
-                        newInstance.getResources().values());
+                createRequest = new CreateRequest(contentFormat, coapRequest, URI, newInstance.getResources().values());
             } else {
-                createRequest = new CreateRequest(contentFormat, path.getObjectId(), object.getInstances().values()
+                createRequest = new CreateRequest(contentFormat, coapRequest, URI, object.getInstances().values()
                         .toArray(new LwM2mObjectInstance[object.getInstances().values().size()]));
             }
 
@@ -345,19 +349,21 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
     public void handleDELETE(CoapExchange coapExchange) {
         // Manage Delete Request
         String URI = coapExchange.getRequestOptions().getUriPathString();
+        Request coapRequest = coapExchange.advanced().getRequest();
         ServerIdentity identity = getServerOrRejectRequest(coapExchange);
         if (identity == null)
             return;
 
         if (identity.isLwm2mBootstrapServer()) {
-            BootstrapDeleteResponse response = nodeEnabler.delete(identity, new BootstrapDeleteRequest(URI));
+            BootstrapDeleteResponse response = nodeEnabler.delete(identity,
+                    new BootstrapDeleteRequest(URI, coapRequest));
             if (response.getCode().isError()) {
                 coapExchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
             } else {
                 coapExchange.respond(toCoapResponseCode(response.getCode()));
             }
         } else {
-            DeleteResponse response = nodeEnabler.delete(identity, new DeleteRequest(URI));
+            DeleteResponse response = nodeEnabler.delete(identity, new DeleteRequest(URI, coapRequest));
             if (response.getCode().isError()) {
                 coapExchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
             } else {

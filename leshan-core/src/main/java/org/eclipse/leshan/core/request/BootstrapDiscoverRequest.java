@@ -32,7 +32,7 @@ public class BootstrapDiscoverRequest extends AbstractDownlinkRequest<BootstrapD
      * Creates a request for discovering all objects and instances supported by the client.
      */
     public BootstrapDiscoverRequest() {
-        this(LwM2mPath.ROOTPATH);
+        this(LwM2mPath.ROOTPATH, null);
     }
 
     /**
@@ -41,7 +41,7 @@ public class BootstrapDiscoverRequest extends AbstractDownlinkRequest<BootstrapD
      * @param objectId the object type
      */
     public BootstrapDiscoverRequest(int objectId) {
-        this(new LwM2mPath(objectId));
+        this(new LwM2mPath(objectId), null);
     }
 
     /**
@@ -51,11 +51,22 @@ public class BootstrapDiscoverRequest extends AbstractDownlinkRequest<BootstrapD
      * @exception InvalidRequestException if the path is not valid.
      */
     public BootstrapDiscoverRequest(String path) throws InvalidRequestException {
-        this(newPath(path));
+        this(newPath(path), null);
     }
 
-    private BootstrapDiscoverRequest(LwM2mPath target) {
-        super(target);
+    /**
+     * Create a request for discovering
+     *
+     * @param path the path of the LWM2M node to discover
+     * @param coapRequest the underlying request
+     * @exception InvalidRequestException if the path is not valid.
+     */
+    public BootstrapDiscoverRequest(String path, Object coapRequest) throws InvalidRequestException {
+        this(newPath(path), coapRequest);
+    }
+
+    private BootstrapDiscoverRequest(LwM2mPath target, Object coapRequest) {
+        super(target, coapRequest);
         if (!target.isRoot() && !target.isObject()) {
             throw new InvalidRequestException("Invalid path %s : Discover request can only target root or object path",
                     target);

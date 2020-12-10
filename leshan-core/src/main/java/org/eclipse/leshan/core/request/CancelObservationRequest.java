@@ -35,7 +35,7 @@ public class CancelObservationRequest extends AbstractDownlinkRequest<CancelObse
      * @param observation the observation to cancel actively
      */
     public CancelObservationRequest(Observation observation) {
-        super(observation.getPath());
+        super(observation.getPath(), null);
         if (getPath().isRoot())
             throw new InvalidRequestException("Observe request cannot target root path");
         if (getPath().isResourceInstance())

@@ -33,7 +33,7 @@ public class ExecuteRequest extends AbstractDownlinkRequest<ExecuteResponse> {
      * @exception InvalidRequestException if the path is not valid.
      */
     public ExecuteRequest(String path) throws InvalidRequestException {
-        this(newPath(path), null);
+        this(path, null);
     }
 
     /**
@@ -44,7 +44,20 @@ public class ExecuteRequest extends AbstractDownlinkRequest<ExecuteResponse> {
      * @exception InvalidRequestException if the path is not valid.
      */
     public ExecuteRequest(String path, String parameters) throws InvalidRequestException {
-        this(newPath(path), parameters);
+        this(newPath(path), parameters, null);
+    }
+
+    /**
+     * Creates a new <em>execute</em> request for a resource accepting parameters encoded as plain text.
+     *
+     * @param path the path of the resource to execute
+     * @param parameters the parameters
+     * @param coapRequest the underlying request
+     * 
+     * @exception InvalidRequestException if the path is not valid.
+     */
+    public ExecuteRequest(String path, String parameters, Object coapRequest) throws InvalidRequestException {
+        this(newPath(path), parameters, coapRequest);
     }
 
     /**
@@ -55,7 +68,7 @@ public class ExecuteRequest extends AbstractDownlinkRequest<ExecuteResponse> {
      * @param resourceId the resource's ID
      */
     public ExecuteRequest(int objectId, int objectInstanceId, int resourceId) {
-        this(new LwM2mPath(objectId, objectInstanceId, resourceId), null);
+        this(new LwM2mPath(objectId, objectInstanceId, resourceId), null, null);
     }
 
     /**
@@ -67,11 +80,11 @@ public class ExecuteRequest extends AbstractDownlinkRequest<ExecuteResponse> {
      * @param parameters the parameters
      */
     public ExecuteRequest(int objectId, int objectInstanceId, int resourceId, String parameters) {
-        this(new LwM2mPath(objectId, objectInstanceId, resourceId), parameters);
+        this(new LwM2mPath(objectId, objectInstanceId, resourceId), parameters, null);
     }
 
-    private ExecuteRequest(LwM2mPath path, String parameters) {
-        super(path);
+    private ExecuteRequest(LwM2mPath path, String parameters, Object coapRequest) {
+        super(path, coapRequest);
         if (path.isRoot())
             throw new InvalidRequestException("Execute request cannot target root path");
 

@@ -30,7 +30,7 @@ import org.eclipse.leshan.core.response.UpdateResponse;
  * A Lightweight M2M request for updating the LWM2M Client properties required by the LWM2M Server to contact the LWM2M
  * Client.
  */
-public class UpdateRequest implements UplinkRequest<UpdateResponse> {
+public class UpdateRequest extends AbstractLwM2mRequest<UpdateResponse> implements UplinkRequest<UpdateResponse> {
 
     private final Long lifeTimeInSec;
     private final String smsNumber;
@@ -51,7 +51,25 @@ public class UpdateRequest implements UplinkRequest<UpdateResponse> {
      */
     public UpdateRequest(String registrationId, Long lifetime, String smsNumber, EnumSet<BindingMode> binding,
             Link[] objectLinks, Map<String, String> additionalAttributes) throws InvalidRequestException {
+        this(registrationId, lifetime, smsNumber, binding, objectLinks, additionalAttributes, null);
+    }
 
+    /**
+     * Sets all fields.
+     * 
+     * @param registrationId the ID under which the client is registered
+     * @param lifetime the number of seconds the client would like its registration to be valid
+     * @param smsNumber the SMS number the client can receive messages under
+     * @param binding the binding mode(s) the client supports
+     * @param objectLinks the objects and object instances the client hosts/supports
+     * @param coapRequest the underlying request
+     * 
+     * @exception InvalidRequestException if the registrationId is empty.
+     */
+    public UpdateRequest(String registrationId, Long lifetime, String smsNumber, EnumSet<BindingMode> binding,
+            Link[] objectLinks, Map<String, String> additionalAttributes, Object coapRequest)
+            throws InvalidRequestException {
+        super(coapRequest);
         if (registrationId == null || registrationId.isEmpty())
             throw new InvalidRequestException("registrationId is mandatory");
 

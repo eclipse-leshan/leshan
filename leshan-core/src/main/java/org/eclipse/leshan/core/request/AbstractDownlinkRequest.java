@@ -24,11 +24,13 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
  *
  * Provides generic support for specifying the target client and the resource path.
  */
-public abstract class AbstractDownlinkRequest<T extends LwM2mResponse> implements DownlinkRequest<T> {
+public abstract class AbstractDownlinkRequest<T extends LwM2mResponse> extends AbstractLwM2mRequest<T>
+        implements DownlinkRequest<T> {
 
     private final LwM2mPath path;
 
-    protected AbstractDownlinkRequest(LwM2mPath path) {
+    protected AbstractDownlinkRequest(LwM2mPath path, Object coapRequest) {
+        super(coapRequest);
         if (path == null)
             throw new InvalidRequestException("path is mandatory");
 

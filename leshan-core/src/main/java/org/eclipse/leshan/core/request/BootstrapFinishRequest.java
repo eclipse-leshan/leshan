@@ -21,7 +21,16 @@ import org.eclipse.leshan.core.response.BootstrapFinishResponse;
 /**
  * Request sent when bootstrap session is finished
  */
-public class BootstrapFinishRequest implements BootstrapDownlinkRequest<BootstrapFinishResponse> {
+public class BootstrapFinishRequest extends AbstractLwM2mRequest<BootstrapFinishResponse>
+        implements BootstrapDownlinkRequest<BootstrapFinishResponse> {
+
+    public BootstrapFinishRequest() {
+        this(null);
+    }
+
+    public BootstrapFinishRequest(Object coapRequest) {
+        super(coapRequest);
+    }
 
     @Override
     public LwM2mPath getPath() {

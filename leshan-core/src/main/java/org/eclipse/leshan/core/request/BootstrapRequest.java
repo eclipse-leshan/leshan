@@ -25,7 +25,8 @@ import org.eclipse.leshan.core.response.BootstrapResponse;
 /**
  * The request to send to start a bootstrap session
  */
-public class BootstrapRequest implements UplinkRequest<BootstrapResponse> {
+public class BootstrapRequest extends AbstractLwM2mRequest<BootstrapResponse>
+        implements UplinkRequest<BootstrapResponse> {
 
     private final String endpointName;
     private final Map<String, String> additionalAttributes;
@@ -34,9 +35,14 @@ public class BootstrapRequest implements UplinkRequest<BootstrapResponse> {
         this(endpointName, null);
     }
 
-    /** @since 1.1 */
     public BootstrapRequest(String endpointName, Map<String, String> additionalAttributes)
             throws InvalidRequestException {
+        this(endpointName, additionalAttributes, null);
+    }
+
+    public BootstrapRequest(String endpointName, Map<String, String> additionalAttributes, Object coapRequest)
+            throws InvalidRequestException {
+        super(coapRequest);
         if (endpointName == null || endpointName.isEmpty())
             throw new InvalidRequestException("endpoint is mandatory");
 

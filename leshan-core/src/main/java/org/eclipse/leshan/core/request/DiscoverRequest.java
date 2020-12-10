@@ -30,7 +30,7 @@ public class DiscoverRequest extends AbstractDownlinkRequest<DiscoverResponse> {
      * @param objectId the object type
      */
     public DiscoverRequest(int objectId) {
-        this(new LwM2mPath(objectId));
+        this(new LwM2mPath(objectId), null);
     }
 
     /**
@@ -40,7 +40,7 @@ public class DiscoverRequest extends AbstractDownlinkRequest<DiscoverResponse> {
      * @param objectInstanceId the object instance
      */
     public DiscoverRequest(int objectId, int objectInstanceId) {
-        this(new LwM2mPath(objectId, objectInstanceId));
+        this(new LwM2mPath(objectId, objectInstanceId), null);
     }
 
     /**
@@ -51,7 +51,7 @@ public class DiscoverRequest extends AbstractDownlinkRequest<DiscoverResponse> {
      * @param resourceId the resource
      */
     public DiscoverRequest(int objectId, int objectInstanceId, int resourceId) {
-        this(new LwM2mPath(objectId, objectInstanceId, resourceId));
+        this(new LwM2mPath(objectId, objectInstanceId, resourceId), null);
     }
 
     /**
@@ -59,14 +59,27 @@ public class DiscoverRequest extends AbstractDownlinkRequest<DiscoverResponse> {
      * path.
      *
      * @param path the path of the LWM2M node to discover
+     * @param coapRequest the underlying request
      * @exception InvalidRequestException if the path is not valid.
      */
     public DiscoverRequest(String path) throws InvalidRequestException {
-        this(newPath(path));
+        this(newPath(path), null);
     }
 
-    private DiscoverRequest(LwM2mPath target) {
-        super(target);
+    /**
+     * Create a request for discovering the attributes of a particular object/instance/resource targeted by a specific
+     * path.
+     *
+     * @param path the path of the LWM2M node to discover
+     * @param coapRequest the underlying request
+     * @exception InvalidRequestException if the path is not valid.
+     */
+    public DiscoverRequest(String path, Object coapRequest) throws InvalidRequestException {
+        this(newPath(path), coapRequest);
+    }
+
+    private DiscoverRequest(LwM2mPath target, Object coapRequest) {
+        super(target, coapRequest);
         if (target.isRoot())
             throw new InvalidRequestException("Discover request cannot target root path");
         if (target.isResourceInstance())

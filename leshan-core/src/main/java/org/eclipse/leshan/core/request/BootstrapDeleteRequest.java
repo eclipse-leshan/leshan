@@ -30,7 +30,7 @@ public class BootstrapDeleteRequest extends AbstractDownlinkRequest<BootstrapDel
      * Account and the single Instance of the Mandatory Device Object (ID:3)).
      */
     public BootstrapDeleteRequest() {
-        this(LwM2mPath.ROOTPATH);
+        this(LwM2mPath.ROOTPATH, null);
     }
 
     /**
@@ -40,7 +40,7 @@ public class BootstrapDeleteRequest extends AbstractDownlinkRequest<BootstrapDel
      * @param objectId the object Id
      */
     public BootstrapDeleteRequest(int objectId) {
-        this(new LwM2mPath(objectId));
+        this(new LwM2mPath(objectId), null);
     }
 
     /**
@@ -51,7 +51,7 @@ public class BootstrapDeleteRequest extends AbstractDownlinkRequest<BootstrapDel
      * @param objectInstanceId the object instance
      */
     public BootstrapDeleteRequest(int objectId, int objectInstanceId) {
-        this(new LwM2mPath(objectId, objectInstanceId));
+        this(new LwM2mPath(objectId, objectInstanceId), null);
     }
 
     /**
@@ -62,11 +62,23 @@ public class BootstrapDeleteRequest extends AbstractDownlinkRequest<BootstrapDel
      * @exception InvalidRequestException if the path is not valid.
      */
     public BootstrapDeleteRequest(String path) throws InvalidRequestException {
-        this(newPath(path));
+        this(newPath(path), null);
     }
 
-    private BootstrapDeleteRequest(LwM2mPath target) {
-        super(target);
+    /**
+     * Creates a request for deleting object instances implemented by a client. (except the LwM2M Bootstrap-Server
+     * Account and the Instance of the Device Object)
+     *
+     * @param path the path (could be a root path, an object path or an object instance path)
+     * @param coapRequest the underlying request
+     * @exception InvalidRequestException if the path is not valid.
+     */
+    public BootstrapDeleteRequest(String path, Object coapRequest) throws InvalidRequestException {
+        this(newPath(path), coapRequest);
+    }
+
+    private BootstrapDeleteRequest(LwM2mPath target, Object coapRequest) {
+        super(target, coapRequest);
         if (target.isResource() || target.isResourceInstance())
             throw new InvalidRequestException("Invalid path %s : Only objects or object instances can be deleted",
                     target);

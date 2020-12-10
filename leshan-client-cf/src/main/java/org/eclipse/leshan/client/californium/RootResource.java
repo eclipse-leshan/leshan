@@ -24,6 +24,7 @@ import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
+import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
@@ -61,7 +62,9 @@ public class RootResource extends LwM2mClientCoapResource {
         String URI = exchange.getRequestOptions().getUriPathString();
 
         // Manage Bootstrap Discover Request
-        BootstrapDiscoverResponse response = bootstrapHandler.discover(identity, new BootstrapDiscoverRequest(URI));
+        Request coapRequest = exchange.advanced().getRequest();
+        BootstrapDiscoverResponse response = bootstrapHandler.discover(identity,
+                new BootstrapDiscoverRequest(URI, coapRequest));
         if (response.getCode().isError()) {
             exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
         } else {
@@ -73,7 +76,8 @@ public class RootResource extends LwM2mClientCoapResource {
 
     @Override
     public void handleDELETE(CoapExchange exchange) {
-        if (!StringUtils.isEmpty(exchange.getRequestOptions().getUriPathString())) {
+        String URI = exchange.getRequestOptions().getUriPathString();
+        if (!StringUtils.isEmpty(URI)) {
             exchange.respond(ResponseCode.METHOD_NOT_ALLOWED);
             return;
         }
@@ -82,7 +86,9 @@ public class RootResource extends LwM2mClientCoapResource {
         if (identity == null)
             return;
 
-        BootstrapDeleteResponse response = bootstrapHandler.delete(identity, new BootstrapDeleteRequest());
+        Request coapRequest = exchange.advanced().getRequest();
+        BootstrapDeleteResponse response = bootstrapHandler.delete(identity,
+                new BootstrapDeleteRequest(URI, coapRequest));
         exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
     }
 

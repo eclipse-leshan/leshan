@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2015 Sierra Wireless and others.
+ * Copyright (c) 2020 Sierra Wireless and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -17,17 +17,16 @@ package org.eclipse.leshan.core.request;
 
 import org.eclipse.leshan.core.response.LwM2mResponse;
 
-/**
- * A Lightweight M2M request.
- */
-public interface LwM2mRequest<T extends LwM2mResponse> {
+public abstract class AbstractLwM2mRequest<T extends LwM2mResponse> implements LwM2mRequest<T> {
 
-    /**
-     * Get the underlying CoAP request. The object type depends of the chosen CoAP implementation. (e.g with Californium
-     * implementation <code>getCoapResponse()</code> will returns
-     * <code>a org.eclipse.californium.core.coap.Request)</code>).
-     * 
-     * @return the CoAP request
-     */
-    Object getCoapRequest();
+    private final Object coapRequest;
+
+    public AbstractLwM2mRequest(Object coapRequest) {
+        this.coapRequest = coapRequest;
+    }
+
+    @Override
+    public Object getCoapRequest() {
+        return coapRequest;
+    }
 }

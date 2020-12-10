@@ -20,6 +20,7 @@ import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toCoapRespons
 
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.MessageObserverAdapter;
+import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
@@ -53,8 +54,9 @@ public class BootstrapResource extends LwM2mClientCoapResource {
 
         // Acknowledge bootstrap finished request
         exchange.accept();
+        Request coapRequest = exchange.advanced().getRequest();
         final SendableResponse<BootstrapFinishResponse> sendableResponse = bootstrapHandler.finished(identity,
-                new BootstrapFinishRequest());
+                new BootstrapFinishRequest(coapRequest));
 
         // Create CoAP response
         Response coapResponse = new Response(toCoapResponseCode(sendableResponse.getResponse().getCode()));

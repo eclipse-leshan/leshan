@@ -35,7 +35,7 @@ public class ReadRequest extends AbstractDownlinkRequest<ReadResponse> {
      * @param objectId the object ID of the resource
      */
     public ReadRequest(int objectId) {
-        this(null, new LwM2mPath(objectId));
+        this(null, new LwM2mPath(objectId), null);
     }
 
     /**
@@ -45,7 +45,7 @@ public class ReadRequest extends AbstractDownlinkRequest<ReadResponse> {
      * @param objectId the object ID of the resource
      */
     public ReadRequest(ContentFormat format, int objectId) {
-        this(format, new LwM2mPath(objectId));
+        this(format, new LwM2mPath(objectId), null);
     }
 
     /**
@@ -55,7 +55,7 @@ public class ReadRequest extends AbstractDownlinkRequest<ReadResponse> {
      * @param objectInstanceId the object instance ID
      */
     public ReadRequest(int objectId, int objectInstanceId) {
-        this(null, new LwM2mPath(objectId, objectInstanceId));
+        this(null, new LwM2mPath(objectId, objectInstanceId), null);
     }
 
     /**
@@ -66,7 +66,7 @@ public class ReadRequest extends AbstractDownlinkRequest<ReadResponse> {
      * @param objectInstanceId the object instance ID
      */
     public ReadRequest(ContentFormat format, int objectId, int objectInstanceId) {
-        this(format, new LwM2mPath(objectId, objectInstanceId));
+        this(format, new LwM2mPath(objectId, objectInstanceId), null);
     }
 
     /**
@@ -77,7 +77,7 @@ public class ReadRequest extends AbstractDownlinkRequest<ReadResponse> {
      * @param resourceId the (individual) resource's ID
      */
     public ReadRequest(int objectId, int objectInstanceId, int resourceId) {
-        this(null, new LwM2mPath(objectId, objectInstanceId, resourceId));
+        this(null, new LwM2mPath(objectId, objectInstanceId, resourceId), null);
     }
 
     /**
@@ -89,7 +89,7 @@ public class ReadRequest extends AbstractDownlinkRequest<ReadResponse> {
      * @param resourceInstanceId the resource instance's ID
      */
     public ReadRequest(int objectId, int objectInstanceId, int resourceId, int resourceInstanceId) {
-        this(null, new LwM2mPath(objectId, objectInstanceId, resourceId, resourceInstanceId));
+        this(null, new LwM2mPath(objectId, objectInstanceId, resourceId, resourceInstanceId), null);
     }
 
     /**
@@ -101,7 +101,7 @@ public class ReadRequest extends AbstractDownlinkRequest<ReadResponse> {
      * @param resourceId the (individual) resource's ID
      */
     public ReadRequest(ContentFormat format, int objectId, int objectInstanceId, int resourceId) {
-        this(format, new LwM2mPath(objectId, objectInstanceId, resourceId));
+        this(format, new LwM2mPath(objectId, objectInstanceId, resourceId), null);
     }
 
     /**
@@ -115,7 +115,7 @@ public class ReadRequest extends AbstractDownlinkRequest<ReadResponse> {
      */
     public ReadRequest(ContentFormat format, int objectId, int objectInstanceId, int resourceId,
             int resourceInstanceId) {
-        this(format, new LwM2mPath(objectId, objectInstanceId, resourceId, resourceInstanceId));
+        this(format, new LwM2mPath(objectId, objectInstanceId, resourceId, resourceInstanceId), null);
     }
 
     /**
@@ -125,7 +125,7 @@ public class ReadRequest extends AbstractDownlinkRequest<ReadResponse> {
      * @throws IllegalArgumentException if the target path is not valid
      */
     public ReadRequest(String path) {
-        this(null, new LwM2mPath(path));
+        this(null, new LwM2mPath(path), null);
     }
 
     /**
@@ -136,11 +136,24 @@ public class ReadRequest extends AbstractDownlinkRequest<ReadResponse> {
      * @throws IllegalArgumentException if the target path is not valid
      */
     public ReadRequest(ContentFormat format, String path) {
-        this(format, new LwM2mPath(path));
+        this(format, new LwM2mPath(path), null);
     }
 
-    private ReadRequest(ContentFormat format, LwM2mPath target) {
-        super(target);
+    /**
+     * Create a request for reading an object/instance/resource targeted by a specific path.
+     *
+     * @param format the desired format for the response
+     * @param path the path to the LWM2M node to read
+     * @param coapRequest the underlying request
+     * 
+     * @throws IllegalArgumentException if the target path is not valid
+     */
+    public ReadRequest(ContentFormat format, String path, Object coapRequest) {
+        this(format, new LwM2mPath(path), coapRequest);
+    }
+
+    private ReadRequest(ContentFormat format, LwM2mPath target, Object coapRequest) {
+        super(target, coapRequest);
         if (target.isRoot())
             throw new InvalidRequestException("Read request cannot target root path");
         this.format = format;

@@ -33,9 +33,13 @@ public class BootstrapWriteRequest extends AbstractDownlinkRequest<BootstrapWrit
     private final LwM2mNode node;
     private final ContentFormat contentFormat;
 
-    public BootstrapWriteRequest(LwM2mPath target, LwM2mNode node, ContentFormat format)
+    public BootstrapWriteRequest(LwM2mPath target, LwM2mNode node, ContentFormat format) {
+        this(target, node, format, null);
+    }
+
+    public BootstrapWriteRequest(LwM2mPath target, LwM2mNode node, ContentFormat format, Object coapRequest)
             throws InvalidRequestException {
-        super(target);
+        super(target, coapRequest);
         if (target.isRoot())
             throw new InvalidRequestException("BootstrapWrite request cannot target root path");
 

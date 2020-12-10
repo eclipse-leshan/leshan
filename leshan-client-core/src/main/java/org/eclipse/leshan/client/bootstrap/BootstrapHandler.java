@@ -78,7 +78,7 @@ public class BootstrapHandler {
 
             // Delete all device management server
             for (LwM2mObjectEnabler enabler : objects.values()) {
-                enabler.delete(server, new BootstrapDeleteRequest(enabler.getId()));
+                enabler.delete(server, deleteRequest);
             }
 
             return BootstrapDeleteResponse.success();

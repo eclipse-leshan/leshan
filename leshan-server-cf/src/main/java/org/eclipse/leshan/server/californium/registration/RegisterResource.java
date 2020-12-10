@@ -162,8 +162,9 @@ public class RegisterResource extends LwM2mCoapResource {
         }
 
         // Create request
+        Request coapRequest = exchange.advanced().getRequest();
         RegisterRequest registerRequest = new RegisterRequest(endpoint, lifetime, lwVersion, binding, queueMode,
-                smsNumber, objectLinks, additionalParams);
+                smsNumber, objectLinks, additionalParams, coapRequest);
 
         // Handle request
         // -------------------------------
@@ -210,8 +211,9 @@ public class RegisterResource extends LwM2mCoapResource {
         if (request.getPayload() != null && request.getPayload().length > 0) {
             objectLinks = Link.parse(request.getPayload());
         }
+        Request coapRequest = exchange.advanced().getRequest();
         UpdateRequest updateRequest = new UpdateRequest(registrationId, lifetime, smsNumber, binding, objectLinks,
-                additionalParams);
+                additionalParams, coapRequest);
 
         // Handle request
         final SendableResponse<UpdateResponse> sendableResponse = registrationHandler.update(sender, updateRequest);
@@ -231,7 +233,8 @@ public class RegisterResource extends LwM2mCoapResource {
         Identity sender = extractIdentity(exchange.advanced().getRequest().getSourceContext());
 
         // Create request
-        DeregisterRequest deregisterRequest = new DeregisterRequest(registrationId);
+        Request coapRequest = exchange.advanced().getRequest();
+        DeregisterRequest deregisterRequest = new DeregisterRequest(registrationId, coapRequest);
 
         // Handle request
         final SendableResponse<DeregisterResponse> sendableResponse = registrationHandler.deregister(sender,

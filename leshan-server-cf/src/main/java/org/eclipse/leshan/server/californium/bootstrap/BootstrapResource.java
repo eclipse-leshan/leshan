@@ -78,8 +78,9 @@ public class BootstrapResource extends LwM2mCoapResource {
         Identity clientIdentity = extractIdentity(request.getSourceContext());
 
         // handle bootstrap request
+        Request coapRequest = exchange.advanced().getRequest();
         SendableResponse<BootstrapResponse> sendableResponse = bootstrapHandler.bootstrap(clientIdentity,
-                new BootstrapRequest(endpoint, additionalParams));
+                new BootstrapRequest(endpoint, additionalParams, coapRequest));
         BootstrapResponse response = sendableResponse.getResponse();
         if (response.isSuccess()) {
             exchange.respond(toCoapResponseCode(response.getCode()));

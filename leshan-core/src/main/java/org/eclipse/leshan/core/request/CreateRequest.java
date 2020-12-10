@@ -48,7 +48,7 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
      */
     public CreateRequest(ContentFormat contentFormat, int objectId, LwM2mResource... resources)
             throws InvalidRequestException {
-        this(contentFormat, new LwM2mPath(objectId), resources, null);
+        this(contentFormat, new LwM2mPath(objectId), null, resources, null);
     }
 
     /**
@@ -59,7 +59,7 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
      * @param resources the resource values for the new instance
      */
     public CreateRequest(int objectId, LwM2mResource... resources) {
-        this(null, new LwM2mPath(objectId), resources, null);
+        this(null, new LwM2mPath(objectId), null, resources, null);
     }
 
     /**
@@ -99,7 +99,7 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
      */
     public CreateRequest(ContentFormat contentFormat, int objectId, LwM2mObjectInstance... instances)
             throws InvalidRequestException {
-        this(contentFormat, new LwM2mPath(objectId), null, instances);
+        this(contentFormat, new LwM2mPath(objectId), null, null, instances);
     }
 
     /**
@@ -144,6 +144,24 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
     }
 
     /**
+     * Creates a request for creating an instance of a particular object.
+     * <p>
+     * The path MUST BE an object path, the instance id will be chosen by the client and accessible in the
+     * CreateResponse.
+     * 
+     * @param contentFormat the payload format (TLV or JSON)
+     * @param path the target object path
+     * @param resources the resource values for the new instance
+     * @param coapRequest the underlying request
+     * 
+     * @exception InvalidRequestException if parameters are invalid.
+     */
+    public CreateRequest(ContentFormat contentFormat, Object coapRequest, String path,
+            Collection<LwM2mResource> resources) throws InvalidRequestException {
+        this(contentFormat, coapRequest, path, resources.toArray(new LwM2mResource[resources.size()]));
+    }
+
+    /**
      * Creates a request for creating an instance of a particular object using the default TLV content format.
      * <p>
      * The path MUST BE an object path, the instance id will be chosen by the client and accessible in the
@@ -154,7 +172,7 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
      * @exception InvalidRequestException if the target path is not valid.
      */
     public CreateRequest(String path, LwM2mResource... resources) throws InvalidRequestException {
-        this(null, newPath(path), resources, null);
+        this(null, newPath(path), null, resources, null);
     }
 
     /**
@@ -170,7 +188,25 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
      */
     public CreateRequest(ContentFormat contentFormat, String path, LwM2mResource... resources)
             throws InvalidRequestException {
-        this(contentFormat, newPath(path), resources, null);
+        this(contentFormat, newPath(path), null, resources, null);
+    }
+
+    /**
+     * Creates a request for creating an instance of a particular object.
+     * <p>
+     * The path MUST BE an object path, the instance id will be chosen by the client and accessible in the
+     * CreateResponse.
+     * 
+     * @param contentFormat the payload format (TLV or JSON)
+     * @param coapRequest the underlying request
+     * @param path the target object path
+     * @param resources the resource values for the new instance
+     * 
+     * @exception InvalidRequestException if parameters are invalid.
+     */
+    public CreateRequest(ContentFormat contentFormat, Object coapRequest, String path, LwM2mResource... resources)
+            throws InvalidRequestException {
+        this(contentFormat, newPath(path), coapRequest, resources, null);
     }
 
     /**
@@ -181,7 +217,7 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
      * @exception InvalidRequestException if the target path is not valid.
      */
     public CreateRequest(String path, LwM2mObjectInstance... instances) throws InvalidRequestException {
-        this(null, newPath(path), null, instances);
+        this(null, newPath(path), null, null, instances);
     }
 
     /**
@@ -194,13 +230,28 @@ public class CreateRequest extends AbstractDownlinkRequest<CreateResponse> {
      */
     public CreateRequest(ContentFormat contentFormat, String path, LwM2mObjectInstance... instances)
             throws InvalidRequestException {
-        this(contentFormat, newPath(path), null, instances);
+        this(contentFormat, newPath(path), null, null, instances);
+    }
+
+    /**
+     * Creates a request for creating instances of a particular object.
+     * 
+     * @param contentFormat the payload format (TLV or JSON)
+     * @param path the target object path
+     * @param instances the object instances to create
+     * @param coapRequest the underlying request
+     * 
+     * @exception InvalidRequestException if parameters are invalid.
+     */
+    public CreateRequest(ContentFormat contentFormat, Object coapRequest, String path, LwM2mObjectInstance... instances)
+            throws InvalidRequestException {
+        this(contentFormat, newPath(path), coapRequest, null, instances);
     }
 
     // ***************** generic constructor ******************* /
-    private CreateRequest(ContentFormat format, LwM2mPath target, LwM2mResource[] resources,
+    private CreateRequest(ContentFormat format, LwM2mPath target, Object coapRequest, LwM2mResource[] resources,
             LwM2mObjectInstance[] instances) {
-        super(target);
+        super(target, coapRequest);
         // ensure instances and resources attributes is exclusives
         if ((instances == null && resources == null) || (instances != null && resources != null)) {
             throw new InvalidRequestException("instance or resources must be present (but not both)");

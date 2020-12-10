@@ -41,7 +41,7 @@ public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
      * @param objectId the object ID of the resource
      */
     public ObserveRequest(int objectId) {
-        this(null, new LwM2mPath(objectId), null);
+        this(null, new LwM2mPath(objectId), null, null);
     }
 
     /**
@@ -51,7 +51,7 @@ public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
      * @param objectId the object ID of the resource
      */
     public ObserveRequest(ContentFormat format, int objectId) {
-        this(format, new LwM2mPath(objectId), null);
+        this(format, new LwM2mPath(objectId), null, null);
     }
 
     /**
@@ -61,7 +61,7 @@ public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
      * @param objectInstanceId the object instance ID
      */
     public ObserveRequest(int objectId, int objectInstanceId) {
-        this(null, new LwM2mPath(objectId, objectInstanceId), null);
+        this(null, new LwM2mPath(objectId, objectInstanceId), null, null);
     }
 
     /**
@@ -72,7 +72,7 @@ public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
      * @param objectInstanceId the object instance ID
      */
     public ObserveRequest(ContentFormat format, int objectId, int objectInstanceId) {
-        this(format, new LwM2mPath(objectId, objectInstanceId), null);
+        this(format, new LwM2mPath(objectId, objectInstanceId), null, null);
     }
 
     /**
@@ -83,7 +83,7 @@ public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
      * @param resourceId the (individual) resource's ID
      */
     public ObserveRequest(int objectId, int objectInstanceId, int resourceId) {
-        this(null, new LwM2mPath(objectId, objectInstanceId, resourceId), null);
+        this(null, new LwM2mPath(objectId, objectInstanceId, resourceId), null, null);
     }
 
     /**
@@ -95,7 +95,7 @@ public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
      * @param resourceId the (individual) resource's ID
      */
     public ObserveRequest(ContentFormat format, int objectId, int objectInstanceId, int resourceId) {
-        this(format, new LwM2mPath(objectId, objectInstanceId, resourceId), null);
+        this(format, new LwM2mPath(objectId, objectInstanceId, resourceId), null, null);
     }
 
     /**
@@ -105,7 +105,7 @@ public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
      * @exception InvalidRequestException if the path is not valid.
      */
     public ObserveRequest(String path) throws InvalidRequestException {
-        this(null, newPath(path), null);
+        this(null, newPath(path), null, null);
     }
 
     /**
@@ -116,7 +116,20 @@ public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
      * @exception InvalidRequestException if the path is not valid.
      */
     public ObserveRequest(ContentFormat format, String path) throws InvalidRequestException {
-        this(format, newPath(path), null);
+        this(format, newPath(path), null, null);
+    }
+
+    /**
+     * Creates a request for observing future changes of a particular LWM2M node (object, object instance or resource).
+     * 
+     * @param format the desired format for the response
+     * @param path the path to the LWM2M node to observe
+     * @param coapRequest the underlying request
+     * 
+     * @exception InvalidRequestException if the path is not valid.
+     */
+    public ObserveRequest(ContentFormat format, String path, Object coapRequest) throws InvalidRequestException {
+        this(format, newPath(path), null, coapRequest);
     }
 
     /**
@@ -130,11 +143,11 @@ public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
      */
     public ObserveRequest(ContentFormat format, String path, Map<String, String> context)
             throws InvalidRequestException {
-        this(format, newPath(path), context);
+        this(format, newPath(path), context, null);
     }
 
-    private ObserveRequest(ContentFormat format, LwM2mPath target, Map<String, String> context) {
-        super(target);
+    private ObserveRequest(ContentFormat format, LwM2mPath target, Map<String, String> context, Object coapRequest) {
+        super(target, coapRequest);
         if (target.isRoot())
             throw new InvalidRequestException("Observe request cannot target root path");
         if (target.isResourceInstance())
