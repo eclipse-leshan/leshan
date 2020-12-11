@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.integration.tests;
+package org.eclipse.leshan.integration.tests.lockstep;
 
 import static org.junit.Assert.assertEquals;
 
@@ -35,6 +35,8 @@ import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.integration.tests.util.Callback;
+import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.junit.After;
 import org.junit.Assert;

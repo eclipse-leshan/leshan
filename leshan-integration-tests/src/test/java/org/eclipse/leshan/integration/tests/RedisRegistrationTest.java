@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests;
 
+import org.eclipse.leshan.integration.tests.util.RedisIntegrationTestHelper;
+
 public class RedisRegistrationTest extends RegistrationTest {
 
     public RedisRegistrationTest() {

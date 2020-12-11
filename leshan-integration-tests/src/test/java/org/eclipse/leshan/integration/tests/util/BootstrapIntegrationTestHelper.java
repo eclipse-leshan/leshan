@@ -14,7 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.leshan.integration.tests;
+package org.eclipse.leshan.integration.tests.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;

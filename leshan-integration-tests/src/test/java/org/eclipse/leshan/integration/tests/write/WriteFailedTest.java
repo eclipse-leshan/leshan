@@ -27,7 +27,7 @@ import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
 import org.eclipse.leshan.core.response.WriteResponse;
-import org.eclipse.leshan.integration.tests.IntegrationTestHelper;
+import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

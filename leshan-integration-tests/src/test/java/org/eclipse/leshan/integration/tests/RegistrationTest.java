@@ -17,7 +17,7 @@
 
 package org.eclipse.leshan.integration.tests;
 
-import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.LIFETIME;
+import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.LIFETIME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -46,6 +46,8 @@ import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.integration.tests.util.Callback;
+import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.junit.After;

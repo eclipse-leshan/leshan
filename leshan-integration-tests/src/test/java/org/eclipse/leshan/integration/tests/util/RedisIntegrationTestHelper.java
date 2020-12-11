@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.integration.tests;
+package org.eclipse.leshan.integration.tests.util;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;

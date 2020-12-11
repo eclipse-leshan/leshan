@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests.observe;
 
-import static org.eclipse.leshan.integration.tests.TestUtil.assertContentFormat;
+import static org.eclipse.leshan.integration.tests.util.TestUtil.assertContentFormat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -41,7 +41,7 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.response.ObserveResponse;
-import org.eclipse.leshan.integration.tests.IntegrationTestHelper;
+import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

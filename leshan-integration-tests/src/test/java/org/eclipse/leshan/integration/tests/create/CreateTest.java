@@ -18,7 +18,7 @@
 
 package org.eclipse.leshan.integration.tests.create;
 
-import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.*;
+import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -39,7 +39,7 @@ import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.CreateResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
-import org.eclipse.leshan.integration.tests.IntegrationTestHelper;
+import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

@@ -24,7 +24,7 @@ import static org.junit.Assert.*;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ReadResponse;
-import org.eclipse.leshan.integration.tests.IntegrationTestHelper;
+import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

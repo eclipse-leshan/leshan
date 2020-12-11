@@ -15,8 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests;
 
-import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.LIFETIME;
-import static org.eclipse.leshan.integration.tests.SecureIntegrationTestHelper.*;
+import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.LIFETIME;
+import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper.*;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
@@ -45,6 +45,8 @@ import org.eclipse.leshan.core.request.exception.SendFailedException;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.request.exception.UnconnectedPeerException;
 import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.integration.tests.util.Callback;
+import org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;

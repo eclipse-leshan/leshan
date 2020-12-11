@@ -26,7 +26,7 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.response.CreateResponse;
-import org.eclipse.leshan.integration.tests.IntegrationTestHelper;
+import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

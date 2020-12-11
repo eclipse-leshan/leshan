@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.integration.tests;
+package org.eclipse.leshan.integration.tests.lockstep;
 
 import java.net.InetSocketAddress;
 import java.util.Random;

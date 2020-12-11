@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests;
 
+import org.eclipse.leshan.integration.tests.util.RedisSecureIntegrationTestHelper;
+
 public class RedisSecurityTest extends SecurityTest {
     public RedisSecurityTest() {
         helper = new RedisSecureIntegrationTestHelper();

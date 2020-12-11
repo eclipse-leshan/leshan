@@ -16,8 +16,8 @@
 package org.eclipse.leshan.integration.tests.read;
 
 import static org.eclipse.leshan.core.ResponseCode.*;
-import static org.eclipse.leshan.integration.tests.IntegrationTestHelper.*;
-import static org.eclipse.leshan.integration.tests.TestUtil.assertContentFormat;
+import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.*;
+import static org.eclipse.leshan.integration.tests.util.TestUtil.assertContentFormat;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
@@ -28,7 +28,7 @@ import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ReadResponse;
-import org.eclipse.leshan.integration.tests.IntegrationTestHelper;
+import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

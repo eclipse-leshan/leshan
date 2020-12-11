@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests.observe;
 
-import org.eclipse.leshan.integration.tests.RedisIntegrationTestHelper;
+import org.eclipse.leshan.integration.tests.util.RedisIntegrationTestHelper;
 
 public class RedisObserveTest extends ObserveTest {
 

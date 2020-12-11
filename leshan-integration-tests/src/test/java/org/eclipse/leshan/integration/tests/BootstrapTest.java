@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests;
 
-import static org.eclipse.leshan.integration.tests.SecureIntegrationTestHelper.*;
+import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper.*;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
@@ -36,6 +36,8 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.integration.tests.util.BootstrapIntegrationTestHelper;
+import org.eclipse.leshan.integration.tests.util.TestObjectsInitializer;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.junit.After;

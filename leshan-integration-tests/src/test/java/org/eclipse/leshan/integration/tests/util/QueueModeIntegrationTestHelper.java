@@ -14,7 +14,7 @@
  *     RISE SICS AB - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.leshan.integration.tests;
+package org.eclipse.leshan.integration.tests.util;
 
 import static org.junit.Assert.*;
 
@@ -32,6 +32,7 @@ import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.integration.tests.PresenceCounter;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.queue.StaticClientAwakeTimeProvider;
 import org.eclipse.leshan.server.registration.Registration;
@@ -51,7 +52,7 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         }
     };
 
-    protected PresenceCounter presenceCounter = new PresenceCounter() {
+    public PresenceCounter presenceCounter = new PresenceCounter() {
         @Override
         public boolean accept(Registration registration) {
             return (registration != null && registration.getEndpoint().equals(currentEndpointIdentifier.get()));

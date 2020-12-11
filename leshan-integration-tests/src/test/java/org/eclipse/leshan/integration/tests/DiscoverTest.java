@@ -26,6 +26,7 @@ import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.request.DiscoverRequest;
 import org.eclipse.leshan.core.response.DiscoverResponse;
+import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
