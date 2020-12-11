@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.*;
 
 import java.net.InetAddress;
@@ -26,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.elements.Connector;
 import org.eclipse.leshan.client.californium.LeshanClient;
@@ -47,13 +50,17 @@ import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
+import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.server.californium.LeshanServer;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.model.StaticModelProvider;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationServiceImpl;
+import org.eclipse.leshan.server.security.DefaultAuthorizer;
 import org.eclipse.leshan.server.security.InMemorySecurityStore;
+import org.eclipse.leshan.server.security.SecurityStore;
 
 /**
  * Helper for running a server and executing a client against it.
@@ -167,7 +174,7 @@ public class IntegrationTestHelper {
 
     public void createClient(Map<String, String> additionalAttributes) {
         // Create objects Enabler
-        ObjectsInitializer initializer = new ObjectsInitializer(new StaticModel(createObjectModels()));
+        ObjectsInitializer initializer = new TestObjectsInitializer(new StaticModel(createObjectModels()));
         initializer.setInstancesForObject(LwM2mId.SECURITY, Security.noSec(
                 "coap://" + server.getUnsecuredAddress().getHostString() + ":" + server.getUnsecuredAddress().getPort(),
                 12345));
@@ -201,8 +208,21 @@ public class IntegrationTestHelper {
         builder.setObjectModelProvider(new StaticModelProvider(createObjectModels()));
         builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-        builder.setSecurityStore(new InMemorySecurityStore());
+        SecurityStore securityStore = createSecurityStore();
+        builder.setSecurityStore(securityStore);
+        builder.setAuthorizer(new DefaultAuthorizer(securityStore) {
+            @Override
+            public Registration isAuthorized(UplinkRequest<?> request, Registration registration,
+                    Identity senderIdentity) {
+                assertThat(request.getCoapRequest(), instanceOf(Request.class));
+                return super.isAuthorized(request, registration, senderIdentity);
+            }
+        });
         return builder;
+    }
+
+    protected SecurityStore createSecurityStore() {
+        return new InMemorySecurityStore();
     }
 
     protected void setupServerMonitoring() {

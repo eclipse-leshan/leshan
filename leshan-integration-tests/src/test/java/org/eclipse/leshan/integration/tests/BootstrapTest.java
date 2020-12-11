@@ -173,7 +173,7 @@ public class BootstrapTest {
         helper.bootstrapServer.start();
 
         // Create Client and check it is not already registered
-        ObjectsInitializer initializer = new ObjectsInitializer();
+        ObjectsInitializer initializer = new TestObjectsInitializer();
         initializer.setInstancesForObject(LwM2mId.ACCESS_CONTROL, new SimpleInstanceEnabler());
         initializer.setInstancesForObject(LwM2mId.CONNECTIVITY_STATISTICS, new SimpleInstanceEnabler());
         helper.createClient(helper.withoutSecurity(), initializer);
@@ -205,7 +205,7 @@ public class BootstrapTest {
         helper.bootstrapServer.start();
 
         // Create Client and check it is not already registered
-        ObjectsInitializer initializer = new ObjectsInitializer();
+        ObjectsInitializer initializer = new TestObjectsInitializer();
         initializer.setInstancesForObject(LwM2mId.ACCESS_CONTROL, new SimpleInstanceEnabler());
         initializer.setInstancesForObject(LwM2mId.CONNECTIVITY_STATISTICS, new SimpleInstanceEnabler());
         helper.createClient(helper.withoutSecurity(), initializer);
@@ -245,7 +245,7 @@ public class BootstrapTest {
         helper.bootstrapServer.start();
 
         // Create Client and check it is not already registered
-        ObjectsInitializer initializer = new ObjectsInitializer();
+        ObjectsInitializer initializer = new TestObjectsInitializer();
         initializer.setInstancesForObject(LwM2mId.ACCESS_CONTROL, new SimpleInstanceEnabler());
         helper.createClient(helper.withoutSecurity(), initializer);
         helper.assertClientNotRegisterered();

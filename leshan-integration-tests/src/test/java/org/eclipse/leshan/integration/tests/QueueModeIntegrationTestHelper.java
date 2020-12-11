@@ -61,7 +61,7 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
     @Override
     public void createClient() {
         // Create objects Enabler
-        ObjectsInitializer initializer = new ObjectsInitializer(new StaticModel(createObjectModels()));
+        ObjectsInitializer initializer = new TestObjectsInitializer(new StaticModel(createObjectModels()));
         initializer.setInstancesForObject(LwM2mId.SECURITY, Security.noSec(
                 "coap://" + server.getUnsecuredAddress().getHostString() + ":" + server.getUnsecuredAddress().getPort(),
                 12345));

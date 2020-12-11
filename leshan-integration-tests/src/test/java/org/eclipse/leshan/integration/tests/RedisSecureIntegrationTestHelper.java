@@ -15,9 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests;
 
-import org.eclipse.leshan.server.californium.LeshanServerBuilder;
-import org.eclipse.leshan.server.redis.RedisRegistrationStore;
 import org.eclipse.leshan.server.redis.RedisSecurityStore;
+import org.eclipse.leshan.server.security.SecurityStore;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -26,18 +25,13 @@ import redis.clients.jedis.util.Pool;
 public class RedisSecureIntegrationTestHelper extends SecureIntegrationTestHelper {
 
     @Override
-    protected LeshanServerBuilder createServerBuilder(Boolean serverOnly)  {
-        LeshanServerBuilder builder = super.createServerBuilder(serverOnly);
-
+    protected SecurityStore createSecurityStore() {
         // Create redis store
         String redisURI = System.getenv("REDIS_URI");
         if (redisURI == null)
             redisURI = "";
         Pool<Jedis> jedis = new JedisPool(redisURI);
-        builder.setRegistrationStore(new RedisRegistrationStore(jedis));
         securityStore = new RedisSecurityStore(jedis);
-        builder.setSecurityStore(securityStore);
-
-        return builder;
+        return securityStore;
     }
 }

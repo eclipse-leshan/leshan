@@ -16,6 +16,9 @@
 
 package org.eclipse.leshan.integration.tests;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
+
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -37,6 +40,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.eclipse.californium.core.coap.Request;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Security;
@@ -45,6 +49,7 @@ import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
+import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
 import org.eclipse.leshan.core.util.Hex;
@@ -131,6 +136,13 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         builder.setPrivateKey(bootstrapServerPrivateKey);
         builder.setPublicKey(bootstrapServerPublicKey);
         builder.setSessionManager(new DefaultBootstrapSessionManager(securityStore) {
+
+            @Override
+            public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity) {
+                assertThat(request.getCoapRequest(), instanceOf(Request.class));
+                return super.begin(request, clientIdentity);
+            }
+
             @Override
             public void end(BootstrapSession bsSession) {
                 lastBootstrapSession = (DefaultBootstrapSession) bsSession;
@@ -228,7 +240,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
     public void createClient(Security security, ObjectsInitializer initializer,
             Map<String, String> additionalAttributes) {
         if (initializer == null) {
-            initializer = new ObjectsInitializer();
+            initializer = new TestObjectsInitializer();
         }
 
         // Initialize LWM2M Object Tree

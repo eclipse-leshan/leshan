@@ -268,7 +268,7 @@ public class ObjectsInitializer {
                 objectModel.name, objectModel.id));
     }
 
-    protected ObjectEnabler createNodeEnabler(ObjectModel objectModel) {
+    protected LwM2mObjectEnabler createNodeEnabler(ObjectModel objectModel) {
         Map<Integer, LwM2mInstanceEnabler> instances = new HashMap<>();
         LwM2mInstanceEnabler[] newInstances = createInstances(objectModel);
         for (LwM2mInstanceEnabler instance : newInstances) {
