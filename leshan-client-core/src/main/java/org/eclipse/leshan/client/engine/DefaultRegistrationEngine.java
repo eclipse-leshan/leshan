@@ -46,6 +46,7 @@ import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.BootstrapRequest;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.RegisterRequest;
@@ -100,6 +101,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
 
     // device state
     private final String endpoint;
+    private final ContentFormat preferredContentFormat; // used for bootstrap
     private final Map<String, String> additionalAttributes;
     private final Map<String, String> bsAdditionalAttributes; // @since 1.1
     private final Map<Integer /* objectId */, LwM2mObjectEnabler> objectEnablers;
@@ -129,7 +131,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             Integer communicationPeriodInMs, boolean reconnectOnUpdate, boolean resumeOnConnect) {
         this(endpoint, objectTree, endpointsManager, requestSender, bootstrapState, observer, additionalAttributes,
                 null, executor, requestTimeoutInMs, deregistrationTimeoutInMs, bootstrapSessionTimeoutInSec,
-                retryWaitingTimeInMs, communicationPeriodInMs, reconnectOnUpdate, resumeOnConnect, false);
+                retryWaitingTimeInMs, communicationPeriodInMs, reconnectOnUpdate, resumeOnConnect, false, null);
     }
 
     /** @since 1.1 */
@@ -138,7 +140,8 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes,
             ScheduledExecutorService executor, long requestTimeoutInMs, long deregistrationTimeoutInMs,
             int bootstrapSessionTimeoutInSec, int retryWaitingTimeInMs, Integer communicationPeriodInMs,
-            boolean reconnectOnUpdate, boolean resumeOnConnect, boolean useQueueMode) {
+            boolean reconnectOnUpdate, boolean resumeOnConnect, boolean useQueueMode,
+            ContentFormat preferredContentFormat) {
         this.endpoint = endpoint;
         this.objectEnablers = objectTree.getObjectEnablers();
         this.bootstrapHandler = bootstrapState;
@@ -157,6 +160,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         this.reconnectOnUpdate = reconnectOnUpdate;
         this.resumeOnConnect = resumeOnConnect;
         this.queueMode = useQueueMode;
+        this.preferredContentFormat = preferredContentFormat;
 
         if (executor == null) {
             schedExecutor = createScheduledExecutor();
@@ -223,7 +227,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             // Send bootstrap request
             BootstrapRequest request = null;
             try {
-                request = new BootstrapRequest(endpoint, bsAdditionalAttributes);
+                request = new BootstrapRequest(endpoint, preferredContentFormat, bsAdditionalAttributes);
                 if (observer != null) {
                     observer.onBootstrapStarted(bootstrapServer, request);
                 }

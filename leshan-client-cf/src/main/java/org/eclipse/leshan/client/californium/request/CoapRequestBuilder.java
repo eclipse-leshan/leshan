@@ -57,6 +57,9 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
         HashMap<String, String> attributes = new HashMap<>();
         attributes.putAll(request.getAdditionalAttributes());
         attributes.put("ep", request.getEndpointName());
+        if (request.getPreferredContentFormat() != null) {
+            attributes.put("pct", Integer.toString(request.getPreferredContentFormat().getCode()));
+        }
         for (Entry<String, String> attr : attributes.entrySet()) {
             coapRequest.getOptions().addUriQuery(attr.getKey() + "=" + attr.getValue());
         }

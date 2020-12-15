@@ -23,6 +23,7 @@ import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.request.LwM2mRequestSender;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
+import org.eclipse.leshan.core.request.ContentFormat;
 
 /**
  * A default implementation of {@link RegistrationEngineFactory}.
@@ -39,6 +40,7 @@ public class DefaultRegistrationEngineFactory implements RegistrationEngineFacto
     private boolean reconnectOnUpdate = false;
     private boolean resumeOnConnect = true;
     private boolean queueMode = false;
+    private ContentFormat preferredContentFormat = ContentFormat.SENML_CBOR;
 
     public DefaultRegistrationEngineFactory() {
     }
@@ -51,7 +53,7 @@ public class DefaultRegistrationEngineFactory implements RegistrationEngineFacto
         return new DefaultRegistrationEngine(endpoint, objectTree, endpointsManager, requestSender, bootstrapState,
                 observer, additionalAttributes, bsAdditionalAttributes, sharedExecutor, requestTimeoutInMs,
                 deregistrationTimeoutInMs, bootstrapSessionTimeoutInSec, retryWaitingTimeInMs, communicationPeriodInMs,
-                reconnectOnUpdate, resumeOnConnect, queueMode);
+                reconnectOnUpdate, resumeOnConnect, queueMode, preferredContentFormat);
     }
 
     /**
@@ -163,5 +165,46 @@ public class DefaultRegistrationEngineFactory implements RegistrationEngineFacto
     public DefaultRegistrationEngineFactory setQueueMode(boolean enable) {
         this.queueMode = enable;
         return this;
+    }
+
+    /**
+     * Define preferred content format for bootstrap session.
+     * <p>
+     * <code>null</code> can be used for "no preferred content format" but using a preferred content format could give a
+     * hint to Bootstrap server to know that your client is a LWM2M v1.1 client as this preferredContentFormat does not
+     * exist in LWM2M v1.0
+     * <p>
+     * Default value is {@link ContentFormat#SENML_CBOR}.
+     * 
+     * @param format preferred content format to use during bootstrap session. It must be SenML JSON, SenML CBOR, or TLV
+     *        or <code>null</code> if no preferred content format.
+     * @return this for fluent API
+     * 
+     * @see <a href=
+     *      "http://www.openmobilealliance.org/release/LightweightM2M/V1_1_1-20190617-A/HTML-Version/OMA-TS-LightweightM2M_Core-V1_1_1-20190617-A.html#6-1-7-1-0-6171-Bootstrap-Request-Operation">6.1.7.1.
+     *      Bootstrap-Request Operation</a>
+     * 
+     * @throws IllegalArgumentException if content format is not a valid one.
+     */
+    public DefaultRegistrationEngineFactory setPreferredContentFormat(ContentFormat format)
+            throws IllegalArgumentException {
+        // handle null case
+        if (format == null) {
+            this.preferredContentFormat = format;
+            return this;
+        }
+
+        // check allowed value
+        switch (format.getCode()) {
+        case ContentFormat.TLV_CODE:
+        case ContentFormat.SENML_CBOR_CODE:
+        case ContentFormat.SENML_JSON_CODE:
+        case ContentFormat.OLD_TLV_CODE:
+            this.preferredContentFormat = format;
+            return this;
+        default:
+            throw new IllegalArgumentException(String
+                    .format("Invalid preferred content format %s, it MUST be SenML JSON, SenML CBOR, or TLV", format));
+        }
     }
 }

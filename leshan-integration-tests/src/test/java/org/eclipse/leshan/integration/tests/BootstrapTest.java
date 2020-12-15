@@ -34,6 +34,7 @@ import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.integration.tests.util.BootstrapIntegrationTestHelper;
@@ -73,6 +74,54 @@ public class BootstrapTest {
 
         // Create Client and check it is not already registered
         helper.createClient();
+        helper.assertClientNotRegisterered();
+
+        // Start it and wait for registration
+        helper.client.start();
+        helper.waitForRegistrationAtServerSide(1);
+
+        // check the client is registered
+        helper.assertClientRegisterered();
+    }
+
+    @Test
+    public void bootstrap_tlv_only() {
+        // Create DM Server without security & start it
+        helper.createServer();
+        helper.server.start();
+
+        // Create and start bootstrap server
+        helper.createBootstrapServer(null);
+        helper.bootstrapServer.start();
+
+        // Create Client and check it is not already registered
+        ContentFormat noPreferredFormat = null; // if no preferred content format server should use TLV
+        ContentFormat supportedFormat = ContentFormat.TLV;
+        helper.createClient(noPreferredFormat, supportedFormat);
+        helper.assertClientNotRegisterered();
+
+        // Start it and wait for registration
+        helper.client.start();
+        helper.waitForRegistrationAtServerSide(1);
+
+        // check the client is registered
+        helper.assertClientRegisterered();
+    }
+
+    @Test
+    public void bootstrap_senmlcbor_only() {
+        // Create DM Server without security & start it
+        helper.createServer();
+        helper.server.start();
+
+        // Create and start bootstrap server
+        helper.createBootstrapServer(null);
+        helper.bootstrapServer.start();
+
+        // Create Client and check it is not already registered
+        ContentFormat preferredFormat = ContentFormat.SENML_CBOR;
+        ContentFormat supportedFormat = ContentFormat.SENML_CBOR;
+        helper.createClient(preferredFormat, supportedFormat);
         helper.assertClientNotRegisterered();
 
         // Start it and wait for registration

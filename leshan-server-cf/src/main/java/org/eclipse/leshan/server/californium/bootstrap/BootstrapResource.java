@@ -26,6 +26,7 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.leshan.core.californium.LwM2mCoapResource;
 import org.eclipse.leshan.core.request.BootstrapRequest;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.BootstrapResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
@@ -40,6 +41,7 @@ public class BootstrapResource extends LwM2mCoapResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(BootstrapResource.class);
     private static final String QUERY_PARAM_ENDPOINT = "ep=";
+    private static final String QUERY_PARAM_PREFERRED_CONTENT_FORMAT = "pct=";
 
     private final BootstrapHandler bootstrapHandler;
 
@@ -60,12 +62,22 @@ public class BootstrapResource extends LwM2mCoapResource {
             return;
         }
 
-        // which endpoint?
+        // Get parameters
         String endpoint = null;
+        ContentFormat preferredContentFomart = null;
         Map<String, String> additionalParams = new HashMap<>();
         for (String param : request.getOptions().getUriQuery()) {
             if (param.startsWith(QUERY_PARAM_ENDPOINT)) {
                 endpoint = param.substring(QUERY_PARAM_ENDPOINT.length());
+            } else if (param.startsWith(QUERY_PARAM_PREFERRED_CONTENT_FORMAT)) {
+                try {
+                    preferredContentFomart = ContentFormat
+                            .fromCode(param.substring(QUERY_PARAM_PREFERRED_CONTENT_FORMAT.length()));
+                } catch (NumberFormatException e) {
+                    handleInvalidRequest(exchange.advanced(),
+                            "Invalid preferre content format (pct) query param : must be a number", e);
+                    return;
+                }
             } else {
                 String[] tokens = param.split("\\=");
                 if (tokens != null && tokens.length == 2) {
@@ -80,7 +92,7 @@ public class BootstrapResource extends LwM2mCoapResource {
         // handle bootstrap request
         Request coapRequest = exchange.advanced().getRequest();
         SendableResponse<BootstrapResponse> sendableResponse = bootstrapHandler.bootstrap(clientIdentity,
-                new BootstrapRequest(endpoint, additionalParams, coapRequest));
+                new BootstrapRequest(endpoint, preferredContentFomart, additionalParams, coapRequest));
         BootstrapResponse response = sendableResponse.getResponse();
         if (response.isSuccess()) {
             exchange.respond(toCoapResponseCode(response.getCode()));

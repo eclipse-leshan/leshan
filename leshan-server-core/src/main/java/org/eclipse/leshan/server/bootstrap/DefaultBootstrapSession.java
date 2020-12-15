@@ -37,8 +37,9 @@ public class DefaultBootstrapSession implements BootstrapSession {
     private volatile boolean cancelled = false;
 
     /**
-     * Create a {@link DefaultBootstrapSession} using default {@link ContentFormat#TLV} content format and using
-     * <code>System.currentTimeMillis()</code> to set the creation time.
+     * Create a {@link DefaultBootstrapSession} using default client preferred content format (see
+     * {@link BootstrapRequest#getPreferredContentFormat()} or {@link ContentFormat#TLV} content format if there is no
+     * preferences and using <code>System.currentTimeMillis()</code> to set the creation time.
      * 
      * @param request The bootstrap request which initiate the session.
      * @param identity The transport layer identity of the device.
@@ -47,7 +48,7 @@ public class DefaultBootstrapSession implements BootstrapSession {
      * @since 1.1
      */
     public DefaultBootstrapSession(BootstrapRequest request, Identity identity, boolean authorized) {
-        this(request, identity, authorized, ContentFormat.TLV);
+        this(request, identity, authorized, null);
     }
 
     /**
@@ -84,7 +85,16 @@ public class DefaultBootstrapSession implements BootstrapSession {
         this.endpoint = request.getEndpointName();
         this.identity = identity;
         this.authorized = authorized;
-        this.contentFormat = contentFormat;
+        if (contentFormat == null) {
+            if (request.getPreferredContentFormat() != null) {
+                System.out.println(request.getPreferredContentFormat());
+                this.contentFormat = request.getPreferredContentFormat();
+            } else {
+                this.contentFormat = ContentFormat.TLV;
+            }
+        } else {
+            this.contentFormat = contentFormat;
+        }
         this.creationTime = creationTime;
     }
 

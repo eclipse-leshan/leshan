@@ -93,6 +93,17 @@ public class ContentFormat {
      * Finds the {@link ContentFormat} for a given media type code.
      *
      * @return the media type or <i>unknown/unknown</i> if the given code is unknown
+     * @exception NumberFormatException if code can not be parsed as an integer.
+     */
+    public static ContentFormat fromCode(String code) throws NumberFormatException {
+        int iCode = Integer.parseInt(code);
+        return fromCode(iCode);
+    }
+
+    /**
+     * Finds the {@link ContentFormat} for a given media type code.
+     *
+     * @return the media type or <i>unknown/unknown</i> if the given code is unknown
      */
     public static ContentFormat fromCode(int code) {
         for (ContentFormat t : knownContentFormat) {
