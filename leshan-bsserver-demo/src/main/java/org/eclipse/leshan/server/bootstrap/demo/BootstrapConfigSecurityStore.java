@@ -97,20 +97,24 @@ public class BootstrapConfigSecurityStore implements BootstrapSecurityStore {
         // TODO this should be done via OSCORE store ?
         // Extract OSCORE security info
         if (bsConfig != null && bsConfig.oscore != null && !bsConfig.oscore.isEmpty()) {
-            LOG.trace("Extracting OSCORE security info for endpoint {}", endpoint);
+            LOG.trace("Looking for OSCORE security info for endpoint {}", endpoint);
 
             // First find the context for this endpoint
-            for (Map.Entry<Integer, BootstrapConfig.OscoreObject> oscoreEntry : bsConfig.oscore.entrySet()) {
-                OscoreObject value = oscoreEntry.getValue();
+            for (ServerSecurity security : bsConfig.security.values()) {
+                // Only find contexts for BS-Client connections
+                Integer oscoreInstanceId = security.oscoreSecurityMode;
+                if (security.bootstrapServer && oscoreInstanceId != null) {
+                    OscoreObject oscoreObject = bsConfig.oscore.get(oscoreInstanceId);
 
-                HashMapCtxDB db = OscoreHandler.getContextDB();
-                byte[] rid = Hex.decodeHex(value.oscoreRecipientId.toCharArray());
-                OSCoreCtx ctx = db.getContext(rid);
+                    HashMapCtxDB db = OscoreHandler.getContextDB();
+                    byte[] rid = Hex.decodeHex(oscoreObject.oscoreRecipientId.toCharArray());
+                    OSCoreCtx ctx = db.getContext(rid);
 
-                // Create the security info (will re-add the context to the db)
-                SecurityInfo securityInfo = SecurityInfo.newOSCoreInfo(endpoint, ctx);
+                    // Create the security info (will re-add the context to the db)
+                    SecurityInfo securityInfo = SecurityInfo.newOSCoreInfo(endpoint, ctx);
 
-                return Arrays.asList(securityInfo).iterator();
+                    return Arrays.asList(securityInfo).iterator();
+                }
             }
         }
 

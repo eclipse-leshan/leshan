@@ -26,7 +26,7 @@
                             <securityconfig-input   ref="lwserver" onchange={update} show={activetab.lwserver}
                                                     securi={ "coaps://" + location.hostname + ":5684" }
                                                     unsecuri= { "coap://" + location.hostname + ":5683" }
-                                                    secmode = { {no_sec:true, psk:true, rpk:true, x509:true} }
+                                                    secmode = { {no_sec:true, psk:true, rpk:true, x509:true, oscore:true} }
                                                     ></securityconfig-input>
                         </div>
                         <div>
@@ -96,7 +96,7 @@
             
             if(bsserver.secmode === "OSCORE") {
                 var bsserverOscore = bsserver.oscore;
-                var oscore =
+                var bsOscore =
                 {
                     oscoreMasterSecret : bsserverOscore.masterSecret,
                     oscoreSenderId : bsserverOscore.senderId,
@@ -107,6 +107,21 @@
                 }
                 var bsOscoreSecurityMode = 0; // link to bs oscore object
                 bsserver.secmode = "NO_SEC"; // act as no_sec from here
+            }
+
+            if(lwserver.secmode === "OSCORE") {
+                var lwserverOscore = lwserver.oscore;
+                var dmOscore =
+                {
+                    oscoreMasterSecret : lwserverOscore.masterSecret,
+                    oscoreSenderId : lwserverOscore.senderId,
+                    oscoreRecipientId : lwserverOscore.recipientId,
+                    oscoreAeadAlgorithm : lwserverOscore.aeadAlgorithm,
+                    oscoreHmacAlgorithm : lwserverOscore.hkdfAlgorithm,
+                    oscoreMasterSalt : lwserverOscore.masterSalt,
+                }
+                var dmOscoreSecurityMode = 1; // link to dm oscore object
+                lwserver.secmode = "NO_SEC"; // act as no_sec from here
             }
 
             // add config to the store
@@ -130,8 +145,10 @@
                         smsBindingKeyParam : [  ],
                         smsBindingKeySecret : [  ],
                         smsSecurityMode : "NO_SEC",
-                        uri : lwserver.uri
-                      }
+                        uri : lwserver.uri,
+                        oscoreSecurityMode : dmOscoreSecurityMode
+                      },
+                      oscore : dmOscore
                 }],
                  bs:[{
                     security : {
@@ -149,7 +166,7 @@
                         uri : bsserver.uri,
                         oscoreSecurityMode : bsOscoreSecurityMode
                       },
-                      oscore
+                      oscore : bsOscore
                 }]
             });
             $('#bootstrap-modal').modal('hide');

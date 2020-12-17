@@ -76,7 +76,7 @@
                     </div>
                 </td>
                 <td>
-                    <div each={ config.dm }>
+                    <div each={ config.dm } if={ security }>
                         <p>
                             <strong>{security.uri}</strong><br/>
                             security mode : {security.securityMode}<br/>

@@ -67,7 +67,9 @@ public class BootstrapConfig implements Serializable {
      */
     public Map<Integer, ACLConfig> acls = new HashMap<>();
 
-    // TODO OSCORE : add some javadoc
+    /**
+     * Map indexed by OSCORE Object Instance Id. Key is the OSCORE Object Instance to write.
+     */
     public Map<Integer, OscoreObject> oscore = new HashMap<>();
 
     /** Server Configuration (object 1) as defined in LWM2M 1.0.x TS. */
@@ -227,6 +229,11 @@ public class BootstrapConfig implements Serializable {
          * Bootstrap-Server Account lifetime is infinite.
          */
         public Integer bootstrapServerAccountTimeout = 0;
+        /**
+         * The Object ID of the OSCORE Object Instance that holds the OSCORE configuration to be used by the LWM2M
+         * Client to the LWM2M Server associated with this Security object.
+         * 
+         */
         public Integer oscoreSecurityMode;
 
         /**
