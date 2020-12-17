@@ -26,6 +26,13 @@ var configFromRestToUI = function(config){
             if (!newConfig.dm){
                 newConfig.dm.push({security:security});
             }
+
+            // add oscore object (if any) to dm
+            var oscoreObjectInstanceId = security.oscoreSecurityMode;
+            var oscore = config.oscore[oscoreObjectInstanceId];
+            if(oscore){
+                newConfig.dm.push({oscore:oscore});
+            }
         }
     }
     return newConfig;
@@ -41,18 +48,26 @@ var configsFromRestToUI = function(configs){
 //convert config from UI to rest API format:
 var configFromUIToRest = function(config){
     var newConfig = {servers:{}, security:{}, oscore:{}};
+    var writingOscore = false;
     for (var i = 0; i < config.bs.length; i++) {
         var bs = config.bs[i];
         newConfig.security[i] = bs.security;
         newConfig.oscore[i] = bs.oscore;
+        writingOscore |= (bs.oscore != null);
     }
     for (var j = 0; j < config.dm.length; j++) {
         var dm = config.dm[j];
         newConfig.security[i+j] = dm.security;
         delete dm.security;
+        newConfig.oscore[i+j] = dm.oscore;
+        writingOscore |= (dm.oscore != null);
+        delete dm.oscore;
         newConfig.servers[j] = dm;
     }
     newConfig.toDelete = ["/0", "/1"]
+    if(writingOscore) {
+        newConfig.toDelete.push("/21");
+    }
     return newConfig;
 };
 

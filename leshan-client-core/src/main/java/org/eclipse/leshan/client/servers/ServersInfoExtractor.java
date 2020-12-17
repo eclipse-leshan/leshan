@@ -95,20 +95,31 @@ public class ServersInfoExtractor {
                         info.serverUri = new URI((String) security.getResource(SEC_SERVER_URI).getValue());
                         info.secureMode = getSecurityMode(security);
 
-                        // find instance id of the associated oscore object (if any)
-                        ObjectLink oscoreObjLink = (ObjectLink) security.getResource(SEC_OSCORE_SECURITY_MODE).getValue();
-                        int oscoreObjectInstanceId = oscoreObjLink.getObjectInstanceId();
-
-                        if (!oscoreObjLink.isNullLink() && oscoreObjLink.getObjectId() != OSCORE) {
-                            LOG.warn("The security object's 'OSCORE Security Mode' links to an incorrect object type.");
+                        // find associated oscore instance (if any)
+                        LwM2mObjectInstance oscoreInstance = null;
+                        ObjectLink oscoreObjLink = (ObjectLink) security.getResource(SEC_OSCORE_SECURITY_MODE)
+                                .getValue();
+                        if (oscoreObjLink != null && !oscoreObjLink.isNullLink()) {
+                            if (oscoreObjLink.getObjectId() != OSCORE) {
+                                LOG.warn(
+                                        "Invalid Security info for bootstrap server : 'OSCORE Security Mode' does not link to OSCORE Object but to {} object.",
+                                        oscoreObjLink.getObjectId());
+                            } else {
+                                if (oscores == null) {
+                                    LOG.warn(
+                                            "Invalid Security info for bootstrap server : OSCORE object enabler is not available.");
+                                } else {
+                                    oscoreInstance = oscores.getInstance(oscoreObjLink.getObjectInstanceId());
+                                    if (oscoreInstance == null) {
+                                        LOG.warn(
+                                                "Invalid Security info for bootstrap server : OSCORE instance {} does not exist.",
+                                                oscoreObjLink.getObjectInstanceId());
+                                    }
+                                }
+                            }
                         }
 
-                        boolean useOscore = oscoreObjLink.getObjectId() == OSCORE;
-                        if (useOscore) {
-                            // get corresponding oscore object
-                            LwM2mObjectInstance oscoreInstance = oscores.getInstance(oscoreObjectInstanceId);
-                            LOG.trace("Bootstrap connection is using OSCORE.");
-
+                        if (oscoreInstance != null) {
                             info.useOscore = true;
                             info.masterSecret = getMasterSecret(oscoreInstance);
                             info.senderId = getSenderId(oscoreInstance);
@@ -139,20 +150,31 @@ public class ServersInfoExtractor {
                     info.serverId = (long) security.getResource(SEC_SERVER_ID).getValue();
                     info.secureMode = getSecurityMode(security);
 
-                    // find instance id of the associated oscore object (if any)
+                    // find associated oscore instance (if any)
+                    LwM2mObjectInstance oscoreInstance = null;
                     ObjectLink oscoreObjLink = (ObjectLink) security.getResource(SEC_OSCORE_SECURITY_MODE).getValue();
-                    int oscoreObjectInstanceId = oscoreObjLink.getObjectInstanceId();
-
-                    if (!oscoreObjLink.isNullLink() && oscoreObjLink.getObjectId() != OSCORE) {
-                        LOG.warn("The security object's 'OSCORE Security Mode' links to an incorrect object type.");
+                    if (oscoreObjLink != null && !oscoreObjLink.isNullLink()) {
+                        if (oscoreObjLink.getObjectId() != OSCORE) {
+                            LOG.warn(
+                                    "Invalid Security info for LWM2M server {} : 'OSCORE Security Mode' does not link to OSCORE Object but to {} object.",
+                                    info.serverUri, oscoreObjLink.getObjectId());
+                        } else {
+                            if (oscores == null) {
+                                LOG.warn(
+                                        "Invalid Security info for LWM2M server {}: OSCORE object enabler is not available.",
+                                        info.serverUri);
+                            } else {
+                                oscoreInstance = oscores.getInstance(oscoreObjLink.getObjectInstanceId());
+                                if (oscoreInstance == null) {
+                                    LOG.warn(
+                                            "Invalid Security info for LWM2M server {} : OSCORE instance {} does not exist.",
+                                            info.serverUri, oscoreObjLink.getObjectInstanceId());
+                                }
+                            }
+                        }
                     }
 
-                    boolean useOscore = oscoreObjLink.getObjectId() == OSCORE;
-                    if (useOscore) {
-                        // get corresponding oscore object
-                        LwM2mObjectInstance oscoreInstance = oscores.getInstance(oscoreObjectInstanceId);
-                        LOG.trace("Registration connection is using OSCORE.");
-
+                    if (oscoreInstance != null) {
                         info.useOscore = true;
                         info.masterSecret = getMasterSecret(oscoreInstance);
                         info.senderId = getSenderId(oscoreInstance);

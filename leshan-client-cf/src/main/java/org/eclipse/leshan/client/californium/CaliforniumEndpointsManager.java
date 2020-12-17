@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.californium.core.CoapServer;
+import org.eclipse.californium.core.Utils;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
@@ -238,8 +239,13 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             }
 
             currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null, db);
-            // TODO OSCORE: Should be visible in identity if OSCORE is used
-            serverIdentity = Identity.unsecure(serverInfo.getAddress());
+
+            // Build server identity for OSCORE
+            String sidString = Utils.toHexString(serverInfo.senderId).replace("[", "").replace("]", "").toLowerCase();
+            String ridString = Utils.toHexString(serverInfo.recipientId).replace("[", "").replace("]", "")
+                    .toLowerCase();
+            String oscoreIdentity = "sid=" + sidString + ",rid=" + ridString;
+            serverIdentity = Identity.oscoreOnly(serverInfo.getAddress(), oscoreIdentity);
         } else {
             currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null, null);
             serverIdentity = Identity.unsecure(serverInfo.getAddress());
