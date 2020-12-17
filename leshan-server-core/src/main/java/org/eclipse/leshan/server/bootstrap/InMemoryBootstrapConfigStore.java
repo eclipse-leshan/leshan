@@ -120,10 +120,13 @@ public class InMemoryBootstrapConfigStore implements EditableBootstrapConfigStor
     // TODO this should be done via a kind of OSCORE Store
     public void addOscoreContext(BootstrapConfig config) {
         HashMapCtxDB db = OscoreHandler.getContextDB();
-        LOG.trace("Adding OSCORE context information to the context database");
-        BootstrapConfig.OscoreObject osc = null;
-        for (Map.Entry<Integer, BootstrapConfig.OscoreObject> o : config.oscore.entrySet()) {
-            osc = o.getValue();
+        for (ServerSecurity security : config.security.values()) {
+            // Make sure to only add OSCORE context for the BS-Client connection
+            BootstrapConfig.OscoreObject osc = config.oscore.get(security.oscoreSecurityMode);
+            if (!security.bootstrapServer || osc == null) {
+                continue;
+            }
+            LOG.trace("Adding OSCORE context information to the context database");
             try {
 
                 // Parse hexadecimal context parameters

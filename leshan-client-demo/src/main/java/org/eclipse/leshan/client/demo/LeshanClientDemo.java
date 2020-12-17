@@ -605,13 +605,13 @@ public class LeshanClientDemo {
         // Get models folder
         String modelsFolderPath = cl.getOptionValue("m");
 
+        // TODO OSCORE : OSCoreCoapStack should be create in Default endpoint factory
+        HashMapCtxDB db = OscoreHandler.getContextDB();
+        OSCoreCoapStackFactory.useAsDefault(db);
+
         // Set parameters controlling OSCORE usage
         OSCoreSettings oscoreSettings = null;
         if (cl.hasOption("msec")) {
-
-            HashMapCtxDB db = OscoreHandler.getContextDB();
-            // TODO OSCORE : OSCoreCoapStack should be create in Default endpoint factory
-            OSCoreCoapStackFactory.useAsDefault(db);
 
             // Parse OSCORE related command line parameters
 
@@ -744,6 +744,7 @@ public class LeshanClientDemo {
                 initializer.setInstancesForObject(SECURITY, noSecBootstap(serverURI));
                 initializer.setClassForObject(SERVER, Server.class);
             }
+            initializer.setClassForObject(OSCORE, Oscore.class);
         } else {
             if (pskIdentity != null) {
                 initializer.setInstancesForObject(SECURITY, psk(serverURI, 123, pskIdentity, pskKey));

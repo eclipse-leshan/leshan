@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Rikard Höglund (RISE) - additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
@@ -27,12 +28,14 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ACLConfig;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfig.OscoreObject;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
 
@@ -65,7 +68,11 @@ public class BootstrapUtil {
             resources.add(LwM2mSingleResource.newIntegerResource(11, securityConfig.clientOldOffTime));
         if (securityConfig.bootstrapServerAccountTimeout != null)
             resources.add(LwM2mSingleResource.newIntegerResource(12, securityConfig.bootstrapServerAccountTimeout));
-
+        if (securityConfig.oscoreSecurityMode != null) {
+            // integer value needs to be made into an object link
+            ObjectLink oscoreSecurityModeLink = new ObjectLink(LwM2mId.OSCORE, securityConfig.oscoreSecurityMode);
+            resources.add(LwM2mSingleResource.newObjectLinkResource(17, oscoreSecurityModeLink));
+        }
         return new LwM2mObjectInstance(instanceId, resources);
     }
 
@@ -121,6 +128,33 @@ public class BootstrapUtil {
         return new BootstrapWriteRequest(path, securityInstance, contentFormat);
     }
 
+    public static LwM2mObjectInstance toOscoreInstance(int instanceId, OscoreObject oscoreConfig) {
+        Collection<LwM2mResource> resources = new ArrayList<>();
+
+        if (oscoreConfig.oscoreMasterSecret != null)
+            resources.add(LwM2mSingleResource.newStringResource(0, oscoreConfig.oscoreMasterSecret));
+        if (oscoreConfig.oscoreSenderId != null)
+            resources.add(LwM2mSingleResource.newStringResource(1, oscoreConfig.oscoreSenderId));
+        if (oscoreConfig.oscoreRecipientId != null)
+            resources.add(LwM2mSingleResource.newStringResource(2, oscoreConfig.oscoreRecipientId));
+        if (oscoreConfig.oscoreAeadAlgorithm != null)
+            resources.add(LwM2mSingleResource.newIntegerResource(3, oscoreConfig.oscoreAeadAlgorithm));
+        if (oscoreConfig.oscoreHmacAlgorithm != null)
+            resources.add(LwM2mSingleResource.newIntegerResource(4, oscoreConfig.oscoreHmacAlgorithm));
+        if (oscoreConfig.oscoreMasterSalt != null)
+            resources.add(LwM2mSingleResource.newStringResource(5, oscoreConfig.oscoreMasterSalt));
+
+        return new LwM2mObjectInstance(instanceId, resources);
+    }
+
+    public static BootstrapWriteRequest toWriteRequest(int instanceId, OscoreObject oscoreConfig,
+            ContentFormat contentFormat) {
+        LwM2mPath path = new LwM2mPath(LwM2mId.OSCORE, instanceId);
+        final LwM2mNode securityInstance = BootstrapUtil.toOscoreInstance(instanceId, oscoreConfig);
+        return new BootstrapWriteRequest(path, securityInstance, contentFormat);
+    }
+
+
     public static List<BootstrapDownlinkRequest<? extends LwM2mResponse>> toRequests(
             BootstrapConfig bootstrapConfig) {
         return toRequests(bootstrapConfig, ContentFormat.TLV);
@@ -144,6 +178,10 @@ public class BootstrapUtil {
         // handle acl
         for (Entry<Integer, ACLConfig> acl : bootstrapConfig.acls.entrySet()) {
             requests.add(toWriteRequest(acl.getKey(), acl.getValue(), contentFormat));
+        }
+        // handle oscore //TODO: Avoid to write also bs oscore object back to client?
+        for (Entry<Integer, OscoreObject> oscore : bootstrapConfig.oscore.entrySet()) {
+            requests.add(toWriteRequest(oscore.getKey(), oscore.getValue(), contentFormat));
         }
         return (requests);
     }

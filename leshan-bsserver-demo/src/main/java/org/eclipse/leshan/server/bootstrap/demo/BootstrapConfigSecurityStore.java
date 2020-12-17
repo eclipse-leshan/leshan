@@ -97,11 +97,17 @@ public class BootstrapConfigSecurityStore implements BootstrapSecurityStore {
         // TODO this should be done via OSCORE store ?
         // Extract OSCORE security info
         if (bsConfig != null && bsConfig.oscore != null && !bsConfig.oscore.isEmpty()) {
-            LOG.trace("Extracting OSCORE security info for endpoint {}", endpoint);
+            LOG.trace("Looking for OSCORE security info for endpoint {}", endpoint);
 
             // First find the context for this endpoint
-            for (Map.Entry<Integer, BootstrapConfig.OscoreObject> oscoreEntry : bsConfig.oscore.entrySet()) {
-                OscoreObject value = oscoreEntry.getValue();
+            for (Map.Entry<Integer, BootstrapConfig.ServerSecurity> bsEntry : bsConfig.security.entrySet()) {
+                // Only find contexts for BS-Client connections
+                Integer bsOscoreSecurityMode = bsEntry.getValue().oscoreSecurityMode;
+                if (!bsEntry.getValue().bootstrapServer || bsOscoreSecurityMode == null) {
+                    continue;
+                }
+
+                OscoreObject value = bsConfig.oscore.get(bsOscoreSecurityMode);
 
                 HashMapCtxDB db = OscoreHandler.getContextDB();
                 byte[] rid = Hex.decodeHex(value.oscoreRecipientId.toCharArray());

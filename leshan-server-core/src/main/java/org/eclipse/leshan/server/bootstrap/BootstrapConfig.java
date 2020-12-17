@@ -65,7 +65,9 @@ public class BootstrapConfig implements Serializable {
      */
     public Map<Integer, ACLConfig> acls = new HashMap<>();
 
-    // TODO OSCORE : add some javadoc
+    /**
+     * Map indexed by OSCORE Object Instance Id. Key is the OSCORE Object Instance to write.
+     */
     public Map<Integer, OscoreObject> oscore = new HashMap<>();
 
     /** Server Configuration (object 1) as defined in LWM2M 1.0.x TS. */
