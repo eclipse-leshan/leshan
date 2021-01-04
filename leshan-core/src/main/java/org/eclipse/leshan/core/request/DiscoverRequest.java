@@ -59,7 +59,6 @@ public class DiscoverRequest extends AbstractDownlinkRequest<DiscoverResponse> {
      * path.
      *
      * @param path the path of the LWM2M node to discover
-     * @param coapRequest the underlying request
      * @exception InvalidRequestException if the path is not valid.
      */
     public DiscoverRequest(String path) throws InvalidRequestException {

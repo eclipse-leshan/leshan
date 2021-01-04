@@ -107,7 +107,6 @@ public class ObjectLoader {
      * @param streamName A name for the stream used for logging only
      * 
      * @throws InvalidDDFFileException if DDF file is invalid
-     * @throws IOException
      */
     public static List<ObjectModel> loadDdfFile(InputStream input, String streamName)
             throws InvalidDDFFileException, IOException {
@@ -125,7 +124,6 @@ public class ObjectLoader {
      * 
      * @throws InvalidDDFFileException if DDF file is invalid
      * @throws InvalidModelException if model is invalid
-     * @throws IOException
      * 
      * @since 1.1
      */
@@ -146,7 +144,6 @@ public class ObjectLoader {
      * 
      * @throws InvalidDDFFileException if DDF file is invalid
      * @throws InvalidModelException if model is invalid
-     * @throws IOException
      */
     public static List<ObjectModel> loadDdfFile(InputStream input, String streamName, DDFFileParser ddfFileParser,
             ObjectModelValidator modelValidator) throws InvalidModelException, InvalidDDFFileException, IOException {
@@ -171,7 +168,6 @@ public class ObjectLoader {
      * 
      * @throws InvalidDDFFileException if DDF file is invalid
      * @throws InvalidModelException if model is invalid
-     * @throws IOException
      */
     public static List<ObjectModel> loadDdfResources(String path, String[] filenames)
             throws IOException, InvalidModelException, InvalidDDFFileException {
@@ -190,7 +186,6 @@ public class ObjectLoader {
      * 
      * @throws InvalidDDFFileException if DDF file is invalid
      * @throws InvalidModelException if model is invalid
-     * @throws IOException
      * 
      * @since 1.1
      */
@@ -215,7 +210,6 @@ public class ObjectLoader {
      * 
      * @throws InvalidDDFFileException if DDF file is invalid
      * @throws InvalidModelException if model is invalid
-     * @throws IOException
      */
     public static List<ObjectModel> loadDdfResources(String path, String[] filenames, DDFFileParser ddfFileParser,
             ObjectModelValidator modelValidator) throws IOException, InvalidModelException, InvalidDDFFileException {
@@ -245,8 +239,7 @@ public class ObjectLoader {
      * @param paths An array of paths to DDF files.
      * 
      * @throws InvalidDDFFileException if DDF file is invalid
-     * @throws IOException
-     * @throws InvalidModelException
+     * @throws InvalidModelException if model is invalid
      */
     public static List<ObjectModel> loadDdfResources(String[] paths)
             throws InvalidDDFFileException, IOException, InvalidModelException {
@@ -264,7 +257,6 @@ public class ObjectLoader {
      *        model if you already trust it.
      * 
      * @throws InvalidDDFFileException if DDF file is invalid
-     * @throws IOException
      */
     public static List<ObjectModel> loadDdfResources(String[] paths, boolean validate)
             throws IOException, InvalidModelException, InvalidDDFFileException {
@@ -284,7 +276,6 @@ public class ObjectLoader {
      *        {@link DefaultObjectModelValidator}. If {@code null} then there will be no validation.
      * 
      * @throws InvalidDDFFileException if DDF file is invalid
-     * @throws IOException
      */
     public static List<ObjectModel> loadDdfResources(String[] paths, DDFFileParser ddfFileParser,
             ObjectModelValidator modelValidator) throws IOException, InvalidModelException, InvalidDDFFileException {

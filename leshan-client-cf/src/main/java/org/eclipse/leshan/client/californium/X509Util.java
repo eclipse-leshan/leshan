@@ -80,7 +80,6 @@ public class X509Util {
      * @param certPath a certificate path to eventually truncate
      * @param trustedCertificates list of trusted certificates
      * @return a certPath without trusted any trusted certificates
-     * @throws CertificateEncodingException
      */
     public static CertPath truncateToFirstTrustedCert(CertPath certPath, X509Certificate[] trustedCertificates)
             throws CertificateEncodingException {
@@ -100,9 +99,8 @@ public class X509Util {
      * @param certPath a certificate path to extend
      * @param certificate to add at the end
      * @return a certPath ending with given certificate
-     * @throws CertificateEncodingException
      */
-    public static CertPath add(CertPath certPath, X509Certificate certificate) throws CertificateEncodingException {
+    public static CertPath add(CertPath certPath, X509Certificate certificate) {
         List<X509Certificate> certificates = CertPathUtil.toX509CertificatesList(certPath.getCertificates());
         certificates.add(certificate);
         return CertPathUtil.generateCertPath(certificates);
@@ -114,10 +112,8 @@ public class X509Util {
      * @param certificate certificate to search
      * @param certificates to search
      * @return {@code true}, if certificate is contained, {@code false}, otherwise.
-     * @throws CertificateEncodingException if encoding a certificate failed!
      */
-    public static boolean contains(X509Certificate certificate, X509Certificate[] certificates)
-            throws CertificateEncodingException {
+    public static boolean contains(X509Certificate certificate, X509Certificate[] certificates) {
         for (X509Certificate trust : certificates) {
             if (certificate.equals(trust)) {
                 return true;
