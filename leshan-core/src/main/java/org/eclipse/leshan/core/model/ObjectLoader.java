@@ -96,7 +96,6 @@ public class ObjectLoader {
      * 
      * @throws InvalidDDFFileException if DDF file is invalid
      * @throws InvalidModelException if model is invalid
-     * @throws IOException
      * 
      * @since 1.1
      */
@@ -118,7 +117,6 @@ public class ObjectLoader {
      * 
      * @throws InvalidDDFFileException if DDF file is invalid
      * @throws InvalidModelException if model is invalid
-     * @throws IOException
      * 
      * @since 1.1
      */
@@ -165,7 +163,6 @@ public class ObjectLoader {
      * 
      * @throws InvalidDDFFileException if DDF file is invalid
      * @throws InvalidModelException if model is invalid
-     * @throws IOException
      * 
      * @since 1.1
      */
@@ -190,7 +187,6 @@ public class ObjectLoader {
      * 
      * @throws InvalidDDFFileException if DDF file is invalid
      * @throws InvalidModelException if model is invalid
-     * @throws IOException
      * 
      * @since 1.1
      */

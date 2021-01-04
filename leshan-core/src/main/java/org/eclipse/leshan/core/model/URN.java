@@ -42,7 +42,6 @@ public class URN {
     /**
      * Return URN "kind" from object id.
      * 
-     * @param objectId
      * @return {@link #OMA_LABEL}, {@link #EXT_LABEL} or {@link #X_LABEL} for valid object id. {@link #INVALID_LABEL} is
      *         returned for invalid id and {@link #RESERVED_LABEL} for reserved range.
      * 
