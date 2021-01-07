@@ -16,6 +16,7 @@ package org.eclipse.leshan.core.node.codec.senml;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -32,6 +33,7 @@ import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
+import org.eclipse.leshan.core.node.codec.MultiNodeEncoder;
 import org.eclipse.leshan.core.node.codec.TimestampedNodeEncoder;
 import org.eclipse.leshan.core.util.Base64;
 import org.eclipse.leshan.core.util.Validate;
@@ -42,7 +44,7 @@ import org.eclipse.leshan.senml.SenMLRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder {
+public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeEncoder {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeSenMLEncoder.class);
 
     private final SenMLEncoder encoder;
@@ -71,6 +73,42 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder {
             return encoder.toSenML(pack);
         } catch (SenMLException e) {
             throw new CodecException(e, "Unable to encode node[path:%s] : %s", path, node);
+        }
+    }
+
+    @Override
+    public byte[] encodeNodes(Map<LwM2mPath, LwM2mNode> nodes, LwM2mModel model, LwM2mValueConverter converter)
+            throws CodecException {
+        // validate arguments
+        Validate.notEmpty(nodes);
+
+        // Encodes nodes to SenML pack
+        SenMLPack pack = new SenMLPack();
+        for (Entry<LwM2mPath, LwM2mNode> entry : nodes.entrySet()) {
+            LwM2mPath path = entry.getKey();
+            InternalEncoder internalEncoder = new InternalEncoder();
+            internalEncoder.objectId = path.getObjectId();
+            internalEncoder.model = model;
+            internalEncoder.requestPath = path;
+            internalEncoder.converter = converter;
+            internalEncoder.records = new ArrayList<>();
+            LwM2mNode node = entry.getValue();
+            if (node != null) {
+                node.accept(internalEncoder);
+                pack.addRecords(internalEncoder.records);
+            }
+            // else
+            // We just ignore null node as the LWM2M specification says that "Read-Composite operation is treated as
+            // non-atomic and handled as best effort by the client. That is, if any of the requested resources do not
+            // have a valid value to return, they will not be included in the response".
+            // Meaning that a given path could have no corresponding value.
+        }
+
+        // Encodes SenML pack using internal encoder (it could be SenML-JSON or SenML-CBOR encoder)
+        try {
+            return encoder.toSenML(pack);
+        } catch (SenMLException e) {
+            throw new CodecException(e, "Unable to encode multi node[paths:%s] : %s", nodes.keySet(), nodes);
         }
     }
 

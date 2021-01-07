@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +29,7 @@ import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
+import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -364,6 +366,52 @@ public class LwM2mNodeEncoderTest {
         b.append("{\"bn\":\"/1024/0/1\",\"bt\":268500020,\"v\":24.1}]");
 
         String expected = b.toString();
+        Assert.assertEquals(expected, new String(encoded));
+    }
+
+    @Test
+    public void senml_json_encode_resources() {
+        // Nodes to encode
+        Map<LwM2mPath, LwM2mNode> nodes = new LinkedHashMap<>();
+        nodes.put(new LwM2mPath("3/0/0"), LwM2mSingleResource.newStringResource(0, "Open Mobile Alliance"));
+        nodes.put(new LwM2mPath("3/0/9"), LwM2mSingleResource.newIntegerResource(9, 95));
+        nodes.put(new LwM2mPath("1/0/1"), LwM2mSingleResource.newIntegerResource(1, 86400));
+
+        // Encode
+        byte[] encoded = encoder.encodeNodes(nodes, ContentFormat.SENML_JSON, model);
+
+        // Expected value
+        StringBuilder b = new StringBuilder();
+        b.append("[{\"bn\":\"/3/0/0\",\"vs\":\"Open Mobile Alliance\"},");
+        b.append("{\"bn\":\"/3/0/9\",\"v\":95},");
+        b.append("{\"bn\":\"/1/0/1\",\"v\":86400}]");
+        String expected = b.toString();
+
+        Assert.assertEquals(expected, new String(encoded));
+    }
+
+    @Test
+    public void senml_json_encode_mixed_resource_and_instance() {
+        // Nodes to encode
+        Map<LwM2mPath, LwM2mNode> nodes = new LinkedHashMap<>();
+        nodes.put(new LwM2mPath("4/0/0"), LwM2mSingleResource.newIntegerResource(0, 45));
+        nodes.put(new LwM2mPath("4/0/1"), LwM2mSingleResource.newIntegerResource(1, 30));
+        nodes.put(new LwM2mPath("4/0/2"), LwM2mSingleResource.newIntegerResource(2, 100));
+        nodes.put(new LwM2mPath("6/0"), new LwM2mObjectInstance(0, LwM2mSingleResource.newFloatResource(0, 43.918998),
+                LwM2mSingleResource.newFloatResource(1, 2.351149)));
+
+        // Encode
+        byte[] encoded = encoder.encodeNodes(nodes, ContentFormat.SENML_JSON, model);
+
+        // Expected value
+        StringBuilder b = new StringBuilder();
+        b.append("[{\"bn\":\"/4/0/0\",\"v\":45},");
+        b.append("{\"bn\":\"/4/0/1\",\"v\":30},");
+        b.append("{\"bn\":\"/4/0/2\",\"v\":100},");
+        b.append("{\"bn\":\"/6/0/\",\"n\":\"0\",\"v\":43.918998},");
+        b.append("{\"n\":\"1\",\"v\":2.351149}]");
+        String expected = b.toString();
+
         Assert.assertEquals(expected, new String(encoded));
     }
 }
