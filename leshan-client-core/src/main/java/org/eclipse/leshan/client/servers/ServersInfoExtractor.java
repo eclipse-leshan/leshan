@@ -96,16 +96,22 @@ public class ServersInfoExtractor {
                         LwM2mObjectInstance oscoreInstance = null;
                         ObjectLink oscoreObjLink = (ObjectLink) security.getResource(SEC_OSCORE_SECURITY_MODE)
                                 .getValue();
-                        if (oscoreObjLink != null) {
-                            int oscoreObjectInstanceId = oscoreObjLink.getObjectInstanceId();
-                            if (!oscoreObjLink.isNullLink() && oscoreObjLink.getObjectId() != OSCORE) {
+                        if (oscoreObjLink != null && !oscoreObjLink.isNullLink()) {
+                            if (oscoreObjLink.getObjectId() != OSCORE) {
                                 LOG.warn(
-                                        "The security object's 'OSCORE Security Mode' links to an incorrect object type.");
+                                        "Invalid Security info for bootstrap server : 'OSCORE Security Mode' does not link to OSCORE Object but to {} object.",
+                                        oscoreObjLink.getObjectId());
                             } else {
-                                oscoreInstance = oscores.getInstance(oscoreObjectInstanceId);
-                                if (oscoreInstance == null) {
-                                    // maybe we should use same log level for this one and the other just above
-                                    LOG.error("Failed to retrieve OSCORE object linked from BS security object");
+                                if (oscores == null) {
+                                    LOG.warn(
+                                            "Invalid Security info for bootstrap server : OSCORE object enabler is not available.");
+                                } else {
+                                    oscoreInstance = oscores.getInstance(oscoreObjLink.getObjectInstanceId());
+                                    if (oscoreInstance == null) {
+                                        LOG.warn(
+                                                "Invalid Security info for bootstrap server : OSCORE instance {} does not exist.",
+                                                oscoreObjLink.getObjectInstanceId());
+                                    }
                                 }
                             }
                         }
@@ -143,15 +149,22 @@ public class ServersInfoExtractor {
                     // find associated oscore instance (if any)
                     LwM2mObjectInstance oscoreInstance = null;
                     ObjectLink oscoreObjLink = (ObjectLink) security.getResource(SEC_OSCORE_SECURITY_MODE).getValue();
-                    if (oscoreObjLink != null) {
-                        int oscoreObjectInstanceId = oscoreObjLink.getObjectInstanceId();
-                        if (!oscoreObjLink.isNullLink() && oscoreObjLink.getObjectId() != OSCORE) {
-                            LOG.warn("The security object's 'OSCORE Security Mode' links to an incorrect object type.");
+                    if (oscoreObjLink != null && !oscoreObjLink.isNullLink()) {
+                        if (oscoreObjLink.getObjectId() != OSCORE) {
+                            LOG.warn(
+                                    "Invalid Security info for LWM2M server : 'OSCORE Security Mode' does not link to OSCORE Object but to {} object.",
+                                    oscoreObjLink.getObjectId());
                         } else {
-                            oscoreInstance = oscores.getInstance(oscoreObjectInstanceId);
-                            if (oscoreInstance == null) {
-                                // maybe we should use same log level for this one and the other just above
-                                LOG.error("Failed to retrieve OSCORE object linked from DM security object");
+                            if (oscores == null) {
+                                LOG.warn(
+                                        "Invalid Security info for LWM2M server : OSCORE object enabler is not available.");
+                            } else {
+                                oscoreInstance = oscores.getInstance(oscoreObjLink.getObjectInstanceId());
+                                if (oscoreInstance == null) {
+                                    LOG.warn(
+                                            "Invalid Security info for LWM2M server : OSCORE instance {} does not exist.",
+                                            oscoreObjLink.getObjectInstanceId());
+                                }
                             }
                         }
                     }
