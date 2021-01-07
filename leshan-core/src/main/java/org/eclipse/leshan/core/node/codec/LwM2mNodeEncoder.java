@@ -16,6 +16,7 @@
 package org.eclipse.leshan.core.node.codec;
 
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -24,7 +25,12 @@ import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.request.ContentFormat;
 
 /**
- * An Encoder of {@link LwM2mNode} which should support several {@link ContentFormat} and time-stamped values.
+ * A LWM2M Encoder which supports several {@link ContentFormat} and is able to encode :
+ * <ul>
+ * <li>a {@link LwM2mNode}</li>
+ * <li>a time-stamped {@link LwM2mNode} (e.g. for historical representations)</li>
+ * <li>a list of {@link LwM2mNode} (e.g. for composite operation)</li>
+ * </ul>
  */
 public interface LwM2mNodeEncoder {
 
@@ -39,6 +45,18 @@ public interface LwM2mNodeEncoder {
      * @throws CodecException if there payload is malformed.
      */
     byte[] encode(LwM2mNode node, ContentFormat format, LwM2mPath path, LwM2mModel model) throws CodecException;
+
+    /**
+     * Serializes a list of {@link LwM2mNode} using the given content format.
+     *
+     * @param nodes the Map from {@link LwM2mPath} to {@link LwM2mNode} to serialize. value can be <code>null</code> if
+     *        no data was available for a given path
+     * @param format the content format
+     * @param model the collection of supported object models
+     * @return the encoded nodes as a byte array
+     * @throws CodecException if there payload is malformed.
+     */
+    byte[] encodeNodes(Map<LwM2mPath, LwM2mNode> nodes, ContentFormat format, LwM2mModel model) throws CodecException;
 
     /**
      * Serializes a list of time-stamped {@link LwM2mNode} with the given content format.
