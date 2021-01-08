@@ -25,7 +25,7 @@ import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
  * 
  * @since 1.1
  */
-public class BootstrapDiscoverRequest extends AbstractDownlinkRequest<BootstrapDiscoverResponse>
+public class BootstrapDiscoverRequest extends AbstractSimpleDownlinkRequest<BootstrapDiscoverResponse>
         implements BootstrapDownlinkRequest<BootstrapDiscoverResponse> {
 
     /**

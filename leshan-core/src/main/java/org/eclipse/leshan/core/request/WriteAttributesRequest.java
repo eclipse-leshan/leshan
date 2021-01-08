@@ -20,7 +20,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.WriteAttributesResponse;
 
-public class WriteAttributesRequest extends AbstractDownlinkRequest<WriteAttributesResponse> {
+public class WriteAttributesRequest extends AbstractSimpleDownlinkRequest<WriteAttributesResponse> {
 
     private final AttributeSet attributes;
 

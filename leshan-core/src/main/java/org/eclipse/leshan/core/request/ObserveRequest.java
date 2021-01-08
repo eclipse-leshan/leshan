@@ -28,7 +28,7 @@ import org.eclipse.leshan.core.response.ObserveResponse;
  * A Lightweight M2M request for observing changes of a specific Resource, Resources within an Object Instance or for
  * all the Object Instances of an Object within the LWM2M Client.
  */
-public class ObserveRequest extends AbstractDownlinkRequest<ObserveResponse> {
+public class ObserveRequest extends AbstractSimpleDownlinkRequest<ObserveResponse> {
 
     private final ContentFormat format;
 

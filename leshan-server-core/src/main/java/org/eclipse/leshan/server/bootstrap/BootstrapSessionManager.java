@@ -15,8 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
+import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
-import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 
@@ -71,7 +71,8 @@ public interface BootstrapSessionManager {
      * @param bsSession the bootstrap session concerned.
      * @param request The request for which we get a successfull response.
      */
-    public void onResponseSuccess(BootstrapSession bsSession, DownlinkRequest<? extends LwM2mResponse> request);
+    public void onResponseSuccess(BootstrapSession bsSession,
+            BootstrapDownlinkRequest<? extends LwM2mResponse> request);
 
     /**
      * Called when we receive a error response to a request.
@@ -82,8 +83,8 @@ public interface BootstrapSessionManager {
      * 
      * @return a {@link BootstrapPolicy} given the way to continue the bootstrap session.
      */
-    public BootstrapPolicy onResponseError(BootstrapSession bsSession, DownlinkRequest<? extends LwM2mResponse> request,
-            LwM2mResponse response);
+    public BootstrapPolicy onResponseError(BootstrapSession bsSession,
+            BootstrapDownlinkRequest<? extends LwM2mResponse> request, LwM2mResponse response);
 
     /**
      * Called when a request failed to be sent.
@@ -95,7 +96,7 @@ public interface BootstrapSessionManager {
      * @return a {@link BootstrapPolicy} given the way to continue the bootstrap session.
      */
     public BootstrapPolicy onRequestFailure(BootstrapSession bsSession,
-            DownlinkRequest<? extends LwM2mResponse> request, Throwable cause);
+            BootstrapDownlinkRequest<? extends LwM2mResponse> request, Throwable cause);
 
     /**
      * Performs any housekeeping related to the successful ending of a Bootstrapping session.

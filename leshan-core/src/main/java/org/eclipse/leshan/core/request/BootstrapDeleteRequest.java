@@ -22,7 +22,7 @@ import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
 /**
  * A LWM2M request for deleting object instances during the bootstrap phase.
  */
-public class BootstrapDeleteRequest extends AbstractDownlinkRequest<BootstrapDeleteResponse>
+public class BootstrapDeleteRequest extends AbstractSimpleDownlinkRequest<BootstrapDeleteResponse>
         implements BootstrapDownlinkRequest<BootstrapDeleteResponse> {
 
     /**

@@ -22,7 +22,7 @@ import org.eclipse.leshan.core.response.DiscoverResponse;
 /**
  * A Lightweight M2M request for discovering LWM2M Attributes attached to an Object, Object Instances, and Resources.
  */
-public class DiscoverRequest extends AbstractDownlinkRequest<DiscoverResponse> {
+public class DiscoverRequest extends AbstractSimpleDownlinkRequest<DiscoverResponse> {
 
     /**
      * Creates a request for discovering the resources implemented by a client for a particular object type.

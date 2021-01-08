@@ -17,5 +17,5 @@ package org.eclipse.leshan.core.request;
 
 import org.eclipse.leshan.core.response.LwM2mResponse;
 
-public interface BootstrapDownlinkRequest<T extends LwM2mResponse> extends DownlinkRequest<T> {
+public interface BootstrapDownlinkRequest<T extends LwM2mResponse> extends SimpleDownlinkRequest<T> {
 }

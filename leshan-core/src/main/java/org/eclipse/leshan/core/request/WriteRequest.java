@@ -36,7 +36,7 @@ import org.eclipse.leshan.core.util.datatype.ULong;
  * The request to change the value of a Resource, an array of Resources Instances or multiple Resources from an Object
  * Instance.
  */
-public class WriteRequest extends AbstractDownlinkRequest<WriteResponse> {
+public class WriteRequest extends AbstractSimpleDownlinkRequest<WriteResponse> {
 
     /**
      * Define the behavior of a write request.

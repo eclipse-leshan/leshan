@@ -22,7 +22,7 @@ import org.eclipse.leshan.core.response.ExecuteResponse;
 /**
  * A Lightweight M2M request for initiate some action, it can only be performed on individual Resources.
  */
-public class ExecuteRequest extends AbstractDownlinkRequest<ExecuteResponse> {
+public class ExecuteRequest extends AbstractSimpleDownlinkRequest<ExecuteResponse> {
 
     private final String parameters;
 

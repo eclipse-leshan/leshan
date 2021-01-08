@@ -27,7 +27,7 @@ import org.eclipse.leshan.core.util.Hex;
  * {@code ObservationService#cancelObservation()}
  * </p>
  */
-public class CancelObservationRequest extends AbstractDownlinkRequest<CancelObservationResponse> {
+public class CancelObservationRequest extends AbstractSimpleDownlinkRequest<CancelObservationResponse> {
 
     private final Observation observation;
 

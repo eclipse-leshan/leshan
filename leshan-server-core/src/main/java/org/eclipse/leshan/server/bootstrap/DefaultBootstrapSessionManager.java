@@ -17,9 +17,9 @@ package org.eclipse.leshan.server.bootstrap;
 
 import java.util.Iterator;
 
+import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
-import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
@@ -88,15 +88,16 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
     }
 
     @Override
-    public void onResponseSuccess(BootstrapSession bsSession, DownlinkRequest<? extends LwM2mResponse> request) {
+    public void onResponseSuccess(BootstrapSession bsSession,
+            BootstrapDownlinkRequest<? extends LwM2mResponse> request) {
         if (LOG.isTraceEnabled())
             LOG.trace("{} {} receives success response for {} : {}", request.getClass().getSimpleName(),
                     request.getPath(), bsSession, request);
     }
 
     @Override
-    public BootstrapPolicy onResponseError(BootstrapSession bsSession, DownlinkRequest<? extends LwM2mResponse> request,
-            LwM2mResponse response) {
+    public BootstrapPolicy onResponseError(BootstrapSession bsSession,
+            BootstrapDownlinkRequest<? extends LwM2mResponse> request, LwM2mResponse response) {
         if (LOG.isTraceEnabled())
             LOG.trace("{} {} receives error response {} for {} : {}", request.getClass().getSimpleName(),
                     request.getPath(), response, bsSession, request);
@@ -109,7 +110,7 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
 
     @Override
     public BootstrapPolicy onRequestFailure(BootstrapSession bsSession,
-            DownlinkRequest<? extends LwM2mResponse> request, Throwable cause) {
+            BootstrapDownlinkRequest<? extends LwM2mResponse> request, Throwable cause) {
         if (LOG.isTraceEnabled())
             LOG.trace("{} {} failed because of {} for {} : {}", request.getClass().getSimpleName(), request.getPath(),
                     cause, bsSession, request);

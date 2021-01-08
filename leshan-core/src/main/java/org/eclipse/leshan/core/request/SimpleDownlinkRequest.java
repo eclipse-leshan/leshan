@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2015 Sierra Wireless and others.
+ * Copyright (c) 2021 Sierra Wireless and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -15,17 +15,17 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 
 /**
- * A Downlink Lightweight M2M request.<br>
- * This is a request sent from server to client to interact with the client resource tree.
+ * A simple {@link DownlinkRequest} which targets only 1 node.
  */
-public interface DownlinkRequest<T extends LwM2mResponse> extends LwM2mRequest<T> {
-
+public interface SimpleDownlinkRequest<T extends LwM2mResponse> extends DownlinkRequest<T> {
     /**
-     * Accept a visitor for this request.
+     * Gets the node path targeted by the request.
+     *
+     * @return the request path
      */
-    void accept(DownlinkRequestVisitor visitor);
-
+    LwM2mPath getPath();
 }
