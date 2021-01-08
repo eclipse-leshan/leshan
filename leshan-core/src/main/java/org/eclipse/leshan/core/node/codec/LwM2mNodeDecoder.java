@@ -16,6 +16,7 @@
 package org.eclipse.leshan.core.node.codec;
 
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -24,7 +25,12 @@ import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.request.ContentFormat;
 
 /**
- * A Decoder of {@link LwM2mNode} which should support several {@link ContentFormat} and time-stamped values.
+ * A Decoder which should support several {@link ContentFormat} and is able to decode :
+ * <ul>
+ * <li>a {@link LwM2mNode}</li>
+ * <li>a time-stamped {@link LwM2mNode} (e.g. for historical representations)</li>
+ * <li>a list of {@link LwM2mNode} (e.g. for composite operation)</li>
+ * </ul>
  */
 public interface LwM2mNodeDecoder {
 
@@ -55,6 +61,22 @@ public interface LwM2mNodeDecoder {
      */
     <T extends LwM2mNode> T decode(byte[] content, ContentFormat format, LwM2mPath path, LwM2mModel model,
             Class<T> nodeClass) throws CodecException;
+
+    /**
+     * Deserializes a binary content into a list of {@link LwM2mNode} of the expected type.
+     * <p>
+     * Expected type is guess from list of {@link LwM2mPath}.
+     *
+     * @param content the content
+     * @param format the content format
+     * @param paths the list of path of node to build.
+     * @param model the collection of supported object models
+     * @return the Map of {@link LwM2mPath} to decoded {@link LwM2mNode}. value can be <code>null</code> if no data was
+     *         available for a given path
+     * @throws CodecException if there payload is malformed.
+     */
+    Map<LwM2mPath, LwM2mNode> decodeNodes(byte[] content, ContentFormat format, List<LwM2mPath> paths, LwM2mModel model)
+            throws CodecException;
 
     /**
      * Deserializes a binary content into a list of time-stamped {@link LwM2mNode} ordering by time-stamp.

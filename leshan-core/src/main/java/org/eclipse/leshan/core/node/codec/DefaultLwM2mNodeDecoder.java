@@ -131,6 +131,29 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
     }
 
     @Override
+    public Map<LwM2mPath, LwM2mNode> decodeNodes(byte[] content, ContentFormat format, List<LwM2mPath> paths,
+            LwM2mModel model) throws CodecException {
+        LOG.debug("Decoding value for path {} and format {}: {}", paths, format, content);
+        Validate.notNull(paths);
+
+        if (format == null) {
+            throw new CodecException("Content format is mandatory. [%s]", paths);
+        }
+
+        NodeDecoder decoder = decoders.get(format);
+        if (decoder == null) {
+            throw new CodecException("Content format %s is not supported [%s]", format, paths);
+        }
+
+        if (decoder instanceof MultiNodeDecoder) {
+            return ((MultiNodeDecoder) decoder).decodeNodes(content, paths, model);
+        } else {
+            throw new CodecException("Decoder does not support multi node decoding for this content format %s [%s] ",
+                    format, paths);
+        }
+    }
+
+    @Override
     public List<TimestampedLwM2mNode> decodeTimestampedData(byte[] content, ContentFormat format, LwM2mPath path,
             LwM2mModel model) throws CodecException {
         LOG.debug("Decoding value for path {} and format {}: {}", path, format, content);
