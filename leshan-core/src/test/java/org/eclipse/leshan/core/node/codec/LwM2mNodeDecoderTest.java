@@ -20,8 +20,11 @@ import static org.junit.Assert.*;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.leshan.core.json.LwM2mJsonException;
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -32,6 +35,7 @@ import org.eclipse.leshan.core.model.ResourceModel.Operations;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
+import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -45,6 +49,7 @@ import org.eclipse.leshan.core.tlv.Tlv.TlvType;
 import org.eclipse.leshan.core.tlv.TlvEncoder;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.datatype.ULong;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -1017,5 +1022,58 @@ public class LwM2mNodeDecoderTest {
                 ((LwM2mObject) timestampedResources.get(2).getNode()).getInstance(1).getResource(1).getValue());
         assertEquals("a string",
                 ((LwM2mObject) timestampedResources.get(2).getNode()).getInstance(0).getResource(0).getValue());
+    }
+
+    @Test
+    public void senml_json_decode_resources() {
+        // Prepare data to decode
+        StringBuilder b = new StringBuilder();
+        b.append("[{\"bn\":\"/3/0/0\",\"vs\":\"Open Mobile Alliance\"},");
+        b.append("{\"bn\":\"/3/0/9\",\"v\":95},");
+        b.append("{\"bn\":\"/1/0/1\",\"v\":86400}]");
+        List<LwM2mPath> paths = Arrays.asList(new LwM2mPath("3/0/0"), new LwM2mPath("3/0/9"), new LwM2mPath("1/0/1"));
+
+        // Decode
+        Map<LwM2mPath, LwM2mNode> res = decoder.decodeNodes(b.toString().getBytes(), ContentFormat.SENML_JSON, paths,
+                model);
+
+        // Expected result
+        Map<LwM2mPath, LwM2mNode> nodes = new HashMap<>();
+        nodes.put(new LwM2mPath("3/0/0"), LwM2mSingleResource.newStringResource(0, "Open Mobile Alliance"));
+        nodes.put(new LwM2mPath("3/0/9"), LwM2mSingleResource.newIntegerResource(9, 95));
+        nodes.put(new LwM2mPath("1/0/1"), LwM2mSingleResource.newIntegerResource(1, 86400));
+
+        Assert.assertEquals(nodes, res);
+    }
+
+    @Test
+    public void senml_json_decode_mixed_resource_and_instance() {
+        // Prepare data to decode
+        StringBuilder b = new StringBuilder();
+        b.append("[{\"bn\":\"/4/0/0\",\"v\":45},");
+        b.append("{\"bn\":\"/4/0/1\",\"v\":30},");
+        b.append("{\"bn\":\"/4/0/2\",\"v\":100},");
+        b.append("{\"bn\":\"/6/0/\",\"n\":\"0\",\"v\":43.918998},");
+        b.append("{\"n\":\"1\",\"v\":2.351149},");
+        b.append("{\"n\":\"5\",\"v\":1610029880}]");
+
+        List<LwM2mPath> paths = Arrays.asList(new LwM2mPath("4/0/0"), new LwM2mPath("4/0/1"), new LwM2mPath("4/0/2"),
+                new LwM2mPath("6/0"));
+
+        // Decode
+        Map<LwM2mPath, LwM2mNode> res = decoder.decodeNodes(b.toString().getBytes(), ContentFormat.SENML_JSON, paths,
+                model);
+
+        // Expected result
+        Map<LwM2mPath, LwM2mNode> nodes = new HashMap<>();
+        nodes.put(new LwM2mPath("4/0/0"), LwM2mSingleResource.newIntegerResource(0, 45));
+        nodes.put(new LwM2mPath("4/0/1"), LwM2mSingleResource.newIntegerResource(1, 30));
+        nodes.put(new LwM2mPath("4/0/2"), LwM2mSingleResource.newIntegerResource(2, 100));
+        nodes.put(new LwM2mPath("6/0"),
+                new LwM2mObjectInstance(0, LwM2mSingleResource.newFloatResource(0, 43.918998),
+                        LwM2mSingleResource.newFloatResource(1, 2.351149),
+                        LwM2mSingleResource.newDateResource(5, new Date(1610029880000l))));
+
+        Assert.assertEquals(nodes, res);
     }
 }

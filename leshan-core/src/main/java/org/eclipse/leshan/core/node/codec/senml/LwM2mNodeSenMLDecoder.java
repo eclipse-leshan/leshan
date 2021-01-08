@@ -39,6 +39,8 @@ import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
+import org.eclipse.leshan.core.node.codec.MultiNodeDecoder;
 import org.eclipse.leshan.core.node.codec.TimestampedNodeDecoder;
 import org.eclipse.leshan.core.util.Base64;
 import org.eclipse.leshan.core.util.datatype.NumberUtil;
@@ -50,7 +52,7 @@ import org.eclipse.leshan.senml.SenMLRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder {
+public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeDecoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeSenMLDecoder.class);
 
@@ -95,6 +97,40 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder {
         } catch (SenMLException e) {
             String jsonStrValue = content != null ? new String(content) : "";
             throw new CodecException(e, "Unable to decode node[path:%s] : %s", path, jsonStrValue, e);
+        }
+    }
+
+    @Override
+    public Map<LwM2mPath, LwM2mNode> decodeNodes(byte[] content, List<LwM2mPath> paths, LwM2mModel model)
+            throws CodecException {
+        try {
+            // Decode SenML pack
+            SenMLPack pack = decoder.fromSenML(content);
+
+            // Resolve records & Group it by time-stamp
+            Map<LwM2mPath, Collection<LwM2mResolvedSenMLRecord>> recordsByPath = groupByPath(pack.getRecords(), paths);
+
+            // Fill nodes collections
+            Map<LwM2mPath, LwM2mNode> nodes = new HashMap<>();
+            for (LwM2mPath path : paths) {
+                Collection<LwM2mResolvedSenMLRecord> records = recordsByPath.get(path);
+                if (records.isEmpty()) {
+                    // Node can be null as the LWM2M specification says that "Read-Composite operation is
+                    // treated as non-atomic and handled as best effort by the client. That is, if any of the
+                    // requested
+                    // resources do not have a valid value to return, they will not be included in the response".
+                    // Meaning that a given path could have no corresponding value.
+                    nodes.put(path, null);
+                } else {
+                    LwM2mNode node = parseRecords(recordsByPath.get(path), path, model,
+                            DefaultLwM2mNodeDecoder.nodeClassFromPath(path));
+                    nodes.put(path, node);
+                }
+            }
+            return nodes;
+        } catch (SenMLException e) {
+            String jsonStrValue = content != null ? new String(content) : "";
+            throw new CodecException(e, "Unable to decode nodes[path:%s] : %s", paths, jsonStrValue, e);
         }
     }
 
@@ -204,6 +240,49 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder {
             throw new IllegalArgumentException("invalid node class: " + nodeClass);
         }
         return node;
+    }
+
+    /**
+     * Resolved record then group it by LwM2mPath
+     */
+    private Map<LwM2mPath, Collection<LwM2mResolvedSenMLRecord>> groupByPath(List<SenMLRecord> records,
+            List<LwM2mPath> paths) throws SenMLException {
+
+        // Prepare map result
+        Map<LwM2mPath, Collection<LwM2mResolvedSenMLRecord>> result = new HashMap<>(paths.size());
+        for (LwM2mPath path : paths) {
+            result.put(path, new ArrayList<LwM2mResolvedSenMLRecord>());
+        }
+
+        // Resolve record and add it to the map
+        LwM2mSenMLResolver resolver = new LwM2mSenMLResolver();
+        for (SenMLRecord record : records) {
+            LwM2mResolvedSenMLRecord resolvedRecord = resolver.resolve(record);
+
+            // Find the corresponding path for this record.
+            LwM2mPath selectedPath = selectPath(resolvedRecord.getPath(), paths);
+            if (selectedPath == null) {
+                throw new CodecException("Invalid path [%s] for resource, it should start by one of %s",
+                        resolvedRecord.getPath(), paths);
+            }
+
+            result.get(selectedPath).add(resolvedRecord);
+        }
+        return result;
+    }
+
+    /**
+     * Search in the list <code>paths<code> which one is a "start" for the given path.
+     * <p>
+     * E.g. for recordPath="/3/0/1" and paths=["/1/0","/2/0/","/3"] result will be "/3"
+     */
+    private LwM2mPath selectPath(LwM2mPath recordPath, List<LwM2mPath> paths) {
+        for (LwM2mPath path : paths) {
+            if (recordPath.startWith(path)) {
+                return path;
+            }
+        }
+        return null;
     }
 
     /**
