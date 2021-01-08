@@ -65,15 +65,33 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder {
     public <T extends LwM2mNode> T decode(byte[] content, LwM2mPath path, LwM2mModel model, Class<T> nodeClass)
             throws CodecException {
         try {
+            // Decode SenML pack
             SenMLPack pack = decoder.fromSenML(content);
-            List<TimestampedLwM2mNode> timestampedNodes = parseSenMLPack(pack, path, model, nodeClass);
-            if (timestampedNodes.size() == 0) {
-                return null;
-            } else if (timestampedNodes.size() == 1 && timestampedNodes.get(0).getTimestamp() == null) {
-                return (T) timestampedNodes.get(0).getNode();
-            } else {
-                throw new CodecException("Unable to decode node[path:%s] : value should not be timestamped", path);
+            List<SenMLRecord> records = pack.getRecords();
+
+            // Resolve records
+            LwM2mSenMLResolver resolver = new LwM2mSenMLResolver();
+            Collection<LwM2mResolvedSenMLRecord> resolvedRecords = new ArrayList<>(records.size());
+            for (SenMLRecord record : records) {
+                LwM2mResolvedSenMLRecord resolvedRecord = resolver.resolve(record);
+                // Validate SenML resolved name
+                if (!resolvedRecord.getPath().isResourceInstance() && !resolvedRecord.getPath().isResource()) {
+                    throw new CodecException(
+                            "Invalid path [%s] for resource, it should be a resource or a resource instance path",
+                            resolvedRecord.getName());
+                }
+                if (!resolvedRecord.getPath().startWith(path)) {
+                    throw new CodecException("Invalid path [%s] for resource, it should start by %s",
+                            resolvedRecord.getPath(), path);
+                }
+                if (resolvedRecord.getTimeStamp() != null) {
+                    throw new CodecException("Unable to decode node[path:%s] : value should not be timestamped", path);
+                }
+                resolvedRecords.add(resolvedRecord);
             }
+
+            // Parse records and create node
+            return (T) parseRecords(resolvedRecords, path, model, nodeClass);
         } catch (SenMLException e) {
             String jsonStrValue = content != null ? new String(content) : "";
             throw new CodecException(e, "Unable to decode node[path:%s] : %s", path, jsonStrValue, e);
@@ -84,107 +102,108 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder {
     public List<TimestampedLwM2mNode> decodeTimestampedData(byte[] content, LwM2mPath path, LwM2mModel model,
             Class<? extends LwM2mNode> nodeClass) throws CodecException {
         try {
+            // Decode SenML pack
             SenMLPack pack = decoder.fromSenML(content);
-            return parseSenMLPack(pack, path, model, nodeClass);
+
+            // Resolve records & Group it by time-stamp
+            Map<Long, Collection<LwM2mResolvedSenMLRecord>> recordsByTimestamp = groupRecordByTimestamp(
+                    pack.getRecords(), path);
+
+            // Fill time-stamped nodes collection
+            List<TimestampedLwM2mNode> timestampedNodes = new ArrayList<>();
+            for (Entry<Long, Collection<LwM2mResolvedSenMLRecord>> entryByTimestamp : recordsByTimestamp.entrySet()) {
+                LwM2mNode node = parseRecords(entryByTimestamp.getValue(), path, model, nodeClass);
+                // add time-stamped node
+                timestampedNodes.add(new TimestampedLwM2mNode(entryByTimestamp.getKey(), node));
+            }
+            return timestampedNodes;
         } catch (SenMLException e) {
             String jsonStrValue = content != null ? new String(content) : "";
             throw new CodecException(e, "Unable to decode node[path:%s] : %s", path, jsonStrValue, e);
         }
     }
 
-    private List<TimestampedLwM2mNode> parseSenMLPack(SenMLPack pack, LwM2mPath path, LwM2mModel model,
-            Class<? extends LwM2mNode> nodeClass) throws CodecException, SenMLException {
+    /**
+     * Parse records for a given LWM2M path.
+     */
+    private LwM2mNode parseRecords(Collection<LwM2mResolvedSenMLRecord> records, LwM2mPath path, LwM2mModel model,
+            Class<? extends LwM2mNode> nodeClass) throws CodecException {
 
-        LOG.trace("Parsing SenML JSON object for path {}: {}", path, pack);
+        LOG.trace("Parsing SenML records for path {}: {}", path, records);
 
-        // Group Records by time-stamp
-        Map<Long, Collection<LwM2mResolvedSenMLRecord>> recordsByTimestamp = groupRecordByTimestamp(pack.getRecords(),
-                path);
+        // Group records by instance
+        Map<Integer, Collection<LwM2mResolvedSenMLRecord>> recordsByInstanceId = groupRecordsByInstanceId(records);
 
-        // fill time-stamped nodes collection
-        List<TimestampedLwM2mNode> timestampedNodes = new ArrayList<>();
-        for (Entry<Long, Collection<LwM2mResolvedSenMLRecord>> entryByTimestamp : recordsByTimestamp.entrySet()) {
+        // Create lwm2m node
+        LwM2mNode node = null;
+        if (nodeClass == LwM2mObject.class) {
+            Collection<LwM2mObjectInstance> instances = new ArrayList<>();
+            for (Entry<Integer, Collection<LwM2mResolvedSenMLRecord>> entryByInstanceId : recordsByInstanceId
+                    .entrySet()) {
+                Map<Integer, LwM2mResource> resourcesMap = extractLwM2mResources(entryByInstanceId.getValue(), path,
+                        model);
 
-            // Group records by instance
-            Map<Integer, Collection<LwM2mResolvedSenMLRecord>> recordsByInstanceId = groupRecordsByInstanceId(
-                    entryByTimestamp.getValue());
-
-            // Create lwm2m node
-            LwM2mNode node = null;
-            if (nodeClass == LwM2mObject.class) {
-                Collection<LwM2mObjectInstance> instances = new ArrayList<>();
-                for (Entry<Integer, Collection<LwM2mResolvedSenMLRecord>> entryByInstanceId : recordsByInstanceId
-                        .entrySet()) {
-                    Map<Integer, LwM2mResource> resourcesMap = extractLwM2mResources(entryByInstanceId.getValue(), path,
-                            model);
-
-                    instances.add(new LwM2mObjectInstance(entryByInstanceId.getKey(), resourcesMap.values()));
-                }
-
-                node = new LwM2mObject(path.getObjectId(), instances);
-            } else if (nodeClass == LwM2mObjectInstance.class) {
-                // validate we have resources for only 1 instance
-                if (recordsByInstanceId.size() != 1)
-                    throw new CodecException("One instance expected in the payload [path:%s]", path);
-
-                // Extract resources
-                Entry<Integer, Collection<LwM2mResolvedSenMLRecord>> instanceEntry = recordsByInstanceId.entrySet()
-                        .iterator().next();
-                Map<Integer, LwM2mResource> resourcesMap = extractLwM2mResources(instanceEntry.getValue(), path, model);
-
-                // Create instance
-                node = new LwM2mObjectInstance(instanceEntry.getKey(), resourcesMap.values());
-            } else if (nodeClass == LwM2mResource.class) {
-                // validate we have resources for only 1 instance
-                if (recordsByInstanceId.size() > 1)
-                    throw new CodecException("Only one instance expected in the payload [path:%s]", path);
-
-                // Extract resources
-                Map<Integer, LwM2mResource> resourcesMap = extractLwM2mResources(
-                        recordsByInstanceId.values().iterator().next(), path, model);
-
-                // validate there is only 1 resource
-                if (resourcesMap.size() != 1)
-                    throw new CodecException("One resource should be present in the payload [path:%s]", path);
-
-                node = resourcesMap.values().iterator().next();
-            } else if (nodeClass == LwM2mResourceInstance.class) {
-                // validate we have resources for only 1 instance
-                if (recordsByInstanceId.size() > 1)
-                    throw new CodecException("Only one instance expected in the payload [path:%s]", path);
-
-                // Extract resources
-                Map<Integer, LwM2mResource> resourcesMap = extractLwM2mResources(
-                        recordsByInstanceId.values().iterator().next(), path, model);
-
-                // validate there is only 1 resource
-                if (resourcesMap.size() != 1)
-                    throw new CodecException("One resource should be present in the payload [path:%s]", path);
-
-                LwM2mResource resource = resourcesMap.values().iterator().next();
-                if (!resource.isMultiInstances()) {
-                    throw new CodecException("Resource should be multi Instances resource [path:%s]", path);
-                }
-
-                if (resource.getInstances().isEmpty()) {
-                    throw new CodecException("Resource instances should not be not empty [path:%s]", path);
-                }
-
-                if (resource.getInstances().size() > 1) {
-                    throw new CodecException("Resource instances should not be > 1 [path:%s]", path);
-                }
-
-                node = resourcesMap.values().iterator().next().getInstance(path.getResourceInstanceId());
-            } else {
-                throw new IllegalArgumentException("invalid node class: " + nodeClass);
+                instances.add(new LwM2mObjectInstance(entryByInstanceId.getKey(), resourcesMap.values()));
             }
 
-            // add time-stamped node
-            timestampedNodes.add(new TimestampedLwM2mNode(entryByTimestamp.getKey(), node));
+            node = new LwM2mObject(path.getObjectId(), instances);
+        } else if (nodeClass == LwM2mObjectInstance.class) {
+            // validate we have resources for only 1 instance
+            if (recordsByInstanceId.size() != 1)
+                throw new CodecException("One instance expected in the payload [path:%s]", path);
+
+            // Extract resources
+            Entry<Integer, Collection<LwM2mResolvedSenMLRecord>> instanceEntry = recordsByInstanceId.entrySet()
+                    .iterator().next();
+            Map<Integer, LwM2mResource> resourcesMap = extractLwM2mResources(instanceEntry.getValue(), path, model);
+
+            // Create instance
+            node = new LwM2mObjectInstance(instanceEntry.getKey(), resourcesMap.values());
+        } else if (nodeClass == LwM2mResource.class) {
+            // validate we have resources for only 1 instance
+            if (recordsByInstanceId.size() > 1)
+                throw new CodecException("Only one instance expected in the payload [path:%s]", path);
+
+            // Extract resources
+            Map<Integer, LwM2mResource> resourcesMap = extractLwM2mResources(
+                    recordsByInstanceId.values().iterator().next(), path, model);
+
+            // validate there is only 1 resource
+            if (resourcesMap.size() != 1)
+                throw new CodecException("One resource should be present in the payload [path:%s]", path);
+
+            node = resourcesMap.values().iterator().next();
+        } else if (nodeClass == LwM2mResourceInstance.class) {
+            // validate we have resources for only 1 instance
+            if (recordsByInstanceId.size() > 1)
+                throw new CodecException("Only one instance expected in the payload [path:%s]", path);
+
+            // Extract resources
+            Map<Integer, LwM2mResource> resourcesMap = extractLwM2mResources(
+                    recordsByInstanceId.values().iterator().next(), path, model);
+
+            // validate there is only 1 resource
+            if (resourcesMap.size() != 1)
+                throw new CodecException("One resource should be present in the payload [path:%s]", path);
+
+            LwM2mResource resource = resourcesMap.values().iterator().next();
+            if (!resource.isMultiInstances()) {
+                throw new CodecException("Resource should be multi Instances resource [path:%s]", path);
+            }
+
+            if (resource.getInstances().isEmpty()) {
+                throw new CodecException("Resource instances should not be not empty [path:%s]", path);
+            }
+
+            if (resource.getInstances().size() > 1) {
+                throw new CodecException("Resource instances should not be > 1 [path:%s]", path);
+            }
+
+            node = resourcesMap.values().iterator().next().getInstance(path.getResourceInstanceId());
+        } else {
+            throw new IllegalArgumentException("invalid node class: " + nodeClass);
         }
-
-        return timestampedNodes;
-
+        return node;
     }
 
     /**
@@ -213,13 +232,12 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder {
         for (SenMLRecord record : records) {
             LwM2mResolvedSenMLRecord resolvedRecord = resolver.resolve(record);
 
-            // Validate SenML resolved name (lwm2m node path)
+            // Validate SenML resolved name
             if (!resolvedRecord.getPath().isResourceInstance() && !resolvedRecord.getPath().isResource()) {
                 throw new CodecException(
                         "Invalid path [%s] for resource, it should be a resource or a resource instance path",
                         resolvedRecord.getName());
             }
-
             if (!resolvedRecord.getPath().startWith(requestPath)) {
                 throw new CodecException("Invalid path [%s] for resource, it should start by %s",
                         resolvedRecord.getName(), requestPath);
