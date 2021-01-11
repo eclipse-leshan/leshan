@@ -18,6 +18,7 @@ package org.eclipse.leshan.core.node.codec;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -413,5 +414,24 @@ public class LwM2mNodeEncoderTest {
         String expected = b.toString();
 
         Assert.assertEquals(expected, new String(encoded));
+    }
+
+    @Test
+    public void senml_json_encode_path_using_name() {
+        // Prepare data to encode
+        List<LwM2mPath> paths = Arrays.asList( //
+                new LwM2mPath("4/0/0"), //
+                new LwM2mPath("4/0/1"), //
+                new LwM2mPath("4/0/2"));
+
+        // Decode
+        byte[] res = encoder.encodePaths(paths, ContentFormat.SENML_JSON);
+
+        // Expected result
+        StringBuilder b = new StringBuilder();
+        b.append("[{\"n\":\"/4/0/0\"},");
+        b.append("{\"n\":\"/4/0/1\"},");
+        b.append("{\"n\":\"/4/0/2\"}]");
+        Assert.assertEquals(b.toString(), new String(res));
     }
 }

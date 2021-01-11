@@ -29,6 +29,7 @@ import org.eclipse.leshan.core.node.codec.cbor.LwM2mNodeCborEncoder;
 import org.eclipse.leshan.core.node.codec.json.LwM2mNodeJsonEncoder;
 import org.eclipse.leshan.core.node.codec.opaque.LwM2mNodeOpaqueEncoder;
 import org.eclipse.leshan.core.node.codec.senml.LwM2mNodeSenMLEncoder;
+import org.eclipse.leshan.core.node.codec.senml.LwM2mPathSenMLEncoder;
 import org.eclipse.leshan.core.node.codec.text.LwM2mNodeTextEncoder;
 import org.eclipse.leshan.core.node.codec.tlv.LwM2mNodeTlvEncoder;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -39,7 +40,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A default {@link LwM2mNodeEncoder} which support LWM2M {@link ContentFormat} :
+ * A default {@link LwM2mNodeEncoder}.
+ * <p>
+ * For {@link LwM2mNode} encoding, those formats are supported :
  * <ul>
  * <li>{@link ContentFormat#TEXT}</li>
  * <li>{@link ContentFormat#OPAQUE}</li>
@@ -48,6 +51,12 @@ import org.slf4j.LoggerFactory;
  * <li>{@link ContentFormat#SENML_CBOR}</li>
  * <li>{@link ContentFormat#TLV}</li>
  * <li>{@link ContentFormat#JSON} (old one from LwM2m v1.0)</li>
+ * </ul>
+ * <p>
+ * For {@link LwM2mPath} encoding, those formats are supported :
+ * <ul>
+ * <li>{@link ContentFormat#SENML_JSON}</li>
+ * <li>{@link ContentFormat#SENML_CBOR}</li>
  * </ul>
  */
 public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
@@ -76,8 +85,18 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
         return encoders;
     }
 
+    public static Map<ContentFormat, PathEncoder> getDefaultPathEncoder() {
+        Map<ContentFormat, PathEncoder> encoders = new HashMap<>();
+        encoders.put(ContentFormat.SENML_JSON, new LwM2mPathSenMLEncoder(new SenMLJsonJacksonEncoderDecoder(true)));
+        encoders.put(ContentFormat.SENML_CBOR,
+                new LwM2mPathSenMLEncoder(new SenMLCborUpokecenterEncoderDecoder(false, true)));
+
+        return encoders;
+    }
+
     protected final LwM2mValueConverter converter;
     protected final Map<ContentFormat, NodeEncoder> nodeEncoders;
+    protected final Map<ContentFormat, PathEncoder> pathEncoders;
 
     /**
      * Create {@link DefaultLwM2mNodeEncoder} without support of old TLV and JSON code.
@@ -103,11 +122,13 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
     }
 
     public DefaultLwM2mNodeEncoder(LwM2mValueConverter converter, boolean supportDeprecatedContentFormat) {
-        this(getDefaultNodeEncoders(supportDeprecatedContentFormat), converter);
+        this(getDefaultNodeEncoders(supportDeprecatedContentFormat), getDefaultPathEncoder(), converter);
     }
 
-    public DefaultLwM2mNodeEncoder(Map<ContentFormat, NodeEncoder> nodeEncoders, LwM2mValueConverter converter) {
+    public DefaultLwM2mNodeEncoder(Map<ContentFormat, NodeEncoder> nodeEncoders,
+            Map<ContentFormat, PathEncoder> pathEncoders, LwM2mValueConverter converter) {
         this.nodeEncoders = nodeEncoders;
+        this.pathEncoders = pathEncoders;
         this.converter = converter;
     }
 
@@ -176,6 +197,24 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
         LOG.trace("Encoded node timestampedNode: {}", timestampedNodes, encoded);
         return encoded;
 
+    }
+
+    @Override
+    public byte[] encodePaths(List<LwM2mPath> paths, ContentFormat format) throws CodecException {
+        Validate.notEmpty(paths);
+
+        if (format == null) {
+            throw new CodecException("Content format is mandatory. [%s]", paths);
+        }
+
+        PathEncoder encoder = pathEncoders.get(format);
+        if (encoder == null) {
+            throw new CodecException("Content format %s is not supported for paths encoding[%s]", format, paths);
+        }
+        LOG.trace("Encoding paths {} with format {}", paths, format);
+        byte[] encoded = encoder.encode(paths);
+        LOG.trace("Encoded path {}: {}", paths, encoded);
+        return encoded;
     }
 
     @Override

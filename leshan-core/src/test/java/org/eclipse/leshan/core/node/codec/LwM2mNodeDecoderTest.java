@@ -1076,4 +1076,68 @@ public class LwM2mNodeDecoderTest {
 
         Assert.assertEquals(nodes, res);
     }
+
+    @Test
+    public void senml_json_decode_path_using_name() {
+        // Prepare data to decode
+        StringBuilder b = new StringBuilder();
+        b.append("[{\"n\":\"/4/0/0\"},");
+        b.append("{\"n\":\"/4/0/1\"},");
+        b.append("{\"n\":\"/4/0/2\"}]");
+
+        // Decode
+        List<LwM2mPath> res = decoder.decodePaths(b.toString().getBytes(), ContentFormat.SENML_JSON);
+
+        // Expected result
+        List<LwM2mPath> paths = Arrays.asList( //
+                new LwM2mPath("4/0/0"), //
+                new LwM2mPath("4/0/1"), //
+                new LwM2mPath("4/0/2"));
+
+        Assert.assertEquals(paths, res);
+    }
+
+    @Test
+    public void senml_json_decode_path_using_base_name() {
+        // Prepare data to decode
+        StringBuilder b = new StringBuilder();
+        b.append("[{\"bn\":\"/4/0/\", \"n\":\"0\"},");
+        b.append("{\"n\":\"1\"},");
+        b.append("{\"n\":\"2\"}]");
+
+        // Decode
+        List<LwM2mPath> res = decoder.decodePaths(b.toString().getBytes(), ContentFormat.SENML_JSON);
+
+        // Expected result
+        List<LwM2mPath> paths = Arrays.asList( //
+                new LwM2mPath("4/0/0"), //
+                new LwM2mPath("4/0/1"), //
+                new LwM2mPath("4/0/2"));
+
+        Assert.assertEquals(paths, res);
+    }
+
+    @Test(expected = CodecException.class)
+    public void senml_json_decode_invalid_path_with_value() {
+        // Prepare data to decode
+        StringBuilder b = new StringBuilder();
+        b.append("[{\"bn\":\"/4/0/\", \"n\":\"0\"},");
+        b.append("{\"n\":\"1\", \"v\":200},");
+        b.append("{\"n\":\"2\"}]");
+
+        // Decode
+        decoder.decodePaths(b.toString().getBytes(), ContentFormat.SENML_JSON);
+    }
+
+    @Test(expected = CodecException.class)
+    public void senml_json_decode_invalid_path_with_timestamp() {
+        // Prepare data to decode
+        StringBuilder b = new StringBuilder();
+        b.append("[{\"bn\":\"/4/0/\", \"n\":\"0\"},");
+        b.append("{\"n\":\"1\", \"t\":20000000},");
+        b.append("{\"n\":\"2\"}]");
+
+        // Decode
+        decoder.decodePaths(b.toString().getBytes(), ContentFormat.SENML_JSON);
+    }
 }

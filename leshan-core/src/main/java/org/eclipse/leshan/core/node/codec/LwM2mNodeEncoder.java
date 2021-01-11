@@ -42,7 +42,7 @@ public interface LwM2mNodeEncoder {
      * @param path the path of the node to serialize
      * @param model the collection of supported object models
      * @return the encoded node as a byte array
-     * @throws CodecException if there payload is malformed.
+     * @throws CodecException if encoding failed.
      */
     byte[] encode(LwM2mNode node, ContentFormat format, LwM2mPath path, LwM2mModel model) throws CodecException;
 
@@ -54,7 +54,7 @@ public interface LwM2mNodeEncoder {
      * @param format the content format
      * @param model the collection of supported object models
      * @return the encoded nodes as a byte array
-     * @throws CodecException if there payload is malformed.
+     * @throws CodecException if encoding failed.
      */
     byte[] encodeNodes(Map<LwM2mPath, LwM2mNode> nodes, ContentFormat format, LwM2mModel model) throws CodecException;
 
@@ -66,10 +66,21 @@ public interface LwM2mNodeEncoder {
      * @param path the path of the node to serialize
      * @param model the collection of supported object models
      * @return the encoded node as a byte array
-     * @throws CodecException if there payload is malformed.
+     * @throws CodecException if encoding failed.
      */
     byte[] encodeTimestampedData(List<TimestampedLwM2mNode> timestampedNodes, ContentFormat format, LwM2mPath path,
             LwM2mModel model) throws CodecException;
+
+    /**
+     * Serializes a list of {@link LwM2mPath} with the given content format.
+     * 
+     * @param paths The list of {@link LwM2mPath} to encode
+     * @param format the {@link ContentFormat} used to encode
+     * @return the encoded path as byte array
+     * 
+     * @throws CodecException if encoding failed.
+     */
+    byte[] encodePaths(List<LwM2mPath> paths, ContentFormat format) throws CodecException;
 
     /**
      * return true is the given {@link ContentFormat} is supported

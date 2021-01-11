@@ -44,7 +44,7 @@ public interface LwM2mNodeDecoder {
      * @param path the path of the node to build
      * @param model the collection of supported object models
      * @return the resulting node
-     * @throws CodecException if there payload is malformed.
+     * @throws CodecException if content is malformed.
      */
     LwM2mNode decode(byte[] content, ContentFormat format, LwM2mPath path, LwM2mModel model) throws CodecException;
 
@@ -57,7 +57,7 @@ public interface LwM2mNodeDecoder {
      * @param model the collection of supported object models
      * @param nodeClass the class of the {@link LwM2mNode} to decode
      * @return the resulting node
-     * @throws CodecException if there payload is malformed.
+     * @throws CodecException if content is malformed.
      */
     <T extends LwM2mNode> T decode(byte[] content, ContentFormat format, LwM2mPath path, LwM2mModel model,
             Class<T> nodeClass) throws CodecException;
@@ -73,7 +73,7 @@ public interface LwM2mNodeDecoder {
      * @param model the collection of supported object models
      * @return the Map of {@link LwM2mPath} to decoded {@link LwM2mNode}. value can be <code>null</code> if no data was
      *         available for a given path
-     * @throws CodecException if there payload is malformed.
+     * @throws CodecException if content is malformed.
      */
     Map<LwM2mPath, LwM2mNode> decodeNodes(byte[] content, ContentFormat format, List<LwM2mPath> paths, LwM2mModel model)
             throws CodecException;
@@ -86,10 +86,21 @@ public interface LwM2mNodeDecoder {
      * @param path the path of the node to build
      * @param model the collection of supported object models
      * @return the resulting list of time-stamped {@link LwM2mNode} ordering by time-stamp
-     * @exception CodecException if there payload is malformed.
+     * @exception CodecException if content is malformed.
      */
     List<TimestampedLwM2mNode> decodeTimestampedData(byte[] content, ContentFormat format, LwM2mPath path,
             LwM2mModel model) throws CodecException;
+
+    /**
+     * Deserializes a binary content into a list of {@link LwM2mPath}.
+     * 
+     * @param content the content to decode
+     * @param format the format used to encode the content
+     * @return a list of {@link LwM2mPath}
+     * 
+     * @throws CodecException if content is malformed.
+     */
+    List<LwM2mPath> decodePaths(byte[] content, ContentFormat format) throws CodecException;
 
     /**
      * return true is the given {@link ContentFormat} is supported
