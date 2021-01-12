@@ -42,6 +42,8 @@ import org.eclipse.leshan.client.observer.LwM2mClientObserverAdapter;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverDispatcher;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
+import org.eclipse.leshan.client.resource.LwM2mRootEnabler;
+import org.eclipse.leshan.client.resource.RootEnabler;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.client.servers.ServerIdentity;
@@ -67,6 +69,9 @@ public class LeshanClient implements LwM2mClient {
 
     private LwM2mObjectTree objectTree;
     private final BootstrapHandler bootstrapHandler;
+    private final LwM2mRootEnabler rootEnabler;
+    private final LwM2mNodeEncoder encoder;
+    private final LwM2mNodeDecoder decoder;
     private final RegistrationEngine engine;
     private final LwM2mClientObserverDispatcher observers;
 
@@ -101,6 +106,9 @@ public class LeshanClient implements LwM2mClient {
         Validate.notNull(coapConfig);
 
         objectTree = createObjectTree(objectEnablers);
+        rootEnabler = createRootEnabler(objectTree);
+        this.decoder = decoder;
+        this.encoder = encoder;
         observers = createClientObserverDispatcher();
         bootstrapHandler = createBoostrapHandler(objectTree);
         endpointsManager = createEndpointsManager(localAddress, coapConfig, dtlsConfigBuilder, trustStore,
@@ -116,6 +124,10 @@ public class LeshanClient implements LwM2mClient {
         createRegistrationUpdateHandler(engine, endpointsManager, bootstrapHandler, objectTree);
 
         coapApi = new CoapAPI();
+    }
+
+    protected LwM2mRootEnabler createRootEnabler(LwM2mObjectTree tree) {
+        return new RootEnabler(tree);
     }
 
     protected LwM2mObjectTree createObjectTree(List<? extends LwM2mObjectEnabler> objectEnablers) {
@@ -143,7 +155,8 @@ public class LeshanClient implements LwM2mClient {
             @Override
             protected Resource createRoot() {
                 // Use to handle Delete on "/"
-                return new org.eclipse.leshan.client.californium.RootResource(engine, bootstrapHandler, this);
+                return new org.eclipse.leshan.client.californium.RootResource(engine, bootstrapHandler, this,
+                        rootEnabler, encoder, decoder);
             }
         };
 

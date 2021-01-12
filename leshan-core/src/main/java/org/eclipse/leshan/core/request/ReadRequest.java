@@ -152,7 +152,18 @@ public class ReadRequest extends AbstractSimpleDownlinkRequest<ReadResponse> {
         this(format, new LwM2mPath(path), coapRequest);
     }
 
-    private ReadRequest(ContentFormat format, LwM2mPath target, Object coapRequest) {
+    /**
+     * Create a request for reading an object/instance/resource targeted by a specific path.
+     * <p>
+     * This constructor is mainly for internal purpore.
+     * 
+     * @param format the desired format for the response
+     * @param target the path to the LWM2M node to read
+     * @param coapRequest the underlying request
+     * 
+     * @throws IllegalArgumentException if the target path is not valid
+     */
+    public ReadRequest(ContentFormat format, LwM2mPath target, Object coapRequest) {
         super(target, coapRequest);
         if (target.isRoot())
             throw new InvalidRequestException("Read request cannot target root path");
