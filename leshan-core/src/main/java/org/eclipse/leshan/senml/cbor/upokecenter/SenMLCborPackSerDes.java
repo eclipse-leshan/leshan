@@ -26,7 +26,6 @@ import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.util.Base64;
 import org.eclipse.leshan.core.util.datatype.NumberUtil;
 import org.eclipse.leshan.core.util.datatype.ULong;
-import org.eclipse.leshan.core.util.json.JsonException;
 import org.eclipse.leshan.senml.SenMLException;
 import org.eclipse.leshan.senml.SenMLPack;
 import org.eclipse.leshan.senml.SenMLRecord;
@@ -36,6 +35,25 @@ import com.upokecenter.cbor.CBORObject;
 import com.upokecenter.cbor.CBORType;
 
 public class SenMLCborPackSerDes {
+
+    private final boolean allowNoValue;
+
+    public SenMLCborPackSerDes() {
+        this(false);
+    }
+
+    /**
+     * Create SenML-CBOR serializer/deserializer based on CBOR-JAVA.
+     * <p>
+     * SenML value is defined as mandatory in <a href="https://tools.ietf.org/html/rfc8428#section-4.2">rfc8428</a>, but
+     * SenML records used with a Read-Composite operation do not contain any value field, so
+     * <code>allowNoValue=true</code> can be used skip this validation.
+     * 
+     * @param allowNoValue <code>True</code> to not check if there is a value for each SenML record.
+     */
+    public SenMLCborPackSerDes(boolean allowNoValue) {
+        this.allowNoValue = allowNoValue;
+    }
 
     public SenMLPack deserializeFromCbor(Collection<CBORObject> objects) throws SenMLException {
         try {
@@ -113,8 +131,9 @@ public class SenMLCborPackSerDes {
                     hasValue = true;
                 }
 
-                if (!hasValue)
-                    throw new JsonException("Invalid SenML record : record must have a value (v,vb,vlo,vd,vs) : %s", o);
+                if (!allowNoValue && !hasValue)
+                    throw new SenMLException("Invalid SenML record : record must have a value (v,vb,vlo,vd,vs) : %s",
+                            o);
 
                 senMLPack.addRecord(record);
             }
@@ -188,6 +207,11 @@ public class SenMLCborPackSerDes {
                         break;
                     default:
                         break;
+                    }
+                } else {
+                    if (!allowNoValue) {
+                        throw new SenMLException(
+                                "Invalid SenML record : record must have a value (v,vb,vlo,vd,vs) : %s", record);
                     }
                 }
                 cborArray.Add(cborRecord);

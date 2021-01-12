@@ -29,6 +29,24 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class SenMLJsonRecordSerDes extends JacksonJsonSerDes<SenMLRecord> {
+    private boolean allowNoValue;
+
+    public SenMLJsonRecordSerDes() {
+        this(false);
+    }
+
+    /**
+     * Create SenML-JSON serializer/deserializer based on Jackson.
+     * <p>
+     * SenML value is defined as mandatory in <a href="https://tools.ietf.org/html/rfc8428#section-4.2">rfc8428</a>, but
+     * SenML records used with a Read-Composite operation do not contain any value field, so
+     * <code>allowNoValue=true</code> can be used skip this validation.
+     * 
+     * @param allowNoValue <code>True</code> to not check if there is a value for each SenML record.
+     */
+    public SenMLJsonRecordSerDes(boolean allowNoValue) {
+        this.allowNoValue = allowNoValue;
+    }
 
     @Override
     public JsonNode jSerialize(SenMLRecord record) throws JsonException {
@@ -94,6 +112,10 @@ public class SenMLJsonRecordSerDes extends JacksonJsonSerDes<SenMLRecord> {
             default:
                 break;
             }
+        } else {
+            if (!allowNoValue)
+                throw new JsonException("Invalid SenML record : record must have a value (v,vb,vlo,vd,vs) : %s",
+                        record);
         }
         return jsonObj;
     }
@@ -152,7 +174,7 @@ public class SenMLJsonRecordSerDes extends JacksonJsonSerDes<SenMLRecord> {
             hasValue = true;
         }
 
-        if (!hasValue)
+        if (!allowNoValue && !hasValue)
             throw new JsonException("Invalid SenML record : record must have a value (v,vb,vlo,vd,vs) : %s", o);
 
         return record;

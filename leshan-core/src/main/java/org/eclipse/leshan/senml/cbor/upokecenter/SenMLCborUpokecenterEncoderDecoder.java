@@ -32,18 +32,24 @@ public class SenMLCborUpokecenterEncoderDecoder implements SenMLDecoder, SenMLEn
     private final SenMLCborPackSerDes serDes;
 
     public SenMLCborUpokecenterEncoderDecoder() {
-        this(false);
+        this(false, false);
     }
 
     /**
-     * @param keepingInsertionOrder Set it to true allows to keep insertion order at serialization. This is a kind of
-     *        HACK using reflection which could make testing easier but could bring performance penalty
+     * Create an Encoder/Decoder for SenML-CBOR based on CBOR-JAVA.
      * 
+     * SenML value is defined as mandatory in <a href="https://tools.ietf.org/html/rfc8428#section-4.2">rfc8428</a>, but
+     * SenML records used with a Read-Composite operation do not contain any value field, so
+     * <code>allowNoValue=true</code> can be used skip this validation.
+     * 
+     * @param keepingInsertionOrder Set it to <code>True</code> allows to keep insertion order at serialization. This is
+     *        a kind of HACK using reflection which could make testing easier but could bring performance penalty
+     * @param allowNoValue <code>True</code> to not check if there is a value for each SenML record.
      * @see <a href="https://github.com/peteroupc/CBOR-Java/issues/13">CBOR-Java#13 issue</a>
      */
-    public SenMLCborUpokecenterEncoderDecoder(boolean keepingInsertionOrder) {
+    public SenMLCborUpokecenterEncoderDecoder(boolean keepingInsertionOrder, boolean allowNoValue) {
         if (keepingInsertionOrder) {
-            serDes = new SenMLCborPackSerDes() {
+            serDes = new SenMLCborPackSerDes(allowNoValue) {
                 @Override
                 CBORObject newMap() {
                     return CBORObject.NewOrderedMap();
@@ -51,7 +57,7 @@ public class SenMLCborUpokecenterEncoderDecoder implements SenMLDecoder, SenMLEn
             };
 
         } else {
-            serDes = new SenMLCborPackSerDes();
+            serDes = new SenMLCborPackSerDes(allowNoValue);
         }
     }
 

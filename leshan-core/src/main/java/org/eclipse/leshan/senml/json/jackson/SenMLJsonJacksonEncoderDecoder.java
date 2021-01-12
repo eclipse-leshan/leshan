@@ -30,8 +30,25 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Helper for encoding/decoding SenML JSON using Jackson
  */
 public class SenMLJsonJacksonEncoderDecoder implements SenMLDecoder, SenMLEncoder {
-    private static final SenMLJsonRecordSerDes serDes = new SenMLJsonRecordSerDes();
+    private final SenMLJsonRecordSerDes serDes;
     private static final ObjectMapper mapper = new ObjectMapper();
+
+    public SenMLJsonJacksonEncoderDecoder() {
+        this(false);
+    }
+
+    /**
+     * Create an Encoder/Decoder for SenML-JSON based on Jackson.
+     * 
+     * SenML value is defined as mandatory in <a href="https://tools.ietf.org/html/rfc8428#section-4.2">rfc8428</a>, but
+     * SenML records used with a Read-Composite operation do not contain any value field, so
+     * <code>allowNoValue=true</code> can be used skip this validation.
+     * 
+     * @param allowNoValue <code>True</code> to not check if there is a value for each SenML record.
+     */
+    public SenMLJsonJacksonEncoderDecoder(boolean allowNoValue) {
+        this.serDes = new SenMLJsonRecordSerDes(allowNoValue);
+    }
 
     @Override
     public byte[] toSenML(SenMLPack pack) throws SenMLException {

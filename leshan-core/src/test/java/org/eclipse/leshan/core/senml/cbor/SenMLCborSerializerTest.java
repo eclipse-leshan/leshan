@@ -34,7 +34,7 @@ public class SenMLCborSerializerTest extends AbstractSenMLTest {
 
     @Parameterized.Parameters(name = "{2}")
     public static Collection<?> senMLJsonencoderDecoder() {
-        SenMLCborUpokecenterEncoderDecoder cborJava = new SenMLCborUpokecenterEncoderDecoder(true);
+        SenMLCborUpokecenterEncoderDecoder cborJava = new SenMLCborUpokecenterEncoderDecoder(true, false);
         SenMLCborJacksonEncoderDecoder jackson = new SenMLCborJacksonEncoderDecoder();
         return Arrays.asList(new Object[][] { //
                                 { cborJava, cborJava, "cbor-java" }, //
