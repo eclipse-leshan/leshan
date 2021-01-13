@@ -44,12 +44,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A default {@link LwM2mNodeDecoder} which support default {@link ContentFormat} :
+ * A default {@link LwM2mNodeDecoder} which support LWM2M {@link ContentFormat} :
  * <ul>
- * <li>{@link ContentFormat#TLV}</li>
- * <li>{@link ContentFormat#JSON}</li>
  * <li>{@link ContentFormat#TEXT}</li>
  * <li>{@link ContentFormat#OPAQUE}</li>
+ * <li>{@link ContentFormat#CBOR}</li>
+ * <li>{@link ContentFormat#SENML_JSON}</li>
+ * <li>{@link ContentFormat#SENML_CBOR}</li>
+ * <li>{@link ContentFormat#TLV}</li>
+ * <li>{@link ContentFormat#JSON} (old one from LwM2m v1.0)</li>
  * </ul>
  */
 public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
