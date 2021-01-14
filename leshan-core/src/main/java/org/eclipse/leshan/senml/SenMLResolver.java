@@ -23,7 +23,7 @@ package org.eclipse.leshan.senml;
 public abstract class SenMLResolver<T extends ResolvedSenMLRecord> {
 
     private long currentTimestamp = System.currentTimeMillis();
-    private String currentBasename = "";
+    private String currentBasename = null;
     private Long currentBasetime = null;
 
     public T resolve(SenMLRecord record) throws SenMLException {
@@ -31,7 +31,11 @@ public abstract class SenMLResolver<T extends ResolvedSenMLRecord> {
         if (record.getBaseName() != null)
             currentBasename = record.getBaseName();
 
-        String resolvedName = record.getName() == null ? currentBasename : currentBasename + record.getName();
+        String resolvedName = null;
+        if (currentBasename != null || record.getName() != null) {
+            String baseName = currentBasename != null ? currentBasename : "";
+            resolvedName = record.getName() == null ? baseName : baseName + record.getName();
+        }
 
         // Resolve SenML time (https://tools.ietf.org/html/rfc8428#section-4.5.3)
         Long resolvedTimestamp = null;
@@ -39,7 +43,7 @@ public abstract class SenMLResolver<T extends ResolvedSenMLRecord> {
             currentBasetime = record.getBaseTime();
         if (currentBasetime != null || record.getTime() != null) {
             Long basetime = currentBasetime != null ? currentBasetime : 0l;
-            resolvedTimestamp = record.getTime() != null ? currentBasetime + record.getTime() : basetime;
+            resolvedTimestamp = record.getTime() != null ? basetime + record.getTime() : basetime;
 
             // Values less than 268,435,456 (2**28) represent time relative to the current time.
             // A negative value indicates seconds in the past from roughly "now".
