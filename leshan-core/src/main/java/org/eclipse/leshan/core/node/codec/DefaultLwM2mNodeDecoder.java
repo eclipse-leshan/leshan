@@ -59,7 +59,7 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultLwM2mNodeDecoder.class);
 
-    public static Map<ContentFormat, NodeDecoder> getDefaultDecoders(boolean supportDeprecatedContentFormat) {
+    public static Map<ContentFormat, NodeDecoder> getDefaultNodeDecoders(boolean supportDeprecatedContentFormat) {
         Map<ContentFormat, NodeDecoder> decoders = new HashMap<>();
         decoders.put(ContentFormat.TEXT, new LwM2mNodeTextDecoder());
         decoders.put(ContentFormat.OPAQUE, new LwM2mNodeOpaqueDecoder());
@@ -81,7 +81,7 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
         return decoders;
     }
 
-    protected final Map<ContentFormat, NodeDecoder> decoders;
+    protected final Map<ContentFormat, NodeDecoder> nodeDecoders;
 
     /**
      * Create {@link DefaultLwM2mNodeDecoder} without support of old TLV and JSON code.
@@ -99,11 +99,11 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
      * @param supportDeprecatedContentFormat True to accept to decode old code.
      */
     public DefaultLwM2mNodeDecoder(boolean supportDeprecatedContentFormat) {
-        this(getDefaultDecoders(supportDeprecatedContentFormat));
+        this(getDefaultNodeDecoders(supportDeprecatedContentFormat));
     }
 
-    public DefaultLwM2mNodeDecoder(Map<ContentFormat, NodeDecoder> decoders) {
-        this.decoders = decoders;
+    public DefaultLwM2mNodeDecoder(Map<ContentFormat, NodeDecoder> nodeDecoders) {
+        this.nodeDecoders = nodeDecoders;
     }
 
     @Override
@@ -123,7 +123,7 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
             throw new CodecException("Content format is mandatory. [%s]", path);
         }
 
-        NodeDecoder decoder = decoders.get(format);
+        NodeDecoder decoder = nodeDecoders.get(format);
         if (decoder == null) {
             throw new CodecException("Content format %s is not supported [%s]", format, path);
         }
@@ -140,7 +140,7 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
             throw new CodecException("Content format is mandatory. [%s]", paths);
         }
 
-        NodeDecoder decoder = decoders.get(format);
+        NodeDecoder decoder = nodeDecoders.get(format);
         if (decoder == null) {
             throw new CodecException("Content format %s is not supported [%s]", format, paths);
         }
@@ -163,7 +163,7 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
             throw new CodecException("Content format is mandatory. [%s]", path);
         }
 
-        NodeDecoder decoder = decoders.get(format);
+        NodeDecoder decoder = nodeDecoders.get(format);
         if (decoder == null) {
             throw new CodecException("Content format %s is not supported [%s]", format, path);
         }
@@ -200,6 +200,6 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
 
     @Override
     public boolean isSupported(ContentFormat format) {
-        return decoders.get(format) != null;
+        return nodeDecoders.get(format) != null;
     }
 }
