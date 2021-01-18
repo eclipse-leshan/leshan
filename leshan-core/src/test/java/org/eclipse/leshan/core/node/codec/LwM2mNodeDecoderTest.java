@@ -1078,6 +1078,33 @@ public class LwM2mNodeDecoderTest {
     }
 
     @Test
+    public void senml_json_decode_mixed_resource_without_given_path() {
+        // Prepare data to decode
+        StringBuilder b = new StringBuilder();
+        b.append("[{\"bn\":\"/4/0/0\",\"v\":45},");
+        b.append("{\"bn\":\"/4/0/1\",\"v\":30},");
+        b.append("{\"bn\":\"/4/0/2\",\"v\":100},");
+        b.append("{\"bn\":\"/6/0/\",\"n\":\"0\",\"v\":43.918998},");
+        b.append("{\"n\":\"1\",\"v\":2.351149},");
+        b.append("{\"n\":\"5\",\"v\":1610029880}]");
+
+        // Decode
+        Map<LwM2mPath, LwM2mNode> res = decoder.decodeNodes(b.toString().getBytes(), ContentFormat.SENML_JSON, null,
+                model);
+
+        // Expected result
+        Map<LwM2mPath, LwM2mNode> nodes = new HashMap<>();
+        nodes.put(new LwM2mPath("4/0/0"), LwM2mSingleResource.newIntegerResource(0, 45));
+        nodes.put(new LwM2mPath("4/0/1"), LwM2mSingleResource.newIntegerResource(1, 30));
+        nodes.put(new LwM2mPath("4/0/2"), LwM2mSingleResource.newIntegerResource(2, 100));
+        nodes.put(new LwM2mPath("6/0/0"), LwM2mSingleResource.newFloatResource(0, 43.918998));
+        nodes.put(new LwM2mPath("6/0/1"), LwM2mSingleResource.newFloatResource(1, 2.351149));
+        nodes.put(new LwM2mPath("6/0/5"), LwM2mSingleResource.newDateResource(5, new Date(1610029880000l)));
+
+        Assert.assertEquals(nodes, res);
+    }
+
+    @Test
     public void senml_json_decode_path_using_name() {
         // Prepare data to decode
         StringBuilder b = new StringBuilder();

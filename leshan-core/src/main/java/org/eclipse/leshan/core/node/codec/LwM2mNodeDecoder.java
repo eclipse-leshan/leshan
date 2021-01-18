@@ -21,6 +21,8 @@ import java.util.Map;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.LwM2mResourceInstance;
+import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.request.ContentFormat;
 
@@ -69,7 +71,9 @@ public interface LwM2mNodeDecoder {
      *
      * @param content the content
      * @param format the content format
-     * @param paths the list of path of node to build.
+     * @param paths the list of path of node to build. The list of path can be <code>null</code> meaning that we don't
+     *        know which kind of {@link LwM2mNode} is encoded. In this case, let's assume this is a list of
+     *        {@link LwM2mSingleResource} or {@link LwM2mResourceInstance}.
      * @param model the collection of supported object models
      * @return the Map of {@link LwM2mPath} to decoded {@link LwM2mNode}. value can be <code>null</code> if no data was
      *         available for a given path

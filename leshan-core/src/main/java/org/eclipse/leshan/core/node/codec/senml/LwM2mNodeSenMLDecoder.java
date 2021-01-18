@@ -14,6 +14,7 @@
 package org.eclipse.leshan.core.node.codec.senml;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -107,28 +108,43 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
             // Decode SenML pack
             SenMLPack pack = decoder.fromSenML(content);
 
-            // Resolve records & Group it by time-stamp
-            Map<LwM2mPath, Collection<LwM2mResolvedSenMLRecord>> recordsByPath = groupByPath(pack.getRecords(), paths);
-
-            // Fill nodes collections
             Map<LwM2mPath, LwM2mNode> nodes = new HashMap<>();
-            for (LwM2mPath path : paths) {
-                Collection<LwM2mResolvedSenMLRecord> records = recordsByPath.get(path);
-                if (records.isEmpty()) {
-                    // Node can be null as the LWM2M specification says that "Read-Composite operation is
-                    // treated as non-atomic and handled as best effort by the client. That is, if any of the
-                    // requested
-                    // resources do not have a valid value to return, they will not be included in the response".
-                    // Meaning that a given path could have no corresponding value.
-                    nodes.put(path, null);
-                } else {
-                    LwM2mNode node = parseRecords(recordsByPath.get(path), path, model,
+            if (paths != null) {
+                // Resolve records & Group it by time-stamp
+                Map<LwM2mPath, Collection<LwM2mResolvedSenMLRecord>> recordsByPath = groupByPath(pack.getRecords(),
+                        paths);
+
+                for (LwM2mPath path : paths) {
+                    Collection<LwM2mResolvedSenMLRecord> records = recordsByPath.get(path);
+                    if (records.isEmpty()) {
+                        // Node can be null as the LWM2M specification says that "Read-Composite operation is
+                        // treated as non-atomic and handled as best effort by the client. That is, if any of the
+                        // requested
+                        // resources do not have a valid value to return, they will not be included in the response".
+                        // Meaning that a given path could have no corresponding value.
+                        nodes.put(path, null);
+                    } else {
+                        LwM2mNode node = parseRecords(recordsByPath.get(path), path, model,
+                                DefaultLwM2mNodeDecoder.nodeClassFromPath(path));
+                        nodes.put(path, node);
+                    }
+                }
+            } else {
+                // Paths are not given so we given so we can not regroup by path
+                // let's assume that each path refer to a single resource or single resource instances.
+                LwM2mSenMLResolver resolver = new LwM2mSenMLResolver();
+                for (SenMLRecord record : pack.getRecords()) {
+                    LwM2mResolvedSenMLRecord resolvedRecord = resolver.resolve(record);
+                    LwM2mPath path = resolvedRecord.getPath();
+                    LwM2mNode node = parseRecords(Arrays.asList(resolvedRecord), path, model,
                             DefaultLwM2mNodeDecoder.nodeClassFromPath(path));
                     nodes.put(path, node);
                 }
             }
             return nodes;
-        } catch (SenMLException e) {
+        } catch (
+
+        SenMLException e) {
             String jsonStrValue = content != null ? new String(content) : "";
             throw new CodecException(e, "Unable to decode nodes[path:%s] : %s", paths, jsonStrValue, e);
         }

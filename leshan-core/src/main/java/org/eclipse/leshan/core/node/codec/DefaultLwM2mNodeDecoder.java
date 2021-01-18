@@ -159,7 +159,8 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
     public Map<LwM2mPath, LwM2mNode> decodeNodes(byte[] content, ContentFormat format, List<LwM2mPath> paths,
             LwM2mModel model) throws CodecException {
         LOG.debug("Decoding value for path {} and format {}: {}", paths, format, content);
-        Validate.notNull(paths);
+        if (paths != null)
+            Validate.notEmpty(paths);
 
         if (format == null) {
             throw new CodecException("Content format is mandatory. [%s]", paths);
