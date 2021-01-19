@@ -39,6 +39,8 @@ public interface DownlinkRequestVisitor {
 
     void visit(ReadCompositeRequest request);
 
+    void visit(WriteCompositeRequest writeCompositeRequest);
+
     void visit(BootstrapDiscoverRequest request);
 
     void visit(BootstrapWriteRequest request);

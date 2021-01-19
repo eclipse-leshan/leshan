@@ -43,6 +43,37 @@ public class LwM2mSingleResource implements LwM2mResource {
         this.type = type;
     }
 
+    public static LwM2mSingleResource newResource(int id, Object value) {
+        LwM2mNodeUtil.validateNotNull(value, "value MUST NOT be null");
+
+        if (value instanceof Byte || value instanceof Short || value instanceof Integer || value instanceof Long) {
+            return new LwM2mSingleResource(id, ((Number) value).longValue(), Type.INTEGER);
+        }
+        if (value instanceof Float || value instanceof Double) {
+            return new LwM2mSingleResource(id, ((Number) value).doubleValue(), Type.FLOAT);
+        }
+        if (value instanceof Boolean) {
+            return new LwM2mSingleResource(id, value, Type.BOOLEAN);
+        }
+        if (value instanceof byte[]) {
+            return new LwM2mSingleResource(id, value, Type.OPAQUE);
+        }
+        if (value instanceof String) {
+            return new LwM2mSingleResource(id, value, Type.STRING);
+        }
+        if (value instanceof Date) {
+            return new LwM2mSingleResource(id, value, Type.TIME);
+        }
+        if (value instanceof ObjectLink) {
+            return new LwM2mSingleResource(id, value, Type.OBJLNK);
+        }
+        if (value instanceof ULong) {
+            return new LwM2mSingleResource(id, value, Type.UNSIGNED_INTEGER);
+        }
+        throw new LwM2mNodeException(
+                String.format("Unsupported type %s for resource", value.getClass().getCanonicalName()));
+    }
+
     public static LwM2mSingleResource newResource(int id, Object value, Type type) {
         String doesNotMatchMessage = "Value does not match the given datatype";
         switch (type) {

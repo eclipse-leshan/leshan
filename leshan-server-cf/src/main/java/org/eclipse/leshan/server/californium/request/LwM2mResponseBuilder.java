@@ -47,6 +47,7 @@ import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadCompositeRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
+import org.eclipse.leshan.core.request.WriteCompositeRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
@@ -63,6 +64,7 @@ import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadCompositeResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteAttributesResponse;
+import org.eclipse.leshan.core.response.WriteCompositeResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.californium.observation.ObserveUtil;
@@ -273,7 +275,21 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             // handle unexpected response:
             handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);
         }
+    }
 
+    @Override
+    public void visit(WriteCompositeRequest request) {
+        if (coapResponse.isError()) {
+            // handle error response:
+            lwM2mresponse = new WriteCompositeResponse(toLwM2mResponseCode(coapResponse.getCode()),
+                    coapResponse.getPayloadString(), coapResponse);
+        } else if (coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.CHANGED) {
+            // handle success response:
+            lwM2mresponse = new WriteCompositeResponse(ResponseCode.CHANGED, null, coapResponse);
+        } else {
+            // handle unexpected response:
+            handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);
+        }
     }
 
     @Override

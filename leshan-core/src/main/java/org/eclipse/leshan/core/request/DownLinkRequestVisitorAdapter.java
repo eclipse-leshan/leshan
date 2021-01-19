@@ -62,6 +62,10 @@ public class DownLinkRequestVisitorAdapter implements DownlinkRequestVisitor {
     }
 
     @Override
+    public void visit(WriteCompositeRequest writeCompositeRequest) {
+    }
+
+    @Override
     public void visit(BootstrapDiscoverRequest request) {
     }
 
