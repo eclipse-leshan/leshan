@@ -19,6 +19,7 @@ package org.eclipse.leshan.client.californium;
 import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toCoapResponseCode;
 
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
@@ -32,6 +33,7 @@ import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.resource.LwM2mRootEnabler;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
@@ -39,9 +41,11 @@ import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ReadCompositeRequest;
+import org.eclipse.leshan.core.request.WriteCompositeRequest;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
 import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
 import org.eclipse.leshan.core.response.ReadCompositeResponse;
+import org.eclipse.leshan.core.response.WriteCompositeResponse;
 import org.eclipse.leshan.core.util.StringUtils;
 
 /**
@@ -125,6 +129,35 @@ public class RootResource extends LwM2mClientCoapResource {
             exchange.respond(toCoapResponseCode(response.getCode()),
                     encoder.encodeNodes(response.getContent(), responseContentFormat, rootEnabler.getModel()),
                     responseContentFormat.getCode());
+        }
+        return;
+    }
+
+    @Override
+    public void handleIPATCH(CoapExchange exchange) {
+        ServerIdentity identity = getServerOrRejectRequest(exchange);
+        if (identity == null)
+            return;
+
+        // Manage Read Composite request
+        Request coapRequest = exchange.advanced().getRequest();
+
+        // Handle content format
+        ContentFormat contentFormat = ContentFormat.fromCode(exchange.getRequestOptions().getContentFormat());
+        if (!decoder.isSupported(contentFormat)) {
+            exchange.respond(ResponseCode.UNSUPPORTED_CONTENT_FORMAT);
+            return;
+        }
+
+        Map<LwM2mPath, LwM2mNode> nodes = decoder.decodeNodes(coapRequest.getPayload(), contentFormat, null,
+                rootEnabler.getModel());
+
+        WriteCompositeResponse response = rootEnabler.write(identity,
+                new WriteCompositeRequest(contentFormat, nodes, coapRequest));
+        if (response.getCode().isError()) {
+            exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
+        } else {
+            exchange.respond(toCoapResponseCode(response.getCode()));
         }
         return;
     }

@@ -19,17 +19,28 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
+import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.LwM2mResourceInstance;
+import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.request.ReadCompositeRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
+import org.eclipse.leshan.core.request.WriteCompositeRequest;
+import org.eclipse.leshan.core.request.WriteRequest;
+import org.eclipse.leshan.core.request.WriteRequest.Mode;
 import org.eclipse.leshan.core.response.ReadCompositeResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.core.response.WriteCompositeResponse;
+import org.eclipse.leshan.core.response.WriteResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -114,6 +125,90 @@ public class RootEnabler implements LwM2mRootEnabler {
         } else {
             return ReadCompositeResponse.success(content);
         }
+    }
+
+    @Override
+    public WriteCompositeResponse write(ServerIdentity identity, WriteCompositeRequest request) {
+        // We first need to check if targeted object and instance exist and if there are writable.
+        Map<Integer, LwM2mObjectEnabler> enablers = new HashMap<>();
+        for (Entry<LwM2mPath, LwM2mNode> entry : request.getNodes().entrySet()) {
+            LwM2mPath path = entry.getKey();
+            LwM2mObjectEnabler objectEnabler = tree.getObjectEnabler(path.getObjectId());
+
+            // check if object is supported
+            if (objectEnabler == null) {
+                return WriteCompositeResponse.notFound(String.format("object %s not found", path.toObjectPath()));
+            }
+
+            // check if instance is available
+            if (!objectEnabler.getAvailableInstanceIds().contains(path.getObjectInstanceId())) {
+                return WriteCompositeResponse
+                        .notFound(String.format("object instance %s not found", path.toObjectInstancePath()));
+            }
+
+            // check if resource is writable
+            ObjectModel model = objectEnabler.getObjectModel();
+            ResourceModel resourceModel = model.resources.get(path.getResourceId());
+            if (!resourceModel.operations.isWritable()) {
+                return WriteCompositeResponse
+                        .methodNotAllowed(String.format("resource %s is not writable", path.toResourcePath()));
+            }
+
+            // check about single/multi instance resource
+            LwM2mNode node = entry.getValue();
+            if (path.isResource()) {
+                if (resourceModel.multiple) {
+                    return WriteCompositeResponse.badRequest(String.format("resource %s is multi instance", path));
+                }
+                if (!(node instanceof LwM2mSingleResource)) {
+                    return WriteCompositeResponse
+                            .badRequest(String.format("invalid path %s for %s", path, node.getClass().getSimpleName()));
+                }
+            } else if (path.isResourceInstance()) {
+                if (!resourceModel.multiple) {
+                    return WriteCompositeResponse.badRequest(String.format("resource %s is single instance", path));
+                }
+                if (!(node instanceof LwM2mResourceInstance)) {
+                    return WriteCompositeResponse
+                            .badRequest(String.format("invalid path %s for %s", path, node.getClass().getSimpleName()));
+                }
+            }
+            enablers.put(path.getObjectId(), objectEnabler);
+        }
+
+        // TODO all of this should be done in an atomic way. So I suppose if we want to support this we need to add a
+        // kind of transaction mechanism with rollback feature and also a way to lock objectTree?
+
+        // Write Nodes
+        for (Entry<LwM2mPath, LwM2mNode> entry : request.getNodes().entrySet()) {
+            // Get corresponding object enabler
+            LwM2mPath path = entry.getKey();
+            LwM2mNode node = entry.getValue();
+            LwM2mObjectEnabler objectEnabler = enablers.get(path.getObjectId());
+
+            // WriteComposite is about patching so we need to use write UPDATE Mode which is only available on instance.
+            // So we create an instance from node
+            LwM2mObjectInstance instance;
+            if (node instanceof LwM2mResource) {
+                instance = new LwM2mObjectInstance(path.getObjectInstanceId(), (LwM2mResource) node);
+            } else if (node instanceof LwM2mResourceInstance) {
+                LwM2mResourceInstance resourceInstance = (LwM2mResourceInstance) node;
+                instance = new LwM2mObjectInstance(path.getObjectInstanceId(),
+                        new LwM2mMultipleResource(path.getResourceId(), resourceInstance.getType(), resourceInstance));
+            } else {
+                return WriteCompositeResponse.internalServerError(
+                        String.format("node %s should be a resource or a resource instance, not a %s", path,
+                                node.getClass().getSimpleName()));
+            }
+
+            WriteResponse response = objectEnabler.write(identity, new WriteRequest(Mode.UPDATE,
+                    request.getContentFormat(), path.toObjectInstancePath(), instance, request.getCoapRequest()));
+
+            if (response.isFailure()) {
+                return new WriteCompositeResponse(response.getCode(), response.getErrorMessage(), null);
+            }
+        }
+        return WriteCompositeResponse.success();
     }
 
     @Override

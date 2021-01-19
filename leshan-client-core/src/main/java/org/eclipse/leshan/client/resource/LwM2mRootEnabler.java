@@ -18,7 +18,9 @@ package org.eclipse.leshan.client.resource;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.request.ReadCompositeRequest;
+import org.eclipse.leshan.core.request.WriteCompositeRequest;
 import org.eclipse.leshan.core.response.ReadCompositeResponse;
+import org.eclipse.leshan.core.response.WriteCompositeResponse;
 
 /**
  * Enable request on root path.
@@ -26,6 +28,8 @@ import org.eclipse.leshan.core.response.ReadCompositeResponse;
 public interface LwM2mRootEnabler {
 
     ReadCompositeResponse read(ServerIdentity identity, ReadCompositeRequest request);
+
+    WriteCompositeResponse write(ServerIdentity identity, WriteCompositeRequest request);
 
     LwM2mModel getModel();
 }
