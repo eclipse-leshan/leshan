@@ -260,6 +260,33 @@ public class LwM2mPath {
     }
 
     /**
+     * @return a new {@link LwM2mPath} targeting an object from current path.
+     */
+    public LwM2mPath toObjectPath() {
+        if (getObjectId() != null)
+            return new LwM2mPath(getObjectId());
+        throw new IllegalStateException(String.format("an object path can not be created from %s", this));
+    }
+
+    /**
+     * @return a new {@link LwM2mPath} targeting an object instance from current path.
+     */
+    public LwM2mPath toObjectInstancePath() {
+        if (getObjectInstanceId() != null)
+            return new LwM2mPath(getObjectId(), getObjectInstanceId());
+        throw new IllegalStateException(String.format("an object instance path can not be created from %s", this));
+    }
+
+    /**
+     * @return a new {@link LwM2mPath} targeting an resource from current path.
+     */
+    public LwM2mPath toResourcePath() {
+        if (getResourceId() != null)
+            return new LwM2mPath(getObjectId(), getObjectInstanceId(), getResourceId());
+        throw new IllegalStateException(String.format("an resource path can not be created from %s", this));
+    }
+
+    /**
      * The string representation of the path: /{Object ID}/{ObjectInstance ID}/{Resource ID}/{ResourceInstance ID}
      */
     @Override
