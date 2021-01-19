@@ -154,7 +154,7 @@ public class Security extends BaseInstanceEnabler {
     }
 
     @Override
-    public WriteResponse write(ServerIdentity identity, int resourceId, LwM2mResource value) {
+    public WriteResponse write(ServerIdentity identity, boolean replace, int resourceId, LwM2mResource value) {
         if (!identity.isSystem())
             LOG.debug("Write on Security resource /{}/{}/{}", getModel().id, getId(), resourceId);
 
@@ -212,7 +212,7 @@ public class Security extends BaseInstanceEnabler {
             return WriteResponse.success();
 
         default:
-            return super.write(identity, resourceId, value);
+            return super.write(identity, replace, resourceId, value);
         }
 
     }

@@ -153,19 +153,23 @@ public interface LwM2mInstanceEnabler {
      * 
      * @param identity the identity of the requester. This could be an internal call in this case
      *        <code> identity == ServerIdentity.SYSTEM</code>.
+     * @param replace If replace is true that means that the resource value completely replace the previous value. The
+     *        behavior difference is only for Multiple resource. If replace is false the existing array of Resource
+     *        Instances is updated meaning some Instances may be created or overwritten but not deleted.
      * @param resourceid the ID of the resource to set the value for
      * @param value the value to set the resource to
      * @return the response object representing the outcome of the operation. An implementation should set the result's
      *         {@link WriteResponse#getCode() response code} to either reflect the success or reason for failure to set
      *         the value.
      */
-    WriteResponse write(ServerIdentity identity, int resourceid, LwM2mResource value);
+    WriteResponse write(ServerIdentity identity, boolean replace, int resourceid, LwM2mResource value);
 
     /**
      * Sets the value of one of this LWM2M object instance's resources instance.
      * 
      * @param identity the identity of the requester. This could be an internal call in this case
      *        <code> identity == ServerIdentity.SYSTEM</code>.
+     * @param addIfAbsent If resource instance does not already exist it must be addded only if addIfAbsent is True
      * @param resourceid the ID of the resource to set the value for
      * @param resourceInstance the ID of the resource instance to set the value of
      * @param value the value to set the resource instance to
@@ -173,7 +177,8 @@ public interface LwM2mInstanceEnabler {
      *         {@link WriteResponse#getCode() response code} to either reflect the success or reason for failure to set
      *         the value.
      */
-    WriteResponse write(ServerIdentity identity, int resourceid, int resourceInstance, LwM2mResourceInstance value);
+    WriteResponse write(ServerIdentity identity, boolean addIfAbsent, int resourceid, int resourceInstance,
+            LwM2mResourceInstance value);
 
     /**
      * Executes the operation represented by one of this LWM2M object instance's resources.

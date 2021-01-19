@@ -152,7 +152,7 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
                 if (!identity.isLwm2mServer() || resourceModel.operations.isWritable()) {
                     LwM2mResource writeResource = resourcesToWrite.remove(resourceModel.id);
                     if (null != writeResource) {
-                        write(identity, resourceModel.id, writeResource);
+                        write(identity, true, resourceModel.id, writeResource);
                     } else {
                         reset(resourceModel.id);
                     }
@@ -161,18 +161,18 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
         }
         // UPDATE and resources currently not in the model
         for (LwM2mResource resource : resourcesToWrite.values()) {
-            write(identity, resource.getId(), resource);
+            write(identity, false, resource.getId(), resource);
         }
         return WriteResponse.success();
     }
 
     @Override
-    public WriteResponse write(ServerIdentity identity, int resourceid, LwM2mResource value) {
+    public WriteResponse write(ServerIdentity identity, boolean replace, int resourceid, LwM2mResource value) {
         return WriteResponse.notFound();
     }
 
     @Override
-    public WriteResponse write(ServerIdentity identity, int resourceid, int resourceInstanceId,
+    public WriteResponse write(ServerIdentity identity, boolean addIfAbsent, int resourceid, int resourceInstanceId,
             LwM2mResourceInstance value) {
         // this is a sub-optimal default implementation
         ReadResponse response = read(ServerIdentity.SYSTEM, resourceid);
@@ -181,10 +181,10 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
             if (content instanceof LwM2mMultipleResource) {
                 LwM2mMultipleResource multiresource = ((LwM2mMultipleResource) content);
                 Map<Integer, LwM2mResourceInstance> instances = new HashMap<>(multiresource.getInstances());
-                if (instances.containsKey(resourceInstanceId)) {
+                if (addIfAbsent || instances.containsKey(resourceInstanceId)) {
                     instances.put(resourceInstanceId, value);
-                    return write(identity, resourceid,
-                        new LwM2mMultipleResource(resourceid, value.getType(), instances.values()));
+                    return write(identity, true, resourceid,
+                            new LwM2mMultipleResource(resourceid, value.getType(), instances.values()));
                 }
             }
         }

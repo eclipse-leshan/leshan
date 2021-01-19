@@ -100,7 +100,7 @@ public class Device extends BaseInstanceEnabler {
     }
 
     @Override
-    public WriteResponse write(ServerIdentity identity, int resourceid, LwM2mResource value) {
+    public WriteResponse write(ServerIdentity identity, boolean replace, int resourceid, LwM2mResource value) {
 
         switch (resourceid) {
 
@@ -115,7 +115,7 @@ public class Device extends BaseInstanceEnabler {
             return WriteResponse.success();
 
         default:
-            return super.write(identity, resourceid, value);
+            return super.write(identity, replace, resourceid, value);
         }
     }
 

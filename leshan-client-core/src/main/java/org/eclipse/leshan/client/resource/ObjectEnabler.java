@@ -184,7 +184,7 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
 
         // add/write resource
         for (LwM2mResource resource : resources) {
-            newInstance.write(identity, resource.getId(), resource);
+            newInstance.write(identity, true, resource.getId(), resource);
         }
 
         return newInstance;
@@ -268,11 +268,11 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
 
         // Manage Resource case
         if (path.getResourceInstanceId() == null) {
-            return instance.write(identity, path.getResourceId(), (LwM2mResource) request.getNode());
+            return instance.write(identity, true, path.getResourceId(), (LwM2mResource) request.getNode());
         }
 
         // Manage Resource Instance case
-        return instance.write(identity, path.getResourceId(), path.getResourceInstanceId(),
+        return instance.write(identity, false, path.getResourceId(), path.getResourceInstanceId(),
                 ((LwM2mResourceInstance) request.getNode()));
     }
 
@@ -314,7 +314,7 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
             doCreate(identity, new CreateRequest(path.getObjectId(),
                     new LwM2mObjectInstance(path.getObjectInstanceId(), resource)));
         } else {
-            instanceEnabler.write(identity, path.getResourceId(), resource);
+            instanceEnabler.write(identity, true, path.getResourceId(), resource);
         }
         return BootstrapWriteResponse.success();
     }

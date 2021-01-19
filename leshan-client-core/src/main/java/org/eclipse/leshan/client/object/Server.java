@@ -108,7 +108,7 @@ public class Server extends BaseInstanceEnabler {
     }
 
     @Override
-    public WriteResponse write(ServerIdentity identity, int resourceid, LwM2mResource value) {
+    public WriteResponse write(ServerIdentity identity, boolean replace, int resourceid, LwM2mResource value) {
         if (!identity.isSystem())
             LOG.debug("Write on Server resource /{}/{}/{}", getModel().id, getId(), resourceid);
 
@@ -191,7 +191,7 @@ public class Server extends BaseInstanceEnabler {
             }
 
         default:
-            return super.write(identity, resourceid, value);
+            return super.write(identity, replace, resourceid, value);
         }
     }
 

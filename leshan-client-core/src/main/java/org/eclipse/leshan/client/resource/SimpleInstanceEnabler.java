@@ -28,6 +28,7 @@ import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
@@ -75,9 +76,28 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
     }
 
     @Override
-    public WriteResponse write(ServerIdentity identity, int resourceid, LwM2mResource value) {
-        LwM2mResource previousValue = resources.put(resourceid, value);
-        if (!value.equals(previousValue))
+    public WriteResponse write(ServerIdentity identity, boolean replace, int resourceid, LwM2mResource value) {
+        // define new Value
+        LwM2mResource newValue;
+        if (value instanceof LwM2mMultipleResource && !replace) {
+            // This is the special case of multiple instance resource where we do not replace the resource instances but
+            // we
+            // merge it.
+            LwM2mMultipleResource multipleResource = (LwM2mMultipleResource) resources.get(resourceid);
+            if (multipleResource != null) {
+                Map<Integer, LwM2mResourceInstance> mergedInstances = new HashMap<>(multipleResource.getInstances());
+                mergedInstances.putAll(value.getInstances());
+                newValue = new LwM2mMultipleResource(resourceid, value.getType(), mergedInstances.values());
+            } else {
+                newValue = value;
+            }
+        } else {
+            newValue = value;
+        }
+
+        LwM2mResource previousValue = resources.put(resourceid, newValue);
+
+        if (!newValue.equals(previousValue))
             fireResourcesChange(resourceid);
         return WriteResponse.success();
     }

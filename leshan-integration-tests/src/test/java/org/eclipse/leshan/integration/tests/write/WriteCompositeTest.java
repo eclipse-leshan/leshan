@@ -40,7 +40,6 @@ import org.eclipse.leshan.core.response.WriteCompositeResponse;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -133,8 +132,6 @@ public class WriteCompositeTest {
         assertEquals(testStringResourceInstance, readResponse.getContent());
     }
 
-    // TODO fix this
-    @Ignore
     @Test
     public void can_add_resource_instances() throws InterruptedException {
         // Prepare node

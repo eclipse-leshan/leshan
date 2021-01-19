@@ -65,17 +65,17 @@ public class DummyInstanceEnabler extends SimpleInstanceEnabler {
     }
 
     @Override
-    public WriteResponse write(ServerIdentity identity, int resourceid, LwM2mResource value) {
+    public WriteResponse write(ServerIdentity identity, boolean replace, int resourceid, LwM2mResource value) {
         LOG.info("Write on {} Resource /{}/{}/{} ", getModel().name, getModel().id, getId(), resourceid);
-        return super.write(identity, resourceid, value);
+        return super.write(identity, replace, resourceid, value);
     }
 
     @Override
-    public WriteResponse write(ServerIdentity identity, int resourceid, int resourceInstance,
+    public WriteResponse write(ServerIdentity identity, boolean addIfAbsent, int resourceid, int resourceInstance,
             LwM2mResourceInstance value) {
         LOG.info("Write on {} Resource  Instance/{}/{}/{}/{} ", getModel().name, getModel().id, getId(), resourceid,
                 resourceInstance);
-        return super.write(identity, resourceid, resourceInstance, value);
+        return super.write(identity, addIfAbsent, resourceid, resourceInstance, value);
     }
 
     @Override
