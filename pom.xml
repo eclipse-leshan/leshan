@@ -384,6 +384,7 @@ Contributors:
                         <excludePackageNames>org.eclipse.leshan.core.util</excludePackageNames>
                         <quiet>true</quiet>
                         <doclint>${javadoc.doclint}</doclint>
+                        <failOnWarnings>true</failOnWarnings>
                     </configuration>
                 </plugin>
                 <plugin>

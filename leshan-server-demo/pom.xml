@@ -137,6 +137,12 @@ Contributors:
                 </configuration>
             </plugin>
             <plugin>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <configuration>
+                        <failOnWarnings>false</failOnWarnings>
+                    </configuration>
+                </plugin>
+            <plugin>
                 <groupId>org.revapi</groupId>
                 <artifactId>revapi-maven-plugin</artifactId>
                 <configuration>
