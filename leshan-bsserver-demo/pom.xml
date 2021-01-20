@@ -122,6 +122,12 @@ Contributors:
                     <skip>true</skip>
                 </configuration>
             </plugin>
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <failOnWarnings>false</failOnWarnings>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
