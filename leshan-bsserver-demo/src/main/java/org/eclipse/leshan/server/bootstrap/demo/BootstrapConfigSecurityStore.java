@@ -100,10 +100,10 @@ public class BootstrapConfigSecurityStore implements BootstrapSecurityStore {
             LOG.trace("Looking for OSCORE security info for endpoint {}", endpoint);
 
             // First find the context for this endpoint
-            for (Map.Entry<Integer, BootstrapConfig.ServerSecurity> bsEntry : bsConfig.security.entrySet()) {
+            for (ServerSecurity bsEntryValue : bsConfig.security.values()) {
                 // Only find contexts for BS-Client connections
-                Integer bsOscoreSecurityMode = bsEntry.getValue().oscoreSecurityMode;
-                if (!bsEntry.getValue().bootstrapServer || bsOscoreSecurityMode == null) {
+                Integer bsOscoreSecurityMode = bsEntryValue.oscoreSecurityMode;
+                if (!bsEntryValue.bootstrapServer || bsOscoreSecurityMode == null) {
                     continue;
                 }
 
