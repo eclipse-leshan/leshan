@@ -58,13 +58,19 @@ public class SecurityChecker {
                 return false;
             }
         } else if (clientIdentity.isOSCORE()) {
-            LOG.trace("Checking incoming clients OSCORE identity.");
-            do {
-                SecurityInfo securityInfo = securityInfos.next();
-                if (checkSecurityInfo(endpoint, clientIdentity, securityInfo)) {
-                    return true;
-                }
-            } while (securityInfos.hasNext());
+            if (securityInfos == null || !securityInfos.hasNext()) {
+                LOG.debug("Client '{}' without security info trying to connect using OSCORE", endpoint);
+                return false;
+            } else {
+                // check if one expected security info matches OSCORE client identity
+                LOG.trace("Checking incoming client's OSCORE identity.");
+                do {
+                    SecurityInfo securityInfo = securityInfos.next();
+                    if (checkSecurityInfo(endpoint, clientIdentity, securityInfo)) {
+                        return true;
+                    }
+                } while (securityInfos.hasNext());
+            }
         } else if (securityInfos != null && securityInfos.hasNext()) {
             LOG.debug("Client '{}' must connect using DTLS", endpoint);
             return false;
