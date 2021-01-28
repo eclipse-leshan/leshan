@@ -20,6 +20,7 @@ import java.security.cert.CertPath;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.security.auth.x500.X500Principal;
@@ -54,7 +55,7 @@ public abstract class BaseCertificateVerifier implements NewAdvancedCertificateV
 
     @Override
     public List<X500Principal> getAcceptedIssuers() {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
