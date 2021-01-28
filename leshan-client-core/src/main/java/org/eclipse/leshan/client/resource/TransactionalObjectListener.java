@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An {@link ObjectListener} which is able to store notification during transaction and raise all grouped event at the
@@ -29,7 +31,10 @@ import org.eclipse.leshan.client.resource.listener.ObjectListener;
  * This class is not threadsafe.
  */
 public class TransactionalObjectListener implements ObjectListener {
-    protected boolean inTransaction = false;
+
+    private static Logger LOG = LoggerFactory.getLogger(TransactionalObjectListener.class);
+
+    protected int currentLevel = 0;
     protected List<Integer> instancesAdded = new ArrayList<>();
     protected List<Integer> instancesRemoved = new ArrayList<>();
     protected Map<Integer, List<Integer>> resourcesChangedByInstance = new HashMap<>();
@@ -49,16 +54,46 @@ public class TransactionalObjectListener implements ObjectListener {
         innerListeners.remove(listener);
     }
 
-    public void beginTransaction() {
-        inTransaction = true;
+    /**
+     * Open a transaction with a given level. Same level must be used to open and close a transaction.
+     * <p>
+     * a transaction can be started in another transaction but in that case the inner transaction should use a higher
+     * level.
+     * 
+     * @param level the transaction level, a not 0 positive integer.
+     */
+    public void beginTransaction(byte level) {
+        if (level <= 0) {
+            throw new IllegalArgumentException("level must be > 0.");
+        }
+        if (currentLevel == 0) {
+            currentLevel = level;
+        } else if (level <= currentLevel) {
+            LOG.warn(
+                    "Begin transaction with a lower level {} than the current one {} for object {}, this could bring to unexpected behavior",
+                    objectEnabler.getId(), currentLevel, level);
+            currentLevel = level;
+        }
+        // else if level > currentLevel
+        // there is nothing to do has this transaction is inner a another one.
     }
 
-    public void endTransaction() {
-        fireStoredEvents();
-        instancesAdded.clear();
-        instancesRemoved.clear();
-        resourcesChangedByInstance.clear();
-        inTransaction = false;
+    public void endTransaction(byte level) {
+        if (currentLevel == level) {
+            try {
+                fireStoredEvents();
+            } catch (Exception e) {
+                LOG.warn("Exception raised when we fired Event about object {}", objectEnabler.getId(), e);
+            }
+            instancesAdded.clear();
+            instancesRemoved.clear();
+            resourcesChangedByInstance.clear();
+            currentLevel = 0;
+        }
+    }
+
+    protected boolean inTransaction() {
+        return currentLevel > 0;
     }
 
     protected void fireStoredEvents() {
@@ -74,7 +109,7 @@ public class TransactionalObjectListener implements ObjectListener {
 
     @Override
     public void objectInstancesAdded(LwM2mObjectEnabler object, int... instanceIds) {
-        if (!inTransaction) {
+        if (!inTransaction()) {
             fireObjectInstancesAdded(instanceIds);
         } else {
             // store additions
@@ -90,7 +125,7 @@ public class TransactionalObjectListener implements ObjectListener {
 
     @Override
     public void objectInstancesRemoved(LwM2mObjectEnabler object, int... instanceIds) {
-        if (!inTransaction) {
+        if (!inTransaction()) {
             fireObjectInstancesRemoved(instanceIds);
         } else {
             // store deletion
@@ -106,7 +141,7 @@ public class TransactionalObjectListener implements ObjectListener {
 
     @Override
     public void resourceChanged(LwM2mObjectEnabler object, int instanceId, int... resourcesIds) {
-        if (!inTransaction) {
+        if (!inTransaction()) {
             fireResourcesChanged(instanceId, resourcesIds);
         } else {
             List<Integer> resourcesChanged = resourcesChangedByInstance.get(instanceId);

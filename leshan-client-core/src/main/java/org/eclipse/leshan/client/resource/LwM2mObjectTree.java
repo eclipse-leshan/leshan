@@ -28,6 +28,7 @@ import org.eclipse.leshan.client.resource.listener.ObjectsListener;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
+import org.eclipse.leshan.core.node.LwM2mPath;
 
 /**
  * The LWM2M Object Tree.
@@ -148,4 +149,17 @@ public class LwM2mObjectTree implements Startable, Stoppable, Destroyable {
             }
         }
     }
+
+    public void beginTransaction(Map<Integer, LwM2mObjectEnabler> enablers) {
+        for (LwM2mObjectEnabler enabler : enablers.values()) {
+            enabler.beginTransaction(LwM2mPath.ROOT_DEPTH);
+        }
+    }
+
+    public void endTransaction(Map<Integer, LwM2mObjectEnabler> enablers) {
+        for (LwM2mObjectEnabler enabler : enablers.values()) {
+            enabler.endTransaction(LwM2mPath.ROOT_DEPTH);
+        }
+    }
+
 }

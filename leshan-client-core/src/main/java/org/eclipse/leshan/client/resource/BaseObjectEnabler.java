@@ -107,7 +107,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     @Override
     public synchronized CreateResponse create(ServerIdentity identity, CreateRequest request) {
         try {
-            beginTransaction();
+            beginTransaction(LwM2mPath.OBJECT_DEPTH);
 
             if (!identity.isSystem()) {
                 if (id == LwM2mId.SECURITY) {
@@ -133,7 +133,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
             return doCreate(identity, request);
 
         } finally {
-            endTransaction();
+            endTransaction(LwM2mPath.OBJECT_DEPTH);
         }
     }
 
@@ -183,7 +183,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     @Override
     public synchronized WriteResponse write(ServerIdentity identity, WriteRequest request) {
         try {
-            beginTransaction();
+            beginTransaction(LwM2mPath.OBJECT_DEPTH);
 
             LwM2mPath path = request.getPath();
 
@@ -234,7 +234,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
             return doWrite(identity, request);
         } finally {
-            endTransaction();
+            endTransaction(LwM2mPath.OBJECT_DEPTH);
         }
     }
 
@@ -476,12 +476,14 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         transactionalListener.removeListener(listener);
     }
 
-    protected void beginTransaction() {
-        transactionalListener.beginTransaction();
+    @Override
+    public synchronized void beginTransaction(byte level) {
+        transactionalListener.beginTransaction(level);
     }
 
-    protected void endTransaction() {
-        transactionalListener.endTransaction();
+    @Override
+    public synchronized void endTransaction(byte level) {
+        transactionalListener.endTransaction(level);
     }
 
     @Override

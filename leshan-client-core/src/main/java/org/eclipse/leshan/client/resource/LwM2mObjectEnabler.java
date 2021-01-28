@@ -103,5 +103,9 @@ public interface LwM2mObjectEnabler {
 
     void setLwM2mClient(LwM2mClient client);
 
+    void beginTransaction(byte level);
+
+    void endTransaction(byte level);
+
     ContentFormat getDefaultEncodingFormat(DownlinkRequest<?> request);
 }

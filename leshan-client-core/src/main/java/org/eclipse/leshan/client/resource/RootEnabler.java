@@ -178,37 +178,45 @@ public class RootEnabler implements LwM2mRootEnabler {
 
         // TODO all of this should be done in an atomic way. So I suppose if we want to support this we need to add a
         // kind of transaction mechanism with rollback feature and also a way to lock objectTree?
+        // current transaction mechanism is just about regroup event and so observe notification.
 
         // Write Nodes
-        for (Entry<LwM2mPath, LwM2mNode> entry : request.getNodes().entrySet()) {
-            // Get corresponding object enabler
-            LwM2mPath path = entry.getKey();
-            LwM2mNode node = entry.getValue();
-            LwM2mObjectEnabler objectEnabler = enablers.get(path.getObjectId());
+        try {
+            tree.beginTransaction(enablers);
+            for (Entry<LwM2mPath, LwM2mNode> entry : request.getNodes().entrySet()) {
+                // Get corresponding object enabler
+                LwM2mPath path = entry.getKey();
+                LwM2mNode node = entry.getValue();
+                LwM2mObjectEnabler objectEnabler = enablers.get(path.getObjectId());
 
-            // WriteComposite is about patching so we need to use write UPDATE Mode which is only available on instance.
-            // So we create an instance from node
-            LwM2mObjectInstance instance;
-            if (node instanceof LwM2mResource) {
-                instance = new LwM2mObjectInstance(path.getObjectInstanceId(), (LwM2mResource) node);
-            } else if (node instanceof LwM2mResourceInstance) {
-                LwM2mResourceInstance resourceInstance = (LwM2mResourceInstance) node;
-                instance = new LwM2mObjectInstance(path.getObjectInstanceId(),
-                        new LwM2mMultipleResource(path.getResourceId(), resourceInstance.getType(), resourceInstance));
-            } else {
-                return WriteCompositeResponse.internalServerError(
-                        String.format("node %s should be a resource or a resource instance, not a %s", path,
-                                node.getClass().getSimpleName()));
+                // WriteComposite is about patching so we need to use write UPDATE Mode
+                // which is only available on instance.
+                // So we create an instance from resource or resource instance.
+                LwM2mObjectInstance instance;
+                if (node instanceof LwM2mResource) {
+                    instance = new LwM2mObjectInstance(path.getObjectInstanceId(), (LwM2mResource) node);
+                } else if (node instanceof LwM2mResourceInstance) {
+                    LwM2mResourceInstance resourceInstance = (LwM2mResourceInstance) node;
+                    instance = new LwM2mObjectInstance(path.getObjectInstanceId(), new LwM2mMultipleResource(
+                            path.getResourceId(), resourceInstance.getType(), resourceInstance));
+                } else {
+                    return WriteCompositeResponse.internalServerError(
+                            String.format("node %s should be a resource or a resource instance, not a %s", path,
+                                    node.getClass().getSimpleName()));
+                }
+
+                WriteResponse response = objectEnabler.write(identity, new WriteRequest(Mode.UPDATE,
+                        request.getContentFormat(), path.toObjectInstancePath(), instance, request.getCoapRequest()));
+
+                if (response.isFailure()) {
+                    return new WriteCompositeResponse(response.getCode(), response.getErrorMessage(), null);
+                }
             }
-
-            WriteResponse response = objectEnabler.write(identity, new WriteRequest(Mode.UPDATE,
-                    request.getContentFormat(), path.toObjectInstancePath(), instance, request.getCoapRequest()));
-
-            if (response.isFailure()) {
-                return new WriteCompositeResponse(response.getCode(), response.getErrorMessage(), null);
-            }
+        } finally {
+            tree.endTransaction(enablers);
         }
         return WriteCompositeResponse.success();
+
     }
 
     @Override

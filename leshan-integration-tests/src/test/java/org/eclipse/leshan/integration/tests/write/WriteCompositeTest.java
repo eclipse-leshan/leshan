@@ -29,14 +29,20 @@ import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteCompositeRequest;
+import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteCompositeResponse;
+import org.eclipse.leshan.integration.tests.observe.TestObservationListener;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.junit.After;
 import org.junit.Before;
@@ -158,5 +164,47 @@ public class WriteCompositeTest {
         assertEquals(3, multiResource.getInstances().size());
         assertEquals(testStringResourceInstance,
                 multiResource.getInstance(resourceInstancePath.getResourceInstanceId()));
+    }
+
+    @Test
+    public void can_observe_instance_with_composite_write() throws InterruptedException {
+        TestObservationListener listener = new TestObservationListener();
+        helper.server.getObservationService().addListener(listener);
+
+        // observe device instance
+        ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(), new ObserveRequest(3, 0));
+        assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
+        assertNotNull(observeResponse.getCoapResponse());
+        assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
+
+        // an observation response should have been sent
+        Observation observation = observeResponse.getObservation();
+        assertEquals("/3/0", observation.getPath().toString());
+        assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
+        System.out.println(observeResponse.getContent());
+
+        // write device timezone
+        Map<String, Object> nodes = new HashMap<>();
+        nodes.put("/3/0/14", "+11");
+        nodes.put("/3/0/15", "Moon");
+
+        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
+                new WriteCompositeRequest(ContentFormat.SENML_CBOR, nodes));
+
+        // verify result both resource must have new value
+        listener.waitForNotification(1000);
+        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
+        assertTrue(listener.receivedNotify().get());
+        assertTrue(listener.getResponse().getContent() instanceof LwM2mObjectInstance);
+        assertNotNull(listener.getResponse().getCoapResponse());
+        assertThat(listener.getResponse().getCoapResponse(), is(instanceOf(Response.class)));
+
+        LwM2mObjectInstance instance = (LwM2mObjectInstance) listener.getResponse().getContent();
+        assertEquals("+11", instance.getResource(14).getValue());
+        assertEquals("Moon", instance.getResource(15).getValue());
+
+        // Ensure we received only one notification.
+        Thread.sleep(1000);// wait 1 second more to catch more notification ?
+        assertEquals(1, listener.getNotificationCount());
     }
 }

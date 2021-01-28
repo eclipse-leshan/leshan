@@ -22,6 +22,12 @@ import org.eclipse.leshan.core.util.Validate;
  */
 public class LwM2mPath {
 
+    public static final byte ROOT_DEPTH = 1;
+    public static final byte OBJECT_DEPTH = 2;
+    public static final byte OBJECT_INSTANCE_DEPTH = 3;
+    public static final byte RESOURCE_DEPTH = 4;
+    public static final byte RESOURCE_INSTANCE_DEPTH = 5;
+
     private final Integer objectId;
     private final Integer objectInstanceId;
     private final Integer resourceId;

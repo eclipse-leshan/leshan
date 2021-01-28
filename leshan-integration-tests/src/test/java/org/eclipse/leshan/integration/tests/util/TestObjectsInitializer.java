@@ -184,6 +184,16 @@ public class TestObjectsInitializer extends ObjectsInitializer {
             public void addListener(ObjectListener listener) {
                 nodeEnabler.addListener(listener);
             }
+
+            @Override
+            public void beginTransaction(byte level) {
+                nodeEnabler.beginTransaction(level);
+            }
+
+            @Override
+            public void endTransaction(byte level) {
+                nodeEnabler.endTransaction(level);
+            }
         };
     }
 }
