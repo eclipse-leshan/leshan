@@ -2,6 +2,7 @@ package org.eclipse.leshan.client.californium;
 
 import java.security.cert.Certificate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.security.auth.x500.X500Principal;
@@ -32,7 +33,7 @@ public class DefaultLeshanCertificateVerifier implements NewAdvancedCertificateV
 
     @Override
     public List<X500Principal> getAcceptedIssuers() {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
