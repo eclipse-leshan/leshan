@@ -48,6 +48,7 @@ import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.californium.EndpointFactory;
+import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.util.Validate;
@@ -113,7 +114,7 @@ public class LeshanClient implements LwM2mClient {
         bootstrapHandler = createBoostrapHandler(objectTree);
         endpointsManager = createEndpointsManager(localAddress, coapConfig, dtlsConfigBuilder, trustStore,
                 endpointFactory);
-        requestSender = createRequestSender(endpointsManager, sharedExecutor);
+        requestSender = createRequestSender(endpointsManager, sharedExecutor, encoder, objectTree.getModel());
         engine = engineFactory.createRegistratioEngine(endpoint, objectTree, endpointsManager, requestSender,
                 bootstrapHandler, observers, additionalAttributes, bsAdditionalAttributes, sharedExecutor);
 
@@ -218,8 +219,8 @@ public class LeshanClient implements LwM2mClient {
     }
 
     protected CaliforniumLwM2mRequestSender createRequestSender(CaliforniumEndpointsManager endpointsManager,
-            ScheduledExecutorService executor) {
-        return new CaliforniumLwM2mRequestSender(endpointsManager, executor);
+            ScheduledExecutorService executor, LwM2mNodeEncoder encoder, LwM2mModel model) {
+        return new CaliforniumLwM2mRequestSender(endpointsManager, executor, encoder, model);
     }
 
     protected RegistrationUpdateHandler createRegistrationUpdateHandler(RegistrationEngine engine,

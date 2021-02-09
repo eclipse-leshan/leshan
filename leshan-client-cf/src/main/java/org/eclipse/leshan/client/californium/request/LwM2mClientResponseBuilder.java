@@ -30,6 +30,7 @@ import org.eclipse.leshan.core.response.BootstrapResponse;
 import org.eclipse.leshan.core.response.DeregisterResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.RegisterResponse;
+import org.eclipse.leshan.core.response.SendResponse;
 import org.eclipse.leshan.core.response.UpdateResponse;
 
 /**
@@ -95,8 +96,18 @@ public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements Upli
     }
 
     @Override
-    public void visit(SendRequest sendRequest) {
-        throw new UnsupportedOperationException("Not implemented");
+    public void visit(SendRequest request) {
+        if (coapResponse.isError()) {
+            // handle error response:
+            lwM2mresponse = new SendResponse(toLwM2mResponseCode(coapResponse.getCode()),
+                    coapResponse.getPayloadString());
+        } else if (coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.CHANGED) {
+            // handle success response:
+            lwM2mresponse = SendResponse.success();
+        } else {
+            // handle unexpected response:
+            handleUnexpectedResponseCode(request, coapResponse);
+        }
     }
 
     @Override

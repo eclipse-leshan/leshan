@@ -16,6 +16,7 @@
 package org.eclipse.leshan.integration.tests.lockstep;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.Random;
 
 import org.eclipse.californium.core.coap.Message;
@@ -25,6 +26,12 @@ import org.eclipse.californium.core.network.serialization.UdpDataSerializer;
 import org.eclipse.californium.core.test.lockstep.LockstepEndpoint;
 import org.eclipse.californium.elements.RawData;
 import org.eclipse.leshan.client.californium.request.CoapRequestBuilder;
+import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.ObjectLoader;
+import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.model.StaticModel;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
+import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -33,15 +40,20 @@ public class LockStepLwM2mClient extends LockstepEndpoint {
 
     private static final Random r = new Random();
     private InetSocketAddress destination;
+    private final LwM2mNodeEncoder encoder;
+    private final LwM2mModel model;
 
     public LockStepLwM2mClient(final InetSocketAddress destination) {
         super(destination);
         this.destination = destination;
+        this.encoder = new DefaultLwM2mNodeEncoder();
+        List<ObjectModel> models = ObjectLoader.loadDefault();
+        this.model = new StaticModel(models);
     }
 
     public Request createCoapRequest(UplinkRequest<? extends LwM2mResponse> lwm2mReq) {
         // create CoAP request
-        CoapRequestBuilder coapRequestBuilder = new CoapRequestBuilder(Identity.unsecure(destination));
+        CoapRequestBuilder coapRequestBuilder = new CoapRequestBuilder(Identity.unsecure(destination), encoder, model);
         lwm2mReq.accept(coapRequestBuilder);
         Request coapReq = coapRequestBuilder.getRequest();
         byte[] token = new byte[8];
