@@ -15,7 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,34 +51,9 @@ public class RootEnabler implements LwM2mRootEnabler {
     private static final Logger LOG = LoggerFactory.getLogger(RootEnabler.class);
 
     private final LwM2mObjectTree tree;
-    private final LwM2mModel model;
 
     public RootEnabler(final LwM2mObjectTree tree) {
         this.tree = tree;
-        this.model = new LwM2mModel() {
-
-            @Override
-            public ResourceModel getResourceModel(int objectId, int resourceId) {
-                ObjectModel objectModel = this.getObjectModel(objectId);
-                if (objectModel != null)
-                    return objectModel.resources.get(resourceId);
-                return null;
-            }
-
-            @Override
-            public Collection<ObjectModel> getObjectModels() {
-                // TODO implements this ?
-                throw new UnsupportedOperationException("Not implemented");
-            }
-
-            @Override
-            public ObjectModel getObjectModel(int objectId) {
-                LwM2mObjectEnabler objectEnabler = tree.getObjectEnabler(objectId);
-                if (objectEnabler != null)
-                    return objectEnabler.getObjectModel();
-                return null;
-            }
-        };
     }
 
     @Override
@@ -221,6 +195,6 @@ public class RootEnabler implements LwM2mRootEnabler {
 
     @Override
     public LwM2mModel getModel() {
-        return model;
+        return tree.getModel();
     }
 }

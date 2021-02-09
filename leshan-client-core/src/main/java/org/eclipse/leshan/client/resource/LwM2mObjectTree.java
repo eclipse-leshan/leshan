@@ -28,6 +28,9 @@ import org.eclipse.leshan.client.resource.listener.ObjectsListener;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
+import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 
 /**
@@ -38,9 +41,10 @@ import org.eclipse.leshan.core.node.LwM2mPath;
  */
 public class LwM2mObjectTree implements Startable, Stoppable, Destroyable {
 
-    protected ObjectListener dispatcher = new ObjectListenerDispatcher();
-    protected CopyOnWriteArrayList<ObjectsListener> listeners = new CopyOnWriteArrayList<>();
-    protected ConcurrentHashMap<Integer, LwM2mObjectEnabler> objectEnablers = new ConcurrentHashMap<>();
+    protected final ObjectListener dispatcher = new ObjectListenerDispatcher();
+    protected final CopyOnWriteArrayList<ObjectsListener> listeners = new CopyOnWriteArrayList<>();
+    protected final ConcurrentHashMap<Integer, LwM2mObjectEnabler> objectEnablers = new ConcurrentHashMap<>();
+    protected final LwM2mModel model;
 
     public LwM2mObjectTree(LwM2mClient client, LwM2mObjectEnabler... enablers) {
         this(client, Arrays.asList(enablers));
@@ -58,6 +62,31 @@ public class LwM2mObjectTree implements Startable, Stoppable, Destroyable {
             enabler.addListener(dispatcher);
             enabler.setLwM2mClient(client);
         }
+
+        this.model = new LwM2mModel() {
+
+            @Override
+            public ResourceModel getResourceModel(int objectId, int resourceId) {
+                ObjectModel objectModel = this.getObjectModel(objectId);
+                if (objectModel != null)
+                    return objectModel.resources.get(resourceId);
+                return null;
+            }
+
+            @Override
+            public Collection<ObjectModel> getObjectModels() {
+                // TODO implements this ?
+                throw new UnsupportedOperationException("Not implemented");
+            }
+
+            @Override
+            public ObjectModel getObjectModel(int objectId) {
+                LwM2mObjectEnabler objectEnabler = getObjectEnabler(objectId);
+                if (objectEnabler != null)
+                    return objectEnabler.getObjectModel();
+                return null;
+            }
+        };
     }
 
     public void addListener(ObjectsListener listener) {
@@ -66,6 +95,10 @@ public class LwM2mObjectTree implements Startable, Stoppable, Destroyable {
 
     public void removedListener(ObjectsListener listener) {
         listeners.remove(listener);
+    }
+
+    public LwM2mModel getModel() {
+        return model;
     }
 
     public Map<Integer, LwM2mObjectEnabler> getObjectEnablers() {
@@ -161,5 +194,4 @@ public class LwM2mObjectTree implements Startable, Stoppable, Destroyable {
             enabler.endTransaction(LwM2mPath.ROOT_DEPTH);
         }
     }
-
 }
