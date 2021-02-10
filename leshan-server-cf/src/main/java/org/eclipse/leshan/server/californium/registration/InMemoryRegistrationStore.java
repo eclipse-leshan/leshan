@@ -71,6 +71,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     private final Map<String /* end-point */, Registration> regsByEp = new HashMap<>();
     private final Map<InetSocketAddress, Registration> regsByAddr = new HashMap<>();
     private final Map<String /* reg-id */, Registration> regsByRegId = new HashMap<>();
+    private final Map<Identity, Registration> regsByIdentity = new HashMap<>();
     private Map<Token, org.eclipse.californium.core.observe.Observation> obsByToken = new HashMap<>();
     private Map<String, Set<Token>> tokensByRegId = new HashMap<>();
 
@@ -108,6 +109,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
 
             Registration registrationRemoved = regsByEp.put(registration.getEndpoint(), registration);
             regsByRegId.put(registration.getId(), registration);
+            regsByIdentity.put(registration.getIdentity(), registration);
             // If a registration is already associated to this address we don't care as we only want to keep the most
             // recent binding.
             regsByAddr.put(registration.getSocketAddress(), registration);
@@ -118,6 +120,9 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
                 }
                 if (!registrationRemoved.getId().equals(registration.getId())) {
                     removeFromMap(regsByRegId, registrationRemoved.getId(), registrationRemoved);
+                }
+                if (!registrationRemoved.getIdentity().equals(registration.getIdentity())) {
+                    removeFromMap(regsByIdentity, registrationRemoved.getIdentity(), registrationRemoved);
                 }
                 return new Deregistration(registrationRemoved, observationsRemoved);
             }
@@ -143,6 +148,10 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
                 regsByAddr.put(updatedRegistration.getSocketAddress(), updatedRegistration);
                 if (!registration.getSocketAddress().equals(updatedRegistration.getSocketAddress())) {
                     removeFromMap(regsByAddr, registration.getSocketAddress(), registration);
+                }
+                regsByIdentity.put(updatedRegistration.getIdentity(), updatedRegistration);
+                if (!registration.getIdentity().equals(updatedRegistration.getIdentity())) {
+                    removeFromMap(regsByIdentity, registration.getIdentity(), registration);
                 }
 
                 regsByRegId.put(updatedRegistration.getId(), updatedRegistration);
@@ -185,18 +194,13 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     }
 
     @Override
-    public Registration getRegistrationByIdentity(Identity sender) {
+    public Registration getRegistrationByIdentity(Identity identity) {
         try {
             lock.readLock().lock();
-            // TODO use index instead of loop
-            for (Registration reg : regsByEp.values()) {
-                if (reg.getIdentity().equals(sender))
-                    return reg;
-            }
+            return regsByIdentity.get(identity);
         } finally {
             lock.readLock().unlock();
         }
-        return null;
     }
 
     @Override
@@ -220,6 +224,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
                 regsByEp.remove(registration.getEndpoint());
                 removeFromMap(regsByAddr, registration.getSocketAddress(), registration);
                 removeFromMap(regsByRegId, registration.getId(), registration);
+                removeFromMap(regsByIdentity, registration.getIdentity(), registration);
                 return new Deregistration(registration, observationsRemoved);
             }
             return null;
