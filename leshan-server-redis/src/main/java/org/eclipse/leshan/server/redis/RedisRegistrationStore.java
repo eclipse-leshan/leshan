@@ -47,6 +47,7 @@ import org.eclipse.leshan.core.util.NamedThreadFactory;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.californium.observation.ObserveUtil;
 import org.eclipse.leshan.server.californium.registration.CaliforniumRegistrationStore;
+import org.eclipse.leshan.server.redis.serialization.IdentitySerDes;
 import org.eclipse.leshan.server.redis.serialization.ObservationSerDes;
 import org.eclipse.leshan.server.redis.serialization.RegistrationSerDes;
 import org.eclipse.leshan.server.registration.Deregistration;
@@ -80,6 +81,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     private static final String REG_EP = "REG:EP:"; // (Endpoint => Registration)
     private static final String REG_EP_REGID_IDX = "EP:REGID:"; // secondary index key (Registration ID => Endpoint)
     private static final String REG_EP_ADDR_IDX = "EP:ADDR:"; // secondary index key (Socket Address => Endpoint)
+    private static final String REG_EP_IDENTITY = "EP:IDENTITY:"; // secondary index key (Identity => Endpoint)
     private static final String LOCK_EP = "LOCK:EP:";
     private static final byte[] OBS_TKN = "OBS:TKN:".getBytes(UTF_8);
     private static final String OBS_TKNS_REGID_IDX = "TKNS:REGID:"; // secondary index (token list by registration)
@@ -170,6 +172,8 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
                 j.set(regid_idx, registration.getEndpoint().getBytes(UTF_8));
                 byte[] addr_idx = toRegAddrKey(registration.getSocketAddress());
                 j.set(addr_idx, registration.getEndpoint().getBytes(UTF_8));
+                byte[] identity_idx = toRegIdentityKey(registration.getIdentity());
+                j.set(identity_idx, registration.getEndpoint().getBytes(UTF_8));
 
                 // Add or update expiration
                 addOrUpdateExpiration(j, registration);
@@ -181,6 +185,9 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
                         j.del(toRegIdKey(oldRegistration.getId()));
                     if (!oldRegistration.getSocketAddress().equals(registration.getSocketAddress())) {
                         removeAddrIndex(j, oldRegistration);
+                    }
+                    if (!oldRegistration.getIdentity().equals(registration.getIdentity())) {
+                        removeIdentityIndex(j, oldRegistration);
                     }
                     // remove old observation
                     Collection<Observation> obsRemoved = unsafeRemoveAllObservations(j, oldRegistration.getId());
@@ -234,6 +241,9 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
                 if (!r.getSocketAddress().equals(updatedRegistration.getSocketAddress())) {
                     removeAddrIndex(j, r);
                 }
+                if (!r.getIdentity().equals(updatedRegistration.getIdentity())) {
+                    removeIdentityIndex(j, r);
+                }
 
                 return new UpdatedRegistration(r, updatedRegistration);
 
@@ -279,8 +289,19 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     }
 
     @Override
-    public Registration getRegistrationByIdentity(Identity sender) {
-        throw new UnsupportedOperationException("not implemented");
+    public Registration getRegistrationByIdentity(Identity identity) {
+        Validate.notNull(identity);
+        try (Jedis j = pool.getResource()) {
+            byte[] ep = j.get(toRegIdentityKey(identity));
+            if (ep == null) {
+                return null;
+            }
+            byte[] data = j.get(toEndpointKey(ep));
+            if (data == null) {
+                return null;
+            }
+            return deserializeReg(data);
+        }
     }
 
     @Override
@@ -383,6 +404,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
                     j.del(toEndpointKey(r.getEndpoint()));
                     Collection<Observation> obsRemoved = unsafeRemoveAllObservations(j, r.getId());
                     removeAddrIndex(j, r);
+                    removeIdentityIndex(j, r);
                     removeExpiration(j, r);
                     return new Deregistration(r, obsRemoved);
                 }
@@ -393,19 +415,26 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
         }
     }
 
-    private void removeAddrIndex(Jedis j, Registration registration) {
-        // Watch the key to remove.
-        byte[] regAddrKey = toRegAddrKey(registration.getSocketAddress());
-        j.watch(regAddrKey);
+    private void removeAddrIndex(Jedis j, Registration r) {
+        removeSecondaryIndex(j, toRegAddrKey(r.getSocketAddress()), r.getEndpoint());
+    }
 
-        byte[] epFromAddr = j.get(regAddrKey);
+    private void removeIdentityIndex(Jedis j, Registration r) {
+        removeSecondaryIndex(j, toRegIdentityKey(r.getIdentity()), r.getEndpoint());
+    }
+
+    private void removeSecondaryIndex(Jedis j, byte[] indexKey, String endpointName) {
+        // Watch the key to remove.
+        j.watch(indexKey);
+
+        byte[] epFromAddr = j.get(indexKey);
         // Delete the key if needed.
-        if (Arrays.equals(epFromAddr, registration.getEndpoint().getBytes(UTF_8))) {
+        if (Arrays.equals(epFromAddr, endpointName.getBytes(UTF_8))) {
             // Try to delete the key
             Transaction transaction = j.multi();
-            transaction.del(regAddrKey);
+            transaction.del(indexKey);
             transaction.exec();
-            // if transaction failed this is not an issue as the socket address is probably reused and we don't neeed to
+            // if transaction failed this is not an issue as the index is probably reused and we don't need to
             // delete it anymore.
         } else {
             // the key must not be deleted.
@@ -427,6 +456,10 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
 
     private byte[] toRegAddrKey(InetSocketAddress addr) {
         return toKey(REG_EP_ADDR_IDX, addr.getAddress().toString() + ":" + addr.getPort());
+    }
+
+    private byte[] toRegIdentityKey(Identity identity) {
+        return toKey(REG_EP_IDENTITY, IdentitySerDes.serialize(identity).toString());
     }
 
     private byte[] toEndpointKey(String endpoint) {
