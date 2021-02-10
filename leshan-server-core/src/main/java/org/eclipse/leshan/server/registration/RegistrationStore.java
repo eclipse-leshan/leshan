@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.request.Identity;
 
 /**
  * A store for registrations and observations. This interface is also responsible to handle registration expiration.
@@ -69,6 +70,14 @@ public interface RegistrationStore {
      * @return the registration or null if there is no client registered with this socket address.
      */
     Registration getRegistrationByAdress(InetSocketAddress address);
+
+    /**
+     * Get the registration by {@link Identity}.
+     * 
+     * @param identity of the client registered.
+     * @return the registration or null if there is no client registered with this identity.
+     */
+    Registration getRegistrationByIdentity(Identity identity);
 
     /**
      * Returns an iterator over the registration of this store. There are no guarantees concerning the order in which

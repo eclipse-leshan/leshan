@@ -38,12 +38,13 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.californium.core.coap.Token;
 import org.eclipse.californium.core.observe.ObservationStoreException;
 import org.eclipse.californium.elements.EndpointContext;
-import org.eclipse.leshan.core.observation.Observation;
-import org.eclipse.leshan.core.util.NamedThreadFactory;
-import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
+import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.util.NamedThreadFactory;
+import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.californium.observation.ObserveUtil;
 import org.eclipse.leshan.server.californium.registration.CaliforniumRegistrationStore;
 import org.eclipse.leshan.server.redis.serialization.ObservationSerDes;
@@ -275,6 +276,11 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
             }
             return deserializeReg(data);
         }
+    }
+
+    @Override
+    public Registration getRegistrationByIdentity(Identity sender) {
+        throw new UnsupportedOperationException("not implemented");
     }
 
     @Override
