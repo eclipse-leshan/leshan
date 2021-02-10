@@ -22,6 +22,7 @@ import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.LwM2mRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
+import org.eclipse.leshan.core.request.SendRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.request.UplinkRequestVisitor;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
@@ -91,6 +92,11 @@ public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements Upli
             // handle unexpected response:
             handleUnexpectedResponseCode(request, coapResponse);
         }
+    }
+
+    @Override
+    public void visit(SendRequest sendRequest) {
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override

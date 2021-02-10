@@ -29,6 +29,7 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.RegisterRequest;
+import org.eclipse.leshan.core.request.SendRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.core.request.UplinkRequestVisitor;
@@ -141,6 +142,11 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
         coapRequest = Request.newDelete();
         buildRequestSettings();
         coapRequest.getOptions().setUriPath(request.getRegistrationId());
+    }
+
+    @Override
+    public void visit(SendRequest sendRequest) {
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public Request getRequest() {
