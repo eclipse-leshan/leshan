@@ -77,8 +77,8 @@ public class ObjectModel {
         for (ResourceModel resource : resources) {
             ResourceModel old = resourcesMap.put(resource.id, resource);
             if (old != null) {
-                throw new IllegalStateException(String
-                        .format("Model already exists for resource %d of object %d. Overriding it.", resource.id, id));
+                throw new IllegalStateException(
+                        String.format("Model for resource %d of object %d already exist", resource.id, id));
             }
             resourcesMap.put(resource.id, resource);
         }
