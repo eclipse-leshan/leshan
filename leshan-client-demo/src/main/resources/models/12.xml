@@ -1,30 +1,23 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <!--
 FILE INFORMATION
 
 OMA Permanent Document
-   File: OMA-SUP-XML_LWM2M_WLAN_connectivity4_V1_0_1-20200616-A
-   Type: xml
+   File: OMA-SUP-XML_12-V1_1-20201110-A.xml
+   Path: http://www.openmobilealliance.org/release/ObjLwM2M_WLAN_Conn/
 
-Public Reachable Information
-   Path: http://www.openmobilealliance.org/tech/profiles
-   Name: LWM2M_WLAN_connectivity4-v1_0_1.xml
+OMNA LwM2M Registry
+   Path: https://github.com/OpenMobileAlliance/lwm2m-registry
+   Name: 12.xml
 
 NORMATIVE INFORMATION
 
-  Information about this file can be found in the latest revision of
+  This file doesn't contain any Technical Specifications.
 
-    OMA-TS-LWM2M_ConnMgmt-V1_0
-
-  This is available at http://www.openmobilealliance.org/release/
+  The file is also available at http://www.openmobilealliance.org/release/LightweightM2M/
 
   Send comments to https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues
-
-CHANGE HISTORY
-
-14032017 Status changed to Approved by TP, TP Ref # OMA-TP-2017-0019-INP_LWM2M_CONNMGMT-V1_0_RRP_for_Final_Approval
-16062020 Status changed to Approved by DMSE, Ref # OMA-DM&SE-2020-0024-INP_LwM2M_WLAN_connectivity4_V1_0_1_for_Final_Approval
 	
 LEGAL DISCLAIMER
 
@@ -59,17 +52,17 @@ LEGAL DISCLAIMER
   The above license is used as a license under copyright only.  Please
   reference the OMA IPR Policy for patent licensing terms:
   https://www.omaspecworks.org/about/intellectual-property-rights/
+  
 -->
 
 <LWM2M xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M.xsd">
 	<Object ObjectType="MODefinition">
 		<Name>WLAN connectivity</Name>
-		<Description1><![CDATA[This object specifies resources to enable a device to connect to a WLAN bearer.
-]]></Description1>
+		<Description1><![CDATA[This object specifies resources to enable a device to connect to a WLAN bearer.]]></Description1>
 		<ObjectID>12</ObjectID>
-		<ObjectURN>urn:oma:lwm2m:oma:12</ObjectURN>
-		<LWM2MVersion />
-		<ObjectVersion />
+		<ObjectURN>urn:oma:lwm2m:oma:12:1.1</ObjectURN>
+		<LWM2MVersion>1.0</LWM2MVersion>
+		<ObjectVersion>1.1</ObjectVersion>
 		<MultipleInstances>Multiple</MultipleInstances>
 		<Mandatory>Optional</Mandatory>
 		<Resources>
@@ -80,8 +73,7 @@ LEGAL DISCLAIMER
 				<Type>String</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[Human-readable identifier
-eg. wlan0]]></Description>
+				<Description><![CDATA[Human-readable identifier eg. wlan0]]></Description>
 			</Item>
 			<Item ID="1"><Name>Enable</Name>
 				<Operations>RW</Operations>
@@ -135,7 +127,7 @@ When disabled radio must also be disabled]]></Description>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Mandatory</Mandatory>
 				<Type>String</Type>
-				<RangeEnumeration>1..32 Bytes</RangeEnumeration>
+				<RangeEnumeration>1..32</RangeEnumeration>
 				<Units></Units>
 				<Description><![CDATA[The Service Set Identifier for this interface.]]></Description>
 			</Item>
@@ -146,9 +138,7 @@ When disabled radio must also be disabled]]></Description>
 				<Type>Boolean</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[0: Do not broadcast SSID
-1: Broadcast SSID
-]]></Description>
+				<Description><![CDATA[0: Do not broadcast SSID 1: Broadcast SSID]]></Description>
 			</Item>
 			<Item ID="7"><Name>Beacon Enabled</Name>
 				<Operations>RW</Operations>
@@ -157,8 +147,7 @@ When disabled radio must also be disabled]]></Description>
 				<Type>Boolean</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[0: Do not broadcast beacons
-1: Broadcast beacons]]></Description>
+				<Description><![CDATA[0: Do not broadcast beacons 1: Broadcast beacons]]></Description>
 			</Item>
 			<Item ID="8"><Name>Mode</Name>
 				<Operations>RW</Operations>
@@ -179,10 +168,7 @@ When disabled radio must also be disabled]]></Description>
 				<Type>Integer</Type>
 				<RangeEnumeration>0..255</RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[The current radio channel in use by this interface.
-0: Disabled
-1: Enabled
-]]></Description>
+				<Description><![CDATA[The current radio channel in use by this interface.]]></Description>
 			</Item>
 			<Item ID="10"><Name>Auto Channel</Name>
 				<Operations>RW</Operations>
@@ -191,8 +177,7 @@ When disabled radio must also be disabled]]></Description>
 				<Type>Boolean</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[0: Disabled
-1: Enabled]]></Description>
+				<Description><![CDATA[0: Disabled 1: Enabled]]></Description>
 			</Item>
 			<Item ID="11"><Name>Supported Channels</Name>
 				<Operations>RW</Operations>
@@ -218,11 +203,11 @@ Including any channels in-use by access point itself.]]></Description>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>String</Type>
-				<RangeEnumeration>3 Bytes</RangeEnumeration>
+				<RangeEnumeration>3 B</RangeEnumeration>
 				<Units></Units>
 				<Description><![CDATA[802.11d Regulatory Domain String. 
 First two octets are ISO/IEC 3166-1 two-character country code. 
-The third octet is either “ ” (all environments), “O” (outside) or “I” (inside).]]></Description>
+The third octet is either " " (all environments), "O" (outside) or "I" (inside).]]></Description>
 			</Item>
 			<Item ID="14"><Name>Standard</Name>
 				<Operations>RW</Operations>
@@ -269,20 +254,18 @@ The third octet is either “ ” (all environments), “O” (outside) or “I�
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>String</Type>
-				<RangeEnumeration>64 Bytes</RangeEnumeration>
+				<RangeEnumeration>64 B</RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[WPA/WPA2 Key expressed as a hex string.
-Write – Only.]]></Description>
+				<Description><![CDATA[WPA/WPA2 Key expressed as a hex string. Write - Only.]]></Description>
 			</Item>
 			<Item ID="18"><Name>WPA Key Phrase</Name>
 				<Operations>W</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>String</Type>
-				<RangeEnumeration>1..64 Bytes</RangeEnumeration>
+				<RangeEnumeration>1..64</RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[WPA/WPA2 Key Phrase.
-Write Only.]]></Description>
+				<Description><![CDATA[WPA/WPA2 Key Phrase. Write Only.]]></Description>
 			</Item>
 			<Item ID="19"><Name>WEP Encryption Type</Name>
 				<Operations>RW</Operations>
@@ -291,7 +274,7 @@ Write Only.]]></Description>
 				<Type>Integer</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[Description.0: None
+				<Description><![CDATA[0: None
 1: 40-bit
 2: 104-bit]]></Description>
 			</Item>
@@ -300,7 +283,7 @@ Write Only.]]></Description>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>Integer</Type>
-				<RangeEnumeration>[1:4]</RangeEnumeration>
+				<RangeEnumeration>1..4</RangeEnumeration>
 				<Units></Units>
 				<Description><![CDATA[Index of the default WEP key.]]></Description>
 			</Item>
@@ -309,17 +292,16 @@ Write Only.]]></Description>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>String</Type>
-				<RangeEnumeration>1..64 Bytes</RangeEnumeration>
+				<RangeEnumeration>1..64</RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[WPA/WPA2 Key Phrase.
-Write Only.]]></Description>
+				<Description><![CDATA[WPA/WPA2 Key Phrase. Write Only.]]></Description>
 			</Item>
 			<Item ID="22"><Name>WEP Key 1</Name>
 				<Operations>W</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>String</Type>
-				<RangeEnumeration>0 or 26 Bytes</RangeEnumeration>
+				<RangeEnumeration>10,26</RangeEnumeration>
 				<Units></Units>
 				<Description><![CDATA[WEP Key 1 expressed as a hexadecimal string.
 10 Bytes for a 40 Bit key
@@ -330,7 +312,7 @@ Write Only.]]></Description>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>String</Type>
-				<RangeEnumeration>0 or 26 Bytes</RangeEnumeration>
+				<RangeEnumeration>10,26</RangeEnumeration>
 				<Units></Units>
 				<Description><![CDATA[WEP Key 2 expressed as a hexadecimal string.
 10 Bytes for a 40 Bit key
@@ -341,7 +323,7 @@ Write Only.]]></Description>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>String</Type>
-				<RangeEnumeration>10 or 26 Bytes</RangeEnumeration>
+				<RangeEnumeration>10,26</RangeEnumeration>
 				<Units></Units>
 				<Description><![CDATA[WEP Key 3 expressed as a hexadecimal string.
 10 Bytes for a 40 Bit key
@@ -352,7 +334,7 @@ Write Only.]]></Description>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>String</Type>
-				<RangeEnumeration>10 or 26 Bytes</RangeEnumeration>
+				<RangeEnumeration>10,26</RangeEnumeration>
 				<Units></Units>
 				<Description><![CDATA[WEP Key 4 expressed as a hexadecimal string.
 10 Bytes for a 40 Bit key
@@ -363,7 +345,7 @@ Write Only.]]></Description>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>String</Type>
-				<RangeEnumeration>1..256 Bytes</RangeEnumeration>
+				<RangeEnumeration>1..256</RangeEnumeration>
 				<Units></Units>
 				<Description><![CDATA[RADIUS Authentication Server Address]]></Description>
 			</Item>
@@ -381,7 +363,7 @@ Write Only.]]></Description>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>String</Type>
-				<RangeEnumeration>1..256 Bytes</RangeEnumeration>
+				<RangeEnumeration>1..256</RangeEnumeration>
 				<Units></Units>
 				<Description><![CDATA[RADIUS Shared Secret]]></Description>
 			</Item>
@@ -392,8 +374,7 @@ Write Only.]]></Description>
 				<Type>Boolean</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[0: WMM NOT Supported
-1: WMM Wupported]]></Description>
+				<Description><![CDATA[0: WMM NOT Supported 1: WMM Wupported]]></Description>
 			</Item>
 			<Item ID="30"><Name>WMM Enabled</Name>
 				<Operations>RW</Operations>
@@ -402,8 +383,7 @@ Write Only.]]></Description>
 				<Type>Boolean</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[0: Disabled
-1: Enabled]]></Description>
+				<Description><![CDATA[0: Disabled 1: Enabled]]></Description>
 			</Item>
 			<Item ID="31"><Name>MAC Control Enabled</Name>
 				<Operations>RW</Operations>
@@ -412,15 +392,14 @@ Write Only.]]></Description>
 				<Type>Boolean</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[0: Any Client MAC Address accepted
-1: Client MAC address must exist in MACAddressList]]></Description>
+				<Description><![CDATA[0: Any Client MAC Address accepted 1: Client MAC address must exist in MACAddressList]]></Description>
 			</Item>
 			<Item ID="32"><Name>MAC Address List</Name>
 				<Operations>RW</Operations>
 				<MultipleInstances>Multiple</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>String</Type>
-				<RangeEnumeration>12 Bytes </RangeEnumeration>
+				<RangeEnumeration>12</RangeEnumeration>
 				<Units></Units>
 				<Description><![CDATA[Array of allowed client MAC addresses, in hexadecimal form.]]></Description>
 			</Item>
@@ -496,7 +475,7 @@ Write Only.]]></Description>
 				<Units></Units>
 				<Description><![CDATA[Count of Unicast Packets Received]]></Description>
 			</Item>
-			<Item ID="41"><Name>Multicast Packets  Received</Name>
+			<Item ID="41"><Name>Multicast Packets Sent</Name>
 				<Operations>R</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
@@ -523,7 +502,7 @@ Write Only.]]></Description>
 				<Units></Units>
 				<Description><![CDATA[Count of Broadcast Packets Sent]]></Description>
 			</Item>
-			<Item ID="44"><Name>44 Broadcast Packets Received</Name>
+			<Item ID="44"><Name>Broadcast Packets Received</Name>
 				<Operations>R</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
@@ -568,6 +547,7 @@ Write Only.]]></Description>
 				<Units></Units>
 				<Description><![CDATA[Links to a vendor specific object.]]></Description>
 			</Item></Resources>
-		<Description2 />
+		<Description2><![CDATA[Notes:
+(1)	WEP is supported by this object for legacy devices. All encryption parameter resources are optional e.g. a Wifi Alliance "HotSpot 2.0" device would not support WEP related resources.]]></Description2>
 	</Object>
 </LWM2M>

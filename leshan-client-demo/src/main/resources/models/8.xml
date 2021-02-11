@@ -81,7 +81,7 @@ LEGAL DISCLAIMER
 				<Description><![CDATA[State of the device:
 0: unlocked state Normal operation.
 1: partially locked state
-To render the device inoperable the device has been partially locked. The “lock target” resource allows specifying the target(s) for this operation.
+To render the device inoperable the device has been partially locked. The "lock target" resource allows specifying the target(s) for this operation.
 2: fully locked state
 To render the device fully inoperable the device has been fully locked.]]></Description>
 			</Item>

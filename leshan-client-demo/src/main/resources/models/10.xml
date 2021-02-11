@@ -3,25 +3,22 @@
 FILE INFORMATION
 
 OMA Permanent Document
-   File: OMA-SUP-XML_LWM2M_Cellular_Connectivity-V1_0_1-20190917-A
-   Type: xml
+   File: OMA-SUP-XML_10-V1_1-20201110-A.xml
+   Path: http://www.openmobilealliance.org/release/ObjLwM2M_Cell_Conn/
 
-Public Reachable Information
-   Path: http://www.openmobilealliance.org/tech/profiles
-   Name: LWM2M_Cellular_Connectivity-v1_0_1.xml
+OMNA LwM2M Registry
+   Path: https://github.com/OpenMobileAlliance/lwm2m-registry
+   Name: 10.xml
 
 NORMATIVE INFORMATION
 
   This file is not part of a Technical Specification document.
 
-  The file is also available at http://www.openmobilealliance.org/
-
   Send comments to https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues
 
-	
 LEGAL DISCLAIMER
 
-  Copyright 2019 Open Mobile Alliance.
+  Copyright 2020 Open Mobile Alliance.
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions
@@ -55,14 +52,14 @@ LEGAL DISCLAIMER
   
 -->
 
-<LWM2M xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M.xsd">
+<LWM2M xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M-v1_1.xsd">
 	<Object ObjectType="MODefinition">
 		<Name>LWM2M Cellular Connectivity</Name>
 		<Description1><![CDATA[This object specifies resources to enable a device to connect to a 3GPP or 3GPP2 bearer, including GPRS/EDGE, UMTS, LTE, NB-IoT, SMS. For cellular connectivity, this object focuses on Packet Switched (PS) connectivity and doesn't aim to provide comprehensive Circuit Switched (CS) connectivity management.]]></Description1>
 		<ObjectID>10</ObjectID>
-		<ObjectURN>urn:oma:lwm2m:oma:10</ObjectURN>
-		<LWM2MVersion>1.0</LWM2MVersion>
-		<ObjectVersion>1.0</ObjectVersion>
+		<ObjectURN>urn:oma:lwm2m:oma:10:1.1</ObjectURN>
+		<LWM2MVersion>1.1</LWM2MVersion>
+		<ObjectVersion>1.1</ObjectVersion>
 		<MultipleInstances>Single</MultipleInstances>
 		<Mandatory>Optional</Mandatory>
 		<Resources>
@@ -95,7 +92,7 @@ LEGAL DISCLAIMER
 				<Type>String</Type>
 				<RangeEnumeration/>
 				<Units/>
-				<Description><![CDATA[Configurable in case the application needs to issue a code (e.g. via AT command) to activate the module. e.g. “*98”.]]></Description>
+				<Description><![CDATA[Configurable in case the application needs to issue a code (e.g. via AT command) to activate the module. e.g. "*98".]]></Description>
 			</Item>
 			<Item ID="3"><Name>Vendor specific extensions</Name>
 				<Operations>R</Operations>
@@ -106,66 +103,57 @@ LEGAL DISCLAIMER
 				<Units/>
 				<Description><![CDATA[Links to a vendor specific object.]]></Description>
 			</Item>
-			<Item ID="4"><Name>PSM Timer (1)</Name>
+			<Item ID="4"><Name>PSM Timer</Name>
 				<Operations>RW</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>Integer</Type>
 				<RangeEnumeration/>
 				<Units>s</Units>
-				<Description><![CDATA[Power saving mode (PSM) timer as defined in [3GPP-TS_23.682].PSM Timer = Extended T3412 in the range 10min..992 days and coded as section 10.5.7.3 of [3GPP-TS_24.008]. It defines Max interval between periodic TAU if there is no other transmission from the device. During most of this time the device is considered as unreachable and can therefore go into a deep sleep mode while keeping the PDN connection(s) active.]]></Description>
+				<Description><![CDATA[PSM Timer = Extended T3412 as described in section 10.5.7.4a (GPRS Timer 3) of [3GPP-TS_24.008]. The value in seconds has to be compatible with Extended T3412, otherwise conversion will not be exact. It defines Max interval between periodic TAU if there is no other transmission from the device. During most of this time the device is considered as unreachable and can therefore go into a deep sleep mode while keeping the PDN connection(s) active.]]></Description>
 			</Item>
-			<Item ID="5"><Name>Active Timer (1)</Name>
+			<Item ID="5"><Name>Active Timer</Name>
 				<Operations>RW</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>Integer</Type>
 				<RangeEnumeration/>
 				<Units>s</Units>
-				<Description><![CDATA[Active timer = T3324 in the range 2sec..31 min and coded as per section 10.5.7.4 of [3GPP-TS_24.008]. This is the time a UE has to remain reachable after transitioning to idle state in case there is pending data from the NW to send out. At the end of T3324 UE can go into a deep sleep mode while keeping the PDN connection(s) active.]]></Description>
+				<Description><![CDATA[Active Timer = T3324 as described in section 10.5.7.3 (GPRS Timer) of [3GPP-TS_24.008]. The value in seconds has to be compatible with T3324, otherwise conversion will not be exact. This is the time a UE has to remain reachable after transitioning to idle state in case there is pending data from the NW to send out. At the end of T3324 UE can go into a deep sleep mode while keeping the PDN connection(s) active.]]></Description>
 			</Item>
-			<Item ID="6"><Name>Serving PLMN Rate control</Name>
-				<Operations>R</Operations>
-				<MultipleInstances>Single</MultipleInstances>
-				<Mandatory>Optional</Mandatory>
-				<Type>Integer</Type>
-				<RangeEnumeration/>
-				<Units/>
-				<Description><![CDATA[Applicable only when Signalling Radio Bearers are used to transfer data, Data over NAS (DoNAS), it indicates the maximum number of allowed uplink PDU transmissions per 6 minute interval aggregated across all PDN connections. See [3GPP-TS_23.401], octet 3 to 4 of the Serving PLMN rate control IE.]]></Description>
-			</Item>
-			<Item ID="7"><Name>eDRX parameters for Iu mode (1)</Name>
+			<Item ID="7"><Name>eDRX parameters for Iu mode</Name>
 				<Operations>RW</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>Opaque</Type>
-				<RangeEnumeration>8 bit</RangeEnumeration>
+				<RangeEnumeration>0..255</RangeEnumeration>
 				<Units/>
 				<Description><![CDATA[Extended DRX parameters (Paging Time Window and eDRX value) for Iu mode which the UE can request from the network. This resource is encoded as octet 3 in [3GPP-TS_24.008, clause 10.5.5.32].]]></Description>
 			</Item>
-			<Item ID="8"><Name>eDRX parameters for WB-S1 mode (1)</Name>
+			<Item ID="8"><Name>eDRX parameters for WB-S1 mode</Name>
 				<Operations>RW</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>Opaque</Type>
-				<RangeEnumeration>8 bit</RangeEnumeration>
+				<RangeEnumeration>0..255</RangeEnumeration>
 				<Units/>
 				<Description><![CDATA[Extended DRX parameters (Paging Time Window and eDRX value) for WB-S1 mode which the UE can request from the network. This resource is encoded as octet 3 in [3GPP-TS_24.008, clause 10.5.5.32].]]></Description>
 			</Item>
-			<Item ID="9"><Name>eDRX parameters for NB-S1 mode (1)</Name>
+			<Item ID="9"><Name>eDRX parameters for NB-S1 mode</Name>
 				<Operations>RW</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>Opaque</Type>
-				<RangeEnumeration>8 bit</RangeEnumeration>
+				<RangeEnumeration>0..255</RangeEnumeration>
 				<Units/>
 				<Description><![CDATA[Extended DRX parameters (Paging Time Window and eDRX value) for NB-S1 mode which the UE can request from the network. This resource is encoded as octet 3 in [3GPP-TS_24.008, clause 10.5.5.32].]]></Description>
 			</Item>
-			<Item ID="10"><Name>eDRX parameters for A/Gb mode (1)</Name>
+			<Item ID="10"><Name>eDRX parameters for A/Gb mode</Name>
 				<Operations>RW</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>Opaque</Type>
-				<RangeEnumeration>8 bit</RangeEnumeration>
+				<RangeEnumeration>0..255</RangeEnumeration>
 				<Units/>
 				<Description><![CDATA[Extended DRX parameters (Paging Time Window and eDRX value) for A/Gb mode which the UE can request from the network. This resource is encoded as octet 3 in [3GPP-TS_24.008, clause 10.5.5.32].]]></Description>
 			</Item>
@@ -176,10 +164,54 @@ LEGAL DISCLAIMER
 				<Type>Objlnk</Type>
 				<RangeEnumeration/>
 				<Units/>
-				<Description><![CDATA[Links to instances of the “APN connection profile” object representing every APN connection profile that has an activated PDN connection.]]></Description>
-			</Item></Resources>
+				<Description><![CDATA[Links to instances of the "APN connection profile" object representing every APN connection profile that has an activated PDN connection.]]></Description>
+			</Item>
+			<Item ID="12">
+				<Name>Supported Power Saving Modes</Name>
+				<Operations>R</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Unsigned Integer</Type>
+				<RangeEnumeration>0..255</RangeEnumeration>
+				<Units />
+				<Description><![CDATA[This Resource is used to indicate the Power Saving Modes supported by the LwM2M Client.
+				Each bit set in the Resource Instance value corresponds to a supported mode. Several bit set, means several modes are supported.
+				1st LSB: PSM
+				2nd LSB: eDRX
+				Other bits are reserved for future use]]></Description>
+			</Item>
+			<Item ID="13">
+				<Name>Active Power Saving Modes</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Unsigned Integer</Type>
+				<RangeEnumeration>0..255</RangeEnumeration>
+				<Units />
+				<Description><![CDATA[This Resource is used to indicate which Power Saving Mode(s) is (are) currently active in the LwM2M Client.
+				Each bit set in the Resource Instance value corresponds to an active mode.
+				1st LSB: PSM 
+				2nd LSB: eDRX
+				Other bits are reserved for future use]]></Description>
+			</Item>
+			<Item ID="14">
+				<Name>Release Assistance Indication Usage</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Unsigned Integer</Type>
+				<RangeEnumeration>0..255</RangeEnumeration>
+				<Units />
+				<Description><![CDATA[This resource is used to indicate client configuration as to when it uses Release Assistance Indicator (RAI) as defined in 3GPP-TS_24.310, clause 9.9.4.25 to indicate to the NW when connection can be released.
+				1st LSB: RAI not used
+				2nd LSB: RAI used when transmitting last message which requires no application/transport layer response/ confirmation
+				3rd LSB: RAI used when transmitting last message which requires response/confirmation; when this bit is set, 2nd LSB is also expected to be set.]]></Description>
+			</Item>
+		</Resources>
 		<Description2><![CDATA[Notes:
-		(1) This parameter is controlled by the 3GPP network. A LwM2M server may write a suggested value to this resource. As soon a LwM2M server changes the current value the device then suggests the new value to the network upon the next practical opportunity e.g. by inclusion of the requested value in an Attach or TAU request. In case the network confirms the suggested value then the device shall apply that value. In case the network provides a different value then the value provided by the network shall be applied by the device and the resource value shall be set to that value.
-		The LwM2M server may use the observe function to be notified upon any changes of PSM or Active timer. By using the observe function the LwM2M server will get notified in case the value suggested by the LwM2M server is not accepted by the network, or, if the value is changed by the network for any reason (e.g., if the device moves into new tracking areas there is no guarantee that the above values remain the same and are not altered by the network).]]></Description2>
+                (0) Resource 6 "Serving PLMN Rate control" was moved to the APN Connection Profile Object (#11) to correctly correspond to the 3GPP specifications.
+
+		(1) PSM Timer, Active Timer and all eDRX parameters resources are controlled by the 3GPP network. A LwM2M server may write a suggested values to these resource. As soon a LwM2M server changes the current values the device then suggests the new values to the network upon the next practical opportunity e.g. by inclusion of the requested value in an Attach or TAU request. In case the network confirms the suggested value then the device shall apply that value. In case the network provides a different value then the value provided by the network shall be applied by the device and the resource value shall be set to that value.
+		The LwM2M server may use the observe function to be notified upon any changes of PSM, Active timer or eDRX parameters. By using the observe function the LwM2M server will get notified in case the value suggested by the LwM2M server is not accepted by the network, or, if the value is changed by the network for any reason (e.g., if the device moves into new tracking areas there is no guarantee that the above values remain the same and are not altered by the network).]]></Description2>
 	</Object>
 </LWM2M>

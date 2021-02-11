@@ -132,7 +132,7 @@ Can be direct link to a single software component or link to archive file, execu
 				<Type>Objlnk</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[Link to a Checkpoint“ object which allows to specify conditions/dependencies for a software update. E.g. power connected, sufficient memory, target system.]]></Description>
+				<Description><![CDATA[Link to a Checkpoint" object which allows to specify conditions/dependencies for a software update. E.g. power connected, sufficient memory, target system.]]></Description>
 			</Item>
 			<Item ID="6"><Name>Uninstall</Name>
 				<Operations>E</Operations>
@@ -143,7 +143,7 @@ Can be direct link to a single software component or link to archive file, execu
 				<Units></Units>
 				<Description><![CDATA[Uninstalls the software package.
 This executable resource may have one argument.
-If used with no argument or argument is 0, the Package is removed i from the Device. If the argument is 1 (“ForUpdate”), the Client MUST prepare itself for receiving a Package used to upgrade the Software already in place. Update State is set back to INITIAL state.
+If used with no argument or argument is 0, the Package is removed i from the Device. If the argument is 1 ("ForUpdate"), the Client MUST prepare itself for receiving a Package used to upgrade the Software already in place. Update State is set back to INITIAL state.
 ]]></Description>
 			</Item>
 			<Item ID="7"><Name>Update State</Name>
@@ -194,7 +194,7 @@ The default value is false.
 				<RangeEnumeration>0..200</RangeEnumeration>
 				<Units></Units>
 				<Description><![CDATA[Contains the result of downloading or installing/uninstalling the software
-0: Initial value. Prior to download any new package in the Device, Update Result MUST be reset to this initial value. One side effect of executing the Uninstall resource is to reset Update Result to this initial value “0”.
+0: Initial value. Prior to download any new package in the Device, Update Result MUST be reset to this initial value. One side effect of executing the Uninstall resource is to reset Update Result to this initial value "0".
 1: Downloading. The package downloading process is on-going.
 2: Software successfully installed.
 3: Successfully Downloaded and package integrity verified
@@ -251,7 +251,7 @@ Activation State is ENABLED only if the Software Activation State Machine is in 
 				<Type>Objlnk</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[Link to “Package Settings” object which allows to modify at any time software configuration settings. This is an application specific object. 
+				<Description><![CDATA[Link to "Package Settings" object which allows to modify at any time software configuration settings. This is an application specific object. 
 Note: OMA might provide a template for a Package Settings object in a future release of this specification.
 ]]></Description>
 			</Item>

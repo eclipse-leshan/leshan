@@ -3,24 +3,21 @@
 FILE INFORMATION
 
 OMA Permanent Document
-   File: OMA-SUP-XML_LWM2M_APN_Connection_Profile-V1_0_1-20190917-A
-   Type: xml
+   File: OMA-SUP-XML_11-V1_1-20201110-A.xml
+   Path: http://www.openmobilealliance.org/release/ObjLwM2M_APN_Conn/
 
-Public Reachable Information
-   Path: http://www.openmobilealliance.org/tech/profiles
-   Name: LWM2M_APN_Connection_Profile-v1_0_1.xml
+OMNA LwM2M Registry
+   Path: https://github.com/OpenMobileAlliance/lwm2m-registry
+   Name: 11.xml
 
 NORMATIVE INFORMATION
   This file is not part of a Technical Specification document.
 
-  The file is also available at http://www.openmobilealliance.org/
-
   Send comments to https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues
 
-	
 LEGAL DISCLAIMER
 
-  Copyright 2019 Open Mobile Alliance.
+  Copyright 2020 Open Mobile Alliance.
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions
@@ -53,15 +50,14 @@ LEGAL DISCLAIMER
   https://www.omaspecworks.org/about/intellectual-property-rights/
   
 -->
-<LWM2M xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M.xsd">
+<LWM2M xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M-v1_1.xsd">
 	<Object ObjectType="MODefinition">
 		<Name>LWM2M APN Connection Profile</Name>
 		<Description1><![CDATA[This object specifies resources to enable a device to connect to an APN.]]></Description1>
 		<ObjectID>11</ObjectID>
-
-		<ObjectURN>urn:oma:lwm2m:oma:11</ObjectURN>
-		<LWM2MVersion>1.0</LWM2MVersion>
-		<ObjectVersion>1.0</ObjectVersion>
+		<ObjectURN>urn:oma:lwm2m:oma:11:1.1</ObjectURN>
+		<LWM2MVersion>1.1</LWM2MVersion>
+		<ObjectVersion>1.1</ObjectVersion>
 		<MultipleInstances>Multiple</MultipleInstances>
 		<Mandatory>Optional</Mandatory>
 		<Resources>
@@ -141,7 +137,7 @@ LEGAL DISCLAIMER
 				<Type>String</Type>
 				<RangeEnumeration/>
 				<Units/>
-				<Description><![CDATA[Comma separated list of retry delay values in seconds to be used in case of unsuccessful connection establishment attempts. e.g. “10,60,600,3600,86400”]]></Description>
+				<Description><![CDATA[Comma separated list of retry delay values in seconds to be used in case of unsuccessful connection establishment attempts. e.g. "10,60,600,3600,86400"]]></Description>
 			</Item>
 			<Item ID="8"><Name>Validity (MCC, MNC)</Name>
 				<Operations>RW</Operations>
@@ -150,7 +146,7 @@ LEGAL DISCLAIMER
 				<Type>String</Type>
 				<RangeEnumeration/>
 				<Units/>
-				<Description><![CDATA[Coma separated mobile country code, then mobile network code – for which this APN is valid.]]></Description>
+				<Description><![CDATA[Coma separated mobile country code, then mobile network code - for which this APN is valid.]]></Description>
 			</Item>
 			<Item ID="9"><Name>Connection establishment time (1)</Name>
 				<Operations>R</Operations>
@@ -314,11 +310,99 @@ LEGAL DISCLAIMER
 				<Description><![CDATA[Determines the number of allowed uplink PDU transmissions per time interval per APN.
 				Rate Control information is part of the Protocol Configuration Options (PCO) according to  [3GPP-TS_24.301], [3GPP-TS_24.008 and [3GPP-TS_27.060]]]>
 				</Description>
-			</Item></Resources>
+			</Item>
+			<Item ID="26"><Name>Serving PLMN Rate control</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Unsigned Integer</Type>
+				<RangeEnumeration/>
+				<Units/>
+				<Description><![CDATA[For data sent over NAS, this indicates the maximum number of messages the UE can send per time unit (Resource 27) per PDN connection. See [3GPP-TS_23.401] clause 4.7.7.2 and [3GPP-TS_24.008] clause 10.5.6.3.2.]]></Description>
+			</Item>
+			<Item ID="27"><Name>Uplink Time Unit</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Unsigned Integer</Type>
+				<RangeEnumeration>0..4</RangeEnumeration>
+				<Units/>
+				<Description><![CDATA[In association with APN Rate Control (Resource 28), this indicates the units of the period over which the maximum number of PDU transmissions are measured. [3GPP-TS_24.008] clause 10.5.6.3.2 specifies that 0=unrestricted, 1=minute, 2=hour, 3=day and 4=week.]]></Description>
+			</Item>
+			<Item ID="28"><Name>APN Rate Control for Exception Data</Name>
+				<Operations>R</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Integer</Type>
+				<RangeEnumeration/>
+				<Units/>
+				<Description><![CDATA[Determines the number of allowed uplink PDU transmissions for exception data per time interval for this APN. This
+				Rate Control information is part of the Protocol Configuration Options (PCO) according to  [3GPP-TS_24.301], [3GPP-TS_24.008 and [3GPP-TS_27.060]]]>
+				</Description>
+			</Item>
+			<Item ID="29"><Name>APN Exception Data Uplink Time Unit</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Unsigned Integer</Type>
+				<RangeEnumeration>0..4</RangeEnumeration>
+				<Units/>
+				<Description><![CDATA[In association with APN Rate Control for Exception Data (Resource 28), this indicates the units of the period over which the maximum number of messages is measured. [3GPP-TS_24.008] clause 10.5.6.3.2 specifies that 0=unrestricted, 1=minute, 2=hour, 3=day and 4=week.]]></Description>
+			</Item>
+			<Item ID="30"><Name>Supported RAT Types</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Multiple</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Unsigned Integer</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units/>
+				<Description><![CDATA[This resource specifies the supported RAT Types that the LWM2M Client can use for connecting to the specified APN.
+				Each instance is one of these values:
+				1: 3GPP PS
+				2: 3GPP PS GSM (GPRS)
+				3: 3GPP PS UMTS
+				4: 3GPP PS LTE
+				5: 1xEV-DO
+				6: 3GPP CS
+				12: 3GPP PS LTE with CIoT EPS optimisations, User Plane
+				13: 3GPP PS LTE with CIoT EPS optimisations, Control Plane
+				14: 3GPP PS NB-IoT Control Plane optimisations
+				15: 3GPP PS NB-IoT User Plane optimisations
+				16-100: Reserved for future use
+				]]></Description>
+			</Item>
+			<Item ID="31"><Name>RDS Application ID</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Multiple</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>String</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[This resource provides the Application ID to correlate to the appropriate instance Ids of Resources 32 and 33.]]></Description>
+			</Item>
+			<Item ID="32"><Name>RDS Destination Port</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Multiple</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Integer</Type>
+				<RangeEnumeration>0..15</RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[This resource provides the correlated RDS Destination Port Number (as defined in 3GPP TS 24.250) to use for contacting the LwM2M Server identifed in Resource 29 when communicating through the SCEF across the Non-IP binding (Resource 24 must equal 0).]]></Description>
+			</Item>
+			<Item ID="33"><Name>RDS Source Port</Name>
+				<Operations>RW</Operations>
+				<MultipleInstances>Multiple</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Integer</Type>
+				<RangeEnumeration>0..15</RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[This resource provides the correlated RDS Source Port Number (as defined in 3GPP TS 24.250) to use for contacting the LwM2M Server identifed in Resource 29 when communicating through the SCEF across the Non-IP binding (Resource 24 must equal 0).]]></Description>
+			</Item>
+		</Resources>
 		<Description2><![CDATA[Notes:
 (1)	For each activated PDP context request, the device may store at least one value of ‘Connection establishment time’, ‘connection establishment result’, ‘Connection end time’ and if activation is unsuccessful then a ‘connection establishment reject cause’.   It is a device decision how many instances to keep.
 (2)	These resources are used in case IP related parameters are defined statically, can also be used to reflect IP related parameters in case of dynamic IP address assignment.  The normal use case would be to have one IPv4 and one IPv6 address which have each associated a prefix length (IPv6 only), a subnet mask, a gateway, and a primary and secondary DNS address.
-(3)	For LTE a higher QoS may be established by setting up an additional bearer (“dedicated bearer”) in addition to the default bearer which is established to the default APN. A dedicated bearer which is set up by the network on request by the device containing a requested QCI value can either be established to the same APN as the default bearer or to another APN. The QoS of a dedicated bearer may be modified on request by the device. The association of QoS values and APNs for a subscriber is stored in the network and checked during the establishment of a bearer.
+(3)	For LTE a higher QoS may be established by setting up an additional bearer ("dedicated bearer") in addition to the default bearer which is established to the default APN. A dedicated bearer which is set up by the network on request by the device containing a requested QCI value can either be established to the same APN as the default bearer or to another APN. The QoS of a dedicated bearer may be modified on request by the device. The association of QoS values and APNs for a subscriber is stored in the network and checked during the establishment of a bearer.
 ]]></Description2>
 	</Object>
 </LWM2M>

@@ -3,24 +3,21 @@
 FILE INFORMATION
 
 OMA Permanent Document
-   File: OMA-SUP-XML_LWM2M_Bearer_Selection-V1_0_1-20190917-A
-   Type: xml
+   File: OMA-SUP-XML_13-V1_1-20201110-A.xml
+   Path: http://www.openmobilealliance.org/release/ObjLwM2M_Bearer_Conn/
 
-Public Reachable Information
-   Path: http://www.openmobilealliance.org/tech/profiles
-   Name: LWM2M_Bearer_Selection-v1_0_1.xml
+OMNA LwM2M Registry
+   Path: https://github.com/OpenMobileAlliance/lwm2m-registry
+   Name: 13.xml
 
 NORMATIVE INFORMATION
   This file is not part of a Technical Specification document.
 
-  The file is also available at http://www.openmobilealliance.org/
-  
   Send comments to https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues
 
-	
 LEGAL DISCLAIMER
 
-  Copyright 2019 Open Mobile Alliance.
+  Copyright 2020 Open Mobile Alliance.
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions
@@ -53,15 +50,15 @@ LEGAL DISCLAIMER
   https://www.omaspecworks.org/about/intellectual-property-rights/
   
 -->
-<LWM2M xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M.xsd">
+<LWM2M xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M-v1_1.xsd">
 	<Object ObjectType="MODefinition">
 		<Name>LWM2M Bearer Selection</Name>
 		<Description1><![CDATA[This object specifies resources to enable a device to choose a PLMN/network on which to attach/register and what type of bearer to then connect.
 		This object allows via remote bearer and network configuration to overwrite automatic network and bearer selection e.g. as supported by the UICC. An equivalent example for overwriting automatic selection is a user doing manual network and bearer selection on a smart phone.]]></Description1>
 		<ObjectID>13</ObjectID>
-		<ObjectURN>urn:oma:lwm2m:oma:13</ObjectURN>
-		<LWM2MVersion>1.0</LWM2MVersion>
-		<ObjectVersion>1.0</ObjectVersion>
+		<ObjectURN>urn:oma:lwm2m:oma:13:1.1</ObjectURN>
+		<LWM2MVersion>1.1</LWM2MVersion>
+		<ObjectVersion>1.1</ObjectVersion>
 		<MultipleInstances>Single</MultipleInstances>
 		<Mandatory>Optional</Mandatory>
 		<Resources>
@@ -70,7 +67,7 @@ LEGAL DISCLAIMER
 				<MultipleInstances>Multiple</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>Integer</Type>
-				<RangeEnumeration>8 bit</RangeEnumeration>
+				<RangeEnumeration>0..100</RangeEnumeration>
 				<Units/>
 				<Description><![CDATA[Used in network selection and, if applicable, in subsequent mobility management procedures:
 				0: auto connect
@@ -88,7 +85,8 @@ LEGAL DISCLAIMER
 				12: 3GPP PS LTE with CIoT EPS optimisations, User Plane preferred (2)
 				13: 3GPP PS LTE with CIoT EPS optimisations, Control Plane preferred (2)14: 3GPP PS NB-IoT Control Plane optimisations preferred (2)
 				15: 3GPP PS NB-IoT User Plane optimisations preferred (2) 
-				16-100: Reserved for future use
+				16: 3GPP 5G-NR preferred
+				17-100: Reserved for future use
 				The Preferred Communications Bearer resource specifies the preferred communications bearer that the LWM2M Client is requested to use for connecting to the LWM2M Server. If multiple preferred communications bearers are specified, the priority order is reflected by the resource instance order. E.g. the bearer which appears first in the list of resource instances is to have higher priority over the rest of available bearers. The LWM2M Client SHOULD use the preferred bearers with higher priority first if they are available. If none of indicated preferred bearers is available, the LWM2M Client SHOULD wait until one of them becomes available. ]]></Description>
 			</Item>
 			<Item ID="1"><Name>Acceptable RSSI (GSM)</Name>
@@ -96,27 +94,27 @@ LEGAL DISCLAIMER
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>Integer</Type>
-				<RangeEnumeration/>
+				<RangeEnumeration>-110..-48</RangeEnumeration>
 				<Units/>
-				<Description><![CDATA[Provides guide to the application when performing manual network selection; the range is -48 to -110.]]></Description>
+				<Description><![CDATA[Provides guide to the application when performing manual network selection.]]></Description>
 			</Item>
 			<Item ID="2"><Name>Acceptable RSCP (UMTS)</Name>
 				<Operations>RW</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>Integer</Type>
-				<RangeEnumeration/>
+				<RangeEnumeration>-120..-25</RangeEnumeration>
 				<Units/>
-				<Description><![CDATA[Provides guide to the application when performing manual network selection; the range is -25 to -120.]]></Description>
+				<Description><![CDATA[Provides guide to the application when performing manual network selection.]]></Description>
 			</Item>
 			<Item ID="3"><Name>Acceptable RSRP (LTE)</Name>
 				<Operations>RW</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>Integer</Type>
-				<RangeEnumeration/>
+				<RangeEnumeration>-140..-44</RangeEnumeration>
 				<Units/>
-				<Description><![CDATA[Provides guide to the application when performing manual network selection; the range is -44 to -140.]]></Description>
+				<Description><![CDATA[Provides guide to the application when performing manual network selection.]]></Description>
 			</Item>
 			<Item ID="4"><Name>Acceptable RSSI (1xEV-DO)</Name>
 				<Operations>RW</Operations>
@@ -144,7 +142,7 @@ LEGAL DISCLAIMER
 				<RangeEnumeration/>
 				<Units/>
 				<Description><![CDATA[Comma separated list of MCC+MNC of operators, in priority order.
-				Resource “operator list mode” indicates how to process this list.]]></Description>
+				Resource "operator list mode" indicates how to process this list.]]></Description>
 			</Item>
 			<Item ID="7"><Name>Operator list mode</Name>
 				<Operations>RW</Operations>
@@ -153,7 +151,7 @@ LEGAL DISCLAIMER
 				<Type>Boolean</Type>
 				<RangeEnumeration/>
 				<Units/>
-				<Description><![CDATA[Indicates whether resource “operator list” represents the allowed operator list (white list), or, the preferred operator list.
+				<Description><![CDATA[Indicates whether resource "operator list" represents the allowed operator list (white list), or, the preferred operator list.
 				0=preferred
 				1=allowed]]></Description>
 			</Item>
@@ -180,9 +178,9 @@ LEGAL DISCLAIMER
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>Integer</Type>
-				<RangeEnumeration/>
+				<RangeEnumeration>-158..-44</RangeEnumeration>
 				<Units/>
-				<Description><![CDATA[Provides guide to the application when performing manual network selection; the range is -44 to -158.]]></Description>
+				<Description><![CDATA[Provides guide to the application when performing manual network selection.]]></Description>
 			</Item>
 			<Item ID="11"><Name>Higher Priority PLMN Search Timer</Name>
 				<Operations>RW</Operations>
