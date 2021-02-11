@@ -76,9 +76,9 @@ limitations under the License.
 		<Name>PrachReport</Name>
 		<Description1><![CDATA[PRACH report information]]></Description1>
 		<ObjectID>3380</ObjectID>
-		<ObjectURN>urn:oma:lwm2m:ext:3380</ObjectURN>
+		<ObjectURN>urn:oma:lwm2m:ext:3380:2.0</ObjectURN>
 		<LWM2MVersion>1.0</LWM2MVersion>
-		<ObjectVersion>1.0</ObjectVersion>
+		<ObjectVersion>2.0</ObjectVersion>
 		<MultipleInstances>Single</MultipleInstances>
 		<Mandatory>Optional</Mandatory>
 		<Resources>
@@ -95,7 +95,7 @@ limitations under the License.
 				<Operations>R</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Mandatory</Mandatory>
-				<Type>Boolean</Type>
+				<Type>Integer</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
 				<Description><![CDATA[Sub Frame Number.]]></Description>

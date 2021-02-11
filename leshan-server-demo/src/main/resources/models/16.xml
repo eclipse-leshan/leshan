@@ -119,7 +119,7 @@ Arguments definitions are described in Section 5.2.1 as well as in table 2 of th
 0 :  IDLE_STATE :  AuthData doesn’t contain any valid data
 1 :  DATA_AVAIL_STATE : AuthData  contains a valid data 
 2 :  ERROR_STATE :  an error occurred  
-This state is reset to IDLE_STATE, when the executable resource “GetAuthData” is triggered or when the AuthData resource has been returned to the LwM2M Server (READ / NOTIFY) .
+This state is reset to IDLE_STATE, when the executable resource "GetAuthData" is triggered or when the AuthData resource has been returned to the LwM2M Server (READ / NOTIFY) .
 ]]></Description>
 			</Item></Resources>
 		<Description2 />

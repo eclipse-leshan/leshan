@@ -124,9 +124,9 @@ executable Resource can work with.
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
 				<Description><![CDATA[When the resource doesn’t exist, it means the associated Device Capability is not removable.
-When this resource is “False”, it means the associated Device Capability is removable and is currently not attached to the device.
-When this resource is “True”, it means the associated Device Capability – if removable – is currently attached to the Device.
-When a Device Capability is not removable, and the “Attached” Resource is present, the “Attached” value but be set to “True”.
+When this resource is "False", it means the associated Device Capability is removable and is currently not attached to the device.
+When this resource is "True", it means the associated Device Capability - if removable - is currently attached to the Device.
+When a Device Capability is not removable, and the "Attached" Resource is present, the "Attached" value but be set to "True".
 ]]></Description>
 			</Item>
 			<Item ID="4"><Name>Enabled</Name>
@@ -136,7 +136,7 @@ When a Device Capability is not removable, and the “Attached” Resource is pr
 				<Type>Boolean</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[This resource indicates whether the Device Capability is enabled regardless whether the Device Capability is attached or not. If the value of this resource is “True” the Device Capability is in Enabled State. If the value is “False” the Device Capability is in Disabled State;
+				<Description><![CDATA[This resource indicates whether the Device Capability is enabled regardless whether the Device Capability is attached or not. If the value of this resource is "True" the Device Capability is in Enabled State. If the value is "False" the Device Capability is in Disabled State;
 The ‘Attached’ and ‘Enabled’ resources are independent. A Device Capability MAY have ‘True’ as value for ‘Enabled’ Resource while having ‘False’ as value for the ‘Attached’ Resource. That means the Device Capability is still not available and can’t be used until it is attached to the Device, but will be useable once the Device Capability is attached.
 ]]></Description>
 			</Item>
@@ -169,7 +169,7 @@ In Disabled state the Device Capability is not allowed to work.
 				<Type>Boolean</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[When the Resources “Enabled” or “Attached” are under “Observation”, this resource specifies whether the LWM2M Server MUST be notified when the value of the Resource on “Observation” changed. If the Resource “NotifyEn” is not present or the value is ‘False’, the LWM2M Server will be not notified about this change. If the “NotifyEn” Resource is present and the value is ‘True’, the LWM2M Server will be notified.]]></Description>
+				<Description><![CDATA[When the Resources "Enabled" or "Attached" are under "Observation", this resource specifies whether the LWM2M Server MUST be notified when the value of the Resource on "Observation" changed. If the Resource "NotifyEn" is not present or the value is ‘False’, the LWM2M Server will be not notified about this change. If the "NotifyEn" Resource is present and the value is ‘True’, the LWM2M Server will be notified.]]></Description>
 			</Item></Resources>
 		<Description2 />
 	</Object>
