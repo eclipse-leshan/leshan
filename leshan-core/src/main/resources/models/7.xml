@@ -4,13 +4,12 @@
 FILE INFORMATION
 
 OMA Permanent Document
-   File: OMA-SUP-XML_LWM2M_Connectivity_Statistics-V1_0_4-20190617-A
-   Type: xml
-   Date: 2019-Jun-17
+   File: OMA-SUP-XML_7-V1_0-20201110-A.xml
+   Path: http://www.openmobilealliance.org/release/ObjLwM2M_Conn_Stat/
 
-Public Reachable Information
-   Path: http://www.openmobilealliance.org/tech/profiles
-   Name: LWM2M_Connectivity_Statistics-v1_0_4.xml
+OMNA LwM2M Registry
+   Path: https://github.com/OpenMobileAlliance/lwm2m-registry
+   Name: 7.xml
 
 NORMATIVE INFORMATION
 
@@ -19,13 +18,13 @@ NORMATIVE INFORMATION
   OMA-TS-LightweightM2M-V1_0_3
   OMA-TS-LightweightM2M_Core-V1_1_1
 
-  This is available at http://www.openmobilealliance.org/
+  This is available at http://www.openmobilealliance.org/release/LightweightM2M/
 
   Send comments to https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues
 
 LEGAL DISCLAIMER
 
-  Copyright 2019 Open Mobile Alliance.
+  Copyright 2020 Open Mobile Alliance.
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions
