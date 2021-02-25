@@ -24,7 +24,11 @@ import java.net.BindException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.security.*;
+import java.security.Key;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -45,8 +49,9 @@ import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
 import org.eclipse.californium.elements.util.SslContextUtil;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.DefaultServlet;
+import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.leshan.core.LwM2m;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -541,19 +546,41 @@ public class LeshanServerDemo {
             jettyAddr = new InetSocketAddress(webAddress, webPort);
         }
         Server server = new Server(jettyAddr);
-        WebAppContext root = new WebAppContext();
-        root.setContextPath("/");
-        root.setResourceBase(LeshanServerDemo.class.getClassLoader().getResource("webapp").toExternalForm());
-        root.setParentLoaderPriority(true);
+        /*
+         * WebAppContext root = new WebAppContext(); root.setContextPath("/");
+         * root.setResourceBase(LeshanServerDemo.class.getClassLoader().getResource("webapp").toExternalForm());
+         * root.setParentLoaderPriority(true); server.setHandler(root);
+         */
+
+        ServletContextHandler root = new ServletContextHandler(null, "/", true, false);
+        // Configuration for new demo
+        DefaultServlet aServlet = new DefaultServlet();
+        ServletHolder aHolder = new ServletHolder(aServlet);
+        aHolder.setInitParameter("resourceBase",
+                LeshanServerDemo.class.getClassLoader().getResource("webapp2").toExternalForm());
+        aHolder.setInitParameter("pathInfoOnly", "true");
+        root.addServlet(aHolder, "/v2/*");
+
+        // Configuration for old demo
+        DefaultServlet bServlet = new DefaultServlet();
+        ServletHolder bHolder = new ServletHolder(bServlet);
+        bHolder.setInitParameter("resourceBase",
+                LeshanServerDemo.class.getClassLoader().getResource("webapp").toExternalForm());
+        bHolder.setInitParameter("pathInfoOnly", "true");
+        root.addServlet(bHolder, "/*");
+
         server.setHandler(root);
 
         // Create Servlet
         EventServlet eventServlet = new EventServlet(lwServer, lwServer.getSecuredAddress().getPort());
         ServletHolder eventServletHolder = new ServletHolder(eventServlet);
         root.addServlet(eventServletHolder, "/event/*");
+        root.addServlet(eventServletHolder, "/api/event/*");
+        root.addServlet(eventServletHolder, "/v2/api/event/*");
 
         ServletHolder clientServletHolder = new ServletHolder(new ClientServlet(lwServer));
         root.addServlet(clientServletHolder, "/api/clients/*");
+        root.addServlet(clientServletHolder, "/v2/api/clients/*");
 
         ServletHolder securityServletHolder;
         if (publicKey != null) {
@@ -562,10 +589,12 @@ public class LeshanServerDemo {
             securityServletHolder = new ServletHolder(new SecurityServlet(securityStore, serverCertificate));
         }
         root.addServlet(securityServletHolder, "/api/security/*");
+        root.addServlet(securityServletHolder, "/v2/api/security/*");
 
         ServletHolder objectSpecServletHolder = new ServletHolder(
                 new ObjectSpecServlet(lwServer.getModelProvider(), lwServer.getRegistrationService()));
         root.addServlet(objectSpecServletHolder, "/api/objectspecs/*");
+        root.addServlet(objectSpecServletHolder, "/v2/api/objectspecs/*");
 
         // Register a service to DNS-SD
         if (publishDNSSdServices) {
