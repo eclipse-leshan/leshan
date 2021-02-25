@@ -388,6 +388,11 @@ Contributors:
                     </configuration>
                 </plugin>
                 <plugin>
+                    <groupId>com.github.eirslett</groupId>
+                    <artifactId>frontend-maven-plugin</artifactId>
+                    <version>1.11.2</version>
+                </plugin>
+                <plugin>
                     <!-- Deprecated use m2e + mvn resources:copy-resources@configure-eclipse to setup preferences-->
                     <artifactId>maven-eclipse-plugin</artifactId>
                     <version>2.2</version>
@@ -494,6 +499,24 @@ Contributors:
                                     </pluginExecutionFilter>
                                     <action>
                                         <ignore></ignore>
+                                    </action>
+                                </pluginExecution>
+                                <pluginExecution>
+                                    <!-- Disable `frontend-maven-plugin` build as it slow down build in 
+                                    eclipse and it is not needed for development workflow -->
+                                    <pluginExecutionFilter>
+                                        <groupId>com.github.eirslett</groupId>
+                                        <artifactId>frontend-maven-plugin</artifactId>
+                                        <versionRange>
+                                            [1.11.2,)
+                                        </versionRange>
+                                        <goals>
+                                            <goal>install-node-and-yarn</goal>
+                                            <goal>yarn</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore />
                                     </action>
                                 </pluginExecution>
                             </pluginExecutions>
