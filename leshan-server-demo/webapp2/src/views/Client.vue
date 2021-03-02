@@ -10,15 +10,12 @@
             <div>Using LWM2M v{{ registration.lwM2mVersion }}</div>
             <div>
               Last Reg. Update at
-              {{
-                registration.lastUpdate
-                  | moment("MMMM Do, h:mm:ss a")
-              }}
+              {{ registration.lastUpdate | moment("MMMM Do, h:mm:ss a") }}
             </div>
           </div>
         </div>
         <v-divider />
-        <client-setting />  
+        <client-setting />
       </v-sheet>
 
       <v-divider />
@@ -83,40 +80,34 @@ export default {
     },*/
   },
   mounted() {
-    this.$sse(
-      "api/event?ep=" + encodeURIComponent(this.$route.params.endpoint),
-      {
-        format: "json",
-      }
-    )
-      .then((sse) => {
-        this.sse = sse; // store sse to close in on Destroy
-
-        sse.onError((e) => {
-          console.error("lost connection; giving up!", e);
-        });
-
-        sse.subscribe("REGISTRATION", (reg) => {
-          this.registration = reg;
-          this.updateModels();
-        });
-        sse.subscribe("UPDATED", (msg) => {
-          let previousReg = this.registration;
-          this.registration = msg.registration;
-          if (
-            JSON.stringify(this.registration.objectLinks) !==
-            JSON.stringify(previousReg.objectLinks)
-          ) {
-            this.updateModels();
-          }
-        });
-        sse.subscribe("DEREGISTRATION", () => {
-          this.registration = null;
-        });
+    this.sse = this.$sse
+      .create({
+        url: "api/event?ep=" + encodeURIComponent(this.$route.params.endpoint),
       })
-      .catch((err) => {
-        console.error("Failed to connect to server", err);
+      .on("REGISTRATION", (reg) => {
+        this.registration = reg;
+        this.updateModels();
+      })
+      .on("UPDATED", (msg) => {
+        let previousReg = this.registration;
+        this.registration = msg.registration;
+        if (
+          JSON.stringify(this.registration.objectLinks) !==
+          JSON.stringify(previousReg.objectLinks)
+        ) {
+          this.updateModels();
+        }
+      })
+      .on("DEREGISTRATION", () => {
+        this.registration = null;
+      })
+      .on("error", (err) => {
+        console.error("sse unexpected error", err);
       });
+
+    this.sse.connect().catch((err) => {
+      console.error("Failed to connect to server", err);
+    });
 
     // get registration
     this.axios
@@ -128,7 +119,7 @@ export default {
     this.updateModels();
   },
   beforeDestroy() {
-    this.sse.close();
+    this.sse.disconnect();
   },
 };
 </script>

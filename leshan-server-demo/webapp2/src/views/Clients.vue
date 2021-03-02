@@ -21,6 +21,7 @@
 
 <script>
 export default {
+  useSSE: true,
   name: "Clients",
   data: () => ({
     loading: true,
@@ -39,32 +40,27 @@ export default {
   },
   mounted() {
     // listen events to update registration.
-    // TODO must be changed in api/event
-    this.$sse("api/event", { format: "json" })
-      .then((sse) => {
-        this.sse = sse; // store sse to close in on Destroy
-
-        sse.onError((e) => {
-          console.error("lost connection; giving up!", e);
-        });
-
-        sse.subscribe("REGISTRATION", (reg) => {
-          this.registrations = this.registrations
-            .filter((r) => reg.endpoint !== r.endpoint)
-            .concat(reg);
-        });
-        sse.subscribe("UPDATED", (msg) => {
-          let reg = msg.registration;
-          this.registrations = this.registrations
-            .filter((r) => reg.registrationId !== r.registrationId)
-            .concat(reg);
-        });
-        sse.subscribe("DEREGISTRATION", (reg) => {
-          this.registrations = this.registrations.filter(
-            (r) => reg.registrationId !== r.registrationId
-          );
-        });
+    this.sse = this.$sse
+      .create({ url: "api/event" })
+      .on("REGISTRATION", (reg) => {
+        this.registrations = this.registrations
+          .filter((r) => reg.endpoint !== r.endpoint)
+          .concat(reg);
       })
+      .on("UPDATED", (msg) => {
+        let reg = msg.registration;
+        this.registrations = this.registrations
+          .filter((r) => reg.registrationId !== r.registrationId)
+          .concat(reg);
+      })
+      .on("DEREGISTRATION", (reg) => {
+        this.registrations = this.registrations.filter(
+          (r) => reg.registrationId !== r.registrationId
+        );
+      }).on("error", (err) => {
+        console.error("sse unexpected error", err);
+      });
+      this.sse.connect()
       .catch((err) => {
         console.error("Failed to connect to server", err);
       });
@@ -81,7 +77,7 @@ export default {
   },
   beforeDestroy() {
     // close eventsource on destroy
-    this.sse.close();
+    this.sse.disconnect();
   },
 };
 </script>
