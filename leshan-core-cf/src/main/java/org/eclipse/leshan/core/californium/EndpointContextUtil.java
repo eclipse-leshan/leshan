@@ -91,8 +91,8 @@ public class EndpointContextUtil {
         }
 
         if (peerIdentity != null && allowConnectionInitiation) {
-            return new MapBasedEndpointContext(identity.getPeerAddress(), peerIdentity,
-                    DtlsEndpointContext.KEY_HANDSHAKE_MODE, DtlsEndpointContext.HANDSHAKE_MODE_AUTO);
+            return new MapBasedEndpointContext(identity.getPeerAddress(), identity.getPeerAddress().getHostName(),
+                    peerIdentity, DtlsEndpointContext.KEY_HANDSHAKE_MODE, DtlsEndpointContext.HANDSHAKE_MODE_AUTO);
         }
         return new AddressEndpointContext(identity.getPeerAddress(), peerIdentity);
     }
