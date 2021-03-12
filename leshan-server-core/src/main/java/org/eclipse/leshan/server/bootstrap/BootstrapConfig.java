@@ -23,8 +23,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.request.BindingMode;
+import org.eclipse.leshan.core.util.datatype.ULong;
 
 /**
  * A client configuration to apply to a device during a bootstrap session.
@@ -223,14 +225,26 @@ public class BootstrapConfig implements Serializable {
          */
         public Integer bootstrapServerAccountTimeout = 0;
 
+        /**
+         * The Certificate Usage Resource specifies the semantic of the certificate or raw public key stored in the
+         * Server Public Key Resource, which is used to match the certificate presented in the TLS/DTLS handshake.
+         * <ul>
+         * <li>0: CA constraint
+         * <li>1: service certificate constraint
+         * <li>2: trust anchor assertion
+         * <li>3: domain-issued certificate (default if missing)
+         * </ul>
+         */
+        public CertificateUsage certificateUsage;
+
         @Override
         public String toString() {
             // Note : secretKey and smsBindingKeySecret are explicitly excluded from the display for security purposes
             return String.format(
-                    "ServerSecurity [uri=%s, bootstrapServer=%s, securityMode=%s, publicKeyOrId=%s, serverPublicKey=%s, smsSecurityMode=%s, smsBindingKeySecret=%s, serverSmsNumber=%s, serverId=%s, clientOldOffTime=%s, bootstrapServerAccountTimeout=%s]",
+                    "ServerSecurity [uri=%s, bootstrapServer=%s, securityMode=%s, publicKeyOrId=%s, serverPublicKey=%s, smsSecurityMode=%s, smsBindingKeySecret=%s, serverSmsNumber=%s, serverId=%s, clientOldOffTime=%s, bootstrapServerAccountTimeout=%s, certificateUsage=%s]",
                     uri, bootstrapServer, securityMode, Arrays.toString(publicKeyOrId),
                     Arrays.toString(serverPublicKey), smsSecurityMode, Arrays.toString(smsBindingKeyParam),
-                    serverSmsNumber, serverId, clientOldOffTime, bootstrapServerAccountTimeout);
+                    serverSmsNumber, serverId, clientOldOffTime, bootstrapServerAccountTimeout, certificateUsage);
         }
     }
 

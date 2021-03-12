@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.security.PublicKey;
 import java.util.Arrays;
 
+import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.util.Validate;
 
 /**
@@ -50,14 +51,18 @@ public class SecurityInfo implements Serializable {
     // X.509
     private final boolean useX509Cert;
 
+    // certificate usage
+    private final CertificateUsage certificateUsage;
+
     private SecurityInfo(String endpoint, String identity, byte[] preSharedKey, PublicKey rawPublicKey,
-            boolean useX509Cert) {
+            boolean useX509Cert, CertificateUsage certificateUsage) {
         Validate.notEmpty(endpoint);
         this.endpoint = endpoint;
         this.identity = identity;
         this.preSharedKey = preSharedKey;
         this.rawPublicKey = rawPublicKey;
         this.useX509Cert = useX509Cert;
+        this.certificateUsage = certificateUsage;
     }
 
     /**
@@ -72,7 +77,7 @@ public class SecurityInfo implements Serializable {
     public static SecurityInfo newPreSharedKeyInfo(String endpoint, String identity, byte[] preSharedKey) {
         Validate.notEmpty(identity);
         Validate.notNull(preSharedKey);
-        return new SecurityInfo(endpoint, identity, preSharedKey, null, false);
+        return new SecurityInfo(endpoint, identity, preSharedKey, null, false, null);
     }
 
     /**
@@ -85,7 +90,7 @@ public class SecurityInfo implements Serializable {
      */
     public static SecurityInfo newRawPublicKeyInfo(String endpoint, PublicKey rawPublicKey) {
         Validate.notNull(rawPublicKey);
-        return new SecurityInfo(endpoint, null, null, rawPublicKey, false);
+        return new SecurityInfo(endpoint, null, null, rawPublicKey, false, null);
     }
 
     /**
@@ -98,7 +103,21 @@ public class SecurityInfo implements Serializable {
      * @return a X.509 Security Info.
      */
     public static SecurityInfo newX509CertInfo(String endpoint) {
-        return new SecurityInfo(endpoint, null, null, null, true);
+        return new SecurityInfo(endpoint, null, null, null, true, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE);
+    }
+
+    /**
+     * Construct a {@link SecurityInfo} meaning that client with given endpoint name should authenticate itself using
+     * X.509 mode with any trusted X.509 Certificate.
+     * <p>
+     * By default, the certificate Common Name (CN) MUST match the endpoint name.
+     *
+     * @param endpoint the endpont name of the client.
+     * @param certificateUsage certificate usage
+     * @return a X.509 Security Info.
+     */
+    public static SecurityInfo newX509CertInfo(String endpoint, CertificateUsage certificateUsage) {
+        return new SecurityInfo(endpoint, null, null, null, true, certificateUsage);
     }
 
     /**
@@ -152,6 +171,13 @@ public class SecurityInfo implements Serializable {
         return useX509Cert;
     }
 
+    /**
+     * @return the certificate usage for server certificate verification.
+     */
+    public CertificateUsage getCertificateUsage() {
+        return this.certificateUsage;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -161,6 +187,7 @@ public class SecurityInfo implements Serializable {
         result = prime * result + Arrays.hashCode(preSharedKey);
         result = prime * result + ((rawPublicKey == null) ? 0 : rawPublicKey.hashCode());
         result = prime * result + (useX509Cert ? 1231 : 1237);
+        result = prime * result + ((certificateUsage == null) ? 0 : certificateUsage.hashCode());
         return result;
     }
 
@@ -192,14 +219,19 @@ public class SecurityInfo implements Serializable {
             return false;
         if (useX509Cert != other.useX509Cert)
             return false;
+        if (certificateUsage == null) {
+            if (other.certificateUsage != null)
+                return false;
+        } else if (!certificateUsage.equals(other.certificateUsage))
+            return false;
         return true;
     }
 
     @Override
     public String toString() {
         // Note : preSharedKey is explicitly excluded from display for security purposes
-        return String.format("SecurityInfo [endpoint=%s, identity=%s, rawPublicKey=%s, useX509Cert=%s]", endpoint,
-                identity, rawPublicKey, useX509Cert);
+        return String.format("SecurityInfo [endpoint=%s, identity=%s, rawPublicKey=%s, useX509Cert=%s, certificateUsage=%s]", endpoint,
+                identity, rawPublicKey, useX509Cert, certificateUsage);
     }
 
 }

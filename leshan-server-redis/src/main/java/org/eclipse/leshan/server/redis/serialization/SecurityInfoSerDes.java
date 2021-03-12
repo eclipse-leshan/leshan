@@ -30,6 +30,7 @@ import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
 import java.util.Arrays;
 
+import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.security.SecurityInfo;
 
@@ -44,6 +45,9 @@ public class SecurityInfoSerDes {
     public static byte[] serialize(SecurityInfo s) {
         JsonObject o = Json.object();
         o.set("ep", s.getEndpoint());
+        if (s.getCertificateUsage() != null) {
+            o.set("cu", s.getCertificateUsage().code.intValue());
+        }
         if (s.getIdentity() != null) {
             o.set("id", s.getIdentity());
         }
@@ -85,11 +89,14 @@ public class SecurityInfoSerDes {
 
         SecurityInfo i;
         String ep = o.getString("ep", null);
+
+        int cu = o.getInt("cu", CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code.intValue());
+        CertificateUsage certificateUsage = CertificateUsage.fromCode(cu);
         if (o.get("psk") != null) {
             i = SecurityInfo.newPreSharedKeyInfo(ep, o.getString("id", null),
                     Hex.decodeHex(o.getString("psk", null).toCharArray()));
         } else if (o.get("x509") != null) {
-            i = SecurityInfo.newX509CertInfo(ep);
+            i = SecurityInfo.newX509CertInfo(ep, certificateUsage);
         } else {
             JsonObject rpk = (JsonObject) o.get("rpk");
             PublicKey key;
