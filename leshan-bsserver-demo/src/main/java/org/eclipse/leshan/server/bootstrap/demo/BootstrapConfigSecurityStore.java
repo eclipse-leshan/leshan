@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.util.SecurityUtil;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
@@ -113,7 +114,7 @@ public class BootstrapConfigSecurityStore implements BootstrapSecurityStore {
             }
             // Extract X509 security info
             else if (value.bootstrapServer && value.securityMode == SecurityMode.X509) {
-                SecurityInfo securityInfo = SecurityInfo.newX509CertInfo(endpoint);
+                SecurityInfo securityInfo = SecurityInfo.newX509CertInfo(endpoint, value.certificateUsage);
                 return Arrays.asList(securityInfo).iterator();
             }
         }

@@ -104,6 +104,7 @@
                     shortId : 123,
                     security : {
                         bootstrapServer : false,
+                        certificateUsage: lwserver.certificateUsage,
                         clientOldOffTime : 1,
                         publicKeyOrId : lwserver.id,
                         secretKey : lwserver.key,
@@ -120,6 +121,7 @@
                  bs:[{
                     security : {
                         bootstrapServer : true,
+                        certificateUsage: bsserver.certificateUsage,
                         clientOldOffTime : 1,
                         publicKeyOrId : bsserver.id,
                         secretKey : bsserver.key,
