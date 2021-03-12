@@ -17,6 +17,10 @@ package org.eclipse.leshan.client.object;
 
 import static org.eclipse.leshan.core.LwM2mId.*;
 
+import java.nio.charset.StandardCharsets;
+import java.security.PrivateKey;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.List;
 
@@ -32,6 +36,7 @@ import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 import org.eclipse.leshan.core.util.datatype.ULong;
+import org.eclipse.leshan.core.util.X509CertUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,6 +115,20 @@ public class Security extends BaseInstanceEnabler {
     }
 
     /**
+     * Returns a new security instance (X509) for a bootstrap server.
+     */
+    public static Security x509Bootstrap(String serverUri, X509Certificate[] clientCertificateChain, PrivateKey clientPrivateKey,
+            X509Certificate serverCertificate, CertificateUsage certificateUsage) throws CertificateEncodingException {
+        byte [] serverIdentity = null;
+        if (serverCertificate != null) {
+            serverIdentity = serverCertificate.getEncoded().clone();
+        }
+        byte [] clientIdentity = X509CertUtil.asPem(clientCertificateChain).getBytes(StandardCharsets.UTF_8);
+        return new Security(serverUri, true, SecurityMode.X509.code, clientIdentity, serverIdentity,
+                clientPrivateKey.getEncoded().clone(), 0, certificateUsage.code);
+    }
+
+    /**
      * Returns a new security instance (NoSec) for a device management server.
      */
     public static Security noSec(String serverUri, int shortServerId) {
@@ -151,6 +170,21 @@ public class Security extends BaseInstanceEnabler {
             byte[] serverPublicKey, ULong certificateUsage) {
         return new Security(serverUri, false, SecurityMode.X509.code, clientCertificate.clone(),
                 serverPublicKey.clone(), clientPrivateKey.clone(), shortServerId, certificateUsage);
+    }
+
+    /**
+     * Returns a new security instance (X509) for a device management server.
+     */
+    public static Security x509(String serverUri, int shortServerId, X509Certificate[] clientCertificateChain,
+            PrivateKey clientPrivateKey, X509Certificate serverCertificate, CertificateUsage certificateUsage)
+            throws CertificateEncodingException {
+        byte [] serverIdentity = null;
+        if (serverCertificate != null) {
+            serverIdentity = serverCertificate.getEncoded().clone();
+        }
+        byte [] clientIdentity = X509CertUtil.asPem(clientCertificateChain).getBytes(StandardCharsets.UTF_8);
+        return new Security(serverUri, false, SecurityMode.X509.code, clientIdentity, serverIdentity,
+                clientPrivateKey.getEncoded().clone(), shortServerId, certificateUsage.code);
     }
 
     @Override
