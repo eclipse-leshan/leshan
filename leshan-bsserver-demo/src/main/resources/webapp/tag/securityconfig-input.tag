@@ -35,11 +35,24 @@
         <x509-input ref="x509" onchange={onchange} disable={disable} servercertificate={servercertificate}></x509-input>
     </div>
 
+    <div class="form-group" if={  refs.secMode.value == "x509" }>
+        <label for="certificateUsage" class="col-sm-4 control-label">Certificate usage</label>
+        <div class="col-sm-8">
+            <select class="form-control" id="certificateUsage" ref="certificateUsage">
+                <option value="CA_CONSTRAINT"                      >CA constraint</option>
+                <option value="SERVICE_CERTIFICATE_CONSTRAINT"     >service certificate constraint</option>
+                <option value="TRUST_ANCHOR_ASSERTION"             >trust anchor assertion</option>
+                <option value="DOMAIN_ISSUER_CERTIFICATE" selected >domain-issued certificate</option>
+            </select>
+        </div>
+    </div>
+
     <script>
         // Tag definition
         var tag = this;
         // Tag Params
         tag.secmode = opts.secmode || {no_sec:true};
+        tag.certificateUsage = opts.certificateUsage || "";
         tag.disable = opts.disable || {};
         tag.serverpubkey = opts.serverpubkey || "";
         tag.servercertificate = opts.servercertificate || "";
@@ -97,6 +110,7 @@
                 config.id = fromHex(x509.cert);
                 config.key = fromHex(x509.key);
                 config.serverKey = fromHex(x509.servCert);
+                config.certificateUsage = tag.refs.certificateUsage.value;
             }
 
             return config;
