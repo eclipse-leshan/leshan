@@ -63,10 +63,11 @@ export default {
     instanceId: String,
     endpoint: String,
     showTitle: Boolean,
+    data: Object
   },
   data() {
     return {
-      values: {},
+      values: this.data,
       expanded: {},
     };
   },
