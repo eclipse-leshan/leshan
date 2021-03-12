@@ -27,6 +27,8 @@ import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import org.eclipse.leshan.core.credentials.CredentialsReader;
 
@@ -70,6 +72,32 @@ public class SecurityUtil {
             } else {
                 return (X509Certificate) certificate;
             }
+        }
+    };
+
+    public static CredentialsReader<X509Certificate[]> certificateChain = new CredentialsReader<X509Certificate[]>() {
+        @Override
+        public X509Certificate[] decode(InputStream inputStream) throws CertificateException {
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            Collection<? extends Certificate> certificates = cf.generateCertificates(inputStream);
+            ArrayList<X509Certificate> x509Certificates = new ArrayList<>();
+
+            for (Certificate cert : certificates) {
+                if (!(cert instanceof X509Certificate)) {
+                    throw new CertificateException(
+                            String.format("%s certificate format is not supported, Only X.509 certificate is supported",
+                                    cert.getType()));
+                }
+                x509Certificates.add((X509Certificate)cert);
+            }
+
+            // we support only EC algorithm
+            if (!"EC".equals(x509Certificates.get(0).getPublicKey().getAlgorithm())) {
+                throw new CertificateException(String.format(
+                        "%s algorithm is not supported, Only EC algorithm is supported", x509Certificates.get(0).getType()));
+            }
+
+            return x509Certificates.toArray(new X509Certificate[0]);
         }
     };
 }
