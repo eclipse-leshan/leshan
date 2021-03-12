@@ -58,6 +58,9 @@
                         <p>
                             <strong>{ security.uri }</strong><br/>
                             security mode : {security.securityMode}<br/>
+                            <span if={security.certificateUsage}>
+                            certificate usage : {security.certificateUsage}<br/>
+                            </span>
                             <span if={security.securityMode === 'PSK'}>
                                 Identity : <code code style=display:block;white-space:pre-wrap>{wrap(toAscii(security.publicKeyOrId))}</code>
                                 Key : <code code style=display:block;white-space:pre-wrap>{wrap(toHex(security.secretKey))}</code>
@@ -70,6 +73,9 @@
                         <p>
                             <strong>{security.uri}</strong><br/>
                             security mode : {security.securityMode}<br/>
+                            <span if={security.certificateUsage}>
+                            certificate usage : {security.certificateUsage}<br/>
+                            </span>
                             <span if={security.securityMode === 'PSK'}>
                                 Identity : <code code style=display:block;white-space:pre-wrap>{wrap(toAscii(security.publicKeyOrId))}</code>
                                 key : <code code style=display:block;white-space:pre-wrap>{wrap(toHex(security.secretKey))}</code>
