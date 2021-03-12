@@ -100,4 +100,19 @@ public class SecurityUtil {
             return x509Certificates.toArray(new X509Certificate[0]);
         }
     };
+
+    public static X509Certificate[] asX509Certificates(Certificate[] certificates) throws CertificateException {
+        ArrayList<X509Certificate> x509Certificates = new ArrayList<>();
+
+        for (Certificate cert : certificates) {
+            if (!(cert instanceof X509Certificate)) {
+                throw new CertificateException(
+                        String.format("%s certificate format is not supported, Only X.509 certificate is supported",
+                                cert.getType()));
+            }
+            x509Certificates.add((X509Certificate)cert);
+        }
+
+        return x509Certificates.toArray(new X509Certificate[0]);
+    }
 }
