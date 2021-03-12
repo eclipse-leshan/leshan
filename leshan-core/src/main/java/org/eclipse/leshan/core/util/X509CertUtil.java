@@ -2,7 +2,9 @@ package org.eclipse.leshan.core.util;
 
 import javax.security.auth.x500.X500Principal;
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.security.Principal;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.*;
@@ -314,5 +316,31 @@ public class X509CertUtil {
             // Ignore exception and just return no match
         }
         return false;
+    }
+
+    private static final String BEGIN_CERTIFICATE = "-----BEGIN CERTIFICATE-----\n";
+    private static final String END_CERTIFICATE = "-----END CERTIFICATE-----\n";
+
+    public static String asPem(X509Certificate certificate) throws CertificateEncodingException {
+        StringBuilder output = new StringBuilder();
+
+        output.append(BEGIN_CERTIFICATE);
+
+        byte[] encoded = Base64.encodeBase64Chunked(certificate.getEncoded());
+        output.append(new String(encoded, StandardCharsets.UTF_8));
+
+        output.append(END_CERTIFICATE);
+
+        return output.toString();
+    }
+
+    public static String asPem(X509Certificate[] certificateChain) throws CertificateEncodingException {
+        StringBuilder output = new StringBuilder();
+
+        for (X509Certificate certificate : certificateChain) {
+            output.append(asPem(certificate));
+        }
+
+        return output.toString();
     }
 }
