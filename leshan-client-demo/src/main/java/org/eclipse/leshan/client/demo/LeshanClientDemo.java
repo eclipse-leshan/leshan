@@ -43,6 +43,7 @@ import org.apache.commons.cli.ParseException;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.elements.util.SslContextUtil;
+import org.eclipse.californium.elements.util.StandardCharsets;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.dtls.ClientHandshaker;
@@ -73,6 +74,7 @@ import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.SecurityUtil;
+import org.eclipse.leshan.core.util.X509CertUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -419,12 +421,12 @@ public class LeshanClientDemo {
         }
 
         // get X509 info
-        X509Certificate clientCertificate = null;
+        X509Certificate[] clientCertificateChain = null;
         X509Certificate serverCertificate = null;
         if (cl.hasOption("ccert")) {
             try {
                 clientPrivateKey = SecurityUtil.privateKey.readFromFile(cl.getOptionValue("cprik"));
-                clientCertificate = SecurityUtil.certificate.readFromFile(cl.getOptionValue("ccert"));
+                clientCertificateChain = SecurityUtil.certificateChain.readFromFile(cl.getOptionValue("ccert"));
                 serverCertificate = SecurityUtil.certificate.readFromFile(cl.getOptionValue("scert"));
             } catch (Exception e) {
                 System.err.println("Unable to load X509 files : " + e.getMessage());
@@ -560,7 +562,7 @@ public class LeshanClientDemo {
         try {
             createAndStartClient(endpoint, localAddress, localPort, cl.hasOption("b"), additionalAttributes,
                     bsAdditionalAttributes, lifetime, communicationPeriod, serverURI, pskIdentity, pskKey,
-                    clientPrivateKey, clientPublicKey, serverPublicKey, clientCertificate, serverCertificate,
+                    clientPrivateKey, clientPublicKey, serverPublicKey, clientCertificateChain, serverCertificate,
                     trustStore, certificateUsage, latitude, longitude, scaleFactor, cl.hasOption("ocf"),
                     cl.hasOption("oc"), cl.hasOption("r"), cl.hasOption("f"), modelsFolderPath, ciphers);
         } catch (Exception e) {
@@ -574,7 +576,7 @@ public class LeshanClientDemo {
             Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes, int lifetime,
             Integer communicationPeriod, String serverURI, byte[] pskIdentity, byte[] pskKey,
             PrivateKey clientPrivateKey, PublicKey clientPublicKey, PublicKey serverPublicKey,
-            X509Certificate clientCertificate, X509Certificate serverCertificate, List<Certificate> trustStore,
+            X509Certificate[] clientCertificateChain, X509Certificate serverCertificate, List<Certificate> trustStore,
             CertificateUsage certificateUsage, Float latitude, Float longitude, float scaleFactor,
             boolean supportOldFormat, boolean supportDeprecatedCiphers, boolean reconnectOnUpdate,
             boolean forceFullhandshake, String modelsFolderPath, List<CipherSuite> ciphers) throws Exception {
@@ -599,9 +601,10 @@ public class LeshanClientDemo {
                 initializer.setInstancesForObject(SECURITY, rpkBootstrap(serverURI, clientPublicKey.getEncoded(),
                         clientPrivateKey.getEncoded(), serverPublicKey.getEncoded()));
                 initializer.setClassForObject(SERVER, Server.class);
-            } else if (clientCertificate != null) {
-                initializer.setInstancesForObject(SECURITY, x509Bootstrap(serverURI, clientCertificate.getEncoded(),
-                        clientPrivateKey.getEncoded(), serverCertificate.getEncoded()));
+            } else if (clientCertificateChain != null) {
+                initializer.setInstancesForObject(SECURITY,
+                        x509Bootstrap(serverURI, clientCertificateChain, clientPrivateKey, serverCertificate,
+                                certificateUsage));
                 initializer.setClassForObject(SERVER, Server.class);
             } else {
                 initializer.setInstancesForObject(SECURITY, noSecBootstap(serverURI));
@@ -615,9 +618,10 @@ public class LeshanClientDemo {
                 initializer.setInstancesForObject(SECURITY, rpk(serverURI, 123, clientPublicKey.getEncoded(),
                         clientPrivateKey.getEncoded(), serverPublicKey.getEncoded()));
                 initializer.setInstancesForObject(SERVER, new Server(123, lifetime));
-            } else if (clientCertificate != null) {
-                initializer.setInstancesForObject(SECURITY, x509(serverURI, 123, clientCertificate.getEncoded(),
-                        clientPrivateKey.getEncoded(), serverCertificate.getEncoded(), certificateUsage.code));
+            } else if (clientCertificateChain != null) {
+                initializer.setInstancesForObject(SECURITY,
+                        x509(serverURI, 123, clientCertificateChain, clientPrivateKey, serverCertificate,
+                                certificateUsage));
                 initializer.setInstancesForObject(SERVER, new Server(123, lifetime));
             } else {
                 initializer.setInstancesForObject(SECURITY, noSec(serverURI, 123));
@@ -787,9 +791,9 @@ public class LeshanClientDemo {
             }
         }
         // Display X509 credentials to easily at it in demo servers.
-        if (clientCertificate != null) {
+        if (clientCertificateChain != null) {
             LOG.info("Client uses X509 : \n X509 Certificate (Hex): {} \n Private Key (Hex): {}",
-                    Hex.encodeHexString(clientCertificate.getEncoded()),
+                    Hex.encodeHexString(clientCertificateChain[0].getEncoded()),
                     Hex.encodeHexString(clientPrivateKey.getEncoded()));
         }
 
