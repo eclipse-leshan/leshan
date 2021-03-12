@@ -49,7 +49,7 @@ public class ServerInfo {
     public PublicKey publicKey;
     public PublicKey serverPublicKey;
 
-    public Certificate clientCertificate;
+    public Certificate[] clientCertificateChain;
     public Certificate serverCertificate;
 
     public PrivateKey privateKey;

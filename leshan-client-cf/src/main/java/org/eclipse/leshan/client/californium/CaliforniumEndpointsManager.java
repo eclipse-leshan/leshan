@@ -123,7 +123,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                         false, true);
             } else if (serverInfo.secureMode == SecurityMode.X509) {
                 // set identity
-                newBuilder.setIdentity(serverInfo.privateKey, new Certificate[] { serverInfo.clientCertificate });
+                newBuilder.setIdentity(serverInfo.privateKey, serverInfo.clientCertificateChain);
 
                 // LWM2M v1.1.1 - 5.2.8.7. Certificate Usage Field
                 //
