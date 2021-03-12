@@ -317,10 +317,9 @@ public class LeshanClientBuilder {
             dtlsConfigBuilder.setReceiverThreadCount(1);
         }
 
-        // Deactivate SNI by default
-        // TODO should we support SNI ?
-        if (incompleteConfig.isSniEnabled() == null) {
-            dtlsConfigBuilder.setSniEnabled(false);
+        // Only set SNI if it is configured (leaving it off by default)
+        if (incompleteConfig.isSniEnabled() != null) {
+            dtlsConfigBuilder.setSniEnabled(incompleteConfig.isSniEnabled());
         }
 
         return createLeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder,

@@ -125,6 +125,11 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                 // set identity
                 newBuilder.setIdentity(serverInfo.privateKey, serverInfo.clientCertificateChain);
 
+                // enable SNI by default if not set
+                if (dtlsConfigbuilder.getIncompleteConfig().isSniEnabled() == null) {
+                    newBuilder.setSniEnabled(true);
+                }
+
                 // LWM2M v1.1.1 - 5.2.8.7. Certificate Usage Field
                 //
                 // 0: Certificate usage 0 ("CA constraint")
