@@ -62,6 +62,7 @@ import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
+import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.LwM2m;
 import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -225,6 +226,9 @@ public class LeshanClientDemo {
         options.addOption("truststore", true,
                 "The path to a root certificate file to trust or a folder containing all the trusted certificates in X509v3 format (DER encoding) or trust store URI."
                         + trustStoreChapter);
+
+        options.addOption("cu", "certificate-usage", true,
+                "Certificate Usage (as integer) for security object.\n Default: domain issued certificate (3).");
 
         HelpFormatter formatter = new HelpFormatter();
         formatter.setWidth(90);
@@ -504,6 +508,11 @@ public class LeshanClientDemo {
             }
         }
 
+        CertificateUsage certificateUsage = CertificateUsage.DOMAIN_ISSUER_CERTIFICATE;
+        if (cl.hasOption("cu")) {
+            certificateUsage = CertificateUsage.fromCode(Integer.parseInt(cl.getOptionValue("cu")));
+        }
+
         // get local address
         String localAddress = null;
         int localPort = 0;
@@ -552,8 +561,8 @@ public class LeshanClientDemo {
             createAndStartClient(endpoint, localAddress, localPort, cl.hasOption("b"), additionalAttributes,
                     bsAdditionalAttributes, lifetime, communicationPeriod, serverURI, pskIdentity, pskKey,
                     clientPrivateKey, clientPublicKey, serverPublicKey, clientCertificate, serverCertificate,
-                    trustStore, latitude, longitude, scaleFactor, cl.hasOption("ocf"), cl.hasOption("oc"),
-                    cl.hasOption("r"), cl.hasOption("f"), modelsFolderPath, ciphers);
+                    trustStore, certificateUsage, latitude, longitude, scaleFactor, cl.hasOption("ocf"),
+                    cl.hasOption("oc"), cl.hasOption("r"), cl.hasOption("f"), modelsFolderPath, ciphers);
         } catch (Exception e) {
             System.err.println("Unable to create and start client ...");
             e.printStackTrace();
@@ -566,9 +575,9 @@ public class LeshanClientDemo {
             Integer communicationPeriod, String serverURI, byte[] pskIdentity, byte[] pskKey,
             PrivateKey clientPrivateKey, PublicKey clientPublicKey, PublicKey serverPublicKey,
             X509Certificate clientCertificate, X509Certificate serverCertificate, List<Certificate> trustStore,
-            Float latitude, Float longitude, float scaleFactor, boolean supportOldFormat,
-            boolean supportDeprecatedCiphers, boolean reconnectOnUpdate, boolean forceFullhandshake,
-            String modelsFolderPath, List<CipherSuite> ciphers) throws Exception {
+            CertificateUsage certificateUsage, Float latitude, Float longitude, float scaleFactor,
+            boolean supportOldFormat, boolean supportDeprecatedCiphers, boolean reconnectOnUpdate,
+            boolean forceFullhandshake, String modelsFolderPath, List<CipherSuite> ciphers) throws Exception {
 
         locationInstance = new MyLocation(latitude, longitude, scaleFactor);
 
@@ -592,7 +601,7 @@ public class LeshanClientDemo {
                 initializer.setClassForObject(SERVER, Server.class);
             } else if (clientCertificate != null) {
                 initializer.setInstancesForObject(SECURITY, x509Bootstrap(serverURI, clientCertificate.getEncoded(),
-                        clientPrivateKey.getEncoded(), serverCertificate.getEncoded()));
+                        clientPrivateKey.getEncoded(), serverCertificate.getEncoded(), certificateUsage.code));
                 initializer.setClassForObject(SERVER, Server.class);
             } else {
                 initializer.setInstancesForObject(SECURITY, noSecBootstap(serverURI));
@@ -608,7 +617,7 @@ public class LeshanClientDemo {
                 initializer.setInstancesForObject(SERVER, new Server(123, lifetime));
             } else if (clientCertificate != null) {
                 initializer.setInstancesForObject(SECURITY, x509(serverURI, 123, clientCertificate.getEncoded(),
-                        clientPrivateKey.getEncoded(), serverCertificate.getEncoded()));
+                        clientPrivateKey.getEncoded(), serverCertificate.getEncoded(), certificateUsage.code));
                 initializer.setInstancesForObject(SERVER, new Server(123, lifetime));
             } else {
                 initializer.setInstancesForObject(SECURITY, noSec(serverURI, 123));
