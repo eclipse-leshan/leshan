@@ -4,13 +4,13 @@
       <!-- registration info -->
       <v-sheet color="grey lighten-5" class="pa-4" width="100%">
         <div>
-          <h3>Client {{ $route.params.endpoint }}</h3>
+          <h3>{{ $route.params.endpoint }}</h3>
           <div v-if="registration">
-            <div>Registered with {{ registration.registrationId }}</div>
+            <div>Reg. ID: {{ registration.registrationId }}</div>
             <div>Using LWM2M v{{ registration.lwM2mVersion }}</div>
             <div>
-              Last Reg. Update at
-              {{ registration.lastUpdate | moment("MMMM Do, h:mm:ss a") }}
+              Updated: 
+              {{ registration.lastUpdate | moment("MMM D, h:mm:ss A") }}
             </div>
           </div>
         </div>

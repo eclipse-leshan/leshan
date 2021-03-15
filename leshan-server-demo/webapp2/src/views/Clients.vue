@@ -11,10 +11,10 @@
   >
     <!-- custom display for date column -->
     <template v-slot:item.registrationDate="{ item }">
-      {{ new Date(item.registrationDate) | moment("from") }}
+      {{ new Date(item.registrationDate) | moment("MMM D, h:mm:ss A") }}
     </template>
     <template v-slot:item.lastUpdate="{ item }">
-      {{ new Date(item.lastUpdate) | moment("from") }}
+      {{ new Date(item.lastUpdate) | moment("MMM D, h:mm:ss A") }}
     </template>
   </v-data-table>
 </template>
@@ -57,13 +57,13 @@ export default {
         this.registrations = this.registrations.filter(
           (r) => reg.registrationId !== r.registrationId
         );
-      }).on("error", (err) => {
+      })
+      .on("error", (err) => {
         console.error("sse unexpected error", err);
       });
-      this.sse.connect()
-      .catch((err) => {
-        console.error("Failed to connect to server", err);
-      });
+    this.sse.connect().catch((err) => {
+      console.error("Failed to connect to server", err);
+    });
 
     // get all registrations
     this.axios
