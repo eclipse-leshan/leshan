@@ -66,6 +66,8 @@ public class BootstrapUtil {
             resources.add(LwM2mSingleResource.newIntegerResource(11, securityConfig.clientOldOffTime));
         if (securityConfig.bootstrapServerAccountTimeout != null)
             resources.add(LwM2mSingleResource.newIntegerResource(12, securityConfig.bootstrapServerAccountTimeout));
+        if (securityConfig.certificateUsage != null)
+            resources.add(LwM2mSingleResource.newUnsignedIntegerResource(15, securityConfig.certificateUsage.code));
 
         return new LwM2mObjectInstance(instanceId, resources);
     }
