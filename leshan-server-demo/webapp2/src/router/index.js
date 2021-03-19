@@ -3,6 +3,7 @@ import VueRouter from "vue-router";
 import Clients from "../views/Clients.vue";
 import Client from "../views/Client.vue";
 import ObjectView from "../views/ObjectView.vue";
+import Security from "../views/Security.vue";
 import About from "../views/About.vue";
 
 Vue.use(VueRouter);
@@ -26,6 +27,11 @@ const routes = [
         component: ObjectView,
       },
     ],
+  },
+  {
+    path: "/security",
+    name: "Security",
+    component: Security,
   },
   {
     path: "/about",
