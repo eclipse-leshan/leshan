@@ -75,6 +75,7 @@ export default {
     },
   },
   watch: {
+    // TODO handle URL changes.
     /*$route(to, from) {
       console.log("route", to, from);
     },*/

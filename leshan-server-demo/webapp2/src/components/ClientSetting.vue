@@ -24,6 +24,7 @@
         v-model="singleformat"
       ></v-select>
     </div>
+    <!-- TODO uncomment when we will support multi node write or read -->
     <!--v-select
       single-line
       dense
@@ -56,12 +57,14 @@ export default {
         "SENML_CBOR",
         "JSON",
       ],
+      // TODO uncomment when we will support multi node write or read
       //multiFormatList: ["TLV", "SENML_JSON", "SENML_CBOR", "JSON"],
     };
   },
   computed: {
     timeout: preference("timeout", { defaultValue: 5 }),
     singleformat: preference("singleformat", { defaultValue: "TLV" }),
+    // TODO uncomment when we will support multi node write or read
     //multiformat: preference("multiformat", { defaultValue: "TLV" }),
   },
   methods: {

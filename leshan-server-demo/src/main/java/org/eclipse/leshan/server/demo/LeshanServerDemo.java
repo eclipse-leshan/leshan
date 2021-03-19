@@ -168,19 +168,20 @@ public class LeshanServerDemo {
 
         final StringBuilder trustStoreChapter = new StringBuilder();
         trustStoreChapter.append("\n .");
-        trustStoreChapter.append("\n URI format: file://<path-to-trust-store-file>#<hex-strore-password>#<alias-pattern>");
+        trustStoreChapter
+                .append("\n URI format: file://<path-to-trust-store-file>#<hex-strore-password>#<alias-pattern>");
         trustStoreChapter.append("\n .");
         trustStoreChapter.append("\n Where:");
         trustStoreChapter.append("\n - path-to-trust-store-file is path to pkcs12 trust store file");
         trustStoreChapter.append("\n - hex-store-password is HEX formatted password for store");
-        trustStoreChapter.append("\n - alias-pattern can be used to filter trusted certificates and can also be empty to get all");
+        trustStoreChapter.append(
+                "\n - alias-pattern can be used to filter trusted certificates and can also be empty to get all");
         trustStoreChapter.append("\n .");
         trustStoreChapter.append("\n Default: All certificates are trusted which is only OK for a demo.");
 
         options.addOption("truststore", true,
                 "The path to a root certificate file to trust or a folder containing all the trusted certificates in X509v3 format (DER encoding) or trust store URI."
-                        + trustStoreChapter
-                        + X509ChapterDeprecated);
+                        + trustStoreChapter + X509ChapterDeprecated);
         options.addOption("ks", "keystore", true,
                 "Set the key store file.\nIf set, X.509 mode is enabled, otherwise built-in RPK credentials are used.");
         options.addOption("ksp", "storepass", true, "Set the key store password.");
@@ -334,7 +335,8 @@ public class LeshanServerDemo {
 
                 // check input exists
                 if (!input.exists()) {
-                    System.err.println("Failed to load trust store - file or directory does not exist : " + input.toString());
+                    System.err.println(
+                            "Failed to load trust store - file or directory does not exist : " + input.toString());
                     formatter.printHelp(USAGE, options);
                     return;
                 }
@@ -547,11 +549,14 @@ public class LeshanServerDemo {
         }
         Server server = new Server(jettyAddr);
         /*
+         * TODO this should be added again when old demo will be removed.
+         * 
          * WebAppContext root = new WebAppContext(); root.setContextPath("/");
          * root.setResourceBase(LeshanServerDemo.class.getClassLoader().getResource("webapp").toExternalForm());
          * root.setParentLoaderPriority(true); server.setHandler(root);
          */
 
+        /* ******** Temporary code to be able to serve both UI ********** */
         ServletContextHandler root = new ServletContextHandler(null, "/", true, false);
         // Configuration for new demo
         DefaultServlet aServlet = new DefaultServlet();
@@ -570,17 +575,18 @@ public class LeshanServerDemo {
         root.addServlet(bHolder, "/*");
 
         server.setHandler(root);
+        /* **************************************************************** */
 
         // Create Servlet
         EventServlet eventServlet = new EventServlet(lwServer, lwServer.getSecuredAddress().getPort());
         ServletHolder eventServletHolder = new ServletHolder(eventServlet);
-        root.addServlet(eventServletHolder, "/event/*");
+        root.addServlet(eventServletHolder, "/event/*"); // Temporary code to be able to serve both UI
         root.addServlet(eventServletHolder, "/api/event/*");
-        root.addServlet(eventServletHolder, "/v2/api/event/*");
+        root.addServlet(eventServletHolder, "/v2/api/event/*"); // Temporary code to be able to serve both UI
 
         ServletHolder clientServletHolder = new ServletHolder(new ClientServlet(lwServer));
         root.addServlet(clientServletHolder, "/api/clients/*");
-        root.addServlet(clientServletHolder, "/v2/api/clients/*");
+        root.addServlet(clientServletHolder, "/v2/api/clients/*");// Temporary code to be able to serve both UI
 
         ServletHolder securityServletHolder;
         if (publicKey != null) {
@@ -589,12 +595,12 @@ public class LeshanServerDemo {
             securityServletHolder = new ServletHolder(new SecurityServlet(securityStore, serverCertificate));
         }
         root.addServlet(securityServletHolder, "/api/security/*");
-        root.addServlet(securityServletHolder, "/v2/api/security/*");
+        root.addServlet(securityServletHolder, "/v2/api/security/*");// Temporary code to be able to serve both UI
 
         ServletHolder objectSpecServletHolder = new ServletHolder(
                 new ObjectSpecServlet(lwServer.getModelProvider(), lwServer.getRegistrationService()));
         root.addServlet(objectSpecServletHolder, "/api/objectspecs/*");
-        root.addServlet(objectSpecServletHolder, "/v2/api/objectspecs/*");
+        root.addServlet(objectSpecServletHolder, "/v2/api/objectspecs/*");// Temporary code to be able to serve both UI
 
         // Register a service to DNS-SD
         if (publishDNSSdServices) {
