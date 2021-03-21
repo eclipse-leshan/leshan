@@ -118,18 +118,21 @@ public class LeshanBootstrapServerDemo {
                 "The path to your server private key file.\nThe private key should be in PKCS#8 format (DER encoding)."
                         + X509Chapter);
         options.addOption("cert", true,
-                "The path to your server certificate file.\n"
+                "The path to your server certificate or certificate chain file.\n"
                         + "The certificate Common Name (CN) should generally be equal to the server hostname.\n"
-                        + "The certificate should be in X509v3 format (DER encoding).");
+                        + "The certificate should be in X509v3 format (DER or PEM encoding).\n"
+                        + "The certificate chain should be in X509v3 format (PEM encoding).");
 
         final StringBuilder trustStoreChapter = new StringBuilder();
         trustStoreChapter.append("\n .");
-        trustStoreChapter.append("\n URI format: file://<path-to-trust-store-file>#<hex-strore-password>#<alias-pattern>");
+        trustStoreChapter
+                .append("\n URI format: file://<path-to-trust-store-file>#<hex-strore-password>#<alias-pattern>");
         trustStoreChapter.append("\n .");
         trustStoreChapter.append("\n Where:");
         trustStoreChapter.append("\n - path-to-trust-store-file is path to pkcs12 trust store file");
         trustStoreChapter.append("\n - hex-store-password is HEX formatted password for store");
-        trustStoreChapter.append("\n - alias-pattern can be used to filter trusted certificates and can also be empty to get all");
+        trustStoreChapter.append(
+                "\n - alias-pattern can be used to filter trusted certificates and can also be empty to get all");
         trustStoreChapter.append("\n .");
         trustStoreChapter.append("\n Default: All certificates are trusted which is only OK for a demo.");
 
@@ -246,11 +249,11 @@ public class LeshanBootstrapServerDemo {
         }
 
         // get X509 info
-        X509Certificate certificate = null;
+        X509Certificate[] certificate = null;
         if (cl.hasOption("cert")) {
             try {
                 privateKey = SecurityUtil.privateKey.readFromFile(cl.getOptionValue("prik"));
-                certificate = SecurityUtil.certificate.readFromFile(cl.getOptionValue("cert"));
+                certificate = SecurityUtil.certificateChain.readFromFile(cl.getOptionValue("cert"));
             } catch (Exception e) {
                 System.err.println("Unable to load X509 files : " + e.getMessage());
                 e.printStackTrace();
@@ -283,7 +286,8 @@ public class LeshanBootstrapServerDemo {
 
                 // check input exists
                 if (!input.exists()) {
-                    System.err.println("Failed to load trust store - file or directory does not exist : " + input.toString());
+                    System.err.println(
+                            "Failed to load trust store - file or directory does not exist : " + input.toString());
                     formatter.printHelp(USAGE, options);
                     return;
                 }
@@ -320,7 +324,7 @@ public class LeshanBootstrapServerDemo {
 
     public static void createAndStartServer(String webAddress, int webPort, String localAddress, Integer localPort,
             String secureLocalAddress, Integer secureLocalPort, String modelsFolderPath, String configFilename,
-            boolean supportDeprecatedCiphers, PublicKey publicKey, PrivateKey privateKey, X509Certificate certificate,
+            boolean supportDeprecatedCiphers, PublicKey publicKey, PrivateKey privateKey, X509Certificate[] certificate,
             List<Certificate> trustStore) throws Exception {
         // Create Models
         List<ObjectModel> models = ObjectLoader.loadDefault();
@@ -340,12 +344,12 @@ public class LeshanBootstrapServerDemo {
         dtlsConfig.setRecommendedCipherSuitesOnly(!supportDeprecatedCiphers);
 
         // Create credentials;
-        X509Certificate serverCertificate = null;
+        X509Certificate[] serverCertificateChain = null;
         if (certificate != null) {
             // use X.509 mode (+ RPK)
-            serverCertificate = certificate;
+            serverCertificateChain = certificate;
             builder.setPrivateKey(privateKey);
-            builder.setCertificateChain(new X509Certificate[] { serverCertificate });
+            builder.setCertificateChain(serverCertificateChain);
         } else if (publicKey != null) {
             // use RPK
             builder.setPublicKey(publicKey);
@@ -354,9 +358,10 @@ public class LeshanBootstrapServerDemo {
             try {
                 PrivateKey embeddedPrivateKey = SecurityUtil.privateKey
                         .readFromResource("credentials/bsserver_privkey.der");
-                serverCertificate = SecurityUtil.certificate.readFromResource("credentials/bsserver_cert.der");
+                serverCertificateChain = SecurityUtil.certificateChain
+                        .readFromResource("credentials/bsserver_cert.der");
                 builder.setPrivateKey(embeddedPrivateKey);
-                builder.setCertificateChain(new X509Certificate[] { serverCertificate });
+                builder.setCertificateChain(serverCertificateChain);
             } catch (Exception e) {
                 LOG.error("Unable to load embedded X.509 certificate.", e);
                 System.exit(-1);
@@ -364,7 +369,7 @@ public class LeshanBootstrapServerDemo {
         }
 
         // Define trust store
-        if (serverCertificate != null) {
+        if (serverCertificateChain != null) {
             if (trustStore != null && !trustStore.isEmpty()) {
                 builder.setTrustedCertificates(trustStore.toArray(new Certificate[trustStore.size()]));
             } else {
@@ -419,7 +424,7 @@ public class LeshanBootstrapServerDemo {
         if (publicKey != null) {
             serverServletHolder = new ServletHolder(new ServerServlet(bsServer, publicKey));
         } else {
-            serverServletHolder = new ServletHolder(new ServerServlet(bsServer, serverCertificate));
+            serverServletHolder = new ServletHolder(new ServerServlet(bsServer, serverCertificateChain[0]));
         }
         root.addServlet(serverServletHolder, "/api/server/*");
 
