@@ -110,6 +110,15 @@ public class Security extends BaseInstanceEnabler {
     }
 
     /**
+     * Returns a new security instance (X509) for a bootstrap server.
+     */
+    public static Security x509Bootstrap(String serverUri, byte[] clientCertificate, byte[] clientPrivateKey,
+            byte[] serverPublicKey, ULong certificateUsage) {
+        return new Security(serverUri, true, SecurityMode.X509.code, clientCertificate.clone(), serverPublicKey.clone(),
+                clientPrivateKey.clone(), null, certificateUsage);
+    }
+
+    /**
      * Returns a new security instance (NoSec) for a device management server.
      */
     public static Security noSec(String serverUri, int shortServerId) {
