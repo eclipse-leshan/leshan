@@ -38,8 +38,10 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
+import org.eclipse.leshan.core.node.codec.senml.LwM2mNodeSenMLEncoder;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.util.Hex;
+import org.eclipse.leshan.senml.cbor.upokecenter.SenMLCborUpokecenterEncoderDecoder;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -55,7 +57,14 @@ public class LwM2mNodeEncoderTest {
     @BeforeClass
     public static void loadModel() {
         model = new StaticModel(ObjectLoader.loadDefault());
-        encoder = new DefaultLwM2mNodeEncoder();
+
+        // keep CBOR order to be able to test.
+        Map<ContentFormat, NodeEncoder> defaultNodeEncoders = DefaultLwM2mNodeEncoder.getDefaultNodeEncoders(false);
+        defaultNodeEncoders.put(ContentFormat.SENML_CBOR,
+                new LwM2mNodeSenMLEncoder(new SenMLCborUpokecenterEncoderDecoder(true, false)));
+
+        encoder = new DefaultLwM2mNodeEncoder(defaultNodeEncoders, DefaultLwM2mNodeEncoder.getDefaultPathEncoder(),
+                new LwM2mValueChecker());
     }
 
     @Test
@@ -433,5 +442,25 @@ public class LwM2mNodeEncoderTest {
         b.append("{\"n\":\"/4/0/1\"},");
         b.append("{\"n\":\"/4/0/2\"}]");
         Assert.assertEquals(b.toString(), new String(res));
+    }
+
+    @Test
+    public void senml_json_encode_opaque_resource() {
+        byte[] bytes = Hex.decodeHex("ABCDEF".toCharArray());
+        LwM2mResource oResource = LwM2mSingleResource.newBinaryResource(3, bytes);
+        byte[] json = encoder.encode(oResource, ContentFormat.SENML_JSON, new LwM2mPath("/0/0/3"), model);
+
+        String expected = "[{\"bn\":\"/0/0/3\",\"vd\":\"q83v\"}]"; // q83v is base64 of ABCDE
+        Assert.assertEquals(expected, new String(json));
+    }
+
+    @Test
+    public void senml_cbor_encode_opaque_resource() {
+        byte[] bytes = Hex.decodeHex("ABCDEF".toCharArray());
+        LwM2mResource oResource = LwM2mSingleResource.newBinaryResource(3, bytes);
+        byte[] cbor = encoder.encode(oResource, ContentFormat.SENML_CBOR, new LwM2mPath("/0/0/3"), model);
+        // value : [{-2: "/0/0/3", 8: h'ABCDEF'}]
+        String expected = "81a221662f302f302f330843abcdef";
+        Assert.assertEquals(expected, Hex.encodeHexString(cbor));
     }
 }

@@ -1167,4 +1167,29 @@ public class LwM2mNodeDecoderTest {
         // Decode
         decoder.decodePaths(b.toString().getBytes(), ContentFormat.SENML_JSON);
     }
+
+    @Test
+    public void senml_json_decode_opaque_resource() {
+        byte[] json = "[{\"bn\":\"/0/0/3\",\"vd\":\"q83v\"}]".getBytes(); // q83v is base64 of ABCDE
+        LwM2mResource oResource = (LwM2mResource) decoder.decode(json, ContentFormat.SENML_JSON,
+                new LwM2mPath("/0/0/3"), model);
+
+        byte[] bytes = Hex.decodeHex("ABCDEF".toCharArray());
+        LwM2mResource expected = LwM2mSingleResource.newBinaryResource(3, bytes);
+
+        Assert.assertEquals(expected, oResource);
+    }
+
+    @Test
+    public void senml_cbor_decode_opaque_resource() {
+        // value : [{-2: "/0/0/3", 8: h'ABCDEF'}]
+        byte[] cbor = Hex.decodeHex("81a221662f302f302f330843abcdef".toCharArray());
+        LwM2mResource oResource = (LwM2mResource) decoder.decode(cbor, ContentFormat.SENML_CBOR,
+                new LwM2mPath("/0/0/3"), model);
+
+        byte[] bytes = Hex.decodeHex("ABCDEF".toCharArray());
+        LwM2mResource expected = LwM2mSingleResource.newBinaryResource(3, bytes);
+
+        Assert.assertEquals(expected, oResource);
+    }
 }

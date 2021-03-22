@@ -67,4 +67,24 @@ public class SenMLCborSerializerTest extends AbstractSenMLTest {
         SenMLPack pack = decoder.fromSenML(Hex.decodeHex(givenSenMLCborExample().toCharArray()));
         SenMLTestUtil.assertSenMLPackEquals(givenDeviceObjectInstance(), pack);
     }
+
+    @Test
+    public void deserialize_opaque_object_() throws Exception {
+        // value : [{-2: "/0/0/3", 8: h'ABCDEF'}]
+        byte[] cbor = Hex.decodeHex("81a221662f302f302f330843abcdef".toCharArray());
+        SenMLPack pack = decoder.fromSenML(cbor);
+
+        SenMLTestUtil.assertSenMLPackEquals(
+                getPackWithSingleOpaqueValue("/0/0/3", Hex.decodeHex("ABCDEF".toCharArray())), pack);
+    }
+
+    @Test
+    public void serialize_opaque_object_() throws Exception {
+        SenMLPack pack = getPackWithSingleOpaqueValue("/0/0/3", Hex.decodeHex("ABCDEF".toCharArray()));
+        byte[] cbor = encoder.toSenML(pack);
+
+        // value : [{-2: "/0/0/3", 8: h'ABCDEF'}]
+        String expected = "81a221662f302f302f330843abcdef";
+        Assert.assertEquals(expected, Hex.encodeHexString(cbor));
+    }
 }

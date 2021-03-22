@@ -101,4 +101,15 @@ public abstract class AbstractSenMLTest {
 
         return pack;
     }
+
+    protected SenMLPack getPackWithSingleOpaqueValue(String path, byte[] value) {
+        SenMLPack pack = new SenMLPack();
+
+        SenMLRecord r = new SenMLRecord();
+        r.setBaseName(path);
+        r.setOpaqueValue(value);
+        pack.addRecord(r);
+
+        return pack;
+    }
 }
