@@ -61,6 +61,7 @@ public class SenMLJsonPackSerDes {
                     break;
                 case OPAQUE:
                     jsonObj.add("vd", Base64.encodeBase64String(record.getOpaqueValue()));
+                    break;
                 case STRING:
                     jsonObj.add("vs", record.getStringValue());
                     break;

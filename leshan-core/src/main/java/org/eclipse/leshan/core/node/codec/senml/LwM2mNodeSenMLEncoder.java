@@ -35,7 +35,6 @@ import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
 import org.eclipse.leshan.core.node.codec.MultiNodeEncoder;
 import org.eclipse.leshan.core.node.codec.TimestampedNodeEncoder;
-import org.eclipse.leshan.core.util.Base64;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.senml.SenMLEncoder;
 import org.eclipse.leshan.senml.SenMLException;
@@ -292,7 +291,7 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
                 record.setFloatValue((((Date) value).getTime() / 1000L));
                 break;
             case OPAQUE:
-                record.setStringValue(Base64.encodeBase64String((byte[]) value));
+                record.setOpaqueValue((byte[]) value);
                 break;
             case OBJLNK:
                 try {

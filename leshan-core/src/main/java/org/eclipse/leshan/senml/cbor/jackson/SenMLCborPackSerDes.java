@@ -15,12 +15,12 @@
 package org.eclipse.leshan.senml.cbor.jackson;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Iterator;
 
 import org.eclipse.leshan.core.model.ResourceModel.Type;
-import org.eclipse.leshan.core.util.Base64;
 import org.eclipse.leshan.core.util.datatype.ULong;
 import org.eclipse.leshan.senml.SenMLException;
 import org.eclipse.leshan.senml.SenMLPack;
@@ -83,8 +83,12 @@ public class SenMLCborPackSerDes {
             }
 
             JsonNode vd = o.get("8");
-            if (vd != null && vd.isTextual()) {
-                record.setOpaqueValue(Base64.decodeBase64(vd.asText()));
+            if (vd != null && vd.isBinary()) {
+                try {
+                    record.setOpaqueValue(vd.binaryValue());
+                } catch (IOException e) {
+                    throw new SenMLException("Invalid SenML record : unable to get binary value for %s", o);
+                }
                 hasValue = true;
             }
 
@@ -192,6 +196,7 @@ public class SenMLCborPackSerDes {
                     case OPAQUE:
                         generator.writeFieldId(8);
                         generator.writeBinary(record.getOpaqueValue());
+                        break;
                     case STRING:
                         generator.writeFieldId(3);
                         generator.writeString(record.getStringValue());

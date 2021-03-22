@@ -43,7 +43,7 @@ import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.MultiNodeDecoder;
 import org.eclipse.leshan.core.node.codec.TimestampedNodeDecoder;
-import org.eclipse.leshan.core.util.Base64;
+import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.datatype.NumberUtil;
 import org.eclipse.leshan.core.util.datatype.ULong;
 import org.eclipse.leshan.senml.SenMLDecoder;
@@ -96,8 +96,8 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
             // Parse records and create node
             return (T) parseRecords(resolvedRecords, path, model, nodeClass);
         } catch (SenMLException e) {
-            String jsonStrValue = content != null ? new String(content) : "";
-            throw new CodecException(e, "Unable to decode node[path:%s] : %s", path, jsonStrValue, e);
+            String hexValue = content != null ? Hex.encodeHexString(content) : "";
+            throw new CodecException(e, "Unable to decode node[path:%s] : %s", path, hexValue, e);
         }
     }
 
@@ -142,11 +142,9 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
                 }
             }
             return nodes;
-        } catch (
-
-        SenMLException e) {
-            String jsonStrValue = content != null ? new String(content) : "";
-            throw new CodecException(e, "Unable to decode nodes[path:%s] : %s", paths, jsonStrValue, e);
+        } catch (SenMLException e) {
+            String hexValue = content != null ? Hex.encodeHexString(content) : "";
+            throw new CodecException(e, "Unable to decode nodes[path:%s] : %s", paths, hexValue, e);
         }
     }
 
@@ -170,8 +168,8 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
             }
             return timestampedNodes;
         } catch (SenMLException e) {
-            String jsonStrValue = content != null ? new String(content) : "";
-            throw new CodecException(e, "Unable to decode node[path:%s] : %s", path, jsonStrValue, e);
+            String hexValue = content != null ? Hex.encodeHexString(content) : "";
+            throw new CodecException(e, "Unable to decode node[path:%s] : %s", path, hexValue, e);
         }
     }
 
@@ -482,9 +480,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
             case TIME:
                 return new Date(numberToLong((Number) value) * 1000L);
             case OPAQUE:
-                // If the Resource data type is opaque the string value
-                // holds the Base64 encoded representation of the Resource
-                return Base64.decodeBase64((String) value);
+                return value;
             case STRING:
                 return value;
             case OBJLNK:

@@ -23,7 +23,6 @@ import java.math.BigInteger;
 import java.util.Collection;
 
 import org.eclipse.leshan.core.model.ResourceModel.Type;
-import org.eclipse.leshan.core.util.Base64;
 import org.eclipse.leshan.core.util.datatype.NumberUtil;
 import org.eclipse.leshan.core.util.datatype.ULong;
 import org.eclipse.leshan.senml.SenMLException;
@@ -126,8 +125,8 @@ public class SenMLCborPackSerDes {
                 }
 
                 CBORObject vd = o.get(8);
-                if (vd != null && vd.getType() == CBORType.TextString) {
-                    record.setOpaqueValue(Base64.decodeBase64(vd.AsString()));
+                if (vd != null && vd.getType() == CBORType.ByteString) {
+                    record.setOpaqueValue(vd.GetByteString());
                     hasValue = true;
                 }
 
@@ -202,6 +201,7 @@ public class SenMLCborPackSerDes {
                         break;
                     case OPAQUE:
                         cborRecord.Add(8, record.getOpaqueValue());
+                        break;
                     case STRING:
                         cborRecord.Add(3, record.getStringValue());
                         break;

@@ -106,6 +106,7 @@ public class SenMLJsonRecordSerDes extends JacksonJsonSerDes<SenMLRecord> {
                 break;
             case OPAQUE:
                 jsonObj.put("vd", Base64.encodeBase64String(record.getOpaqueValue()));
+                break;
             case STRING:
                 jsonObj.put("vs", record.getStringValue());
                 break;

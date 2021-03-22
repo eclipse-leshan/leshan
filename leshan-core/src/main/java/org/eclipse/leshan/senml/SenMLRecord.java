@@ -14,8 +14,11 @@
 
 package org.eclipse.leshan.senml;
 
+import java.util.Arrays;
+
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.util.Hex;
 
 /**
  * The class representing the SenML Record.
@@ -157,7 +160,7 @@ public class SenMLRecord {
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((objectLinkValue == null) ? 0 : objectLinkValue.hashCode());
         result = prime * result + ((stringValue == null) ? 0 : stringValue.hashCode());
-        result = prime * result + ((opaqueValue == null) ? 0 : opaqueValue.hashCode());
+        result = prime * result + ((opaqueValue == null) ? 0 : Arrays.hashCode(opaqueValue));
         return result;
     }
 
@@ -221,7 +224,7 @@ public class SenMLRecord {
         if (opaqueValue == null) {
             if (other.opaqueValue != null)
                 return false;
-        } else if (!opaqueValue.equals(other.opaqueValue))
+        } else if (!Arrays.equals(opaqueValue, other.opaqueValue))
             return false;
 
         return true;
@@ -231,6 +234,7 @@ public class SenMLRecord {
     public String toString() {
         return String.format(
                 "SenMLRecord [baseName=%s, baseTime=%d, name=%s, time=%d, floatValue=%s, booleanValue=%s, objectLinkValue=%s, stringValue=%s, opaque=%s]",
-                baseName, baseTime, name, time, floatValue, booleanValue, objectLinkValue, stringValue, opaqueValue);
+                baseName, baseTime, name, time, floatValue, booleanValue, objectLinkValue, stringValue,
+                opaqueValue != null ? Hex.encodeHexString(opaqueValue) : "null");
     }
 }
