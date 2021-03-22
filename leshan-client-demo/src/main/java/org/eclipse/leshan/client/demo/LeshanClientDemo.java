@@ -29,7 +29,13 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPublicKey;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -213,16 +219,18 @@ public class LeshanClientDemo {
 
         final StringBuilder trustStoreChapter = new StringBuilder();
         trustStoreChapter.append("\n .");
-        trustStoreChapter.append("\n URI format: file://<path-to-trust-store-file>#<hex-strore-password>#<alias-pattern>");
+        trustStoreChapter
+                .append("\n URI format: file://<path-to-trust-store-file>#<hex-strore-password>#<alias-pattern>");
         trustStoreChapter.append("\n .");
         trustStoreChapter.append("\n Where:");
         trustStoreChapter.append("\n - path-to-trust-store-file is path to pkcs12 trust store file");
         trustStoreChapter.append("\n - hex-store-password is HEX formatted password for store");
-        trustStoreChapter.append("\n - alias-pattern can be used to filter trusted certificates and can also be empty to get all");
+        trustStoreChapter.append(
+                "\n - alias-pattern can be used to filter trusted certificates and can also be empty to get all");
         trustStoreChapter.append("\n .");
         trustStoreChapter.append("\n Default: All certificates are trusted which is only OK for a demo.");
 
-        options.addOption("truststore", true,
+        options.addOption("ts", true,
                 "The path to a root certificate file to trust or a folder containing all the trusted certificates in X509v3 format (DER encoding) or trust store URI."
                         + trustStoreChapter);
 
@@ -482,7 +490,8 @@ public class LeshanClientDemo {
 
                 // check input exists
                 if (!input.exists()) {
-                    System.err.println("Failed to load trust store - file or directory does not exist : " + input.toString());
+                    System.err.println(
+                            "Failed to load trust store - file or directory does not exist : " + input.toString());
                     formatter.printHelp(USAGE, options);
                     return;
                 }
