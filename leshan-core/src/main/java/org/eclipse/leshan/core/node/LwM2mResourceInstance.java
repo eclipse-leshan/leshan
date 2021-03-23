@@ -135,6 +135,17 @@ public class LwM2mResourceInstance implements LwM2mNode {
         return new LwM2mResourceInstance(id, value, Type.OPAQUE);
     }
 
+    public static LwM2mResourceInstance newUnsignedIntegerInstance(int id, ULong value) {
+        return new LwM2mResourceInstance(id, value, Type.UNSIGNED_INTEGER);
+    }
+
+    public static LwM2mResourceInstance newUnsignedIntegerInstance(int id, Long value) {
+        if (value >= 0)
+            return new LwM2mResourceInstance(id, ULong.valueOf(value), Type.UNSIGNED_INTEGER);
+        else
+            throw new LwM2mNodeException("Invalid value : positive value expected for UNSIGNED_INTEGER");
+    }
+
     @Override
     public int getId() {
         return id;
