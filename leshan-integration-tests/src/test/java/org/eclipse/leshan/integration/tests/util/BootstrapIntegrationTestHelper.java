@@ -356,7 +356,6 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
 
                 // security for BS server
                 ServerSecurity bsSecurity = new ServerSecurity();
-                bsSecurity.serverId = 1111;
                 bsSecurity.bootstrapServer = true;
                 bsSecurity.uri = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
                         + bootstrapServer.getUnsecuredAddress().getPort();
@@ -413,7 +412,6 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
 
                 // security for BS server
                 ServerSecurity bsSecurity = new ServerSecurity();
-                bsSecurity.serverId = 1111;
                 bsSecurity.bootstrapServer = true;
                 bsSecurity.uri = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
                         + bootstrapServer.getUnsecuredAddress().getPort();
@@ -464,7 +462,6 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
 
                 // security for BS server
                 ServerSecurity bsSecurity = new ServerSecurity();
-                bsSecurity.serverId = 1111;
                 bsSecurity.bootstrapServer = true;
                 bsSecurity.uri = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
                         + bootstrapServer.getUnsecuredAddress().getPort();
@@ -501,7 +498,6 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
 
                 // security for BS server
                 ServerSecurity bsSecurity = new ServerSecurity();
-                bsSecurity.serverId = 1111;
                 bsSecurity.bootstrapServer = true;
                 bsSecurity.uri = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
                         + bootstrapServer.getUnsecuredAddress().getPort();

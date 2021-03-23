@@ -185,7 +185,7 @@ public class ConfigurationChecker {
 
     protected static BootstrapConfig.ServerSecurity getSecurityEntry(BootstrapConfig config, int shortId) {
         for (Map.Entry<Integer, BootstrapConfig.ServerSecurity> es : config.security.entrySet()) {
-            if (es.getValue().serverId == shortId) {
+            if (!es.getValue().bootstrapServer && es.getValue().serverId == shortId) {
                 return es.getValue();
             }
         }

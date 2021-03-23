@@ -124,7 +124,6 @@
                         publicKeyOrId : bsserver.id,
                         secretKey : bsserver.key,
                         securityMode : bsserver.secmode,
-                        serverId : 111,
                         serverPublicKey : bsserver.serverKey,
                         serverSmsNumber : "",
                         smsBindingKeyParam : [  ],
