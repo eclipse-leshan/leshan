@@ -230,12 +230,12 @@ public class LeshanClientDemo {
         trustStoreChapter.append("\n .");
         trustStoreChapter.append("\n Default: All certificates are trusted which is only OK for a demo.");
 
-        options.addOption("ts", true,
+        options.addOption("truststore", true,
                 "The path to a root certificate file to trust or a folder containing all the trusted certificates in X509v3 format (DER encoding) or trust store URI."
                         + trustStoreChapter);
 
         HelpFormatter formatter = new HelpFormatter();
-        formatter.setWidth(90);
+        formatter.setWidth(120);
         formatter.setOptionComparator(null);
 
         // Parse arguments
