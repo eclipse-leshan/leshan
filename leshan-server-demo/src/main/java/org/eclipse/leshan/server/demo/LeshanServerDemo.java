@@ -362,7 +362,7 @@ public class LeshanServerDemo {
         String keyStorePath = cl.getOptionValue("ks");
         String keyStoreType = cl.getOptionValue("kst", KeyStore.getDefaultType());
         String keyStorePass = cl.getOptionValue("ksp");
-        String keyStoreAlias = cl.getOptionValue("ksa");
+        String keyStoreAlias = cl.getOptionValue("ksa", "leshan");
         String keyStoreAliasPass = cl.getOptionValue("ksap");
 
         // Get mDNS publish switch
