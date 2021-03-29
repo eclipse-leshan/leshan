@@ -87,7 +87,6 @@ public class DefaultBootstrapSession implements BootstrapSession {
         this.authorized = authorized;
         if (contentFormat == null) {
             if (request.getPreferredContentFormat() != null) {
-                System.out.println(request.getPreferredContentFormat());
                 this.contentFormat = request.getPreferredContentFormat();
             } else {
                 this.contentFormat = ContentFormat.TLV;

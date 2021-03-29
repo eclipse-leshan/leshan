@@ -181,7 +181,6 @@ public class WriteCompositeTest {
         Observation observation = observeResponse.getObservation();
         assertEquals("/3/0", observation.getPath().toString());
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
-        System.out.println(observeResponse.getContent());
 
         // write device timezone
         Map<String, Object> nodes = new HashMap<>();
