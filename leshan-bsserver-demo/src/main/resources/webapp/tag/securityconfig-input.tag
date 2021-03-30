@@ -39,9 +39,11 @@
         <label for="certificateUsage" class="col-sm-4 control-label">Certificate usage</label>
         <div class="col-sm-8">
             <select class="form-control" id="certificateUsage" ref="certificateUsage">
-                <option value="CA_CONSTRAINT"                      >CA constraint</option>
+                <!-- as for now this is not possible to change server certificate during bootstrap session, 
+                     we do not allow CA constraint and trust anchor assertion certificate usage, we will do better in UI v2 -->
+                <option if={!disable.servercertificate} value="CA_CONSTRAINT"                      >CA constraint</option>
                 <option value="SERVICE_CERTIFICATE_CONSTRAINT"     >service certificate constraint</option>
-                <option value="TRUST_ANCHOR_ASSERTION"             >trust anchor assertion</option>
+                <option if={!disable.servercertificate} value="TRUST_ANCHOR_ASSERTION"             >trust anchor assertion</option>
                 <option value="DOMAIN_ISSUER_CERTIFICATE" selected >domain-issued certificate</option>
             </select>
         </div>
