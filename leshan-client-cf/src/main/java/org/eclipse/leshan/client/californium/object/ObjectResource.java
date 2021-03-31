@@ -28,6 +28,7 @@ import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
+import org.eclipse.leshan.client.californium.CaliforniumEndpointsManager;
 import org.eclipse.leshan.client.californium.LwM2mClientCoapResource;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
@@ -81,8 +82,8 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
     protected final LwM2mNodeDecoder decoder;
 
     public ObjectResource(LwM2mObjectEnabler nodeEnabler, RegistrationEngine registrationEngine,
-            LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
-        super(Integer.toString(nodeEnabler.getId()), registrationEngine);
+            CaliforniumEndpointsManager endpointsManager, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
+        super(Integer.toString(nodeEnabler.getId()), registrationEngine, endpointsManager);
         this.nodeEnabler = nodeEnabler;
         this.nodeEnabler.addListener(this);
         this.encoder = encoder;

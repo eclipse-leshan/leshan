@@ -44,7 +44,6 @@ import org.eclipse.leshan.client.servers.ServerIdentity.Role;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.SecurityMode;
-import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.request.Identity;
 import org.slf4j.Logger;
@@ -186,8 +185,10 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                             new DomainIssuerCertificateVerifier(serverInfo.serverCertificate));
                 }
 
-                serverIdentity = Identity.x509(serverInfo.getAddress(), EndpointContextUtil.extractCN(
-                        ((X509Certificate) serverInfo.serverCertificate).getSubjectX500Principal().getName()));
+                // TODO We set CN with '*' as we are not able to know the CN for some certificate usage and so this is
+                // not used anymore to identify a server with x509.
+                // See : https://github.com/eclipse/leshan/issues/992
+                serverIdentity = Identity.x509(serverInfo.getAddress(), "*");
                 filterCipherSuites(newBuilder, dtlsConfigbuilder.getIncompleteConfig().getSupportedCipherSuites(),
                         false, true);
             } else {
@@ -292,6 +293,24 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
         // TODO support multi server
         if (server != null && server.equals(currentServer) && currentEndpoint.isStarted())
             return currentEndpoint;
+        return null;
+    }
+
+    public synchronized ServerIdentity getServerIdentity(Endpoint endpoint, InetSocketAddress serverAddress) {
+        // TODO support multi server
+
+        // knowing used CoAP endpoint we should be able to know the server identity because :
+        // - we create 1 CoAP endpoint by server.
+        // - the dtls configuration ensure that only server with expected credential is able to talk.
+        // (see https://github.com/eclipse/leshan/issues/992 for more details)
+        if (endpoint != null && endpoint.equals(currentEndpoint) && currentEndpoint.isStarted()) {
+            // For UDP (not secure) endpoint we also check socket address as anybody send data to this kind of endpoint.
+            if (currentEndpoint.getConnector().getProtocol() == "UDP"
+                    && !currentServer.getIdentity().getPeerAddress().equals(serverAddress)) {
+                return null;
+            }
+            return currentServer;
+        }
         return null;
     }
 

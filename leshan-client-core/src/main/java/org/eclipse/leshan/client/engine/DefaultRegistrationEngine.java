@@ -48,7 +48,6 @@ import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.DeregisterRequest;
-import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
@@ -813,25 +812,25 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     }
 
     @Override
-    public ServerIdentity getServer(Identity identity) {
-        if (identity == null)
-            return null;
+    public boolean isAllowedToCommunicate(ServerIdentity foreingPeer) {
+        if (foreingPeer == null)
+            return false;
         ServerIdentity bootstrapServer = currentBoostrapServer.get();
-        if (bootstrapServer != null && identity.equals(bootstrapServer.getIdentity())) {
-            return bootstrapServer;
+        if (bootstrapServer != null && foreingPeer.equals(bootstrapServer)) {
+            return true;
         } else {
             for (ServerIdentity server : registeringServers) {
-                if (identity.equals(server.getIdentity())) {
-                    return server;
+                if (foreingPeer.equals(server)) {
+                    return true;
                 }
             }
             for (ServerIdentity server : registeredServers.values()) {
-                if (identity.equals(server.getIdentity())) {
-                    return server;
+                if (foreingPeer.equals(server)) {
+                    return true;
                 }
             }
         }
-        return null;
+        return false;
     }
 
     /**

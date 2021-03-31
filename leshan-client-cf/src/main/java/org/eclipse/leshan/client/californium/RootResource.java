@@ -59,9 +59,10 @@ public class RootResource extends LwM2mClientCoapResource {
     protected LwM2mNodeEncoder encoder;
     protected LwM2mNodeDecoder decoder;
 
-    public RootResource(RegistrationEngine registrationEngine, BootstrapHandler bootstrapHandler, CoapServer coapServer,
-            LwM2mRootEnabler rootEnabler, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
-        super("", registrationEngine);
+    public RootResource(RegistrationEngine registrationEngine, CaliforniumEndpointsManager endpointsManager,
+            BootstrapHandler bootstrapHandler, CoapServer coapServer, LwM2mRootEnabler rootEnabler,
+            LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
+        super("", registrationEngine, endpointsManager);
         this.bootstrapHandler = bootstrapHandler;
         setVisible(false);
         this.coapServer = coapServer;

@@ -19,7 +19,6 @@ import java.util.Map;
 
 import org.eclipse.leshan.client.RegistrationUpdate;
 import org.eclipse.leshan.client.servers.ServerIdentity;
-import org.eclipse.leshan.core.request.Identity;
 
 /**
  * Manage the registration life-cycle:
@@ -71,10 +70,9 @@ public interface RegistrationEngine {
     ServerIdentity getRegisteredServer(long serverId);
 
     /**
-     * @return The registered LWM2M Server or Bootstrap server for the given identity or null if there is no
-     *         corresponding server registered.
+     * @return true if the given server can currently communicate with the device.
      */
-    ServerIdentity getServer(Identity identity);
+    boolean isAllowedToCommunicate(ServerIdentity foreingPeer);
 
     /**
      * @return the endpoint name of the LWM2M client

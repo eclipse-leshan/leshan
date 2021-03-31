@@ -25,6 +25,7 @@ import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
+import org.eclipse.leshan.client.californium.CaliforniumEndpointsManager;
 import org.eclipse.leshan.client.californium.LwM2mClientCoapResource;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.servers.ServerIdentity;
@@ -39,8 +40,9 @@ public class BootstrapResource extends LwM2mClientCoapResource {
 
     protected BootstrapHandler bootstrapHandler;
 
-    public BootstrapResource(RegistrationEngine registrationEngine, BootstrapHandler bootstrapHandler) {
-        super("bs", registrationEngine);
+    public BootstrapResource(RegistrationEngine registrationEngine, CaliforniumEndpointsManager endpointsManager,
+            BootstrapHandler bootstrapHandler) {
+        super("bs", registrationEngine, endpointsManager);
         this.bootstrapHandler = bootstrapHandler;
         this.setVisible(false);
     }
