@@ -73,7 +73,8 @@ public class SecurityTest {
     }
 
     @Test
-    public void registered_device_with_psk_to_server_with_psk() throws NonUniqueSecurityInfoException {
+    public void registered_device_with_psk_to_server_with_psk()
+            throws NonUniqueSecurityInfoException, InterruptedException {
         // Create PSK server & start it
         helper.createServer(); // default server support PSK
         helper.server.start();
@@ -94,6 +95,10 @@ public class SecurityTest {
 
         // Check client is well registered
         helper.assertClientRegisterered();
+
+        // check we can send request to client.
+        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
+        assertTrue(response.isSuccess());
     }
 
     @Test
@@ -471,7 +476,8 @@ public class SecurityTest {
     }
 
     @Test
-    public void registered_device_with_rpk_to_server_with_rpk() throws NonUniqueSecurityInfoException {
+    public void registered_device_with_rpk_to_server_with_rpk()
+            throws NonUniqueSecurityInfoException, InterruptedException {
         helper.createServerWithRPK();
         helper.server.start();
 
@@ -485,6 +491,10 @@ public class SecurityTest {
         helper.waitForRegistrationAtServerSide(1);
 
         assertNotNull(helper.getCurrentRegistration());
+
+        // check we can send request to client.
+        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
+        assertTrue(response.isSuccess());
     }
 
     @Test
@@ -571,7 +581,7 @@ public class SecurityTest {
 
     @Test
     public void registered_device_with_x509cert_to_server_with_x509cert()
-            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+            throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
         helper.createServerWithX509Cert();
         helper.server.start();
 
@@ -586,11 +596,15 @@ public class SecurityTest {
         helper.waitForRegistrationAtServerSide(1);
 
         assertNotNull(helper.getCurrentRegistration());
+
+        // check we can send request to client.
+        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
+        assertTrue(response.isSuccess());
     }
 
     @Test
     public void registered_device_with_x509cert_to_server_with_self_signed_x509cert()
-            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+            throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
         helper.createServerWithX509Cert(helper.serverX509CertSelfSigned, helper.serverPrivateKeyFromCert, true);
         helper.server.start();
 
@@ -606,6 +620,11 @@ public class SecurityTest {
         helper.waitForRegistrationAtServerSide(1);
 
         assertNotNull(helper.getCurrentRegistration());
+
+        // check we can send request to client.
+        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
+        assertTrue(response.isSuccess());
+
     }
 
     @Test
@@ -747,7 +766,7 @@ public class SecurityTest {
      */
     @Test
     public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_ca_intca_given()
-            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+            throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
         helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
                 helper.trustedCertificates, true);
 
@@ -765,6 +784,11 @@ public class SecurityTest {
         helper.waitForRegistrationAtServerSide(1);
 
         assertNotNull(helper.getCurrentRegistration());
+
+        // check we can send request to client.
+        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
+        assertTrue(response.isSuccess());
+
     }
 
     /**
@@ -782,7 +806,7 @@ public class SecurityTest {
      */
     @Test
     public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_ca_domain_root_ca_given()
-            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+            throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
         helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
                 helper.trustedCertificates, true);
 
@@ -800,6 +824,10 @@ public class SecurityTest {
         helper.waitForRegistrationAtServerSide(1);
 
         assertNotNull(helper.getCurrentRegistration());
+
+        // check we can send request to client.
+        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
+        assertTrue(response.isSuccess());
     }
 
     /**
@@ -951,7 +979,7 @@ public class SecurityTest {
      */
     @Test
     public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_service()
-            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+            throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
         helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
                 helper.trustedCertificates, true);
 
@@ -970,6 +998,11 @@ public class SecurityTest {
         helper.waitForRegistrationAtServerSide(1);
 
         assertNotNull(helper.getCurrentRegistration());
+
+        // check we can send request to client.
+        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
+        assertTrue(response.isSuccess());
+
     }
 
     /**
@@ -1190,7 +1223,7 @@ public class SecurityTest {
      */
     @Test
     public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_taa_intca_given()
-            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+            throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
         helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
                 helper.trustedCertificates, true);
 
@@ -1208,6 +1241,10 @@ public class SecurityTest {
         helper.waitForRegistrationAtServerSide(1);
 
         assertNotNull(helper.getCurrentRegistration());
+
+        // check we can send request to client.
+        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
+        assertTrue(response.isSuccess());
     }
 
     /**
@@ -1225,7 +1262,7 @@ public class SecurityTest {
      */
     @Test
     public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_taa_domain_root_ca_given()
-            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+            throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
         helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
                 helper.trustedCertificates, true);
 
@@ -1243,6 +1280,10 @@ public class SecurityTest {
         helper.waitForRegistrationAtServerSide(1);
 
         assertNotNull(helper.getCurrentRegistration());
+
+        // check we can send request to client.
+        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
+        assertTrue(response.isSuccess());
     }
 
     /**
@@ -1394,7 +1435,7 @@ public class SecurityTest {
      */
     @Test
     public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_domain()
-            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+            throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
         helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
                 helper.trustedCertificates, true);
 
@@ -1412,6 +1453,10 @@ public class SecurityTest {
         helper.waitForRegistrationAtServerSide(1);
 
         assertNotNull(helper.getCurrentRegistration());
+
+        // check we can send request to client.
+        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
+        assertTrue(response.isSuccess());
     }
 
     /**
@@ -1529,7 +1574,7 @@ public class SecurityTest {
      */
     @Test
     public void registered_device_with_x509cert_to_server_with_x509cert_selfsigned_certificate_usage_domain_selfsigned_server_cert_given()
-            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+            throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
         helper.createServerWithX509Cert(new X509Certificate[] { helper.serverIntX509CertSelfSigned },
                 helper.serverIntPrivateKeyFromCert, helper.trustedCertificates, true);
 
@@ -1548,6 +1593,11 @@ public class SecurityTest {
         helper.waitForRegistrationAtServerSide(1);
 
         assertNotNull(helper.getCurrentRegistration());
+
+        // check we can send request to client.
+        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
+        assertTrue(response.isSuccess());
+
     }
 
     /**
@@ -1565,7 +1615,7 @@ public class SecurityTest {
      */
     @Test
     public void registered_device_with_x509cert_to_server_with_x509cert_server_certificate_usage_domain_server_cert_wo_chain_given()
-            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+            throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
         helper.createServerWithX509Cert(new X509Certificate[] { helper.serverIntX509CertChain[0] },
                 helper.serverIntPrivateKeyFromCert, helper.trustedCertificates, true);
 
@@ -1583,6 +1633,10 @@ public class SecurityTest {
         helper.waitForRegistrationAtServerSide(1);
 
         assertNotNull(helper.getCurrentRegistration());
+
+        // check we can send request to client.
+        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
+        assertTrue(response.isSuccess());
     }
 
     /* ---- */
@@ -1606,7 +1660,8 @@ public class SecurityTest {
     }
 
     @Test
-    public void registered_device_with_rpk_to_server_with_x509cert() throws NonUniqueSecurityInfoException {
+    public void registered_device_with_rpk_to_server_with_x509cert()
+            throws NonUniqueSecurityInfoException, InterruptedException {
         helper.createServerWithX509Cert();
         helper.server.start();
 
@@ -1621,5 +1676,10 @@ public class SecurityTest {
         helper.waitForRegistrationAtServerSide(1);
 
         assertNotNull(helper.getCurrentRegistration());
+
+        // check we can send request to client.
+        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
+        assertTrue(response.isSuccess());
+
     }
 }
