@@ -32,6 +32,7 @@ import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.elements.util.CertPathUtil;
 import org.eclipse.californium.scandium.DTLSConnector;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.californium.scandium.dtls.pskstore.AdvancedSinglePskStore;
@@ -101,7 +102,8 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
         // Create new endpoint
         Identity serverIdentity;
         if (serverInfo.isSecure()) {
-            Builder newBuilder = new Builder(dtlsConfigbuilder.getIncompleteConfig());
+            DtlsConnectorConfig incompleteConfig = dtlsConfigbuilder.getIncompleteConfig();
+            Builder newBuilder = new Builder(incompleteConfig);
 
             // Support PSK
             if (serverInfo.secureMode == SecurityMode.PSK) {
@@ -191,6 +193,13 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             } else {
                 throw new RuntimeException("Unable to create connector : unsupported security mode");
             }
+
+            // For bootstrap no need to have DTLS role exchange
+            // and so we can set DTLS Connection as client only by default.
+            if (serverInfo.bootstrap && incompleteConfig.isClientOnly() == null) {
+                newBuilder.setClientOnly();
+            }
+
             currentEndpoint = endpointFactory.createSecuredEndpoint(newBuilder.build(), coapConfig, null);
         } else {
             currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null);
