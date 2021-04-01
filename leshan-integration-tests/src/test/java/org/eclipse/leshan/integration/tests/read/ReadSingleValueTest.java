@@ -94,7 +94,7 @@ public class ReadSingleValueTest {
     public void can_read_resource_instance() throws InterruptedException {
         // read device model number
         ReadResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new ReadRequest(contentFormat, TEST_OBJECT_ID, 0, STRING_RESOURCE_INSTANCE_ID, 0), 1000000);
+                new ReadRequest(contentFormat, TEST_OBJECT_ID, 0, STRING_RESOURCE_INSTANCE_ID, 0));
 
         // verify result
         assertEquals(CONTENT, response.getCode());
@@ -109,7 +109,7 @@ public class ReadSingleValueTest {
     public void cannot_read_non_multiple_resource_instance() throws InterruptedException {
         // read device model number
         ReadResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new ReadRequest(contentFormat, TEST_OBJECT_ID, 0, INTEGER_RESOURCE_ID, 0), 1000000);
+                new ReadRequest(contentFormat, TEST_OBJECT_ID, 0, INTEGER_RESOURCE_ID, 0));
 
         // verify result
         assertEquals(BAD_REQUEST, response.getCode());
