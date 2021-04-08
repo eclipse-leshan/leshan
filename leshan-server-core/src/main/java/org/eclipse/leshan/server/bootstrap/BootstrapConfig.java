@@ -26,7 +26,6 @@ import java.util.Map;
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.request.BindingMode;
-import org.eclipse.leshan.core.util.datatype.ULong;
 
 /**
  * A client configuration to apply to a device during a bootstrap session.
