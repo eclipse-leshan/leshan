@@ -38,6 +38,7 @@ import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
 import org.eclipse.californium.elements.util.SslContextUtil;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
+import org.eclipse.californium.scandium.dtls.SingleNodeConnectionIdGenerator;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -111,7 +112,13 @@ public class LeshanBootstrapServerDemo {
         options.addOption("m", "modelsfolder", true, "A folder which contains object models in OMA DDF(.xml) format.");
         options.addOption("cfg", "configfile", true,
                 "Set the filename for the configuration.\nDefault: " + JSONFileBootstrapStore.DEFAULT_FILE + ".");
-        options.addOption("oc", "activate support of old/deprecated cipher suites." + RPKChapter);
+        options.addOption("oc", "activate support of old/deprecated cipher suites.");
+        options.addOption("cid", true, "Control usage of DTLS connection ID." //
+                + "\n - 'on' to activate Connection ID support (same as -cid 6)" //
+                + "\n - 'off' to deactivate it" //
+                + "\n - Positive value define the size in byte of CID generated."
+                + "\n - 0 value means we accept to use CID but will not generated one for foreign peer."
+                + "\n (Default: on)" + RPKChapter);
         options.addOption("pubk", true,
                 "The path to your server public key file.\n The public Key should be in SubjectPublicKeyInfo format (DER encoding).");
         options.addOption("prik", true,
@@ -233,6 +240,20 @@ public class LeshanBootstrapServerDemo {
             configFilename = JSONFileBootstrapStore.DEFAULT_FILE;
         }
 
+        // Get CID config
+        String cidOption = cl.getOptionValue("cid");
+        Integer cid = 6;
+        if (cidOption != null) {
+            if ("off".equals(cidOption)) {
+                cid = null;
+            } else if ("on".equals(cidOption)) {
+                // we keep default value
+            } else {
+                cid = Integer.parseInt(cidOption);
+                cid = cid < 0 ? null : cid;
+            }
+        }
+
         // get RPK info
         PublicKey publicKey = null;
         PrivateKey privateKey = null;
@@ -312,7 +333,7 @@ public class LeshanBootstrapServerDemo {
         try {
             createAndStartServer(webAddress, webPort, localAddress, localPort, secureLocalAddress, secureLocalPort,
                     modelsFolderPath, configFilename, cl.hasOption("oc"), publicKey, privateKey, certificate,
-                    trustStore);
+                    trustStore, cid);
         } catch (BindException e) {
             System.err.println(String
                     .format("Web port %s is already in use, you can change it using the 'webport' option.", webPort));
@@ -325,7 +346,7 @@ public class LeshanBootstrapServerDemo {
     public static void createAndStartServer(String webAddress, int webPort, String localAddress, Integer localPort,
             String secureLocalAddress, Integer secureLocalPort, String modelsFolderPath, String configFilename,
             boolean supportDeprecatedCiphers, PublicKey publicKey, PrivateKey privateKey, X509Certificate[] certificate,
-            List<Certificate> trustStore) throws Exception {
+            List<Certificate> trustStore, Integer cid) throws Exception {
         // Create Models
         List<ObjectModel> models = ObjectLoader.loadDefault();
         if (modelsFolderPath != null) {
@@ -342,6 +363,9 @@ public class LeshanBootstrapServerDemo {
         // Create DTLS Config
         DtlsConnectorConfig.Builder dtlsConfig = new DtlsConnectorConfig.Builder();
         dtlsConfig.setRecommendedCipherSuitesOnly(!supportDeprecatedCiphers);
+        if (cid != null) {
+            dtlsConfig.setConnectionIdGenerator(new SingleNodeConnectionIdGenerator(cid));
+        }
 
         // Create credentials;
         X509Certificate[] serverCertificateChain = null;

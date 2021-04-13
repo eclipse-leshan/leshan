@@ -61,6 +61,7 @@ import org.eclipse.californium.scandium.dtls.ResumingServerHandshaker;
 import org.eclipse.californium.scandium.dtls.ServerHandshaker;
 import org.eclipse.californium.scandium.dtls.SessionAdapter;
 import org.eclipse.californium.scandium.dtls.SessionId;
+import org.eclipse.californium.scandium.dtls.SingleNodeConnectionIdGenerator;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
@@ -192,6 +193,13 @@ public class LeshanClientDemo {
         c.hasArgs();
         options.addOption(c.build());
         options.addOption("oc", "activate support of old/deprecated cipher suites.");
+        options.addOption("cid", true, "Control usage of DTLS connection ID." //
+                + "\n - 'on' to activate Connection ID support (same as -cid 0)" //
+                + "\n - 'off' to deactivate it" //
+                + "\n - Positive value define the size in byte of CID generated."
+                + "\n - 0 value means we accept to use CID but will not generated one for foreign peer."
+                + "\n (Default: off)");
+
         Builder aa = Option.builder("aa");
         aa.desc("Use additional attributes at registration time, syntax is \n -aa attrName1=attrValue1 attrName2=\\\"attrValue2\\\" ...");
         aa.hasArgs();
@@ -418,6 +426,20 @@ public class LeshanClientDemo {
                 serverURI = "coap://localhost:" + LwM2m.DEFAULT_COAP_PORT;
         }
 
+        // Get CID config
+        String cidOption = cl.getOptionValue("cid");
+        Integer cid = null;
+        if (cidOption != null) {
+            if ("off".equals(cidOption)) {
+                cid = null;
+            } else if ("on".equals(cidOption)) {
+                cid = 0;
+            } else {
+                cid = Integer.parseInt(cidOption);
+                cid = cid < 0 ? null : cid;
+            }
+        }
+
         // get PSK info
         byte[] pskIdentity = null;
         byte[] pskKey = null;
@@ -596,7 +618,7 @@ public class LeshanClientDemo {
                     bsAdditionalAttributes, lifetime, communicationPeriod, serverURI, pskIdentity, pskKey,
                     clientPrivateKey, clientPublicKey, serverPublicKey, clientCertificate, serverCertificate,
                     trustStore, certificateUsage, latitude, longitude, scaleFactor, cl.hasOption("ocf"),
-                    cl.hasOption("oc"), cl.hasOption("r"), cl.hasOption("f"), modelsFolderPath, ciphers);
+                    cl.hasOption("oc"), cl.hasOption("r"), cl.hasOption("f"), modelsFolderPath, ciphers, cid);
         } catch (Exception e) {
             System.err.println("Unable to create and start client ...");
             e.printStackTrace();
@@ -611,7 +633,8 @@ public class LeshanClientDemo {
             X509Certificate clientCertificate, X509Certificate serverCertificate, List<Certificate> trustStore,
             CertificateUsage certificateUsage, Float latitude, Float longitude, float scaleFactor,
             boolean supportOldFormat, boolean supportDeprecatedCiphers, boolean reconnectOnUpdate,
-            boolean forceFullhandshake, String modelsFolderPath, List<CipherSuite> ciphers) throws Exception {
+            boolean forceFullhandshake, String modelsFolderPath, List<CipherSuite> ciphers, Integer cid)
+            throws Exception {
 
         locationInstance = new MyLocation(latitude, longitude, scaleFactor);
 
@@ -679,6 +702,9 @@ public class LeshanClientDemo {
         dtlsConfig.setRecommendedCipherSuitesOnly(!supportDeprecatedCiphers);
         if (ciphers != null) {
             dtlsConfig.setSupportedCipherSuites(ciphers);
+        }
+        if (cid != null) {
+            dtlsConfig.setConnectionIdGenerator(new SingleNodeConnectionIdGenerator(cid));
         }
 
         // Configure Registration Engine
