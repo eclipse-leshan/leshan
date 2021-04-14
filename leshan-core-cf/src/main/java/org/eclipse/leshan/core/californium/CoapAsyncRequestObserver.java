@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Sierra Wireless and others.
+ * Copyright (c) 2016, 2021 Sierra Wireless and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -94,7 +94,7 @@ public class CoapAsyncRequestObserver extends AbstractRequestObserver {
         LOG.debug("Received coap response: {} for {}", coapResponse, coapRequest);
         coapRequest.removeMessageObserver(this);
         if (eventRaised.compareAndSet(false, true)) {
-            cleaningTask.cancel(false);
+            cancelCleaningTask();
             try {
                 responseCallback.onResponse(coapResponse);
             } catch (RuntimeException e) {
@@ -114,8 +114,8 @@ public class CoapAsyncRequestObserver extends AbstractRequestObserver {
 
     @Override
     public void onTimeout() {
-        cancelCleaningTask();
         if (eventRaised.compareAndSet(false, true)) {
+            cancelCleaningTask();
             errorCallback.onError(new TimeoutException(Type.COAP_TIMEOUT,
                     "Request %s timed out : CoAP or blockwise timeout", coapRequest.getURI()));
         } else {
@@ -126,8 +126,8 @@ public class CoapAsyncRequestObserver extends AbstractRequestObserver {
 
     @Override
     public void onCancel() {
-        cancelCleaningTask();
         if (eventRaised.compareAndSet(false, true)) {
+            cancelCleaningTask();
             if (responseTimedOut.get()) {
                 errorCallback.onError(new TimeoutException(Type.RESPONSE_TIMEOUT,
                         "Request %s timed out : no response received", coapRequest.getURI()));
@@ -143,8 +143,8 @@ public class CoapAsyncRequestObserver extends AbstractRequestObserver {
 
     @Override
     public void onReject() {
-        cancelCleaningTask();
         if (eventRaised.compareAndSet(false, true)) {
+            cancelCleaningTask();
             errorCallback.onError(new RequestRejectedException("Request %s rejected", coapRequest.getURI()));
         } else {
             LOG.debug("OnReject callback ignored because an event was already raised for this request {}", coapRequest);
@@ -153,8 +153,8 @@ public class CoapAsyncRequestObserver extends AbstractRequestObserver {
 
     @Override
     public void onSendError(Throwable error) {
-        cancelCleaningTask();
         if (eventRaised.compareAndSet(false, true)) {
+            cancelCleaningTask();
             if (error instanceof DtlsHandshakeTimeoutException) {
                 errorCallback.onError(new TimeoutException(Type.DTLS_HANDSHAKE_TIMEOUT, error,
                         "Request %s timeout : dtls handshake timeout", coapRequest.getURI()));
