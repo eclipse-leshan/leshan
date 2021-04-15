@@ -37,6 +37,7 @@ import org.eclipse.californium.cose.CoseException;
 import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.elements.util.CertPathUtil;
+import org.eclipse.californium.oscore.ContextRederivation.PHASE;
 import org.eclipse.californium.oscore.HashMapCtxDB;
 import org.eclipse.californium.oscore.OSCoreCtx;
 import org.eclipse.californium.oscore.OSException;
@@ -241,6 +242,12 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
 
                 // Also add the context by the IP of the server since requests may use that
                 String serverIP = InetAddress.getByName(serverInfo.getFullUri().getHost()).getHostAddress();
+                // Support Appendix B.2 functionality
+                ctx.setContextRederivationEnabled(true);
+                // Set to initiate Appendix B.2 procedure on first sent request
+                // To either server or bs server
+                ctx.setContextRederivationPhase(PHASE.CLIENT_INITIATE);
+
                 db.addContext("coap://" + serverIP, ctx);
 
             } catch (OSException | UnknownHostException e) {

@@ -164,6 +164,9 @@ public class SecurityDeserializer implements JsonDeserializer<SecurityInfo> {
                 try {
                     ctx = new OSCoreCtx(masterSecret, true, aeadAlgorithm, recipientId, senderId, hkdfAlgorithm, 32,
                             masterSalt, idContext);
+
+                    // Support Appendix B.2 functionality
+                    ctx.setContextRederivationEnabled(true);
                 } catch (OSException e) {
                     throw new JsonParseException("Failed to generate OSCORE context", e);
                 }
