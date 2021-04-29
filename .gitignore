@@ -1,5 +1,5 @@
 # Leshan config files #
-leshan-core/ddffiles
+**/ddffiles
 **/Californium.properties
 **/data/*.data
 **/data/*.json
@@ -37,3 +37,7 @@ bin/
 **/*.pem
 **/*.srl
 !**/src/**/*.der
+
+#nodes
+node_modules
+node
