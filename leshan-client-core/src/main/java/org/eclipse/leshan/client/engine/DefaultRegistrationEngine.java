@@ -20,6 +20,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -41,6 +42,7 @@ import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
+import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.ResponseCode;
@@ -101,6 +103,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     // device state
     private final String endpoint;
     private final ContentFormat preferredContentFormat; // used for bootstrap
+    private final Set<ContentFormat> supportedContentFormats;
     private final Map<String, String> additionalAttributes;
     private final Map<String, String> bsAdditionalAttributes; // @since 1.1
     private final Map<Integer /* objectId */, LwM2mObjectEnabler> objectEnablers;
@@ -125,22 +128,11 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
 
     public DefaultRegistrationEngine(String endpoint, LwM2mObjectTree objectTree, EndpointsManager endpointsManager,
             LwM2mRequestSender requestSender, BootstrapHandler bootstrapState, LwM2mClientObserver observer,
-            Map<String, String> additionalAttributes, ScheduledExecutorService executor, long requestTimeoutInMs,
-            long deregistrationTimeoutInMs, int bootstrapSessionTimeoutInSec, int retryWaitingTimeInMs,
-            Integer communicationPeriodInMs, boolean reconnectOnUpdate, boolean resumeOnConnect) {
-        this(endpoint, objectTree, endpointsManager, requestSender, bootstrapState, observer, additionalAttributes,
-                null, executor, requestTimeoutInMs, deregistrationTimeoutInMs, bootstrapSessionTimeoutInSec,
-                retryWaitingTimeInMs, communicationPeriodInMs, reconnectOnUpdate, resumeOnConnect, false, null);
-    }
-
-    /** @since 1.1 */
-    public DefaultRegistrationEngine(String endpoint, LwM2mObjectTree objectTree, EndpointsManager endpointsManager,
-            LwM2mRequestSender requestSender, BootstrapHandler bootstrapState, LwM2mClientObserver observer,
             Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes,
             ScheduledExecutorService executor, long requestTimeoutInMs, long deregistrationTimeoutInMs,
             int bootstrapSessionTimeoutInSec, int retryWaitingTimeInMs, Integer communicationPeriodInMs,
             boolean reconnectOnUpdate, boolean resumeOnConnect, boolean useQueueMode,
-            ContentFormat preferredContentFormat) {
+            ContentFormat preferredContentFormat, Set<ContentFormat> supportedContentFormats) {
         this.endpoint = endpoint;
         this.objectEnablers = objectTree.getObjectEnablers();
         this.bootstrapHandler = bootstrapState;
@@ -160,6 +152,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         this.resumeOnConnect = resumeOnConnect;
         this.queueMode = useQueueMode;
         this.preferredContentFormat = preferredContentFormat;
+        this.supportedContentFormats = supportedContentFormats;
 
         if (executor == null) {
             schedExecutor = createScheduledExecutor();
@@ -307,11 +300,14 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         LOG.info("Trying to register to {} ...", server.getUri());
         RegisterRequest request = null;
         try {
+            Version lwM2mVersion = Version.lastSupported();
             EnumSet<BindingMode> supportedBindingMode = ServersInfoExtractor
                     .getDeviceSupportedBindingMode(objectEnablers.get(LwM2mId.DEVICE), 0);
-            request = new RegisterRequest(endpoint, dmInfo.lifetime, Version.lastSupported().toString(),
-                    supportedBindingMode, queueMode, null,
-                    LinkFormatHelper.getClientDescription(objectEnablers.values(), null), additionalAttributes);
+            Link[] links = LinkFormatHelper.getClientDescription(objectEnablers.values(), null,
+                    ContentFormat.getOptionalContentFormatForClient(supportedContentFormats, lwM2mVersion));
+
+            request = new RegisterRequest(endpoint, dmInfo.lifetime, lwM2mVersion.toString(), supportedBindingMode,
+                    queueMode, null, links, additionalAttributes);
             if (observer != null) {
                 observer.onRegistrationStarted(server, request);
             }

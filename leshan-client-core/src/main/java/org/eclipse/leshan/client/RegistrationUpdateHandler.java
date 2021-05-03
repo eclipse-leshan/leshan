@@ -48,28 +48,28 @@ public class RegistrationUpdateHandler {
             public void objectInstancesRemoved(LwM2mObjectEnabler object, int... instanceIds) {
                 if (!bsHandler.isBootstrapping())
                     engine.triggerRegistrationUpdate(new RegistrationUpdate(
-                            LinkFormatHelper.getClientDescription(objecTree.getObjectEnablers().values(), null)));
+                            LinkFormatHelper.getClientDescription(objecTree.getObjectEnablers().values(), null, null)));
             }
 
             @Override
             public void objectInstancesAdded(LwM2mObjectEnabler object, int... instanceIds) {
                 if (!bsHandler.isBootstrapping())
                     engine.triggerRegistrationUpdate(new RegistrationUpdate(
-                            LinkFormatHelper.getClientDescription(objecTree.getObjectEnablers().values(), null)));
+                            LinkFormatHelper.getClientDescription(objecTree.getObjectEnablers().values(), null, null)));
             }
 
             @Override
             public void objectRemoved(LwM2mObjectEnabler object) {
                 if (!bsHandler.isBootstrapping())
                     engine.triggerRegistrationUpdate(new RegistrationUpdate(
-                            LinkFormatHelper.getClientDescription(objecTree.getObjectEnablers().values(), null)));
+                            LinkFormatHelper.getClientDescription(objecTree.getObjectEnablers().values(), null, null)));
             }
 
             @Override
             public void objectAdded(LwM2mObjectEnabler object) {
                 if (!bsHandler.isBootstrapping())
                     engine.triggerRegistrationUpdate(new RegistrationUpdate(
-                            LinkFormatHelper.getClientDescription(objecTree.getObjectEnablers().values(), null)));
+                            LinkFormatHelper.getClientDescription(objecTree.getObjectEnablers().values(), null, null)));
             }
 
             @Override

@@ -16,6 +16,7 @@
 package org.eclipse.leshan.client.engine;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.eclipse.leshan.client.EndpointsManager;
@@ -49,11 +50,12 @@ public class DefaultRegistrationEngineFactory implements RegistrationEngineFacto
     public RegistrationEngine createRegistratioEngine(String endpoint, LwM2mObjectTree objectTree,
             EndpointsManager endpointsManager, LwM2mRequestSender requestSender, BootstrapHandler bootstrapState,
             LwM2mClientObserver observer, Map<String, String> additionalAttributes,
-            Map<String, String> bsAdditionalAttributes, ScheduledExecutorService sharedExecutor) {
+            Map<String, String> bsAdditionalAttributes, Set<ContentFormat> supportedContentFormat,
+            ScheduledExecutorService sharedExecutor) {
         return new DefaultRegistrationEngine(endpoint, objectTree, endpointsManager, requestSender, bootstrapState,
                 observer, additionalAttributes, bsAdditionalAttributes, sharedExecutor, requestTimeoutInMs,
                 deregistrationTimeoutInMs, bootstrapSessionTimeoutInSec, retryWaitingTimeInMs, communicationPeriodInMs,
-                reconnectOnUpdate, resumeOnConnect, queueMode, preferredContentFormat);
+                reconnectOnUpdate, resumeOnConnect, queueMode, preferredContentFormat, supportedContentFormat);
     }
 
     /**

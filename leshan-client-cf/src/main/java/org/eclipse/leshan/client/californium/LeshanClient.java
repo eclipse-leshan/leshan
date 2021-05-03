@@ -19,6 +19,8 @@ import java.net.InetSocketAddress;
 import java.security.cert.Certificate;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.eclipse.californium.core.CoapResource;
@@ -125,8 +127,10 @@ public class LeshanClient implements LwM2mClient {
         endpointsManager = createEndpointsManager(localAddress, coapConfig, dtlsConfigBuilder, trustStore,
                 endpointFactory);
         requestSender = createRequestSender(endpointsManager, sharedExecutor, encoder, objectTree.getModel());
+
         engine = engineFactory.createRegistratioEngine(endpoint, objectTree, endpointsManager, requestSender,
-                bootstrapHandler, observers, additionalAttributes, bsAdditionalAttributes, sharedExecutor);
+                bootstrapHandler, observers, additionalAttributes, bsAdditionalAttributes,
+                getSupportedContentFormat(decoder, encoder), sharedExecutor);
 
         coapServer = createCoapServer(coapConfig, sharedExecutor);
         coapServer.add(createBootstrapResource(engine, endpointsManager, bootstrapHandler));
@@ -243,6 +247,13 @@ public class LeshanClient implements LwM2mClient {
         RegistrationUpdateHandler registrationUpdateHandler = new RegistrationUpdateHandler(engine, bootstrapHandler);
         registrationUpdateHandler.listen(objectTree);
         return registrationUpdateHandler;
+    }
+
+    protected Set<ContentFormat> getSupportedContentFormat(LwM2mNodeDecoder decoder, LwM2mNodeEncoder encoder) {
+        Set<ContentFormat> supportedContentFormat = new TreeSet<>();
+        supportedContentFormat.addAll(decoder.getSupportedContentFormat());
+        supportedContentFormat.addAll(encoder.getSupportedContentFormat());
+        return supportedContentFormat;
     }
 
     @Override

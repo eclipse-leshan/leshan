@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +31,7 @@ import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.util.StringUtils;
 
 /**
@@ -41,7 +43,8 @@ public final class LinkFormatHelper {
     private LinkFormatHelper() {
     }
 
-    public static Link[] getClientDescription(Collection<LwM2mObjectEnabler> objectEnablers, String rootPath) {
+    public static Link[] getClientDescription(Collection<LwM2mObjectEnabler> objectEnablers, String rootPath,
+            List<ContentFormat> supportedContentFormats) {
         List<Link> links = new ArrayList<>();
 
         // clean root path
@@ -51,6 +54,18 @@ public final class LinkFormatHelper {
         String rootURL = getPath("/", root);
         Map<String, String> attributes = new HashMap<>();
         attributes.put("rt", "\"oma.lwm2m\"");
+        // serialize contentFormat;
+        if (supportedContentFormats != null && !supportedContentFormats.isEmpty()) {
+            StringBuilder b = new StringBuilder();
+            Iterator<ContentFormat> iterator = supportedContentFormats.iterator();
+            b.append(iterator.next().getCode());
+            while (iterator.hasNext()) {
+                b.append(" ");
+                b.append(iterator.next().getCode());
+            }
+            attributes.put("ct", b.toString());
+        }
+
         links.add(new Link(rootURL, attributes));
 
         // sort resources
