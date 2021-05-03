@@ -28,7 +28,7 @@ import org.eclipse.leshan.core.LwM2m.Version;
 /**
  * Data format defined by the LWM2M specification
  */
-public class ContentFormat {
+public class ContentFormat implements Comparable<ContentFormat> {
     public static final int TLV_CODE = 11542;
     public static final int JSON_CODE = 11543;
     public static final int TEXT_CODE = 0;
@@ -184,6 +184,11 @@ public class ContentFormat {
         if (code != other.code)
             return false;
         return true;
+    }
+
+    @Override
+    public int compareTo(ContentFormat ct) {
+        return Integer.compare(this.code, ct.code);
     }
 
     /**
