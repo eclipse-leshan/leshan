@@ -44,7 +44,7 @@ public class RegistrationSerializer implements JsonSerializer<Registration> {
         element.add("lastUpdate", context.serialize(src.getLastUpdate()));
         element.addProperty("address", src.getAddress().getHostAddress() + ":" + src.getPort());
         element.addProperty("smsNumber", src.getSmsNumber());
-        element.addProperty("lwM2mVersion", src.getLwM2mVersion());
+        element.addProperty("lwM2mVersion", src.getLwM2mVersion().toString());
         element.addProperty("lifetime", src.getLifeTimeInSec());
         element.addProperty("bindingMode", BindingMode.toString(src.getBindingMode()));
         element.add("rootPath", context.serialize(src.getRootPath()));

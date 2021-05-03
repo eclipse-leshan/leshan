@@ -19,6 +19,7 @@ package org.eclipse.leshan.server.registration;
 
 import java.util.Date;
 
+import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.RegisterRequest;
@@ -55,7 +56,7 @@ public class RegistrationHandler {
         Registration.Builder builder = new Registration.Builder(
                 registrationIdProvider.getRegistrationId(registerRequest), registerRequest.getEndpointName(), sender);
 
-        builder.lwM2mVersion(registerRequest.getLwVersion()).lifeTimeInSec(registerRequest.getLifetime())
+        builder.lwM2mVersion(Version.get(registerRequest.getLwVersion())).lifeTimeInSec(registerRequest.getLifetime())
                 .bindingMode(registerRequest.getBindingMode()).queueMode(registerRequest.getQueueMode())
                 .objectLinks(registerRequest.getObjectLinks()).smsNumber(registerRequest.getSmsNumber())
                 .registrationDate(new Date()).lastUpdate(new Date())

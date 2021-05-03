@@ -56,7 +56,7 @@ public class Registration implements Serializable {
 
     private final String smsNumber;
 
-    private final String lwM2mVersion;
+    private final Version lwM2mVersion;
 
     private final EnumSet<BindingMode> bindingMode;
 
@@ -82,7 +82,7 @@ public class Registration implements Serializable {
 
     private final Date lastUpdate;
 
-    protected Registration(String id, String endpoint, Identity identity, String lwM2mVersion, Long lifetimeInSec,
+    protected Registration(String id, String endpoint, Identity identity, Version lwM2mVersion, Long lifetimeInSec,
             String smsNumber, EnumSet<BindingMode> bindingMode, Boolean queueMode, Link[] objectLinks,
             Date registrationDate, Date lastUpdate, Map<String, String> additionalRegistrationAttributes,
             Map<Integer, String> supportedObjects) {
@@ -112,10 +112,9 @@ public class Registration implements Serializable {
         this.rootPath = rootPath;
         this.supportedObjects = new AtomicReference<Map<Integer, String>>(supportedObjects);
         this.lifeTimeInSec = lifetimeInSec == null ? DEFAULT_LIFETIME_IN_SEC : lifetimeInSec;
-        this.lwM2mVersion = lwM2mVersion == null ? Version.getDefault().toString() : lwM2mVersion;
+        this.lwM2mVersion = lwM2mVersion == null ? Version.getDefault() : lwM2mVersion;
         this.bindingMode = bindingMode == null ? EnumSet.of(BindingMode.U) : bindingMode;
-        this.queueMode = queueMode == null && Version.get(this.lwM2mVersion).newerThan(Version.V1_0) ? Boolean.FALSE
-                : queueMode;
+        this.queueMode = queueMode == null && this.lwM2mVersion.newerThan(Version.V1_0) ? Boolean.FALSE : queueMode;
         this.registrationDate = registrationDate == null ? new Date() : registrationDate;
         this.lastUpdate = lastUpdate == null ? new Date() : lastUpdate;
         if (additionalRegistrationAttributes == null || additionalRegistrationAttributes.isEmpty()) {
@@ -235,7 +234,7 @@ public class Registration implements Serializable {
         return smsNumber;
     }
 
-    public String getLwM2mVersion() {
+    public Version getLwM2mVersion() {
         return lwM2mVersion;
     }
 
@@ -306,7 +305,7 @@ public class Registration implements Serializable {
     }
 
     public boolean usesQueueMode() {
-        if (Version.get(lwM2mVersion).olderThan(Version.V1_1))
+        if (lwM2mVersion.olderThan(Version.V1_1))
             return bindingMode.contains(BindingMode.Q);
         else
             return queueMode;
@@ -424,7 +423,7 @@ public class Registration implements Serializable {
         private String smsNumber;
         private EnumSet<BindingMode> bindingMode;
         private Boolean queueMode;
-        private String lwM2mVersion;
+        private Version lwM2mVersion;
         private Link[] objectLinks;
         private Map<Integer, String> supportedObjects;
         private Map<String, String> additionalRegistrationAttributes;
@@ -469,7 +468,7 @@ public class Registration implements Serializable {
             return this;
         }
 
-        public Builder lwM2mVersion(String lwM2mVersion) {
+        public Builder lwM2mVersion(Version lwM2mVersion) {
             this.lwM2mVersion = lwM2mVersion;
             return this;
         }

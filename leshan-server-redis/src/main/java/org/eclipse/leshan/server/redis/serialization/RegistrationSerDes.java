@@ -42,7 +42,7 @@ public class RegistrationSerDes {
         if (r.getSmsNumber() != null) {
             o.add("sms", r.getSmsNumber());
         }
-        o.add("ver", r.getLwM2mVersion());
+        o.add("ver", r.getLwM2mVersion().toString());
         o.add("bnd", BindingMode.toString(r.getBindingMode()));
         if (r.getQueueMode() != null)
             o.add("qm", r.getQueueMode());
@@ -91,7 +91,12 @@ public class RegistrationSerDes {
             b.queueMode(jObj.getBoolean("qm", false));
         b.lastUpdate(new Date(jObj.getLong("lastUp", 0)));
         b.lifeTimeInSec(jObj.getLong("lt", 0));
-        b.lwM2mVersion(jObj.getString("ver", Version.getDefault().toString()));
+        String versionAsString = jObj.getString("ver", null);
+        if (versionAsString == null) {
+            b.lwM2mVersion(Version.getDefault());
+        } else {
+            b.lwM2mVersion(Version.get(versionAsString));
+        }
         b.registrationDate(new Date(jObj.getLong("regDate", 0)));
         if (jObj.get("sms") != null) {
             b.smsNumber(jObj.getString("sms", ""));

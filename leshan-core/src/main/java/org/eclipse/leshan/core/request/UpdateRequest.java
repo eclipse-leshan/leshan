@@ -108,9 +108,9 @@ public class UpdateRequest extends AbstractLwM2mRequest<UpdateResponse> implemen
         return additionalAttributes;
     }
 
-    public void validate(String targetedVersion) {
+    public void validate(Version targetedVersion) {
         if (bindingMode != null) {
-            String err = BindingMode.isValidFor(bindingMode, Version.get(targetedVersion));
+            String err = BindingMode.isValidFor(bindingMode, targetedVersion);
             if (err != null) {
                 throw new InvalidRequestException("Invalid Binding mode: %s", err);
             }
