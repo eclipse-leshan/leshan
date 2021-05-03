@@ -15,6 +15,16 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.eclipse.leshan.core.LwM2m.Version;
+
 /**
  * Data format defined by the LWM2M specification
  */
@@ -33,11 +43,15 @@ public class ContentFormat {
     public static final int SENML_JSON_CODE = 110;
     public static final int SENML_CBOR_CODE = 112;
 
-    public static final ContentFormat TLV = new ContentFormat("TLV", "application/vnd.oma.lwm2m+tlv", TLV_CODE);
+    public static final ContentFormat TLV = new ContentFormat("TLV", "application/vnd.oma.lwm2m+tlv", TLV_CODE,
+            Arrays.asList(Version.V1_0));
     public static final ContentFormat JSON = new ContentFormat("JSON", "application/vnd.oma.lwm2m+json", JSON_CODE);
-    public static final ContentFormat TEXT = new ContentFormat("TEXT", "text/plain", TEXT_CODE);
-    public static final ContentFormat OPAQUE = new ContentFormat("OPAQUE", "application/octet-stream", OPAQUE_CODE);
-    public static final ContentFormat LINK = new ContentFormat("LINK", "application/link-format", LINK_CODE);
+    public static final ContentFormat TEXT = new ContentFormat("TEXT", "text/plain", TEXT_CODE,
+            Arrays.asList(Version.V1_1));
+    public static final ContentFormat OPAQUE = new ContentFormat("OPAQUE", "application/octet-stream", OPAQUE_CODE,
+            Arrays.asList(Version.V1_1));
+    public static final ContentFormat LINK = new ContentFormat("LINK", "application/link-format", LINK_CODE,
+            Arrays.asList(Version.V1_1));
     public static final ContentFormat SENML_JSON = new ContentFormat("SENML_JSON", "application/senml+json",
             SENML_JSON_CODE);
     public static final ContentFormat SENML_CBOR = new ContentFormat("SENML_CBOR", "application/senml+cbor",
@@ -46,23 +60,33 @@ public class ContentFormat {
 
     public static final ContentFormat DEFAULT = TLV;
 
-    private static final ContentFormat knownContentFormat[] = new ContentFormat[] { TLV, JSON, SENML_JSON, SENML_CBOR,
+    public static final ContentFormat knownContentFormat[] = new ContentFormat[] { TLV, JSON, SENML_JSON, SENML_CBOR,
                             TEXT, OPAQUE, CBOR, LINK };
 
     private final String name;
     private final String mediaType;
     private final int code;
+    private Set<Version> mandatoryForClient; // lwm2m version where this content format is mandatory at client side
+
+    public ContentFormat(String name, String mediaType, int code, Collection<Version> mandatory) {
+        this.name = name;
+        this.mediaType = mediaType;
+        this.code = code;
+        this.mandatoryForClient = new HashSet<>(mandatory);
+    }
 
     public ContentFormat(String name, String mediaType, int code) {
         this.name = name;
         this.mediaType = mediaType;
         this.code = code;
+        this.mandatoryForClient = Collections.emptySet();
     }
 
     public ContentFormat(int code) {
         this.name = "UNKNOWN";
         this.mediaType = "unknown/unknown";
         this.code = code;
+        this.mandatoryForClient = Collections.emptySet();
     }
 
     public String getName() {
@@ -75,6 +99,13 @@ public class ContentFormat {
 
     public int getCode() {
         return this.code;
+    }
+
+    /**
+     * @return True is this {@link ContentFormat} is mandatory at client side for the given LWM2M {@link Version}.
+     */
+    public boolean isMandatoryForClient(Version lwM2mVersion) {
+        return this.mandatoryForClient.contains(lwM2mVersion);
     }
 
     /**
@@ -153,5 +184,24 @@ public class ContentFormat {
         if (code != other.code)
             return false;
         return true;
+    }
+
+    /**
+     * From a list of {@link ContentFormat} of a client, return only the optional ones for a given LWM2M
+     * {@link Version}. In other words we remove all {@link ContentFormat} which is considered as Mandatory.
+     * 
+     * @param contentFormat A list of all supported {@link ContentFormat} for a given device.
+     * @param lwm2mVersion The LWM2M version targeted
+     * @return only optional {@link ContentFormat}
+     */
+    public static List<ContentFormat> getOptionalContentFormatForClient(Collection<ContentFormat> contentFormat,
+            Version lwm2mVersion) {
+        List<ContentFormat> optionalFormat = new ArrayList<>();
+        for (ContentFormat supportedFormat : contentFormat) {
+            if (!supportedFormat.isMandatoryForClient(lwm2mVersion)) {
+                optionalFormat.add(supportedFormat);
+            }
+        }
+        return optionalFormat;
     }
 }
