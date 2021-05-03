@@ -15,9 +15,11 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -111,7 +113,7 @@ public class LinkFormatHelperTest {
         instancesMap.put(0, new BaseInstanceEnabler());
         objectEnablers.add(new ObjectEnabler(6, getObjectModel(6), instancesMap, null, ContentFormat.DEFAULT));
 
-        Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null);
+        Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null, null);
         String strLinks = Link.serialize(links);
 
         assertEquals("</>;rt=\"oma.lwm2m\",</6/0>", strLinks);
@@ -127,7 +129,7 @@ public class LinkFormatHelperTest {
         objectEnablers.add(
                 new ObjectEnabler(6, getVersionedObjectModel(6, "2.0"), instancesMap, null, ContentFormat.DEFAULT));
 
-        Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null);
+        Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null, null);
         String strLinks = Link.serialize(links);
 
         assertEquals("</>;rt=\"oma.lwm2m\",</6>;ver=2.0,</6/0>,</6/1>", strLinks);
@@ -141,10 +143,35 @@ public class LinkFormatHelperTest {
         objectEnablers.add(
                 new ObjectEnabler(6, getVersionedObjectModel(6, "2.0"), instancesMap, null, ContentFormat.DEFAULT));
 
-        Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null);
+        Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null, null);
         String strLinks = Link.serialize(links);
 
         assertEquals("</>;rt=\"oma.lwm2m\",</6>;ver=2.0", strLinks);
+    }
+
+    @Test
+    public void encode_1_content_format() {
+        List<LwM2mObjectEnabler> objectEnablers = new ArrayList<>();
+        Map<Integer, LwM2mInstanceEnabler> instancesMap = Collections.emptyMap();
+        objectEnablers.add(
+                new ObjectEnabler(6, getVersionedObjectModel(6, "1.0"), instancesMap, null, ContentFormat.DEFAULT));
+
+        Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null, Arrays.asList(ContentFormat.TLV));
+
+        assertArrayEquals(Link.parse("</>;rt=\"oma.lwm2m\";ct=11542,</6>".getBytes()), links);
+    }
+
+    @Test
+    public void encode_several_content_format() {
+        List<LwM2mObjectEnabler> objectEnablers = new ArrayList<>();
+        Map<Integer, LwM2mInstanceEnabler> instancesMap = Collections.emptyMap();
+        objectEnablers.add(
+                new ObjectEnabler(6, getVersionedObjectModel(6, "1.0"), instancesMap, null, ContentFormat.DEFAULT));
+
+        Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null,
+                Arrays.asList(ContentFormat.TLV, ContentFormat.JSON, ContentFormat.OPAQUE));
+
+        assertArrayEquals(Link.parse("</>;rt=\"oma.lwm2m\";ct=11542 11543 42,</6>".getBytes()), links);
     }
 
     @Test
