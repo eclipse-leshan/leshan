@@ -221,4 +221,9 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
     public boolean isSupported(ContentFormat format) {
         return nodeEncoders.get(format) != null;
     }
+
+    @Override
+    public Set<ContentFormat> getSupportedContentFormat() {
+        return nodeEncoders.keySet();
+    }
 }

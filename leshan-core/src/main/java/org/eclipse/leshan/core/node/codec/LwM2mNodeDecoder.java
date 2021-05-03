@@ -17,6 +17,7 @@ package org.eclipse.leshan.core.node.codec;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -110,5 +111,10 @@ public interface LwM2mNodeDecoder {
      * return true is the given {@link ContentFormat} is supported
      */
     boolean isSupported(ContentFormat format);
+
+    /**
+     * @return {@link ContentFormat} supported by this decoder
+     */
+    Set<ContentFormat> getSupportedContentFormat();
 
 }

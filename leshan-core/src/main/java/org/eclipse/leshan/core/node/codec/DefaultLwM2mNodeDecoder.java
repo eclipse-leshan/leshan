@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -244,4 +245,9 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
     public boolean isSupported(ContentFormat format) {
         return nodeDecoders.get(format) != null;
     }
+
+    @Override
+    public Set<ContentFormat> getSupportedContentFormat() {
+        return nodeDecoders.keySet();
+    };
 }
