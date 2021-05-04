@@ -17,11 +17,14 @@ package org.eclipse.leshan.server.redis.serialization;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.request.BindingMode;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.server.registration.Registration;
 
 import com.eclipsesource.json.Json;
@@ -72,6 +75,14 @@ public class RegistrationSerDes {
         o.add("addAttr", addAttr);
         o.add("root", r.getRootPath());
         o.add("lastUp", r.getLastUpdate().getTime());
+
+        // add supported content format
+        Set<ContentFormat> supportedContentFormat = r.getSupportedContentFormats();
+        JsonArray ct = Json.array();
+        for (ContentFormat contentFormat : supportedContentFormat) {
+            ct.add(contentFormat.getCode());
+        }
+        o.add("ct", ct);
         return o;
     }
 
@@ -133,6 +144,18 @@ public class RegistrationSerDes {
         }
         b.additionalRegistrationAttributes(addAttr);
 
+        // add supported content format
+        JsonValue ct = jObj.get("ct");
+        if (ct == null) {
+            // Backward compatibility : if suppObjs doesn't exist we extract supported object from object link
+            b.extractDataFromObjectLink(true);
+        } else {
+            Set<ContentFormat> supportedContentFormat = new HashSet<>();
+            for (JsonValue ctCode : ct.asArray()) {
+                supportedContentFormat.add(ContentFormat.fromCode(ctCode.asInt()));
+            }
+            b.supportedContentFormats(supportedContentFormat);
+        }
         return b.build();
     }
 

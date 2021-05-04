@@ -87,7 +87,8 @@ public class RegistrationUpdate {
         builder.lwM2mVersion(registration.getLwM2mVersion()).lifeTimeInSec(lifeTimeInSec).smsNumber(smsNumber)
                 .bindingMode(bindingMode).queueMode(registration.getQueueMode()).objectLinks(linkObject)
                 .registrationDate(registration.getRegistrationDate()).lastUpdate(lastUpdate)
-                .additionalRegistrationAttributes(additionalAttributes).rootPath(registration.getRootPath());
+                .additionalRegistrationAttributes(additionalAttributes).rootPath(registration.getRootPath())
+                .supportedContentFormats(registration.getSupportedContentFormats());
 
         return builder.build();
 

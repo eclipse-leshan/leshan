@@ -24,7 +24,9 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,14 +36,19 @@ import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.attributes.Attribute;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.request.BindingMode;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.util.StringUtils;
 import org.eclipse.leshan.core.util.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An immutable structure which represent a LW-M2M client registration on the server
  */
 public class Registration {
+
+    private static final Logger LOG = LoggerFactory.getLogger(Registration.class);
 
     private static final long DEFAULT_LIFETIME_IN_SEC = 86400L;
 
@@ -75,6 +82,9 @@ public class Registration {
     // The location where LWM2M objects are hosted on the device
     private final String rootPath;
 
+    // All ContentFormat supported by the client
+    private final Set<ContentFormat> supportedContentFormats;
+
     private final Date lastUpdate;
 
     protected Registration(Builder builder) {
@@ -91,6 +101,7 @@ public class Registration {
         // object links related params
         objectLinks = builder.objectLinks;
         rootPath = builder.rootPath;
+        supportedContentFormats = builder.supportedContentFormats;
         supportedObjects = new AtomicReference<Map<Integer, String>>(builder.supportedObjects);
 
         // other params
@@ -232,6 +243,13 @@ public class Registration {
     }
 
     /**
+     * @return all {@link ContentFormat} supported by the client.
+     */
+    public Set<ContentFormat> getSupportedContentFormats() {
+        return supportedContentFormats;
+    }
+
+    /**
      * Gets the unique name the client has registered with.
      * 
      * @return the name
@@ -313,9 +331,10 @@ public class Registration {
     @Override
     public String toString() {
         return String.format(
-                "Registration [registrationDate=%s, identity=%s, lifeTimeInSec=%s, smsNumber=%s, lwM2mVersion=%s, bindingMode=%s, endpoint=%s, registrationId=%s, objectLinks=%s, lastUpdate=%s]",
-                registrationDate, identity, lifeTimeInSec, smsNumber, lwM2mVersion, bindingMode, endpoint, id,
-                Arrays.toString(objectLinks), lastUpdate);
+                "Registration [registrationDate=%s, identity=%s, lifeTimeInSec=%s, smsNumber=%s, lwM2mVersion=%s, bindingMode=%s, queueMode=%s, endpoint=%s, id=%s, objectLinks=%s, supportedObjects=%s, additionalRegistrationAttributes=%s, rootPath=%s, supportedContentFormats=%s, lastUpdate=%s]",
+                registrationDate, identity, lifeTimeInSec, smsNumber, lwM2mVersion, bindingMode, queueMode, endpoint,
+                id, Arrays.toString(objectLinks), supportedObjects, additionalRegistrationAttributes, rootPath,
+                supportedContentFormats, lastUpdate);
     }
 
     @Override
@@ -336,6 +355,7 @@ public class Registration {
         result = prime * result + ((registrationDate == null) ? 0 : registrationDate.hashCode());
         result = prime * result + ((rootPath == null) ? 0 : rootPath.hashCode());
         result = prime * result + ((smsNumber == null) ? 0 : smsNumber.hashCode());
+        result = prime * result + ((supportedContentFormats == null) ? 0 : supportedContentFormats.hashCode());
         return result;
     }
 
@@ -407,6 +427,11 @@ public class Registration {
                 return false;
         } else if (!smsNumber.equals(other.smsNumber))
             return false;
+        if (supportedContentFormats == null) {
+            if (other.supportedContentFormats != null)
+                return false;
+        } else if (!supportedContentFormats.equals(other.supportedContentFormats))
+            return false;
         return true;
     }
 
@@ -467,9 +492,10 @@ public class Registration {
         private String smsNumber;
         private EnumSet<BindingMode> bindingMode;
         private Boolean queueMode;
-        private Version lwM2mVersion;
+        private Version lwM2mVersion = Version.getDefault();
         private Link[] objectLinks;
         private String rootPath;
+        private Set<ContentFormat> supportedContentFormats;
         private Map<Integer, String> supportedObjects;
         private Map<String, String> additionalRegistrationAttributes;
 
@@ -536,6 +562,19 @@ public class Registration {
             return this;
         }
 
+        public Builder supportedContentFormats(Set<ContentFormat> supportedContentFormats) {
+            this.supportedContentFormats = supportedContentFormats;
+            return this;
+        }
+
+        public Builder supportedContentFormats(ContentFormat... supportedContentFormats) {
+            this.supportedContentFormats = new HashSet<>();
+            for (ContentFormat contentFormat : supportedContentFormats) {
+                this.supportedContentFormats.add(contentFormat);
+            }
+            return this;
+        }
+
         public Builder additionalRegistrationAttributes(Map<String, String> additionalRegistrationAttributes) {
             this.additionalRegistrationAttributes = additionalRegistrationAttributes;
             return this;
@@ -557,10 +596,51 @@ public class Registration {
                     }
                 }
 
-                // TODO extract supported Content format
-                // TODO extract object supported
-                // TODO extract available instances
+                // Extract data from link object
+                for (Link link : objectLinks) {
+                    // TODO extract object supported
+                    // TODO extract available instances
+
+                    if (link != null) {
+                        // search supported Content format in root link
+                        if (rootPath.equals(link.getUrl())) {
+                            String ctValue = link.getAttributes().get("ct");
+                            if (ctValue != null) {
+                                supportedContentFormats = extractContentFormat(ctValue);
+                            }
+                        }
+                    }
+                }
             }
+        }
+
+        private Set<ContentFormat> extractContentFormat(String ctValue) {
+            Set<ContentFormat> supportedContentFormats = new HashSet<>();
+
+            // add content format from ct attributes
+            String[] formats = ctValue.split(" ");
+            for (String codeAsString : formats) {
+                try {
+                    ContentFormat contentformat = ContentFormat.fromCode(codeAsString);
+                    if (supportedContentFormats.contains(contentformat)) {
+                        LOG.warn("Duplicate Content format {} in ct={} attributes for registration {} of client {} ",
+                                codeAsString, supportedContentFormats, registrationId, endpoint);
+                    }
+                    supportedContentFormats.add(contentformat);
+                } catch (NumberFormatException e) {
+                    LOG.warn(
+                            "Invalid supported Content format {} in ct={} attributes for registration {} of client {} ",
+                            codeAsString, supportedContentFormats, registrationId, endpoint);
+                }
+            }
+
+            // add mandatory content format
+            for (ContentFormat format : ContentFormat.knownContentFormat) {
+                if (format.isMandatoryForClient(lwM2mVersion)) {
+                    supportedContentFormats.add(format);
+                }
+            }
+            return supportedContentFormats;
         }
 
         public Registration build() {
@@ -573,18 +653,23 @@ public class Registration {
             registrationDate = registrationDate == null ? new Date() : registrationDate;
             lastUpdate = lastUpdate == null ? new Date() : lastUpdate;
 
-            // Make collection immutable
-            if (additionalRegistrationAttributes == null || additionalRegistrationAttributes.isEmpty()) {
-                additionalRegistrationAttributes = Collections.emptyMap();
-            } else {
-                // We create a new HashMap to have a real immutable map and to avoid "unmodifiableMap" encapsulation.
-                additionalRegistrationAttributes = Collections
-                        .unmodifiableMap(new HashMap<>(additionalRegistrationAttributes));
-            }
-
             // Extract data from object links if wanted
             if (extractData) {
                 extractDataFromObjectLinks();
+            }
+
+            // Make collection immutable
+            // We create a new Collection and make it "unmodifiable".
+            if (supportedContentFormats == null || supportedContentFormats.isEmpty()) {
+                supportedContentFormats = Collections.emptySet();
+            } else {
+                supportedContentFormats = Collections.unmodifiableSet(new HashSet<>(supportedContentFormats));
+            }
+            if (additionalRegistrationAttributes == null || additionalRegistrationAttributes.isEmpty()) {
+                additionalRegistrationAttributes = Collections.emptyMap();
+            } else {
+                additionalRegistrationAttributes = Collections
+                        .unmodifiableMap(new HashMap<>(additionalRegistrationAttributes));
             }
 
             // Create Registration
