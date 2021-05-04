@@ -87,31 +87,24 @@ public class Registration implements Serializable {
         Validate.notNull(builder.identity);
 
         // mandatory params
-        this.id = builder.registrationId;
-        this.identity = builder.identity;
-        this.endpoint = builder.endpoint;
+        id = builder.registrationId;
+        identity = builder.identity;
+        endpoint = builder.endpoint;
 
         // object links related params
-        this.objectLinks = builder.objectLinks;
-        this.rootPath = builder.rootPath == null ? "/" : builder.rootPath;
-        this.supportedObjects = new AtomicReference<Map<Integer, String>>(builder.supportedObjects);
+        objectLinks = builder.objectLinks;
+        rootPath = builder.rootPath;
+        supportedObjects = new AtomicReference<Map<Integer, String>>(builder.supportedObjects);
 
         // other params
-        this.lifeTimeInSec = builder.lifeTimeInSec == null ? DEFAULT_LIFETIME_IN_SEC : builder.lifeTimeInSec;
-        this.lwM2mVersion = builder.lwM2mVersion == null ? Version.getDefault() : builder.lwM2mVersion;
-        this.bindingMode = builder.bindingMode == null ? EnumSet.of(BindingMode.U) : builder.bindingMode;
-        this.queueMode = builder.queueMode == null && lwM2mVersion.newerThan(Version.V1_0) ? Boolean.FALSE
-                : builder.queueMode;
-        this.registrationDate = builder.registrationDate == null ? new Date() : builder.registrationDate;
-        this.lastUpdate = builder.lastUpdate == null ? new Date() : builder.lastUpdate;
-        this.smsNumber = builder.smsNumber;
-        if (builder.additionalRegistrationAttributes == null || builder.additionalRegistrationAttributes.isEmpty()) {
-            this.additionalRegistrationAttributes = Collections.emptyMap();
-        } else {
-            // We create a new HashMap to have a real immutable map and to avoid "unmodifiableMap" encapsulation.
-            this.additionalRegistrationAttributes = Collections
-                    .unmodifiableMap(new HashMap<>(builder.additionalRegistrationAttributes));
-        }
+        lifeTimeInSec = builder.lifeTimeInSec;
+        lwM2mVersion = builder.lwM2mVersion;
+        bindingMode = builder.bindingMode;
+        queueMode = builder.queueMode;
+        registrationDate = builder.registrationDate;
+        lastUpdate = builder.lastUpdate;
+        smsNumber = builder.smsNumber;
+        additionalRegistrationAttributes = builder.additionalRegistrationAttributes;
 
     }
 
@@ -574,6 +567,24 @@ public class Registration implements Serializable {
         }
 
         public Registration build() {
+            // Define Default value
+            rootPath = rootPath == null ? "/" : rootPath;
+            lifeTimeInSec = lifeTimeInSec == null ? DEFAULT_LIFETIME_IN_SEC : lifeTimeInSec;
+            lwM2mVersion = lwM2mVersion == null ? Version.getDefault() : lwM2mVersion;
+            bindingMode = bindingMode == null ? EnumSet.of(BindingMode.U) : bindingMode;
+            queueMode = queueMode == null && lwM2mVersion.newerThan(Version.V1_0) ? Boolean.FALSE : queueMode;
+            registrationDate = registrationDate == null ? new Date() : registrationDate;
+            lastUpdate = lastUpdate == null ? new Date() : lastUpdate;
+
+            // Make collection immutable
+            if (additionalRegistrationAttributes == null || additionalRegistrationAttributes.isEmpty()) {
+                additionalRegistrationAttributes = Collections.emptyMap();
+            } else {
+                // We create a new HashMap to have a real immutable map and to avoid "unmodifiableMap" encapsulation.
+                additionalRegistrationAttributes = Collections
+                        .unmodifiableMap(new HashMap<>(additionalRegistrationAttributes));
+            }
+
             // Extract data from object links if wanted
             if (extractData) {
                 extractDataFromObjectLinks();
