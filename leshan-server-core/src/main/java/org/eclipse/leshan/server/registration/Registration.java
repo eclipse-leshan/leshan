@@ -16,7 +16,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.registration;
 
-import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
@@ -42,9 +41,7 @@ import org.eclipse.leshan.core.util.Validate;
 /**
  * An immutable structure which represent a LW-M2M client registration on the server
  */
-public class Registration implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class Registration {
 
     private static final long DEFAULT_LIFETIME_IN_SEC = 86400L;
 

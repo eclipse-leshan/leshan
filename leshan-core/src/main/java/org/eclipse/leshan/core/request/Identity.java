@@ -16,7 +16,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
-import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.PublicKey;
@@ -27,9 +26,7 @@ import org.eclipse.leshan.core.util.Validate;
  * Contains all data which could identify a peer like peer address, PSK identity, Raw Public Key or Certificate Common
  * Name.
  */
-public class Identity implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class Identity {
 
     private final InetSocketAddress peerAddress;
     private final String pskIdentity;

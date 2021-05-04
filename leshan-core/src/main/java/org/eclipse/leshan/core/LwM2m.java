@@ -15,16 +15,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.core;
 
-import java.io.Serializable;
-
 public interface LwM2m {
 
     /**
      * Version of LWM2M specification.
      */
-    public class Version implements Comparable<Version>, Serializable {
-
-        private static final long serialVersionUID = 1L;
+    public class Version implements Comparable<Version> {
 
         public static Version V1_0 = new Version("1.0", true);
         public static Version V1_1 = new Version("1.1", true);

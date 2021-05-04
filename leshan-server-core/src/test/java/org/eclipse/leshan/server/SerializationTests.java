@@ -20,18 +20,10 @@ import static org.junit.Assert.fail;
 import java.util.Map;
 
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
-import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.junit.Test;
 
 public class SerializationTests {
-
-    @Test
-    public void ensure_Registration_is_serializable() {
-        // We exclude "org.eclipse.leshan.Link.attributes" because we can not be sure it is serializable in a
-        // reliable way.
-        assertIsSerializable(Registration.class, "org.eclipse.leshan.Link.attributes");
-    }
 
     @Test
     public void ensure_SecurityInfo_is_serializable() {
