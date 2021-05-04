@@ -340,30 +340,96 @@ public class Registration implements Serializable {
                 Arrays.toString(objectLinks), lastUpdate);
     }
 
-    /**
-     * Computes a hash code for this client.
-     * 
-     * @return the hash code based on the <em>endpoint</em> property
-     */
     @Override
     public int hashCode() {
-        return getEndpoint().hashCode();
+        final int prime = 31;
+        int result = 1;
+        result = prime * result
+                + ((additionalRegistrationAttributes == null) ? 0 : additionalRegistrationAttributes.hashCode());
+        result = prime * result + ((bindingMode == null) ? 0 : bindingMode.hashCode());
+        result = prime * result + ((endpoint == null) ? 0 : endpoint.hashCode());
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        result = prime * result + ((identity == null) ? 0 : identity.hashCode());
+        result = prime * result + ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
+        result = prime * result + (int) (lifeTimeInSec ^ (lifeTimeInSec >>> 32));
+        result = prime * result + ((lwM2mVersion == null) ? 0 : lwM2mVersion.hashCode());
+        result = prime * result + Arrays.hashCode(objectLinks);
+        result = prime * result + ((queueMode == null) ? 0 : queueMode.hashCode());
+        result = prime * result + ((registrationDate == null) ? 0 : registrationDate.hashCode());
+        result = prime * result + ((rootPath == null) ? 0 : rootPath.hashCode());
+        result = prime * result + ((smsNumber == null) ? 0 : smsNumber.hashCode());
+        return result;
     }
 
-    /**
-     * Compares this Client to another object.
-     * 
-     * @return <code>true</code> if the other object is a Client instance and its <em>endpoint</em> property has the
-     *         same value as this Client
-     */
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Registration) {
-            Registration other = (Registration) obj;
-            return this.getEndpoint().equals(other.getEndpoint());
-        } else {
+        if (this == obj)
+            return true;
+        if (obj == null)
             return false;
-        }
+        if (getClass() != obj.getClass())
+            return false;
+        Registration other = (Registration) obj;
+        if (additionalRegistrationAttributes == null) {
+            if (other.additionalRegistrationAttributes != null)
+                return false;
+        } else if (!additionalRegistrationAttributes.equals(other.additionalRegistrationAttributes))
+            return false;
+        if (bindingMode == null) {
+            if (other.bindingMode != null)
+                return false;
+        } else if (!bindingMode.equals(other.bindingMode))
+            return false;
+        if (endpoint == null) {
+            if (other.endpoint != null)
+                return false;
+        } else if (!endpoint.equals(other.endpoint))
+            return false;
+        if (id == null) {
+            if (other.id != null)
+                return false;
+        } else if (!id.equals(other.id))
+            return false;
+        if (identity == null) {
+            if (other.identity != null)
+                return false;
+        } else if (!identity.equals(other.identity))
+            return false;
+        if (lastUpdate == null) {
+            if (other.lastUpdate != null)
+                return false;
+        } else if (!lastUpdate.equals(other.lastUpdate))
+            return false;
+        if (lifeTimeInSec != other.lifeTimeInSec)
+            return false;
+        if (lwM2mVersion == null) {
+            if (other.lwM2mVersion != null)
+                return false;
+        } else if (!lwM2mVersion.equals(other.lwM2mVersion))
+            return false;
+        if (!Arrays.equals(objectLinks, other.objectLinks))
+            return false;
+        if (queueMode == null) {
+            if (other.queueMode != null)
+                return false;
+        } else if (!queueMode.equals(other.queueMode))
+            return false;
+        if (registrationDate == null) {
+            if (other.registrationDate != null)
+                return false;
+        } else if (!registrationDate.equals(other.registrationDate))
+            return false;
+        if (rootPath == null) {
+            if (other.rootPath != null)
+                return false;
+        } else if (!rootPath.equals(other.rootPath))
+            return false;
+        if (smsNumber == null) {
+            if (other.smsNumber != null)
+                return false;
+        } else if (!smsNumber.equals(other.smsNumber))
+            return false;
+        return true;
     }
 
     /**
