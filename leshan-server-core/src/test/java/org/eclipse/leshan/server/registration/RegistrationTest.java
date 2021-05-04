@@ -120,7 +120,7 @@ public class RegistrationTest {
     private Registration given_a_registration_with_object_link_like(String objectLinks) {
         Builder builder = new Registration.Builder("id", "endpoint",
                 Identity.unsecure(InetSocketAddress.createUnresolved("localhost", 0)));
-
+        builder.extractDataFromObjectLink(true);
         builder.objectLinks(Link.parse(objectLinks.getBytes()));
         return builder.build();
     }

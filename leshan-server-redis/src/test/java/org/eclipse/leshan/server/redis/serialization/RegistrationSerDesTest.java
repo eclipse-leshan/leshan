@@ -40,7 +40,7 @@ public class RegistrationSerDesTest {
         objs[1] = new Link("/0/2");
 
         Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
-                Identity.unsecure(Inet4Address.getLoopbackAddress(), 1)).objectLinks(objs);
+                Identity.unsecure(Inet4Address.getLoopbackAddress(), 1)).objectLinks(objs).rootPath("/");
 
         builder.registrationDate(new Date(100L));
         builder.lastUpdate(new Date(101L));

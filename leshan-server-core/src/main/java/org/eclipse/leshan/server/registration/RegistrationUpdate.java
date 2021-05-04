@@ -82,11 +82,12 @@ public class RegistrationUpdate {
 
         Registration.Builder builder = new Registration.Builder(registration.getId(), registration.getEndpoint(),
                 identity);
+        builder.extractDataFromObjectLink(this.objectLinks != null); // we parse object link only if there was updated.
 
         builder.lwM2mVersion(registration.getLwM2mVersion()).lifeTimeInSec(lifeTimeInSec).smsNumber(smsNumber)
                 .bindingMode(bindingMode).queueMode(registration.getQueueMode()).objectLinks(linkObject)
                 .registrationDate(registration.getRegistrationDate()).lastUpdate(lastUpdate)
-                .additionalRegistrationAttributes(additionalAttributes);
+                .additionalRegistrationAttributes(additionalAttributes).rootPath(registration.getRootPath());
 
         return builder.build();
 

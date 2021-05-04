@@ -55,6 +55,7 @@ public class RegistrationHandler {
 
         Registration.Builder builder = new Registration.Builder(
                 registrationIdProvider.getRegistrationId(registerRequest), registerRequest.getEndpointName(), sender);
+        builder.extractDataFromObjectLink(true);
 
         builder.lwM2mVersion(Version.get(registerRequest.getLwVersion())).lifeTimeInSec(registerRequest.getLifetime())
                 .bindingMode(registerRequest.getBindingMode()).queueMode(registerRequest.getQueueMode())

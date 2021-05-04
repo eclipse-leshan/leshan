@@ -102,6 +102,8 @@ public class RegistrationSerDes {
             b.smsNumber(jObj.getString("sms", ""));
         }
 
+        b.rootPath(jObj.getString("root", "/"));
+
         JsonArray links = (JsonArray) jObj.get("objLink");
         Link[] linkObjs = new Link[links.size()];
         for (int i = 0; i < links.size(); i++) {

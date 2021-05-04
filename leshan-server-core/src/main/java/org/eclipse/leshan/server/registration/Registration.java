@@ -83,7 +83,7 @@ public class Registration implements Serializable {
     private final Date lastUpdate;
 
     protected Registration(String id, String endpoint, Identity identity, Version lwM2mVersion, Long lifetimeInSec,
-            String smsNumber, EnumSet<BindingMode> bindingMode, Boolean queueMode, Link[] objectLinks,
+            String smsNumber, EnumSet<BindingMode> bindingMode, Boolean queueMode, Link[] objectLinks, String rootPath,
             Date registrationDate, Date lastUpdate, Map<String, String> additionalRegistrationAttributes,
             Map<Integer, String> supportedObjects) {
 
@@ -97,19 +97,7 @@ public class Registration implements Serializable {
         this.smsNumber = smsNumber;
 
         this.objectLinks = objectLinks;
-        // Parse object link to extract root path.
-        String rootPath = "/";
-        if (objectLinks != null) {
-            for (Link link : objectLinks) {
-                if (link != null && "oma.lwm2m".equals(Link.unquote(link.getAttributes().get("rt")))) {
-                    rootPath = link.getUrl();
-                    break;
-                }
-            }
-        }
-        if (!rootPath.endsWith("/"))
-            rootPath = rootPath + "/";
-        this.rootPath = rootPath;
+        this.rootPath = rootPath == null ? "/" : rootPath;
         this.supportedObjects = new AtomicReference<Map<Integer, String>>(supportedObjects);
         this.lifeTimeInSec = lifetimeInSec == null ? DEFAULT_LIFETIME_IN_SEC : lifetimeInSec;
         this.lwM2mVersion = lwM2mVersion == null ? Version.getDefault() : lwM2mVersion;
@@ -491,8 +479,12 @@ public class Registration implements Serializable {
         private Boolean queueMode;
         private Version lwM2mVersion;
         private Link[] objectLinks;
+        private String rootPath;
         private Map<Integer, String> supportedObjects;
         private Map<String, String> additionalRegistrationAttributes;
+
+        // builder setting
+        private boolean extractData; // if true extract data from objectLinks
 
         public Builder(String registrationId, String endpoint, Identity identity) {
 
@@ -502,6 +494,11 @@ public class Registration implements Serializable {
             this.registrationId = registrationId;
             this.endpoint = endpoint;
             this.identity = identity;
+        }
+
+        public Builder extractDataFromObjectLink(boolean extract) {
+            this.extractData = extract;
+            return this;
         }
 
         public Builder registrationDate(Date registrationDate) {
@@ -544,8 +541,8 @@ public class Registration implements Serializable {
             return this;
         }
 
-        public Builder supportedObjects(Map<Integer, String> supportedObjects) {
-            this.supportedObjects = Collections.unmodifiableMap(supportedObjects);
+        public Builder rootPath(String rootPath) {
+            this.rootPath = rootPath;
             return this;
         }
 
@@ -554,12 +551,38 @@ public class Registration implements Serializable {
             return this;
         }
 
-        public Registration build() {
-            return new Registration(Builder.this.registrationId, Builder.this.endpoint, Builder.this.identity,
-                    Builder.this.lwM2mVersion, Builder.this.lifeTimeInSec, Builder.this.smsNumber, this.bindingMode,
-                    this.queueMode, this.objectLinks, this.registrationDate, this.lastUpdate,
-                    this.additionalRegistrationAttributes, this.supportedObjects);
+        private void extractDataFromObjectLinks() {
+            if (objectLinks != null) {
+                // Define default RootPath;
+                rootPath = "/";
+
+                // Parse object link to extract root path
+                for (Link link : objectLinks) {
+                    if (link != null && "oma.lwm2m".equals(Link.unquote(link.getAttributes().get("rt")))) {
+                        rootPath = link.getUrl();
+                        if (!rootPath.endsWith("/")) {
+                            rootPath = rootPath + "/";
+                        }
+                        break;
+                    }
+                }
+
+                // TODO extract supported Content format
+                // TODO extract object supported
+                // TODO extract available instances
+            }
         }
 
+        public Registration build() {
+            // Extract data from object links if wanted
+            if (extractData) {
+                extractDataFromObjectLinks();
+            }
+
+            // Create Registration
+            return new Registration(registrationId, endpoint, identity, lwM2mVersion, lifeTimeInSec, smsNumber,
+                    bindingMode, queueMode, objectLinks, rootPath, registrationDate, lastUpdate,
+                    additionalRegistrationAttributes, supportedObjects);
+        }
     }
 }

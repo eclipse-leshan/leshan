@@ -76,6 +76,7 @@ public class CoapRequestBuilderTest {
     private Registration newRegistration(String rootpath) throws UnknownHostException {
         Builder b = new Registration.Builder("regid", "endpoint",
                 Identity.unsecure(Inet4Address.getLoopbackAddress(), 12354));
+        b.extractDataFromObjectLink(true);
         if (rootpath != null) {
             Map<String, String> attr = new HashMap<>();
             attr.put("rt", "\"oma.lwm2m\"");
