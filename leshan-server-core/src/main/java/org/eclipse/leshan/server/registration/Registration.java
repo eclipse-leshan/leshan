@@ -62,9 +62,7 @@ public class Registration implements Serializable {
 
     private final Boolean queueMode; // since LWM2M 1.1
 
-    /**
-     * The LWM2M Client's unique end point name.
-     */
+    // The LWM2M Client's unique end point name.
     private final String endpoint;
 
     private final String id;
@@ -77,40 +75,42 @@ public class Registration implements Serializable {
 
     private final Map<String, String> additionalRegistrationAttributes;
 
-    /** The location where LWM2M objects are hosted on the device */
+    // The location where LWM2M objects are hosted on the device
     private final String rootPath;
 
     private final Date lastUpdate;
 
-    protected Registration(String id, String endpoint, Identity identity, Version lwM2mVersion, Long lifetimeInSec,
-            String smsNumber, EnumSet<BindingMode> bindingMode, Boolean queueMode, Link[] objectLinks, String rootPath,
-            Date registrationDate, Date lastUpdate, Map<String, String> additionalRegistrationAttributes,
-            Map<Integer, String> supportedObjects) {
+    protected Registration(Builder builder) {
 
-        Validate.notNull(id);
-        Validate.notEmpty(endpoint);
-        Validate.notNull(identity);
+        Validate.notNull(builder.registrationId);
+        Validate.notEmpty(builder.endpoint);
+        Validate.notNull(builder.identity);
 
-        this.id = id;
-        this.identity = identity;
-        this.endpoint = endpoint;
-        this.smsNumber = smsNumber;
+        // mandatory params
+        this.id = builder.registrationId;
+        this.identity = builder.identity;
+        this.endpoint = builder.endpoint;
 
-        this.objectLinks = objectLinks;
-        this.rootPath = rootPath == null ? "/" : rootPath;
-        this.supportedObjects = new AtomicReference<Map<Integer, String>>(supportedObjects);
-        this.lifeTimeInSec = lifetimeInSec == null ? DEFAULT_LIFETIME_IN_SEC : lifetimeInSec;
-        this.lwM2mVersion = lwM2mVersion == null ? Version.getDefault() : lwM2mVersion;
-        this.bindingMode = bindingMode == null ? EnumSet.of(BindingMode.U) : bindingMode;
-        this.queueMode = queueMode == null && this.lwM2mVersion.newerThan(Version.V1_0) ? Boolean.FALSE : queueMode;
-        this.registrationDate = registrationDate == null ? new Date() : registrationDate;
-        this.lastUpdate = lastUpdate == null ? new Date() : lastUpdate;
-        if (additionalRegistrationAttributes == null || additionalRegistrationAttributes.isEmpty()) {
+        // object links related params
+        this.objectLinks = builder.objectLinks;
+        this.rootPath = builder.rootPath == null ? "/" : builder.rootPath;
+        this.supportedObjects = new AtomicReference<Map<Integer, String>>(builder.supportedObjects);
+
+        // other params
+        this.lifeTimeInSec = builder.lifeTimeInSec == null ? DEFAULT_LIFETIME_IN_SEC : builder.lifeTimeInSec;
+        this.lwM2mVersion = builder.lwM2mVersion == null ? Version.getDefault() : builder.lwM2mVersion;
+        this.bindingMode = builder.bindingMode == null ? EnumSet.of(BindingMode.U) : builder.bindingMode;
+        this.queueMode = builder.queueMode == null && lwM2mVersion.newerThan(Version.V1_0) ? Boolean.FALSE
+                : builder.queueMode;
+        this.registrationDate = builder.registrationDate == null ? new Date() : builder.registrationDate;
+        this.lastUpdate = builder.lastUpdate == null ? new Date() : builder.lastUpdate;
+        this.smsNumber = builder.smsNumber;
+        if (builder.additionalRegistrationAttributes == null || builder.additionalRegistrationAttributes.isEmpty()) {
             this.additionalRegistrationAttributes = Collections.emptyMap();
         } else {
             // We create a new HashMap to have a real immutable map and to avoid "unmodifiableMap" encapsulation.
             this.additionalRegistrationAttributes = Collections
-                    .unmodifiableMap(new HashMap<>(additionalRegistrationAttributes));
+                    .unmodifiableMap(new HashMap<>(builder.additionalRegistrationAttributes));
         }
 
     }
@@ -580,9 +580,7 @@ public class Registration implements Serializable {
             }
 
             // Create Registration
-            return new Registration(registrationId, endpoint, identity, lwM2mVersion, lifeTimeInSec, smsNumber,
-                    bindingMode, queueMode, objectLinks, rootPath, registrationDate, lastUpdate,
-                    additionalRegistrationAttributes, supportedObjects);
+            return new Registration(this);
         }
     }
 }
