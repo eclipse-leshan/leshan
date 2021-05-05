@@ -28,10 +28,8 @@ import org.junit.Test;
 
 public class RegistrationTest {
 
-    String tto = "</>;rt=\"oma.lwm2m\";ct=100, </1/101>,</1/102>, </2/0>, </2/1> ;empty";
-
     @Test
-    public void test_supported_object_given_an_object_link_without_version() {
+    public void test_object_links_without_version_nor_rootpath() {
         Registration reg = given_a_registration_with_object_link_like("</1/0>,</3/0>");
 
         // Ensure supported objects are correct
@@ -42,7 +40,18 @@ public class RegistrationTest {
     }
 
     @Test
-    public void test_supported_object_given_an_object_link_with_rootpath() {
+    public void test_object_links_with_default_rootpath() {
+        Registration reg = given_a_registration_with_object_link_like("</>;rt=\"oma.lwm2m\", </1/0>,</3/0>");
+
+        // Ensure supported objects are correct
+        Map<Integer, String> supportedObject = reg.getSupportedObject();
+        assertEquals(2, supportedObject.size());
+        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
+        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(3));
+    }
+
+    @Test
+    public void test_object_links_with_rootpath() {
         Registration reg = given_a_registration_with_object_link_like("</root>;rt=\"oma.lwm2m\", </root/1/0>,</3/0>");
 
         // Ensure supported objects are correct
@@ -53,7 +62,7 @@ public class RegistrationTest {
     }
 
     @Test
-    public void test_supported_object_given_an_object_link_with_unquoted_rootpath() {
+    public void test_object_links_with_unquoted_rootpath() {
         Registration reg = given_a_registration_with_object_link_like("</root>;rt=oma.lwm2m, </root/1/0>,</3/0>");
 
         // Ensure supported objects are correct
@@ -64,7 +73,7 @@ public class RegistrationTest {
     }
 
     @Test
-    public void test_supported_object_given_an_object_link_with_regexp_rootpath() {
+    public void test_object_links_with_regexp_rootpath() {
         Registration reg = given_a_registration_with_object_link_like(
                 "</r(\\d+)oot>;rt=\"oma.lwm2m\", </r(\\d+)oot/1/0>,</3/0>");
 
@@ -76,7 +85,7 @@ public class RegistrationTest {
     }
 
     @Test
-    public void test_supported_object_given_an_object_link_with_version() {
+    public void test_object_links_with_version() {
         Registration reg = given_a_registration_with_object_link_like("</1/0>,</3>;ver=\"1.1\",</3/0>");
 
         // Ensure supported objects are correct
@@ -87,9 +96,20 @@ public class RegistrationTest {
     }
 
     @Test
-    public void test_supported_object_given_an_object_link_with_not_lwm2m_url() {
+    public void test_object_links_with_text_in_not_lwm2m_path() {
         Registration reg = given_a_registration_with_object_link_like(
-                "<text>,</1/text/0/in/path>,empty,</2/O/test/in/path>,</3/0>;ver=\"1.1\",<4/0/0/>");
+                "</root>;rt=\"oma.lwm2m\",<text>,</1/text/0/in/path>,empty,</2/O/test/in/path>,</root/3/0>;ver=\"1.1\",</root/4/0/0/>");
+
+        // Ensure supported objects are correct
+        Map<Integer, String> supportedObject = reg.getSupportedObject();
+        assertEquals(1, supportedObject.size());
+        assertEquals("1.1", supportedObject.get(3));
+    }
+
+    @Test
+    public void test_object_links_with_text_in_lwm2m_path() {
+        Registration reg = given_a_registration_with_object_link_like(
+                "<text>,</1/text/0/in/path>,empty,</2/O/test/in/path>,</3/0>;ver=\"1.1\",</4/0/0/>");
 
         // Ensure supported objects are correct
         Map<Integer, String> supportedObject = reg.getSupportedObject();
@@ -98,7 +118,7 @@ public class RegistrationTest {
     }
 
     private Registration given_a_registration_with_object_link_like(String objectLinks) {
-        Builder builder = new Registration.Builder("id", "endpoin",
+        Builder builder = new Registration.Builder("id", "endpoint",
                 Identity.unsecure(InetSocketAddress.createUnresolved("localhost", 0)));
 
         builder.objectLinks(Link.parse(objectLinks.getBytes()));
