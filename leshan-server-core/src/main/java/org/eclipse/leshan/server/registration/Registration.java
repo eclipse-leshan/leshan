@@ -27,14 +27,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.attributes.Attribute;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
@@ -73,10 +71,6 @@ public class Registration {
 
     private final Link[] objectLinks;
 
-    // Lazy Loaded map of supported object (object id => version)
-    // built from objectLinks
-    private final AtomicReference<Map<Integer, String>> supportedObjects;
-
     private final Map<String, String> additionalRegistrationAttributes;
 
     // The location where LWM2M objects are hosted on the device
@@ -84,6 +78,9 @@ public class Registration {
 
     // All ContentFormat supported by the client
     private final Set<ContentFormat> supportedContentFormats;
+
+    // All supported object (object id => version)
+    private final Map<Integer, String> supportedObjects;
 
     private final Date lastUpdate;
 
@@ -102,7 +99,7 @@ public class Registration {
         objectLinks = builder.objectLinks;
         rootPath = builder.rootPath;
         supportedContentFormats = builder.supportedContentFormats;
-        supportedObjects = new AtomicReference<Map<Integer, String>>(builder.supportedObjects);
+        supportedObjects = builder.supportedObjects;
 
         // other params
         lifeTimeInSec = builder.lifeTimeInSec;
@@ -320,12 +317,7 @@ public class Registration {
      * @return a map from {@code objectId} {@literal =>} {@code supportedVersion} for each supported objects. supported.
      */
     public Map<Integer, String> getSupportedObject() {
-        Map<Integer, String> objects = supportedObjects.get();
-        if (objects != null)
-            return objects;
-
-        supportedObjects.compareAndSet(null, Collections.unmodifiableMap(getSupportedObject(rootPath, objectLinks)));
-        return supportedObjects.get();
+        return supportedObjects;
     }
 
     @Override
@@ -356,6 +348,7 @@ public class Registration {
         result = prime * result + ((rootPath == null) ? 0 : rootPath.hashCode());
         result = prime * result + ((smsNumber == null) ? 0 : smsNumber.hashCode());
         result = prime * result + ((supportedContentFormats == null) ? 0 : supportedContentFormats.hashCode());
+        result = prime * result + ((supportedObjects == null) ? 0 : supportedObjects.hashCode());
         return result;
     }
 
@@ -432,53 +425,12 @@ public class Registration {
                 return false;
         } else if (!supportedContentFormats.equals(other.supportedContentFormats))
             return false;
+        if (supportedObjects == null) {
+            if (other.supportedObjects != null)
+                return false;
+        } else if (!supportedObjects.equals(other.supportedObjects))
+            return false;
         return true;
-    }
-
-    /**
-     * Build a Map {@code objectId} {@literal =>} {@code supportedVersion} from root path and registration object links.
-     * 
-     * @param rootPath the rootpath of LWM2M tree.
-     * @param objectLinks the registraiton object links payload.
-     * @return a Map {@code objectId} {@literal =>} {@code supportedVersion}.
-     */
-    public static Map<Integer, String> getSupportedObject(String rootPath, Link[] objectLinks) {
-        Map<Integer, String> objects = new HashMap<>();
-        for (Link link : objectLinks) {
-            if (link != null) {
-                Pattern p = Pattern.compile("^\\Q" + rootPath + "\\E(\\d+)(?:/\\d+)*$");
-                Matcher m = p.matcher(link.getUrl());
-                if (m.matches()) {
-                    try {
-                        // extract object id and version
-                        int objectId = Integer.parseInt(m.group(1));
-                        String version = link.getAttributes().get(Attribute.OBJECT_VERSION);
-                        // un-quote version (see https://github.com/eclipse/leshan/issues/732)
-                        version = Link.unquote(version);
-                        String currentVersion = objects.get(objectId);
-
-                        // store it in map
-                        if (currentVersion == null) {
-                            // we never find version for this object add it
-                            if (version != null) {
-                                objects.put(objectId, version);
-                            } else {
-                                objects.put(objectId, ObjectModel.DEFAULT_VERSION);
-                            }
-                        } else {
-                            // if version is already set, we override it only if new version is not DEFAULT_VERSION
-                            if (version != null && !version.equals(ObjectModel.DEFAULT_VERSION)) {
-                                objects.put(objectId, version);
-                            }
-                        }
-                    } catch (NumberFormatException e) {
-                        // This should not happened except maybe if the number in url is too long...
-                        // In this case we just ignore it because this is not an object id.
-                    }
-                }
-            }
-        }
-        return objects;
     }
 
     public static class Builder {
@@ -575,6 +527,11 @@ public class Registration {
             return this;
         }
 
+        public Builder supportedObjects(Map<Integer, String> supportedObjects) {
+            this.supportedObjects = supportedObjects;
+            return this;
+        }
+
         public Builder additionalRegistrationAttributes(Map<String, String> additionalRegistrationAttributes) {
             this.additionalRegistrationAttributes = additionalRegistrationAttributes;
             return this;
@@ -597,8 +554,8 @@ public class Registration {
                 }
 
                 // Extract data from link object
+                supportedObjects = new HashMap<>();
                 for (Link link : objectLinks) {
-                    // TODO extract object supported
                     // TODO extract available instances
 
                     if (link != null) {
@@ -607,6 +564,14 @@ public class Registration {
                             String ctValue = link.getAttributes().get("ct");
                             if (ctValue != null) {
                                 supportedContentFormats = extractContentFormat(ctValue);
+                            }
+                        } else {
+                            LwM2mPath path = LwM2mPath.parse(link.getUrl(), rootPath);
+                            if (path != null) {
+                                // add supported objects
+                                if (path.isObject() || path.isObjectInstance()) {
+                                    addSupportedObject(link, path);
+                                }
                             }
                         }
                     }
@@ -643,6 +608,30 @@ public class Registration {
             return supportedContentFormats;
         }
 
+        private void addSupportedObject(Link link, LwM2mPath path) {
+            // extract object id and version
+            int objectId = path.getObjectId();
+            String version = link.getAttributes().get(Attribute.OBJECT_VERSION);
+            // un-quote version (see https://github.com/eclipse/leshan/issues/732)
+            version = Link.unquote(version);
+            String currentVersion = supportedObjects.get(objectId);
+
+            // store it in map
+            if (currentVersion == null) {
+                // we never find version for this object add it
+                if (version != null) {
+                    supportedObjects.put(objectId, version);
+                } else {
+                    supportedObjects.put(objectId, ObjectModel.DEFAULT_VERSION);
+                }
+            } else {
+                // if version is already set, we override it only if new version is not DEFAULT_VERSION
+                if (version != null && !version.equals(ObjectModel.DEFAULT_VERSION)) {
+                    supportedObjects.put(objectId, version);
+                }
+            }
+        }
+
         public Registration build() {
             // Define Default value
             rootPath = rootPath == null ? "/" : rootPath;
@@ -664,6 +653,11 @@ public class Registration {
                 supportedContentFormats = Collections.emptySet();
             } else {
                 supportedContentFormats = Collections.unmodifiableSet(new HashSet<>(supportedContentFormats));
+            }
+            if (supportedObjects == null || supportedObjects.isEmpty()) {
+                supportedObjects = Collections.emptyMap();
+            } else {
+                supportedObjects = Collections.unmodifiableMap(new HashMap<>(supportedObjects));
             }
             if (additionalRegistrationAttributes == null || additionalRegistrationAttributes.isEmpty()) {
                 additionalRegistrationAttributes = Collections.emptyMap();

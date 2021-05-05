@@ -157,18 +157,10 @@ public class RegistrationTest {
         assertEquals("1.1", supportedObject.get(3));
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void test_object_links_with_text_in_lwm2m_path() {
-        Registration reg = given_a_registration_with_object_link_like(
+        given_a_registration_with_object_link_like(
                 "<text>,</1/text/0/in/path>,empty,</2/O/test/in/path>,</3/0>;ver=\"1.1\",</4/0/0/>");
-
-        // check root path
-        assertEquals("/", reg.getRootPath());
-
-        // Ensure supported objects are correct
-        Map<Integer, String> supportedObject = reg.getSupportedObject();
-        assertEquals(1, supportedObject.size());
-        assertEquals("1.1", supportedObject.get(3));
     }
 
     private Registration given_a_registration_with_object_link_like(String objectLinks) {

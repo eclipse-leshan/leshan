@@ -368,4 +368,29 @@ public class LwM2mPath {
         return true;
     }
 
+    /**
+     * Parse a string containing a full LWM2M path containing rootpath (rt="oma.lwm2m").
+     * <p>
+     * E.g. : fullpath="/myrootpath/1/0 and rootpath="/myrootpat/" will return <code>new LwM2mPath(1,0)</code>
+     * 
+     * @param fullpath the path to parse.
+     * @param lwm2mRootpath the expected rootpath. <code>null</code> is considered as "/"
+     * @return A valid {@link LwM2mPath} or null it does not start by lwm2mRootPath
+     * 
+     * @exception NumberFormatException if path contains not Numeric value
+     * @exception LwM2mNodeException if path is invalid (e.g. too big number in path)
+     * @exception IllegalArgumentException if path length is invalid
+     */
+    public static LwM2mPath parse(String fullpath, String lwm2mRootpath)
+            throws NumberFormatException, LwM2mNodeException, IllegalArgumentException {
+        if (lwm2mRootpath == null) {
+            return new LwM2mPath(fullpath);
+        }
+
+        if (!fullpath.startsWith(lwm2mRootpath))
+            return null;
+        String path = fullpath.substring(lwm2mRootpath.length());
+
+        return new LwM2mPath(path);
+    }
 }

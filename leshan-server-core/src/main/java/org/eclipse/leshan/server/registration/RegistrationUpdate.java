@@ -88,7 +88,8 @@ public class RegistrationUpdate {
                 .bindingMode(bindingMode).queueMode(registration.getQueueMode()).objectLinks(linkObject)
                 .registrationDate(registration.getRegistrationDate()).lastUpdate(lastUpdate)
                 .additionalRegistrationAttributes(additionalAttributes).rootPath(registration.getRootPath())
-                .supportedContentFormats(registration.getSupportedContentFormats());
+                .supportedContentFormats(registration.getSupportedContentFormats())
+                .supportedObjects(registration.getSupportedObject());
 
         return builder.build();
 

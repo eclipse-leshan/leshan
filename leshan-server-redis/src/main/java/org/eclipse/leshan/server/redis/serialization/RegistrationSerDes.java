@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.leshan.core.Link;
@@ -30,6 +31,7 @@ import org.eclipse.leshan.server.registration.Registration;
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonObject.Member;
 import com.eclipsesource.json.JsonValue;
 
 /**
@@ -83,6 +85,13 @@ public class RegistrationSerDes {
             ct.add(contentFormat.getCode());
         }
         o.add("ct", ct);
+
+        // handle supported object
+        JsonObject so = Json.object();
+        for (Entry<Integer, String> supportedObject : r.getSupportedObject().entrySet()) {
+            so.add(supportedObject.getKey().toString(), supportedObject.getValue());
+        }
+        o.add("suppObjs", so);
         return o;
     }
 
@@ -156,6 +165,19 @@ public class RegistrationSerDes {
             }
             b.supportedContentFormats(supportedContentFormat);
         }
+        // parse supported object
+        JsonValue so = jObj.get("suppObjs");
+        if (so == null) {
+            // Backward compatibility : if suppObjs doesn't exist we extract supported object from object link
+            b.extractDataFromObjectLink(true);
+        } else {
+            Map<Integer, String> supportedObject = new HashMap<>();
+            for (Member member : so.asObject()) {
+                supportedObject.put(Integer.parseInt(member.getName()), member.getValue().asString());
+            }
+            b.supportedObjects(supportedObject);
+        }
+
         return b.build();
     }
 
