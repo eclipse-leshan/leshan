@@ -32,6 +32,9 @@ public class RegistrationTest {
     public void test_object_links_without_version_nor_rootpath() {
         Registration reg = given_a_registration_with_object_link_like("</1/0>,</3/0>");
 
+        // check root path
+        assertEquals("/", reg.getRootPath());
+
         // Ensure supported objects are correct
         Map<Integer, String> supportedObject = reg.getSupportedObject();
         assertEquals(2, supportedObject.size());
@@ -42,6 +45,9 @@ public class RegistrationTest {
     @Test
     public void test_object_links_with_default_rootpath() {
         Registration reg = given_a_registration_with_object_link_like("</>;rt=\"oma.lwm2m\", </1/0>,</3/0>");
+
+        // check root path
+        assertEquals("/", reg.getRootPath());
 
         // Ensure supported objects are correct
         Map<Integer, String> supportedObject = reg.getSupportedObject();
@@ -54,6 +60,9 @@ public class RegistrationTest {
     public void test_object_links_with_rootpath() {
         Registration reg = given_a_registration_with_object_link_like("</root>;rt=\"oma.lwm2m\", </root/1/0>,</3/0>");
 
+        // check root path
+        assertEquals("/root/", reg.getRootPath());
+
         // Ensure supported objects are correct
         Map<Integer, String> supportedObject = reg.getSupportedObject();
         assertEquals(1, supportedObject.size());
@@ -64,6 +73,9 @@ public class RegistrationTest {
     @Test
     public void test_object_links_with_unquoted_rootpath() {
         Registration reg = given_a_registration_with_object_link_like("</root>;rt=oma.lwm2m, </root/1/0>,</3/0>");
+
+        // check root path
+        assertEquals("/root/", reg.getRootPath());
 
         // Ensure supported objects are correct
         Map<Integer, String> supportedObject = reg.getSupportedObject();
@@ -77,6 +89,9 @@ public class RegistrationTest {
         Registration reg = given_a_registration_with_object_link_like(
                 "</r(\\d+)oot>;rt=\"oma.lwm2m\", </r(\\d+)oot/1/0>,</3/0>");
 
+        // check root path
+        assertEquals("/r(\\d+)oot/", reg.getRootPath());
+
         // Ensure supported objects are correct
         Map<Integer, String> supportedObject = reg.getSupportedObject();
         assertEquals(1, supportedObject.size());
@@ -87,6 +102,9 @@ public class RegistrationTest {
     @Test
     public void test_object_links_with_version() {
         Registration reg = given_a_registration_with_object_link_like("</1/0>,</3>;ver=\"1.1\",</3/0>");
+
+        // check root path
+        assertEquals("/", reg.getRootPath());
 
         // Ensure supported objects are correct
         Map<Integer, String> supportedObject = reg.getSupportedObject();
@@ -100,6 +118,9 @@ public class RegistrationTest {
         Registration reg = given_a_registration_with_object_link_like(
                 "</root>;rt=\"oma.lwm2m\",<text>,</1/text/0/in/path>,empty,</2/O/test/in/path>,</root/3/0>;ver=\"1.1\",</root/4/0/0/>");
 
+        // check root path
+        assertEquals("/root/", reg.getRootPath());
+
         // Ensure supported objects are correct
         Map<Integer, String> supportedObject = reg.getSupportedObject();
         assertEquals(1, supportedObject.size());
@@ -110,6 +131,9 @@ public class RegistrationTest {
     public void test_object_links_with_text_in_lwm2m_path() {
         Registration reg = given_a_registration_with_object_link_like(
                 "<text>,</1/text/0/in/path>,empty,</2/O/test/in/path>,</3/0>;ver=\"1.1\",</4/0/0/>");
+
+        // check root path
+        assertEquals("/", reg.getRootPath());
 
         // Ensure supported objects are correct
         Map<Integer, String> supportedObject = reg.getSupportedObject();
