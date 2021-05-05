@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.LwM2m.Version;
@@ -82,6 +83,9 @@ public class Registration {
     // All supported object (object id => version)
     private final Map<Integer, String> supportedObjects;
 
+    // All available instances
+    private final Set<LwM2mPath> availableInstances;
+
     private final Date lastUpdate;
 
     protected Registration(Builder builder) {
@@ -100,6 +104,7 @@ public class Registration {
         rootPath = builder.rootPath;
         supportedContentFormats = builder.supportedContentFormats;
         supportedObjects = builder.supportedObjects;
+        availableInstances = builder.availableInstances;
 
         // other params
         lifeTimeInSec = builder.lifeTimeInSec;
@@ -247,6 +252,13 @@ public class Registration {
     }
 
     /**
+     * @return all available object instance by the client
+     */
+    public Set<LwM2mPath> getAvailableInstances() {
+        return availableInstances;
+    }
+
+    /**
      * Gets the unique name the client has registered with.
      * 
      * @return the name
@@ -323,10 +335,10 @@ public class Registration {
     @Override
     public String toString() {
         return String.format(
-                "Registration [registrationDate=%s, identity=%s, lifeTimeInSec=%s, smsNumber=%s, lwM2mVersion=%s, bindingMode=%s, queueMode=%s, endpoint=%s, id=%s, objectLinks=%s, supportedObjects=%s, additionalRegistrationAttributes=%s, rootPath=%s, supportedContentFormats=%s, lastUpdate=%s]",
+                "Registration [registrationDate=%s, identity=%s, lifeTimeInSec=%s, smsNumber=%s, lwM2mVersion=%s, bindingMode=%s, queueMode=%s, endpoint=%s, id=%s, objectLinks=%s, additionalRegistrationAttributes=%s, rootPath=%s, supportedContentFormats=%s, supportedObjects=%s, availableInstances=%s, lastUpdate=%s]",
                 registrationDate, identity, lifeTimeInSec, smsNumber, lwM2mVersion, bindingMode, queueMode, endpoint,
-                id, Arrays.toString(objectLinks), supportedObjects, additionalRegistrationAttributes, rootPath,
-                supportedContentFormats, lastUpdate);
+                id, Arrays.toString(objectLinks), additionalRegistrationAttributes, rootPath, supportedContentFormats,
+                supportedObjects, availableInstances, lastUpdate);
     }
 
     @Override
@@ -335,6 +347,7 @@ public class Registration {
         int result = 1;
         result = prime * result
                 + ((additionalRegistrationAttributes == null) ? 0 : additionalRegistrationAttributes.hashCode());
+        result = prime * result + ((availableInstances == null) ? 0 : availableInstances.hashCode());
         result = prime * result + ((bindingMode == null) ? 0 : bindingMode.hashCode());
         result = prime * result + ((endpoint == null) ? 0 : endpoint.hashCode());
         result = prime * result + ((id == null) ? 0 : id.hashCode());
@@ -365,6 +378,11 @@ public class Registration {
             if (other.additionalRegistrationAttributes != null)
                 return false;
         } else if (!additionalRegistrationAttributes.equals(other.additionalRegistrationAttributes))
+            return false;
+        if (availableInstances == null) {
+            if (other.availableInstances != null)
+                return false;
+        } else if (!availableInstances.equals(other.availableInstances))
             return false;
         if (bindingMode == null) {
             if (other.bindingMode != null)
@@ -449,6 +467,7 @@ public class Registration {
         private String rootPath;
         private Set<ContentFormat> supportedContentFormats;
         private Map<Integer, String> supportedObjects;
+        private Set<LwM2mPath> availableInstances;
         private Map<String, String> additionalRegistrationAttributes;
 
         // builder setting
@@ -532,6 +551,11 @@ public class Registration {
             return this;
         }
 
+        public Builder availableInstances(Set<LwM2mPath> availableInstances) {
+            this.availableInstances = availableInstances;
+            return this;
+        }
+
         public Builder additionalRegistrationAttributes(Map<String, String> additionalRegistrationAttributes) {
             this.additionalRegistrationAttributes = additionalRegistrationAttributes;
             return this;
@@ -555,9 +579,8 @@ public class Registration {
 
                 // Extract data from link object
                 supportedObjects = new HashMap<>();
+                availableInstances = new HashSet<>();
                 for (Link link : objectLinks) {
-                    // TODO extract available instances
-
                     if (link != null) {
                         // search supported Content format in root link
                         if (rootPath.equals(link.getUrl())) {
@@ -569,8 +592,11 @@ public class Registration {
                             LwM2mPath path = LwM2mPath.parse(link.getUrl(), rootPath);
                             if (path != null) {
                                 // add supported objects
-                                if (path.isObject() || path.isObjectInstance()) {
+                                if (path.isObject()) {
                                     addSupportedObject(link, path);
+                                } else if (path.isObjectInstance()) {
+                                    addSupportedObject(link, path);
+                                    availableInstances.add(path);
                                 }
                             }
                         }
@@ -658,6 +684,11 @@ public class Registration {
                 supportedObjects = Collections.emptyMap();
             } else {
                 supportedObjects = Collections.unmodifiableMap(new HashMap<>(supportedObjects));
+            }
+            if (availableInstances == null || availableInstances.isEmpty()) {
+                availableInstances = Collections.emptySet();
+            } else {
+                availableInstances = Collections.unmodifiableSet(new TreeSet<>(availableInstances));
             }
             if (additionalRegistrationAttributes == null || additionalRegistrationAttributes.isEmpty()) {
                 additionalRegistrationAttributes = Collections.emptyMap();

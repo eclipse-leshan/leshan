@@ -89,7 +89,8 @@ public class RegistrationUpdate {
                 .registrationDate(registration.getRegistrationDate()).lastUpdate(lastUpdate)
                 .additionalRegistrationAttributes(additionalAttributes).rootPath(registration.getRootPath())
                 .supportedContentFormats(registration.getSupportedContentFormats())
-                .supportedObjects(registration.getSupportedObject());
+                .supportedObjects(registration.getSupportedObject())
+                .availableInstances(registration.getAvailableInstances());
 
         return builder.build();
 
