@@ -20,7 +20,7 @@ import org.eclipse.leshan.core.util.Validate;
 /**
  * A path pointing to a LwM2M node (root, object, object instance, resource or resource instance).
  */
-public class LwM2mPath {
+public class LwM2mPath implements Comparable<LwM2mPath> {
 
     public static final byte ROOT_DEPTH = 1;
     public static final byte OBJECT_DEPTH = 2;
@@ -366,6 +366,35 @@ public class LwM2mPath {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public int compareTo(LwM2mPath o) {
+        int res = compareInteger(this.objectId, o.objectId);
+        if (res != 0 || this.objectId == null)
+            return res;
+
+        res = compareInteger(this.objectInstanceId, o.objectInstanceId);
+        if (res != 0 || this.objectInstanceId == null)
+            return res;
+
+        res = compareInteger(this.resourceId, o.resourceId);
+        if (res != 0 || this.resourceId == null)
+            return res;
+
+        return compareInteger(this.resourceInstanceId, o.resourceInstanceId);
+    }
+
+    private int compareInteger(Integer i1, Integer i2) {
+        if (i1 == i2) {
+            return 0;
+        } else if (i1 == null) {
+            return -1;
+        } else if (i2 == null) {
+            return 1;
+        } else {
+            return i1.compareTo(i2);
+        }
     }
 
     /**
