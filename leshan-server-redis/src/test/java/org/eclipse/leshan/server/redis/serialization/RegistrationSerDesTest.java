@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.registration.Registration;
 import org.junit.Test;
@@ -40,7 +41,8 @@ public class RegistrationSerDesTest {
         objs[1] = new Link("/0/2");
 
         Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
-                Identity.unsecure(Inet4Address.getLoopbackAddress(), 1)).objectLinks(objs).rootPath("/");
+                Identity.unsecure(Inet4Address.getLoopbackAddress(), 1)).objectLinks(objs).rootPath("/")
+                        .supportedContentFormats(ContentFormat.TLV, ContentFormat.TEXT);
 
         builder.registrationDate(new Date(100L));
         builder.lastUpdate(new Date(101L));

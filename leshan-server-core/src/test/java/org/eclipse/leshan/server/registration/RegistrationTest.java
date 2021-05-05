@@ -18,10 +18,13 @@ package org.eclipse.leshan.server.registration;
 import static org.junit.Assert.*;
 
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.registration.Registration.Builder;
 import org.junit.Test;
@@ -43,8 +46,8 @@ public class RegistrationTest {
     }
 
     @Test
-    public void test_object_links_with_default_rootpath() {
-        Registration reg = given_a_registration_with_object_link_like("</>;rt=\"oma.lwm2m\", </1/0>,</3/0>");
+    public void test_object_links_with_ct_but_with_rt() {
+        Registration reg = given_a_registration_with_object_link_like("</>;ct=0 42 11543,</1/0>,</3/0>");
 
         // check root path
         assertEquals("/", reg.getRootPath());
@@ -54,6 +57,33 @@ public class RegistrationTest {
         assertEquals(2, supportedObject.size());
         assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
         assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(3));
+
+        // Check Supported Content format
+        Set<ContentFormat> supportedContentFormats = reg.getSupportedContentFormats();
+        assertEquals(4, supportedContentFormats.size()); // 3 + 1 mandatory TLV content format for LWM2M v1.0
+        assertTrue(supportedContentFormats.containsAll(
+                Arrays.asList(ContentFormat.TLV, ContentFormat.TEXT, ContentFormat.OPAQUE, ContentFormat.JSON)));
+    }
+
+    @Test
+    public void test_object_links_with_default_rootpath() {
+        Registration reg = given_a_registration_with_object_link_like(
+                "</>;rt=\"oma.lwm2m\";ct=0 42 11543,</1/0>,</3/0>");
+
+        // check root path
+        assertEquals("/", reg.getRootPath());
+
+        // Ensure supported objects are correct
+        Map<Integer, String> supportedObject = reg.getSupportedObject();
+        assertEquals(2, supportedObject.size());
+        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
+        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(3));
+
+        // Check Supported Content format
+        Set<ContentFormat> supportedContentFormats = reg.getSupportedContentFormats();
+        assertEquals(4, supportedContentFormats.size()); // 3 + 1 mandatory TLV content format for LWM2M v1.0
+        assertTrue(supportedContentFormats.containsAll(
+                Arrays.asList(ContentFormat.TLV, ContentFormat.TEXT, ContentFormat.OPAQUE, ContentFormat.JSON)));
     }
 
     @Test
