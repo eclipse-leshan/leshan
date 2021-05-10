@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.registration.Registration.Builder;
@@ -43,6 +44,11 @@ public class RegistrationTest {
         assertEquals(2, supportedObject.size());
         assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
         assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(3));
+
+        // ensure available instances are correct
+        Set<LwM2mPath> availableInstances = reg.getAvailableInstances();
+        assertEquals(2, availableInstances.size());
+        assertTrue(availableInstances.containsAll(Arrays.asList(new LwM2mPath(1, 0), new LwM2mPath(3, 0))));
     }
 
     @Test
@@ -63,6 +69,11 @@ public class RegistrationTest {
         assertEquals(4, supportedContentFormats.size()); // 3 + 1 mandatory TLV content format for LWM2M v1.0
         assertTrue(supportedContentFormats.containsAll(
                 Arrays.asList(ContentFormat.TLV, ContentFormat.TEXT, ContentFormat.OPAQUE, ContentFormat.JSON)));
+
+        // ensure available instances are correct
+        Set<LwM2mPath> availableInstances = reg.getAvailableInstances();
+        assertEquals(2, availableInstances.size());
+        assertTrue(availableInstances.containsAll(Arrays.asList(new LwM2mPath(1, 0), new LwM2mPath(3, 0))));
     }
 
     @Test
@@ -84,6 +95,11 @@ public class RegistrationTest {
         assertEquals(4, supportedContentFormats.size()); // 3 + 1 mandatory TLV content format for LWM2M v1.0
         assertTrue(supportedContentFormats.containsAll(
                 Arrays.asList(ContentFormat.TLV, ContentFormat.TEXT, ContentFormat.OPAQUE, ContentFormat.JSON)));
+
+        // ensure available instances are correct
+        Set<LwM2mPath> availableInstances = reg.getAvailableInstances();
+        assertEquals(2, availableInstances.size());
+        assertTrue(availableInstances.containsAll(Arrays.asList(new LwM2mPath(1, 0), new LwM2mPath(3, 0))));
     }
 
     @Test
@@ -98,6 +114,11 @@ public class RegistrationTest {
         assertEquals(1, supportedObject.size());
         assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
         assertNull(supportedObject.get(3));
+
+        // ensure available instances are correct
+        Set<LwM2mPath> availableInstances = reg.getAvailableInstances();
+        assertEquals(1, availableInstances.size());
+        assertTrue(availableInstances.containsAll(Arrays.asList(new LwM2mPath(1, 0))));
     }
 
     @Test
@@ -112,6 +133,11 @@ public class RegistrationTest {
         assertEquals(1, supportedObject.size());
         assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
         assertNull(supportedObject.get(3));
+
+        // ensure available instances are correct
+        Set<LwM2mPath> availableInstances = reg.getAvailableInstances();
+        assertEquals(1, availableInstances.size());
+        assertTrue(availableInstances.containsAll(Arrays.asList(new LwM2mPath(1, 0))));
     }
 
     @Test
@@ -127,6 +153,11 @@ public class RegistrationTest {
         assertEquals(1, supportedObject.size());
         assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
         assertNull(supportedObject.get(3));
+
+        // ensure available instances are correct
+        Set<LwM2mPath> availableInstances = reg.getAvailableInstances();
+        assertEquals(1, availableInstances.size());
+        assertTrue(availableInstances.containsAll(Arrays.asList(new LwM2mPath(1, 0))));
     }
 
     @Test
@@ -141,6 +172,11 @@ public class RegistrationTest {
         assertEquals(2, supportedObject.size());
         assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
         assertEquals("1.1", supportedObject.get(3));
+
+        // ensure available instances are correct
+        Set<LwM2mPath> availableInstances = reg.getAvailableInstances();
+        assertEquals(2, availableInstances.size());
+        assertTrue(availableInstances.containsAll(Arrays.asList(new LwM2mPath(1, 0), new LwM2mPath(3, 0))));
     }
 
     @Test
@@ -155,6 +191,11 @@ public class RegistrationTest {
         Map<Integer, String> supportedObject = reg.getSupportedObject();
         assertEquals(1, supportedObject.size());
         assertEquals("1.1", supportedObject.get(3));
+
+        // ensure available instances are correct
+        Set<LwM2mPath> availableInstances = reg.getAvailableInstances();
+        assertEquals(1, availableInstances.size());
+        assertTrue(availableInstances.containsAll(Arrays.asList(new LwM2mPath(3, 0))));
     }
 
     @Test(expected = IllegalArgumentException.class)
