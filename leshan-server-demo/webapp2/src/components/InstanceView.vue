@@ -1,6 +1,16 @@
 <template>
   <div>
-    <h4 class="pa-1" v-if="showTitle">Instance {{ instanceId }} :</h4>
+    <h4 class="pa-1">
+      Instance {{ instanceId }} :
+      <instance-control
+        :objectdef="object"
+        :endpoint="endpoint"
+        :id="instanceId"
+        :path="instancePath"
+        @input="handleNewValue"
+      />
+    </h4>
+
     <v-expansion-panels
       accordion
       multiple
@@ -36,7 +46,7 @@
                 align-self="center"
                 class="pa-0 "
                 :class="{
-                 'text--disabled': values[resource.path]
+                  'text--disabled': values[resource.path]
                     ? values[resource.path].supposed
                     : false,
                 }"
@@ -55,32 +65,41 @@
   </div>
 </template>
 <script>
+import InstanceControl from "./InstanceControl.vue";
 import ResourceControl from "./ResourceControl.vue";
 export default {
-  components: { ResourceControl },
+  components: { ResourceControl, InstanceControl },
   props: {
     object: Object,
     instanceId: String,
     endpoint: String,
     showTitle: Boolean,
-    data: Object
+    value: Object,
   },
   data() {
     return {
-      values: this.data,
       expanded: {},
     };
   },
   computed: {
+    values() {
+      return this.value;
+    },
     resources() {
       return this.object.resourcedefs.map((r) => {
-        return { path: this.path(r.id), def: r };
+        return { path: this.resourcePath(r.id), def: r };
       });
+    },
+    instancePath() {
+      return `/${this.object.id}/${this.instanceId}`;
     },
   },
   methods: {
-    path(resourceId) {
+    resourcePath(resourceId) {
       return `/${this.object.id}/${this.instanceId}/${resourceId}`;
+    },
+    handleNewValue(vals) {
+      this.$emit("input", Object.assign({}, this.value, vals));
     },
   },
 };
