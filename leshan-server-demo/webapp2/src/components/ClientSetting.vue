@@ -18,21 +18,22 @@
       <v-select
         single-line
         dense
-        prefix="Format :"
+        prefix="Single Value :"
         hide-details
         :items="singleFormatList"
         v-model="singleformat"
       ></v-select>
     </div>
-    <!-- TODO uncomment when we will support multi node write or read -->
-    <!--v-select
-      single-line
-      dense
-      hide-details
-      prefix="Multi :"
-      :items="multiFormatList"
-      v-model="multiformat"
-    ></v-select-->
+    <div title="Content Format used to send request handling multiple values">
+      <v-select
+        single-line
+        dense
+        hide-details
+        prefix="Multi Value :"
+        :items="multiFormatList"
+        v-model="multiformat"
+      ></v-select>
+    </div>
   </div>
 </template>
 <script>
@@ -57,15 +58,13 @@ export default {
         "SENML_CBOR",
         "JSON",
       ],
-      // TODO uncomment when we will support multi node write or read
-      //multiFormatList: ["TLV", "SENML_JSON", "SENML_CBOR", "JSON"],
+      multiFormatList: ["TLV", "SENML_JSON", "SENML_CBOR", "JSON"],
     };
   },
   computed: {
     timeout: preference("timeout", { defaultValue: 5 }),
     singleformat: preference("singleformat", { defaultValue: "TLV" }),
-    // TODO uncomment when we will support multi node write or read
-    //multiformat: preference("multiformat", { defaultValue: "TLV" }),
+    multiformat: preference("multiformat", { defaultValue: "TLV" }),
   },
   methods: {
     openTimeoutHelps() {
