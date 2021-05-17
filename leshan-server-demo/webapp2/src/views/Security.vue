@@ -99,7 +99,6 @@ export default {
             return this.adaptToUI(c);
           }))
       )
-      .catch((error) => console.log(error));
   },
 
   methods: {
@@ -157,13 +156,6 @@ export default {
         .then(() => {
           this.securityInfos.push(cred);
           this.dialogOpened = false;
-        })
-        .catch((error) => {
-          console.log(error);
-          this.$dialog.message.error(error.response ? error.response.data : error.toString(), {
-            position: "bottom",
-            timeout: 5000,
-          });
         });
     },
 
@@ -180,13 +172,6 @@ export default {
             s.endpoint == sec.endpoint ? sec : s
           );
           this.dialogOpened = false;
-        })
-        .catch((error) => {
-          console.log(error);
-          this.$dialog.message.error(error.response ? error.response.data : error.toString(), {
-            position: "bottom",
-            timeout: 5000,
-          });
         });
     },
 
@@ -198,13 +183,6 @@ export default {
         )
         .then(() => {
           this.securityInfos.splice(this.indexToRemove, 1);
-        })
-        .catch((error) => {
-          console.log(error);
-          this.$dialog.message.error(error.response ? error.response.data : error.toString(), {
-            position: "bottom",
-            timeout: 5000,
-          });
         });
     },
   },

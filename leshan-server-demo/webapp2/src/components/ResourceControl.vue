@@ -81,10 +81,8 @@ export default {
               supposed: false,
             });
         })
-        .catch((error) => {
-          console.log(error);
+        .catch(() => {
           requestButton.resetState();
-          alert(error);
         });
     },
     openWriteDialog() {
@@ -99,10 +97,8 @@ export default {
           if (response.data.success)
             this.$emit("input", { val: value, supposed: true });
         })
-        .catch((error) => {
-          console.log(error);
+        .catch(() => {
           requestButton.resetState();
-          alert(error);
         });
     },
     exec(requestButton) {
@@ -111,10 +107,8 @@ export default {
         .then((response) => {
           this.updateState(response.data, requestButton);
         })
-        .catch((error) => {
-          console.log(error);
+        .catch(() => {
           requestButton.resetState();
-          alert(error);
         });
     },
   },

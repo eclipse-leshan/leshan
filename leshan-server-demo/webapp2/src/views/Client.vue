@@ -55,7 +55,6 @@ export default {
           "api/objectspecs/" + encodeURIComponent(this.$route.params.endpoint)
         )
         .then((response) => (this.objects = response.data))
-        .catch((error) => console.log(error));
     },
   },
   computed: {
@@ -114,7 +113,6 @@ export default {
     this.axios
       .get("api/clients/" + encodeURIComponent(this.$route.params.endpoint))
       .then((response) => (this.registration = response.data))
-      .catch((error) => console.log(error));
 
     // get models for this endpoint
     this.updateModels();

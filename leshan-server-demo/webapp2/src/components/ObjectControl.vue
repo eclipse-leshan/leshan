@@ -70,10 +70,8 @@ export default {
         .then((response) => {
           this.updateState(response.data, requestButton);
         })
-        .catch((error) => {
-          console.log(error);
+        .catch(() => {
           requestButton.resetState();
-          alert(error);
         });
     },
   },
