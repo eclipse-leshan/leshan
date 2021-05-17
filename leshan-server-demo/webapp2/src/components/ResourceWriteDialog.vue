@@ -33,6 +33,9 @@
         <v-btn text @click="write">
           Write
         </v-btn>
+        <v-btn text @click="show = false">
+          Cancel
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

@@ -30,6 +30,9 @@
         <v-btn text @click="replace">
           Replace
         </v-btn>
+        <v-btn text @click="show = false">
+          Cancel
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -41,7 +44,7 @@ export default {
     value: Boolean,
     objectdef: Object,
     path: String,
-    id:String
+    id: String,
   },
   data() {
     return {
@@ -70,7 +73,7 @@ export default {
     },
   },
   methods: {
-    replace(){
+    replace() {
       this.show = false;
       this.$emit("replace", this.instanceValue);
     },

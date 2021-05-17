@@ -7,9 +7,7 @@
   >
     <v-card>
       <v-card-title class="headline grey lighten-2">
-        Create new Instance for Object {{ objectdef.name }} ({{
-          objectdef.id
-        }})
+        Create new Instance for Object {{ objectdef.name }} ({{ objectdef.id }})
       </v-card-title>
       <v-card-text>
         <v-form ref="form" @submit.prevent="write">
@@ -31,6 +29,9 @@
         <v-btn text @click="create">
           Create
         </v-btn>
+        <v-btn text @click="show=false">
+          Cancel
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -44,15 +45,14 @@ export default {
   },
   data() {
     return {
-      instance: { id:null,resources:{}},
+      instance: { id: null, resources: {} },
     };
   },
   watch: {
     value(v) {
       // reset local state when dialog is open
       if (v) {
-        this.instanceValue = { id:null,resources:{}},
-        this.id = null
+        (this.instanceValue = { id: null, resources: {} }), (this.id = null);
       }
     },
   },
@@ -72,7 +72,7 @@ export default {
     },
   },
   methods: {
-    create(){
+    create() {
       this.show = false;
       this.$emit("create", this.instance);
     },

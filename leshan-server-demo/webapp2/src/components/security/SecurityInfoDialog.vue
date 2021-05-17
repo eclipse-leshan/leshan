@@ -34,15 +34,15 @@
       <!-- Buttons -->
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn text @click="close">
-          Cancel
-        </v-btn>
         <v-btn
           text
           @click="$emit(editMode ? 'edit' : 'new', securityInfo)"
           :disabled="!valid"
         >
           {{ editMode ? "Save" : "Add" }}
+        </v-btn>
+        <v-btn text @click="show = false">
+          Cancel
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -86,11 +86,6 @@ export default {
           this.editMode = false;
         }
       }
-    },
-  },
-  methods: {
-    close() {
-      this.show = false;
     },
   },
 };
