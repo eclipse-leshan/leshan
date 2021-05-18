@@ -19,13 +19,10 @@
         <v-divider class="pa-2" />
         <p>{{ resourcedef.description }}</p>
         <v-form ref="form" @submit.prevent="write">
-          <v-text-field
+          <single-resource-input
             v-model="resourceValue"
-            clearable
-            :label="resourcedef.name"
-            required
-            autofocus
-          ></v-text-field>
+            :resourcedef="resourcedef"
+          />
         </v-form>
       </v-card-text>
       <v-card-actions>
@@ -42,7 +39,9 @@
 </template>
 
 <script>
+import SingleResourceInput from "./resources/SingleResourceInput.vue";
 export default {
+  components: { SingleResourceInput },
   props: {
     value: Boolean,
     resourcedef: Object,
@@ -61,6 +60,12 @@ export default {
       set(value) {
         this.$emit("input", value);
       },
+    },
+  },
+  watch: {
+    value(v) {
+      // reset local state when dialog is open
+      if (v) this.resourceValue = null;
     },
   },
   methods: {

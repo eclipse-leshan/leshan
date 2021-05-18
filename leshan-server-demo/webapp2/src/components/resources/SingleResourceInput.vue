@@ -1,0 +1,45 @@
+<template>
+  <boolean-resource-input
+    v-if="resourcedef.type == 'boolean'"
+    :resourcedef="resourcedef"
+    :value="value"
+    @input="$emit('input', convertValue($event))"
+  />
+  <v-text-field
+    v-else
+    :label="resourcedef.type"
+    :hint="hint"
+    :suffix="resourcedef.units"
+    :value="value"
+    @input="$emit('input', convertValue($event))"
+  />
+</template>
+<script>
+import BooleanResourceInput from "./BooleanResourceInput.vue";
+
+export default {
+  components: { BooleanResourceInput },
+  props: { value: null, resourcedef: Object, hint: String },
+  methods: {
+    convertValue(strValue) {
+      // TODO this should probably done in dedicated ResourceInputComponent
+      var val = strValue;
+      if (this.resourcedef.type != undefined) {
+        switch (this.resourcedef.type) {
+          case "integer":
+            val = parseInt(strValue);
+            val = isNaN(val) ? strValue : val;
+            break;
+          case "float":
+            val = parseFloat(strValue);
+            val = isNaN(val) ? strValue : val;
+            break;
+          default:
+            val = strValue;
+        }
+      }
+      return val;
+    },
+  },
+};
+</script>

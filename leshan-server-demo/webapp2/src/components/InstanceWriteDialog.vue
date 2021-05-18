@@ -6,24 +6,29 @@
     transition="dialog-bottom-transition"
   >
     <v-card>
+      <!-- dialog title -->
       <v-card-title class="headline grey lighten-2">
         Write Instance "{{ id }}" for Object {{ objectdef.name }} ({{
           objectdef.id
         }})
       </v-card-title>
+
       <v-card-text>
         <v-form ref="form" @submit.prevent="write">
-          <v-text-field
-            v-for="resourcedef in writableResourceDef"
-            :key="resourcedef.id"
-            v-model="instanceValue[resourcedef.id]"
-            :label="resourcedef.name"
-            required
-          ></v-text-field>
+          <v-container fluid>
+            <!-- resources fields -->
+            <resource-input
+              v-for="resourcedef in writableResourceDef"
+              :key="resourcedef.id"
+              v-model="instanceValue[resourcedef.id]"
+              :resourcedef="resourcedef"
+            ></resource-input>
+          </v-container>
         </v-form>
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
+        <!-- dialog buttons-->
         <v-btn text @click="update">
           Update
         </v-btn>
@@ -39,7 +44,9 @@
 </template>
 
 <script>
+import ResourceInput from "./resources/ResourceInput.vue";
 export default {
+  components: { ResourceInput },
   props: {
     value: Boolean,
     objectdef: Object,
