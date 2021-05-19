@@ -5,6 +5,12 @@
     :value="value"
     @input="$emit('input', convertValue($event))"
   />
+  <opaque-resource-input
+    v-else-if="resourcedef.type == 'opaque'"
+    :resourcedef="resourcedef"
+    :value="value"
+    @input="$emit('input', convertValue($event))"
+  />
   <v-text-field
     v-else
     :label="resourcedef.type"
@@ -16,9 +22,10 @@
 </template>
 <script>
 import BooleanResourceInput from "./BooleanResourceInput.vue";
+import OpaqueResourceInput from "./OpaqueResourceInput.vue";
 
 export default {
-  components: { BooleanResourceInput },
+  components: { BooleanResourceInput, OpaqueResourceInput },
   props: { value: null, resourcedef: Object, hint: String },
   methods: {
     convertValue(strValue) {
