@@ -3,11 +3,10 @@
     <h4 class="pa-1">
       Instance {{ instanceId }} :
       <instance-control
-        :objectdef="object"
+        :objectdef="objectdef"
         :endpoint="endpoint"
         :id="instanceId"
         :path="instancePath"
-        @input="handleNewValue"
       />
     </h4>
 
@@ -16,7 +15,7 @@
       multiple
       dense
       tile
-      v-model="expanded[object.id]"
+      v-model="expanded[objectdef.id]"
     >
       <v-expansion-panel v-for="resource in resources" :key="resource.path">
         <v-expansion-panel-header style="min-height:32px" class="pa-3">
@@ -40,7 +39,6 @@
                   :resourcedef="resource.def"
                   :endpoint="endpoint"
                   :path="resource.path"
-                  v-model="values[resource.path]"
                 />
               </v-col>
               <v-col
@@ -49,13 +47,13 @@
                 align-self="center"
                 class="pa-0"
                 :class="{
-                  'text--disabled': values[resource.path]
-                    ? values[resource.path].supposed
+                  'text--disabled': state.data[resource.path]
+                    ? state.data[resource.path].supposed
                     : false,
                 }"
               >
                 <div class="pr-3 text-truncate">
-                  {{ values[resource.path] ? values[resource.path].val : null }}
+                  {{ state.data[resource.path] ? state.data[resource.path].val : null }}
                 </div>
               </v-col>
             </v-row>
@@ -75,11 +73,9 @@ import ResourceControl from "./ResourceControl.vue";
 export default {
   components: { ResourceControl, InstanceControl },
   props: {
-    object: Object,
+    objectdef: Object,
     instanceId: String,
     endpoint: String,
-    showTitle: Boolean,
-    value: Object,
   },
   data() {
     return {
@@ -87,24 +83,21 @@ export default {
     };
   },
   computed: {
-    values() {
-      return this.value;
+    state(){
+      return this.$store.state[this.endpoint];
     },
     resources() {
-      return this.object.resourcedefs.map((r) => {
+      return this.objectdef.resourcedefs.map((r) => {
         return { path: this.resourcePath(r.id), def: r };
       });
     },
     instancePath() {
-      return `/${this.object.id}/${this.instanceId}`;
+      return `/${this.objectdef.id}/${this.instanceId}`;
     },
   },
   methods: {
     resourcePath(resourceId) {
-      return `/${this.object.id}/${this.instanceId}/${resourceId}`;
-    },
-    handleNewValue(vals) {
-      this.$emit("input", Object.assign({}, this.value, vals));
+      return `/${this.objectdef.id}/${this.instanceId}/${resourceId}`;
     },
   },
 };

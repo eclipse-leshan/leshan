@@ -1,19 +1,15 @@
 <template>
   <span>
     <request-button @on-click="read">R</request-button>
-    <request-button
-      @on-click="openWriteDialog"
-      ref="W"
-      >W</request-button
-    >
+    <request-button @on-click="openWriteDialog" ref="W">W</request-button>
     <request-button @on-click="del">Delete</request-button>
     <instance-write-dialog
       v-model="showDialog"
       :objectdef="objectdef"
       :path="path"
       :id="id"
-      @update="write($event,false)"
-      @replace="write($event,true)"
+      @update="write($event, false)"
+      @replace="write($event, true)"
     />
   </span>
 </template>
@@ -26,8 +22,8 @@ const timeout = preference("timeout", { defaultValue: 5 });
 const format = preference("multiformat", { defaultValue: "TLV" });
 
 export default {
-  components: { RequestButton ,InstanceWriteDialog },
-  props: { objectdef: Object, path: String, endpoint: String, value: Object, id:String },
+  components: { RequestButton, InstanceWriteDialog },
+  props: { objectdef: Object, path: String, endpoint: String, id: String },
   data() {
     return {
       dialog: false,
@@ -45,9 +41,6 @@ export default {
     },
   },
   methods: {
-    resourcePath(resourceId) {
-      return this.path + "/" + resourceId;
-    },
     requestPath() {
       return `api/clients/${encodeURIComponent(this.endpoint)}${
         this.path
@@ -67,15 +60,11 @@ export default {
         .then((response) => {
           this.updateState(response.data, requestButton);
           if (response.data.success) {
-            let vals = {};
-            response.data.content.resources.forEach(
-              (res) =>
-                (vals[this.resourcePath(res.id)] = {
-                  val: res.value,
-                  supposed: false,
-                })
+            this.$store.newInstanceValue(
+              this.endpoint,
+              this.path,
+              response.data.content.resources
             );
-            this.$emit("input", vals);
           }
         })
         .catch(() => {
@@ -87,25 +76,22 @@ export default {
     },
     write(value, replace) {
       let requestButton = this.$refs.W;
-      let data = {id:this.id,resources:[]};
-      for (let id in value){
-          data.resources.push({id:id,value:value[id]})
+      let data = { id: this.id, resources: [] };
+      for (let id in value) {
+        data.resources.push({ id: id, value: value[id] });
       }
 
       this.axios
-        .put(this.requestPath()+"&replace="+replace,data)
+        .put(this.requestPath() + "&replace=" + replace, data)
         .then((response) => {
           this.updateState(response.data, requestButton);
-          if (response.data.success){
-            let vals = {};
-            data.resources.forEach(
-              (res) =>
-                (vals[this.resourcePath(res.id)] = {
-                  val: res.value,
-                  supposed: true,
-                })
+          if (response.data.success) {
+            this.$store.newInstanceValue(
+              this.endpoint,
+              this.path,
+              data.resources,
+              true
             );
-            this.$emit("input", vals);
           }
         })
         .catch(() => {
@@ -117,6 +103,9 @@ export default {
         .delete(this.requestPath())
         .then((response) => {
           this.updateState(response.data, requestButton);
+          if (response.data.success) {
+            this.$store.removeInstanceValue(this.endpoint, this.path);
+          }
         })
         .catch(() => {
           requestButton.resetState();

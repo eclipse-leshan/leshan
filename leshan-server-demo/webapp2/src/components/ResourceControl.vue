@@ -30,7 +30,7 @@ const format = preference("singleformat", { defaultValue: "TLV" });
 
 export default {
   components: { RequestButton, ResourceWriteDialog },
-  props: { resourcedef: Object, path: String, endpoint: String, value: null },
+  props: { resourcedef: Object, path: String, endpoint: String },
   data() {
     return {
       dialog: false,
@@ -76,10 +76,11 @@ export default {
         .then((response) => {
           this.updateState(response.data, requestButton);
           if (response.data.success)
-            this.$emit("input", {
-              val: response.data.content.value,
-              supposed: false,
-            });
+            this.$store.newResourceValue(
+              this.endpoint,
+              this.path,
+              response.data.content.value
+            );
         })
         .catch(() => {
           requestButton.resetState();
@@ -95,7 +96,12 @@ export default {
         .then((response) => {
           this.updateState(response.data, requestButton);
           if (response.data.success)
-            this.$emit("input", { val: value, supposed: true });
+            this.$store.newResourceValue(
+              this.endpoint,
+              this.path,
+              value,
+              true
+            );
         })
         .catch(() => {
           requestButton.resetState();

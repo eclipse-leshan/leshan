@@ -22,7 +22,7 @@ const format = preference("multiformat", { defaultValue: "TLV" });
 
 export default {
   components: { RequestButton ,InstanceCreateDialog },
-  props: { objectdef: Object, endpoint: String, value: Object,},
+  props: { objectdef: Object, endpoint: String},
   data() {
     return {
       dialog: false,
@@ -40,9 +40,6 @@ export default {
     },
   },
   methods: {
-    resourcePath(resourceId) {
-      return this.path + "/" + resourceId;
-    },
     requestPath() {
       return `api/clients/${encodeURIComponent(this.endpoint)}/${this.objectdef.id}?timeout=${timeout.get()}&format=${format.get()}`;
     },

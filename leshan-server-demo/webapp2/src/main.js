@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import './plugins/axios'
+import './plugins/store'
 import './plugins/sse'
 import './plugins/moment'
 import './plugins/preferences'

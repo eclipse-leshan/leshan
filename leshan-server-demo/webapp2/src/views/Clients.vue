@@ -73,7 +73,6 @@ export default {
           (this.loading = false), (this.registrations = response.data)
         )
       )
-      .catch((error) => console.log(error));
   },
   beforeDestroy() {
     // close eventsource on destroy

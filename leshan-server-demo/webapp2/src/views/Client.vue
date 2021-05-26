@@ -9,7 +9,7 @@
             <div>Reg. ID: {{ registration.registrationId }}</div>
             <div>Using LWM2M v{{ registration.lwM2mVersion }}</div>
             <div>
-              Updated: 
+              Updated:
               {{ registration.lastUpdate | moment("MMM D, h:mm:ss A") }}
             </div>
           </div>
@@ -21,15 +21,14 @@
       <v-divider />
 
       <!-- object selector -->
-      <object-selector :objects="objects" />
+      <object-selector :objects="objectdefs" />
 
       <v-divider></v-divider>
     </v-col>
-
     <v-col no-gutters cols="12" md="10">
       <!-- object viewer -->
       <router-view
-        :object="objects.find((o) => o.id == $route.params.objectid)"
+        :objectdef="objectdefs.find((o) => o.id == $route.params.objectid)"
         :instances="instances"
       ></router-view>
     </v-col>
@@ -46,7 +45,7 @@ export default {
   name: "Client",
   data: () => ({
     registration: null,
-    objects: [],
+    objectdefs: [],
   }),
   methods: {
     updateModels: function() {
@@ -54,7 +53,7 @@ export default {
         .get(
           "api/objectspecs/" + encodeURIComponent(this.$route.params.endpoint)
         )
-        .then((response) => (this.objects = response.data))
+        .then((response) => (this.objectdefs = response.data));
     },
   },
   computed: {
@@ -78,6 +77,16 @@ export default {
     /*$route(to, from) {
       console.log("route", to, from);
     },*/
+    registration(newReg, oldReg) {
+      // reinit state for this endpoint
+      if (newReg) {
+        if (!oldReg) {
+          this.$store.initState(newReg.endpoint);
+        } else if (oldReg.endpoint !== newReg.endpoint) {
+          this.$store.initState(newReg.endpoint);
+        }
+      }
+    },
   },
   mounted() {
     this.sse = this.$sse
@@ -112,7 +121,7 @@ export default {
     // get registration
     this.axios
       .get("api/clients/" + encodeURIComponent(this.$route.params.endpoint))
-      .then((response) => (this.registration = response.data))
+      .then((response) => (this.registration = response.data));
 
     // get models for this endpoint
     this.updateModels();
