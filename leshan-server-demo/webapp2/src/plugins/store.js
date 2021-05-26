@@ -10,7 +10,8 @@ class Store {
                "multipleInstanceResourcepath": { id1: { val: "a resource value", supposed: true }
                                                  id1: { val: "a resource value", supposed: true }},    
              },
-    }
+      observed : { path(object/instance/resource/resourceinstance) : boolean }
+      }
     };  
    */
 
@@ -26,6 +27,7 @@ class Store {
   initState(endpoint) {
     Vue.set(this.state, endpoint, {
       data: {},
+      observed: {},
     });
   }
 
@@ -74,6 +76,15 @@ class Store {
         delete s.data[p];
       }
     });
+  }
+
+  setObserved(endpoint, path, observed) {
+    let o = this.state[endpoint].observed[path];
+    if (!o) {
+      Vue.set(this.state[endpoint].observed, path, observed);
+    } else{
+      this.state[endpoint].observed[path] = observed;
+    }
   }
 }
 

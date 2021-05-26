@@ -1,18 +1,18 @@
 <template>
-  <span>
-    <v-badge :color="state" dot bottom overlap :title="details" :value="state">
-      <v-btn
-        class="ma-1"
-        small
-        elevation="0"
-        :loading="loading"
-        :disabled="loading"
-        @click.stop="onClick"
-      >
-        <slot></slot>
-      </v-btn>
-    </v-badge>
-  </span>
+  <v-badge :color="state" dot bottom overlap :title="details" :value="state">
+    <v-btn
+      class="ma-1"
+      small
+      tile
+      min-width="0"
+      elevation="0"
+      :loading="loading"
+      :disabled="loading"
+      @click.stop="onClick"
+    >
+      <slot></slot>
+    </v-btn>
+  </v-badge>
 </template>
 <script>
 export default {

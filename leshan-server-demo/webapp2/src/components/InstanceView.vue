@@ -24,17 +24,30 @@
           -->
           <v-container class="pa-0" style="min-width:0">
             <v-row>
-              <v-col cols="7" md="3" align-self="center" class="pa-2"
+              <v-col cols="7" lg="3" align-self="center" class="pa-2"
                 >{{ resource.def.name }}
               </v-col>
               <v-col
-                cols="5"
-                md="2"
+                cols="4"
+                lg="1"
                 align-self="center"
                 class="pa-2 text--disabled"
-                >{{ resource.path }}</v-col
+                >{{ resource.path }}
+              </v-col>
+              <v-col
+                cols="1"
+                lg="1"
+                align-self="center"
+                class="pa-2 text--disabled"
               >
-              <v-col cols="6" md="2" align-self="center" class="pa-0">
+                <v-icon
+                  x-small
+                  v-show="state.observed[resource.path]"
+                  >mdi-eye-outline</v-icon
+                ></v-col
+              >
+
+              <v-col cols="7" lg="3" align-self="center" class="pa-0">
                 <resource-control
                   :resourcedef="resource.def"
                   :endpoint="endpoint"
@@ -42,8 +55,8 @@
                 />
               </v-col>
               <v-col
-                cols="6"
-                md="5"
+                cols="5"
+                lg="4"
                 align-self="center"
                 class="pa-0"
                 :class="{

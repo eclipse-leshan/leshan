@@ -110,6 +110,15 @@ export default {
       .on("DEREGISTRATION", () => {
         this.registration = null;
       })
+      .on("NOTIFICATION", (msg) => {
+        this.$store.newResourceValue(
+          this.$route.params.endpoint,
+          msg.res,
+          msg.val.value,
+          false
+        );
+        this.$store.setObserved(this.$route.params.endpoint, msg.res, true);
+      })
       .on("error", (err) => {
         console.error("sse unexpected error", err);
       });
