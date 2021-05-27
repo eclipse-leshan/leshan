@@ -1,5 +1,9 @@
 <template>
   <span>
+    <request-button @on-click="observe">Obs</request-button>
+    <request-button @on-click="stopObserve">
+      <v-icon dense small>mdi-eye-remove-outline</v-icon></request-button
+    >
     <request-button @on-click="read">R</request-button>
     <request-button @on-click="openWriteDialog" ref="W">W</request-button>
     <request-button @on-click="del">Delete</request-button>
@@ -42,9 +46,10 @@ export default {
   },
   methods: {
     requestPath() {
-      return `api/clients/${encodeURIComponent(this.endpoint)}${
-        this.path
-      }?timeout=${timeout.get()}&format=${format.get()}`;
+      return `api/clients/${encodeURIComponent(this.endpoint)}${this.path}`;
+    },
+    requestOption() {
+      return `?timeout=${timeout.get()}&format=${format.get()}`;
     },
     updateState(content, requestButton) {
       let state = !content.valid
@@ -56,7 +61,7 @@ export default {
     },
     read(requestButton) {
       this.axios
-        .get(this.requestPath())
+        .get(`${this.requestPath()}${this.requestOption()}`)
         .then((response) => {
           this.updateState(response.data, requestButton);
           if (response.data.success) {
@@ -66,6 +71,35 @@ export default {
               response.data.content.resources
             );
           }
+        })
+        .catch(() => {
+          requestButton.resetState();
+        });
+    },
+    observe(requestButton) {
+      this.axios
+        .post(`${this.requestPath()}/observe${this.requestOption()}`)
+        .then((response) => {
+          this.updateState(response.data, requestButton);
+          if (response.data.success) {
+            this.$store.newInstanceValue(
+              this.endpoint,
+              this.path,
+              response.data.content.resources
+            );
+            this.$store.setObserved(this.endpoint, this.path, true);
+          }
+        })
+        .catch(() => {
+          requestButton.resetState();
+        });
+    },
+    stopObserve(requestButton) {
+      this.axios
+        .delete(`${this.requestPath()}/observe`)
+        .then(() => {
+          requestButton.changeState("success");
+          this.$store.setObserved(this.endpoint, this.path, false);
         })
         .catch(() => {
           requestButton.resetState();
@@ -82,7 +116,10 @@ export default {
       }
 
       this.axios
-        .put(this.requestPath() + "&replace=" + replace, data)
+        .put(
+          `${this.requestPath()}${this.requestOption()}&replace=${replace}`,
+          data
+        )
         .then((response) => {
           this.updateState(response.data, requestButton);
           if (response.data.success) {
@@ -100,7 +137,7 @@ export default {
     },
     del(requestButton) {
       this.axios
-        .delete(this.requestPath())
+        .delete(`${this.requestPath()}?timeout=${timeout.get()}`)
         .then((response) => {
           this.updateState(response.data, requestButton);
           if (response.data.success) {

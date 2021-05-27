@@ -1,13 +1,21 @@
 <template>
   <div>
     <h4 class="pa-1">
-      Instance {{ instanceId }} :
-      <instance-control
-        :objectdef="objectdef"
-        :endpoint="endpoint"
-        :id="instanceId"
-        :path="instancePath"
-      />
+      <span class="d-flex">
+        <span class="align-self-center"> Instance {{ instanceId }} : </span>
+
+        <instance-control
+          :objectdef="objectdef"
+          :endpoint="endpoint"
+          :id="instanceId"
+          :path="instancePath"
+          class='mr-auto'
+        />
+
+        <v-icon class="pr-3" small v-show="state.observed[instancePath]"
+          >mdi-eye-outline</v-icon
+        >
+      </span>
     </h4>
 
     <v-expansion-panels
@@ -40,9 +48,7 @@
                 align-self="center"
                 class="pa-2 text--disabled"
               >
-                <v-icon
-                  x-small
-                  v-show="state.observed[resource.path]"
+                <v-icon x-small v-show="state.observed[resource.path]"
                   >mdi-eye-outline</v-icon
                 ></v-col
               >
@@ -66,7 +72,11 @@
                 }"
               >
                 <div class="pr-3 text-truncate">
-                  {{ state.data[resource.path] ? state.data[resource.path].val : null }}
+                  {{
+                    state.data[resource.path]
+                      ? state.data[resource.path].val
+                      : null
+                  }}
                 </div>
               </v-col>
             </v-row>
@@ -96,7 +106,7 @@ export default {
     };
   },
   computed: {
-    state(){
+    state() {
       return this.$store.state[this.endpoint];
     },
     resources() {

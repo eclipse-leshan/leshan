@@ -111,12 +111,21 @@ export default {
         this.registration = null;
       })
       .on("NOTIFICATION", (msg) => {
-        this.$store.newResourceValue(
-          this.$route.params.endpoint,
-          msg.res,
-          msg.val.value,
-          false
-        );
+        if (msg.val.resources) {
+          this.$store.newInstanceValue(
+              this.$route.params.endpoint,
+              msg.res,
+              msg.val.resources,
+              false
+            );
+        } else if (msg.val.value) {
+          this.$store.newResourceValue(
+            this.$route.params.endpoint,
+            msg.res,
+            msg.val.value,
+            false
+          );
+        }
         this.$store.setObserved(this.$route.params.endpoint, msg.res, true);
       })
       .on("error", (err) => {
