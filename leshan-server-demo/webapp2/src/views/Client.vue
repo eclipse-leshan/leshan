@@ -122,6 +122,9 @@ export default {
       .on("DEREGISTRATION", () => {
         this.registration = null;
       })
+      .on("SLEEPING", () => {
+        this.registration.sleeping = true;
+      })
       .on("NOTIFICATION", (msg) => {
         if (msg.val.resources) {
           this.$store.newInstanceValue(

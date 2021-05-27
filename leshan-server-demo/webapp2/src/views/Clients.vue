@@ -17,7 +17,7 @@
       {{ new Date(item.lastUpdate) | moment("MMM D, h:mm:ss A") }}
     </template>
     <template v-slot:item.infos="{ item }">
-      <client-info :registration="item" tooltipleft/>
+      <client-info :registration="item" tooltipleft />
     </template>
   </v-data-table>
 </template>
@@ -63,6 +63,13 @@ export default {
         this.registrations = this.registrations.filter(
           (r) => reg.registrationId !== r.registrationId
         );
+      })
+      .on("SLEEPING", (reg) => {
+        for (var i = 0; i < this.registrations.length; i++) {
+          if (this.registrations[i].endpoint === reg.ep) {
+            this.registrations[i].sleeping = true;
+          }
+        }
       })
       .on("error", (err) => {
         console.error("sse unexpected error", err);

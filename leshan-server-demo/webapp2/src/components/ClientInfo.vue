@@ -7,9 +7,13 @@
           mdi-information
         </v-icon>
       </template>
-      lifetime : {{ registration.lifetime }}s
+      Lifetime : {{ registration.lifetime }}s
       <br />
-      Binding mode : {{ registration.bindingMode }}
+      Binding mode : {{ registration.bindingMode }} 
+      <span v-if="registration.queuemode">
+      <br /> 
+      Using QueueMode 
+      </span>
       <br />
       Protocole version : {{ registration.lwM2mVersion }}
       <br />
@@ -31,6 +35,15 @@
       </template>
       Communication over DTLS
     </v-tooltip>
+    <!-- secure icon -->
+    <v-tooltip :left="tooltipleft" :bottom="tooltipbottom">
+      <template v-slot:activator="{ on }">
+        <v-icon v-on="on" class="pr-2" :small="small" v-visible="registration.sleeping">
+          mdi-sleep
+        </v-icon>
+      </template>
+      Device using Queue mode is absent
+    </v-tooltip>
   </span>
 </template>
 <script>
@@ -40,11 +53,6 @@ export default {
     small: Boolean,
     tooltipleft: Boolean,
     tooltipbottom: Boolean,
-  },
-  computed: {
-    unsecure() {
-     return !this.registration.secure;
-    },
   },
 };
 </script>

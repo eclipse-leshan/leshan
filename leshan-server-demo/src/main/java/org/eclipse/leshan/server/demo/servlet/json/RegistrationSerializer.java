@@ -51,6 +51,7 @@ public class RegistrationSerializer implements JsonSerializer<Registration> {
         element.add("objectLinks", context.serialize(src.getSortedObjectLinks()));
         element.add("secure", context.serialize(src.getIdentity().isSecure()));
         element.add("additionalRegistrationAttributes", context.serialize(src.getAdditionalRegistrationAttributes()));
+        element.add("queuemode", context.serialize(src.usesQueueMode()));
 
         if (src.usesQueueMode()) {
             element.add("sleeping", context.serialize(!presenceService.isClientAwake(src)));
