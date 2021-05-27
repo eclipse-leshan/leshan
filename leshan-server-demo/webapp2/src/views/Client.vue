@@ -4,10 +4,21 @@
       <!-- registration info -->
       <v-sheet color="grey lighten-5" class="pa-4" width="100%">
         <div>
-          <h3>{{ $route.params.endpoint }}</h3>
+          <h3>
+            {{ $route.params.endpoint }}
+            <client-info
+              v-if="registration"
+              :registration="registration"
+              small
+              tooltipbottom
+            />
+          </h3>
           <div v-if="registration">
             <div>Reg. ID: {{ registration.registrationId }}</div>
-            <div>Using LWM2M v{{ registration.lwM2mVersion }}</div>
+            <div>
+              Registered:
+              {{ registration.registrationDate | moment("MMM D, h:mm:ss A") }}
+            </div>
             <div>
               Updated:
               {{ registration.lastUpdate | moment("MMM D, h:mm:ss A") }}
@@ -36,12 +47,13 @@
 </template>
 
 <script>
+import ClientInfo from "../components/ClientInfo.vue";
 import ClientSetting from "../components/ClientSetting.vue";
 import ObjectSelector from "../components/ObjectSelector.vue";
 
 // get models for this endpoint
 export default {
-  components: { ObjectSelector, ClientSetting },
+  components: { ObjectSelector, ClientSetting, ClientInfo },
   name: "Client",
   data: () => ({
     registration: null,
@@ -113,11 +125,11 @@ export default {
       .on("NOTIFICATION", (msg) => {
         if (msg.val.resources) {
           this.$store.newInstanceValue(
-              this.$route.params.endpoint,
-              msg.res,
-              msg.val.resources,
-              false
-            );
+            this.$route.params.endpoint,
+            msg.res,
+            msg.val.resources,
+            false
+          );
         } else if (msg.val.value) {
           this.$store.newResourceValue(
             this.$route.params.endpoint,

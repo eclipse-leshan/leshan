@@ -16,11 +16,16 @@
     <template v-slot:item.lastUpdate="{ item }">
       {{ new Date(item.lastUpdate) | moment("MMM D, h:mm:ss A") }}
     </template>
+    <template v-slot:item.infos="{ item }">
+      <client-info :registration="item" tooltipleft/>
+    </template>
   </v-data-table>
 </template>
 
 <script>
+import ClientInfo from "../components/ClientInfo.vue";
 export default {
+  components: { ClientInfo },
   useSSE: true,
   name: "Clients",
   data: () => ({
@@ -31,6 +36,7 @@ export default {
       { text: "Registration ID", value: "registrationId" },
       { text: "Registration Date", value: "registrationDate" },
       { text: "Last Update", value: "lastUpdate" },
+      { text: "", value: "infos", sortable: false, align: "end" },
     ],
   }),
   methods: {
@@ -72,7 +78,7 @@ export default {
         (response) => (
           (this.loading = false), (this.registrations = response.data)
         )
-      )
+      );
   },
   beforeDestroy() {
     // close eventsource on destroy

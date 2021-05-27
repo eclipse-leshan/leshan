@@ -11,8 +11,18 @@ import router from './router'
 
 Vue.config.productionTip = false
 
+/**
+ * directive to hide content without changing layout unlike v-show or v-if
+ */
+Vue.directive('visible', function(el, binding) {
+  el.style.visibility = binding.value ? 'visible' : 'hidden';
+});
+
+
 new Vue({
   vuetify,
   router,
   render: h => h(App)
 }).$mount('#app')
+
+
