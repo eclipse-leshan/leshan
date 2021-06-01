@@ -3,7 +3,7 @@ module.exports = {
   outputDir: process.env.MAVEN_OUTPUT_DIR
     ? process.env.MAVEN_OUTPUT_DIR
     : "../target/dist",
-  publicPath: "/v2/",
+  publicPath: "./",
   transpileDependencies: ["vuetify"],
   devServer: {
     proxy: {
