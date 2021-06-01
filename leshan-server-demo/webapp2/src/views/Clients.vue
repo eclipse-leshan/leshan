@@ -41,7 +41,7 @@ export default {
   }),
   methods: {
     openLink(reg) {
-      this.$router.replace(`/clients/${reg.endpoint}/3`);
+      this.$router.push(`/clients/${reg.endpoint}/3`);
     },
   },
   mounted() {

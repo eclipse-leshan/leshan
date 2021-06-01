@@ -14,11 +14,6 @@ const routes = [
     redirect: "/clients",
   },
   {
-    path: "/clients",
-    name: "Clients",
-    component: Clients,
-  },
-  {
     path: "/clients/:endpoint",
     component: Client,
     children: [
@@ -27,6 +22,11 @@ const routes = [
         component: ObjectView,
       },
     ],
+  },
+  {
+    path: "/clients",
+    name: "Clients",
+    component: Clients,
   },
   {
     path: "/security",
