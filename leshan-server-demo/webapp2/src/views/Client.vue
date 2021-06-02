@@ -65,7 +65,7 @@ export default {
         .get(
           "api/objectspecs/" + encodeURIComponent(this.$route.params.endpoint)
         )
-        .then((response) => (this.objectdefs = response.data));
+        .then((response) => (this.objectdefs = Object.freeze(response.data)));
     },
   },
   computed: {

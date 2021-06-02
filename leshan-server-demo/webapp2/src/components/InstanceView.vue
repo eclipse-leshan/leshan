@@ -23,8 +23,8 @@
       multiple
       dense
       tile
-      v-model="expanded[objectdef.id]"
-    >
+      v-if="objectdef && instanceId && endpoint"
+     >
       <v-expansion-panel v-for="resource in resources" :key="resource.path">
         <v-expansion-panel-header style="min-height:32px" class="pa-3">
           <!-- min-width is needed for avoid shift about truncated text 
@@ -100,11 +100,7 @@ export default {
     instanceId: String,
     endpoint: String,
   },
-  data() {
-    return {
-      expanded: {},
-    };
-  },
+
   computed: {
     state() {
       return this.$store.state[this.endpoint];

@@ -1,27 +1,19 @@
 <template>
   <div>
-    <request-button @on-click="observe" v-if="readable(resourcedef)"
-      >Obs</request-button
-    >
-    <request-button @on-click="stopObserve" v-if="readable(resourcedef)">
+    <request-button @on-click="observe" v-if="readable">Obs</request-button>
+    <request-button @on-click="stopObserve" v-if="readable">
       <v-icon dense small>mdi-eye-remove-outline</v-icon></request-button
     >
-    <request-button @on-click="read" v-if="readable(resourcedef)"
-      >R</request-button
-    >
-    <request-button
-      @on-click="openWriteDialog"
-      v-if="writable(resourcedef)"
-      ref="W"
+    <request-button @on-click="read" v-if="readable">R</request-button>
+    <request-button @on-click="openWriteDialog" v-if="writable" ref="W"
       >W</request-button
     >
-    <request-button @on-click="exec" v-if="executable(resourcedef)"
-      >Exe</request-button
-    >
-    <request-button @on-click="execWithParams" v-if="executable(resourcedef)"
+    <request-button @on-click="exec" v-if="executable">Exe</request-button>
+    <request-button @on-click="execWithParams" v-if="executable"
       ><v-icon dense small>mdi-cog-outline</v-icon></request-button
     >
     <resource-write-dialog
+      v-if="showDialog"
       v-model="showDialog"
       :resourcedef="resourcedef"
       :path="path"
@@ -36,6 +28,7 @@ import { preference } from "vue-preferences";
 
 const timeout = preference("timeout", { defaultValue: 5 });
 const format = preference("singleformat", { defaultValue: "TLV" });
+
 
 export default {
   components: { RequestButton, ResourceWriteDialog },
@@ -55,6 +48,15 @@ export default {
         this.$refs.W.resetState();
       },
     },
+    readable() {
+      return this.resourcedef.operations.includes("R");
+    },
+    writable() {
+      return this.resourcedef.operations.includes("W");
+    },
+    executable() {
+      return this.resourcedef.operations.includes("E");
+    },
   },
   methods: {
     requestPath() {
@@ -63,15 +65,7 @@ export default {
     requestOption() {
       return `?timeout=${timeout.get()}&format=${format.get()}`;
     },
-    readable(resourcedef) {
-      return resourcedef.operations.includes("R");
-    },
-    writable(resourcedef) {
-      return resourcedef.operations.includes("W");
-    },
-    executable(resourcedef) {
-      return resourcedef.operations.includes("E");
-    },
+
     updateState(content, requestButton) {
       let state = !content.valid
         ? "warning"
@@ -170,7 +164,7 @@ export default {
               .catch(() => {
                 requestButton.resetState();
               });
-          }else{
+          } else {
             requestButton.resetState();
           }
         });
