@@ -27,11 +27,18 @@ import java.util.Map;
 import javax.security.auth.x500.X500Principal;
 
 import org.eclipse.californium.elements.AddressEndpointContext;
+import org.eclipse.californium.elements.DtlsEndpointContext;
 import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.MapBasedEndpointContext;
+import org.eclipse.californium.elements.MapBasedEndpointContext.Attributes;
+import org.eclipse.californium.elements.UdpEndpointContext;
 import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.elements.auth.X509CertPath;
+import org.eclipse.californium.elements.util.Bytes;
+import org.eclipse.californium.elements.util.StringUtil;
+import org.eclipse.californium.scandium.dtls.ConnectionId;
+import org.eclipse.californium.scandium.dtls.SessionId;
 import org.eclipse.leshan.core.util.Hex;
 
 import com.eclipsesource.json.Json;
@@ -67,11 +74,16 @@ public class EndpointContextSerDes {
             }
         }
         /** copy the attributes **/
-        Map<String, String> attributes = context.entries();
+        Map<String, Object> attributes = context.entries();
         if (!attributes.isEmpty()) {
             JsonObject attContext = Json.object();
             for (String key : attributes.keySet()) {
-                attContext.set(key, attributes.get(key));
+                // write all values as string
+                Object value = attributes.get(key);
+                if (value instanceof Bytes) {
+                    value = ((Bytes) value).getAsString();
+                }
+                attContext.set(key, value.toString());
             }
             peer.set(KEY_ATTRIBUTES, attContext);
         }
@@ -106,11 +118,27 @@ public class EndpointContextSerDes {
         if (value == null) {
             endpointContext = new AddressEndpointContext(socketAddress, principal);
         } else {
-            int index = 0;
-            String attributes[] = new String[value.asObject().size() * 2];
+            Attributes attributes = new Attributes();
             for (Member member : value.asObject()) {
-                attributes[index++] = member.getName();
-                attributes[index++] = member.getValue().asString();
+                String name = member.getName();
+                String attributeValue = member.getValue().asString();
+                // convert the text values into typed values according their name
+                if (name.equals(UdpEndpointContext.KEY_PLAIN)) {
+                    attributes.add(name, attributeValue);
+                } else if (name.equals(DtlsEndpointContext.KEY_SESSION_ID)) {
+                    attributes.add(name, new SessionId(StringUtil.hex2ByteArray(attributeValue)));
+                } else if (name.equals(DtlsEndpointContext.KEY_EPOCH)) {
+                    attributes.add(name, Integer.parseInt(attributeValue));
+                } else if (name.equals(DtlsEndpointContext.KEY_CIPHER)) {
+                    attributes.add(name, attributeValue);
+                } else if (name.equals(DtlsEndpointContext.KEY_HANDSHAKE_TIMESTAMP)) {
+                    attributes.add(name, Long.parseLong(attributeValue));
+                } else if (name.equals(DtlsEndpointContext.KEY_READ_CONNECTION_ID)) {
+                    attributes.add(name, new ConnectionId(StringUtil.hex2ByteArray(attributeValue)));
+                } else if (name.equals(DtlsEndpointContext.KEY_WRITE_CONNECTION_ID)) {
+                    attributes.add(name, new ConnectionId(StringUtil.hex2ByteArray(attributeValue)));
+                }
+                attributes.add(name, attributeValue);
             }
             endpointContext = new MapBasedEndpointContext(socketAddress, principal, attributes);
         }
