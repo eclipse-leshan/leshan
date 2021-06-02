@@ -114,7 +114,7 @@ public class LeshanBootstrapServer {
         return new CoapServer(coapConfig) {
             @Override
             protected Resource createRoot() {
-                return new RootResource(this);
+                return new RootResource();
             }
         };
     }
