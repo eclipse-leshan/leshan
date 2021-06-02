@@ -18,6 +18,9 @@ Vue.directive('visible', function(el, binding) {
   el.style.visibility = binding.value ? 'visible' : 'hidden';
 });
 
+// TODO remove it activate debug tools in prod to check performance issue.
+Vue.config.devtools = true
+Vue.config.performance = true
 
 new Vue({
   vuetify,
