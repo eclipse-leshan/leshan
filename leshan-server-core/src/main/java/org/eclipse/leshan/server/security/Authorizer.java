@@ -26,9 +26,15 @@ import org.eclipse.leshan.server.registration.Registration;
 public interface Authorizer {
 
     /**
-     * Return the registration if this request should be handle by the LWM2M Server. When <code>null</code> is returned
+     * Return the registration if this request should be handled by the LWM2M Server. When <code>null</code> is returned
      * the LWM2M server will stop to handle this request and will respond with a {@link ResponseCode#FORBIDDEN} or
      * {@link ResponseCode#BAD_REQUEST}.
+     * <p>
+     * Some Application Data could be attached to the Registration using :
+     * 
+     * <pre>
+     * return new Registration.Builder(registration).applicationData(myAppData).build();
+     * </pre>
      * 
      * @param request the request received
      * @param registration the registration linked to the received request.<br>

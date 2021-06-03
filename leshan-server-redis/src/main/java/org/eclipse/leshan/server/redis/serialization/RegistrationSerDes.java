@@ -92,6 +92,13 @@ public class RegistrationSerDes {
             so.add(supportedObject.getKey().toString(), supportedObject.getValue());
         }
         o.add("suppObjs", so);
+
+        // handle application data
+        JsonObject ad = Json.object();
+        for (Entry<String, String> appData : r.getApplicationData().entrySet()) {
+            ad.add(appData.getKey(), appData.getValue());
+        }
+        o.add("appdata", ad);
         return o;
     }
 
@@ -146,6 +153,8 @@ public class RegistrationSerDes {
             linkObjs[i] = o;
         }
         b.objectLinks(linkObjs);
+
+        // additional attributes
         Map<String, String> addAttr = new HashMap<>();
         JsonObject o = (JsonObject) jObj.get("addAttr");
         for (String k : o.names()) {
@@ -177,6 +186,19 @@ public class RegistrationSerDes {
             }
             b.supportedObjects(supportedObject);
         }
+
+        // app data
+        Map<String, String> appData = new HashMap<>();
+        JsonObject oap = (JsonObject) jObj.get("appdata");
+        for (String k : oap.names()) {
+            JsonValue jv = oap.get(k);
+            if (jv.isNull()) {
+                appData.put(k, null);
+            } else {
+                appData.put(k, jv.asString());
+            }
+        }
+        b.applicationData(appData);
 
         return b.build();
     }

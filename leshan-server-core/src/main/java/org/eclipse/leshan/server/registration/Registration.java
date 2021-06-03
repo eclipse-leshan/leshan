@@ -39,6 +39,7 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.util.StringUtils;
 import org.eclipse.leshan.core.util.Validate;
+import org.eclipse.leshan.server.security.Authorizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,6 +89,8 @@ public class Registration {
 
     private final Date lastUpdate;
 
+    private final Map<String, String> applicationData;
+
     protected Registration(Builder builder) {
 
         Validate.notNull(builder.registrationId);
@@ -116,6 +119,7 @@ public class Registration {
         smsNumber = builder.smsNumber;
         additionalRegistrationAttributes = builder.additionalRegistrationAttributes;
 
+        applicationData = builder.applicationData;
     }
 
     public String getId() {
@@ -332,13 +336,20 @@ public class Registration {
         return supportedObjects;
     }
 
+    /**
+     * @return Some application data which could have been added at Registration by the {@link Authorizer}
+     */
+    public Map<String, String> getApplicationData() {
+        return applicationData;
+    }
+
     @Override
     public String toString() {
         return String.format(
-                "Registration [registrationDate=%s, identity=%s, lifeTimeInSec=%s, smsNumber=%s, lwM2mVersion=%s, bindingMode=%s, queueMode=%s, endpoint=%s, id=%s, objectLinks=%s, additionalRegistrationAttributes=%s, rootPath=%s, supportedContentFormats=%s, supportedObjects=%s, availableInstances=%s, lastUpdate=%s]",
+                "Registration [registrationDate=%s, identity=%s, lifeTimeInSec=%s, smsNumber=%s, lwM2mVersion=%s, bindingMode=%s, queueMode=%s, endpoint=%s, id=%s, objectLinks=%s, additionalRegistrationAttributes=%s, rootPath=%s, supportedContentFormats=%s, supportedObjects=%s, availableInstances=%s, lastUpdate=%s, applicationData=%s]",
                 registrationDate, identity, lifeTimeInSec, smsNumber, lwM2mVersion, bindingMode, queueMode, endpoint,
                 id, Arrays.toString(objectLinks), additionalRegistrationAttributes, rootPath, supportedContentFormats,
-                supportedObjects, availableInstances, lastUpdate);
+                supportedObjects, availableInstances, lastUpdate, applicationData);
     }
 
     @Override
@@ -347,6 +358,7 @@ public class Registration {
         int result = 1;
         result = prime * result
                 + ((additionalRegistrationAttributes == null) ? 0 : additionalRegistrationAttributes.hashCode());
+        result = prime * result + ((applicationData == null) ? 0 : applicationData.hashCode());
         result = prime * result + ((availableInstances == null) ? 0 : availableInstances.hashCode());
         result = prime * result + ((bindingMode == null) ? 0 : bindingMode.hashCode());
         result = prime * result + ((endpoint == null) ? 0 : endpoint.hashCode());
@@ -378,6 +390,11 @@ public class Registration {
             if (other.additionalRegistrationAttributes != null)
                 return false;
         } else if (!additionalRegistrationAttributes.equals(other.additionalRegistrationAttributes))
+            return false;
+        if (applicationData == null) {
+            if (other.applicationData != null)
+                return false;
+        } else if (!applicationData.equals(other.applicationData))
             return false;
         if (availableInstances == null) {
             if (other.availableInstances != null)
@@ -469,9 +486,37 @@ public class Registration {
         private Map<Integer, String> supportedObjects;
         private Set<LwM2mPath> availableInstances;
         private Map<String, String> additionalRegistrationAttributes;
+        private Map<String, String> applicationData;
 
         // builder setting
         private boolean extractData; // if true extract data from objectLinks
+
+        public Builder(Registration registration) {
+
+            // mandatory params
+            registrationId = registration.id;
+            identity = registration.identity;
+            endpoint = registration.endpoint;
+
+            // object links related params
+            objectLinks = registration.objectLinks;
+            rootPath = registration.rootPath;
+            supportedContentFormats = registration.supportedContentFormats;
+            supportedObjects = registration.supportedObjects;
+            availableInstances = registration.availableInstances;
+
+            // other params
+            lifeTimeInSec = registration.lifeTimeInSec;
+            lwM2mVersion = registration.lwM2mVersion;
+            bindingMode = registration.bindingMode;
+            queueMode = registration.queueMode;
+            registrationDate = registration.registrationDate;
+            lastUpdate = registration.lastUpdate;
+            smsNumber = registration.smsNumber;
+            additionalRegistrationAttributes = registration.additionalRegistrationAttributes;
+
+            applicationData = registration.applicationData;
+        }
 
         public Builder(String registrationId, String endpoint, Identity identity) {
 
@@ -558,6 +603,11 @@ public class Registration {
 
         public Builder additionalRegistrationAttributes(Map<String, String> additionalRegistrationAttributes) {
             this.additionalRegistrationAttributes = additionalRegistrationAttributes;
+            return this;
+        }
+
+        public Builder applicationData(Map<String, String> applicationData) {
+            this.applicationData = applicationData;
             return this;
         }
 
@@ -695,6 +745,11 @@ public class Registration {
             } else {
                 additionalRegistrationAttributes = Collections
                         .unmodifiableMap(new HashMap<>(additionalRegistrationAttributes));
+            }
+            if (applicationData == null || applicationData.isEmpty()) {
+                applicationData = Collections.emptyMap();
+            } else {
+                applicationData = Collections.unmodifiableMap(new HashMap<>(applicationData));
             }
 
             // Create Registration
