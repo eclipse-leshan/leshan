@@ -53,7 +53,7 @@ public class RegistrationTest {
 
     @Test
     public void test_object_links_with_ct_but_with_rt() {
-        Registration reg = given_a_registration_with_object_link_like("</>;ct=0 42 11543,</1/0>,</3/0>");
+        Registration reg = given_a_registration_with_object_link_like("</>;ct=\"0 42 11543\",</1/0>,</3/0>");
 
         // check root path
         assertEquals("/", reg.getRootPath());
@@ -77,9 +77,105 @@ public class RegistrationTest {
     }
 
     @Test
+    public void test_object_links_with_ct_with_1_content_format_with_quote() {
+        Registration reg = given_a_registration_with_object_link_like("</>;ct=\"42\",</1/0>,</3/0>");
+
+        // check root path
+        assertEquals("/", reg.getRootPath());
+
+        // Ensure supported objects are correct
+        Map<Integer, String> supportedObject = reg.getSupportedObject();
+        assertEquals(2, supportedObject.size());
+        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
+        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(3));
+
+        // Check Supported Content format
+        Set<ContentFormat> supportedContentFormats = reg.getSupportedContentFormats();
+        assertEquals(2, supportedContentFormats.size()); // 1 + 1 mandatory TLV content format for LWM2M v1.0
+        assertTrue(supportedContentFormats.containsAll(Arrays.asList(ContentFormat.TLV, ContentFormat.OPAQUE)));
+
+        // ensure available instances are correct
+        Set<LwM2mPath> availableInstances = reg.getAvailableInstances();
+        assertEquals(2, availableInstances.size());
+        assertTrue(availableInstances.containsAll(Arrays.asList(new LwM2mPath(1, 0), new LwM2mPath(3, 0))));
+    }
+
+    @Test
+    public void test_object_links_with_ct_with_1_content_format_without_quote() {
+        Registration reg = given_a_registration_with_object_link_like("</>;ct=42,</1/0>,</3/0>");
+
+        // check root path
+        assertEquals("/", reg.getRootPath());
+
+        // Ensure supported objects are correct
+        Map<Integer, String> supportedObject = reg.getSupportedObject();
+        assertEquals(2, supportedObject.size());
+        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
+        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(3));
+
+        // Check Supported Content format
+        Set<ContentFormat> supportedContentFormats = reg.getSupportedContentFormats();
+        assertEquals(2, supportedContentFormats.size()); // 1 + 1 mandatory TLV content format for LWM2M v1.0
+        assertTrue(supportedContentFormats.containsAll(Arrays.asList(ContentFormat.TLV, ContentFormat.OPAQUE)));
+
+        // ensure available instances are correct
+        Set<LwM2mPath> availableInstances = reg.getAvailableInstances();
+        assertEquals(2, availableInstances.size());
+        assertTrue(availableInstances.containsAll(Arrays.asList(new LwM2mPath(1, 0), new LwM2mPath(3, 0))));
+    }
+
+    @Test
+    public void test_object_links_with_ct_with_several_without_quote() {
+        Registration reg = given_a_registration_with_object_link_like("</>;ct=0 42 11543,</1/0>,</3/0>");
+
+        // check root path
+        assertEquals("/", reg.getRootPath());
+
+        // Ensure supported objects are correct
+        Map<Integer, String> supportedObject = reg.getSupportedObject();
+        assertEquals(2, supportedObject.size());
+        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
+        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(3));
+
+        // Check Supported Content format
+        Set<ContentFormat> supportedContentFormats = reg.getSupportedContentFormats();
+        assertEquals(1, supportedContentFormats.size()); // 1 mandatory TLV content format for LWM2M v1.0
+        assertTrue(supportedContentFormats.containsAll(Arrays.asList(ContentFormat.TLV)));
+
+        // ensure available instances are correct
+        Set<LwM2mPath> availableInstances = reg.getAvailableInstances();
+        assertEquals(2, availableInstances.size());
+        assertTrue(availableInstances.containsAll(Arrays.asList(new LwM2mPath(1, 0), new LwM2mPath(3, 0))));
+    }
+
+    @Test
+    public void test_object_links_with_ct_with_several_with_unclosed_quote() {
+        Registration reg = given_a_registration_with_object_link_like("</>;ct=\"0 42 11543,</1/0>,</3/0>");
+
+        // check root path
+        assertEquals("/", reg.getRootPath());
+
+        // Ensure supported objects are correct
+        Map<Integer, String> supportedObject = reg.getSupportedObject();
+        assertEquals(2, supportedObject.size());
+        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
+        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(3));
+
+        // Check Supported Content format
+        Set<ContentFormat> supportedContentFormats = reg.getSupportedContentFormats();
+        assertEquals(1, supportedContentFormats.size()); // 1 mandatory TLV content format for LWM2M v1.0
+        assertTrue(supportedContentFormats.containsAll(Arrays.asList(ContentFormat.TLV)));
+
+        // ensure available instances are correct
+        Set<LwM2mPath> availableInstances = reg.getAvailableInstances();
+        assertEquals(2, availableInstances.size());
+        assertTrue(availableInstances.containsAll(Arrays.asList(new LwM2mPath(1, 0), new LwM2mPath(3, 0))));
+    }
+
+    @Test
     public void test_object_links_with_default_rootpath() {
         Registration reg = given_a_registration_with_object_link_like(
-                "</>;rt=\"oma.lwm2m\";ct=0 42 11543,</1/0>,</3/0>");
+                "</>;rt=\"oma.lwm2m\";ct=\"0 42 11543\",</1/0>,</3/0>");
 
         // check root path
         assertEquals("/", reg.getRootPath());

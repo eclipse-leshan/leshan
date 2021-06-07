@@ -171,7 +171,7 @@ public class LinkFormatHelperTest {
         Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null,
                 Arrays.asList(ContentFormat.TLV, ContentFormat.JSON, ContentFormat.OPAQUE));
 
-        assertArrayEquals(Link.parse("</>;rt=\"oma.lwm2m\";ct=11542 11543 42,</6>".getBytes()), links);
+        assertArrayEquals(Link.parse("</>;rt=\"oma.lwm2m\";ct=\"11542 11543 42\",</6>".getBytes()), links);
     }
 
     @Test

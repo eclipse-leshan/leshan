@@ -659,19 +659,35 @@ public class Registration {
             Set<ContentFormat> supportedContentFormats = new HashSet<>();
 
             // add content format from ct attributes
-            String[] formats = ctValue.split(" ");
-            for (String codeAsString : formats) {
+            if (!ctValue.startsWith("\"")) {
                 try {
-                    ContentFormat contentformat = ContentFormat.fromCode(codeAsString);
-                    if (supportedContentFormats.contains(contentformat)) {
-                        LOG.warn("Duplicate Content format {} in ct={} attributes for registration {} of client {} ",
-                                codeAsString, supportedContentFormats, registrationId, endpoint);
-                    }
-                    supportedContentFormats.add(contentformat);
+                    supportedContentFormats.add(ContentFormat.fromCode(ctValue));
                 } catch (NumberFormatException e) {
                     LOG.warn(
-                            "Invalid supported Content format {} in ct={} attributes for registration {} of client {} ",
-                            codeAsString, supportedContentFormats, registrationId, endpoint);
+                            "Invalid supported Content format for ct attributes for registration {} of client {} :  [{}] is not an Integer",
+                            registrationId, endpoint, ctValue);
+                }
+            } else {
+                if (!ctValue.endsWith("\"")) {
+                    LOG.warn("Invalid ct value [{}] attributes for registration {} of client {} : end quote is missing",
+                            ctValue, registrationId, endpoint);
+                } else {
+                    String[] formats = Link.unquote(ctValue).split(" ");
+                    for (String codeAsString : formats) {
+                        try {
+                            ContentFormat contentformat = ContentFormat.fromCode(codeAsString);
+                            if (supportedContentFormats.contains(contentformat)) {
+                                LOG.warn(
+                                        "Duplicate Content format [{}] in ct={} attributes for registration {} of client {} ",
+                                        codeAsString, ctValue, registrationId, endpoint);
+                            }
+                            supportedContentFormats.add(contentformat);
+                        } catch (NumberFormatException e) {
+                            LOG.warn(
+                                    "Invalid supported Content format in ct={} attributes for registration {} of client {}: [{}] is not an Integer",
+                                    ctValue, registrationId, endpoint, codeAsString);
+                        }
+                    }
                 }
             }
 

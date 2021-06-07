@@ -56,14 +56,20 @@ public final class LinkFormatHelper {
         attributes.put("rt", "\"oma.lwm2m\"");
         // serialize contentFormat;
         if (supportedContentFormats != null && !supportedContentFormats.isEmpty()) {
-            StringBuilder b = new StringBuilder();
-            Iterator<ContentFormat> iterator = supportedContentFormats.iterator();
-            b.append(iterator.next().getCode());
-            while (iterator.hasNext()) {
-                b.append(" ");
+            if (supportedContentFormats.size() == 1) {
+                attributes.put("ct", Integer.toString(supportedContentFormats.get(0).getCode()));
+            } else {
+                StringBuilder b = new StringBuilder();
+                b.append("\"");
+                Iterator<ContentFormat> iterator = supportedContentFormats.iterator();
                 b.append(iterator.next().getCode());
+                while (iterator.hasNext()) {
+                    b.append(" ");
+                    b.append(iterator.next().getCode());
+                }
+                b.append("\"");
+                attributes.put("ct", b.toString());
             }
-            attributes.put("ct", b.toString());
         }
 
         links.add(new Link(rootURL, attributes));
