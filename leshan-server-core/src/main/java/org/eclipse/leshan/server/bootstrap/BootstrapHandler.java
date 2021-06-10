@@ -22,8 +22,9 @@ import org.eclipse.leshan.core.response.SendableResponse;
 
 /**
  * Handle the bootstrap logic at Server side. Check if the client is allowed to bootstrap, with the wanted security
- * scheme. Then send delete and write request to bootstrap the client, then close the bootstrap session by sending a
- * bootstrap finished request.
+ * scheme. Then send requests to the client, then close the bootstrap session by sending a bootstrap finished request.
+ * 
+ * @see DefaultBootstrapHandler
  */
 public interface BootstrapHandler {
 

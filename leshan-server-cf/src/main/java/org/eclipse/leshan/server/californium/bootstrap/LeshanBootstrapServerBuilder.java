@@ -406,13 +406,13 @@ public class LeshanBootstrapServerBuilder {
             configStore = new InMemoryBootstrapConfigurationStore();
 
         if (sessionManager == null)
-            sessionManager = new DefaultBootstrapSessionManager(securityStore);
+            sessionManager = new DefaultBootstrapSessionManager(securityStore, configStore);
         if (bootstrapHandlerFactory == null)
             bootstrapHandlerFactory = new BootstrapHandlerFactory() {
                 @Override
-                public BootstrapHandler create(BootstrapConfigurationStore store, LwM2mBootstrapRequestSender sender,
+                public BootstrapHandler create(LwM2mBootstrapRequestSender sender,
                         BootstrapSessionManager sessionManager) {
-                    return new DefaultBootstrapHandler(store, sender, sessionManager);
+                    return new DefaultBootstrapHandler(sender, sessionManager);
                 }
             };
         if (model == null)

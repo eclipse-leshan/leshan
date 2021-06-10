@@ -15,9 +15,13 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
+import java.util.List;
+
+import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.util.RandomStringUtils;
 import org.eclipse.leshan.core.util.Validate;
 
@@ -33,6 +37,7 @@ public class DefaultBootstrapSession implements BootstrapSession {
     private final ContentFormat contentFormat;
     private final long creationTime;
     private final BootstrapRequest request;
+    private List<BootstrapDownlinkRequest<? extends LwM2mResponse>> requests;
 
     private volatile boolean cancelled = false;
 
@@ -130,6 +135,14 @@ public class DefaultBootstrapSession implements BootstrapSession {
     @Override
     public BootstrapRequest getBootstrapRequest() {
         return request;
+    }
+
+    public List<BootstrapDownlinkRequest<? extends LwM2mResponse>> getRequests() {
+        return requests;
+    }
+
+    public void setRequests(List<BootstrapDownlinkRequest<? extends LwM2mResponse>> requests) {
+        this.requests = requests;
     }
 
     @Override

@@ -44,9 +44,8 @@ public class LeshanBootstrapServerTest {
         builder.setBootstrapHandlerFactory(new BootstrapHandlerFactory() {
 
             @Override
-            public BootstrapHandler create(BootstrapConfigurationStore store, LwM2mBootstrapRequestSender sender,
-                    BootstrapSessionManager sessionManager) {
-                bsHandler = new DefaultBootstrapHandler(store, sender, sessionManager);
+            public BootstrapHandler create(LwM2mBootstrapRequestSender sender, BootstrapSessionManager sessionManager) {
+                bsHandler = new DefaultBootstrapHandler(sender, sessionManager);
                 return bsHandler;
             }
         });

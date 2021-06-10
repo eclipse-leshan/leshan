@@ -34,7 +34,6 @@ import java.security.spec.ECPoint;
 import java.security.spec.ECPrivateKeySpec;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.KeySpec;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -140,7 +139,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         builder.setPrivateKey(bootstrapServerPrivateKey);
         builder.setPublicKey(bootstrapServerPublicKey);
-        builder.setSessionManager(new DefaultBootstrapSessionManager(securityStore) {
+        builder.setSessionManager(new DefaultBootstrapSessionManager(securityStore, bootstrapStore) {
 
             @Override
             public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity) {
@@ -170,18 +169,17 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         builder.setBootstrapHandlerFactory(new BootstrapHandlerFactory() {
 
             @Override
-            public BootstrapHandler create(BootstrapConfigurationStore store, LwM2mBootstrapRequestSender sender,
-                    BootstrapSessionManager sessionManager) {
-                return new DefaultBootstrapHandler(store, sender, sessionManager) {
+            public BootstrapHandler create(LwM2mBootstrapRequestSender sender, BootstrapSessionManager sessionManager) {
+                return new DefaultBootstrapHandler(sender, sessionManager) {
 
                     @Override
-                    protected void startBootstrap(final BootstrapSession session, final BootstrapConfiguration cfg) {
+                    protected void startBootstrap(final BootstrapSession session) {
                         send(session, request, new SafeResponseCallback<BootstrapDiscoverResponse>(session) {
 
                             @Override
                             public void safeOnResponse(BootstrapDiscoverResponse response) {
                                 lastDiscoverAnswer = response;
-                                sendRequest(session, cfg, new ArrayList<>(cfg.getRequests()));
+                                sendRequest(session, sessionManager.getFirstRequest(session));
                             }
                         }, new SafeErrorCallback(session) {
                             @Override

@@ -23,13 +23,13 @@ import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.server.resources.Resource;
+import org.eclipse.leshan.core.Destroyable;
+import org.eclipse.leshan.core.Startable;
+import org.eclipse.leshan.core.Stoppable;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.util.Validate;
-import org.eclipse.leshan.core.Destroyable;
-import org.eclipse.leshan.core.Startable;
-import org.eclipse.leshan.core.Stoppable;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfigurationStore;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
@@ -105,8 +105,7 @@ public class LeshanBootstrapServer {
         requestSender = createRequestSender(securedEndpoint, unsecuredEndpoint, model, encoder, decoder);
 
         // create bootstrap resource
-        CoapResource bsResource = createBootstrapResource(
-                bsHandlerFactory.create(bsStore, requestSender, bsSessionManager));
+        CoapResource bsResource = createBootstrapResource(bsHandlerFactory.create(requestSender, bsSessionManager));
         coapServer.add(bsResource);
     }
 

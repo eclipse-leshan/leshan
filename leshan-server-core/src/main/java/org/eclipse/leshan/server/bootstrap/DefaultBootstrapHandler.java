@@ -17,15 +17,12 @@ package org.eclipse.leshan.server.bootstrap;
 
 import static org.eclipse.leshan.server.bootstrap.BootstrapFailureCause.*;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.Identity;
-import org.eclipse.leshan.core.response.BootstrapFinishResponse;
 import org.eclipse.leshan.core.response.BootstrapResponse;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -37,6 +34,13 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A default implementation for {@link BootstrapHandler}.
+ * <p>
+ * It ensure there isn't 2 bootstrap session at the same time for a given client. If this happens the old one was stop
+ * and ongoing request are cancelled.
+ * <p>
+ * It also ensure that we send only one request at a time for a given client.
+ * <p>
+ * All the logic for a given session is delegate to a the {@link BootstrapSessionManager}.
  */
 public class DefaultBootstrapHandler implements BootstrapHandler {
 
@@ -46,34 +50,18 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
     // send a Confirmable message to the time when an acknowledgement is no longer expected.
     public static final long DEFAULT_TIMEOUT = 2 * 60 * 1000l; // 2min in ms
 
-    protected final BootstrapConfigurationStore store;
-
     protected final LwM2mBootstrapRequestSender sender;
     protected final long requestTimeout;
 
     protected final ConcurrentHashMap<String, BootstrapSession> onGoingSession = new ConcurrentHashMap<>();
     protected final BootstrapSessionManager sessionManager;
 
-    @Deprecated
-    public DefaultBootstrapHandler(BootstrapConfigStore store, LwM2mBootstrapRequestSender sender,
-            BootstrapSessionManager sessionManager) {
-        this(new BootstrapConfigurationStoreAdapter(store), sender, sessionManager, DEFAULT_TIMEOUT);
+    public DefaultBootstrapHandler(LwM2mBootstrapRequestSender sender, BootstrapSessionManager sessionManager) {
+        this(sender, sessionManager, DEFAULT_TIMEOUT);
     }
 
-    @Deprecated
-    public DefaultBootstrapHandler(BootstrapConfigStore store, LwM2mBootstrapRequestSender sender,
-            BootstrapSessionManager sessionManager, long requestTimeout) {
-        this(new BootstrapConfigurationStoreAdapter(store), sender, sessionManager, requestTimeout);
-    }
-
-    public DefaultBootstrapHandler(BootstrapConfigurationStore store, LwM2mBootstrapRequestSender sender,
-            BootstrapSessionManager sessionManager) {
-        this(store, sender, sessionManager, DEFAULT_TIMEOUT);
-    }
-
-    public DefaultBootstrapHandler(BootstrapConfigurationStore store, LwM2mBootstrapRequestSender sender,
-            BootstrapSessionManager sessionManager, long requestTimeout) {
-        this.store = store;
+    public DefaultBootstrapHandler(LwM2mBootstrapRequestSender sender, BootstrapSessionManager sessionManager,
+            long requestTimeout) {
         this.sender = sender;
         this.sessionManager = sessionManager;
         this.requestTimeout = requestTimeout;
@@ -103,9 +91,8 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
         }
 
         try {
-            // Get the desired bootstrap config for the endpoint
-            final BootstrapConfiguration cfg = store.get(endpoint, sender, session);
-            if (cfg == null) {
+            // check if there is a configuration to apply for this device
+            if (!sessionManager.hasConfigFor(session)) {
                 LOG.debug("No bootstrap config for {}", session);
                 stopSession(session, NO_BOOTSTRAP_CONFIG);
                 return new SendableResponse<>(BootstrapResponse.badRequest("no bootstrap config"));
@@ -115,7 +102,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             Runnable onSent = new Runnable() {
                 @Override
                 public void run() {
-                    startBootstrap(session, cfg);
+                    startBootstrap(session);
                 }
             };
             return new SendableResponse<>(BootstrapResponse.success(), onSent);
@@ -127,8 +114,8 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
         }
     }
 
-    protected void startBootstrap(BootstrapSession session, BootstrapConfiguration cfg) {
-        sendRequest(session, cfg, new ArrayList<>(cfg.getRequests()));
+    protected void startBootstrap(BootstrapSession session) {
+        sendRequest(session, sessionManager.getFirstRequest(session));
     }
 
     protected void stopSession(BootstrapSession session, BootstrapFailureCause cause) {
@@ -146,116 +133,49 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    protected void sendRequest(final BootstrapSession session, final BootstrapConfiguration cfg,
-            final List<BootstrapDownlinkRequest<? extends LwM2mResponse>> requestToSend) {
-        if (!requestToSend.isEmpty()) {
-            // get next request
-            final BootstrapDownlinkRequest request = requestToSend.get(0);
+    protected void sendRequest(final BootstrapSession session,
+            final BootstrapDownlinkRequest<? extends LwM2mResponse> requestToSend) {
 
-            send(session, request, new SafeResponseCallback(session) {
-                @Override
-                public void safeOnResponse(LwM2mResponse response) {
-                    if (response.isSuccess()) {
-                        LOG.trace("{} receives {} for {}", session, response, request);
-                        sessionManager.onResponseSuccess(session, request);
-                        afterRequest(session, cfg, requestToSend, BootstrapPolicy.CONTINUE);
-                    } else {
-                        LOG.debug("{} receives {} for {}", session, response, request);
-                        BootstrapPolicy policy = sessionManager.onResponseError(session, request, response);
-                        afterRequest(session, cfg, requestToSend, policy);
-                    }
-                }
-            }, new SafeErrorCallback(session) {
-                @Override
-                public void safeOnError(Exception e) {
-                    LOG.debug("Error for {} while sending {} ", session, request, e);
-                    BootstrapPolicy policy = sessionManager.onRequestFailure(session, request, e);
-                    afterRequest(session, cfg, requestToSend, policy);
-                }
-            });
-        } else {
-            // we are done, send bootstrap finished.
-            bootstrapFinished(session, cfg);
-        }
-    }
-
-    protected void afterRequest(BootstrapSession session, BootstrapConfiguration cfg,
-            final List<BootstrapDownlinkRequest<? extends LwM2mResponse>> requestToSend, BootstrapPolicy policy) {
-        if (session.isCancelled()) {
-            stopSession(session, CANCELLED);
-            return;
-        }
-        switch (policy) {
-        case CONTINUE:
-            requestToSend.remove(0);
-            sendRequest(session, cfg, requestToSend);
-            break;
-        case RETRY:
-            sendRequest(session, cfg, requestToSend);
-            break;
-        case RETRYALL:
-            startBootstrap(session, cfg);
-            break;
-        case SEND_FINISHED:
-            bootstrapFinished(session, cfg);
-            break;
-        case STOP:
-            stopSession(session, REQUEST_FAILED);
-            break;
-        default:
-            throw new IllegalStateException("unknown policy :" + policy);
-        }
-    }
-
-    protected void bootstrapFinished(final BootstrapSession session, final BootstrapConfiguration cfg) {
-
-        final BootstrapFinishRequest finishBootstrapRequest = new BootstrapFinishRequest();
-        send(session, finishBootstrapRequest, new SafeResponseCallback<BootstrapFinishResponse>(session) {
+        send(session, requestToSend, new SafeResponseCallback(session) {
             @Override
-            public void safeOnResponse(BootstrapFinishResponse response) {
+            public void safeOnResponse(LwM2mResponse response) {
                 if (response.isSuccess()) {
-                    LOG.trace("{} receives {} for {}", session, response, finishBootstrapRequest);
-                    sessionManager.onResponseSuccess(session, finishBootstrapRequest);
-                    afterBootstrapFinished(session, cfg, BootstrapPolicy.CONTINUE);
+                    LOG.trace("{} receives {} for {}", session, response, requestToSend);
+                    BootstrapPolicy policy = sessionManager.onResponseSuccess(session, requestToSend);
+                    afterRequest(session, policy, requestToSend);
                 } else {
-                    LOG.debug("{} receives {} for {}", session, response, finishBootstrapRequest);
-                    BootstrapPolicy policy = sessionManager.onResponseError(session, finishBootstrapRequest, response);
-                    afterBootstrapFinished(session, cfg, policy);
+                    LOG.debug("{} receives {} for {}", session, response, requestToSend);
+                    BootstrapPolicy policy = sessionManager.onResponseError(session, requestToSend, response);
+                    afterRequest(session, policy, requestToSend);
                 }
             }
         }, new SafeErrorCallback(session) {
             @Override
             public void safeOnError(Exception e) {
-                LOG.debug("Error for {} while sending {} ", session, finishBootstrapRequest, e);
-                BootstrapPolicy policy = sessionManager.onRequestFailure(session, finishBootstrapRequest, e);
-                afterBootstrapFinished(session, cfg, policy);
+                LOG.debug("Error for {} while sending {} ", session, requestToSend, e);
+                BootstrapPolicy policy = sessionManager.onRequestFailure(session, requestToSend, e);
+                afterRequest(session, policy, requestToSend);
             }
         });
     }
 
-    protected void afterBootstrapFinished(BootstrapSession session, BootstrapConfiguration cfg,
-            BootstrapPolicy policy) {
+    protected void afterRequest(BootstrapSession session, BootstrapPolicy policy,
+            BootstrapDownlinkRequest<? extends LwM2mResponse> requestSent) {
         if (session.isCancelled()) {
             stopSession(session, CANCELLED);
             return;
         }
-        switch (policy) {
-        case CONTINUE:
+        if (policy.shouldContinue()) {
+            sendRequest(session, policy.nextRequest());
+        } else if (policy.shouldfail()) {
+            if (requestSent instanceof BootstrapFinishRequest) {
+                stopSession(session, FINISH_FAILED);
+            } else {
+                stopSession(session, REQUEST_FAILED);
+            }
+        } else if (policy.shouldFinish()) {
             stopSession(session, null);
-            break;
-        case RETRY:
-            bootstrapFinished(session, cfg);
-            break;
-        case RETRYALL:
-            startBootstrap(session, cfg);
-            break;
-        case SEND_FINISHED:
-            bootstrapFinished(session, cfg);
-            break;
-        case STOP:
-            stopSession(session, FINISH_FAILED);
-            break;
-        default:
+        } else {
             throw new IllegalStateException("unknown policy :" + policy);
         }
     }
