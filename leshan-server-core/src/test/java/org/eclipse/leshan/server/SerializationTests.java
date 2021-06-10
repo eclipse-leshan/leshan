@@ -19,7 +19,6 @@ import static org.junit.Assert.fail;
 
 import java.util.Map;
 
-import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.junit.Test;
 
@@ -28,11 +27,6 @@ public class SerializationTests {
     @Test
     public void ensure_SecurityInfo_is_serializable() {
         assertIsSerializable(SecurityInfo.class);
-    }
-
-    @Test
-    public void ensure_BootstrapConfig_is_serializable() {
-        assertIsSerializable(BootstrapConfig.class);
     }
 
     private static void assertIsSerializable(Class<?> clazz, String... excludes) {

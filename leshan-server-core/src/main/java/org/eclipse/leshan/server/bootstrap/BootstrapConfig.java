@@ -15,7 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -42,9 +41,7 @@ import org.eclipse.leshan.core.request.BindingMode;
  * @see BootstrapConfigStore
  * @see DefaultBootstrapHandler
  */
-public class BootstrapConfig implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class BootstrapConfig {
 
     /**
      * List of LWM2M path to delete.
@@ -67,8 +64,7 @@ public class BootstrapConfig implements Serializable {
     public Map<Integer, ACLConfig> acls = new HashMap<>();
 
     /** Server Configuration (object 1) as defined in LWM2M 1.0.x TS. */
-    public static class ServerConfig implements Serializable {
-        private static final long serialVersionUID = 1L;
+    public static class ServerConfig {
 
         /** Used as link to associate server Object Instance. */
         public int shortId;
@@ -123,8 +119,7 @@ public class BootstrapConfig implements Serializable {
      * One Object Instance SHOULD address a LwM2M Bootstrap-Server. These LwM2M Object Resources MUST only be changed by
      * a LwM2M Bootstrap-Server or Bootstrap from Smartcard and MUST NOT be accessible by any other LwM2M Server.
      */
-    public static class ServerSecurity implements Serializable {
-        private static final long serialVersionUID = 1L;
+    public static class ServerSecurity {
 
         /**
          * Uniquely identifies the LwM2M Server or LwM2M Bootstrap-Server. The format of the CoAP URI is defined in
@@ -252,8 +247,7 @@ public class BootstrapConfig implements Serializable {
      * <p>
      * Access Control Object is used to check whether the LwM2M Server has access right for performing an operation.
      */
-    public static class ACLConfig implements Serializable {
-        private static final long serialVersionUID = 1L;
+    public static class ACLConfig {
 
         /** The Object ID of the Object Instance for which ACL are applied. */
         public int objectId;
