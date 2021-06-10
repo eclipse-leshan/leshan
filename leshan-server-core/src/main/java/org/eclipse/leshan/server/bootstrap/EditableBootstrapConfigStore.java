@@ -19,13 +19,7 @@ import java.util.Map;
 
 /**
  * An editable {@link BootstrapConfigStore}.
- * 
- * @deprecated use {@link EditableBootstrapConfigurationStore} instead or see {@link BootstrapConfigurationStoreAdapter}
- *             or
- *             {@link BootstrapUtil#toRequests(BootstrapConfig, org.eclipse.leshan.core.request.ContentFormat)}
- * 
  */
-@Deprecated
 public interface EditableBootstrapConfigStore extends BootstrapConfigStore {
 
     /**

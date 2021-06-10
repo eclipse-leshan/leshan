@@ -43,7 +43,7 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
 
     private BootstrapSecurityStore bsSecurityStore;
     private SecurityChecker securityChecker;
-    private BootstrapConfigurationStore configStore;
+    private BootstrapConfigStore configStore;
 
     /**
      * Create a {@link DefaultBootstrapSessionManager} using a default {@link SecurityChecker} to accept or refuse new
@@ -51,8 +51,7 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
      * 
      * @param bsSecurityStore the {@link BootstrapSecurityStore} used by default {@link SecurityChecker}.
      */
-    public DefaultBootstrapSessionManager(BootstrapSecurityStore bsSecurityStore,
-            BootstrapConfigurationStore configStore) {
+    public DefaultBootstrapSessionManager(BootstrapSecurityStore bsSecurityStore, BootstrapConfigStore configStore) {
         this(bsSecurityStore, new SecurityChecker(), configStore);
     }
 
@@ -63,7 +62,7 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
      * @param securityChecker used to accept or refuse new {@link BootstrapSession}.
      */
     public DefaultBootstrapSessionManager(BootstrapSecurityStore bsSecurityStore, SecurityChecker securityChecker,
-            BootstrapConfigurationStore configStore) {
+            BootstrapConfigStore configStore) {
         Validate.notNull(configStore);
         this.bsSecurityStore = bsSecurityStore;
         this.securityChecker = securityChecker;
@@ -86,11 +85,14 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
 
     @Override
     public boolean hasConfigFor(BootstrapSession session) {
-        BootstrapConfiguration configuration = configStore.get(session.getEndpoint(), session.getIdentity(), session);
+        BootstrapConfig configuration = configStore.get(session.getEndpoint(), session.getIdentity(), session);
         if (configuration == null)
             return false;
 
-        ((DefaultBootstrapSession) session).setRequests(configuration.getRequests());
+        List<BootstrapDownlinkRequest<? extends LwM2mResponse>> requests = BootstrapUtil.toRequests(configuration,
+                session.getContentFormat());
+
+        ((DefaultBootstrapSession) session).setRequests(requests);
         return true;
     }
 

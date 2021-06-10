@@ -48,7 +48,6 @@ import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.util.SecurityUtil;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfigurationStoreAdapter;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.BootstrapServlet;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.ServerServlet;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
@@ -357,7 +356,7 @@ public class LeshanBootstrapServerDemo {
         // Prepare and start bootstrap server
         LeshanBootstrapServerBuilder builder = new LeshanBootstrapServerBuilder();
         JSONFileBootstrapStore bsStore = new JSONFileBootstrapStore(configFilename);
-        builder.setConfigStore(new BootstrapConfigurationStoreAdapter(bsStore));
+        builder.setConfigStore(bsStore);
         builder.setSecurityStore(new BootstrapConfigSecurityStore(bsStore));
         builder.setModel(new StaticModel(models));
 

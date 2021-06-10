@@ -48,7 +48,7 @@ public class BootstrapHandlerTest {
     public void error_if_not_authorized() {
         // prepare bootstrapHandler with a session manager which does not authorized any session
         BootstrapSessionManager bsSessionManager = new MockBootstrapSessionManager(false,
-                new InMemoryBootstrapConfigurationStore());
+                new InMemoryBootstrapConfigStore());
         BootstrapHandler bsHandler = new DefaultBootstrapHandler(null, bsSessionManager);
 
         // Try to bootstrap
@@ -66,8 +66,8 @@ public class BootstrapHandlerTest {
         // and a sender which "obtains" always successful response.
         // and a config store with and an empty config for the expected endpoint
         LwM2mBootstrapRequestSender requestSender = new MockRequestSender(Mode.ALWAYS_SUCCESS);
-        EditableBootstrapConfigurationStore bsStore = new InMemoryBootstrapConfigurationStore();
-        bsStore.add("endpoint", new BootstrapConfiguration());
+        EditableBootstrapConfigStore bsStore = new InMemoryBootstrapConfigStore();
+        bsStore.add("endpoint", new BootstrapConfig());
         MockBootstrapSessionManager bsSessionManager = new MockBootstrapSessionManager(true, bsStore);
 
         BootstrapHandler bsHandler = new DefaultBootstrapHandler(requestSender, bsSessionManager);
@@ -88,8 +88,8 @@ public class BootstrapHandlerTest {
         // and a sender which always failed to send request.
         // and a config store with and an empty config for the expected endpoint
         LwM2mBootstrapRequestSender requestSender = new MockRequestSender(Mode.ALWAYS_FAILURE);
-        EditableBootstrapConfigurationStore bsStore = new InMemoryBootstrapConfigurationStore();
-        bsStore.add("endpoint", new BootstrapConfiguration());
+        EditableBootstrapConfigStore bsStore = new InMemoryBootstrapConfigStore();
+        bsStore.add("endpoint", new BootstrapConfig());
         MockBootstrapSessionManager bsSessionManager = new MockBootstrapSessionManager(true, bsStore);
         BootstrapHandler bsHandler = new DefaultBootstrapHandler(requestSender, bsSessionManager);
 
@@ -111,8 +111,8 @@ public class BootstrapHandlerTest {
         // and a sender which never get response.
         // and a config store with and an empty config for the expected endpoint
         MockRequestSender requestSender = new MockRequestSender(Mode.NO_RESPONSE);
-        EditableBootstrapConfigurationStore bsStore = new InMemoryBootstrapConfigurationStore();
-        bsStore.add("endpoint", new BootstrapConfiguration());
+        EditableBootstrapConfigStore bsStore = new InMemoryBootstrapConfigStore();
+        bsStore.add("endpoint", new BootstrapConfig());
         MockBootstrapSessionManager bsSessionManager = new MockBootstrapSessionManager(true, bsStore);
         BootstrapHandler bsHandler = new DefaultBootstrapHandler(requestSender, bsSessionManager,
                 DefaultBootstrapHandler.DEFAULT_TIMEOUT);
@@ -219,7 +219,7 @@ public class BootstrapHandlerTest {
         private List<BootstrapSession> endedSession = new ArrayList<BootstrapSession>();
         private Map<BootstrapSession, BootstrapFailureCause> failureCauses = new HashMap<>();
 
-        public MockBootstrapSessionManager(boolean authorized, BootstrapConfigurationStore store) {
+        public MockBootstrapSessionManager(boolean authorized, BootstrapConfigStore store) {
             super(null, store);
             this.authorized = authorized;
         }

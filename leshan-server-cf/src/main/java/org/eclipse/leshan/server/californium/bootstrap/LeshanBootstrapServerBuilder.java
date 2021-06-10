@@ -44,14 +44,13 @@ import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfigurationStore;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfigurationStoreAdapter;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapSessionManager;
-import org.eclipse.leshan.server.bootstrap.InMemoryBootstrapConfigurationStore;
+import org.eclipse.leshan.server.bootstrap.InMemoryBootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.slf4j.Logger;
@@ -69,7 +68,7 @@ public class LeshanBootstrapServerBuilder {
 
     private InetSocketAddress localAddress;
     private InetSocketAddress localAddressSecure;
-    private BootstrapConfigurationStore configStore;
+    private BootstrapConfigStore configStore;
     private BootstrapSecurityStore securityStore;
     private BootstrapSessionManager sessionManager;
     private BootstrapHandlerFactory bootstrapHandlerFactory;
@@ -220,18 +219,17 @@ public class LeshanBootstrapServerBuilder {
     }
 
     /**
-     * Set the {@link BootstrapConfigurationStore} containing bootstrap configuration to apply to each devices.
+     * Set the {@link BootstrapConfigStore} containing bootstrap configuration to apply to each devices.
      * <p>
-     * By default an {@link InMemoryBootstrapConfigurationStore} is used.
+     * By default an {@link InMemoryBootstrapConfigStore} is used.
      * <p>
      * See {@link BootstrapConfig} to see what is could be done during a bootstrap session.
      * 
      * @param configStore the bootstrap configuration store.
      * @return the builder for fluent Bootstrap Server creation.
      * 
-     * @see BootstrapConfigurationStoreAdapter
      */
-    public LeshanBootstrapServerBuilder setConfigStore(BootstrapConfigurationStore configStore) {
+    public LeshanBootstrapServerBuilder setConfigStore(BootstrapConfigStore configStore) {
         this.configStore = configStore;
         return this;
     }
@@ -403,7 +401,7 @@ public class LeshanBootstrapServerBuilder {
         if (localAddress == null)
             localAddress = new InetSocketAddress(LwM2m.DEFAULT_COAP_PORT);
         if (configStore == null)
-            configStore = new InMemoryBootstrapConfigurationStore();
+            configStore = new InMemoryBootstrapConfigStore();
 
         if (sessionManager == null)
             sessionManager = new DefaultBootstrapSessionManager(securityStore, configStore);
@@ -597,7 +595,7 @@ public class LeshanBootstrapServerBuilder {
      * @return the LWM2M Bootstrap server.
      */
     protected LeshanBootstrapServer createBootstrapServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
-            BootstrapConfigurationStore bsStore, BootstrapSecurityStore bsSecurityStore,
+            BootstrapConfigStore bsStore, BootstrapSecurityStore bsSecurityStore,
             BootstrapSessionManager bsSessionManager, BootstrapHandlerFactory bsHandlerFactory, LwM2mModel model,
             NetworkConfig coapConfig, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
         return new LeshanBootstrapServer(unsecuredEndpoint, securedEndpoint, bsStore, bsSecurityStore, bsSessionManager,

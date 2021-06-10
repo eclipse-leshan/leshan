@@ -20,10 +20,7 @@ import org.eclipse.leshan.core.request.Identity;
 /**
  * A store containing the bootstrap information to be sent to the devices.
  * 
- * @deprecated use {@link BootstrapConfigurationStore} instead or see {@link BootstrapConfigurationStoreAdapter} or
- *             {@link BootstrapUtil#toRequests(BootstrapConfig, org.eclipse.leshan.core.request.ContentFormat)}
  */
-@Deprecated
 public interface BootstrapConfigStore {
 
     /**
