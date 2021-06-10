@@ -70,6 +70,7 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
     public DefaultBootstrapSessionManager(BootstrapSecurityStore bsSecurityStore, SecurityChecker securityChecker,
             BootstrapTaskProvider tasksProvider, LwM2mBootstrapModelProvider modelProvider) {
         Validate.notNull(tasksProvider);
+        Validate.notNull(modelProvider);
         this.bsSecurityStore = bsSecurityStore;
         this.securityChecker = securityChecker;
         this.tasksProvider = tasksProvider;
@@ -79,7 +80,7 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
     @Override
     public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity) {
         boolean authorized;
-        if (bsSecurityStore != null) {
+        if (bsSecurityStore != null && securityChecker != null) {
             Iterator<SecurityInfo> securityInfos = bsSecurityStore.getAllByEndpoint(request.getEndpointName());
             authorized = securityChecker.checkSecurityInfos(request.getEndpointName(), clientIdentity, securityInfos);
         } else {
@@ -87,6 +88,7 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
         }
         DefaultBootstrapSession session = new DefaultBootstrapSession(request, clientIdentity, authorized);
         LOG.trace("Bootstrap session started : {}", session);
+
         return session;
     }
 

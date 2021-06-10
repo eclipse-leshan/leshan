@@ -131,12 +131,11 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         }
 
         LeshanBootstrapServerBuilder builder = new LeshanBootstrapServerBuilder();
-        builder.setConfigStore(bootstrapStore);
-        builder.setSecurityStore(securityStore);
         builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         builder.setPrivateKey(bootstrapServerPrivateKey);
         builder.setPublicKey(bootstrapServerPublicKey);
+        builder.setSecurityStore(securityStore);
         builder.setSessionManager(new DefaultBootstrapSessionManager(securityStore, bootstrapStore) {
 
             @Override

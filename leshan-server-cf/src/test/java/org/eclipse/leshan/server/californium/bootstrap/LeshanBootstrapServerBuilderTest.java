@@ -70,7 +70,6 @@ public class LeshanBootstrapServerBuilderTest {
 
         assertNotNull(server.getSecuredAddress());
         assertNotNull(server.getUnsecuredAddress());
-        assertNotNull(server.getBootstrapSecurityStore());
     }
 
     @Test

@@ -42,6 +42,7 @@ import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfigStoreTaskProvider;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
@@ -49,7 +50,6 @@ import org.eclipse.leshan.server.bootstrap.DefaultBootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.InMemoryBootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfigStoreTaskProvider;
 import org.eclipse.leshan.server.model.LwM2mBootstrapModelProvider;
 import org.eclipse.leshan.server.model.StandardBootstrapModelProvider;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
@@ -397,9 +397,6 @@ public class LeshanBootstrapServerBuilder {
     public LeshanBootstrapServer build() {
         if (localAddress == null)
             localAddress = new InetSocketAddress(LwM2m.DEFAULT_COAP_PORT);
-        if (configStore == null)
-            configStore = new InMemoryBootstrapConfigStore();
-
         if (bootstrapHandlerFactory == null)
             bootstrapHandlerFactory = new BootstrapHandlerFactory() {
                 @Override
@@ -408,11 +405,21 @@ public class LeshanBootstrapServerBuilder {
                     return new DefaultBootstrapHandler(sender, sessionManager);
                 }
             };
-        if (modelProvider == null)
+        if (configStore == null) {
+            configStore = new InMemoryBootstrapConfigStore();
+        } else if (sessionManager != null) {
+            LOG.warn("configStore is set but you also provide a custom SessionManager so this store will not be used");
+        }
+        if (modelProvider == null) {
             modelProvider = new StandardBootstrapModelProvider();
-        if (sessionManager == null)
+        } else if (sessionManager != null) {
+            LOG.warn(
+                    "modelProvider is set but you also provide a custom SessionManager so this provider will not be used");
+        }
+        if (sessionManager == null) {
             sessionManager = new DefaultBootstrapSessionManager(securityStore, new SecurityChecker(),
                     new BootstrapConfigStoreTaskProvider(configStore), modelProvider);
+        }
         if (coapConfig == null) {
             coapConfig = createDefaultNetworkConfig();
         }
@@ -562,8 +569,8 @@ public class LeshanBootstrapServerBuilder {
                     "All CoAP enpoints are deactivated, at least one endpoint should be activated");
         }
 
-        return createBootstrapServer(unsecuredEndpoint, securedEndpoint, configStore, securityStore, sessionManager,
-                bootstrapHandlerFactory, coapConfig, encoder, decoder);
+        return createBootstrapServer(unsecuredEndpoint, securedEndpoint, sessionManager, bootstrapHandlerFactory,
+                coapConfig, encoder, decoder);
     }
 
     /**
@@ -582,8 +589,6 @@ public class LeshanBootstrapServerBuilder {
      * 
      * @param unsecuredEndpoint CoAP endpoint used for <code>coap://</code> communication.
      * @param securedEndpoint CoAP endpoint used for <code>coaps://</code> communication.
-     * @param bsStore the bootstrap configuration store.
-     * @param bsSecurityStore the security store used to authenticate devices.
      * @param bsSessionManager the manager responsible to handle bootstrap session.
      * @param bsHandlerFactory the factory used to create {@link BootstrapHandler}.
      * @param coapConfig the CoAP configuration.
@@ -592,10 +597,9 @@ public class LeshanBootstrapServerBuilder {
      * @return the LWM2M Bootstrap server.
      */
     protected LeshanBootstrapServer createBootstrapServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
-            BootstrapConfigStore bsStore, BootstrapSecurityStore bsSecurityStore,
             BootstrapSessionManager bsSessionManager, BootstrapHandlerFactory bsHandlerFactory,
             NetworkConfig coapConfig, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
-        return new LeshanBootstrapServer(unsecuredEndpoint, securedEndpoint, bsStore, bsSecurityStore, bsSessionManager,
-                bsHandlerFactory, coapConfig, encoder, decoder);
+        return new LeshanBootstrapServer(unsecuredEndpoint, securedEndpoint, bsSessionManager, bsHandlerFactory,
+                coapConfig, encoder, decoder);
     }
 }
