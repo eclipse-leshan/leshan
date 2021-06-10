@@ -26,7 +26,6 @@ import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
-import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.util.Validate;
@@ -70,20 +69,18 @@ public class LeshanBootstrapServer {
      * @param bsSecurityStore the store containing security information needed to authenticate a client.
      * @param bsSessionManager manages life cycle of a bootstrap process
      * @param bsHandlerFactory responsible to create the {@link BootstrapHandler}
-     * @param model the {@link LwM2mModel} used mainly to decode an encode LWM2M payload.
      * @param coapConfig the CoAP {@link NetworkConfig}.
      * @param encoder encode used to encode request payload.
      * @param decoder decoder used to decode response payload.
      */
     public LeshanBootstrapServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             BootstrapConfigStore bsStore, BootstrapSecurityStore bsSecurityStore,
-            BootstrapSessionManager bsSessionManager, BootstrapHandlerFactory bsHandlerFactory, LwM2mModel model,
+            BootstrapSessionManager bsSessionManager, BootstrapHandlerFactory bsHandlerFactory,
             NetworkConfig coapConfig, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
 
         Validate.notNull(bsStore, "bootstrap store must not be null");
         Validate.notNull(bsSessionManager, "session manager must not be null");
         Validate.notNull(bsHandlerFactory, "BootstrapHandler factory must not be null");
-        Validate.notNull(model, "model must not be null");
         Validate.notNull(coapConfig, "coapConfig must not be null");
 
         this.bsStore = bsStore;
@@ -102,7 +99,7 @@ public class LeshanBootstrapServer {
             coapServer.addEndpoint(securedEndpoint);
 
         // create request sender
-        requestSender = createRequestSender(securedEndpoint, unsecuredEndpoint, model, encoder, decoder);
+        requestSender = createRequestSender(securedEndpoint, unsecuredEndpoint, encoder, decoder);
 
         // create bootstrap resource
         CoapResource bsResource = createBootstrapResource(bsHandlerFactory.create(requestSender, bsSessionManager));
@@ -119,8 +116,8 @@ public class LeshanBootstrapServer {
     }
 
     protected LwM2mBootstrapRequestSender createRequestSender(Endpoint securedEndpoint, Endpoint unsecuredEndpoint,
-            LwM2mModel model, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
-        return new CaliforniumLwM2mBootstrapRequestSender(securedEndpoint, unsecuredEndpoint, model, encoder, decoder);
+            LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
+        return new CaliforniumLwM2mBootstrapRequestSender(securedEndpoint, unsecuredEndpoint, encoder, decoder);
     }
 
     protected CoapResource createBootstrapResource(BootstrapHandler handler) {

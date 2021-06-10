@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -24,6 +25,8 @@ import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.util.Validate;
+import org.eclipse.leshan.server.model.LwM2mBootstrapModelProvider;
+import org.eclipse.leshan.server.model.StandardBootstrapModelProvider;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityChecker;
 import org.eclipse.leshan.server.security.SecurityInfo;
@@ -44,6 +47,7 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
     private BootstrapSecurityStore bsSecurityStore;
     private SecurityChecker securityChecker;
     private BootstrapConfigStore configStore;
+    private LwM2mBootstrapModelProvider modelProvider;
 
     /**
      * Create a {@link DefaultBootstrapSessionManager} using a default {@link SecurityChecker} to accept or refuse new
@@ -52,7 +56,7 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
      * @param bsSecurityStore the {@link BootstrapSecurityStore} used by default {@link SecurityChecker}.
      */
     public DefaultBootstrapSessionManager(BootstrapSecurityStore bsSecurityStore, BootstrapConfigStore configStore) {
-        this(bsSecurityStore, new SecurityChecker(), configStore);
+        this(bsSecurityStore, new SecurityChecker(), configStore, new StandardBootstrapModelProvider());
     }
 
     /**
@@ -62,11 +66,12 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
      * @param securityChecker used to accept or refuse new {@link BootstrapSession}.
      */
     public DefaultBootstrapSessionManager(BootstrapSecurityStore bsSecurityStore, SecurityChecker securityChecker,
-            BootstrapConfigStore configStore) {
+            BootstrapConfigStore configStore, LwM2mBootstrapModelProvider modelProvider) {
         Validate.notNull(configStore);
         this.bsSecurityStore = bsSecurityStore;
         this.securityChecker = securityChecker;
         this.configStore = configStore;
+        this.modelProvider = modelProvider;
     }
 
     @Override
@@ -89,11 +94,23 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
         if (configuration == null)
             return false;
 
+        initSessionFromConfig(session, configuration);
+        return true;
+    }
+
+    protected void initSessionFromConfig(BootstrapSession bssession, BootstrapConfig configuration) {
+        DefaultBootstrapSession session = (DefaultBootstrapSession) bssession;
+        // set models
+        HashMap<Integer, String> supportedObjects = new HashMap<>();
+        supportedObjects.put(0, "1.0");
+        supportedObjects.put(1, "1.0");
+        supportedObjects.put(2, "1.0");
+        session.setModel(modelProvider.getObjectModel(session, supportedObjects));
+
+        // set Requests to Send
         List<BootstrapDownlinkRequest<? extends LwM2mResponse>> requests = BootstrapUtil.toRequests(configuration,
                 session.getContentFormat());
-
-        ((DefaultBootstrapSession) session).setRequests(requests);
-        return true;
+        session.setRequests(requests);
     }
 
     @Override

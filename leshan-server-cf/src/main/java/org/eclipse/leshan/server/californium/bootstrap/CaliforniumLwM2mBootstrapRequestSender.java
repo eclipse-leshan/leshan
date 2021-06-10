@@ -16,7 +16,7 @@
 package org.eclipse.leshan.server.californium.bootstrap;
 
 import org.eclipse.californium.core.network.Endpoint;
-import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
@@ -30,7 +30,6 @@ import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
-import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.server.bootstrap.BootstrapSession;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
 import org.eclipse.leshan.server.californium.request.RequestSender;
@@ -44,19 +43,16 @@ public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapReq
 
     static final Logger LOG = LoggerFactory.getLogger(CaliforniumLwM2mBootstrapRequestSender.class);
 
-    private final LwM2mModel model;
     private final RequestSender sender;
 
     /**
      * @param secureEndpoint The endpoint used to send coaps request.
      * @param nonSecureEndpoint The endpoint used to send coap request.
-     * @param model the {@link LwM2mModel} used to encode/decode {@link LwM2mNode}.
      * @param encoder The {@link LwM2mNodeEncoder} used to encode {@link LwM2mNode}.
      * @param decoder The {@link LwM2mNodeDecoder} used to encode {@link LwM2mNode}.
      */
-    public CaliforniumLwM2mBootstrapRequestSender(Endpoint secureEndpoint, Endpoint nonSecureEndpoint, LwM2mModel model,
+    public CaliforniumLwM2mBootstrapRequestSender(Endpoint secureEndpoint, Endpoint nonSecureEndpoint,
             LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
-        this.model = model;
         this.sender = new RequestSender(secureEndpoint, nonSecureEndpoint, encoder, decoder);
     }
 
@@ -83,8 +79,9 @@ public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapReq
     @Override
     public <T extends LwM2mResponse> T send(BootstrapSession destination, DownlinkRequest<T> request, long timeoutInMs)
             throws InterruptedException {
-        return sender.sendLwm2mRequest(destination.getEndpoint(), destination.getIdentity(), destination.getId(), model,
-                null, request, null, timeoutInMs, false);
+
+        return sender.sendLwm2mRequest(destination.getEndpoint(), destination.getIdentity(), destination.getId(),
+                destination.getModel(), null, request, null, timeoutInMs, false);
     }
 
     /**
@@ -116,8 +113,9 @@ public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapReq
     @Override
     public <T extends LwM2mResponse> void send(BootstrapSession destination, DownlinkRequest<T> request,
             long timeoutInMs, ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
-        sender.sendLwm2mRequest(destination.getEndpoint(), destination.getIdentity(), destination.getId(), model, null,
-                request, null, timeoutInMs, responseCallback, errorCallback, false);
+
+        sender.sendLwm2mRequest(destination.getEndpoint(), destination.getIdentity(), destination.getId(),
+                destination.getModel(), null, request, null, timeoutInMs, responseCallback, errorCallback, false);
     }
 
     /**

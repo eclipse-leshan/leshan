@@ -17,6 +17,7 @@ package org.eclipse.leshan.server.bootstrap;
 
 import java.util.List;
 
+import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -37,6 +38,7 @@ public class DefaultBootstrapSession implements BootstrapSession {
     private final ContentFormat contentFormat;
     private final long creationTime;
     private final BootstrapRequest request;
+    private LwM2mModel model;
     private List<BootstrapDownlinkRequest<? extends LwM2mResponse>> requests;
 
     private volatile boolean cancelled = false;
@@ -143,6 +145,15 @@ public class DefaultBootstrapSession implements BootstrapSession {
 
     public void setRequests(List<BootstrapDownlinkRequest<? extends LwM2mResponse>> requests) {
         this.requests = requests;
+    }
+
+    @Override
+    public LwM2mModel getModel() {
+        return model;
+    }
+
+    public void setModel(LwM2mModel model) {
+        this.model = model;
     }
 
     @Override

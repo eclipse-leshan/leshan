@@ -35,9 +35,6 @@ import org.eclipse.californium.scandium.dtls.x509.BridgeCertificateVerifier;
 import org.eclipse.leshan.core.LwM2m;
 import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.californium.EndpointFactory;
-import org.eclipse.leshan.core.model.LwM2mModel;
-import org.eclipse.leshan.core.model.ObjectLoader;
-import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
@@ -52,7 +49,10 @@ import org.eclipse.leshan.server.bootstrap.DefaultBootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.InMemoryBootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
+import org.eclipse.leshan.server.model.LwM2mBootstrapModelProvider;
+import org.eclipse.leshan.server.model.StandardBootstrapModelProvider;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
+import org.eclipse.leshan.server.security.SecurityChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,7 +73,7 @@ public class LeshanBootstrapServerBuilder {
     private BootstrapSessionManager sessionManager;
     private BootstrapHandlerFactory bootstrapHandlerFactory;
 
-    private LwM2mModel model;
+    private LwM2mBootstrapModelProvider modelProvider;
     private NetworkConfig coapConfig;
     private Builder dtlsConfigBuilder;
 
@@ -278,18 +278,14 @@ public class LeshanBootstrapServerBuilder {
     }
 
     /**
-     * Advanced setter used to customize default {@link LwM2mModel}. This model is mainly used for data encoding of
-     * Bootstrap write request.
      * <p>
-     * By default, LWM2M object models defined in LWM2M v1.1.x are used.
-     * <p>
-     * WARNING: Only 1 version by object is supported for now.
+     * Set your {@link LwM2mBootstrapModelProvider} implementation.
+     * </p>
+     * By default the {@link StandardBootstrapModelProvider}.
      * 
-     * @param model the LWM2M Model.
-     * @return the builder for fluent Bootstrap Server creation.
      */
-    public LeshanBootstrapServerBuilder setModel(LwM2mModel model) {
-        this.model = model;
+    public LeshanBootstrapServerBuilder setObjectModelProvider(LwM2mBootstrapModelProvider objectModelProvider) {
+        this.modelProvider = objectModelProvider;
         return this;
     }
 
@@ -403,8 +399,6 @@ public class LeshanBootstrapServerBuilder {
         if (configStore == null)
             configStore = new InMemoryBootstrapConfigStore();
 
-        if (sessionManager == null)
-            sessionManager = new DefaultBootstrapSessionManager(securityStore, configStore);
         if (bootstrapHandlerFactory == null)
             bootstrapHandlerFactory = new BootstrapHandlerFactory() {
                 @Override
@@ -413,8 +407,11 @@ public class LeshanBootstrapServerBuilder {
                     return new DefaultBootstrapHandler(sender, sessionManager);
                 }
             };
-        if (model == null)
-            model = new StaticModel(ObjectLoader.loadDefault());
+        if (modelProvider == null)
+            modelProvider = new StandardBootstrapModelProvider();
+        if (sessionManager == null)
+            sessionManager = new DefaultBootstrapSessionManager(securityStore, new SecurityChecker(), configStore,
+                    modelProvider);
         if (coapConfig == null) {
             coapConfig = createDefaultNetworkConfig();
         }
@@ -565,7 +562,7 @@ public class LeshanBootstrapServerBuilder {
         }
 
         return createBootstrapServer(unsecuredEndpoint, securedEndpoint, configStore, securityStore, sessionManager,
-                bootstrapHandlerFactory, model, coapConfig, encoder, decoder);
+                bootstrapHandlerFactory, coapConfig, encoder, decoder);
     }
 
     /**
@@ -588,7 +585,6 @@ public class LeshanBootstrapServerBuilder {
      * @param bsSecurityStore the security store used to authenticate devices.
      * @param bsSessionManager the manager responsible to handle bootstrap session.
      * @param bsHandlerFactory the factory used to create {@link BootstrapHandler}.
-     * @param model the LWM2M model used mainly used for data encoding.
      * @param coapConfig the CoAP configuration.
      * @param decoder decoder used to decode response payload.
      * @param encoder encode used to encode request payload.
@@ -596,9 +592,9 @@ public class LeshanBootstrapServerBuilder {
      */
     protected LeshanBootstrapServer createBootstrapServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             BootstrapConfigStore bsStore, BootstrapSecurityStore bsSecurityStore,
-            BootstrapSessionManager bsSessionManager, BootstrapHandlerFactory bsHandlerFactory, LwM2mModel model,
+            BootstrapSessionManager bsSessionManager, BootstrapHandlerFactory bsHandlerFactory,
             NetworkConfig coapConfig, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
         return new LeshanBootstrapServer(unsecuredEndpoint, securedEndpoint, bsStore, bsSecurityStore, bsSessionManager,
-                bsHandlerFactory, model, coapConfig, encoder, decoder);
+                bsHandlerFactory, coapConfig, encoder, decoder);
     }
 }

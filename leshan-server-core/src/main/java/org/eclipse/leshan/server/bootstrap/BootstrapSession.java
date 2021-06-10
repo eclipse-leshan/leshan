@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
+import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
@@ -72,4 +73,9 @@ public interface BootstrapSession {
      * @return True if this session was cancellled
      */
     boolean isCancelled();
+
+    /**
+     * @return objects model supported by the client for this session.
+     */
+    LwM2mModel getModel();
 }
