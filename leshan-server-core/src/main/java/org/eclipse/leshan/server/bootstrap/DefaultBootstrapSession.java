@@ -38,9 +38,11 @@ public class DefaultBootstrapSession implements BootstrapSession {
     private final ContentFormat contentFormat;
     private final long creationTime;
     private final BootstrapRequest request;
-    private LwM2mModel model;
-    private List<BootstrapDownlinkRequest<? extends LwM2mResponse>> requests;
 
+    private volatile LwM2mModel model;
+    private volatile List<BootstrapDownlinkRequest<? extends LwM2mResponse>> requests;
+    private volatile List<LwM2mResponse> responses;
+    private volatile boolean moreTasks = false;
     private volatile boolean cancelled = false;
 
     /**
@@ -147,6 +149,14 @@ public class DefaultBootstrapSession implements BootstrapSession {
         this.requests = requests;
     }
 
+    public List<LwM2mResponse> getResponses() {
+        return responses;
+    }
+
+    public void setResponses(List<LwM2mResponse> responses) {
+        this.responses = responses;
+    }
+
     @Override
     public LwM2mModel getModel() {
         return model;
@@ -154,6 +164,14 @@ public class DefaultBootstrapSession implements BootstrapSession {
 
     public void setModel(LwM2mModel model) {
         this.model = model;
+    }
+
+    public void setMoreTasks(boolean moreTasks) {
+        this.moreTasks = moreTasks;
+    }
+
+    public boolean hasMoreTasks() {
+        return moreTasks;
     }
 
     @Override

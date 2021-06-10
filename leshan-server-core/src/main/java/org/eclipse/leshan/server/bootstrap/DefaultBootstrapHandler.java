@@ -141,7 +141,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             public void safeOnResponse(LwM2mResponse response) {
                 if (response.isSuccess()) {
                     LOG.trace("{} receives {} for {}", session, response, requestToSend);
-                    BootstrapPolicy policy = sessionManager.onResponseSuccess(session, requestToSend);
+                    BootstrapPolicy policy = sessionManager.onResponseSuccess(session, requestToSend, response);
                     afterRequest(session, policy, requestToSend);
                 } else {
                     LOG.debug("{} receives {} for {}", session, response, requestToSend);

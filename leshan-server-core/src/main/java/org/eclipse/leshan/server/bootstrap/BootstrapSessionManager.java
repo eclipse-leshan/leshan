@@ -124,11 +124,11 @@ public interface BootstrapSessionManager {
      * 
      * @param bsSession the bootstrap session concerned.
      * @param request The request for which we get a successful response.
-     * 
+     * @param response The response received.
      * @return a {@link BootstrapPolicy} given the way to continue the bootstrap session.
      */
     public BootstrapPolicy onResponseSuccess(BootstrapSession bsSession,
-            BootstrapDownlinkRequest<? extends LwM2mResponse> request);
+            BootstrapDownlinkRequest<? extends LwM2mResponse> request, LwM2mResponse response);
 
     /**
      * Called when we receive a error response to a request.

@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -25,6 +25,7 @@ import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.util.Validate;
+import org.eclipse.leshan.server.bootstrap.BootstrapTaskProvider.Tasks;
 import org.eclipse.leshan.server.model.LwM2mBootstrapModelProvider;
 import org.eclipse.leshan.server.model.StandardBootstrapModelProvider;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
@@ -46,7 +47,7 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
 
     private BootstrapSecurityStore bsSecurityStore;
     private SecurityChecker securityChecker;
-    private BootstrapConfigStore configStore;
+    private BootstrapTaskProvider tasksProvider;
     private LwM2mBootstrapModelProvider modelProvider;
 
     /**
@@ -56,7 +57,8 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
      * @param bsSecurityStore the {@link BootstrapSecurityStore} used by default {@link SecurityChecker}.
      */
     public DefaultBootstrapSessionManager(BootstrapSecurityStore bsSecurityStore, BootstrapConfigStore configStore) {
-        this(bsSecurityStore, new SecurityChecker(), configStore, new StandardBootstrapModelProvider());
+        this(bsSecurityStore, new SecurityChecker(), new BootstrapConfigStoreTaskProvider(configStore),
+                new StandardBootstrapModelProvider());
     }
 
     /**
@@ -66,11 +68,11 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
      * @param securityChecker used to accept or refuse new {@link BootstrapSession}.
      */
     public DefaultBootstrapSessionManager(BootstrapSecurityStore bsSecurityStore, SecurityChecker securityChecker,
-            BootstrapConfigStore configStore, LwM2mBootstrapModelProvider modelProvider) {
-        Validate.notNull(configStore);
+            BootstrapTaskProvider tasksProvider, LwM2mBootstrapModelProvider modelProvider) {
+        Validate.notNull(tasksProvider);
         this.bsSecurityStore = bsSecurityStore;
         this.securityChecker = securityChecker;
-        this.configStore = configStore;
+        this.tasksProvider = tasksProvider;
         this.modelProvider = modelProvider;
     }
 
@@ -90,27 +92,28 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
 
     @Override
     public boolean hasConfigFor(BootstrapSession session) {
-        BootstrapConfig configuration = configStore.get(session.getEndpoint(), session.getIdentity(), session);
-        if (configuration == null)
+        Tasks firstTasks = tasksProvider.getTasks(session, null);
+        if (firstTasks == null)
             return false;
 
-        initSessionFromConfig(session, configuration);
+        initTasks(session, firstTasks);
         return true;
     }
 
-    protected void initSessionFromConfig(BootstrapSession bssession, BootstrapConfig configuration) {
+    protected void initTasks(BootstrapSession bssession, Tasks tasks) {
         DefaultBootstrapSession session = (DefaultBootstrapSession) bssession;
         // set models
-        HashMap<Integer, String> supportedObjects = new HashMap<>();
-        supportedObjects.put(0, "1.0");
-        supportedObjects.put(1, "1.0");
-        supportedObjects.put(2, "1.0");
-        session.setModel(modelProvider.getObjectModel(session, supportedObjects));
+        if (tasks.supportedObjects != null)
+            session.setModel(modelProvider.getObjectModel(session, tasks.supportedObjects));
 
         // set Requests to Send
-        List<BootstrapDownlinkRequest<? extends LwM2mResponse>> requests = BootstrapUtil.toRequests(configuration,
-                session.getContentFormat());
-        session.setRequests(requests);
+        session.setRequests(tasks.requestsToSend);
+
+        // prepare list where we will store Responses
+        session.setResponses(new ArrayList<LwM2mResponse>(tasks.requestsToSend.size()));
+
+        // is last Tasks ?
+        session.setMoreTasks(!tasks.last);
     }
 
     @Override
@@ -121,21 +124,37 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
     protected BootstrapDownlinkRequest<? extends LwM2mResponse> nextRequest(BootstrapSession bsSession) {
         DefaultBootstrapSession session = (DefaultBootstrapSession) bsSession;
         List<BootstrapDownlinkRequest<? extends LwM2mResponse>> requestsToSend = session.getRequests();
-        if (requestsToSend.isEmpty()) {
-            return new BootstrapFinishRequest();
-        } else {
+
+        if (!requestsToSend.isEmpty()) {
+            // get next requests
             return requestsToSend.remove(0);
+        } else {
+            if (session.hasMoreTasks()) {
+                Tasks nextTasks = tasksProvider.getTasks(session, session.getResponses());
+                if (nextTasks == null) {
+                    session.setMoreTasks(false);
+                    return new BootstrapFinishRequest();
+                }
+
+                initTasks(session, nextTasks);
+                return nextRequest(bsSession);
+            } else {
+                return new BootstrapFinishRequest();
+            }
         }
     }
 
     @Override
     public BootstrapPolicy onResponseSuccess(BootstrapSession bsSession,
-            BootstrapDownlinkRequest<? extends LwM2mResponse> request) {
+            BootstrapDownlinkRequest<? extends LwM2mResponse> request, LwM2mResponse response) {
         if (LOG.isTraceEnabled())
             LOG.trace("{} {} receives success response for {} : {}", request.getClass().getSimpleName(),
                     request.getPath(), bsSession, request);
 
         if (!(request instanceof BootstrapFinishRequest)) {
+            // store response
+            DefaultBootstrapSession session = (DefaultBootstrapSession) bsSession;
+            session.getResponses().add(response);
             // on success for NOT bootstrap finish request we send next request
             return BootstrapPolicy.continueWith(nextRequest(bsSession));
         } else {
@@ -152,6 +171,10 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
                     request.getPath(), response, bsSession, request);
 
         if (!(request instanceof BootstrapFinishRequest)) {
+            // store response
+            DefaultBootstrapSession session = (DefaultBootstrapSession) bsSession;
+            session.getResponses().add(response);
+
             // on response error for NOT bootstrap finish request we continue any sending next request
             return BootstrapPolicy.continueWith(nextRequest(bsSession));
         } else {

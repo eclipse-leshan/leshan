@@ -49,6 +49,7 @@ import org.eclipse.leshan.server.bootstrap.DefaultBootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.InMemoryBootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfigStoreTaskProvider;
 import org.eclipse.leshan.server.model.LwM2mBootstrapModelProvider;
 import org.eclipse.leshan.server.model.StandardBootstrapModelProvider;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
@@ -410,8 +411,8 @@ public class LeshanBootstrapServerBuilder {
         if (modelProvider == null)
             modelProvider = new StandardBootstrapModelProvider();
         if (sessionManager == null)
-            sessionManager = new DefaultBootstrapSessionManager(securityStore, new SecurityChecker(), configStore,
-                    modelProvider);
+            sessionManager = new DefaultBootstrapSessionManager(securityStore, new SecurityChecker(),
+                    new BootstrapConfigStoreTaskProvider(configStore), modelProvider);
         if (coapConfig == null) {
             coapConfig = createDefaultNetworkConfig();
         }
