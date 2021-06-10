@@ -34,6 +34,7 @@ import java.security.spec.ECPoint;
 import java.security.spec.ECPrivateKeySpec;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.KeySpec;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -56,25 +57,24 @@ import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
+import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ACLConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
-import org.eclipse.leshan.server.bootstrap.BootstrapFailureCause;
-import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
-import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfigStoreTaskProvider;
 import org.eclipse.leshan.server.bootstrap.BootstrapSession;
-import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
-import org.eclipse.leshan.server.bootstrap.DefaultBootstrapHandler;
+import org.eclipse.leshan.server.bootstrap.BootstrapTaskProvider;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapSession;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapSessionManager;
-import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
 import org.eclipse.leshan.server.californium.bootstrap.LeshanBootstrapServer;
 import org.eclipse.leshan.server.californium.bootstrap.LeshanBootstrapServerBuilder;
+import org.eclipse.leshan.server.model.StandardBootstrapModelProvider;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
+import org.eclipse.leshan.server.security.SecurityChecker;
 import org.eclipse.leshan.server.security.SecurityInfo;
 
 /**
@@ -88,6 +88,30 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
     public final PrivateKey bootstrapServerPrivateKey;
     public volatile DefaultBootstrapSession lastBootstrapSession;
     public volatile BootstrapDiscoverResponse lastDiscoverAnswer;
+
+    private class TestBootstrapSessionManager extends DefaultBootstrapSessionManager {
+
+        public TestBootstrapSessionManager(BootstrapSecurityStore bsSecurityStore,
+                BootstrapTaskProvider tasksProvider) {
+            super(bsSecurityStore, new SecurityChecker(), tasksProvider, new StandardBootstrapModelProvider());
+        }
+
+        public TestBootstrapSessionManager(BootstrapSecurityStore bsSecurityStore, BootstrapConfigStore configStore) {
+            super(bsSecurityStore, new SecurityChecker(), new BootstrapConfigStoreTaskProvider(configStore),
+                    new StandardBootstrapModelProvider());
+        }
+
+        @Override
+        public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity) {
+            assertThat(request.getCoapRequest(), instanceOf(Request.class));
+            return super.begin(request, clientIdentity);
+        }
+
+        @Override
+        public void end(BootstrapSession bsSession) {
+            lastBootstrapSession = (DefaultBootstrapSession) bsSession;
+        }
+    }
 
     public BootstrapIntegrationTestHelper() {
         super();
@@ -122,6 +146,16 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
 
     private LeshanBootstrapServerBuilder createBootstrapBuilder(BootstrapSecurityStore securityStore,
             BootstrapConfigStore bootstrapStore) {
+        LeshanBootstrapServerBuilder builder = new LeshanBootstrapServerBuilder();
+        builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
+        builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
+        builder.setPrivateKey(bootstrapServerPrivateKey);
+        builder.setPublicKey(bootstrapServerPublicKey);
+        return builder;
+    }
+
+    public void createBootstrapServer(BootstrapSecurityStore securityStore, BootstrapConfigStore bootstrapStore) {
+        LeshanBootstrapServerBuilder builder = createBootstrapBuilder(securityStore, bootstrapStore);
         if (bootstrapStore == null) {
             bootstrapStore = unsecuredBootstrapStore();
         }
@@ -129,65 +163,38 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         if (securityStore == null) {
             securityStore = dummyBsSecurityStore();
         }
-
-        LeshanBootstrapServerBuilder builder = new LeshanBootstrapServerBuilder();
-        builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-        builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-        builder.setPrivateKey(bootstrapServerPrivateKey);
-        builder.setPublicKey(bootstrapServerPublicKey);
         builder.setSecurityStore(securityStore);
-        builder.setSessionManager(new DefaultBootstrapSessionManager(securityStore, bootstrapStore) {
-
-            @Override
-            public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity) {
-                assertThat(request.getCoapRequest(), instanceOf(Request.class));
-                return super.begin(request, clientIdentity);
-            }
-
-            @Override
-            public void end(BootstrapSession bsSession) {
-                lastBootstrapSession = (DefaultBootstrapSession) bsSession;
-            }
-        });
-
-        return builder;
-    }
-
-    public void createBootstrapServer(BootstrapSecurityStore securityStore, BootstrapConfigStore bootstrapStore) {
-        bootstrapServer = createBootstrapBuilder(securityStore, bootstrapStore).build();
+        builder.setSessionManager(new TestBootstrapSessionManager(securityStore, bootstrapStore));
+        bootstrapServer = builder.build();
     }
 
     public void createBootstrapServer(BootstrapSecurityStore securityStore, BootstrapConfigStore bootstrapStore,
             final BootstrapDiscoverRequest request) {
         LeshanBootstrapServerBuilder builder = createBootstrapBuilder(securityStore, bootstrapStore);
-
+        if (bootstrapStore == null) {
+            bootstrapStore = unsecuredBootstrapStore();
+        }
+        if (securityStore == null) {
+            securityStore = dummyBsSecurityStore();
+        }
         // start bootstrap session by a bootstrap discover request
-        builder.setBootstrapHandlerFactory(new BootstrapHandlerFactory() {
-
+        BootstrapConfigStoreTaskProvider taskProvider = new BootstrapConfigStoreTaskProvider(bootstrapStore) {
             @Override
-            public BootstrapHandler create(LwM2mBootstrapRequestSender sender, BootstrapSessionManager sessionManager) {
-                return new DefaultBootstrapHandler(sender, sessionManager) {
-
-                    @Override
-                    protected void startBootstrap(final BootstrapSession session) {
-                        send(session, request, new SafeResponseCallback<BootstrapDiscoverResponse>(session) {
-
-                            @Override
-                            public void safeOnResponse(BootstrapDiscoverResponse response) {
-                                lastDiscoverAnswer = response;
-                                sendRequest(session, sessionManager.getFirstRequest(session));
-                            }
-                        }, new SafeErrorCallback(session) {
-                            @Override
-                            public void safeOnError(Exception e) {
-                                stopSession(session, BootstrapFailureCause.INTERNAL_SERVER_ERROR);
-                            }
-                        });
-                    }
-                };
+            public Tasks getTasks(BootstrapSession session, List<LwM2mResponse> previousResponses) {
+                if (previousResponses == null) {
+                    Tasks tasks = new Tasks();
+                    tasks.requestsToSend = new ArrayList<>();
+                    tasks.requestsToSend.add(request);
+                    tasks.last = false;
+                    return tasks;
+                } else {
+                    lastDiscoverAnswer = (BootstrapDiscoverResponse) previousResponses.get(0);
+                    return super.getTasks(session, previousResponses);
+                }
             }
-        });
-
+        };
+        builder.setSecurityStore(securityStore);
+        builder.setSessionManager(new TestBootstrapSessionManager(securityStore, taskProvider));
         bootstrapServer = builder.build();
     }
 
