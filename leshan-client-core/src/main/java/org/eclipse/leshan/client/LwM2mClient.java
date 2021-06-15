@@ -68,6 +68,15 @@ public interface LwM2mClient {
     void triggerRegistrationUpdate(ServerIdentity server);
 
     /**
+     * Trigger a client initiated bootstrap.
+     * 
+     * @param deregister True if client should deregister itself before to stop.
+     * 
+     * @return true if the bootstrap can be initiated.
+     */
+    boolean triggerClientInitiatedBootstrap(boolean deregister);
+
+    /**
      * Send Data synchronously to a LWM2M Server.
      * <p>
      * The "Send" operation is used by the LwM2M Client to send data to the LwM2M Server without explicit request by

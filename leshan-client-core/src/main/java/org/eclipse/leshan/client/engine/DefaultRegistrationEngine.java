@@ -760,6 +760,49 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         }
     }
 
+    @Override
+    public boolean triggerClientInitiatedBootstrap(final boolean deregister) {
+        synchronized (this) {
+            if (started) {
+
+                // check if we have a bootstrap server
+                ServerInfo bootstrapServerInfo = ServersInfoExtractor.getBootstrapServerInfo(objectEnablers);
+                if (bootstrapServerInfo == null) {
+                    return false;
+                }
+
+                // stop every
+                cancelUpdateTask(true);
+                cancelRegistrationTask();
+                // TODO we should manage the case where we stop in the middle of a bootstrap session ...
+                cancelBootstrapTask();
+
+                schedExecutor.submit(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        try {
+                            // deregister if needed
+                            if (deregister) {
+                                if (!registeredServers.isEmpty()) {
+                                    for (Entry<String, ServerIdentity> registeredServer : registeredServers
+                                            .entrySet()) {
+                                        deregister(registeredServer.getValue(), registeredServer.getKey());
+                                    }
+                                }
+                            }
+                        } catch (InterruptedException e) {
+                        }
+
+                        // schedule a new bootstrap.
+                        scheduleClientInitiatedBootstrap(NOW);
+                    }
+                });
+            }
+        }
+        return true;
+    }
+
     private void logExceptionOnSendRequest(String message, Exception e) {
         if (LOG.isDebugEnabled()) {
             LOG.warn(message, e);

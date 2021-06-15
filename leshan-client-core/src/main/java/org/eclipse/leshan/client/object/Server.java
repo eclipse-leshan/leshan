@@ -201,6 +201,13 @@ public class Server extends BaseInstanceEnabler {
         if (resourceid == 8) {
             getLwM2mClient().triggerRegistrationUpdate(identity);
             return ExecuteResponse.success();
+        } else if (resourceid == 9) {
+            boolean success = getLwM2mClient().triggerClientInitiatedBootstrap(true);
+            if (success)
+                return ExecuteResponse.success();
+            else {
+                return ExecuteResponse.badRequest("probably no bootstrap server configured");
+            }
         } else {
             return super.execute(identity, resourceid, params);
         }

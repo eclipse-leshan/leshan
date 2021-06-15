@@ -305,6 +305,11 @@ public class LeshanClient implements LwM2mClient {
     }
 
     @Override
+    public boolean triggerClientInitiatedBootstrap(boolean deregister) {
+        return engine.triggerClientInitiatedBootstrap(deregister);
+    }
+
+    @Override
     public SendResponse sendData(ServerIdentity server, ContentFormat format, List<String> paths, long timeoutInMs)
             throws InterruptedException {
         Validate.notNull(server);

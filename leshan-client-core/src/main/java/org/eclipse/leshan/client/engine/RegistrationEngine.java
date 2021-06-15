@@ -53,6 +53,15 @@ public interface RegistrationEngine {
     void triggerRegistrationUpdate(ServerIdentity server, RegistrationUpdate registrationUpdate);
 
     /**
+     * Trigger a client initiated bootstrap.
+     * 
+     * @param deregister True if client should deregister itself before to stop.
+     * 
+     * @return true if the bootstrap can be initiated.
+     */
+    boolean triggerClientInitiatedBootstrap(boolean deregister);
+
+    /**
      * Returns the current registration Id for this server.
      * 
      * @return the client registration Id or <code>null</code> if the client is not registered to this server.
