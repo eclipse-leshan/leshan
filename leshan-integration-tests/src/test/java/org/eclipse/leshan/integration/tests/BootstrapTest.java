@@ -35,7 +35,11 @@ import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
+import org.eclipse.leshan.core.request.exception.InvalidRequestException;
+import org.eclipse.leshan.core.request.exception.RequestCanceledException;
+import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.integration.tests.util.BootstrapIntegrationTestHelper;
 import org.eclipse.leshan.integration.tests.util.TestObjectsInitializer;
@@ -185,6 +189,54 @@ public class BootstrapTest {
         assertEquals(ResponseCode.CONTENT, helper.lastDiscoverAnswer.getCode());
         assertEquals("</>;lwm2m=1.0,</0>;ver=1.1,</0/0>,</1>;ver=1.1,</3>;ver=1.1,</3/0>",
                 Link.serialize(helper.lastDiscoverAnswer.getObjectLinks()));
+    }
+
+    @Test
+    public void bootstrapWithDiscoverOnRootThenRebootstrap() throws InvalidRequestException, InterruptedException {
+        // Create DM Server without security & start it
+        helper.createServer();
+        helper.server.start();
+
+        // Create and start bootstrap server
+        helper.createBootstrapServer(null, null, new BootstrapDiscoverRequest());
+        helper.bootstrapServer.start();
+
+        // Create Client and check it is not already registered
+        helper.createClient();
+        helper.assertClientNotRegisterered();
+
+        // Start it and wait for registration
+        helper.client.start();
+        helper.waitForBootstrapFinishedAtClientSide(1);
+        helper.waitForRegistrationAtServerSide(1);
+
+        // check the client is registered
+        helper.assertClientRegisterered();
+        assertNotNull(helper.lastDiscoverAnswer);
+        assertEquals(ResponseCode.CONTENT, helper.lastDiscoverAnswer.getCode());
+        assertEquals("</>;lwm2m=1.0,</0>;ver=1.1,</0/0>,</1>;ver=1.1,</3>;ver=1.1,</3/0>",
+                Link.serialize(helper.lastDiscoverAnswer.getObjectLinks()));
+
+        // re-bootstrap
+        try {
+            ExecuteResponse response = helper.server.send(helper.getCurrentRegistration(),
+                    new ExecuteRequest("/1/0/9"));
+            assertTrue(response.isSuccess());
+        } catch (RequestCanceledException e) {
+            // request can be cancelled if server does not received the execute response before the de-registration
+            // so we just ignore this error.
+        }
+
+        // wait bootstrap finished
+        helper.waitForBootstrapFinishedAtClientSide(1);
+
+        // check last discover response
+        assertNotNull(helper.lastDiscoverAnswer);
+        assertEquals(ResponseCode.CONTENT, helper.lastDiscoverAnswer.getCode());
+        assertEquals(
+                "</>;lwm2m=1.0,</0>;ver=1.1,</0/0>,</0/1>;ssid=2222,</1>;ver=1.1,</1/0>;ssid=2222,</3>;ver=1.1,</3/0>",
+                Link.serialize(helper.lastDiscoverAnswer.getObjectLinks()));
+
     }
 
     @Test

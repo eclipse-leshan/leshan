@@ -46,7 +46,7 @@ import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Security;
-import org.eclipse.leshan.client.resource.DummyInstanceEnabler;
+import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.SecurityMode;
@@ -258,7 +258,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         initializer.setInstancesForObject(LwM2mId.SECURITY, security);
         initializer.setInstancesForObject(LwM2mId.DEVICE,
                 new Device("Eclipse Leshan", IntegrationTestHelper.MODEL_NUMBER, "12345"));
-        initializer.setClassForObject(LwM2mId.SERVER, DummyInstanceEnabler.class);
+        initializer.setClassForObject(LwM2mId.SERVER, Server.class);
         createClient(initializer, additionalAttributes, preferredContentFormat, supportedContentFormat);
     }
 
