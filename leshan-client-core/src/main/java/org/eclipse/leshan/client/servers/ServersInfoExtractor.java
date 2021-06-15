@@ -208,6 +208,18 @@ public class ServersInfoExtractor {
         }
     }
 
+    public static String getServerURI(LwM2mObjectEnabler objectEnabler, int instanceId) {
+        ReadResponse response = null;
+        if (objectEnabler.getId() == SECURITY) {
+            response = objectEnabler.read(ServerIdentity.SYSTEM, new ReadRequest(SECURITY, instanceId, SEC_SERVER_URI));
+        }
+        if (response != null && response.isSuccess()) {
+            return (String) ((LwM2mResource) response.getContent()).getValue();
+        } else {
+            return null;
+        }
+    }
+
     public static SecurityMode getSecurityMode(LwM2mObjectInstance securityInstance) {
         return SecurityMode.fromCode((long) securityInstance.getResource(SEC_SECURITY_MODE).getValue());
     }

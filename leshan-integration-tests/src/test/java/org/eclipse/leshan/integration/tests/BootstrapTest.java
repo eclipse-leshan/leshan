@@ -187,7 +187,10 @@ public class BootstrapTest {
         helper.assertClientRegisterered();
         assertNotNull(helper.lastDiscoverAnswer);
         assertEquals(ResponseCode.CONTENT, helper.lastDiscoverAnswer.getCode());
-        assertEquals("</>;lwm2m=1.0,</0>;ver=1.1,</0/0>,</1>;ver=1.1,</3>;ver=1.1,</3/0>",
+        assertEquals(
+                String.format("</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</1>;ver=1.1,</3>;ver=1.1,</3/0>",
+                        helper.bootstrapServer.getUnsecuredAddress().getHostString(),
+                        helper.bootstrapServer.getUnsecuredAddress().getPort()),
                 Link.serialize(helper.lastDiscoverAnswer.getObjectLinks()));
     }
 
@@ -214,7 +217,10 @@ public class BootstrapTest {
         helper.assertClientRegisterered();
         assertNotNull(helper.lastDiscoverAnswer);
         assertEquals(ResponseCode.CONTENT, helper.lastDiscoverAnswer.getCode());
-        assertEquals("</>;lwm2m=1.0,</0>;ver=1.1,</0/0>,</1>;ver=1.1,</3>;ver=1.1,</3/0>",
+        assertEquals(
+                String.format("</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</1>;ver=1.1,</3>;ver=1.1,</3/0>",
+                        helper.bootstrapServer.getUnsecuredAddress().getHostString(),
+                        helper.bootstrapServer.getUnsecuredAddress().getPort()),
                 Link.serialize(helper.lastDiscoverAnswer.getObjectLinks()));
 
         // re-bootstrap
@@ -233,8 +239,11 @@ public class BootstrapTest {
         // check last discover response
         assertNotNull(helper.lastDiscoverAnswer);
         assertEquals(ResponseCode.CONTENT, helper.lastDiscoverAnswer.getCode());
-        assertEquals(
-                "</>;lwm2m=1.0,</0>;ver=1.1,</0/0>,</0/1>;ssid=2222,</1>;ver=1.1,</1/0>;ssid=2222,</3>;ver=1.1,</3/0>",
+        assertEquals(String.format(
+                "</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</0/1>;ssid=2222;uri=\"coap://%s:%d\",</1>;ver=1.1,</1/0>;ssid=2222,</3>;ver=1.1,</3/0>",
+                helper.bootstrapServer.getUnsecuredAddress().getHostString(),
+                helper.bootstrapServer.getUnsecuredAddress().getPort(),
+                helper.server.getUnsecuredAddress().getHostString(), helper.server.getUnsecuredAddress().getPort()),
                 Link.serialize(helper.lastDiscoverAnswer.getObjectLinks()));
 
     }

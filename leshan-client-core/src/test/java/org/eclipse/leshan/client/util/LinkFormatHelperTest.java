@@ -241,17 +241,21 @@ public class LinkFormatHelperTest {
     @Test
     public void encode_bootstrap_security_object() {
         Map<Integer, LwM2mInstanceEnabler> instancesMap = new HashMap<>();
-        instancesMap.put(0, Security.noSec("coap://localhost", 111));
-        instancesMap.put(1, Security.noSecBootstap("coap://localhost"));
-        instancesMap.put(2, Security.noSec("coap://localhost", 222));
-        instancesMap.put(3, Security.noSec("coap://localhost", 333));
+        instancesMap.put(0, Security.noSec("coap://localhost:11", 111));
+        instancesMap.put(1, Security.noSecBootstap("coap://localhost:1"));
+        instancesMap.put(2, Security.noSec("coap://localhost:22", 222));
+        instancesMap.put(3, Security.noSec("coap://localhost:33", 333));
         ObjectEnabler objectEnabler = new ObjectEnabler(0, getObjectModel(0), instancesMap, null,
                 ContentFormat.DEFAULT);
 
         Link[] links = LinkFormatHelper.getBootstrapObjectDescription(objectEnabler);
         String strLinks = Link.serialize(links);
 
-        assertEquals("</>;lwm2m=1.0,</0/0>;ssid=111,</0/1>,</0/2>;ssid=222,</0/3>;ssid=333", strLinks);
+        assertEquals("</>;lwm2m=1.0,</0/0>;ssid=111;uri=\"coap://localhost:11\"," //
+                + "</0/1>;uri=\"coap://localhost:1\"," //
+                + "</0/2>;ssid=222;uri=\"coap://localhost:22\"," //
+                + "</0/3>;ssid=333;uri=\"coap://localhost:33\"" //
+                , strLinks);
 
     }
 
@@ -261,10 +265,10 @@ public class LinkFormatHelperTest {
 
         // object 0
         Map<Integer, LwM2mInstanceEnabler> securityInstances = new HashMap<>();
-        securityInstances.put(0, Security.noSec("coap://localhost", 111));
-        securityInstances.put(1, Security.noSecBootstap("coap://localhost"));
-        securityInstances.put(2, Security.noSec("coap://localhost", 222));
-        securityInstances.put(3, Security.noSec("coap://localhost", 333));
+        securityInstances.put(0, Security.noSec("coap://localhost:11", 111));
+        securityInstances.put(1, Security.noSecBootstap("coap://localhost:1"));
+        securityInstances.put(2, Security.noSec("coap://localhost:22", 222));
+        securityInstances.put(3, Security.noSec("coap://localhost:33", 333));
         ObjectEnabler securityObjectEnabler = new ObjectEnabler(0, getObjectModel(0), securityInstances, null,
                 ContentFormat.DEFAULT);
         objectEnablers.add(securityObjectEnabler);
@@ -291,9 +295,11 @@ public class LinkFormatHelperTest {
         Link[] links = LinkFormatHelper.getBootstrapClientDescription(objectEnablers);
         String strLinks = Link.serialize(links);
 
-        assertEquals(
-                "</>;lwm2m=1.0,</0/0>;ssid=111,</0/1>,</0/2>;ssid=222,</0/3>;ssid=333,</1>;ver=2.0,</1/0>;ssid=333,</2>;ver=2.0,</3/0>",
-                strLinks);
+        assertEquals("</>;lwm2m=1.0,</0/0>;ssid=111;uri=\"coap://localhost:11\"," //
+                + "</0/1>;uri=\"coap://localhost:1\"," //
+                + "</0/2>;ssid=222;uri=\"coap://localhost:22\"," //
+                + "</0/3>;ssid=333;uri=\"coap://localhost:33\"," //
+                + "</1>;ver=2.0,</1/0>;ssid=333,</2>;ver=2.0,</3/0>", strLinks);
     }
 
     private ObjectModel getObjectModel(int id) {

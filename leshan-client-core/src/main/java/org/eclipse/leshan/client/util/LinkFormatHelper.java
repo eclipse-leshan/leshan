@@ -170,21 +170,29 @@ public final class LinkFormatHelper {
         // add instance link
         for (Integer instanceId : objectEnabler.getAvailableInstanceIds()) {
             String instanceURL = getPath("/", Integer.toString(objectEnabler.getId()), Integer.toString(instanceId));
+            Map<String, String> objectAttributes = new HashMap<>();
 
             // get short id
-            Long shortServerId = null;
             if (objectEnabler.getId() == LwM2mId.SECURITY || objectEnabler.getId() == LwM2mId.SERVER) {
                 Boolean isBootstrapServer = objectEnabler.getId() == LwM2mId.SECURITY
                         && ServersInfoExtractor.isBootstrapServer(objectEnabler, instanceId);
                 if (isBootstrapServer != null && !isBootstrapServer) {
-                    shortServerId = ServersInfoExtractor.getServerId(objectEnabler, instanceId);
+                    Long shortServerId = ServersInfoExtractor.getServerId(objectEnabler, instanceId);
+                    if (shortServerId != null)
+                        objectAttributes.put("ssid", shortServerId.toString());
                 }
+
+            }
+
+            // get uri
+            if (objectEnabler.getId() == LwM2mId.SECURITY) {
+                String uri = ServersInfoExtractor.getServerURI(objectEnabler, instanceId);
+                if (uri != null)
+                    objectAttributes.put("uri", "\"" + uri + "\"");
             }
 
             // create link
-            if (shortServerId != null) {
-                Map<String, String> objectAttributes = new HashMap<>();
-                objectAttributes.put("ssid", shortServerId.toString());
+            if (!objectAttributes.isEmpty()) {
                 links.add(new Link(instanceURL, objectAttributes));
             } else {
                 links.add(new Link(instanceURL));
