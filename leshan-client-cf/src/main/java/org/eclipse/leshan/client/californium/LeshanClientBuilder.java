@@ -31,6 +31,8 @@ import org.eclipse.californium.elements.UDPConnector;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
+import org.eclipse.leshan.client.bootstrap.BootstrapConsistencyChecker;
+import org.eclipse.leshan.client.bootstrap.DefaultBootstrapConsistencyChecker;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.engine.RegistrationEngineFactory;
@@ -71,11 +73,11 @@ public class LeshanClientBuilder {
     private EndpointFactory endpointFactory;
     private RegistrationEngineFactory engineFactory;
     private Map<String, String> additionalAttributes;
+    private Map<String, String> bsAdditionalAttributes;
+
+    private BootstrapConsistencyChecker bootstrapConsistencyChecker;
 
     private ScheduledExecutorService executor;
-
-    /** @since 1.1 */
-    protected Map<String, String> bsAdditionalAttributes;
 
     /**
      * Creates a new instance for setting the configuration options for a {@link LeshanClient} instance.
@@ -218,6 +220,18 @@ public class LeshanClientBuilder {
     }
 
     /**
+     * Set a {@link BootstrapConsistencyChecker} which is used to valid client state after a bootstrap session.
+     * <p>
+     * By default a {@link DefaultBootstrapConsistencyChecker} is used.
+     * 
+     * @return the builder for fluent client creation.
+     */
+    public LeshanClientBuilder setBootstrapConsistencyChecker(BootstrapConsistencyChecker checker) {
+        this.bootstrapConsistencyChecker = checker;
+        return this;
+    }
+
+    /**
      * Set a shared executor. This executor will be used everywhere it is possible. This is generally used when you want
      * to limit the number of thread to use or if you want to simulate a lot of clients sharing the same thread pool.
      * <p>
@@ -283,6 +297,9 @@ public class LeshanClientBuilder {
                 }
             };
         }
+        if (bootstrapConsistencyChecker == null) {
+            bootstrapConsistencyChecker = new DefaultBootstrapConsistencyChecker();
+        }
 
         // handle dtlsConfig
         if (dtlsConfigBuilder == null) {
@@ -324,7 +341,8 @@ public class LeshanClientBuilder {
         }
 
         return createLeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder,
-                this.trustStore, endpointFactory, engineFactory, additionalAttributes, encoder, decoder, executor);
+                this.trustStore, endpointFactory, engineFactory, bootstrapConsistencyChecker, additionalAttributes,
+                bsAdditionalAttributes, encoder, decoder, executor);
     }
 
     /**
@@ -344,7 +362,9 @@ public class LeshanClientBuilder {
      * @param trustStore The optional trust store for verifying X.509 server certificates.
      * @param endpointFactory The factory which will create the {@link CoapEndpoint}.
      * @param engineFactory The factory which will create the {@link RegistrationEngine}.
+     * @param checker Used to check if client state is consistent after a bootstrap session.
      * @param additionalAttributes Some extra (out-of-spec) attributes to add to the register request.
+     * @param bsAdditionalAttributes Some extra (out-of-spec) attributes to add to the bootstrap request.
      * @param encoder used to encode request payload.
      * @param decoder used to decode response payload.
      * @param sharedExecutor an optional shared executor.
@@ -354,10 +374,11 @@ public class LeshanClientBuilder {
     protected LeshanClient createLeshanClient(String endpoint, InetSocketAddress localAddress,
             List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig, Builder dtlsConfigBuilder,
             List<Certificate> trustStore, EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
-            Map<String, String> additionalAttributes, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
+            BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
+            Map<String, String> bsAdditionalAttributes, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
             ScheduledExecutorService sharedExecutor) {
         return new LeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder, trustStore,
-                endpointFactory, engineFactory, additionalAttributes, bsAdditionalAttributes, encoder, decoder,
-                executor);
+                endpointFactory, engineFactory, checker, additionalAttributes, bsAdditionalAttributes, encoder, decoder,
+                sharedExecutor);
     }
 }

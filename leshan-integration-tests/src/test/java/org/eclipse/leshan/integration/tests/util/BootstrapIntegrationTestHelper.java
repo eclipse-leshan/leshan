@@ -203,10 +203,17 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
     }
 
     public Security withoutSecurity() {
+        return withoutSecurityAndInstanceId(null);
+    }
+
+    public Security withoutSecurityAndInstanceId(Integer id) {
         // Create Security Object (with bootstrap server only)
         String bsUrl = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
                 + bootstrapServer.getUnsecuredAddress().getPort();
-        return Security.noSecBootstap(bsUrl);
+        Security sec = Security.noSecBootstap(bsUrl);
+        if (id != null)
+            sec.setId(id);
+        return sec;
     }
 
     @Override
@@ -348,6 +355,10 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
     }
 
     public BootstrapConfigStore unsecuredBootstrapStore() {
+        return unsecuredBootstrapStoreWithBsSecurityInstanceIdAt(0);
+    }
+
+    public BootstrapConfigStore unsecuredBootstrapStoreWithBsSecurityInstanceIdAt(final int instanceId) {
         return new BootstrapConfigStore() {
 
             @Override
@@ -361,7 +372,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                 bsSecurity.uri = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
                         + bootstrapServer.getUnsecuredAddress().getPort();
                 bsSecurity.securityMode = SecurityMode.NO_SEC;
-                bsConfig.security.put(0, bsSecurity);
+                bsConfig.security.put(instanceId, bsSecurity);
 
                 // security for DM server
                 ServerSecurity dmSecurity = new ServerSecurity();

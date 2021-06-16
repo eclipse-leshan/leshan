@@ -33,7 +33,9 @@ import org.eclipse.californium.elements.util.NamedThreadFactory;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.RegistrationUpdateHandler;
+import org.eclipse.leshan.client.bootstrap.BootstrapConsistencyChecker;
 import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
+import org.eclipse.leshan.client.bootstrap.DefaultBootstrapConsistencyChecker;
 import org.eclipse.leshan.client.californium.bootstrap.BootstrapResource;
 import org.eclipse.leshan.client.californium.object.ObjectResource;
 import org.eclipse.leshan.client.californium.request.CaliforniumLwM2mRequestSender;
@@ -104,15 +106,17 @@ public class LeshanClient implements LwM2mClient {
             Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes,
             LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder, ScheduledExecutorService sharedExecutor) {
         this(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder, null, endpointFactory,
-                engineFactory, additionalAttributes, bsAdditionalAttributes, encoder, decoder, sharedExecutor);
+                engineFactory, new DefaultBootstrapConsistencyChecker(), additionalAttributes, bsAdditionalAttributes,
+                encoder, decoder, sharedExecutor);
     }
 
     /** @since 2.0 */
     public LeshanClient(String endpoint, InetSocketAddress localAddress,
             List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig, Builder dtlsConfigBuilder,
             List<Certificate> trustStore, EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
-            Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes,
-            LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder, ScheduledExecutorService sharedExecutor) {
+            BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
+            Map<String, String> bsAdditionalAttributes, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
+            ScheduledExecutorService sharedExecutor) {
 
         Validate.notNull(endpoint);
         Validate.notEmpty(objectEnablers);
@@ -123,7 +127,7 @@ public class LeshanClient implements LwM2mClient {
         this.decoder = decoder;
         this.encoder = encoder;
         observers = createClientObserverDispatcher();
-        bootstrapHandler = createBoostrapHandler(objectTree);
+        bootstrapHandler = createBoostrapHandler(objectTree, checker);
         endpointsManager = createEndpointsManager(localAddress, coapConfig, dtlsConfigBuilder, trustStore,
                 endpointFactory);
         requestSender = createRequestSender(endpointsManager, sharedExecutor, encoder, objectTree.getModel());
@@ -160,8 +164,8 @@ public class LeshanClient implements LwM2mClient {
         return observer;
     }
 
-    protected BootstrapHandler createBoostrapHandler(LwM2mObjectTree objectTree) {
-        return new BootstrapHandler(objectTree.getObjectEnablers());
+    protected BootstrapHandler createBoostrapHandler(LwM2mObjectTree objectTree, BootstrapConsistencyChecker checker) {
+        return new BootstrapHandler(objectTree.getObjectEnablers(), checker);
     }
 
     protected CoapServer createCoapServer(NetworkConfig coapConfig, ScheduledExecutorService sharedExecutor) {

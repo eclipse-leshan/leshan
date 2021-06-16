@@ -274,6 +274,32 @@ public class BootstrapTest {
     }
 
     @Test
+    public void bootstrap_create_2_bsserver() {
+        // Create DM Server without security & start it
+        helper.createServer();
+        helper.server.start();
+
+        // Create and start bootstrap server
+        helper.createBootstrapServer(null, helper.unsecuredBootstrapStoreWithBsSecurityInstanceIdAt(0));
+        helper.bootstrapServer.start();
+
+        // Create Client with bootstrap server config at /0/10
+        helper.createClient(helper.withoutSecurityAndInstanceId(10), null);
+        helper.assertClientNotRegisterered();
+
+        // Start BS.
+        // Server will delete /0 but Client will not delete /0/10 instance (because bs server is not deletable)
+        // Then a new BS server will be written at /0/0
+        //
+        // So bootstrap should failed because 2 bs server in Security Object is not a valid state.
+        // see https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/523
+        helper.client.start();
+
+        // ensure bootstrap session failed because of invalid state
+        helper.waitForInconsistentStateAtClientSide(1);
+    }
+
+    @Test
     public void bootstrapDeleteSecurity() {
         // Create DM Server without security & start it
         helper.createServer();

@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.eclipse.leshan.client.EndpointsManager;
 import org.eclipse.leshan.client.RegistrationUpdate;
 import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
+import org.eclipse.leshan.client.bootstrap.InvalidStateException;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.request.LwM2mRequestSender;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
@@ -233,25 +234,33 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                 } else if (response.isSuccess()) {
                     LOG.info("Bootstrap started");
                     // Wait until it is finished (or too late)
-                    boolean timeout = !bootstrapHandler.waitBoostrapFinished(bootstrapSessionTimeoutInSec);
-                    if (timeout) {
-                        LOG.info("Bootstrap sequence aborted: Timeout.");
+                    try {
+                        boolean timeout = !bootstrapHandler.waitBoostrapFinished(bootstrapSessionTimeoutInSec);
+                        if (timeout) {
+                            LOG.info("Bootstrap sequence aborted: Timeout.");
+                            if (observer != null) {
+                                observer.onBootstrapTimeout(bootstrapServer, request);
+                            }
+                            return null;
+                        } else {
+                            LOG.info("Bootstrap finished {}.", bootstrapServer.getUri());
+                            ServerInfo serverInfo = selectServer(
+                                    ServersInfoExtractor.getInfo(objectEnablers).deviceManagements);
+                            ServerIdentity dmServer = null;
+                            if (serverInfo != null) {
+                                dmServer = endpointsManager.createEndpoint(serverInfo);
+                            }
+                            if (observer != null) {
+                                observer.onBootstrapSuccess(bootstrapServer, request);
+                            }
+                            return dmServer;
+                        }
+                    } catch (InvalidStateException e) {
+                        LOG.info("Bootstrap finished with failure because of consistency check failure.", e);
                         if (observer != null) {
-                            observer.onBootstrapTimeout(bootstrapServer, request);
+                            observer.onBootstrapFailure(bootstrapServer, request, null, null, e);
                         }
                         return null;
-                    } else {
-                        LOG.info("Bootstrap finished {}.", bootstrapServer.getUri());
-                        ServerInfo serverInfo = selectServer(
-                                ServersInfoExtractor.getInfo(objectEnablers).deviceManagements);
-                        ServerIdentity dmServer = null;
-                        if (serverInfo != null) {
-                            dmServer = endpointsManager.createEndpoint(serverInfo);
-                        }
-                        if (observer != null) {
-                            observer.onBootstrapSuccess(bootstrapServer, request);
-                        }
-                        return dmServer;
                     }
                 } else {
                     LOG.info("Bootstrap failed: {} {}.", response.getCode(), response.getErrorMessage());

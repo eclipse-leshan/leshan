@@ -59,6 +59,12 @@ public class ServersInfoExtractor {
     private static final Logger LOG = LoggerFactory.getLogger(ServersInfoExtractor.class);
 
     public static ServersInfo getInfo(Map<Integer, LwM2mObjectEnabler> objectEnablers) {
+        return getInfo(objectEnablers, false);
+    }
+
+    public static ServersInfo getInfo(Map<Integer, LwM2mObjectEnabler> objectEnablers, boolean raiseException)
+            throws IllegalStateException {
+
         LwM2mObjectEnabler securityEnabler = objectEnablers.get(SECURITY);
         LwM2mObjectEnabler serverEnabler = objectEnablers.get(SERVER);
 
@@ -70,72 +76,89 @@ public class ServersInfoExtractor {
         LwM2mObject servers = (LwM2mObject) serverEnabler.read(SYSTEM, new ReadRequest(SERVER)).getContent();
 
         for (LwM2mObjectInstance security : securities.getInstances().values()) {
-            try {
-                if ((boolean) security.getResource(SEC_BOOTSTRAP).getValue()) {
-                    if (infos.bootstrap != null) {
-                        LOG.warn("There is more than one bootstrap configuration in security object.");
-                    } else {
-                        // create bootstrap info
-                        ServerInfo info = new ServerInfo();
-                        info.bootstrap = true;
-                        LwM2mResource serverIdResource = security.getResource(SEC_SERVER_ID);
-                        if (serverIdResource != null && serverIdResource.getValue() != null)
-                            info.serverId = (long) serverIdResource.getValue();
-                        else
-                            info.serverId = 0;
-                        info.serverUri = new URI((String) security.getResource(SEC_SERVER_URI).getValue());
-                        info.secureMode = getSecurityMode(security);
-                        if (info.secureMode == SecurityMode.PSK) {
-                            info.pskId = getPskIdentity(security);
-                            info.pskKey = getPskKey(security);
-                        } else if (info.secureMode == SecurityMode.RPK) {
-                            info.publicKey = getPublicKey(security);
-                            info.privateKey = getPrivateKey(security);
-                            info.serverPublicKey = getServerPublicKey(security);
-                        } else if (info.secureMode == SecurityMode.X509) {
-                            info.clientCertificate = getClientCertificate(security);
-                            info.serverCertificate = getServerCertificate(security);
-                            info.privateKey = getPrivateKey(security);
-                            info.certificateUsage = getCertificateUsage(security);
-                        }
-                        infos.bootstrap = info;
+            if ((boolean) security.getResource(SEC_BOOTSTRAP).getValue()) {
+                if (infos.bootstrap != null) {
+                    String message = "There is more than one bootstrap configuration in security object.";
+                    LOG.debug(message);
+                    if (raiseException) {
+                        throw new IllegalStateException(message);
                     }
                 } else {
-                    // create device management info
-                    DmServerInfo info = new DmServerInfo();
-                    info.bootstrap = false;
-                    info.serverUri = new URI((String) security.getResource(SEC_SERVER_URI).getValue());
-                    info.serverId = (long) security.getResource(SEC_SERVER_ID).getValue();
-                    info.secureMode = getSecurityMode(security);
-                    if (info.secureMode == SecurityMode.PSK) {
-                        info.pskId = getPskIdentity(security);
-                        info.pskKey = getPskKey(security);
-                    } else if (info.secureMode == SecurityMode.RPK) {
-                        info.publicKey = getPublicKey(security);
-                        info.privateKey = getPrivateKey(security);
-                        info.serverPublicKey = getServerPublicKey(security);
-                    } else if (info.secureMode == SecurityMode.X509) {
-                        info.clientCertificate = getClientCertificate(security);
-                        info.serverCertificate = getServerCertificate(security);
-                        info.privateKey = getPrivateKey(security);
-                        info.certificateUsage = getCertificateUsage(security);
-                    }
-                    // search corresponding device management server
-                    for (LwM2mObjectInstance server : servers.getInstances().values()) {
-                        if (info.serverId == (Long) server.getResource(SRV_SERVER_ID).getValue()) {
-                            info.lifetime = (long) server.getResource(SRV_LIFETIME).getValue();
-                            info.binding = BindingMode.parse((String) server.getResource(SRV_BINDING).getValue());
+                    // create server info for bootstrap server
+                    ServerInfo serverInfo = new ServerInfo();
+                    serverInfo.bootstrap = true;
+                    try {
+                        // fill info from current client state.
+                        populateServerInfo(serverInfo, security);
 
-                            infos.deviceManagements.put(info.serverId, info);
-                            break;
-                        }
+                        // add server info to result to return
+                        infos.bootstrap = serverInfo;
+                    } catch (RuntimeException e) {
+                        LOG.debug("Unable to get info for bootstrap server /O/{}", security.getId(), e);
+                        if (raiseException)
+                            throw e;
                     }
                 }
-            } catch (URISyntaxException e) {
-                LOG.error(String.format("Invalid URI %s", (String) security.getResource(SEC_SERVER_URI).getValue()), e);
+            } else {
+                try {
+                    // create device management info
+                    DmServerInfo info = createDMServerInfo(security, servers);
+                    infos.deviceManagements.put(info.serverId, info);
+                } catch (RuntimeException e) {
+                    LOG.debug("Unable to get info for DM server /O/{}", security.getId(), e);
+                    if (raiseException)
+                        throw e;
+                }
             }
         }
         return infos;
+    }
+
+    private static void populateServerInfo(ServerInfo info, LwM2mObjectInstance security) {
+        try {
+            LwM2mResource serverIdResource = security.getResource(SEC_SERVER_ID);
+            if (serverIdResource != null && serverIdResource.getValue() != null)
+                info.serverId = (long) serverIdResource.getValue();
+            else
+                info.serverId = 0;
+            info.serverUri = new URI((String) security.getResource(SEC_SERVER_URI).getValue());
+            info.secureMode = getSecurityMode(security);
+            if (info.secureMode == SecurityMode.PSK) {
+                info.pskId = getPskIdentity(security);
+                info.pskKey = getPskKey(security);
+            } else if (info.secureMode == SecurityMode.RPK) {
+                info.publicKey = getPublicKey(security);
+                info.privateKey = getPrivateKey(security);
+                info.serverPublicKey = getServerPublicKey(security);
+            } else if (info.secureMode == SecurityMode.X509) {
+                info.clientCertificate = getClientCertificate(security);
+                info.serverCertificate = getServerCertificate(security);
+                info.privateKey = getPrivateKey(security);
+                info.certificateUsage = getCertificateUsage(security);
+            }
+        } catch (RuntimeException | URISyntaxException e) {
+            throw new IllegalStateException("Invalid Security Instance /0/" + security.getId(), e);
+        }
+    }
+
+    private static DmServerInfo createDMServerInfo(LwM2mObjectInstance security, LwM2mObject servers) {
+        DmServerInfo info = new DmServerInfo();
+        info.bootstrap = false;
+        populateServerInfo(info, security);
+
+        // search corresponding device management server
+        for (LwM2mObjectInstance server : servers.getInstances().values()) {
+            try {
+                if (info.serverId == (Long) server.getResource(SRV_SERVER_ID).getValue()) {
+                    info.lifetime = (long) server.getResource(SRV_LIFETIME).getValue();
+                    info.binding = BindingMode.parse((String) server.getResource(SRV_BINDING).getValue());
+                    return info;
+                }
+            } catch (RuntimeException e) {
+                throw new IllegalStateException("Invalid Server Instance /1/" + server.getId(), e);
+            }
+        }
+        return null;
     }
 
     public static DmServerInfo getDMServerInfo(Map<Integer, LwM2mObjectEnabler> objectEnablers, Long shortID) {
@@ -245,11 +268,10 @@ public class ServersInfoExtractor {
             KeyFactory kf = KeyFactory.getInstance(algorithm);
             return kf.generatePublic(keySpec);
         } catch (NoSuchAlgorithmException e) {
-            LOG.debug("Failed to instantiate key factory for algorithm " + algorithm, e);
+            throw new IllegalArgumentException("Failed to instantiate key factory for algorithm " + algorithm, e);
         } catch (InvalidKeySpecException e) {
-            LOG.debug("Failed to decode RFC7250 public key with algorithm " + algorithm, e);
+            throw new IllegalArgumentException("Failed to decode RFC7250 public key with algorithm " + algorithm, e);
         }
-        return null;
     }
 
     private static PrivateKey getPrivateKey(LwM2mObjectInstance securityInstance) {
@@ -257,8 +279,7 @@ public class ServersInfoExtractor {
         try {
             return SecurityUtil.privateKey.decode(encodedKey);
         } catch (IOException | GeneralSecurityException e) {
-            LOG.debug("Failed to decode RFC5958 private key", e);
-            return null;
+            throw new IllegalArgumentException("Failed to decode RFC5958 private key", e);
         }
     }
 
@@ -267,8 +288,7 @@ public class ServersInfoExtractor {
         try {
             return SecurityUtil.publicKey.decode(encodedKey);
         } catch (IOException | GeneralSecurityException e) {
-            LOG.debug("Failed to decode RFC7250 public key", e);
-            return null;
+            throw new IllegalArgumentException("Failed to decode RFC7250 public key", e);
         }
     }
 
@@ -277,8 +297,7 @@ public class ServersInfoExtractor {
         try {
             return SecurityUtil.certificate.decode(encodedCert);
         } catch (IOException | GeneralSecurityException e) {
-            LOG.debug("Failed to decode X.509 certificate", e);
-            return null;
+            throw new IllegalArgumentException("Failed to decode X.509 certificate", e);
         }
     }
 
@@ -290,8 +309,7 @@ public class ServersInfoExtractor {
                 return cf.generateCertificate(in);
             }
         } catch (CertificateException | IOException e) {
-            LOG.debug("Failed to decode X.509 certificate", e);
-            return null;
+            throw new IllegalArgumentException("Failed to decode X.509 certificate", e);
         }
     }
 

@@ -281,6 +281,14 @@ public class IntegrationTestHelper {
         }
     }
 
+    public void waitForInconsistentStateAtClientSide(long timeInSeconds) {
+        try {
+            assertTrue(clientObserver.waitForInconsistenState(timeInSeconds, TimeUnit.SECONDS));
+        } catch (InterruptedException | TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void ensureNoUpdate(long timeInSeconds) {
         try {
             registrationListener.waitForUpdate(timeInSeconds, TimeUnit.SECONDS);
