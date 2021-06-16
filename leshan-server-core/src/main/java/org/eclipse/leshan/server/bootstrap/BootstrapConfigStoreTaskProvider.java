@@ -15,16 +15,25 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
+import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An implementation of {@link BootstrapTaskProvider} which use a {@link BootstrapConfigStore} to know which requests to
  * send during a {@link BootstrapSession}.
  */
 public class BootstrapConfigStoreTaskProvider implements BootstrapTaskProvider {
+
+    private static final Logger LOG = LoggerFactory.getLogger(BootstrapConfigStoreTaskProvider.class);
 
     private BootstrapConfigStore store;
 
@@ -39,18 +48,73 @@ public class BootstrapConfigStoreTaskProvider implements BootstrapTaskProvider {
         if (config == null)
             return null;
 
-        Tasks tasks = new Tasks();
-        // create requests from config
-        tasks.requestsToSend = BootstrapUtil.toRequests(config, session.getContentFormat());
+        if (previousResponse == null && shouldStartWithDiscover(config)) {
+            Tasks tasks = new Tasks();
+            tasks.requestsToSend = new ArrayList<>(1);
+            tasks.requestsToSend.add(new BootstrapDiscoverRequest());
+            tasks.last = false;
+            return tasks;
+        } else {
+            Tasks tasks = new Tasks();
 
-        // We add model for Security(0), Server(0) and ACL(2) which are the only one supported by BootstrapConfig
-        // We use default 1.0 model as currently BootstrapConfig support only this model version (which should be
-        // compatible with models of LWM2M v1.1 but without new resources)
-        tasks.supportedObjects = new HashMap<>();
-        tasks.supportedObjects.put(0, "1.0");
-        tasks.supportedObjects.put(1, "1.0");
-        tasks.supportedObjects.put(2, "1.0");
+            // handle bootstrap discover response
+            if (previousResponse != null) {
+                BootstrapDiscoverResponse response = (BootstrapDiscoverResponse) previousResponse.get(0);
+                if (!response.isSuccess()) {
+                    LOG.warn(
+                            "Bootstrap Discover return error {} : unable to continue bootstrap session with autoIdForSecurityObject mode. {}",
+                            response, session);
+                    return null;
+                }
 
-        return tasks;
+                Integer bootstrapServerInstanceId = findBootstrapServerInstanceId(response.getObjectLinks());
+                if (bootstrapServerInstanceId == null) {
+                    LOG.warn(
+                            "Unable to find bootstrap server instance in Security Object (0) in response {}: unable to continue bootstrap session with autoIdForSecurityObject mode. {}",
+                            response, session);
+                    return null;
+                }
+
+                // create requests from config
+                tasks.requestsToSend = BootstrapUtil.toRequests(config, session.getContentFormat(),
+                        bootstrapServerInstanceId);
+            } else {
+                // create requests from config
+                tasks.requestsToSend = BootstrapUtil.toRequests(config, session.getContentFormat());
+
+            }
+
+            // We add model for Security(0), Server(0) and ACL(2) which are the only one supported by BootstrapConfig
+            // We use default 1.0 model as currently BootstrapConfig support only this model version (which should be
+            // compatible with models of LWM2M v1.1 but without new resources)
+            tasks.supportedObjects = new HashMap<>();
+            tasks.supportedObjects.put(0, "1.0");
+            tasks.supportedObjects.put(1, "1.0");
+            tasks.supportedObjects.put(2, "1.0");
+
+            return tasks;
+        }
+    }
+
+    protected boolean shouldStartWithDiscover(BootstrapConfig config) {
+        return config.autoIdForSecurityObject;
+    }
+
+    protected Integer findBootstrapServerInstanceId(Link[] objectLinks) {
+        for (Link link : objectLinks) {
+            if (link.getUrl().startsWith("/0/")) {
+                try {
+                    LwM2mPath path = new LwM2mPath(link.getUrl());
+                    if (path.isObjectInstance()) {
+                        if (!link.getAttributes().containsKey("ssid"))
+                            return path.getObjectInstanceId();
+                    }
+                } catch (Exception e) {
+                    // ignore if this is not a LWM2M path
+                    LOG.warn("Invalid LwM2MPath starting by \"/0/\"");
+                }
+            }
+        }
+        return null;
     }
 }

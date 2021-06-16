@@ -189,7 +189,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                     return tasks;
                 } else {
                     lastDiscoverAnswer = (BootstrapDiscoverResponse) previousResponses.get(0);
-                    return super.getTasks(session, previousResponses);
+                    return super.getTasks(session, null);
                 }
             }
         };
@@ -355,10 +355,18 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
     }
 
     public BootstrapConfigStore unsecuredBootstrapStore() {
-        return unsecuredBootstrapStoreWithBsSecurityInstanceIdAt(0);
+        return unsecuredBootstrapStore(0, false);
     }
 
-    public BootstrapConfigStore unsecuredBootstrapStoreWithBsSecurityInstanceIdAt(final int instanceId) {
+    public BootstrapConfigStore unsecuredBootstrapStoreWithBsSecurityInstanceIdAt(Integer instanceId) {
+        return unsecuredBootstrapStore(instanceId, false);
+    }
+
+    public BootstrapConfigStore unsecuredBootstrapWithAutoID() {
+        return unsecuredBootstrapStore(0, true);
+    }
+
+    public BootstrapConfigStore unsecuredBootstrapStore(final Integer bsInstanceId, final boolean autoId) {
         return new BootstrapConfigStore() {
 
             @Override
@@ -366,13 +374,15 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
 
                 BootstrapConfig bsConfig = new BootstrapConfig();
 
+                bsConfig.autoIdForSecurityObject = autoId;
+
                 // security for BS server
                 ServerSecurity bsSecurity = new ServerSecurity();
                 bsSecurity.bootstrapServer = true;
                 bsSecurity.uri = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
                         + bootstrapServer.getUnsecuredAddress().getPort();
                 bsSecurity.securityMode = SecurityMode.NO_SEC;
-                bsConfig.security.put(instanceId, bsSecurity);
+                bsConfig.security.put(bsInstanceId, bsSecurity);
 
                 // security for DM server
                 ServerSecurity dmSecurity = new ServerSecurity();

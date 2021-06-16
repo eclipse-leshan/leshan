@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
@@ -138,6 +139,36 @@ public class BootstrapUtil {
         // handle security
         for (Entry<Integer, ServerSecurity> security : bootstrapConfig.security.entrySet()) {
             requests.add(toWriteRequest(security.getKey(), security.getValue(), contentFormat));
+        }
+        // handle server
+        for (Entry<Integer, ServerConfig> server : bootstrapConfig.servers.entrySet()) {
+            requests.add(toWriteRequest(server.getKey(), server.getValue(), contentFormat));
+        }
+        // handle acl
+        for (Entry<Integer, ACLConfig> acl : bootstrapConfig.acls.entrySet()) {
+            requests.add(toWriteRequest(acl.getKey(), acl.getValue(), contentFormat));
+        }
+        return (requests);
+    }
+
+    public static List<BootstrapDownlinkRequest<? extends LwM2mResponse>> toRequests(BootstrapConfig bootstrapConfig,
+            ContentFormat contentFormat, int bootstrapServerID) {
+        List<BootstrapDownlinkRequest<? extends LwM2mResponse>> requests = new ArrayList<>();
+        // handle delete
+        for (String path : bootstrapConfig.toDelete) {
+            requests.add(new BootstrapDeleteRequest(path));
+        }
+        // handle security
+        int id = 0;
+        for (ServerSecurity security : new TreeMap<>(bootstrapConfig.security).values()) {
+            if (security.bootstrapServer) {
+                requests.add(toWriteRequest(bootstrapServerID, security, contentFormat));
+            } else {
+                if (id == bootstrapServerID)
+                    id++;
+                requests.add(toWriteRequest(id, security, contentFormat));
+                id++;
+            }
         }
         // handle server
         for (Entry<Integer, ServerConfig> server : bootstrapConfig.servers.entrySet()) {

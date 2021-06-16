@@ -25,6 +25,7 @@ import java.util.Map;
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.request.BindingMode;
+import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 
 /**
  * A client configuration to apply to a device during a bootstrap session.
@@ -42,6 +43,20 @@ import org.eclipse.leshan.core.request.BindingMode;
  * @see DefaultBootstrapHandler
  */
 public class BootstrapConfig {
+
+    /**
+     * If activated, bootstrap server will start the bootstrap session with a {@link BootstrapDiscoverRequest} to know
+     * what is the Security(object 0) instance ID of bootstrap server on the device, then it will use this information
+     * to automatically attribute IDs to {@link #security} instance. (meaning that ID defined in {@link #security} will
+     * not be used)
+     * <p>
+     * This can be useful because bootstrap server can not be deleted and only 1 Bootstrap server can be present in
+     * Security Object. <br>
+     * See <a href=
+     * "https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/522">OMA_LwM2M_for_Developers#522</a>for
+     * more details .
+     */
+    public boolean autoIdForSecurityObject = false;
 
     /**
      * List of LWM2M path to delete.
