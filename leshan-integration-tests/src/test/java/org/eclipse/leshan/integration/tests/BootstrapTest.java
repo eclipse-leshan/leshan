@@ -43,6 +43,7 @@ import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.integration.tests.util.BootstrapIntegrationTestHelper;
 import org.eclipse.leshan.integration.tests.util.TestObjectsInitializer;
+import org.eclipse.leshan.server.bootstrap.BootstrapFailureCause;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.junit.After;
@@ -162,7 +163,8 @@ public class BootstrapTest {
         helper.assertClientRegisterered();
 
         // assert session contains additional attributes
-        assertEquals(additionalAttributes, helper.lastBootstrapSession.getBootstrapRequest().getAdditionalAttributes());
+        assertEquals(additionalAttributes,
+                helper.getLastBootstrapSession().getBootstrapRequest().getAdditionalAttributes());
     }
 
     @Test
@@ -297,6 +299,8 @@ public class BootstrapTest {
 
         // ensure bootstrap session failed because of invalid state
         helper.waitForInconsistentStateAtClientSide(1);
+        helper.waitForBootstrapFailureAtServerSide(1);
+        assertEquals(BootstrapFailureCause.FINISH_FAILED, helper.getLastCauseOfBootstrapFailure());
     }
 
     @Test
@@ -323,6 +327,7 @@ public class BootstrapTest {
 
         // ensure bootstrap session succeed
         helper.waitForBootstrapFinishedAtClientSide(1);
+        helper.waitForBootstrapSuccessAtServerSide(1);
         helper.waitForRegistrationAtServerSide(1);
         helper.assertClientRegisterered();
     }

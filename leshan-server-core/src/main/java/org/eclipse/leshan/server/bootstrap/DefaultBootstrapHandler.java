@@ -28,6 +28,7 @@ import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.response.SendableResponse;
+import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager.BootstrapPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,15 +56,21 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
 
     protected final ConcurrentHashMap<String, BootstrapSession> onGoingSession = new ConcurrentHashMap<>();
     protected final BootstrapSessionManager sessionManager;
+    protected final BootstrapSessionListener listener;
 
-    public DefaultBootstrapHandler(LwM2mBootstrapRequestSender sender, BootstrapSessionManager sessionManager) {
-        this(sender, sessionManager, DEFAULT_TIMEOUT);
+    public DefaultBootstrapHandler(LwM2mBootstrapRequestSender sender, BootstrapSessionManager sessionManager,
+            BootstrapSessionListener listener) {
+        this(sender, sessionManager, listener, DEFAULT_TIMEOUT);
     }
 
     public DefaultBootstrapHandler(LwM2mBootstrapRequestSender sender, BootstrapSessionManager sessionManager,
-            long requestTimeout) {
+            BootstrapSessionListener listener, long requestTimeout) {
+        Validate.notNull(sender);
+        Validate.notNull(sessionManager);
+        Validate.notNull(listener);
         this.sender = sender;
         this.sessionManager = sessionManager;
+        this.listener = listener;
         this.requestTimeout = requestTimeout;
     }
 
@@ -74,11 +81,14 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
         // Start session, checking the BS credentials
         final BootstrapSession session;
         session = sessionManager.begin(request, sender);
+        listener.sessionInitiated(request, sender);
 
         if (!session.isAuthorized()) {
             sessionManager.failed(session, UNAUTHORIZED);
+            listener.unAuthorized(request, sender);
             return new SendableResponse<>(BootstrapResponse.badRequest("Unauthorized"));
         }
+        listener.authorized(session);
 
         // check if there is not an ongoing session.
         BootstrapSession oldSession = onGoingSession.put(endpoint, session);
@@ -94,6 +104,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             // check if there is a configuration to apply for this device
             if (!sessionManager.hasConfigFor(session)) {
                 LOG.debug("No bootstrap config for {}", session);
+                listener.noConfig(session);
                 stopSession(session, NO_BOOTSTRAP_CONFIG);
                 return new SendableResponse<>(BootstrapResponse.badRequest("no bootstrap config"));
             }
@@ -127,8 +138,10 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
         // if there is no cause of failure, this is a success
         if (cause == null) {
             sessionManager.end(session);
+            listener.end(session);
         } else {
             sessionManager.failed(session, cause);
+            listener.failed(session, cause);
         }
     }
 
@@ -136,16 +149,19 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
     protected void sendRequest(final BootstrapSession session,
             final BootstrapDownlinkRequest<? extends LwM2mResponse> requestToSend) {
 
+        listener.sendRequest(session, requestToSend);
         send(session, requestToSend, new SafeResponseCallback(session) {
             @Override
             public void safeOnResponse(LwM2mResponse response) {
                 if (response.isSuccess()) {
                     LOG.trace("{} receives {} for {}", session, response, requestToSend);
                     BootstrapPolicy policy = sessionManager.onResponseSuccess(session, requestToSend, response);
+                    listener.onResponseSuccess(session, requestToSend, response);
                     afterRequest(session, policy, requestToSend);
                 } else {
                     LOG.debug("{} receives {} for {}", session, response, requestToSend);
                     BootstrapPolicy policy = sessionManager.onResponseError(session, requestToSend, response);
+                    listener.onResponseError(session, requestToSend, response);
                     afterRequest(session, policy, requestToSend);
                 }
             }
@@ -154,6 +170,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             public void safeOnError(Exception e) {
                 LOG.debug("Error for {} while sending {} ", session, requestToSend, e);
                 BootstrapPolicy policy = sessionManager.onRequestFailure(session, requestToSend, e);
+                listener.onRequestFailure(session, requestToSend, e);
                 afterRequest(session, policy, requestToSend);
             }
         });

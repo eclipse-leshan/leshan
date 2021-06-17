@@ -49,7 +49,8 @@ public class BootstrapHandlerTest {
         // prepare bootstrapHandler with a session manager which does not authorized any session
         BootstrapSessionManager bsSessionManager = new MockBootstrapSessionManager(false,
                 new InMemoryBootstrapConfigStore());
-        BootstrapHandler bsHandler = new DefaultBootstrapHandler(null, bsSessionManager);
+        BootstrapHandler bsHandler = new DefaultBootstrapHandler(new MockRequestSender(Mode.ALWAYS_SUCCESS),
+                bsSessionManager, new BootstrapSessionDispatcher());
 
         // Try to bootstrap
         BootstrapResponse response = bsHandler
@@ -70,7 +71,8 @@ public class BootstrapHandlerTest {
         bsStore.add("endpoint", new BootstrapConfig());
         MockBootstrapSessionManager bsSessionManager = new MockBootstrapSessionManager(true, bsStore);
 
-        BootstrapHandler bsHandler = new DefaultBootstrapHandler(requestSender, bsSessionManager);
+        BootstrapHandler bsHandler = new DefaultBootstrapHandler(requestSender, bsSessionManager,
+                new BootstrapSessionDispatcher());
 
         // Try to bootstrap
         SendableResponse<BootstrapResponse> sendableResponse = bsHandler
@@ -91,7 +93,8 @@ public class BootstrapHandlerTest {
         EditableBootstrapConfigStore bsStore = new InMemoryBootstrapConfigStore();
         bsStore.add("endpoint", new BootstrapConfig());
         MockBootstrapSessionManager bsSessionManager = new MockBootstrapSessionManager(true, bsStore);
-        BootstrapHandler bsHandler = new DefaultBootstrapHandler(requestSender, bsSessionManager);
+        BootstrapHandler bsHandler = new DefaultBootstrapHandler(requestSender, bsSessionManager,
+                new BootstrapSessionDispatcher());
 
         // Try to bootstrap
         SendableResponse<BootstrapResponse> sendableResponse = bsHandler
@@ -115,7 +118,7 @@ public class BootstrapHandlerTest {
         bsStore.add("endpoint", new BootstrapConfig());
         MockBootstrapSessionManager bsSessionManager = new MockBootstrapSessionManager(true, bsStore);
         BootstrapHandler bsHandler = new DefaultBootstrapHandler(requestSender, bsSessionManager,
-                DefaultBootstrapHandler.DEFAULT_TIMEOUT);
+                new BootstrapSessionDispatcher(), DefaultBootstrapHandler.DEFAULT_TIMEOUT);
 
         // First bootstrap : which will not end (because of sender)
         SendableResponse<BootstrapResponse> first_response = bsHandler

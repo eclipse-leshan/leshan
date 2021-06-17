@@ -40,6 +40,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
@@ -65,6 +67,7 @@ import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfigStoreTaskProvider;
+import org.eclipse.leshan.server.bootstrap.BootstrapFailureCause;
 import org.eclipse.leshan.server.bootstrap.BootstrapSession;
 import org.eclipse.leshan.server.bootstrap.BootstrapTaskProvider;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapSession;
@@ -86,8 +89,9 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
     public LeshanBootstrapServer bootstrapServer;
     public final PublicKey bootstrapServerPublicKey;
     public final PrivateKey bootstrapServerPrivateKey;
-    public volatile DefaultBootstrapSession lastBootstrapSession;
     public volatile BootstrapDiscoverResponse lastDiscoverAnswer;
+
+    private SynchronousBootstrapListener bootstrapListener = new SynchronousBootstrapListener();
 
     private class TestBootstrapSessionManager extends DefaultBootstrapSessionManager {
 
@@ -105,11 +109,6 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity) {
             assertThat(request.getCoapRequest(), instanceOf(Request.class));
             return super.begin(request, clientIdentity);
-        }
-
-        @Override
-        public void end(BootstrapSession bsSession) {
-            lastBootstrapSession = (DefaultBootstrapSession) bsSession;
         }
     }
 
@@ -166,6 +165,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         builder.setSecurityStore(securityStore);
         builder.setSessionManager(new TestBootstrapSessionManager(securityStore, bootstrapStore));
         bootstrapServer = builder.build();
+        setupBootstrapServerMonitoring();
     }
 
     public void createBootstrapServer(BootstrapSecurityStore securityStore, BootstrapConfigStore bootstrapStore,
@@ -196,6 +196,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         builder.setSecurityStore(securityStore);
         builder.setSessionManager(new TestBootstrapSessionManager(securityStore, taskProvider));
         bootstrapServer = builder.build();
+        setupBootstrapServerMonitoring();
     }
 
     public void createBootstrapServer(BootstrapSecurityStore securityStore) {
@@ -214,6 +215,10 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         if (id != null)
             sec.setId(id);
         return sec;
+    }
+
+    protected void setupBootstrapServerMonitoring() {
+        bootstrapServer.addListener(bootstrapListener);
     }
 
     @Override
@@ -545,6 +550,30 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                 return bsConfig;
             }
         };
+    }
+
+    public void waitForBootstrapSuccessAtServerSide(long timeInSeconds) {
+        try {
+            bootstrapListener.waitForSuccess(timeInSeconds, TimeUnit.SECONDS);
+        } catch (InterruptedException | TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void waitForBootstrapFailureAtServerSide(long timeInSeconds) {
+        try {
+            bootstrapListener.waitForFailure(timeInSeconds, TimeUnit.SECONDS);
+        } catch (InterruptedException | TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public DefaultBootstrapSession getLastBootstrapSession() {
+        return (DefaultBootstrapSession) bootstrapListener.getLastSuccessfulSession();
+    }
+
+    public BootstrapFailureCause getLastCauseOfBootstrapFailure() {
+        return bootstrapListener.getLastCauseOfFailure();
     }
 
     @Override

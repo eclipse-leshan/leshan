@@ -31,6 +31,8 @@ import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
+import org.eclipse.leshan.server.bootstrap.BootstrapSessionDispatcher;
+import org.eclipse.leshan.server.bootstrap.BootstrapSessionListener;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
 import org.eclipse.leshan.server.californium.RootResource;
@@ -49,6 +51,7 @@ public class LeshanBootstrapServer {
     private final CoapServer coapServer;
     private final CoapEndpoint unsecuredEndpoint;
     private final CoapEndpoint securedEndpoint;
+    private final BootstrapSessionDispatcher dispatcher = new BootstrapSessionDispatcher();
 
     private LwM2mBootstrapRequestSender requestSender;
 
@@ -90,7 +93,8 @@ public class LeshanBootstrapServer {
         requestSender = createRequestSender(securedEndpoint, unsecuredEndpoint, encoder, decoder);
 
         // create bootstrap resource
-        CoapResource bsResource = createBootstrapResource(bsHandlerFactory.create(requestSender, bsSessionManager));
+        CoapResource bsResource = createBootstrapResource(
+                bsHandlerFactory.create(requestSender, bsSessionManager, dispatcher));
         coapServer.add(bsResource);
     }
 
@@ -175,6 +179,14 @@ public class LeshanBootstrapServer {
         } else {
             return null;
         }
+    }
+
+    public void addListener(BootstrapSessionListener listener) {
+        dispatcher.addListener(listener);
+    }
+
+    public void removeListener(BootstrapSessionListener listener) {
+        dispatcher.removeListener(listener);
     }
 
     /**

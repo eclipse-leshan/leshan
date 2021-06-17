@@ -28,6 +28,7 @@ import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
 import org.eclipse.leshan.server.bootstrap.BootstrapSession;
+import org.eclipse.leshan.server.bootstrap.BootstrapSessionListener;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
@@ -43,8 +44,9 @@ public class LeshanBootstrapServerTest {
         builder.setBootstrapHandlerFactory(new BootstrapHandlerFactory() {
 
             @Override
-            public BootstrapHandler create(LwM2mBootstrapRequestSender sender, BootstrapSessionManager sessionManager) {
-                bsHandler = new DefaultBootstrapHandler(sender, sessionManager);
+            public BootstrapHandler create(LwM2mBootstrapRequestSender sender, BootstrapSessionManager sessionManager,
+                    BootstrapSessionListener listener) {
+                bsHandler = new DefaultBootstrapHandler(sender, sessionManager, listener);
                 return bsHandler;
             }
         });
