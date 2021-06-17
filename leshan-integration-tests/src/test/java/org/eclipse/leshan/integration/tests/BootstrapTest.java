@@ -42,6 +42,7 @@ import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.integration.tests.util.BootstrapIntegrationTestHelper;
+import org.eclipse.leshan.integration.tests.util.BootstrapRequestChecker;
 import org.eclipse.leshan.integration.tests.util.TestObjectsInitializer;
 import org.eclipse.leshan.server.bootstrap.BootstrapFailureCause;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
@@ -98,6 +99,8 @@ public class BootstrapTest {
         // Create and start bootstrap server
         helper.createBootstrapServer(null);
         helper.bootstrapServer.start();
+        BootstrapRequestChecker contentFormatChecker = BootstrapRequestChecker.contentFormatChecker(ContentFormat.TLV);
+        helper.bootstrapServer.addListener(contentFormatChecker);
 
         // Create Client and check it is not already registered
         ContentFormat noPreferredFormat = null; // if no preferred content format server should use TLV
@@ -108,6 +111,7 @@ public class BootstrapTest {
         // Start it and wait for registration
         helper.client.start();
         helper.waitForRegistrationAtServerSide(1);
+        assertTrue("not expected content format used", contentFormatChecker.isValid());
 
         // check the client is registered
         helper.assertClientRegisterered();
@@ -122,6 +126,9 @@ public class BootstrapTest {
         // Create and start bootstrap server
         helper.createBootstrapServer(null);
         helper.bootstrapServer.start();
+        BootstrapRequestChecker contentFormatChecker = BootstrapRequestChecker
+                .contentFormatChecker(ContentFormat.SENML_CBOR);
+        helper.bootstrapServer.addListener(contentFormatChecker);
 
         // Create Client and check it is not already registered
         ContentFormat preferredFormat = ContentFormat.SENML_CBOR;
@@ -132,6 +139,7 @@ public class BootstrapTest {
         // Start it and wait for registration
         helper.client.start();
         helper.waitForRegistrationAtServerSide(1);
+        assertTrue("not expected content format used", contentFormatChecker.isValid());
 
         // check the client is registered
         helper.assertClientRegisterered();
