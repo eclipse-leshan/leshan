@@ -28,8 +28,9 @@ public class AttributeSetTest {
     @Test
     public void should_provide_query_params() {
         AttributeSet sut = new AttributeSet(new Attribute(Attribute.OBJECT_VERSION, "1.1"),
-                new Attribute(Attribute.MINIMUM_PERIOD, 5L), new Attribute(Attribute.MAXIMUM_PERIOD, 60L));
-        assertEquals("ver=1.1&pmin=5&pmax=60", sut.toString());
+                new Attribute(Attribute.MINIMUM_PERIOD, 5L), new Attribute(Attribute.MAXIMUM_PERIOD, 60L),
+                new Attribute(Attribute.EVALUATE_MINIMUM_PERIOD, 30L),new Attribute(Attribute.EVALUATE_MAXIMUM_PERIOD, 45L));
+        assertEquals("ver=1.1&pmin=5&pmax=60&epmin=30&epmax=45", sut.toString());
 
         AttributeSet res = AttributeSet.parse(sut.toString());
         assertEquals(sut, res);
@@ -38,8 +39,9 @@ public class AttributeSetTest {
     @Test
     public void no_value_to_unset() {
         AttributeSet sut = new AttributeSet(new Attribute(Attribute.MINIMUM_PERIOD),
-                new Attribute(Attribute.MAXIMUM_PERIOD));
-        assertEquals("pmin&pmax", sut.toString());
+                new Attribute(Attribute.MAXIMUM_PERIOD), new Attribute(Attribute.EVALUATE_MINIMUM_PERIOD),
+                new Attribute(Attribute.EVALUATE_MAXIMUM_PERIOD));
+        assertEquals("pmin&pmax&epmin&epmax", sut.toString());
 
         AttributeSet res = AttributeSet.parse(sut.toString());
         assertEquals(sut, res);
@@ -48,11 +50,14 @@ public class AttributeSetTest {
     @Test
     public void should_get_map() {
         AttributeSet sut = new AttributeSet(new Attribute(Attribute.OBJECT_VERSION, "1.1"),
-                new Attribute(Attribute.MINIMUM_PERIOD, 5L), new Attribute(Attribute.MAXIMUM_PERIOD, 60L));
+                new Attribute(Attribute.MINIMUM_PERIOD, 5L), new Attribute(Attribute.MAXIMUM_PERIOD, 60L),
+                new Attribute(Attribute.EVALUATE_MINIMUM_PERIOD, 30L),new Attribute(Attribute.EVALUATE_MAXIMUM_PERIOD, 45L));
         Map<String, Object> map = sut.getMap();
         assertEquals("1.1", map.get("ver"));
         assertEquals(5L, map.get("pmin"));
         assertEquals(60L, map.get("pmax"));
+        assertEquals(45L, map.get("epmax"));
+        assertEquals(30L, map.get("epmin"));
     }
 
     @Test
@@ -79,9 +84,10 @@ public class AttributeSetTest {
     @Test
     public void should_to_string() {
         AttributeSet sut = new AttributeSet(new Attribute(Attribute.OBJECT_VERSION, "1.1"),
-                new Attribute(Attribute.MINIMUM_PERIOD, 5L), new Attribute(Attribute.MAXIMUM_PERIOD, 60L));
+                new Attribute(Attribute.MINIMUM_PERIOD, 5L), new Attribute(Attribute.MAXIMUM_PERIOD, 60L),
+                new Attribute(Attribute.EVALUATE_MINIMUM_PERIOD, 30L),new Attribute(Attribute.EVALUATE_MAXIMUM_PERIOD, 45L));
 
-        assertEquals("ver=1.1&pmin=5&pmax=60", sut.toString());
+        assertEquals("ver=1.1&pmin=5&pmax=60&epmin=30&epmax=45", sut.toString());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -112,6 +118,15 @@ public class AttributeSetTest {
     public void should_throw_on_invalid_pmin_pmax() {
         AttributeSet sut = new AttributeSet(new Attribute(Attribute.MINIMUM_PERIOD, 50L),
                 new Attribute(Attribute.MAXIMUM_PERIOD, 49L));
+
+        // pmin cannot be greater then pmax
+        sut.validate(AssignationLevel.RESOURCE);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void should_throw_on_invalid_epmin_epmax() {
+        AttributeSet sut = new AttributeSet(new Attribute(Attribute.EVALUATE_MINIMUM_PERIOD, 50L),
+                new Attribute(Attribute.EVALUATE_MAXIMUM_PERIOD, 49L));
 
         // pmin cannot be greater then pmax
         sut.validate(AssignationLevel.RESOURCE);

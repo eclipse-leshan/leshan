@@ -38,6 +38,8 @@ public class Attribute {
     public static final String GREATER_THAN = "gt";
     public static final String LESSER_THAN = "lt";
     public static final String STEP = "st";
+    public static final String EVALUATE_MINIMUM_PERIOD = "epmin";
+    public static final String EVALUATE_MAXIMUM_PERIOD = "epmax";
 
     /**
      * Metadata container for LwM2m attributes
@@ -81,6 +83,14 @@ public class Attribute {
                 EnumSet.of(AssignationLevel.RESOURCE), AccessMode.RW, Double.class));
         modelMap.put(STEP, new AttributeModel(STEP, Attachment.RESOURCE, EnumSet.of(AssignationLevel.RESOURCE),
                 AccessMode.RW, Double.class));
+        modelMap.put(EVALUATE_MINIMUM_PERIOD,
+                new Attribute.AttributeModel(EVALUATE_MINIMUM_PERIOD, Attachment.RESOURCE,
+                        EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.INSTANCE, AssignationLevel.RESOURCE),
+                        AccessMode.RW, Long.class));
+        modelMap.put(EVALUATE_MAXIMUM_PERIOD,
+                new Attribute.AttributeModel(EVALUATE_MAXIMUM_PERIOD, Attachment.RESOURCE,
+                        EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.INSTANCE, AssignationLevel.RESOURCE),
+                        AccessMode.RW, Long.class));
     }
 
     private final AttributeModel model;
