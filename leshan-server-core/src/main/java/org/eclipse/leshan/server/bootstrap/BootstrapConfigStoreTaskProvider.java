@@ -87,11 +87,9 @@ public class BootstrapConfigStoreTaskProvider implements BootstrapTaskProvider {
             }
 
             // We add model for Security(0), Server(0) and ACL(2) which are the only one supported by BootstrapConfig
-            // We use default 1.0 model as currently BootstrapConfig support only this model version (which should be
-            // compatible with models of LWM2M v1.1 but without new resources)
             tasks.supportedObjects = new HashMap<>();
-            tasks.supportedObjects.put(0, "1.0");
-            tasks.supportedObjects.put(1, "1.0");
+            tasks.supportedObjects.put(0, "1.1");
+            tasks.supportedObjects.put(1, "1.1");
             tasks.supportedObjects.put(2, "1.0");
 
             return tasks;

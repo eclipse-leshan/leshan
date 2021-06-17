@@ -23,10 +23,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.leshan.core.CertificateUsage;
+import org.eclipse.leshan.core.MatchingType;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.util.datatype.ULong;
 
 /**
  * A client configuration to apply to a device during a bootstrap session.
@@ -126,12 +128,49 @@ public class BootstrapConfig {
          */
         public EnumSet<BindingMode> binding = EnumSet.of(BindingMode.U);
 
+        /**
+         * If this resource is defined, it provides a link to the APN connection profile Object Instance (OMNA
+         * registered Object ID:11) to be used to communicate with this server.
+         * <p>
+         * Since Server v1.1
+         */
+        public Integer apnLink = null;
+
+        /**
+         * Using the Trigger Resource a LwM2M Client can indicate whether it is reachable over SMS (value set to 'true')
+         * or not (value set to 'false'). The default value (resource not present) is 'false'. When set to 'true' the
+         * LwM2M Server MAY, for example, request the LwM2M Client to perform operations, such as the "Update" operation
+         * by sending an "Execute" operation on "Registration Update Trigger" Resource via SMS. No SMS response is
+         * expected for such a message.
+         * <p>
+         * Since Server v1.1
+         */
+        public Boolean trigger = null;
+
+        /**
+         * Only a single transport binding SHALL be present. When the LwM2M client supports multiple transports, it MAY
+         * use this transport to initiate a connection. This resource can also be used to switch between multiple
+         * transports e.g. a non-IP device can switch to UDP transport to perform firmware updates.
+         * <p>
+         * Since Server v1.1
+         */
+        public BindingMode preferredTransport = null;
+        /**
+         * If true or the Resource is not present, the LwM2M Client Send command capability is de-activated. If false,
+         * the LwM2M Client Send Command capability is activated. *
+         * <p>
+         * Since Server v1.1
+         */
+        public Boolean muteSend = null;
+
         @Override
         public String toString() {
             return String.format(
-                    "ServerConfig [shortId=%s, lifetime=%s, defaultMinPeriod=%s, defaultMaxPeriod=%s, disableTimeout=%s, notifIfDisabled=%s, binding=%s]",
-                    shortId, lifetime, defaultMinPeriod, defaultMaxPeriod, disableTimeout, notifIfDisabled, binding);
+                    "ServerConfig [shortId=%s, lifetime=%s, defaultMinPeriod=%s, defaultMaxPeriod=%s, disableTimeout=%s, notifIfDisabled=%s, binding=%s, apnLink=%s, trigger=%s, preferredTransport=%s, muteSend=%s]",
+                    shortId, lifetime, defaultMinPeriod, defaultMaxPeriod, disableTimeout, notifIfDisabled, binding,
+                    apnLink, trigger, preferredTransport, muteSend);
         }
+
     }
 
     /**
@@ -243,6 +282,29 @@ public class BootstrapConfig {
         public Integer bootstrapServerAccountTimeout = 0;
 
         /**
+         * The Matching Type Resource specifies how the certificate or raw public key in in the Server Public Key is
+         * presented. Four values are currently defined:
+         * <ul>
+         * <li>0: Exact match. This is the default value and also corresponds to the functionality of LwM2M v1.0. Hence,
+         * if this resource is not present then the content of the Server Public Key Resource corresponds to this value.
+         * <li>1: SHA-256 hash [RFC6234]
+         * <li>2: SHA-384 hash [RFC6234]
+         * <li>3: SHA-512 hash [RFC6234]
+         * </ul>
+         * Since Security v1.1
+         */
+        public MatchingType matchingType = null;
+
+        /**
+         * This resource holds the value of the Server Name Indication (SNI) value to be used during the TLS handshake.
+         * When this resource is present then the LwM2M Server URI acts as the address of the service while the SNI
+         * value is used for matching a presented certificate, or PSK identity. *
+         * <p>
+         * Since Security v1.1
+         */
+        public String sni = null;
+
+        /**
          * The Certificate Usage Resource specifies the semantic of the certificate or raw public key stored in the
          * Server Public Key Resource, which is used to match the certificate presented in the TLS/DTLS handshake.
          * <ul>
@@ -251,17 +313,38 @@ public class BootstrapConfig {
          * <li>2: trust anchor assertion
          * <li>3: domain-issued certificate (default if missing)
          * </ul>
+         * <p>
+         * Since Security v1.1
          */
-        public CertificateUsage certificateUsage;
+        public CertificateUsage certificateUsage = null;
+
+        /**
+         * When this resource is present it instructs the TLS/DTLS client to propose the indicated ciphersuite(s) in the
+         * ClientHello of the handshake. A ciphersuite is indicated as a 32-bit integer value. The IANA TLS ciphersuite
+         * registry is maintained at https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml. As an
+         * example, the TLS_PSK_WITH_AES_128_CCM_8 ciphersuite is represented with the following string "0xC0,0xA8". To
+         * form an integer value the two values are concatenated. In this example, the value is 0xc0a8 or 49320.
+         * <p>
+         * Since Security v1.1
+         */
+        public ULong cipherSuite = null;
+
+        /**
+         * The Object ID of the OSCORE Object Instance that holds the OSCORE configuration to be used by the LWM2M
+         * Client to the LWM2M Server associated with this Security object.
+         * 
+         */
+        public Integer oscoreSecurityMode = null;
 
         @Override
         public String toString() {
             // Note : secretKey and smsBindingKeySecret are explicitly excluded from the display for security purposes
             return String.format(
-                    "ServerSecurity [uri=%s, bootstrapServer=%s, securityMode=%s, publicKeyOrId=%s, serverPublicKey=%s, smsSecurityMode=%s, smsBindingKeySecret=%s, serverSmsNumber=%s, serverId=%s, clientOldOffTime=%s, bootstrapServerAccountTimeout=%s, certificateUsage=%s]",
+                    "ServerSecurity [uri=%s, bootstrapServer=%s, securityMode=%s, publicKeyOrId=%s, serverPublicKey=%s, smsSecurityMode=%s, smsBindingKeyParam=%s, serverSmsNumber=%s, serverId=%s, clientOldOffTime=%s, bootstrapServerAccountTimeout=%s, matchingType=%s, certificateUsage=%s, sni=%s, cipherSuite=%s, oscoreSecurityMode=%s]",
                     uri, bootstrapServer, securityMode, Arrays.toString(publicKeyOrId),
                     Arrays.toString(serverPublicKey), smsSecurityMode, Arrays.toString(smsBindingKeyParam),
-                    serverSmsNumber, serverId, clientOldOffTime, bootstrapServerAccountTimeout, certificateUsage);
+                    serverSmsNumber, serverId, clientOldOffTime, bootstrapServerAccountTimeout, matchingType,
+                    certificateUsage, sni, cipherSuite, oscoreSecurityMode);
         }
     }
 

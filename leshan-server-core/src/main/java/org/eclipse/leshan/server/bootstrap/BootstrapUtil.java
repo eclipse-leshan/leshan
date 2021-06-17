@@ -28,6 +28,7 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
@@ -42,6 +43,7 @@ public class BootstrapUtil {
     public static LwM2mObjectInstance toSecurityInstance(int instanceId, ServerSecurity securityConfig) {
         Collection<LwM2mResource> resources = new ArrayList<>();
 
+        // resources since v1.0
         if (securityConfig.uri != null)
             resources.add(LwM2mSingleResource.newStringResource(0, securityConfig.uri));
         resources.add(LwM2mSingleResource.newBooleanResource(1, securityConfig.bootstrapServer));
@@ -67,9 +69,20 @@ public class BootstrapUtil {
             resources.add(LwM2mSingleResource.newIntegerResource(11, securityConfig.clientOldOffTime));
         if (securityConfig.bootstrapServerAccountTimeout != null)
             resources.add(LwM2mSingleResource.newIntegerResource(12, securityConfig.bootstrapServerAccountTimeout));
+
+        // resources since v1.1
+        if (securityConfig.matchingType != null)
+            resources.add(LwM2mSingleResource.newUnsignedIntegerResource(13, securityConfig.matchingType.code));
+        if (securityConfig.sni != null)
+            resources.add(LwM2mSingleResource.newStringResource(14, securityConfig.sni));
         if (securityConfig.certificateUsage != null)
             resources.add(LwM2mSingleResource.newUnsignedIntegerResource(15, securityConfig.certificateUsage.code));
-
+        if (securityConfig.cipherSuite != null)
+            resources.add(LwM2mSingleResource.newUnsignedIntegerResource(16, securityConfig.cipherSuite));
+        if (securityConfig.oscoreSecurityMode != null) {
+            resources.add(LwM2mSingleResource.newObjectLinkResource(17,
+                    new ObjectLink(21, securityConfig.oscoreSecurityMode)));
+        }
         return new LwM2mObjectInstance(instanceId, resources);
     }
 
@@ -83,6 +96,7 @@ public class BootstrapUtil {
     public static LwM2mObjectInstance toServerInstance(int instanceId, ServerConfig serverConfig) {
         Collection<LwM2mResource> resources = new ArrayList<>();
 
+        // resources since v1.0
         resources.add(LwM2mSingleResource.newIntegerResource(0, serverConfig.shortId));
         resources.add(LwM2mSingleResource.newIntegerResource(1, serverConfig.lifetime));
         if (serverConfig.defaultMinPeriod != null)
@@ -94,6 +108,16 @@ public class BootstrapUtil {
         resources.add(LwM2mSingleResource.newBooleanResource(6, serverConfig.notifIfDisabled));
         if (serverConfig.binding != null)
             resources.add(LwM2mSingleResource.newStringResource(7, BindingMode.toString(serverConfig.binding)));
+
+        // resources since v1.1
+        if (serverConfig.apnLink != null)
+            resources.add(LwM2mSingleResource.newObjectLinkResource(10, new ObjectLink(11, serverConfig.apnLink)));
+        if (serverConfig.trigger != null)
+            resources.add(LwM2mSingleResource.newBooleanResource(21, serverConfig.trigger));
+        if (serverConfig.preferredTransport != null)
+            resources.add(LwM2mSingleResource.newStringResource(22, serverConfig.preferredTransport.toString()));
+        if (serverConfig.muteSend != null)
+            resources.add(LwM2mSingleResource.newBooleanResource(23, serverConfig.muteSend));
 
         return new LwM2mObjectInstance(instanceId, resources);
     }
