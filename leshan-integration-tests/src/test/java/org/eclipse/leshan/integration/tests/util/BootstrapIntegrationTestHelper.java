@@ -360,18 +360,23 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
     }
 
     public BootstrapConfigStore unsecuredBootstrapStore() {
-        return unsecuredBootstrapStore(0, false);
+        return unsecuredBootstrapStore(0, false, null);
     }
 
     public BootstrapConfigStore unsecuredBootstrapStoreWithBsSecurityInstanceIdAt(Integer instanceId) {
-        return unsecuredBootstrapStore(instanceId, false);
+        return unsecuredBootstrapStore(instanceId, false, null);
     }
 
     public BootstrapConfigStore unsecuredBootstrapWithAutoID() {
-        return unsecuredBootstrapStore(0, true);
+        return unsecuredBootstrapStore(0, true, null);
     }
 
-    public BootstrapConfigStore unsecuredBootstrapStore(final Integer bsInstanceId, final boolean autoId) {
+    public BootstrapConfigStore unsecuredBootstrap(ContentFormat format) {
+        return unsecuredBootstrapStore(0, true, format);
+    }
+
+    public BootstrapConfigStore unsecuredBootstrapStore(final Integer bsInstanceId, final boolean autoId,
+            final ContentFormat format) {
         return new BootstrapConfigStore() {
 
             @Override
@@ -380,6 +385,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                 BootstrapConfig bsConfig = new BootstrapConfig();
 
                 bsConfig.autoIdForSecurityObject = autoId;
+                bsConfig.contentFormat = format;
 
                 // security for BS server
                 ServerSecurity bsSecurity = new ServerSecurity();

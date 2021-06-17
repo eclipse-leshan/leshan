@@ -76,11 +76,13 @@ public class BootstrapConfigStoreTaskProvider implements BootstrapTaskProvider {
                 }
 
                 // create requests from config
-                tasks.requestsToSend = BootstrapUtil.toRequests(config, session.getContentFormat(),
+                tasks.requestsToSend = BootstrapUtil.toRequests(config,
+                        config.contentFormat != null ? config.contentFormat : session.getContentFormat(),
                         bootstrapServerInstanceId);
             } else {
                 // create requests from config
-                tasks.requestsToSend = BootstrapUtil.toRequests(config, session.getContentFormat());
+                tasks.requestsToSend = BootstrapUtil.toRequests(config,
+                        config.contentFormat != null ? config.contentFormat : session.getContentFormat());
 
             }
 

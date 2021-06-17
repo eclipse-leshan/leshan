@@ -146,6 +146,33 @@ public class BootstrapTest {
     }
 
     @Test
+    public void bootstrap_contentformat_from_config() {
+        // Create DM Server without security & start it
+        helper.createServer();
+        helper.server.start();
+
+        // Create and start bootstrap server
+        helper.createBootstrapServer(null, helper.unsecuredBootstrap(ContentFormat.SENML_JSON));
+        helper.bootstrapServer.start();
+        BootstrapRequestChecker contentFormatChecker = BootstrapRequestChecker
+                .contentFormatChecker(ContentFormat.SENML_JSON);
+        helper.bootstrapServer.addListener(contentFormatChecker);
+
+        // Create Client and check it is not already registered
+        ContentFormat preferredFormat = ContentFormat.SENML_CBOR;
+        helper.createClient(preferredFormat);
+        helper.assertClientNotRegisterered();
+
+        // Start it and wait for registration
+        helper.client.start();
+        helper.waitForRegistrationAtServerSide(1);
+        assertTrue("not expected content format used", contentFormatChecker.isValid());
+
+        // check the client is registered
+        helper.assertClientRegisterered();
+    }
+
+    @Test
     public void bootstrapWithAdditionalAttributes() {
         // Create DM Server without security & start it
         helper.createServer();

@@ -26,6 +26,7 @@ import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
+import org.eclipse.leshan.core.request.ContentFormat;
 
 /**
  * A client configuration to apply to a device during a bootstrap session.
@@ -57,6 +58,13 @@ public class BootstrapConfig {
      * more details .
      */
     public boolean autoIdForSecurityObject = false;
+
+    /**
+     * Content format used to send requests.
+     * <p>
+     * if <code>null</code> content format used is the preferred one by the client (pct attribute from BootstrapRequest)
+     */
+    public ContentFormat contentFormat = null;
 
     /**
      * List of LWM2M path to delete.
