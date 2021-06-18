@@ -98,13 +98,13 @@ public class ReadCompositeTest {
     public void can_read_resource_instance() throws InterruptedException {
         // read device model number
         ReadCompositeResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new ReadCompositeRequest(requestContentFormat, responseContentFormat, "/2000/0/10/1"));
+                new ReadCompositeRequest(requestContentFormat, responseContentFormat, "/2000/0/65010/1"));
 
         // verify result
         assertEquals(CONTENT, response.getCode());
         assertContentFormat(responseContentFormat, response);
 
-        LwM2mResourceInstance resource = (LwM2mResourceInstance) response.getContent("/2000/0/10/1");
+        LwM2mResourceInstance resource = (LwM2mResourceInstance) response.getContent("/2000/0/65010/1");
         assertEquals(1, resource.getId());
         assertEquals(Type.STRING, resource.getType());
 

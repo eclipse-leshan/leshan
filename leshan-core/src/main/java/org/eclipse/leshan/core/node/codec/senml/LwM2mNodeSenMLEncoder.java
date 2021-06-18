@@ -250,10 +250,13 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
             String bn = requestPath.toString();
             String n = recordName == null ? "" : recordName;
 
+            // Add slash if necessary
+            if (!n.isEmpty()) {
+                bn += "/";
+            }
+
+            // Set basename only for first record
             if (records.isEmpty()) {
-                if (!n.isEmpty()) {
-                    bn += "/";
-                }
                 record.setBaseName(bn);
             }
             record.setName(n);

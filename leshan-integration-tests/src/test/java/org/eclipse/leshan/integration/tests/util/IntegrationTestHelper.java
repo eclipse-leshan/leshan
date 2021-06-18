@@ -83,7 +83,7 @@ public class IntegrationTestHelper {
     public static final int OBJLNK_SINGLE_INSTANCE_RESOURCE_ID = 7;
     public static final int INTEGER_MANDATORY_RESOURCE_ID = 8;
     public static final int STRING_MANDATORY_RESOURCE_ID = 9;
-    public static final int STRING_RESOURCE_INSTANCE_ID = 10;
+    public static final int STRING_RESOURCE_INSTANCE_ID = 65010;
     public static final int UNSIGNED_INTEGER_RESOURCE_ID = 11;
 
     public static final String MULTI_INSTANCE = "multiinstance";
