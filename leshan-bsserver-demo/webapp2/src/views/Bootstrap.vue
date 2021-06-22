@@ -5,6 +5,7 @@
     item-key="endpoint"
     sort-by="endpoint"
     class="elevation-0"
+    @click:row="openLink"
     dense
   >
     <template v-slot:top>
@@ -54,7 +55,7 @@
     </template>
     <!--custom display for "actions" column-->
     <template v-slot:item.actions="{ item }">
-      <v-icon small @click="deleteConfig(item)">
+      <v-icon small @click.stop="deleteConfig(item)">
         mdi-delete
       </v-icon>
     </template>
@@ -88,6 +89,9 @@ export default {
   },
 
   methods: {
+    openLink(bs) {
+      this.$router.push(`/bootstrap/${bs.endpoint}`);
+    },
     fromAscii(ascii) {
       var bytearray = [];
       for (var i in ascii) {

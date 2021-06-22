@@ -2,6 +2,7 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 import Bootstrap from "../views/Bootstrap.vue";
 import About from "../views/About.vue";
+import Client from "../views/Client.vue"
 
 Vue.use(VueRouter);
 
@@ -15,16 +16,10 @@ const routes = [
     name: "Bootstrap",
     component: Bootstrap,
   },
-  /*{
+  {
     path: "/bootstrap/:endpoint",
     component: Client,
-    children: [
-      {
-        path: ":objectid",
-        component: ObjectView,
-      },
-    ],
-  },*/
+  },
   {
     path: "/about",
     name: "About",

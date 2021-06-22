@@ -48,6 +48,7 @@ import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.util.SecurityUtil;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.BootstrapServlet;
+import org.eclipse.leshan.server.bootstrap.demo.servlet.EventServlet;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.ServerServlet;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.bootstrap.LeshanBootstrapServer;
@@ -475,6 +476,12 @@ public class LeshanBootstrapServerDemo {
         }
         root.addServlet(serverServletHolder, "/api/server/*");
         root.addServlet(serverServletHolder, "/v2/api/server/*"); // Temporary code to be able to serve both UI
+
+        EventServlet eventServlet = new EventServlet(bsServer);
+        ServletHolder eventServletHolder = new ServletHolder(eventServlet);
+        root.addServlet(eventServletHolder, "/event/*"); // Temporary code to be able to serve both UI
+        root.addServlet(eventServletHolder, "/api/event/*");
+        root.addServlet(eventServletHolder, "/v2/api/event/*"); // Temporary code to be able to serve both UI
 
         server.setHandler(root);
         /* **************************************************************** */
