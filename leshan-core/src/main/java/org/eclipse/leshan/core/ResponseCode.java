@@ -141,10 +141,7 @@ public class ResponseCode {
 
     @Override
     public String toString() {
-        if (UNKNOWN.equals(name))
-            return String.format("%s(%d)", name, code);
-        else
-            return name;
+        return String.format("%s(%d)", name, code);
     }
 
     @Override

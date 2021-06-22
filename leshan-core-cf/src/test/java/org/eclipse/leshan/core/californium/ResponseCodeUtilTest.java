@@ -23,10 +23,11 @@ public class ResponseCodeUtilTest {
 
     @Test
     public void known_coap_code_to_known_lwm2m_Code() {
-        org.eclipse.leshan.core.ResponseCode lwM2mResponseCode = ResponseCodeUtil.toLwM2mResponseCode(ResponseCode.CREATED);
+        org.eclipse.leshan.core.ResponseCode lwM2mResponseCode = ResponseCodeUtil
+                .toLwM2mResponseCode(ResponseCode.CREATED);
 
         Assert.assertEquals(org.eclipse.leshan.core.ResponseCode.CREATED, lwM2mResponseCode);
-        Assert.assertEquals("CREATED", lwM2mResponseCode.toString());
+        Assert.assertEquals("CREATED(201)", lwM2mResponseCode.toString());
     }
 
     @Test
@@ -49,7 +50,8 @@ public class ResponseCodeUtilTest {
 
     @Test
     public void unknown_lwm2m_code_to_known_coap_code() {
-        ResponseCode coapResponseCode = ResponseCodeUtil.toCoapResponseCode(new org.eclipse.leshan.core.ResponseCode(503));
+        ResponseCode coapResponseCode = ResponseCodeUtil
+                .toCoapResponseCode(new org.eclipse.leshan.core.ResponseCode(503));
 
         Assert.assertEquals(ResponseCode.SERVICE_UNAVAILABLE, coapResponseCode);
     }
@@ -69,7 +71,8 @@ public class ResponseCodeUtilTest {
         // californium behavior is not really consistent
 
         // for success : code value is lost but we know we use an unknown code
-        ResponseCode coapResponseCode = ResponseCodeUtil.toCoapResponseCode(new org.eclipse.leshan.core.ResponseCode(206));
+        ResponseCode coapResponseCode = ResponseCodeUtil
+                .toCoapResponseCode(new org.eclipse.leshan.core.ResponseCode(206));
         Assert.assertEquals(ResponseCode._UNKNOWN_SUCCESS_CODE, coapResponseCode);
 
         // for client error,: unknown code is replace by BAD REQUEST ...

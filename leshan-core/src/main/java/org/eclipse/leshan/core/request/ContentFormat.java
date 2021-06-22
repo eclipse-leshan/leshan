@@ -161,7 +161,7 @@ public class ContentFormat implements Comparable<ContentFormat> {
 
     @Override
     public String toString() {
-        return String.format("ContentFormat [name=%s, code=%s]", name, code);
+        return String.format("%s(%s)", name, code);
     }
 
     @Override
