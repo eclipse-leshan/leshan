@@ -18,6 +18,8 @@ package org.eclipse.leshan.core.node;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.eclipse.leshan.core.model.ResourceModel.Type;
+
 /**
  * Utility class about {@link LwM2mNode} and {@link LwM2mPath}.
  */
@@ -138,6 +140,22 @@ public class LwM2mNodeUtil {
     public static void validateUndefinedObjecInstanceId(int id) {
         if (id != LwM2mObjectInstance.UNDEFINED) {
             throw new LwM2mNodeException("Instance id should be undefined");
+        }
+    }
+
+    public static void valueToPrettyString(StringBuilder b, Object value, Type type) {
+        switch (type) {
+        case STRING:
+            b.append("\"").append(value).append("\"");
+            break;
+        case OPAQUE:
+            // We don't print OPAQUE value as this could be credentials one.
+            // Not ideal but didn't find better way for now.
+            b.append(((byte[]) value).length).append(" Bytes");
+            break;
+        default:
+            b.append(value);
+            break;
         }
     }
 }

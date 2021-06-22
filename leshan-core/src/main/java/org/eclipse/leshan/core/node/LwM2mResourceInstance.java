@@ -210,4 +210,21 @@ public class LwM2mResourceInstance implements LwM2mNode {
         return String.format("LwM2mResourceInstance [id=%s, value=%s, type=%s]", id,
                 type == Type.OPAQUE ? ((byte[]) value).length + "Bytes" : value, type);
     }
+
+    @Override
+    public String toPrettyString(LwM2mPath path) {
+        return appendPrettyNode(new StringBuilder(), path).toString();
+    }
+
+    @Override
+    public StringBuilder appendPrettyNode(StringBuilder b, LwM2mPath path) {
+        if (!path.isResourceInstance())
+            throw new IllegalArgumentException("path must be a resource instance path");
+        if (path.getResourceInstanceId() != id)
+            throw new IllegalArgumentException("path resource instance id must match this LwM2mResourceInstance id");
+
+        b.append(path).append(" : ");
+        LwM2mNodeUtil.valueToPrettyString(b, value, type);
+        return b;
+    }
 }

@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 /**
  * The top level element in the LWM2M resource tree.
@@ -86,6 +88,34 @@ public class LwM2mObject implements LwM2mNode {
     @Override
     public String toString() {
         return String.format("LwM2mObject [id=%s, instances=%s]", id, instances);
+    }
+
+    @Override
+    public String toPrettyString(LwM2mPath path) {
+        return appendPrettyNode(new StringBuilder(), path).toString();
+    }
+
+    @Override
+    public StringBuilder appendPrettyNode(StringBuilder b, LwM2mPath path) {
+        if (!path.isObject())
+            throw new IllegalArgumentException("path must be an object path");
+        if (path.getObjectId() != id)
+            throw new IllegalArgumentException("path object id must match this LwM2mObject id");
+
+        if (instances.isEmpty()) {
+            b.append(path).append(" : {}");
+        } else {
+            boolean first = true;
+            for (Entry<Integer, LwM2mObjectInstance> entry : new TreeMap<>(instances).entrySet()) {
+                if (first) {
+                    first = false;
+                } else {
+                    b.append("\n");
+                }
+                entry.getValue().appendPrettyNode(b, path.append(entry.getKey()));
+            }
+        }
+        return b;
     }
 
     @Override

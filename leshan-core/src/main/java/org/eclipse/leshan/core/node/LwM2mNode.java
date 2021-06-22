@@ -30,4 +30,18 @@ public interface LwM2mNode {
      */
     void accept(LwM2mNodeVisitor visitor);
 
+    /**
+     * Convert node to pretty string
+     * 
+     * @param path of this node;
+     */
+    String toPrettyString(LwM2mPath path);
+
+    /**
+     * Append pretty node to given {@link StringBuilder}
+     * 
+     * @param b string builder to which node should be appended
+     * @param path of this node;
+     */
+    StringBuilder appendPrettyNode(StringBuilder b, LwM2mPath path);
 }

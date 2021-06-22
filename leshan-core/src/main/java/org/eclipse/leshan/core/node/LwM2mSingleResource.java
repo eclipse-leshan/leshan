@@ -263,4 +263,21 @@ public class LwM2mSingleResource implements LwM2mResource {
                 type == Type.OPAQUE ? ((byte[]) value).length + "Bytes" : value, type);
     }
 
+    @Override
+    public String toPrettyString(LwM2mPath path) {
+        return appendPrettyNode(new StringBuilder(), path).toString();
+    }
+
+    @Override
+    public StringBuilder appendPrettyNode(StringBuilder b, LwM2mPath path) {
+        if (!path.isResource())
+            throw new IllegalArgumentException("path must be a resource path");
+        if (path.getResourceId() != id)
+            throw new IllegalArgumentException("path resource id must match this LwM2mSingleResource id");
+
+        b.append(path).append(" : ");
+        LwM2mNodeUtil.valueToPrettyString(b, value, type);
+
+        return b;
+    }
 }

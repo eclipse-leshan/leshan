@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.TreeMap;
 
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.util.Validate;
@@ -252,4 +253,31 @@ public class LwM2mMultipleResource implements LwM2mResource {
         return String.format("LwM2mMultipleResource [id=%s, values=%s, type=%s]", id, instances, type);
     }
 
+    @Override
+    public String toPrettyString(LwM2mPath path) {
+        return appendPrettyNode(new StringBuilder(), path).toString();
+    }
+
+    @Override
+    public StringBuilder appendPrettyNode(StringBuilder b, LwM2mPath path) {
+        if (!path.isResource())
+            throw new IllegalArgumentException("path must be a resource path");
+        if (path.getResourceId() != id)
+            throw new IllegalArgumentException("path resource id must match this LwM2mMultipleResource id");
+
+        if (instances.isEmpty()) {
+            b.append(path).append(" : {}");
+        } else {
+            boolean first = true;
+            for (Entry<Integer, LwM2mResourceInstance> entry : new TreeMap<>(instances).entrySet()) {
+                if (first) {
+                    first = false;
+                } else {
+                    b.append("\n");
+                }
+                entry.getValue().appendPrettyNode(b, path.append(entry.getKey()));
+            }
+        }
+        return b;
+    }
 }

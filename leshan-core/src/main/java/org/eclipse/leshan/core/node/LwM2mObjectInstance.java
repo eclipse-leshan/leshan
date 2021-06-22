@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import org.eclipse.leshan.core.node.codec.tlv.LwM2mNodeTlvDecoder;
 import org.eclipse.leshan.core.util.Validate;
@@ -151,4 +153,31 @@ public class LwM2mObjectInstance implements LwM2mNode {
         return true;
     }
 
+    @Override
+    public String toPrettyString(LwM2mPath path) {
+        return appendPrettyNode(new StringBuilder(), path).toString();
+    }
+
+    @Override
+    public StringBuilder appendPrettyNode(StringBuilder b, LwM2mPath path) {
+        if (!path.isObjectInstance())
+            throw new IllegalArgumentException("path must be an object instance path");
+        if (path.getObjectInstanceId() != id)
+            throw new IllegalArgumentException("path object instance id must match this LwM2mInstanceObject id");
+
+        if (resources.isEmpty()) {
+            b.append(path).append(" : {}");
+        } else {
+            boolean first = true;
+            for (Entry<Integer, LwM2mResource> entry : new TreeMap<>(resources).entrySet()) {
+                if (first) {
+                    first = false;
+                } else {
+                    b.append("\n");
+                }
+                entry.getValue().appendPrettyNode(b, path.append(entry.getKey()));
+            }
+        }
+        return b;
+    }
 }
