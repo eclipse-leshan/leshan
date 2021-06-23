@@ -12,6 +12,7 @@
     "@mdi/font": "^5.9.55",
     "axios": "^0.21.1",
     "core-js": "^3.6.5",
+    "file-saver": "^2.0.5",
     "vue": "^2.6.11",
     "vue-moment": "^4.1.0",
     "vue-router": "^3.2.0",

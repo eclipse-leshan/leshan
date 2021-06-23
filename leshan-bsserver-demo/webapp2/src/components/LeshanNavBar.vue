@@ -25,6 +25,7 @@ export default {
     return {
       pages: [
         { title: "Bootstrap", route: "/bootstrap", icon: "mdi-devices" },
+        { title: "Server", route: "/server", icon: "mdi-server-security" },
         { title: "About", route: "/about", icon: "mdi-information-outline" },
       ],
     };
