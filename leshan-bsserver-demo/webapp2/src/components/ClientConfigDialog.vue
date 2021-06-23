@@ -17,7 +17,6 @@
           <v-stepper-step
             :complete="currentStep > 1"
             step="1"
-            @click="currentStep = 1"
           >
             Endpoint Name
           </v-stepper-step>
@@ -25,7 +24,6 @@
           <v-stepper-step
             :complete="currentStep > 2"
             step="2"
-            @click="currentStep = 2"
           >
             LWM2M Server Configuration
           </v-stepper-step>
@@ -33,7 +31,6 @@
           <v-stepper-step
             :complete="currentStep > 3"
             step="3"
-            @click="currentStep = 3"
           >
             LWM2M Bootstrap Server Configuration
           </v-stepper-step>
