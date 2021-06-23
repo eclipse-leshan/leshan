@@ -1,65 +1,88 @@
 <template>
-  <v-data-table
-    :headers="headers"
-    :items="clientConfigs"
-    item-key="endpoint"
-    sort-by="endpoint"
-    class="elevation-0"
-    @click:row="openLink"
-    dense
-  >
-    <template v-slot:top>
-      <v-toolbar flat>
-        <v-toolbar-title>Clients Configuration</v-toolbar-title>
-        <v-divider class="mx-4" inset vertical></v-divider>
-        <v-spacer></v-spacer>
-        <!-- add clients configuration button-->
-        <v-btn dark class="mb-2" @click.stop="dialogOpened = true">
-          Add Clients Configuration
-          <v-icon right dark>
-            mdi-key-plus
-          </v-icon>
-        </v-btn>
+  <div>
+    <v-data-table
+      :headers="headers"
+      :items="clientConfigs"
+      item-key="endpoint"
+      sort-by="endpoint"
+      class="elevation-0"
+      @click:row="openLink"
+      dense
+      :search="search"
+    >
+      <template v-slot:top>
+        <v-toolbar flat>
+          <v-toolbar-title v-if="$vuetify.breakpoint.smAndUp"
+            >Clients Configuration</v-toolbar-title
+          >
+          <v-divider
+            v-if="$vuetify.breakpoint.smAndUp"
+            class="mx-4"
+            inset
+            vertical
+          ></v-divider>
+          <v-text-field
+            v-model="search"
+            append-icon="mdi-magnify"
+            label="Search"
+            single-line
+            hide-details
+            class="pa-2"
+            clearable
+          ></v-text-field>
 
-        <!-- add client configuration dialog -->
-        <client-config-dialog
-          v-model="dialogOpened"
-          @add="addConfig($event)"
-          :initialValue="editedSecurityInfo"
-        />
-      </v-toolbar>
-    </template>
-    <!--custom display for "dm" column-->
-    <template v-slot:item.dm="{ item }">
-      <div v-for="server in item.dm" :key="server.shortid">
-        <p>
-          <strong>{{server.security.uri }}</strong><br />
-          security mode : {{server.security.securityMode}}<br />
-          <span v-if="server.security.certificateUsage">
-            certificate usage : {{server.security.certificateUsage}}<br />
-          </span>
-        </p>
-      </div>
-    </template>
-    <!--custom display for "bs" column-->
-    <template v-slot:item.bs="{ item }">
-        <div v-for="server in item.bs" :key="server.security.uri">
-        <p>
-          <strong>{{server.security.uri }}</strong><br />
-          security mode : {{server.security.securityMode}}<br />
-          <span v-if="server.security.certificateUsage">
-            certificate usage : {{server.security.certificateUsage}}<br />
-          </span>
-        </p>
+          <!-- add clients configuration button-->
+          <v-btn dark class="mb-2" @click.stop="dialogOpened = true">
+            {{
+              $vuetify.breakpoint.smAndDown ? "" : "Add Clients Configuration"
+            }}
+            <v-icon :right="!$vuetify.breakpoint.smAndDown" dark>
+              mdi-key-plus
+            </v-icon>
+          </v-btn>
+
+          <!-- add client configuration dialog -->
+          <client-config-dialog
+            v-model="dialogOpened"
+            @add="addConfig($event)"
+            :initialValue="editedSecurityInfo"
+          />
+        </v-toolbar>
+      </template>
+      <!--custom display for "dm" column-->
+      <template v-slot:item.dm="{ item }">
+        <div v-for="server in item.dm" :key="server.shortid">
+          <p>
+            <strong>{{ server.security.uri }}</strong
+            ><br />
+            security mode : {{ server.security.securityMode }}<br />
+            <span v-if="server.security.certificateUsage">
+              certificate usage : {{ server.security.certificateUsage }}<br />
+            </span>
+          </p>
         </div>
-    </template>
-    <!--custom display for "actions" column-->
-    <template v-slot:item.actions="{ item }">
-      <v-icon small @click.stop="deleteConfig(item)">
-        mdi-delete
-      </v-icon>
-    </template>
-  </v-data-table>
+      </template>
+      <!--custom display for "bs" column-->
+      <template v-slot:item.bs="{ item }">
+        <div v-for="server in item.bs" :key="server.security.uri">
+          <p>
+            <strong>{{ server.security.uri }}</strong
+            ><br />
+            security mode : {{ server.security.securityMode }}<br />
+            <span v-if="server.security.certificateUsage">
+              certificate usage : {{ server.security.certificateUsage }}<br />
+            </span>
+          </p>
+        </div>
+      </template>
+      <!--custom display for "actions" column-->
+      <template v-slot:item.actions="{ item }">
+        <v-icon small @click.stop="deleteConfig(item)">
+          mdi-delete
+        </v-icon>
+      </template>
+    </v-data-table>
+  </div>
 </template>
 <script>
 import { configsFromRestToUI, configFromUIToRest } from "../js/bsconfigutil.js";
@@ -71,10 +94,16 @@ export default {
     dialogOpened: false,
     headers: [
       { text: "Endpoint", value: "endpoint", width: "20%" },
-      { text: "LWM2M Server", value: "dm", width: "40%" },
-      { text: "LWM2M Bootstrap Server", value: "bs", width: "40%" },
+      { text: "LWM2M Server", value: "dm", width: "40%", sortable: false },
+      {
+        text: "LWM2M Bootstrap Server",
+        value: "bs",
+        width: "40%",
+        sortable: false,
+      },
       { text: "Actions", value: "actions", sortable: false },
     ],
+    search: "",
     clientConfigs: [],
     editedSecurityInfo: {}, // initial value for Security Information dialog
   }),
