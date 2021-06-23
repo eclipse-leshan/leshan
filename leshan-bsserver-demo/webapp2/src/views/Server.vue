@@ -7,7 +7,7 @@
         </v-card-title>
 
         <v-card-subtitle class="text-center">
-           Here some information about this server.
+          Here some information about this server.
         </v-card-subtitle>
       </v-card-text>
     </v-card>
@@ -72,9 +72,9 @@
 
           <v-card-text>
             <p>
-              If you want to connect a client using DTLS with Raw Public Key(RPK)
-              mode, your client need to trust this key to accept DTLS connection
-              with this server.
+              If you want to connect a client using DTLS with Raw Public
+              Key(RPK) mode, your client need to trust this key to accept DTLS
+              connection with this server.
             </p>
             <u>Elliptic Curve parameters :</u>
             <div>
@@ -171,31 +171,25 @@ export default {
     },
   },
   beforeMount() {
-    this.axios
-      .get("api/server/endpoint")
-      .then((response) => {
-        this.coapurl = `coap://${location.hostname}:${response.data.unsecuredEndpointPort}`;
-        this.coapsurl = `coaps://${location.hostname}:${response.data.securedEndpointPort}`;
-      })
-      .catch((error) => console.log(error));
-    this.axios
-      .get("api/server/security")
-      .then((response) => {
-        if (response.data.certificate) {
-          this.certificate = response.data.certificate;
-          this.certificate.bytesDer = base64ToBytes(this.certificate.b64Der);
-          this.certificate.hexDer = toHex(this.certificate.bytesDer);
-          this.pubkey = response.data.certificate.pubkey;
-          this.pubkey.bytesDer = base64ToBytes(this.pubkey.b64Der);
-          this.pubkey.hexDer = toHex(this.pubkey.bytesDer);
-        } else if (response.data.pubkey) {
-          this.certificate = null;
-          this.pubkey = response.data.pubkey;
-          this.pubkey.bytesDer = base64ToBytes(this.pubkey.b64Der);
-          this.pubkey.hexDer = toHex(this.pubkey.bytesDer);
-        }
-      })
-      .catch((error) => console.log(error));
+    this.axios.get("api/server/endpoint").then((response) => {
+      this.coapurl = `coap://${location.hostname}:${response.data.unsecuredEndpointPort}`;
+      this.coapsurl = `coaps://${location.hostname}:${response.data.securedEndpointPort}`;
+    });
+    this.axios.get("api/server/security").then((response) => {
+      if (response.data.certificate) {
+        this.certificate = response.data.certificate;
+        this.certificate.bytesDer = base64ToBytes(this.certificate.b64Der);
+        this.certificate.hexDer = toHex(this.certificate.bytesDer);
+        this.pubkey = response.data.certificate.pubkey;
+        this.pubkey.bytesDer = base64ToBytes(this.pubkey.b64Der);
+        this.pubkey.hexDer = toHex(this.pubkey.bytesDer);
+      } else if (response.data.pubkey) {
+        this.certificate = null;
+        this.pubkey = response.data.pubkey;
+        this.pubkey.bytesDer = base64ToBytes(this.pubkey.b64Der);
+        this.pubkey.hexDer = toHex(this.pubkey.bytesDer);
+      }
+    });
   },
 };
 </script>
