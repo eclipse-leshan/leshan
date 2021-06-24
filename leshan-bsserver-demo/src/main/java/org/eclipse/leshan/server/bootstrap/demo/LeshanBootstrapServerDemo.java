@@ -453,7 +453,7 @@ public class LeshanBootstrapServerDemo {
         aHolder.setInitParameter("resourceBase",
                 LeshanBootstrapServerDemo.class.getClassLoader().getResource("webapp2").toExternalForm());
         aHolder.setInitParameter("pathInfoOnly", "true");
-        root.addServlet(aHolder, "/v2/*");
+        root.addServlet(aHolder, "/*");
 
         // Configuration for old demo
         DefaultServlet bServlet = new DefaultServlet();
@@ -461,12 +461,12 @@ public class LeshanBootstrapServerDemo {
         bHolder.setInitParameter("resourceBase",
                 LeshanBootstrapServerDemo.class.getClassLoader().getResource("webapp").toExternalForm());
         bHolder.setInitParameter("pathInfoOnly", "true");
-        root.addServlet(bHolder, "/*");
+        root.addServlet(bHolder, "/old/*");
         /* **************************************************************** */
 
         ServletHolder bsServletHolder = new ServletHolder(new BootstrapServlet(bsStore));
+        root.addServlet(bsServletHolder, "/old/api/bootstrap/*"); // Temporary code to be able to serve both UI
         root.addServlet(bsServletHolder, "/api/bootstrap/*");
-        root.addServlet(bsServletHolder, "/v2/api/bootstrap/*"); // Temporary code to be able to serve both UI
 
         ServletHolder serverServletHolder;
         if (publicKey != null) {
@@ -474,14 +474,14 @@ public class LeshanBootstrapServerDemo {
         } else {
             serverServletHolder = new ServletHolder(new ServerServlet(bsServer, serverCertificateChain[0]));
         }
+        root.addServlet(serverServletHolder, "/old/api/server/*"); // Temporary code to be able to serve both UI
         root.addServlet(serverServletHolder, "/api/server/*");
-        root.addServlet(serverServletHolder, "/v2/api/server/*"); // Temporary code to be able to serve both UI
 
         EventServlet eventServlet = new EventServlet(bsServer);
         ServletHolder eventServletHolder = new ServletHolder(eventServlet);
-        root.addServlet(eventServletHolder, "/event/*"); // Temporary code to be able to serve both UI
+        root.addServlet(eventServletHolder, "/old/event/*"); // Temporary code to be able to serve both UI
         root.addServlet(eventServletHolder, "/api/event/*");
-        root.addServlet(eventServletHolder, "/v2/api/event/*"); // Temporary code to be able to serve both UI
+        root.addServlet(eventServletHolder, "/old/api/event/*"); // Temporary code to be able to serve both UI
 
         server.setHandler(root);
         /* **************************************************************** */

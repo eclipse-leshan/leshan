@@ -1,9 +1,9 @@
 <bootstrap>
     <span >
-        <div class="alert alert-info alert-dismissible"> 
+        <div class="alert alert-warning alert-dismissible"> 
         <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <p>A new version of <strong>Leshan Bootstrap Server Demo</strong> based on <a href="https://vuejs.org/">Vue.js</a> is in development.
-          <br/>This new version is missing a lot of features but is already <strong>testable <a href="./v2">here</a></strong>.</p>
+        <p>This UI is now <strong>deprecated</strong> and will be removed very soon.</p>
+        <p> The <strong>new version</strong> of Leshan Bootstrap Server Demo based on <a href="https://vuejs.org/">Vue.js</a> is now ready and <strong> available <a href="../">here</a></strong>.</p>
         <p> (If you want to contribute to it or understand this move : see <a href="https://github.com/eclipse/leshan/issues/906">#906</a>)</p></div>
     </span>
    <div class="well well-sm col-md-12"  if={certificate}>

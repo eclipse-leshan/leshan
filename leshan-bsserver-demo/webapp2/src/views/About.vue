@@ -46,14 +46,14 @@
           type="info"
           elevation="2"
           max-width="600"
-          icon="mdi-account-hard-hat"
+          icon="mdi-alert-decagram"
         >
-          This is a work in progress version of our new UI for Leshan Bootstrap Server
-          Demo. Lot of features are still missing and probably some bugs are
-          still hidden. If needed, you can still use the old version which
-          should be available
-          <a href="../"><strong>here</strong></a
-          >.
+          <p>
+            This is the new UI for Leshan Bootstrap Server Demo. If needed, you
+            can still use the old version which should be available
+            <a href="../old/"><strong>here</strong></a> but not for so long as
+            it <strong> will be removed very soon !</strong>
+          </p>
         </v-alert>
       </v-layout>
     </v-row>

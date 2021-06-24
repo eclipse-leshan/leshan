@@ -1,5 +1,25 @@
 <template>
   <div>
+    <v-layout justify-center>
+      <v-alert
+        border="left"
+        outlined
+        type="info"
+        elevation="2"
+        icon="mdi-alert-decagram"
+        dismissible
+        prominent
+        class="ma-2"
+        v-model="shownews"
+      >
+        <p>
+          This is the new UI for Leshan Bootstrap Server Demo. If needed, you
+          can still use the old version which should be available
+          <a href="../old/"><strong>here</strong></a> but not for so long as it
+          <strong> will be removed very soon !</strong>
+        </p>
+      </v-alert>
+    </v-layout>
     <v-data-table
       :headers="headers"
       :items="clientConfigs"
@@ -87,6 +107,7 @@
 <script>
 import { configsFromRestToUI, configFromUIToRest } from "../js/bsconfigutil.js";
 import ClientConfigDialog from "../components/ClientConfigDialog.vue";
+import { preference } from "vue-preferences";
 
 export default {
   components: { ClientConfigDialog },
@@ -107,6 +128,13 @@ export default {
     clientConfigs: [],
     editedSecurityInfo: {}, // initial value for Security Information dialog
   }),
+
+  computed: {
+    shownews: preference("shownews", {
+      defaultValue: true,
+      ttl: 60 * 60 * 24,
+    }),
+  },
 
   beforeMount() {
     this.axios
@@ -136,7 +164,7 @@ export default {
       return bytes;
     },
     formatData(c) {
-      console.log(c)
+      console.log(c);
       let s = {};
       s.securityMode = c.mode.toUpperCase();
       s.uri = c.url;
