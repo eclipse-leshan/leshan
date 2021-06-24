@@ -13,7 +13,12 @@
       "
       class="examplePatch"
     ></v-text-field>
-    <security-input :mode.sync="server.mode" :details.sync="server.details" />
+    <security-input
+      :mode.sync="server.mode"
+      :details.sync="server.details"
+      :defaultrpk="defaultrpk"
+      :defaultx509="defaultx509"
+    />
   </div>
 </template>
 <script>
@@ -25,6 +30,18 @@ export default {
     value: Object,
     defaultNoSecValue: String,
     defaultSecureValue: String,
+    defaultrpk: {
+      default: function() {
+        return {};
+      },
+      type: Object,
+    },
+    defaultx509: {
+      default: function() {
+        return {};
+      },
+      type: Object,
+    },
   },
   computed: {
     server: {

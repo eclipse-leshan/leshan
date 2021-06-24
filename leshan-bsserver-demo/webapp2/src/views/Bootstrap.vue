@@ -136,6 +136,7 @@ export default {
       return bytes;
     },
     formatData(c) {
+      console.log(c)
       let s = {};
       s.securityMode = c.mode.toUpperCase();
       s.uri = c.url;
@@ -147,7 +148,7 @@ export default {
         case "rpk":
           s.publicKeyOrId = this.fromHex(c.details.client_pub_key);
           s.secretKey = this.fromHex(c.details.client_pri_key);
-          s.serverPublicKey = this.fromHex(c.details.server_pri_key);
+          s.serverPublicKey = this.fromHex(c.details.server_pub_key);
           break;
         case "x509":
           s.publicKeyOrId = this.fromHex(c.details.client_certificate);

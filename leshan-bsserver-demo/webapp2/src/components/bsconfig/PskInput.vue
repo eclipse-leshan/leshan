@@ -8,6 +8,7 @@
       :rules="[(v) => !!v || 'Identity is required']"
       @input="$emit('input', psk)"
       spellcheck="false"
+      rows="1"
     ></v-textarea>
 
     <!-- key field -->
@@ -22,6 +23,7 @@
       ]"
       @input="$emit('input', psk)"
       spellcheck="false"
+      rows="1"
     ></v-textarea>
   </div>
 </template>

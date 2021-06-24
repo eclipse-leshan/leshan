@@ -14,24 +14,15 @@
       <!-- Form -->
       <v-stepper v-model="currentStep">
         <v-stepper-header>
-          <v-stepper-step
-            :complete="currentStep > 1"
-            step="1"
-          >
+          <v-stepper-step :complete="currentStep > 1" step="1">
             Endpoint Name
           </v-stepper-step>
           <v-divider></v-divider>
-          <v-stepper-step
-            :complete="currentStep > 2"
-            step="2"
-          >
+          <v-stepper-step :complete="currentStep > 2" step="2">
             LWM2M Server Configuration
           </v-stepper-step>
           <v-divider></v-divider>
-          <v-stepper-step
-            :complete="currentStep > 3"
-            step="3"
-          >
+          <v-stepper-step :complete="currentStep > 3" step="3">
             LWM2M Bootstrap Server Configuration
           </v-stepper-step>
         </v-stepper-header>
@@ -115,6 +106,8 @@
                   v-model="config.bs"
                   :defaultNoSecValue="defval.bs.url.nosec"
                   :defaultSecureValue="defval.bs.url.sec"
+                  :defaultx509="defaultx509"
+                  :defaultrpk="defaultrpk" 
                 />
               </v-form>
             </v-card>
@@ -155,6 +148,7 @@
 </template>
 <script>
 import ServerInput from "./bsconfig/ServerInput.vue";
+import { toHex, base64ToBytes } from "../js/byteutils.js";
 
 export default {
   components: { ServerInput },
@@ -169,6 +163,8 @@ export default {
         dm: { url: {} },
         bs: { url: {} },
       },
+      defaultrpk:{},
+      defaultx509:{},    
     };
   },
   computed: {
@@ -182,15 +178,25 @@ export default {
     },
   },
   beforeMount() {
-    this.axios
-      .get("api/server/endpoint")
-      .then((response) => {
-        this.defval.dm.url.nosec = `coap://${location.hostname}:5683`;
-        this.defval.dm.url.sec = `coaps://${location.hostname}:5684`;
-        this.defval.bs.url.nosec = `coap://${location.hostname}:${response.data.unsecuredEndpointPort}`;
-        this.defval.bs.url.sec = `coaps://${location.hostname}:${response.data.securedEndpointPort}`;
-      })
-      .catch((error) => console.log(error));
+    this.axios.get("api/server/endpoint").then((response) => {
+      this.defval.dm.url.nosec = `coap://${location.hostname}:5683`;
+      this.defval.dm.url.sec = `coaps://${location.hostname}:5684`;
+      this.defval.bs.url.nosec = `coap://${location.hostname}:${response.data.unsecuredEndpointPort}`;
+      this.defval.bs.url.sec = `coaps://${location.hostname}:${response.data.securedEndpointPort}`;
+    });
+
+    this.axios.get("api/server/security").then((response) => {
+      if (response.data.certificate) {
+        let certificate = response.data.certificate;
+        this.defaultx509.server_certificate = toHex(base64ToBytes(certificate.b64Der));
+        let pubkey = response.data.certificate.pubkey;
+        this.defaultrpk.server_pub_key = toHex(base64ToBytes(pubkey.b64Der));
+      } else if (response.data.pubkey) {
+        this.defaultx509={};
+        let pubkey = response.data.certificate.pubkey;
+        this.defaultrpk.server_pub_key = toHex(base64ToBytes(pubkey.b64Der));
+      }
+    });
   },
   watch: {
     value(v) {
@@ -204,7 +210,7 @@ export default {
         this.currentStep = 1;
         for (let i = 1; i <= this.nbSteps; i++) {
           if (this.$refs["form" + i]) this.$refs["form" + i].resetValidation();
-          this.valid[i] = false;
+          this.valid[i] = true;
         }
       }
     },
@@ -226,6 +232,23 @@ export default {
             ? this.defval.bs.url.nosec
             : this.defval.bs.url.sec;
       }
+      // apply default rpk value for bs server
+      if (res.bs.mode == "rpk") {
+        for (const key in this.defaultrpk) {
+          if (!res.bs.details[key]){
+            res.bs.details[key] = this.defaultrpk[key];
+          }
+        }
+      }
+      // apply default x509 value for bs server
+      if (res.bs.mode == "x509") {
+        for (const key in this.defaultx509) {
+          if (!res.bs.details[key]){
+            res.bs.details[key] = this.defaultx509[key];
+          }
+        }
+      }
+
       return res;
     },
     close() {

@@ -1,17 +1,24 @@
 <template>
   <div>
-    <!--Client Certificate Key field -->
+    <!--Client Certificate field -->
     <v-textarea
       filled
-      label="Client Certificate Key"
+      label="Client Certificate"
       v-model="x509.client_certificate"
       :rules="[
-        (v) => !!v || 'Client Certificate Key is required',
-        (v) => /^[0-9a-fA-F]+$/.test(v) || 'Hexadecimal format is expected',
+        (v) =>
+          !!defaultvalue.client_certificate ||
+          !!v ||
+          'Client Certificate is required',
+        (v) =>
+          !v || /^[0-9a-fA-F]*$/.test(v) || 'Hexadecimal format is expected',
       ]"
-      hint="SubjectPublicKeyInfo der encoded in Hexadecimal"
+      hint="x509v3 der encoded in Hexadecimal"
       @input="$emit('input', x509)"
       spellcheck="false"
+      rows="3"
+      :placeholder="defaultvalue.client_certificate"
+      persistent-placeholder
     ></v-textarea>
     <!--Client Private Key field -->
     <v-textarea
@@ -19,25 +26,39 @@
       label="Client Private Key"
       v-model="x509.client_pri_key"
       :rules="[
-        (v) => !!v || 'Client Private Key is required',
-        (v) => /^[0-9a-fA-F]+$/.test(v) || 'Hexadecimal format is expected',
+        (v) =>
+          !!defaultvalue.client_pri_key ||
+          !!v ||
+          'Client Private Key is required',
+        (v) =>
+          !v || /^[0-9a-fA-F]*$/.test(v) || 'Hexadecimal format is expected',
       ]"
-      hint="SubjectPublicKeyInfo der encoded in Hexadecimal"
+      hint="PKCS8 format der encoded in Hexadecimal"
       @input="$emit('input', x509)"
       spellcheck="false"
+      rows="1"
+      :placeholder="defaultvalue.client_pri_key"
+      persistent-placeholder
     ></v-textarea>
-    <!--Server Certificate Key field -->
+    <!--Server Certificate  field -->
     <v-textarea
       filled
-      label="Server Certificate Key"
+      label="Server Certificate"
       v-model="x509.server_certificate"
       :rules="[
-        (v) => !!v || 'Server Certificate Key is required',
-        (v) => /^[0-9a-fA-F]+$/.test(v) || 'Hexadecimal format is expected',
+        (v) =>
+          !!defaultvalue.server_certificate ||
+          !!v ||
+          'Server Certificate is required',
+        (v) =>
+          !v || /^[0-9a-fA-F]*$/.test(v) || 'Hexadecimal format is expected',
       ]"
-      hint="SubjectPublicKeyInfo der encoded in Hexadecimal"
+      hint="x509v3 der encoded in Hexadecimal"
       @input="$emit('input', x509)"
       spellcheck="false"
+      rows="3"
+      :placeholder="defaultvalue.server_certificate"
+      persistent-placeholder
     ></v-textarea>
     <!--Certificate Usagefield -->
     <v-select
@@ -52,7 +73,7 @@
 </template>
 <script>
 export default {
-  props: { value: Object },
+  props: { value: Object, defaultvalue: Object },
   data() {
     return {
       x509: { certificate_usage: 3 },

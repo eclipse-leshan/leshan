@@ -16,11 +16,13 @@
     <rpk-input
       v-if="internalMode == 'rpk'"
       v-model="rpkValue"
+      :defaultvalue="defaultrpk"
       @input="$emit('update:details', rpkValue)"
     />
     <x-509-input
       v-if="internalMode == 'x509'"
       v-model="x509Value"
+      :defaultvalue="defaultx509"
       @input="$emit('update:details', x509Value)"
     />
   </div>
@@ -32,7 +34,7 @@ import X509Input from "./X509Input.vue";
 
 export default {
   components: { PskInput, RpkInput, X509Input },
-  props: { mode: String, details: Object },
+  props: { mode: String, details: Object, defaultrpk:{}, defaultx509:{}},
   data() {
     return {
       modes: [
