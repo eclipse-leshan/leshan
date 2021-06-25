@@ -50,9 +50,18 @@
 export default {
   props: {
     registration: Object,
-    small: Boolean,
-    tooltipleft: Boolean,
-    tooltipbottom: Boolean,
+    small: {
+      type: Boolean,
+      default: false
+    },
+    tooltipleft:{
+      type: Boolean,
+      default: false
+    },
+    tooltipbottom: {
+      type: Boolean,
+      default: false
+    },
   },
 };
 </script>
