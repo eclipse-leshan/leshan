@@ -21,7 +21,7 @@
             mdi-help-circle-outline
           </v-icon>
         </template>
-        {{ resourcedef.description }}
+        <p style="white-space: pre-wrap">{{ resourcedef.description }}</p>
       </v-tooltip>
     </v-col>
   </v-row>

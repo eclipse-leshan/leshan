@@ -26,7 +26,11 @@ import OpaqueResourceInput from "./OpaqueResourceInput.vue";
 
 export default {
   components: { BooleanResourceInput, OpaqueResourceInput },
-  props: { value: null, resourcedef: Object, hint: String },
+  props: {
+    value: null,
+    resourcedef: Object,
+    hint: { type: String, default: null },
+  },
   methods: {
     convertValue(strValue) {
       // TODO this should probably done in dedicated ResourceInputComponent

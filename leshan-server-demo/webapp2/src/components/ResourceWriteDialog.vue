@@ -16,8 +16,8 @@
         </div>
         <div v-if="resourcedef.range">Range : {{ resourcedef.range }}</div>
         <div v-if="resourcedef.units">Units : {{ resourcedef.units }}</div>
-        <v-divider class="pa-2" />
-        <p>{{ resourcedef.description }}</p>
+        <v-divider class="pa-2"/>
+        <p style="white-space: pre-wrap">{{ resourcedef.description }}</p>
         <v-form ref="form" @submit.prevent="write">
           <single-resource-input
             v-model="resourceValue"

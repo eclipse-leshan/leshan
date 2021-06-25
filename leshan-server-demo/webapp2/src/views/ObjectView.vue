@@ -14,7 +14,7 @@
         />
       </h3>
 
-      <p>{{ objectdef.description }}</p>
+      <p style="white-space: pre-wrap">{{ objectdef.description }}</p>
     </div>
     <v-divider></v-divider>
     <div v-for="instance in instances" :key="objectdef.id + '/' + instance.id">

@@ -9,7 +9,7 @@
           :endpoint="endpoint"
           :id="instanceId"
           :path="instancePath"
-          class='mr-auto'
+          class="mr-auto"
         />
 
         <v-icon class="pr-3" small v-show="state.observed[instancePath]"
@@ -24,7 +24,7 @@
       dense
       tile
       v-if="objectdef && instanceId && endpoint"
-     >
+    >
       <v-expansion-panel v-for="resource in resources" :key="resource.path">
         <v-expansion-panel-header style="min-height:32px" class="pa-3">
           <!-- min-width is needed for avoid shift about truncated text 
@@ -82,9 +82,8 @@
             </v-row>
           </v-container>
         </v-expansion-panel-header>
-        <v-expansion-panel-content>
-          {{ resource.def.description }}
-          {{ resource.def.description2 }}
+        <v-expansion-panel-content style="white-space: pre-wrap"
+          >{{ resource.def.description }}<br v-if="resource.def.description2"/>{{ resource.def.description2 }}
         </v-expansion-panel-content>
       </v-expansion-panel>
     </v-expansion-panels>
