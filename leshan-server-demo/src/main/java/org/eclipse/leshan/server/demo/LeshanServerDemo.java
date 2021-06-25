@@ -66,6 +66,7 @@ import org.eclipse.leshan.server.demo.servlet.ClientServlet;
 import org.eclipse.leshan.server.demo.servlet.EventServlet;
 import org.eclipse.leshan.server.demo.servlet.ObjectSpecServlet;
 import org.eclipse.leshan.server.demo.servlet.SecurityServlet;
+import org.eclipse.leshan.server.demo.servlet.ServerServlet;
 import org.eclipse.leshan.server.demo.utils.MagicLwM2mValueConverter;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.VersionedModelProvider;
@@ -622,6 +623,15 @@ public class LeshanServerDemo {
         }
         root.addServlet(securityServletHolder, "/api/security/*");
         root.addServlet(securityServletHolder, "/v2/api/security/*");// Temporary code to be able to serve both UI
+
+        ServletHolder serverServletHolder;
+        if (publicKey != null) {
+            serverServletHolder = new ServletHolder(new ServerServlet(lwServer, publicKey));
+        } else {
+            serverServletHolder = new ServletHolder(new ServerServlet(lwServer, serverCertificateChain[0]));
+        }
+        root.addServlet(serverServletHolder, "/api/server/*");
+        root.addServlet(serverServletHolder, "/v2/api/server/*");// Temporary code to be able to serve both UI
 
         ServletHolder objectSpecServletHolder = new ServletHolder(
                 new ObjectSpecServlet(lwServer.getModelProvider(), lwServer.getRegistrationService()));

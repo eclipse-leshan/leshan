@@ -25,6 +25,7 @@ export default {
     return {
       pages: [
         { title: "Clients", route: "/clients", icon: "mdi-devices" },
+        { title: "Server", route: "/server", icon: "mdi-server-security" },
         { title: "Security", route: "/security", icon: "mdi-shield-key" },
         { title: "About", route: "/about", icon: "mdi-information-outline" },
       ],
