@@ -1,28 +1,40 @@
 <template>
   <v-row class="fill-height" no-gutters>
-    <v-col cols="12" md="2">
+    <v-col cols="12" v-if="deregister">
+      <div style="height: 100px;"></div>
+      <v-card elevation="0" class="text-center">
+        <v-card-text class="fill-height">
+          <v-icon x-large> mdi-exit-run</v-icon>
+          <v-card-title class="justify-center">
+            {{ $route.params.endpoint }} is deregistered.
+          </v-card-title>
+          <v-card-subtitle>
+            Waiting for new registration ?
+          </v-card-subtitle>
+        </v-card-text>
+      </v-card>
+    </v-col>
+    <v-col
+      cols="12"
+      md="2"
+      v-if="registration"
+      style="background-color:#fafafa"
+    >
       <!-- registration info -->
       <v-sheet color="grey lighten-5" class="pa-4" width="100%">
+        <h3>
+          {{ $route.params.endpoint }}
+          <client-info :registration="registration" small tooltipbottom />
+        </h3>
         <div>
-          <h3>
-            {{ $route.params.endpoint }}
-            <client-info
-              v-if="registration"
-              :registration="registration"
-              small
-              tooltipbottom
-            />
-          </h3>
-          <div v-if="registration">
-            <div>Reg. ID: {{ registration.registrationId }}</div>
-            <div>
-              Registered:
-              {{ registration.registrationDate | moment("MMM D, h:mm:ss A") }}
-            </div>
-            <div>
-              Updated:
-              {{ registration.lastUpdate | moment("MMM D, h:mm:ss A") }}
-            </div>
+          <div>Reg. ID: {{ registration.registrationId }}</div>
+          <div>
+            Registered:
+            {{ registration.registrationDate | moment("MMM D, h:mm:ss A") }}
+          </div>
+          <div>
+            Updated:
+            {{ registration.lastUpdate | moment("MMM D, h:mm:ss A") }}
           </div>
         </div>
         <v-divider />
@@ -32,13 +44,13 @@
       <v-divider />
 
       <!-- object selector -->
-      <object-selector :objects="objectdefs" />
-
+      <object-selector :objects="objectdefs" v-show="objectdefs" />
       <v-divider></v-divider>
     </v-col>
     <v-col no-gutters cols="12" md="10">
       <!-- object viewer -->
       <router-view
+        v-if="objectdefs"
         :objectdef="objectdefs.find((o) => o.id == $route.params.objectid)"
         :instances="instances"
       ></router-view>
@@ -56,6 +68,7 @@ export default {
   components: { ObjectSelector, ClientSetting, ClientInfo },
   name: "Client",
   data: () => ({
+    deregister: false,
     registration: null,
     objectdefs: [],
   }),
@@ -107,6 +120,7 @@ export default {
       })
       .on("REGISTRATION", (reg) => {
         this.registration = reg;
+        this.deregister = false;
         this.updateModels();
       })
       .on("UPDATED", (msg) => {
@@ -121,6 +135,8 @@ export default {
       })
       .on("DEREGISTRATION", () => {
         this.registration = null;
+        this.objectdefs = null;
+        this.deregister = true;
       })
       .on("SLEEPING", () => {
         this.registration.sleeping = true;
@@ -154,10 +170,14 @@ export default {
     // get registration
     this.axios
       .get("api/clients/" + encodeURIComponent(this.$route.params.endpoint))
-      .then((response) => (this.registration = response.data));
-
-    // get models for this endpoint
-    this.updateModels();
+      .then((response) => {
+        (this.registration = response.data), // get models for this endpoint
+          this.updateModels();
+      })
+      .catch(() => {
+        this.registration = null;
+        this.deregister = true;
+      });
   },
   beforeDestroy() {
     this.sse.disconnect();
