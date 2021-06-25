@@ -6,16 +6,32 @@
     sort-by="endpoint"
     class="elevation-0"
     dense
+    :search="search"
   >
     <template v-slot:top>
       <v-toolbar flat>
-        <v-toolbar-title>Security Information</v-toolbar-title>
-        <v-divider class="mx-4" inset vertical></v-divider>
-        <v-spacer></v-spacer>
+        <v-toolbar-title v-if="$vuetify.breakpoint.smAndUp"
+          >Security Information</v-toolbar-title
+        >
+        <v-divider
+          class="mx-4"
+          inset
+          vertical
+          v-if="$vuetify.breakpoint.smAndUp"
+        ></v-divider>
+        <v-text-field
+          v-model="search"
+          append-icon="mdi-magnify"
+          label="Search"
+          single-line
+          hide-details
+          class="pa-2"
+          clearable
+        ></v-text-field>
         <!-- add security info button-->
         <v-btn dark class="mb-2" @click.stop="openNewSec()">
-          Add Security Information
-          <v-icon right dark>
+          {{ $vuetify.breakpoint.smAndDown ? "" : "Add Security Information" }}
+          <v-icon :right="!$vuetify.breakpoint.smAndDown" dark>
             mdi-key-plus
           </v-icon>
         </v-btn>
@@ -43,10 +59,12 @@
       <div v-if="item.mode == 'psk'" style="word-break:break-all;" class="pa-1">
         <strong>Identity:</strong> <code>{{ item.details.identity }}</code>
         <br />
-        <strong>Key:</strong><code class="text-uppercase">{{ item.details.key }}</code>
+        <strong>Key:</strong
+        ><code class="text-uppercase">{{ item.details.key }}</code>
       </div>
       <div v-if="item.mode == 'rpk'" style="word-break:break-all;" class="pa-1">
-        <strong>Public Key:</strong> <code class="text-uppercase">{{ item.details.key }}</code>
+        <strong>Public Key:</strong>
+        <code class="text-uppercase">{{ item.details.key }}</code>
       </div>
       <div
         v-if="item.mode == 'x509'"
@@ -86,19 +104,18 @@ export default {
       { text: "Details", value: "details", sortable: false, width: "60%" },
       { text: "Actions", value: "actions", sortable: false },
     ],
+    search:"",
     securityInfos: [],
     editedSecurityInfo: {}, // initial value for Security Information dialog
   }),
 
   beforeMount() {
-    this.axios
-      .get("api/security/clients")
-      .then(
-        (response) =>
-          (this.securityInfos = response.data.map((c) => {
-            return this.adaptToUI(c);
-          }))
-      )
+    this.axios.get("api/security/clients").then(
+      (response) =>
+        (this.securityInfos = response.data.map((c) => {
+          return this.adaptToUI(c);
+        }))
+    );
   },
 
   methods: {
@@ -108,8 +125,7 @@ export default {
       let s = {};
       s.endpoint = sec.endpoint;
       s.mode = this.getMode(sec);
-      if (s.mode != "unsupported" && s.mode != "x509")
-        s.details = sec[s.mode];
+      if (s.mode != "unsupported" && s.mode != "x509") s.details = sec[s.mode];
       return s;
     },
     adaptToAPI(sec) {
@@ -165,22 +181,18 @@ export default {
     },
 
     editSec(sec) {
-      this.axios
-        .put("api/security/clients/", this.adaptToAPI(sec))
-        .then(() => {
-          this.securityInfos = this.securityInfos.map((s) =>
-            s.endpoint == sec.endpoint ? sec : s
-          );
-          this.dialogOpened = false;
-        });
+      this.axios.put("api/security/clients/", this.adaptToAPI(sec)).then(() => {
+        this.securityInfos = this.securityInfos.map((s) =>
+          s.endpoint == sec.endpoint ? sec : s
+        );
+        this.dialogOpened = false;
+      });
     },
 
     deleteSec(sec) {
       this.indexToRemove = this.securityInfos.indexOf(sec);
       this.axios
-        .delete(
-          "api/security/clients/" + encodeURIComponent(sec.endpoint)
-        )
+        .delete("api/security/clients/" + encodeURIComponent(sec.endpoint))
         .then(() => {
           this.securityInfos.splice(this.indexToRemove, 1);
         });

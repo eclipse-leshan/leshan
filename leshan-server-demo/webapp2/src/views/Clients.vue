@@ -8,7 +8,30 @@
     :items-per-page="10"
     class="elevation-0 fill-height ma-3"
     @click:row="openLink"
+    :search="search"
   >
+    <template v-slot:top>
+      <v-toolbar flat>
+        <v-toolbar-title v-if="$vuetify.breakpoint.smAndUp"
+          >Registered Clients</v-toolbar-title
+        >
+        <v-divider
+          v-if="$vuetify.breakpoint.smAndUp"
+          class="mx-4"
+          inset
+          vertical
+        ></v-divider>
+        <v-text-field
+          v-model="search"
+          append-icon="mdi-magnify"
+          label="Search"
+          single-line
+          hide-details
+          class="pa-2"
+          clearable
+        ></v-text-field>
+      </v-toolbar>
+    </template>
     <!-- custom display for date column -->
     <template v-slot:item.registrationDate="{ item }">
       {{ new Date(item.registrationDate) | moment("MMM D, h:mm:ss A") }}
@@ -38,6 +61,7 @@ export default {
       { text: "Last Update", value: "lastUpdate" },
       { text: "", value: "infos", sortable: false, align: "end" },
     ],
+    search: "",
   }),
   methods: {
     openLink(reg) {
