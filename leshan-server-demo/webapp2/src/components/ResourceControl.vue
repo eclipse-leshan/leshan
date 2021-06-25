@@ -1,15 +1,15 @@
 <template>
   <div>
-    <request-button @on-click="observe" v-if="readable">Obs</request-button>
-    <request-button @on-click="stopObserve" v-if="readable">
+    <request-button @on-click="observe" v-if="readable" :title="'Observe ' + path">Obs</request-button>
+    <request-button @on-click="stopObserve" v-if="readable" :title="'Passive Cancel Obverse ' + path">
       <v-icon dense small>mdi-eye-remove-outline</v-icon></request-button
     >
-    <request-button @on-click="read" v-if="readable">R</request-button>
-    <request-button @on-click="openWriteDialog" v-if="writable" ref="W"
+    <request-button @on-click="read" v-if="readable" :title="'Read ' + path">R</request-button>
+    <request-button @on-click="openWriteDialog" v-if="writable" ref="W" :title="'Write ' + path"
       >W</request-button
     >
-    <request-button @on-click="exec" v-if="executable">Exe</request-button>
-    <request-button @on-click="execWithParams" v-if="executable"
+    <request-button @on-click="exec" v-if="executable" :title="'Execute ' + path">Exe</request-button>
+    <request-button @on-click="execWithParams" v-if="executable" :title="'Execute with params ' + path"
       ><v-icon dense small>mdi-cog-outline</v-icon></request-button
     >
     <resource-write-dialog

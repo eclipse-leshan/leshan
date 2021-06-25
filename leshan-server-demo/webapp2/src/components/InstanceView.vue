@@ -12,7 +12,7 @@
           class="mr-auto"
         />
 
-        <v-icon class="pr-3" small v-show="state.observed[instancePath]"
+        <v-icon class="pr-3" small v-show="state.observed[instancePath]" :title="'Instance ' + instancePath + ' observed'"
           >mdi-eye-outline</v-icon
         >
       </span>
@@ -48,7 +48,10 @@
                 align-self="center"
                 class="pa-2 text--disabled"
               >
-                <v-icon x-small v-show="state.observed[resource.path]"
+                <v-icon
+                  x-small
+                  v-show="state.observed[resource.path]"
+                  :title="'Resource ' + resource.path + ' observed'"
                   >mdi-eye-outline</v-icon
                 ></v-col
               >
@@ -83,7 +86,10 @@
           </v-container>
         </v-expansion-panel-header>
         <v-expansion-panel-content style="white-space: pre-wrap"
-          >{{ resource.def.description }}<br v-if="resource.def.description2"/>{{ resource.def.description2 }}
+          >{{ resource.def.description
+          }}<br v-if="resource.def.description2" />{{
+            resource.def.description2
+          }}
         </v-expansion-panel-content>
       </v-expansion-panel>
     </v-expansion-panels>

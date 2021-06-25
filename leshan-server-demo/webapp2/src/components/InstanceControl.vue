@@ -1,12 +1,12 @@
 <template>
   <span>
-    <request-button @on-click="observe">Obs</request-button>
-    <request-button @on-click="stopObserve">
+    <request-button @on-click="observe" :title="'Observe ' + path">Obs</request-button>
+    <request-button @on-click="stopObserve" :title="'Passive Cancel Obverse ' + path">
       <v-icon dense small>mdi-eye-remove-outline</v-icon></request-button
     >
-    <request-button @on-click="read">R</request-button>
-    <request-button @on-click="openWriteDialog" ref="W">W</request-button>
-    <request-button @on-click="del">Delete</request-button>
+    <request-button @on-click="read" :title="'Read ' + path">R</request-button>
+    <request-button @on-click="openWriteDialog" ref="W" :title="'Write ' + path">W</request-button>
+    <request-button @on-click="del" :title="'Delete ' + path">Delete</request-button>
     <instance-write-dialog
       v-model="showDialog"
       :objectdef="objectdef"

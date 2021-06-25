@@ -6,6 +6,7 @@
       tile
       min-width="0"
       elevation="0"
+      :title="title"
       :loading="loading"
       :disabled="loading"
       @click.stop="onClick"
@@ -16,6 +17,9 @@
 </template>
 <script>
 export default {
+  props: {
+    title: String,
+  },
   data() {
     return {
       loading: false,

@@ -3,6 +3,7 @@
     <request-button
       @on-click="openCreateDialog"
       ref="C"
+      :title="'Create Instance /' + objectdef.id"
       >Create</request-button
     >
     <instance-create-dialog
