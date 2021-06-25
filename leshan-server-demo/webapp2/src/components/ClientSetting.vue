@@ -5,7 +5,7 @@
         single-line
         dense
         hide-details
-        prefix="Timeout :"
+        :prefix="$vuetify.breakpoint.mdOnly ? null : 'Timeout :'"
         :items="timeoutList"
         item-value="val"
         item-text="txt"
@@ -18,7 +18,7 @@
       <v-select
         single-line
         dense
-        prefix="Single Value :"
+        :prefix="$vuetify.breakpoint.mdOnly ? null : 'Single Value :'"
         hide-details
         :items="singleFormatList"
         v-model="singleformat"
@@ -29,7 +29,7 @@
         single-line
         dense
         hide-details
-        prefix="Multi Value :"
+        :prefix="$vuetify.breakpoint.mdOnly ? null : 'Multi Value :'"
         :items="multiFormatList"
         v-model="multiformat"
       ></v-select>
