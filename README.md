@@ -38,7 +38,7 @@ You can try live our servers demos instances:
 
 (Automatic deployment of master branch)
 
-![Leshan](https://eclipse.org/leshan/img/capture_for_github.png)
+![Leshan](https://www.eclipse.org/leshan/img/capture_for_github-v2.png)
 
 Test Leshan Demos locally
 -----------------------
