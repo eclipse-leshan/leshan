@@ -85,6 +85,7 @@ public class IntegrationTestHelper {
     public static final int STRING_MANDATORY_RESOURCE_ID = 9;
     public static final int STRING_RESOURCE_INSTANCE_ID = 65010;
     public static final int UNSIGNED_INTEGER_RESOURCE_ID = 11;
+    public static final int OPAQUE_MULTI_INSTANCE_RESOURCE_ID = 12;
 
     public static final String MULTI_INSTANCE = "multiinstance";
 
@@ -129,9 +130,13 @@ public class IntegrationTestHelper {
         ResourceModel unsignedintegerfield = new ResourceModel(UNSIGNED_INTEGER_RESOURCE_ID, "unsigned", Operations.RW,
                 false, false, Type.UNSIGNED_INTEGER, null, null, null);
 
+        ResourceModel opaqueMultiField = new ResourceModel(OPAQUE_MULTI_INSTANCE_RESOURCE_ID, "opaque_multi",
+                Operations.RW, true, false, Type.OPAQUE, null, null, null);
+
         objectModels.add(new ObjectModel(TEST_OBJECT_ID, "testobject", null, ObjectModel.DEFAULT_VERSION, true, false,
                 stringfield, booleanfield, integerfield, floatfield, timefield, opaquefield, objlnkfield,
-                objlnkSinglefield, integermandatoryfield, stringmandatoryfield, multiInstance, unsignedintegerfield));
+                objlnkSinglefield, integermandatoryfield, stringmandatoryfield, multiInstance, unsignedintegerfield,
+                opaqueMultiField));
 
         return objectModels;
     }

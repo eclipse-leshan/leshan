@@ -77,14 +77,20 @@ public class LwM2mNodeOpaqueEncoder implements NodeEncoder {
             if (rSpec != null && rSpec.type != Type.OPAQUE) {
                 throw new CodecException("Only single opaque resource can be encoded in opaque format. [%s]", path);
             }
-            LOG.trace("Encoding resource {} into text", resource);
+            LOG.trace("Encoding resource {} into Bytes(OPAQUE format)", resource);
             Object value = converter.convertValue(resource.getValue(), resource.getType(), Type.OPAQUE, path);
             encoded = (byte[]) value;
         }
 
         @Override
         public void visit(LwM2mResourceInstance instance) {
-            throw new UnsupportedOperationException("not yet implemented");
+            ResourceModel rSpec = model.getResourceModel(path.getObjectId(), path.getResourceId());
+            if (rSpec != null && rSpec.type != Type.OPAQUE) {
+                throw new CodecException("Only opaque resource instance can be encoded in opaque format. [%s]", path);
+            }
+            LOG.trace("Encoding resource instance {} into Bytes(OPAQUE format)", instance);
+            Object value = converter.convertValue(instance.getValue(), instance.getType(), Type.OPAQUE, path);
+            encoded = (byte[]) value;
         }
     }
 }

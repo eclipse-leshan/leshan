@@ -23,10 +23,14 @@ import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.ResponseCode;
+import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
@@ -98,5 +102,51 @@ public class WriteOpaqueValueTest {
                 new ReadRequest(contentFormat, TEST_OBJECT_ID, 0, OPAQUE_RESOURCE_ID));
         LwM2mResource resource = (LwM2mResource) readResponse.getContent();
         assertArrayEquals(expectedvalue, (byte[]) resource.getValue());
+    }
+
+    @Test
+    public void write_opaque_resource_instance() throws InterruptedException {
+        // write 2 resource instances using TLV
+        Map<Integer, byte[]> values = new HashMap<>();
+        byte[] firstExpectedvalue = new byte[] { 1, 2, 3 };
+        byte[] secondExpectedvalue = new byte[] { 4, 5, 6 };
+        values.put(2, firstExpectedvalue);
+        values.put(3, secondExpectedvalue);
+
+        WriteResponse response = helper.server.send(helper.getCurrentRegistration(), new WriteRequest(ContentFormat.TLV,
+                TEST_OBJECT_ID, 0, OPAQUE_MULTI_INSTANCE_RESOURCE_ID, values, Type.OPAQUE));
+
+        // verify result
+        assertEquals(ResponseCode.CHANGED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
+
+        // read first instance using parameter content format
+        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
+                new ReadRequest(contentFormat, TEST_OBJECT_ID, 0, OPAQUE_MULTI_INSTANCE_RESOURCE_ID, 2));
+        LwM2mResourceInstance resource = (LwM2mResourceInstance) readResponse.getContent();
+        assertArrayEquals(firstExpectedvalue, (byte[]) resource.getValue());
+
+        // read second instance using parameter content format
+        readResponse = helper.server.send(helper.getCurrentRegistration(),
+                new ReadRequest(contentFormat, TEST_OBJECT_ID, 0, OPAQUE_MULTI_INSTANCE_RESOURCE_ID, 3));
+        resource = (LwM2mResourceInstance) readResponse.getContent();
+        assertArrayEquals(secondExpectedvalue, (byte[]) resource.getValue());
+
+        // write second resource instance using parameter content format
+        byte[] newExpectedvalue = new byte[] { 7, 8, 9, 10 };
+        response = helper.server.send(helper.getCurrentRegistration(), new WriteRequest(contentFormat, TEST_OBJECT_ID,
+                0, OPAQUE_MULTI_INSTANCE_RESOURCE_ID, 3, newExpectedvalue, Type.OPAQUE));
+
+        // verify result
+        assertEquals(ResponseCode.CHANGED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
+
+        // read second instance using parameter content format
+        readResponse = helper.server.send(helper.getCurrentRegistration(),
+                new ReadRequest(contentFormat, TEST_OBJECT_ID, 0, OPAQUE_MULTI_INSTANCE_RESOURCE_ID, 3));
+        resource = (LwM2mResourceInstance) readResponse.getContent();
+        assertArrayEquals(newExpectedvalue, (byte[]) resource.getValue());
     }
 }
