@@ -142,7 +142,7 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
     public <T extends LwM2mNode> T decode(byte[] content, ContentFormat format, LwM2mPath path, LwM2mModel model,
             Class<T> nodeClass) throws CodecException {
 
-        LOG.debug("Decoding value for path {} and format {}: {}", path, format, content);
+        LOG.trace("Decoding value for path {} and format {}: {}", path, format, content);
         Validate.notNull(path);
 
         if (format == null) {
@@ -159,7 +159,7 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
     @Override
     public Map<LwM2mPath, LwM2mNode> decodeNodes(byte[] content, ContentFormat format, List<LwM2mPath> paths,
             LwM2mModel model) throws CodecException {
-        LOG.debug("Decoding value for path {} and format {}: {}", paths, format, content);
+        LOG.trace("Decoding value for path {} and format {}: {}", paths, format, content);
         if (paths != null)
             Validate.notEmpty(paths);
 
@@ -183,7 +183,7 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
     @Override
     public List<TimestampedLwM2mNode> decodeTimestampedData(byte[] content, ContentFormat format, LwM2mPath path,
             LwM2mModel model) throws CodecException {
-        LOG.debug("Decoding value for path {} and format {}: {}", path, format, content);
+        LOG.trace("Decoding value for path {} and format {}: {}", path, format, content);
         Validate.notNull(path);
 
         if (format == null) {
@@ -205,7 +205,7 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
 
     @Override
     public List<LwM2mPath> decodePaths(byte[] content, ContentFormat format) throws CodecException {
-        LOG.debug("Decoding paths encoded with {}: {}", format, content);
+        LOG.trace("Decoding paths encoded with {}: {}", format, content);
         Validate.notNull(content);
 
         if (format == null) {
