@@ -40,6 +40,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
+import org.eclipse.leshan.core.request.BootstrapReadRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
@@ -53,6 +54,7 @@ import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
 import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
+import org.eclipse.leshan.core.response.BootstrapReadResponse;
 import org.eclipse.leshan.core.response.BootstrapWriteResponse;
 import org.eclipse.leshan.core.response.CreateResponse;
 import org.eclipse.leshan.core.response.DeleteResponse;
@@ -178,6 +180,29 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     protected ReadResponse doRead(ServerIdentity identity, ReadRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
         return ReadResponse.internalServerError("not implemented");
+    }
+
+    @Override
+    public BootstrapReadResponse read(ServerIdentity identity, BootstrapReadRequest request) {
+        // read is not supported for bootstrap
+        if (identity.isLwm2mServer()) {
+            return BootstrapReadResponse.methodNotAllowed();
+        }
+
+        if (!identity.isSystem()) {
+            LwM2mPath path = request.getPath();
+
+            // BootstrapRead can only target object 1 and 2
+            if (path.getObjectId() != 1 && path.getObjectId() != 2) {
+                return BootstrapReadResponse.badRequest("bootstrap read can only target Object 1 (Server) or 2 (ACL)");
+            }
+        }
+        return doRead(identity, request);
+    }
+
+    protected BootstrapReadResponse doRead(ServerIdentity identity, BootstrapReadRequest request) {
+        // This should be a not implemented error, but this is not defined in the spec.
+        return BootstrapReadResponse.internalServerError("not implemented");
     }
 
     @Override

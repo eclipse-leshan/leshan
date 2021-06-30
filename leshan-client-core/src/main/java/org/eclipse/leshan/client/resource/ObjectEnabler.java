@@ -39,6 +39,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
+import org.eclipse.leshan.core.request.BootstrapReadRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
@@ -50,6 +51,7 @@ import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
+import org.eclipse.leshan.core.response.BootstrapReadResponse;
 import org.eclipse.leshan.core.response.BootstrapWriteResponse;
 import org.eclipse.leshan.core.response.CreateResponse;
 import org.eclipse.leshan.core.response.DeleteResponse;
@@ -222,6 +224,14 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
 
         // Manage Resource Instance case
         return instance.read(identity, path.getResourceId(), path.getResourceInstanceId());
+    }
+
+    @Override
+    protected BootstrapReadResponse doRead(ServerIdentity identity, BootstrapReadRequest request) {
+        // Basic implementation we delegate to classic Read Request
+        ReadResponse response = doRead(identity,
+                new ReadRequest(request.getContentFormat(), request.getPath(), request.getCoapRequest()));
+        return new BootstrapReadResponse(response.getCode(), response.getContent(), response.getErrorMessage());
     }
 
     @Override

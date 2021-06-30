@@ -54,11 +54,10 @@ import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
-import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
+import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
-import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
@@ -89,7 +88,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
     public LeshanBootstrapServer bootstrapServer;
     public final PublicKey bootstrapServerPublicKey;
     public final PrivateKey bootstrapServerPrivateKey;
-    public volatile BootstrapDiscoverResponse lastDiscoverAnswer;
+    public volatile LwM2mResponse lastCustomResponse;
 
     private SynchronousBootstrapListener bootstrapListener = new SynchronousBootstrapListener();
 
@@ -169,7 +168,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
     }
 
     public void createBootstrapServer(BootstrapSecurityStore securityStore, BootstrapConfigStore bootstrapStore,
-            final BootstrapDiscoverRequest request) {
+            final BootstrapDownlinkRequest<?> firstCustomRequest) {
         LeshanBootstrapServerBuilder builder = createBootstrapBuilder(securityStore, bootstrapStore);
         if (bootstrapStore == null) {
             bootstrapStore = unsecuredBootstrapStore();
@@ -181,14 +180,18 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         BootstrapConfigStoreTaskProvider taskProvider = new BootstrapConfigStoreTaskProvider(bootstrapStore) {
             @Override
             public Tasks getTasks(BootstrapSession session, List<LwM2mResponse> previousResponses) {
-                if (previousResponses == null) {
+               if (previousResponses == null) {
                     Tasks tasks = new Tasks();
-                    tasks.requestsToSend = new ArrayList<>();
-                    tasks.requestsToSend.add(request);
+                    tasks.requestsToSend = new ArrayList<>(1);
+                    tasks.requestsToSend.add(firstCustomRequest);
                     tasks.last = false;
+                    tasks.supportedObjects = new HashMap<>();
+                    tasks.supportedObjects.put(0, "1.1");
+                    tasks.supportedObjects.put(1, "1.1");
+                    tasks.supportedObjects.put(2, "1.0");
                     return tasks;
                 } else {
-                    lastDiscoverAnswer = (BootstrapDiscoverResponse) previousResponses.get(0);
+                    lastCustomResponse = previousResponses.get(0);
                     return super.getTasks(session, null);
                 }
             }

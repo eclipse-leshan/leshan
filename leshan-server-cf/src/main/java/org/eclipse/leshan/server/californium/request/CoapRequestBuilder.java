@@ -31,6 +31,7 @@ import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
+import org.eclipse.leshan.core.request.BootstrapReadRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.CancelObservationRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -207,6 +208,15 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         ContentFormat format = request.getContentFormat();
         coapRequest.getOptions().setContentFormat(format.getCode());
         coapRequest.setPayload(encoder.encode(request.getNode(), format, request.getPath(), model));
+        setTarget(coapRequest, request.getPath());
+        applyLowerLayerConfig(coapRequest);
+    }
+
+    @Override
+    public void visit(BootstrapReadRequest request) {
+        coapRequest = Request.newGet();
+        if (request.getContentFormat() != null)
+            coapRequest.getOptions().setAccept(request.getContentFormat().getCode());
         setTarget(coapRequest, request.getPath());
         applyLowerLayerConfig(coapRequest);
     }

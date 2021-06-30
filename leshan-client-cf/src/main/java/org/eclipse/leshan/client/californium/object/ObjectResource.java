@@ -48,6 +48,7 @@ import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
+import org.eclipse.leshan.core.request.BootstrapReadRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
@@ -62,6 +63,7 @@ import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
 import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
+import org.eclipse.leshan.core.response.BootstrapReadResponse;
 import org.eclipse.leshan.core.response.BootstrapWriteResponse;
 import org.eclipse.leshan.core.response.CreateResponse;
 import org.eclipse.leshan.core.response.DeleteResponse;
@@ -152,21 +154,41 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
                     return;
                 }
             }
-            // Manage Read Request
+
             else {
-                ReadRequest readRequest = new ReadRequest(requestedContentFormat, URI, coapRequest);
-                ReadResponse response = nodeEnabler.read(identity, readRequest);
-                if (response.getCode() == org.eclipse.leshan.core.ResponseCode.CONTENT) {
-                    LwM2mPath path = new LwM2mPath(URI);
-                    LwM2mNode content = response.getContent();
-                    LwM2mModel model = new StaticModel(nodeEnabler.getObjectModel());
-                    ContentFormat format = getContentFormat(readRequest, requestedContentFormat);
-                    exchange.respond(ResponseCode.CONTENT, encoder.encode(content, format, path, model),
-                            format.getCode());
-                    return;
+                if (identity.isLwm2mBootstrapServer()) {
+                    // Manage Bootstrap Read Request
+                    BootstrapReadRequest readRequest = new BootstrapReadRequest(requestedContentFormat, URI,
+                            coapRequest);
+                    BootstrapReadResponse response = nodeEnabler.read(identity, readRequest);
+                    if (response.getCode() == org.eclipse.leshan.core.ResponseCode.CONTENT) {
+                        LwM2mPath path = new LwM2mPath(URI);
+                        LwM2mNode content = response.getContent();
+                        LwM2mModel model = new StaticModel(nodeEnabler.getObjectModel());
+                        ContentFormat format = getContentFormat(readRequest, requestedContentFormat);
+                        exchange.respond(ResponseCode.CONTENT, encoder.encode(content, format, path, model),
+                                format.getCode());
+                        return;
+                    } else {
+                        exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
+                        return;
+                    }
                 } else {
-                    exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
-                    return;
+                    // Manage Read Request
+                    ReadRequest readRequest = new ReadRequest(requestedContentFormat, URI, coapRequest);
+                    ReadResponse response = nodeEnabler.read(identity, readRequest);
+                    if (response.getCode() == org.eclipse.leshan.core.ResponseCode.CONTENT) {
+                        LwM2mPath path = new LwM2mPath(URI);
+                        LwM2mNode content = response.getContent();
+                        LwM2mModel model = new StaticModel(nodeEnabler.getObjectModel());
+                        ContentFormat format = getContentFormat(readRequest, requestedContentFormat);
+                        exchange.respond(ResponseCode.CONTENT, encoder.encode(content, format, path, model),
+                                format.getCode());
+                        return;
+                    } else {
+                        exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
+                        return;
+                    }
                 }
             }
         }

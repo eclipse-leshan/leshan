@@ -30,6 +30,7 @@ import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
+import org.eclipse.leshan.core.request.BootstrapReadRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
@@ -43,6 +44,7 @@ import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
 import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
+import org.eclipse.leshan.core.response.BootstrapReadResponse;
 import org.eclipse.leshan.core.response.BootstrapWriteResponse;
 import org.eclipse.leshan.core.response.CreateResponse;
 import org.eclipse.leshan.core.response.DeleteResponse;
@@ -101,6 +103,13 @@ public class TestObjectsInitializer extends ObjectsInitializer {
 
             @Override
             public ReadResponse read(ServerIdentity identity, ReadRequest request) {
+                if (!identity.isSystem())
+                    assertThat(request.getCoapRequest(), instanceOf(Request.class));
+                return nodeEnabler.read(identity, request);
+            }
+
+            @Override
+            public BootstrapReadResponse read(ServerIdentity identity, BootstrapReadRequest request) {
                 if (!identity.isSystem())
                     assertThat(request.getCoapRequest(), instanceOf(Request.class));
                 return nodeEnabler.read(identity, request);
