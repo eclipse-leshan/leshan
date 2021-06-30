@@ -299,22 +299,24 @@ public class WriteRequest extends AbstractSimpleDownlinkRequest<WriteResponse> {
     }
 
     /**
-     * Request to write a specific resource instance from a client.
+     * Request to write a <b>Multi-Instance Resource</b> using the TLV content format.
      *
      * @param mode the mode of the request : replace or update.
      * @param contentFormat Format of the payload (TLV or JSON).
-     * @param objectId the object ID of the resource
-     * @param objectInstanceId the object instance ID
-     * @param resourceId the (individual) resource's ID
-     * @param resourceInstanceId the resource instance's ID
-     * @param value the resource instance (id-&gt;value) to write.
+     * @param objectId the id of the object to write.
+     * @param objectInstanceId the id of the object instance to write.
+     * @param resourceId the id of the resource to write.
+     * @param values the list of resource instance (id-&gt;value) to write.
      * @param type the data type of the resource.
+     * @exception InvalidRequestException if parameters are invalid.
      */
     public WriteRequest(Mode mode, ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId,
-            int resourceInstanceId, Object value, Type type) {
-        this(mode, contentFormat, new LwM2mPath(objectId, objectInstanceId, resourceId, resourceInstanceId),
-                LwM2mResourceInstance.newInstance(resourceInstanceId, value, type), null);
+            Map<Integer, ?> values, Type type) throws InvalidRequestException {
+        this(mode, ContentFormat.TLV, new LwM2mPath(objectId, objectInstanceId, resourceId),
+                LwM2mMultipleResource.newResource(resourceId, values, type), null);
     }
+
+    // ***************** write resource instance****************** //
 
     /**
      * Request to write a specific resource instance from a client, MODE = REPLACE.
@@ -387,7 +389,8 @@ public class WriteRequest extends AbstractSimpleDownlinkRequest<WriteResponse> {
             throw new InvalidRequestException("new node value is mandatory for %s", target);
 
         // Validate Mode
-        if (getPath().isResource() && mode == Mode.UPDATE)
+        if (getPath().isResource() && mode == Mode.UPDATE
+                && (node instanceof LwM2mSingleResource || node instanceof LwM2mResourceInstance))
             throw new InvalidRequestException("Invalid mode for '%s': update is not allowed on resource", target);
 
         // Validate node and path coherence

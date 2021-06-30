@@ -214,13 +214,15 @@ public class WriteMultiValueTest {
     @Test
     public void can_write_object_resource_instance() throws InterruptedException {
 
+        // --------------------------------
+        // write (replace) multi instance
+        // --------------------------------
         Map<Integer, String> values = new HashMap<>();
         values.put(10, "value10");
         values.put(20, "value20");
 
-        // write multi instance
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(contentFormat, IntegrationTestHelper.TEST_OBJECT_ID, 0,
+                new WriteRequest(Mode.REPLACE, contentFormat, IntegrationTestHelper.TEST_OBJECT_ID, 0,
                         IntegrationTestHelper.STRING_RESOURCE_INSTANCE_ID, values, Type.STRING));
 
         // Verify Write result
@@ -239,6 +241,59 @@ public class WriteMultiValueTest {
         LwM2mMultipleResource resourceInstance = (LwM2mMultipleResource) readResponse.getContent();
         assertEquals("value10", resourceInstance.getInstance(10).getValue());
         assertEquals("value20", resourceInstance.getInstance(20).getValue());
-    }
 
+        // --------------------------------
+        // write (update) multi instance
+        // --------------------------------
+        Map<Integer, String> newValues = new HashMap<>();
+        newValues.put(20, "value200");
+        newValues.put(30, "value30");
+        response = helper.server.send(helper.getCurrentRegistration(),
+                new WriteRequest(Mode.UPDATE, contentFormat, IntegrationTestHelper.TEST_OBJECT_ID, 0,
+                        IntegrationTestHelper.STRING_RESOURCE_INSTANCE_ID, newValues, Type.STRING));
+
+        // Verify Write result
+        assertEquals(ResponseCode.CHANGED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
+
+        // read multi instance
+        readResponse = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(contentFormat,
+                IntegrationTestHelper.TEST_OBJECT_ID, 0, IntegrationTestHelper.STRING_RESOURCE_INSTANCE_ID));
+
+        // verify result
+        assertEquals(CONTENT, readResponse.getCode());
+        assertContentFormat(contentFormat, readResponse);
+
+        resourceInstance = (LwM2mMultipleResource) readResponse.getContent();
+        assertEquals("value200", resourceInstance.getInstance(20).getValue());
+        assertEquals("value30", resourceInstance.getInstance(30).getValue());
+        assertEquals("value10", resourceInstance.getInstance(10).getValue());
+
+        // --------------------------------
+        // write (replace) multi instance
+        // --------------------------------
+        newValues = new HashMap<>();
+        newValues.put(1, "value1");
+        response = helper.server.send(helper.getCurrentRegistration(),
+                new WriteRequest(Mode.REPLACE, contentFormat, IntegrationTestHelper.TEST_OBJECT_ID, 0,
+                        IntegrationTestHelper.STRING_RESOURCE_INSTANCE_ID, newValues, Type.STRING));
+
+        // Verify Write result
+        assertEquals(ResponseCode.CHANGED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
+
+        // read multi instance
+        readResponse = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(contentFormat,
+                IntegrationTestHelper.TEST_OBJECT_ID, 0, IntegrationTestHelper.STRING_RESOURCE_INSTANCE_ID));
+
+        // verify result
+        assertEquals(CONTENT, readResponse.getCode());
+        assertContentFormat(contentFormat, readResponse);
+
+        resourceInstance = (LwM2mMultipleResource) readResponse.getContent();
+        assertEquals(1, resourceInstance.getInstances().size());
+        assertEquals("value1", resourceInstance.getInstance(1).getValue());
+    }
 }

@@ -289,15 +289,20 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
 
         // Manage Execute Request
         if (path.isResource()) {
-            byte[] payload = exchange.getRequestPayload();
-            ExecuteResponse response = nodeEnabler.execute(identity,
-                    new ExecuteRequest(URI, payload != null ? new String(payload) : null, coapRequest));
-            if (response.getCode().isError()) {
-                exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
-            } else {
-                exchange.respond(toCoapResponseCode(response.getCode()));
+            // execute request has no content format at all or a TEXT concent format for parameters.
+            if (!exchange.getRequestOptions().hasContentFormat()
+                    || ContentFormat.fromCode(exchange.getRequestOptions().getContentFormat()) == ContentFormat.TEXT) {
+                byte[] payload = exchange.getRequestPayload();
+
+                ExecuteResponse response = nodeEnabler.execute(identity,
+                        new ExecuteRequest(URI, payload != null ? new String(payload) : null, coapRequest));
+                if (response.getCode().isError()) {
+                    exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
+                } else {
+                    exchange.respond(toCoapResponseCode(response.getCode()));
+                }
+                return;
             }
-            return;
         }
 
         // handle content format for Write (Update) and Create request
@@ -313,6 +318,22 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
         }
         LwM2mModel model = new StaticModel(nodeEnabler.getObjectModel());
 
+        // manage partial update of multi-instance resource
+        if (path.isResource()) {
+            try {
+                LwM2mNode lwM2mNode = decoder.decode(exchange.getRequestPayload(), contentFormat, path, model);
+                WriteResponse response = nodeEnabler.write(identity,
+                        new WriteRequest(Mode.UPDATE, contentFormat, URI, lwM2mNode, coapRequest));
+                if (response.getCode().isError()) {
+                    exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
+                } else {
+                    exchange.respond(toCoapResponseCode(response.getCode()));
+                }
+            } catch (CodecException e) {
+                handleInvalidRequest(exchange.advanced(), "Unable to decode payload on WRITE", e);
+            }
+            return;
+        }
         // Manage Update Instance
         if (path.isObjectInstance()) {
             try {
