@@ -207,9 +207,7 @@ public class LeshanServerBuilder {
      * <p>
      * Set your {@link LwM2mModelProvider} implementation.
      * </p>
-     * By default the {@link StandardModelProvider} implementation is used which support all core objects for all
-     * devices.
-     * 
+     * By default the {@link StandardModelProvider}.
      */
     public LeshanServerBuilder setObjectModelProvider(LwM2mModelProvider objectModelProvider) {
         this.modelProvider = objectModelProvider;

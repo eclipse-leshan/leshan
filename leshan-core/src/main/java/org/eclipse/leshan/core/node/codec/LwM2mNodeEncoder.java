@@ -30,7 +30,8 @@ import org.eclipse.leshan.core.request.ContentFormat;
  * <ul>
  * <li>a {@link LwM2mNode}</li>
  * <li>a time-stamped {@link LwM2mNode} (e.g. for historical representations)</li>
- * <li>a list of {@link LwM2mNode} (e.g. for composite operation)</li>
+ * <li>a map of {@link LwM2mNode} (e.g. for composite operation)</li>
+ * <li>a list of {@link LwM2mPath} (e.g. for composite operation)</li>
  * </ul>
  */
 public interface LwM2mNodeEncoder {
