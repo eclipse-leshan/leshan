@@ -27,7 +27,7 @@ import org.eclipse.leshan.core.californium.LwM2mCoapResource;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
+import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.SendRequest;
@@ -45,11 +45,11 @@ import org.eclipse.leshan.server.send.SendHandler;
  */
 public class SendResource extends LwM2mCoapResource {
     private RegistrationStore registrationStore;
-    private LwM2mNodeDecoder decoder;
+    private LwM2mDecoder decoder;
     private LwM2mModelProvider modelProvider;
     private SendHandler sendHandler;
 
-    public SendResource(SendHandler sendHandler, LwM2mModelProvider modelProvider, LwM2mNodeDecoder decoder,
+    public SendResource(SendHandler sendHandler, LwM2mModelProvider modelProvider, LwM2mDecoder decoder,
             RegistrationStore registrationStore) {
         super("dp");
         this.registrationStore = registrationStore;

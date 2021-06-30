@@ -28,7 +28,7 @@ import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.californium.AsyncRequestObserver;
 import org.eclipse.leshan.core.californium.SyncRequestObserver;
 import org.eclipse.leshan.core.model.LwM2mModel;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
+import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -47,11 +47,11 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
     private final ScheduledExecutorService executor;
     private final boolean attached;
     private final CaliforniumEndpointsManager endpointsManager;
-    private final LwM2mNodeEncoder encoder;
+    private final LwM2mEncoder encoder;
     private final LwM2mModel model;
 
     public CaliforniumLwM2mRequestSender(CaliforniumEndpointsManager endpointsManager,
-            ScheduledExecutorService sharedExecutor, LwM2mNodeEncoder encoder, LwM2mModel model) {
+            ScheduledExecutorService sharedExecutor, LwM2mEncoder encoder, LwM2mModel model) {
         this.endpointsManager = endpointsManager;
         if (sharedExecutor == null) {
             this.executor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("Leshan Async Request timeout"));

@@ -23,7 +23,7 @@ import java.util.Set;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.ObserveRequest;
@@ -50,7 +50,7 @@ public class ObservationServiceTest {
         support.givenASimpleClient();
         store = new InMemoryRegistrationStore();
         observationService = new ObservationServiceImpl(store, new StandardModelProvider(),
-                new DefaultLwM2mNodeDecoder());
+                new DefaultLwM2mDecoder());
     }
 
     @Test

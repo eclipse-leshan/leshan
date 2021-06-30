@@ -54,12 +54,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Unit tests for {@link LwM2mNodeDecoder}
+ * Unit tests for {@link LwM2mDecoder}
  */
 public class LwM2mNodeDecoderTest {
 
     private static LwM2mModel model;
-    private static LwM2mNodeDecoder decoder;
+    private static LwM2mDecoder decoder;
 
     @BeforeClass
     public static void loadModel() {
@@ -83,7 +83,7 @@ public class LwM2mNodeDecoderTest {
                 new ObjectModel(66, "object link tests 66", "", ObjectModel.DEFAULT_VERSION, true, false, resForObj66));
 
         model = new StaticModel(objects);
-        decoder = new DefaultLwM2mNodeDecoder();
+        decoder = new DefaultLwM2mDecoder();
     }
 
     // tlv content for instance 0 of device object (encoded as an array of resource TLVs)

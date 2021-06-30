@@ -47,23 +47,23 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Unit tests for {@link LwM2mNodeEncoder}
+ * Unit tests for {@link LwM2mEncoder}
  */
 public class LwM2mNodeEncoderTest {
 
     private static LwM2mModel model;
-    private static LwM2mNodeEncoder encoder;
+    private static LwM2mEncoder encoder;
 
     @BeforeClass
     public static void loadModel() {
         model = new StaticModel(ObjectLoader.loadDefault());
 
         // keep CBOR order to be able to test.
-        Map<ContentFormat, NodeEncoder> defaultNodeEncoders = DefaultLwM2mNodeEncoder.getDefaultNodeEncoders(false);
+        Map<ContentFormat, NodeEncoder> defaultNodeEncoders = DefaultLwM2mEncoder.getDefaultNodeEncoders(false);
         defaultNodeEncoders.put(ContentFormat.SENML_CBOR,
                 new LwM2mNodeSenMLEncoder(new SenMLCborUpokecenterEncoderDecoder(true, false)));
 
-        encoder = new DefaultLwM2mNodeEncoder(defaultNodeEncoders, DefaultLwM2mNodeEncoder.getDefaultPathEncoder(),
+        encoder = new DefaultLwM2mEncoder(defaultNodeEncoders, DefaultLwM2mEncoder.getDefaultPathEncoder(),
                 new LwM2mValueChecker());
     }
 

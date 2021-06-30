@@ -34,7 +34,7 @@ import org.eclipse.leshan.core.request.ContentFormat;
  * <li>a list of {@link LwM2mPath} (e.g. for composite operation)</li>
  * </ul>
  */
-public interface LwM2mNodeEncoder {
+public interface LwM2mEncoder {
 
     /**
      * Serializes a {@link LwM2mNode} with the given content format.

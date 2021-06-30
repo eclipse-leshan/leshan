@@ -40,7 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A default {@link LwM2mNodeEncoder}.
+ * A default {@link LwM2mEncoder}.
  * <p>
  * For {@link LwM2mNode} encoding, those formats are supported :
  * <ul>
@@ -59,9 +59,9 @@ import org.slf4j.LoggerFactory;
  * <li>{@link ContentFormat#SENML_CBOR}</li>
  * </ul>
  */
-public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
+public class DefaultLwM2mEncoder implements LwM2mEncoder {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DefaultLwM2mNodeEncoder.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultLwM2mEncoder.class);
 
     public static Map<ContentFormat, NodeEncoder> getDefaultNodeEncoders(boolean supportDeprecatedContentFormat) {
         Map<ContentFormat, NodeEncoder> encoders = new HashMap<>();
@@ -99,33 +99,33 @@ public class DefaultLwM2mNodeEncoder implements LwM2mNodeEncoder {
     protected final Map<ContentFormat, PathEncoder> pathEncoders;
 
     /**
-     * Create {@link DefaultLwM2mNodeEncoder} without support of old TLV and JSON code.
+     * Create {@link DefaultLwM2mEncoder} without support of old TLV and JSON code.
      */
-    public DefaultLwM2mNodeEncoder() {
+    public DefaultLwM2mEncoder() {
         this(new LwM2mValueChecker());
     }
 
-    public DefaultLwM2mNodeEncoder(LwM2mValueConverter converter) {
+    public DefaultLwM2mEncoder(LwM2mValueConverter converter) {
         this(converter, false);
     }
 
     /**
-     * Create {@link DefaultLwM2mNodeEncoder} allowing to enable support for old TLV and JSON code.
+     * Create {@link DefaultLwM2mEncoder} allowing to enable support for old TLV and JSON code.
      * <p>
      * Those old codes was used by the LWM2M specification before the official v1.0.0 release and could still be needed
      * for backward compatibility.
      * 
      * @param supportDeprecatedContentFormat True to accept to encode old code.
      */
-    public DefaultLwM2mNodeEncoder(boolean supportDeprecatedContentFormat) {
+    public DefaultLwM2mEncoder(boolean supportDeprecatedContentFormat) {
         this(new LwM2mValueChecker(), supportDeprecatedContentFormat);
     }
 
-    public DefaultLwM2mNodeEncoder(LwM2mValueConverter converter, boolean supportDeprecatedContentFormat) {
+    public DefaultLwM2mEncoder(LwM2mValueConverter converter, boolean supportDeprecatedContentFormat) {
         this(getDefaultNodeEncoders(supportDeprecatedContentFormat), getDefaultPathEncoder(), converter);
     }
 
-    public DefaultLwM2mNodeEncoder(Map<ContentFormat, NodeEncoder> nodeEncoders,
+    public DefaultLwM2mEncoder(Map<ContentFormat, NodeEncoder> nodeEncoders,
             Map<ContentFormat, PathEncoder> pathEncoders, LwM2mValueConverter converter) {
         this.nodeEncoders = nodeEncoders;
         this.pathEncoders = pathEncoders;

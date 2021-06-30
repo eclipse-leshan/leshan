@@ -36,10 +36,10 @@ import org.eclipse.leshan.core.LwM2m;
 import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.node.LwM2mNode;
-import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
-import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
+import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
+import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfigStoreTaskProvider;
@@ -79,8 +79,8 @@ public class LeshanBootstrapServerBuilder {
     private NetworkConfig coapConfig;
     private Builder dtlsConfigBuilder;
 
-    private LwM2mNodeEncoder encoder;
-    private LwM2mNodeDecoder decoder;
+    private LwM2mEncoder encoder;
+    private LwM2mDecoder decoder;
 
     private PublicKey publicKey;
     private PrivateKey privateKey;
@@ -293,22 +293,22 @@ public class LeshanBootstrapServerBuilder {
 
     /**
      * <p>
-     * Set the {@link LwM2mNodeEncoder} which will encode {@link LwM2mNode} with supported content format.
+     * Set the {@link LwM2mEncoder} which will encode {@link LwM2mNode} with supported content format.
      * </p>
-     * By default the {@link DefaultLwM2mNodeEncoder} is used. It supports Text, Opaque, TLV and JSON format.
+     * By default the {@link DefaultLwM2mEncoder} is used. It supports Text, Opaque, TLV and JSON format.
      */
-    public LeshanBootstrapServerBuilder setEncoder(LwM2mNodeEncoder encoder) {
+    public LeshanBootstrapServerBuilder setEncoder(LwM2mEncoder encoder) {
         this.encoder = encoder;
         return this;
     }
 
     /**
      * <p>
-     * Set the {@link LwM2mNodeDecoder} which will decode data in supported content format to create {@link LwM2mNode}.
+     * Set the {@link LwM2mDecoder} which will decode data in supported content format to create {@link LwM2mNode}.
      * </p>
-     * By default the {@link DefaultLwM2mNodeDecoder} is used. It supports Text, Opaque, TLV and JSON format.
+     * By default the {@link DefaultLwM2mDecoder} is used. It supports Text, Opaque, TLV and JSON format.
      */
-    public LeshanBootstrapServerBuilder setDecoder(LwM2mNodeDecoder decoder) {
+    public LeshanBootstrapServerBuilder setDecoder(LwM2mDecoder decoder) {
         this.decoder = decoder;
         return this;
     }
@@ -428,9 +428,9 @@ public class LeshanBootstrapServerBuilder {
             endpointFactory = new DefaultEndpointFactory("LWM2M BS Server", false);
         }
         if (encoder == null)
-            encoder = new DefaultLwM2mNodeEncoder();
+            encoder = new DefaultLwM2mEncoder();
         if (decoder == null)
-            decoder = new DefaultLwM2mNodeDecoder();
+            decoder = new DefaultLwM2mDecoder();
 
         // handle dtlsConfig
         DtlsConnectorConfig dtlsConfig = null;
@@ -599,7 +599,7 @@ public class LeshanBootstrapServerBuilder {
      */
     protected LeshanBootstrapServer createBootstrapServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             BootstrapSessionManager bsSessionManager, BootstrapHandlerFactory bsHandlerFactory,
-            NetworkConfig coapConfig, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
+            NetworkConfig coapConfig, LwM2mEncoder encoder, LwM2mDecoder decoder) {
         return new LeshanBootstrapServer(unsecuredEndpoint, securedEndpoint, bsSessionManager, bsHandlerFactory,
                 coapConfig, encoder, decoder);
     }

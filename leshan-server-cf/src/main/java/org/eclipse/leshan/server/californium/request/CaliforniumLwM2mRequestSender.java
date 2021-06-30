@@ -23,8 +23,8 @@ import org.eclipse.leshan.core.californium.CoapResponseCallback;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
+import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
+import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
@@ -59,12 +59,12 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
      * @param observationService The service used to store observation.
      * @param modelProvider the {@link LwM2mModelProvider} used retrieve the {@link LwM2mModel} used to encode/decode
      *        {@link LwM2mNode}.
-     * @param encoder The {@link LwM2mNodeEncoder} used to encode {@link LwM2mNode}.
-     * @param decoder The {@link LwM2mNodeDecoder} used to encode {@link LwM2mNode}.
+     * @param encoder The {@link LwM2mEncoder} used to encode {@link LwM2mNode}.
+     * @param decoder The {@link LwM2mDecoder} used to encode {@link LwM2mNode}.
      */
     public CaliforniumLwM2mRequestSender(Endpoint secureEndpoint, Endpoint nonSecureEndpoint,
-            ObservationServiceImpl observationService, LwM2mModelProvider modelProvider, LwM2mNodeEncoder encoder,
-            LwM2mNodeDecoder decoder) {
+            ObservationServiceImpl observationService, LwM2mModelProvider modelProvider, LwM2mEncoder encoder,
+            LwM2mDecoder decoder) {
         Validate.notNull(observationService);
         Validate.notNull(modelProvider);
         this.observationService = observationService;

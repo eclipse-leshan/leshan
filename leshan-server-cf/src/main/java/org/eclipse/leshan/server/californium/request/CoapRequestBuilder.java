@@ -27,7 +27,7 @@ import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
+import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
@@ -69,12 +69,12 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     private final boolean allowConnectionInitiation;
 
     private final LwM2mModel model;
-    private final LwM2mNodeEncoder encoder;
+    private final LwM2mEncoder encoder;
 
     private LowerLayerConfig lowerLayerConfig;
 
     public CoapRequestBuilder(Identity destination, String rootPath, String registrationId, String endpoint,
-            LwM2mModel model, LwM2mNodeEncoder encoder, boolean allowConnectionInitiation,
+            LwM2mModel model, LwM2mEncoder encoder, boolean allowConnectionInitiation,
             LowerLayerConfig lowerLayerConfig) {
         this.destination = destination;
         this.rootPath = rootPath;

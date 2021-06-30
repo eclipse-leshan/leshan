@@ -23,7 +23,7 @@ import org.eclipse.leshan.core.request.ContentFormat;
 /**
  * A decoder for {@link LwM2mNode} which support only one {@link ContentFormat}.
  * 
- * @see DefaultLwM2mNodeDecoder
+ * @see DefaultLwM2mDecoder
  */
 public interface NodeDecoder {
 

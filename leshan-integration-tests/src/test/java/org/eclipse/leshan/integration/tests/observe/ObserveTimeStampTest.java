@@ -35,8 +35,8 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
-import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
+import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ObserveRequest;
@@ -63,7 +63,7 @@ public class ObserveTimeStampTest {
     protected IntegrationTestHelper helper = new IntegrationTestHelper();
 
     private ContentFormat contentFormat;
-    private LwM2mNodeEncoder encoder = new DefaultLwM2mNodeEncoder();
+    private LwM2mEncoder encoder = new DefaultLwM2mEncoder();
 
     public ObserveTimeStampTest(ContentFormat contentFormat) {
         this.contentFormat = contentFormat;

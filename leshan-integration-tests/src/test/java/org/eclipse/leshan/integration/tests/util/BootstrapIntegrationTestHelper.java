@@ -52,8 +52,8 @@ import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.SecurityMode;
-import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
-import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -289,13 +289,13 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         // custom encoder/decoder with limited supported content format.
         if (supportedContentFormat != null && supportedContentFormat.length > 0) {
             final List<ContentFormat> supportedFormat = Arrays.asList(supportedContentFormat);
-            builder.setDecoder(new DefaultLwM2mNodeDecoder() {
+            builder.setDecoder(new DefaultLwM2mDecoder() {
                 @Override
                 public boolean isSupported(ContentFormat format) {
                     return supportedFormat.contains(format);
                 }
             });
-            builder.setEncoder(new DefaultLwM2mNodeEncoder() {
+            builder.setEncoder(new DefaultLwM2mEncoder() {
                 @Override
                 public boolean isSupported(ContentFormat format) {
                     return supportedFormat.contains(format);

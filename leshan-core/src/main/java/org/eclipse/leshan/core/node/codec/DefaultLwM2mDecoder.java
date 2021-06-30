@@ -46,7 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A default {@link LwM2mNodeDecoder}.
+ * A default {@link LwM2mDecoder}.
  * <p>
  * For {@link LwM2mNode} decoding, those formats are supported :
  * <ul>
@@ -65,9 +65,9 @@ import org.slf4j.LoggerFactory;
  * <li>{@link ContentFormat#SENML_CBOR}</li>
  * </ul>
  */
-public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
+public class DefaultLwM2mDecoder implements LwM2mDecoder {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DefaultLwM2mNodeDecoder.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultLwM2mDecoder.class);
 
     public static Map<ContentFormat, NodeDecoder> getDefaultNodeDecoders(boolean supportDeprecatedContentFormat) {
         Map<ContentFormat, NodeDecoder> decoders = new HashMap<>();
@@ -104,29 +104,29 @@ public class DefaultLwM2mNodeDecoder implements LwM2mNodeDecoder {
     protected final Map<ContentFormat, PathDecoder> pathDecoders;
 
     /**
-     * Create {@link DefaultLwM2mNodeDecoder} without support of old TLV and JSON code.
+     * Create {@link DefaultLwM2mDecoder} without support of old TLV and JSON code.
      */
-    public DefaultLwM2mNodeDecoder() {
+    public DefaultLwM2mDecoder() {
         this(false);
     }
 
     /**
-     * Create {@link DefaultLwM2mNodeDecoder} allowing to enable support for old TLV and JSON code.
+     * Create {@link DefaultLwM2mDecoder} allowing to enable support for old TLV and JSON code.
      * <p>
      * Those old codes was used by the LWM2M specification before the official v1.0.0 release and could still be needed
      * for backward compatibility.
      * 
      * @param supportDeprecatedContentFormat True to accept to decode old code.
      */
-    public DefaultLwM2mNodeDecoder(boolean supportDeprecatedContentFormat) {
+    public DefaultLwM2mDecoder(boolean supportDeprecatedContentFormat) {
         this(getDefaultNodeDecoders(supportDeprecatedContentFormat));
     }
 
-    public DefaultLwM2mNodeDecoder(Map<ContentFormat, NodeDecoder> nodeDecoders) {
+    public DefaultLwM2mDecoder(Map<ContentFormat, NodeDecoder> nodeDecoders) {
         this(nodeDecoders, getDefaultPathDecoder());
     }
 
-    public DefaultLwM2mNodeDecoder(Map<ContentFormat, NodeDecoder> nodeDecoders,
+    public DefaultLwM2mDecoder(Map<ContentFormat, NodeDecoder> nodeDecoders,
             Map<ContentFormat, PathDecoder> pathDecoders) {
         this.nodeDecoders = nodeDecoders;
         this.pathDecoders = pathDecoders;

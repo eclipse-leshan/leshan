@@ -44,8 +44,8 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.codec.CodecException;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
+import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
+import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.request.BootstrapReadRequest;
@@ -80,11 +80,11 @@ import org.eclipse.leshan.core.response.WriteResponse;
 public class ObjectResource extends LwM2mClientCoapResource implements ObjectListener {
 
     protected final LwM2mObjectEnabler nodeEnabler;
-    protected final LwM2mNodeEncoder encoder;
-    protected final LwM2mNodeDecoder decoder;
+    protected final LwM2mEncoder encoder;
+    protected final LwM2mDecoder decoder;
 
     public ObjectResource(LwM2mObjectEnabler nodeEnabler, RegistrationEngine registrationEngine,
-            CaliforniumEndpointsManager endpointsManager, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
+            CaliforniumEndpointsManager endpointsManager, LwM2mEncoder encoder, LwM2mDecoder decoder) {
         super(Integer.toString(nodeEnabler.getId()), registrationEngine, endpointsManager);
         this.nodeEnabler = nodeEnabler;
         this.nodeEnabler.addListener(this);

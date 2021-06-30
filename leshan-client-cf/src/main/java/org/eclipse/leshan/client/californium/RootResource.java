@@ -35,8 +35,8 @@ import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
+import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
+import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -56,12 +56,12 @@ public class RootResource extends LwM2mClientCoapResource {
     protected CoapServer coapServer;
     protected BootstrapHandler bootstrapHandler;
     protected LwM2mRootEnabler rootEnabler;
-    protected LwM2mNodeEncoder encoder;
-    protected LwM2mNodeDecoder decoder;
+    protected LwM2mEncoder encoder;
+    protected LwM2mDecoder decoder;
 
     public RootResource(RegistrationEngine registrationEngine, CaliforniumEndpointsManager endpointsManager,
             BootstrapHandler bootstrapHandler, CoapServer coapServer, LwM2mRootEnabler rootEnabler,
-            LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
+            LwM2mEncoder encoder, LwM2mDecoder decoder) {
         super("", registrationEngine, endpointsManager);
         this.bootstrapHandler = bootstrapHandler;
         setVisible(false);

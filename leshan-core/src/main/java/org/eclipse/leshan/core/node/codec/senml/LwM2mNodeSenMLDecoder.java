@@ -40,7 +40,7 @@ import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
-import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.MultiNodeDecoder;
 import org.eclipse.leshan.core.node.codec.TimestampedNodeDecoder;
 import org.eclipse.leshan.core.util.Hex;
@@ -125,7 +125,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
                         nodes.put(path, null);
                     } else {
                         LwM2mNode node = parseRecords(recordsByPath.get(path), path, model,
-                                DefaultLwM2mNodeDecoder.nodeClassFromPath(path));
+                                DefaultLwM2mDecoder.nodeClassFromPath(path));
                         nodes.put(path, node);
                     }
                 }
@@ -137,7 +137,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
                     LwM2mResolvedSenMLRecord resolvedRecord = resolver.resolve(record);
                     LwM2mPath path = resolvedRecord.getPath();
                     LwM2mNode node = parseRecords(Arrays.asList(resolvedRecord), path, model,
-                            DefaultLwM2mNodeDecoder.nodeClassFromPath(path));
+                            DefaultLwM2mDecoder.nodeClassFromPath(path));
                     nodes.put(path, node);
                 }
             }

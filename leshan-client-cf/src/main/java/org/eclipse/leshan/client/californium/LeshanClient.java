@@ -56,8 +56,8 @@ import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
+import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
+import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ReadCompositeRequest;
 import org.eclipse.leshan.core.request.SendRequest;
@@ -85,15 +85,15 @@ public class LeshanClient implements LwM2mClient {
     private LwM2mObjectTree objectTree;
     private final BootstrapHandler bootstrapHandler;
     private final LwM2mRootEnabler rootEnabler;
-    private final LwM2mNodeEncoder encoder;
-    private final LwM2mNodeDecoder decoder;
+    private final LwM2mEncoder encoder;
+    private final LwM2mDecoder decoder;
     private final RegistrationEngine engine;
     private final LwM2mClientObserverDispatcher observers;
 
     public LeshanClient(String endpoint, InetSocketAddress localAddress,
             List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig, Builder dtlsConfigBuilder,
             EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
-            Map<String, String> additionalAttributes, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
+            Map<String, String> additionalAttributes, LwM2mEncoder encoder, LwM2mDecoder decoder,
             ScheduledExecutorService sharedExecutor) {
         this(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder, endpointFactory, engineFactory,
                 additionalAttributes, null, encoder, decoder, sharedExecutor);
@@ -104,7 +104,7 @@ public class LeshanClient implements LwM2mClient {
             List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig, Builder dtlsConfigBuilder,
             EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
             Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes,
-            LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder, ScheduledExecutorService sharedExecutor) {
+            LwM2mEncoder encoder, LwM2mDecoder decoder, ScheduledExecutorService sharedExecutor) {
         this(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder, null, endpointFactory,
                 engineFactory, new DefaultBootstrapConsistencyChecker(), additionalAttributes, bsAdditionalAttributes,
                 encoder, decoder, sharedExecutor);
@@ -115,7 +115,7 @@ public class LeshanClient implements LwM2mClient {
             List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig, Builder dtlsConfigBuilder,
             List<Certificate> trustStore, EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
             BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
-            Map<String, String> bsAdditionalAttributes, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
+            Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder, LwM2mDecoder decoder,
             ScheduledExecutorService sharedExecutor) {
 
         Validate.notNull(endpoint);
@@ -194,7 +194,7 @@ public class LeshanClient implements LwM2mClient {
 
     protected void linkObjectTreeToCoapServer(final CoapServer coapServer, final RegistrationEngine registrationEngine,
             final CaliforniumEndpointsManager endpointsManager, LwM2mObjectTree objectTree,
-            final LwM2mNodeEncoder encoder, final LwM2mNodeDecoder decoder) {
+            final LwM2mEncoder encoder, final LwM2mDecoder decoder) {
 
         // Create CoAP resources for each lwm2m Objects.
         for (LwM2mObjectEnabler enabler : objectTree.getObjectEnablers().values()) {
@@ -224,7 +224,7 @@ public class LeshanClient implements LwM2mClient {
     }
 
     protected CoapResource createObjectResource(LwM2mObjectEnabler enabler, RegistrationEngine registrationEngine,
-            CaliforniumEndpointsManager endpointsManager, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
+            CaliforniumEndpointsManager endpointsManager, LwM2mEncoder encoder, LwM2mDecoder decoder) {
         return new ObjectResource(enabler, registrationEngine, endpointsManager, encoder, decoder);
     }
 
@@ -241,7 +241,7 @@ public class LeshanClient implements LwM2mClient {
     }
 
     protected CaliforniumLwM2mRequestSender createRequestSender(CaliforniumEndpointsManager endpointsManager,
-            ScheduledExecutorService executor, LwM2mNodeEncoder encoder, LwM2mModel model) {
+            ScheduledExecutorService executor, LwM2mEncoder encoder, LwM2mModel model) {
         return new CaliforniumLwM2mRequestSender(endpointsManager, executor, encoder, model);
     }
 
@@ -253,7 +253,7 @@ public class LeshanClient implements LwM2mClient {
         return registrationUpdateHandler;
     }
 
-    protected Set<ContentFormat> getSupportedContentFormat(LwM2mNodeDecoder decoder, LwM2mNodeEncoder encoder) {
+    protected Set<ContentFormat> getSupportedContentFormat(LwM2mDecoder decoder, LwM2mEncoder encoder) {
         Set<ContentFormat> supportedContentFormat = new TreeSet<>();
         supportedContentFormat.addAll(decoder.getSupportedContentFormat());
         supportedContentFormat.addAll(encoder.getSupportedContentFormat());

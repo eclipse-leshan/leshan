@@ -29,7 +29,7 @@ import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.CodecException;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
+import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
@@ -89,10 +89,10 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     private final Response coapResponse;
     private final String clientEndpoint;
     private final LwM2mModel model;
-    private final LwM2mNodeDecoder decoder;
+    private final LwM2mDecoder decoder;
 
     public LwM2mResponseBuilder(Request coapRequest, Response coapResponse, String clientEndpoint, LwM2mModel model,
-            LwM2mNodeDecoder decoder) {
+            LwM2mDecoder decoder) {
         this.coapRequest = coapRequest;
         this.coapResponse = coapResponse;
         this.clientEndpoint = clientEndpoint;

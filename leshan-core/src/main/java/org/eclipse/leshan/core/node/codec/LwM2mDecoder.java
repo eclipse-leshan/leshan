@@ -36,7 +36,7 @@ import org.eclipse.leshan.core.request.ContentFormat;
  * <li>a list of {@link LwM2mPath} (e.g. for composite operation)</li>
  * </ul>
  */
-public interface LwM2mNodeDecoder {
+public interface LwM2mDecoder {
 
     /**
      * Deserializes a binary content into a {@link LwM2mNode}.

@@ -24,7 +24,7 @@ import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.model.LwM2mModel;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
+import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -45,10 +45,10 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
 
     protected Request coapRequest;
     protected final Identity server;
-    protected final LwM2mNodeEncoder encoder;
+    protected final LwM2mEncoder encoder;
     protected final LwM2mModel model;
 
-    public CoapRequestBuilder(Identity server, LwM2mNodeEncoder encoder, LwM2mModel model) {
+    public CoapRequestBuilder(Identity server, LwM2mEncoder encoder, LwM2mModel model) {
         this.server = server;
         this.encoder = encoder;
         this.model = model;

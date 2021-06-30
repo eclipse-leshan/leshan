@@ -25,7 +25,7 @@ import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 /**
  * A {@link NodeDecoder} which can also decode time-stamped values.
  * 
- * @see DefaultLwM2mNodeDecoder
+ * @see DefaultLwM2mDecoder
  */
 public interface TimestampedNodeDecoder extends NodeDecoder {
     /**

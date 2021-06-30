@@ -16,15 +16,15 @@
 package org.eclipse.leshan.server.model;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
+import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
+import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.server.registration.Registration;
 
 /**
  * A <code>LwM2mModelProvider</code> implementation is in charge of returning the description of the LWM2M objects for
  * each registered client.
  * <p>
- * The description of each object is mainly used by the {@link LwM2mNodeEncoder}/{@link LwM2mNodeDecoder} to
+ * The description of each object is mainly used by the {@link LwM2mEncoder}/{@link LwM2mDecoder} to
  * encode/decode the requests/responses payload.
  * </p>
  * <p>

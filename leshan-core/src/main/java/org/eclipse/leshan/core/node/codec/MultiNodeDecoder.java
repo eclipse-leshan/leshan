@@ -28,7 +28,7 @@ import org.eclipse.leshan.core.request.ContentFormat;
 /**
  * A decoder for a list of {@link LwM2mNode} which supports only one {@link ContentFormat}.
  * 
- * @see DefaultLwM2mNodeDecoder
+ * @see DefaultLwM2mDecoder
  */
 public interface MultiNodeDecoder {
 

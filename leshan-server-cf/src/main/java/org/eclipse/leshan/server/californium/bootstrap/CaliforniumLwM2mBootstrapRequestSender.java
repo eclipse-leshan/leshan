@@ -19,8 +19,8 @@ import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
+import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
+import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
@@ -48,11 +48,11 @@ public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapReq
     /**
      * @param secureEndpoint The endpoint used to send coaps request.
      * @param nonSecureEndpoint The endpoint used to send coap request.
-     * @param encoder The {@link LwM2mNodeEncoder} used to encode {@link LwM2mNode}.
-     * @param decoder The {@link LwM2mNodeDecoder} used to encode {@link LwM2mNode}.
+     * @param encoder The {@link LwM2mEncoder} used to encode {@link LwM2mNode}.
+     * @param decoder The {@link LwM2mDecoder} used to encode {@link LwM2mNode}.
      */
     public CaliforniumLwM2mBootstrapRequestSender(Endpoint secureEndpoint, Endpoint nonSecureEndpoint,
-            LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
+            LwM2mEncoder encoder, LwM2mDecoder decoder) {
         this.sender = new RequestSender(secureEndpoint, nonSecureEndpoint, encoder, decoder);
     }
 

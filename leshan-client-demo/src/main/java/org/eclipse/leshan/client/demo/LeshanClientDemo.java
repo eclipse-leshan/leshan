@@ -81,8 +81,8 @@ import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Operations;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.model.StaticModel;
-import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
-import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.SecurityUtil;
 import org.slf4j.Logger;
@@ -810,8 +810,8 @@ public class LeshanClientDemo {
         builder.setRegistrationEngineFactory(engineFactory);
         builder.setEndpointFactory(endpointFactory);
         if (supportOldFormat) {
-            builder.setDecoder(new DefaultLwM2mNodeDecoder(true));
-            builder.setEncoder(new DefaultLwM2mNodeEncoder(true));
+            builder.setDecoder(new DefaultLwM2mDecoder(true));
+            builder.setEncoder(new DefaultLwM2mEncoder(true));
         }
         builder.setAdditionalAttributes(additionalAttributes);
         builder.setBootstrapAdditionalAttributes(bsAdditionalAttributes);

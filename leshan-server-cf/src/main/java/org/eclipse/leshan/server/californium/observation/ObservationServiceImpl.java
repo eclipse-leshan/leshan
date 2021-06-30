@@ -36,7 +36,7 @@ import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
+import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
@@ -65,7 +65,7 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
 
     private final CaliforniumRegistrationStore registrationStore;
     private final LwM2mModelProvider modelProvider;
-    private final LwM2mNodeDecoder decoder;
+    private final LwM2mDecoder decoder;
     private Endpoint secureEndpoint;
     private Endpoint nonSecureEndpoint;
     private boolean updateRegistrationOnNotification;
@@ -77,10 +77,10 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
      * 
      * @param store instance of californium's {@link ObservationStore}
      * @param modelProvider instance of {@link LwM2mModelProvider}
-     * @param decoder instance of {@link LwM2mNodeDecoder}
+     * @param decoder instance of {@link LwM2mDecoder}
      */
     public ObservationServiceImpl(CaliforniumRegistrationStore store, LwM2mModelProvider modelProvider,
-            LwM2mNodeDecoder decoder) {
+            LwM2mDecoder decoder) {
         this(store, modelProvider, decoder, false);
     }
 
@@ -89,13 +89,13 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
      * 
      * @param store instance of californium's {@link ObservationStore}
      * @param modelProvider instance of {@link LwM2mModelProvider}
-     * @param decoder instance of {@link LwM2mNodeDecoder}
+     * @param decoder instance of {@link LwM2mDecoder}
      * @param updateRegistrationOnNotification will activate registration update on observe notification.
      * 
      * @since 1.1
      */
     public ObservationServiceImpl(CaliforniumRegistrationStore store, LwM2mModelProvider modelProvider,
-            LwM2mNodeDecoder decoder, boolean updateRegistrationOnNotification) {
+            LwM2mDecoder decoder, boolean updateRegistrationOnNotification) {
         this.registrationStore = store;
         this.modelProvider = modelProvider;
         this.decoder = decoder;

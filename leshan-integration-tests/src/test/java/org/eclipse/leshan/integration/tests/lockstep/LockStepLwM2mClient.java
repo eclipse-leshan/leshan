@@ -30,8 +30,8 @@ import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.StaticModel;
-import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
+import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -40,13 +40,13 @@ public class LockStepLwM2mClient extends LockstepEndpoint {
 
     private static final Random r = new Random();
     private InetSocketAddress destination;
-    private final LwM2mNodeEncoder encoder;
+    private final LwM2mEncoder encoder;
     private final LwM2mModel model;
 
     public LockStepLwM2mClient(final InetSocketAddress destination) {
         super(destination);
         this.destination = destination;
-        this.encoder = new DefaultLwM2mNodeEncoder();
+        this.encoder = new DefaultLwM2mEncoder();
         List<ObjectModel> models = ObjectLoader.loadDefault();
         this.model = new StaticModel(models);
     }

@@ -22,7 +22,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 /**
  * a {@link LwM2mPath} decoder.
  * 
- * @see DefaultLwM2mNodeDecoder
+ * @see DefaultLwM2mDecoder
  */
 public interface PathDecoder {
 

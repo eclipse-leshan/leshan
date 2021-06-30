@@ -56,9 +56,9 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.leshan.core.LwM2m;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
-import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
-import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
+import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.util.SecurityUtil;
 import org.eclipse.leshan.server.californium.LeshanServer;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
@@ -413,8 +413,8 @@ public class LeshanServerDemo {
             throws Exception {
         // Prepare LWM2M server
         LeshanServerBuilder builder = new LeshanServerBuilder();
-        builder.setEncoder(new DefaultLwM2mNodeEncoder());
-        LwM2mNodeDecoder decoder = new DefaultLwM2mNodeDecoder();
+        builder.setEncoder(new DefaultLwM2mEncoder());
+        LwM2mDecoder decoder = new DefaultLwM2mDecoder();
         builder.setDecoder(decoder);
 
         // Create CoAP Config
@@ -562,7 +562,7 @@ public class LeshanServerDemo {
         builder.setSecurityStore(securityStore);
 
         // use a magic converter to support bad type send by the UI.
-        builder.setEncoder(new DefaultLwM2mNodeEncoder(new MagicLwM2mValueConverter()));
+        builder.setEncoder(new DefaultLwM2mEncoder(new MagicLwM2mValueConverter()));
 
         // Create and start LWM2M server
         LeshanServer lwServer = builder.build();

@@ -33,8 +33,8 @@ import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
 import org.eclipse.leshan.core.californium.CoapResponseCallback;
 import org.eclipse.leshan.core.node.codec.CodecException;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
+import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
+import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.SendRequest;
@@ -143,7 +143,7 @@ public class LeshanServer {
      */
     public LeshanServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
-            LwM2mModelProvider modelProvider, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
+            LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder,
             NetworkConfig coapConfig, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
             RegistrationIdProvider registrationIdProvider) {
         this(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer, modelProvider, encoder,
@@ -174,7 +174,7 @@ public class LeshanServer {
      */
     public LeshanServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
-            LwM2mModelProvider modelProvider, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
+            LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder,
             NetworkConfig coapConfig, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
             RegistrationIdProvider registrationIdProvider, boolean updateRegistrationOnNotification) {
 
@@ -246,7 +246,7 @@ public class LeshanServer {
     }
 
     protected ObservationServiceImpl createObservationService(CaliforniumRegistrationStore registrationStore,
-            LwM2mModelProvider modelProvider, LwM2mNodeDecoder decoder, CoapEndpoint unsecuredEndpoint,
+            LwM2mModelProvider modelProvider, LwM2mDecoder decoder, CoapEndpoint unsecuredEndpoint,
             CoapEndpoint securedEndpoint) {
 
         ObservationServiceImpl observationService = new ObservationServiceImpl(registrationStore, modelProvider,
@@ -285,13 +285,13 @@ public class LeshanServer {
     }
 
     protected CoapResource createSendResource(SendHandler sendHandler, LwM2mModelProvider modelProvider,
-            LwM2mNodeDecoder decoder, CaliforniumRegistrationStore registrationStore) {
+            LwM2mDecoder decoder, CaliforniumRegistrationStore registrationStore) {
         return new SendResource(sendHandler, modelProvider, decoder, registrationStore);
     }
 
     protected LwM2mRequestSender createRequestSender(Endpoint securedEndpoint, Endpoint unsecuredEndpoint,
             RegistrationServiceImpl registrationService, ObservationServiceImpl observationService,
-            LwM2mModelProvider modelProvider, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder,
+            LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder,
             PresenceServiceImpl presenceService) {
 
         // if no queue mode, create a "simple" sender

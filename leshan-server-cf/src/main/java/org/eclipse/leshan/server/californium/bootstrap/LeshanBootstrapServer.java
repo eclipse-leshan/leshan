@@ -26,8 +26,8 @@ import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
-import org.eclipse.leshan.core.node.codec.LwM2mNodeEncoder;
+import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
+import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
@@ -70,7 +70,7 @@ public class LeshanBootstrapServer {
      */
     public LeshanBootstrapServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             BootstrapSessionManager bsSessionManager, BootstrapHandlerFactory bsHandlerFactory,
-            NetworkConfig coapConfig, LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
+            NetworkConfig coapConfig, LwM2mEncoder encoder, LwM2mDecoder decoder) {
 
         Validate.notNull(bsSessionManager, "session manager must not be null");
         Validate.notNull(bsHandlerFactory, "BootstrapHandler factory must not be null");
@@ -108,7 +108,7 @@ public class LeshanBootstrapServer {
     }
 
     protected LwM2mBootstrapRequestSender createRequestSender(Endpoint securedEndpoint, Endpoint unsecuredEndpoint,
-            LwM2mNodeEncoder encoder, LwM2mNodeDecoder decoder) {
+            LwM2mEncoder encoder, LwM2mDecoder decoder) {
         return new CaliforniumLwM2mBootstrapRequestSender(securedEndpoint, unsecuredEndpoint, encoder, decoder);
     }
 
