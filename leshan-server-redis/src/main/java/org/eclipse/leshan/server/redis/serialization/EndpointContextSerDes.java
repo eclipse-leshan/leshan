@@ -35,9 +35,6 @@ import org.eclipse.californium.elements.UdpEndpointContext;
 import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.elements.auth.X509CertPath;
-import org.eclipse.californium.elements.util.DatagramReader;
-import org.eclipse.californium.elements.util.DatagramWriter;
-import org.eclipse.californium.elements.util.SerializationUtil;
 import org.eclipse.californium.elements.util.StringUtil;
 import org.eclipse.californium.scandium.dtls.ConnectionId;
 import org.eclipse.californium.scandium.dtls.SessionId;
@@ -78,10 +75,12 @@ public class EndpointContextSerDes {
         /** copy the attributes **/
         Map<String, Object> attributes = context.entries();
         if (!attributes.isEmpty()) {
-            DatagramWriter writer = new DatagramWriter();
-            SerializationUtil.write(writer, attributes);
-            String base64 = StringUtil.byteArrayToBase64(writer.toByteArray());
-            peer.set(KEY_ATTRIBUTES, base64);
+            JsonObject attContext = Json.object();
+            for (String key : attributes.keySet()) {
+                // write all values as string
+                attContext.set(key, attributes.get(key).toString());
+            }
+            peer.set(KEY_ATTRIBUTES, attContext);
         }
         return peer;
     }
@@ -113,17 +112,12 @@ public class EndpointContextSerDes {
         value = peer.get(KEY_ATTRIBUTES);
         if (value == null) {
             endpointContext = new AddressEndpointContext(socketAddress, principal);
-        } else if (value.isString()) {
-            String base64 = value.asString();
-            byte[] data = StringUtil.base64ToByteArray(base64);
-            DatagramReader reader = new DatagramReader(data, false);
-            Attributes contexAttributes = SerializationUtil.readEndpointContexAttributes(reader);
-            endpointContext = new MapBasedEndpointContext(socketAddress, principal, contexAttributes);
         } else {
-            MapBasedEndpointContext.Attributes attributes = new MapBasedEndpointContext.Attributes();
+            Attributes attributes = new Attributes();
             for (Member member : value.asObject()) {
                 String name = member.getName();
                 String attributeValue = member.getValue().asString();
+                // convert the text values into typed values according their name
                 if (name.equals(UdpEndpointContext.KEY_PLAIN)) {
                     attributes.add(name, attributeValue);
                 } else if (name.equals(DtlsEndpointContext.KEY_SESSION_ID)) {
