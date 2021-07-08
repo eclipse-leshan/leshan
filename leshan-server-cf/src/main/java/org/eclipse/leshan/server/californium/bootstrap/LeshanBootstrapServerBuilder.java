@@ -463,10 +463,24 @@ public class LeshanBootstrapServerBuilder {
             if (incompleteConfig.getStaleConnectionThreshold() == null)
                 dtlsConfigBuilder.setStaleConnectionThreshold(coapConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
 
-            if (privateKey != null) {
-
+            // check conflict in configuration
+            if (incompleteConfig.getCertificateIdentityProvider() != null) {
+                if (privateKey != null) {
+                    throw new IllegalStateException(String.format(
+                            "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for private key"));
+                }
+                if (publicKey != null) {
+                    throw new IllegalStateException(String.format(
+                            "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for public key"));
+                }
+                if (certificateChain != null) {
+                    throw new IllegalStateException(String.format(
+                            "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for certificate chain"));
+                }
+            } else if (privateKey != null) {
                 // if in raw key mode and not in X.509 set the raw keys
                 if (certificateChain == null && publicKey != null) {
+
                     dtlsConfigBuilder.setCertificateIdentityProvider(new SingleCertificateProvider(privateKey, publicKey));
                 }
                 // if in X.509 mode set the private key, certificate chain, public key is extracted from the certificate
@@ -475,22 +489,22 @@ public class LeshanBootstrapServerBuilder {
                     dtlsConfigBuilder.setCertificateIdentityProvider(new SingleCertificateProvider(privateKey, certificateChain, CertificateType.X_509,
                             CertificateType.RAW_PUBLIC_KEY));
                 }
+            }
 
-                // handle trusted certificates or RPK
-                if (incompleteConfig.getAdvancedCertificateVerifier() != null) {
-                    if (trustedCertificates != null) {
-                        throw new IllegalStateException(
-                                "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder: if a AdvancedCertificateVerifier is set, trustedCertificates must not be set.");
-                    }
-                } else {
-                    StaticNewAdvancedCertificateVerifier.Builder verifierBuilder = StaticNewAdvancedCertificateVerifier.builder();
-                    // by default trust all RPK
-                    verifierBuilder.setTrustAllRPKs();
-                    if (trustedCertificates != null) {
-                        verifierBuilder.setTrustedCertificates(trustedCertificates);
-                    }
-                    dtlsConfigBuilder.setAdvancedCertificateVerifier(verifierBuilder.build());
+            // handle trusted certificates or RPK
+            if (incompleteConfig.getAdvancedCertificateVerifier() != null) {
+                if (trustedCertificates != null) {
+                    throw new IllegalStateException(
+                            "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder: if a AdvancedCertificateVerifier is set, trustedCertificates must not be set.");
                 }
+            } else if (incompleteConfig.getCertificateIdentityProvider() != null){
+                StaticNewAdvancedCertificateVerifier.Builder verifierBuilder = StaticNewAdvancedCertificateVerifier.builder();
+                // by default trust all RPK
+                verifierBuilder.setTrustAllRPKs();
+                if (trustedCertificates != null) {
+                    verifierBuilder.setTrustedCertificates(trustedCertificates);
+                }
+                dtlsConfigBuilder.setAdvancedCertificateVerifier(verifierBuilder.build());
             }
 
             // Bootstrap Server acts as Server only : It does not need to initiate handshake
